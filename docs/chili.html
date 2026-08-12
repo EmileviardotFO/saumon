@@ -63,6 +63,15 @@ tr.hi td{background:rgba(95,211,196,.07)}
 .ev time{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--open);letter-spacing:.08em}
 .ev h3{font-size:16px;margin:3px 0 5px;text-transform:none;letter-spacing:0;font-family:'Inter';font-weight:600}
 .ev p{font-size:13px;color:var(--mist)}
+.links{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:10px;margin-top:4px}
+.links a{display:block;padding:11px 14px;background:var(--hull);border:1px solid var(--line);
+  border-radius:3px;color:var(--mist);text-decoration:none;font-size:12.5px;transition:border-color .15s}
+.links a:hover{border-color:var(--open);color:var(--bone)}
+.links a b{color:var(--open);font-family:'IBM Plex Mono',monospace;font-size:11px;
+  letter-spacing:.1em;margin-right:9px}
+.mapwrap{display:grid;grid-template-columns:340px 1fr;gap:32px;align-items:start}
+@media(max-width:820px){.mapwrap{grid-template-columns:1fr}}
+#carte{max-width:340px}
 footer{border-top:1px solid var(--line);padding-top:22px;font-size:12.5px;color:var(--mist)}
 </style></head><body><div class="wrap">
 
@@ -107,13 +116,40 @@ footer{border-top:1px solid var(--line);padding-top:22px;font-size:12.5px;color:
 </section>
 
 <section>
+  <h2>Les trois bassins</h2>
+  <div class="lede">Le Chili salmonicole tient dans trois régions étirées sur quinze degrés de latitude,
+  de Puerto Montt au détroit de Magellan. Plus on descend vers le sud, plus l'eau est froide et la
+  mortalité basse — même gradient qu'entre le sud de la Norvège et le Finnmark, mais sur une amplitude
+  bien plus large.</div>
+  <div class="mapwrap">
+    <svg id="carte" viewBox="0 0 340 520"></svg>
+    <div id="regTable"></div>
+  </div>
+  <div class="note" id="regNote"></div>
+</section>
+
+<section>
   <h2>Production et biomasse</h2>
   <div class="lede">Le grain reste annuel ou semestriel, avec des délais longs — Sernapesca publie son
   bilan sanitaire vingt-huit semaines après la période. C'est de la connaissance structurelle, pas du
-  pilotage.</div>
+  pilotage. <span class="warn">La biomasse mensuelle existe</span> dans les rapports, mais sous forme de
+  graphiques dans des PDF : elle n'est lisible qu'à l'œil, jamais publiée en série. Seul le pic de juin
+  est chiffré dans le texte, d'où ces trois points isolés.</div>
   <div class="grid2" style="display:grid;grid-template-columns:1fr 1fr;gap:26px">
     <div id="prodTable"></div>
     <div id="bioTable"></div>
+  </div>
+  <div class="sig" style="margin-top:34px">
+    <div class="disp" style="font-size:17px">Biomasse en mer — tout ce qui est chiffré</div>
+    <div style="color:var(--mist);font-size:13px;margin:5px 0 16px;max-width:78ch">
+      Quatre points en cinq ans, c'est tout ce que les sources publiques donnent en clair. La biomasse
+      mensuelle existe dans les rapports Sernapesca, mais sous forme de graphiques : elle n'est lisible
+      qu'à l'œil et jamais publiée en série.</div>
+    <svg id="bioSerie" viewBox="0 0 980 260"></svg>
+    <div class="grid2" style="display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:24px">
+      <div id="bio26"></div><div id="bioEnt"></div>
+    </div>
+    <div class="note" id="bioNote"></div>
   </div>
 </section>
 
@@ -132,7 +168,7 @@ footer{border-top:1px solid var(--line);padding-top:22px;font-size:12.5px;color:
 <footer id="foot"></footer>
 </div>
 
-<script id="donnees" type="application/json">{"_meta":{"build":"2026-07-31","statut":"amorce enrichie","note":"Le grain reste annuel/semestriel. Les exportations sont trimestrielles car Aduanas publie au mois. Aucune valeur n'est interpolee : les champs derives sont calcules a l'affichage et signales comme tels.","generated":"2026-08-12","pays":"Chili"},"provenance":{"ADU":"Servicio Nacional de Aduanas, Comex","CDS":"Consejo del Salmon, reporte semestriel","SCH":"SalmonChile, Boletin de Exportaciones","SNP":"Sernapesca, Informe de Situacion Sanitaria","SPS":"Subpesca, Informe Sectorial","AQB":"Aquabench, indicateurs annuels (base WFE)","UB":"Urner Barry / Expana, filet frais salar chilien EEUU","ARC":"Arctic Securities / Kontali, note de marche","USTR":"Office of the US Trade Representative"},"latence":[{"source":"ADU","cadence":"mensuelle","retard_semaines":5,"dernier":"juin 2026"},{"source":"CDS","cadence":"semestrielle","retard_semaines":3,"dernier":"S1 2026"},{"source":"SPS","cadence":"mensuelle","retard_semaines":6,"dernier":"mai 2026"},{"source":"SNP","cadence":"semestrielle","retard_semaines":28,"dernier":"annee 2025"},{"source":"SCH","cadence":"trimestrielle","retard_semaines":4,"dernier":"T1 2026"}],"prod":[{"year":2023,"total_t":1113412,"base":"WFE","src":"AQB","especes":{"salar":772361,"coho":292974,"trucha":48077}},{"year":2024,"total_t":1033028,"base":"declare","src":"SCH","derive":true,"note":"reconstitue depuis le total 2025 et la croissance +13% publiee"},{"year":2025,"total_t":1167322,"base":"declare","src":"SCH","croissance_pct":13.0,"part_pct":{"salar":70,"coho":27,"trucha":4},"croissance_espece_pct":{"salar":15,"coho":14,"trucha":-24},"note":"parts publiees arrondies (somme 101%) — ecart de reconciliation ~1,5%"}],"sanitaire":[{"year":2022,"periode":"S1","biomasa_max_t":490000,"mois_pic":6,"src":"SNP"},{"year":2024,"periode":"S1","biomasa_max_t":510000,"mois_pic":6,"src":"SNP"},{"year":2025,"periode":"S1","biomasa_max_t":600000,"mois_pic":6,"src":"SNP"},{"year":2025,"periode":"AN","biomasa_vs_n1_pct":17.0,"mortalidad_vs_n1_pct":-1.5,"ica_vs_n1_pct":5.88,"src":"SNP"}],"biomasse_2026":[{"mois":3,"vs_n1_pct":-2.5,"src":"ARC","note":"estimation Kontali"},{"mois":4,"vs_n1_pct":-1.8,"src":"ARC","note":"nombre de poissons en mer"}],"recolte_2026":[{"mois":4,"croissance_pct":3.0,"cumul_ytd_pct":15.7,"src":"ARC"}],"mortalite_region":[{"year":2025,"region":"Los Lagos","pct_mensuel_moyen":0.9,"src":"SNP"},{"year":2025,"region":"Aysen","pct_mensuel_moyen":0.8,"src":"SNP"},{"year":2025,"region":"Magallanes","pct_mensuel_moyen":0.4,"src":"SNP"}],"mix_centres_espece":[{"year":2025,"salar_pct":66,"coho_pct":28,"trucha_pct":6,"src":"SNP"}],"export_periode":[{"year":2025,"periode":"T1","tons":218331,"usd_m":1838,"src":"ADU","derive":true},{"year":2025,"periode":"T4","tons":260313,"usd_m":1855,"src":"ADU"},{"year":2026,"periode":"T1","tons":260533,"usd_m":1990,"src":"ADU"},{"year":2025,"periode":"S1","tons":382000,"usd_m":3266,"src":"ADU"},{"year":2026,"periode":"S1","tons":440922,"usd_m":3488,"src":"CDS","note":"Aduanas publie 441 000 t / 3 506 MUSD — ecart de source normal"}],"export_destination":[{"year":2025,"periode":"S1","dest":"Etats-Unis","tons":118800,"usd_m":1326,"src":"ADU"},{"year":2026,"periode":"S1","dest":"Etats-Unis","tons":133600,"usd_m":1356,"src":"ADU"},{"year":2025,"periode":"S1","dest":"Bresil","tons":74910,"usd_m":473,"src":"ADU"},{"year":2026,"periode":"S1","dest":"Bresil","tons":85945,"usd_m":519,"src":"ADU"},{"year":2025,"periode":"S1","dest":"Chine","tons":11770,"usd_m":78,"src":"ADU"},{"year":2026,"periode":"S1","dest":"Chine","tons":26355,"usd_m":157,"src":"ADU"},{"year":2025,"periode":"S1","dest":"Russie","tons":22700,"usd_m":169,"src":"ADU"},{"year":2026,"periode":"S1","dest":"Russie","tons":14400,"usd_m":94,"src":"ADU"},{"year":2025,"periode":"S1","dest":"Mexique","tons":9309,"usd_m":98,"src":"ADU"},{"year":2026,"periode":"S1","dest":"Mexique","tons":11500,"usd_m":113,"src":"ADU"}],"export_mix_produit":[{"year":2025,"produit":"Filet frais salar","part_valeur_pct":24,"src":"SCH"},{"year":2025,"produit":"Filet congele salar","part_valeur_pct":18,"src":"SCH"},{"year":2025,"produit":"Entier frais","part_valeur_pct":15,"src":"SCH"},{"year":2025,"produit":"Coho H/G congele","part_valeur_pct":15,"src":"SCH"},{"year":2025,"produit":"Autres formats","part_valeur_pct":28,"src":"SCH","derive":true}],"prix_ub":[{"date":"2026-01","usd_lb":6.48,"src":"UB","approx":true},{"date":"2026-02","usd_lb":5.8,"src":"UB","approx":true},{"date":"2026-04","usd_lb":6.85,"src":"UB","approx":true},{"date":"2026-06","usd_lb":6.97,"src":"UB","approx":true}],"evenements":[{"date":"2026-07-24","type":"commercial","titre":"Droit de douane EEUU porte a 12,5%","detail":"Le taux provisoire de 10% est remplace par 12,5%. Le saumon d'elevage chilien n'a pas ete place en Annexe A (exemptions). Entree en vigueur 00h01 ET.","src":"USTR"},{"date":"2026-07-27","type":"commercial","titre":"Negociations bilaterales annoncees","detail":"Delegation USTR attendue au Chili fin aout pour negocier des exclusions.","src":"USTR"}],"tarif":{"taux_avant_pct":10.0,"taux_apres_pct":12.5,"entree_vigueur":"2026-07-24","assiette_usd_m_an":2600,"surcout_incremental_usd_m_an":65,"part_us_dans_envois_pct":39.9,"src":"SCH","note":"Surcout incremental = assiette x (12,5% - 10%). L'estimation gremiale d'un impact jusqu'a 500 MUSD couvre un perimetre plus large que le seul differentiel tarifaire."},"couverture":{"colonnes":["2021","2022","2023","2024","2025","2026"],"lignes":[{"champ":"recolte totale","etat":[0,0,1,2,1,0]},{"champ":"recolte par espece","etat":[0,0,1,0,1,0]},{"champ":"recolte par region","etat":[0,0,0,0,0,0]},{"champ":"biomasse pic (mer)","etat":[0,1,0,1,1,2]},{"champ":"mortalite par region","etat":[0,0,0,0,1,0]},{"champ":"export volume/valeur","etat":[0,0,0,0,1,1]},{"champ":"export par destination","etat":[0,0,0,0,1,1]},{"champ":"export par produit","etat":[0,0,0,0,1,0]},{"champ":"prix reference","etat":[0,0,0,0,0,2]},{"champ":"polygones ACS","etat":[0,0,0,0,0,0]}],"legende":{"0":"vide","1":"source","2":"partiel ou approximatif"}},"aduanas":{"_statut":"amorce manuelle — 5 marches, especes et formats non ventiles. fetch_aduanas.py remplace ce bloc par ~80 marches x espece x format.","_grain":"semestre","annees":[2025,2026],"periodes":["S1"],"especes":["tous"],"formats":["tous"],"lignes":[{"year":2025,"periode":"S1","pais":"Etats-Unis","espece":"tous","format":"tous","kg":118800000.0,"fob_usd":1326000000.0,"src":"ADU"},{"year":2026,"periode":"S1","pais":"Etats-Unis","espece":"tous","format":"tous","kg":133600000.0,"fob_usd":1356000000.0,"src":"ADU"},{"year":2025,"periode":"S1","pais":"Bresil","espece":"tous","format":"tous","kg":74910000.0,"fob_usd":473000000.0,"src":"ADU"},{"year":2026,"periode":"S1","pais":"Bresil","espece":"tous","format":"tous","kg":85945000.0,"fob_usd":519000000.0,"src":"ADU"},{"year":2025,"periode":"S1","pais":"Chine","espece":"tous","format":"tous","kg":11770000.0,"fob_usd":78000000.0,"src":"ADU"},{"year":2026,"periode":"S1","pais":"Chine","espece":"tous","format":"tous","kg":26355000.0,"fob_usd":157000000.0,"src":"ADU"},{"year":2025,"periode":"S1","pais":"Russie","espece":"tous","format":"tous","kg":22700000.0,"fob_usd":169000000.0,"src":"ADU"},{"year":2026,"periode":"S1","pais":"Russie","espece":"tous","format":"tous","kg":14400000.0,"fob_usd":94000000.0,"src":"ADU"},{"year":2025,"periode":"S1","pais":"Mexique","espece":"tous","format":"tous","kg":9309000.0,"fob_usd":98000000.0,"src":"ADU"},{"year":2026,"periode":"S1","pais":"Mexique","espece":"tous","format":"tous","kg":11500000.0,"fob_usd":113000000.0,"src":"ADU"}]}}</script>
+<script id="donnees" type="application/json">{"_meta":{"build":"2026-07-31","statut":"amorce enrichie","note":"Le grain reste annuel/semestriel. Les exportations sont trimestrielles car Aduanas publie au mois. Aucune valeur n'est interpolee : les champs derives sont calcules a l'affichage et signales comme tels.","generated":"2026-08-12","pays":"Chili"},"provenance":{"ADU":"Servicio Nacional de Aduanas, Comex","CDS":"Consejo del Salmon, reporte semestriel","SCH":"SalmonChile, Boletin de Exportaciones","SNP":"Sernapesca, Informe de Situacion Sanitaria","SPS":"Subpesca, Informe Sectorial","AQB":"Aquabench, indicateurs annuels (base WFE)","UB":"Urner Barry / Expana, filet frais salar chilien EEUU","ARC":"Arctic Securities / Kontali, note de marche","USTR":"Office of the US Trade Representative","SKX":"Salmonexpert / Skills, releve mensuel de biomasse par entreprise"},"latence":[{"source":"ADU","cadence":"mensuelle","retard_semaines":5,"dernier":"juin 2026"},{"source":"CDS","cadence":"semestrielle","retard_semaines":3,"dernier":"S1 2026"},{"source":"SPS","cadence":"mensuelle","retard_semaines":6,"dernier":"mai 2026"},{"source":"SNP","cadence":"semestrielle","retard_semaines":28,"dernier":"annee 2025"},{"source":"SCH","cadence":"trimestrielle","retard_semaines":4,"dernier":"T1 2026"},{"source":"SKX","cadence":"mensuelle","retard_semaines":8,"dernier":"avril 2026"}],"prod":[{"year":2023,"total_t":1113412,"base":"WFE","src":"AQB","especes":{"salar":772361,"coho":292974,"trucha":48077}},{"year":2024,"total_t":1033028,"base":"declare","src":"SCH","derive":true,"note":"reconstitue depuis le total 2025 et la croissance +13% publiee"},{"year":2025,"total_t":1167322,"base":"declare","src":"SCH","croissance_pct":13.0,"part_pct":{"salar":70,"coho":27,"trucha":4},"croissance_espece_pct":{"salar":15,"coho":14,"trucha":-24},"note":"parts publiees arrondies (somme 101%) — ecart de reconciliation ~1,5%"}],"sanitaire":[{"year":2022,"periode":"S1","biomasa_max_t":490000,"mois_pic":6,"src":"SNP"},{"year":2024,"periode":"S1","biomasa_max_t":510000,"mois_pic":6,"src":"SNP"},{"year":2025,"periode":"S1","biomasa_max_t":600000,"mois_pic":6,"src":"SNP"},{"year":2025,"periode":"AN","biomasa_vs_n1_pct":17.0,"mortalidad_vs_n1_pct":-1.5,"ica_vs_n1_pct":5.88,"src":"SNP"},{"year":2025,"periode":"S1","biomasa_max_t":600000,"mois_pic":6,"vs_n1_moyenne_pct":16.0,"src":"SNP","note":"Biomasse moyenne S1 2025 en hausse de 16% sur S1 2024."}],"biomasse_2026":[{"mois":3,"vs_n1_pct":-2.5,"src":"ARC","note":"estimation Kontali"},{"mois":4,"vs_n1_pct":-1.8,"src":"ARC","note":"nombre de poissons en mer"},{"mois":4,"total_t":458000,"centres_actifs":308,"src":"SKX","especes_t":{"salar":386000,"coho":49000,"trucha":23000},"note":"Tonnage seul. Les effectifs publies avec ce releve sont incoherents avec SIFA (50 M de salar contre 285-320 M) et ne sont pas repris."}],"recolte_2026":[{"mois":4,"croissance_pct":3.0,"cumul_ytd_pct":15.7,"src":"ARC"}],"mortalite_region":[{"year":2025,"periode":"S1","milieu":"mer","region":"Los Lagos","pct_mensuel_moyen":1.05,"src":"SNP"},{"year":2025,"periode":"S1","milieu":"mer","region":"Aysen","pct_mensuel_moyen":0.95,"src":"SNP"},{"year":2025,"periode":"S1","milieu":"mer","region":"Magallanes","pct_mensuel_moyen":0.35,"src":"SNP"},{"year":2025,"periode":"AN","milieu":"eau douce","region":"Los Lagos","pct_mensuel_moyen":5.3,"src":"SNP"},{"year":2025,"periode":"AN","milieu":"eau douce","region":"Los Rios","pct_mensuel_moyen":5.3,"src":"SNP"},{"year":2025,"periode":"AN","milieu":"eau douce","region":"Araucania","pct_mensuel_moyen":5.3,"src":"SNP"},{"year":2025,"periode":"AN","milieu":"eau douce","region":"Biobio","pct_mensuel_moyen":5.1,"src":"SNP"},{"year":2025,"periode":"AN","milieu":"eau douce","region":"Magallanes","pct_mensuel_moyen":4.4,"src":"SNP"}],"mix_centres_espece":[{"year":2025,"salar_pct":66,"coho_pct":28,"trucha_pct":6,"src":"SNP"}],"export_periode":[{"year":2025,"periode":"T1","tons":218331,"usd_m":1838,"src":"ADU","derive":true},{"year":2025,"periode":"T4","tons":260313,"usd_m":1855,"src":"ADU"},{"year":2026,"periode":"T1","tons":260533,"usd_m":1990,"src":"ADU"},{"year":2025,"periode":"S1","tons":382000,"usd_m":3266,"src":"ADU"},{"year":2026,"periode":"S1","tons":440922,"usd_m":3488,"src":"CDS","note":"Aduanas publie 441 000 t / 3 506 MUSD — ecart de source normal"}],"export_destination":[{"year":2025,"periode":"S1","dest":"Etats-Unis","tons":118800,"usd_m":1326,"src":"ADU"},{"year":2026,"periode":"S1","dest":"Etats-Unis","tons":133600,"usd_m":1356,"src":"ADU"},{"year":2025,"periode":"S1","dest":"Bresil","tons":74910,"usd_m":473,"src":"ADU"},{"year":2026,"periode":"S1","dest":"Bresil","tons":85945,"usd_m":519,"src":"ADU"},{"year":2025,"periode":"S1","dest":"Chine","tons":11770,"usd_m":78,"src":"ADU"},{"year":2026,"periode":"S1","dest":"Chine","tons":26355,"usd_m":157,"src":"ADU"},{"year":2025,"periode":"S1","dest":"Russie","tons":22700,"usd_m":169,"src":"ADU"},{"year":2026,"periode":"S1","dest":"Russie","tons":14400,"usd_m":94,"src":"ADU"},{"year":2025,"periode":"S1","dest":"Mexique","tons":9309,"usd_m":98,"src":"ADU"},{"year":2026,"periode":"S1","dest":"Mexique","tons":11500,"usd_m":113,"src":"ADU"}],"export_mix_produit":[{"year":2025,"produit":"Filet frais salar","part_valeur_pct":24,"src":"SCH"},{"year":2025,"produit":"Filet congele salar","part_valeur_pct":18,"src":"SCH"},{"year":2025,"produit":"Entier frais","part_valeur_pct":15,"src":"SCH"},{"year":2025,"produit":"Coho H/G congele","part_valeur_pct":15,"src":"SCH"},{"year":2025,"produit":"Autres formats","part_valeur_pct":28,"src":"SCH","derive":true}],"prix_ub":[{"date":"2026-01","usd_lb":6.48,"src":"UB","approx":true},{"date":"2026-02","usd_lb":5.8,"src":"UB","approx":true},{"date":"2026-04","usd_lb":6.85,"src":"UB","approx":true},{"date":"2026-06","usd_lb":6.97,"src":"UB","approx":true}],"evenements":[{"date":"2026-07-24","type":"commercial","titre":"Droit de douane EEUU porte a 12,5%","detail":"Le taux provisoire de 10% est remplace par 12,5%. Le saumon d'elevage chilien n'a pas ete place en Annexe A (exemptions). Entree en vigueur 00h01 ET.","src":"USTR"},{"date":"2026-07-27","type":"commercial","titre":"Negociations bilaterales annoncees","detail":"Delegation USTR attendue au Chili fin aout pour negocier des exclusions.","src":"USTR"}],"tarif":{"taux_avant_pct":10.0,"taux_apres_pct":12.5,"entree_vigueur":"2026-07-24","assiette_usd_m_an":2600,"surcout_incremental_usd_m_an":65,"part_us_dans_envois_pct":39.9,"src":"SCH","note":"Surcout incremental = assiette x (12,5% - 10%). L'estimation gremiale d'un impact jusqu'a 500 MUSD couvre un perimetre plus large que le seul differentiel tarifaire."},"couverture":{"colonnes":["2021","2022","2023","2024","2025","2026"],"lignes":[{"champ":"recolte totale","etat":[0,0,1,2,1,0]},{"champ":"recolte par espece","etat":[0,0,1,0,1,0]},{"champ":"recolte par region","etat":[0,0,0,0,0,0]},{"champ":"biomasse pic (mer)","etat":[0,1,0,1,1,2]},{"champ":"mortalite par region","etat":[0,0,0,0,1,0]},{"champ":"export volume/valeur","etat":[0,0,0,0,1,1]},{"champ":"export par destination","etat":[0,0,0,0,1,1]},{"champ":"export par produit","etat":[0,0,0,0,1,0]},{"champ":"prix reference","etat":[0,0,0,0,0,2]},{"champ":"polygones ACS","etat":[0,0,0,0,0,0]}],"legende":{"0":"vide","1":"source","2":"partiel ou approximatif"}},"aduanas":{"_statut":"amorce manuelle — 5 marches, especes et formats non ventiles. fetch_aduanas.py remplace ce bloc par ~80 marches x espece x format.","_grain":"semestre","annees":[2025,2026],"periodes":["S1"],"especes":["tous"],"formats":["tous"],"lignes":[{"year":2025,"periode":"S1","pais":"Etats-Unis","espece":"tous","format":"tous","kg":118800000.0,"fob_usd":1326000000.0,"src":"ADU"},{"year":2026,"periode":"S1","pais":"Etats-Unis","espece":"tous","format":"tous","kg":133600000.0,"fob_usd":1356000000.0,"src":"ADU"},{"year":2025,"periode":"S1","pais":"Bresil","espece":"tous","format":"tous","kg":74910000.0,"fob_usd":473000000.0,"src":"ADU"},{"year":2026,"periode":"S1","pais":"Bresil","espece":"tous","format":"tous","kg":85945000.0,"fob_usd":519000000.0,"src":"ADU"},{"year":2025,"periode":"S1","pais":"Chine","espece":"tous","format":"tous","kg":11770000.0,"fob_usd":78000000.0,"src":"ADU"},{"year":2026,"periode":"S1","pais":"Chine","espece":"tous","format":"tous","kg":26355000.0,"fob_usd":157000000.0,"src":"ADU"},{"year":2025,"periode":"S1","pais":"Russie","espece":"tous","format":"tous","kg":22700000.0,"fob_usd":169000000.0,"src":"ADU"},{"year":2026,"periode":"S1","pais":"Russie","espece":"tous","format":"tous","kg":14400000.0,"fob_usd":94000000.0,"src":"ADU"},{"year":2025,"periode":"S1","pais":"Mexique","espece":"tous","format":"tous","kg":9309000.0,"fob_usd":98000000.0,"src":"ADU"},{"year":2026,"periode":"S1","pais":"Mexique","espece":"tous","format":"tous","kg":11500000.0,"fob_usd":113000000.0,"src":"ADU"}]},"liens":{"ADU":"https://www.aduana.cl/aduana/site/edic/base/port/estadisticas.html","CDS":"https://www.consejodelsalmon.cl/informacion-de-la-industria/estudios-y-publicaciones/informe-trimestral-de-exportaciones-de-salmon/","SCH":"https://www.salmonchile.cl/informacion-de-la-industria/","SNP":"https://www.sernapesca.cl/informes/estadisticas/","SPS":"https://www.subpesca.cl/portal/616/w3-propertyvalue-50834.html","AQB":"https://www.aquabench.cl/","UB":"https://www.expana.com/","ARC":"https://arctic.com/securities/","USTR":"https://ustr.gov/","SKX":"https://www.salmonexpert.cl/"},"mortalite_totale":[{"year":2025,"pct_annuel":9.7,"vs_n1_pct":-1.5,"src":"SNP","note":"Mortalite totale annuelle en centres de culture, toutes especes. C'est le seul chiffre directement comparable au cumul norvegien."},{"year":2024,"pct_annuel":11.2,"src":"SNP","derive":true,"note":"Reconstitue depuis 2025 et la baisse de 1,5 point publiee."}],"mortalite_espece":[{"year":2025,"periode":"S1","milieu":"mer","espece":"Truite arc-en-ciel","pct_mensuel_moyen":1.23,"src":"SNP"},{"year":2025,"periode":"S1","milieu":"mer","espece":"Coho","pct_mensuel_moyen":1.08,"src":"SNP"},{"year":2025,"periode":"S1","milieu":"mer","espece":"Salar","pct_mensuel_moyen":0.82,"src":"SNP","note":"Maximum en mai a 0,93 %, minimum en fevrier a 0,68 %."}],"centres":[{"year":2025,"max_actifs":386,"mois_pic":8,"src":"SNP","part_espece_pct":{"salar":66,"coho":28,"trucha":6}}],"regions":[{"region":"Los Lagos","lat":"41-44 S","part_pct":41.2,"volume_t":474857,"src":"SNP","note":"Chiffre publie directement par le boletin sectoriel Sernapesca T4 2025.","mortalite_mer_mensuelle":1.05,"centres_note":"Chiloe concentre 71% des recoltes de la region"},{"region":"Aysen","lat":"44-49 S","part_pct":45.6,"volume_t":532299,"src":"CDS","derive":true,"note":"Reconstitue : part publiee par le Consejo del Salmon appliquee au total national 2025.","mortalite_mer_mensuelle":0.95},{"region":"Magallanes","lat":"49-56 S","part_pct":13.1,"volume_t":152919,"src":"CDS","derive":true,"note":"Reconstitue de la meme facon.","mortalite_mer_mensuelle":0.35}],"biomasse_entreprise":[{"year":2026,"mois":4,"entreprise":"AquaChile","total_t":78000,"salar_t":67000,"coho_t":11000,"src":"SKX"},{"year":2026,"mois":4,"entreprise":"Mowi Chile","total_t":54000,"salar_t":54000,"src":"SKX"},{"year":2026,"mois":4,"entreprise":"Multi X","total_t":50000,"salar_t":50000,"src":"SKX"},{"year":2026,"mois":4,"entreprise":"Cermaq Chile","total_t":47000,"salar_t":42000,"coho_t":5000,"src":"SKX"},{"year":2026,"mois":4,"entreprise":"Salmones Camanchaca","total_t":29000,"salar_t":29000,"src":"SKX"}],"biomasse_serie":[{"periode":"2022-06","total_t":490000,"type":"pic","src":"SNP"},{"periode":"2024-06","total_t":510000,"type":"pic","src":"SNP"},{"periode":"2025-06","total_t":600000,"type":"pic","src":"SNP","vs_n1_moyenne_pct":16.0},{"periode":"2026-04","total_t":458000,"type":"releve","src":"SKX","note":"Avril, pas le pic. Source privee, 308 centres."}]}</script>
 <script>
 const EMBEDDED = JSON.parse(document.getElementById('donnees').textContent);
 const DATA_URL = 'https://emileviardotfo.github.io/saumon/data/chili.json';
@@ -255,6 +291,73 @@ function renderAll(){
       +`Lire les variations, pas les niveaux entre pays.</span>`;
   })();
 
+  // ---------- les trois bassins ----------
+  (function(){
+    const R=D.regions||[]; if(!R.length) return;
+    const s2=document.getElementById('carte'); s2.innerHTML='';
+    // Schema, pas une carte geographique : la cote chilienne est reduite a une
+    // bande verticale graduee en latitude. L'objectif est de situer les trois
+    // regions les unes par rapport aux autres, pas de representer un littoral.
+    const seg=[{r:R[0],y0:40,y1:180},{r:R[1],y0:180,y1:330},{r:R[2],y0:330,y1:490}];
+    const maxV=Math.max(...R.map(x=>x.volume_t));
+    const col=['#F2A65A','#5FD3C4','#7FA8FF'];
+    seg.forEach((g,i)=>{
+      const w=40+110*(g.r.volume_t/maxV);
+      s2.appendChild(el('rect',{x:96,y:g.y0,width:w,height:g.y1-g.y0-4,
+        fill:col[i],opacity:.24,rx:3}));
+      s2.appendChild(el('rect',{x:96,y:g.y0,width:4,height:g.y1-g.y0-4,fill:col[i]}));
+      const n=el('text',{x:106,y:g.y0+24,fill:col[i],'font-size':15,
+        'font-family':'Barlow Condensed','letter-spacing':'.06em','font-weight':600});
+      n.textContent=g.r.region.toUpperCase(); s2.appendChild(n);
+      const v=el('text',{x:106,y:g.y0+46,fill:'#E8F0F2','font-size':17,
+        'font-family':'IBM Plex Mono','font-weight':600});
+      v.textContent=fmt(g.r.volume_t/1000)+' kt'; s2.appendChild(v);
+      const p=el('text',{x:106,y:g.y0+64,fill:'#8CA6B0','font-size':11,'font-family':'IBM Plex Mono'});
+      p.textContent=fmt(g.r.part_pct,1)+' % du pays'; s2.appendChild(p);
+      const m=el('text',{x:106,y:g.y0+82,fill:'#8CA6B0','font-size':11,'font-family':'IBM Plex Mono'});
+      const ann=(1-Math.pow(1-g.r.mortalite_mer_mensuelle/100,12))*100;
+      m.textContent='mortalité '+fmt(ann,1)+' %/an'; s2.appendChild(m);
+      const la=el('text',{x:88,y:g.y0+16,'text-anchor':'end',fill:'#3d515e','font-size':10,
+        'font-family':'IBM Plex Mono'});
+      la.textContent=g.r.lat; s2.appendChild(la);
+      s2.appendChild(el('line',{x1:78,x2:92,y1:g.y0,y2:g.y0,stroke:'#274955'}));
+    });
+    s2.appendChild(el('line',{x1:85,x2:85,y1:40,y2:490,stroke:'#274955','stroke-width':1}));
+    const t0=el('text',{x:96,y:26,fill:'#8CA6B0','font-size':10,'font-family':'IBM Plex Mono',
+      'letter-spacing':'.14em'});
+    t0.textContent='NORD'; s2.appendChild(t0);
+    const t1=el('text',{x:96,y:512,fill:'#8CA6B0','font-size':10,'font-family':'IBM Plex Mono',
+      'letter-spacing':'.14em'});
+    t1.textContent='SUD  ·  largeur = volume récolté'; s2.appendChild(t1);
+
+    let h='<table><tr><th>Région</th><th>Volume 2025</th><th>Part</th>'
+         +'<th>Mortalité /mois</th><th>/an</th><th>/cycle 14 mois</th></tr>';
+    R.forEach(r=>{
+      const m=r.mortalite_mer_mensuelle;
+      const an=(1-Math.pow(1-m/100,12))*100, cy=(1-Math.pow(1-m/100,14))*100;
+      h+=`<tr><td>${r.region}${r.derive?'<span class="tag d">dérivé</span>':''}`
+        +`<br><span style="color:var(--mist);font-size:11.5px">${r.lat}</span></td>`
+        +`<td class="num">${fmt(r.volume_t/1000,1)} kt</td>`
+        +`<td class="num">${fmt(r.part_pct,1)} %</td>`
+        +`<td class="num" style="color:var(--mist)">${fmt(m,2)} %</td>`
+        +`<td class="num"><b>${fmt(an,1)} %</b></td>`
+        +`<td class="num">${fmt(cy,1)} %</td></tr>`;});
+    document.getElementById('regTable').innerHTML=h+'</table>';
+    const ll=R[0],ay=R[1],mg=R[2];
+    document.getElementById('regNote').innerHTML=
+      `<b>Aysén produit plus de saumon que Los Lagos.</b> C'est contre-intuitif et c'est un piège des `
+      +`statistiques chiliennes : Los Lagos domine largement les récoltes aquacoles totales — 930 kt en 2024 — `
+      +`mais l'essentiel est de la moule. Sur les seuls salmonidés, Aysén passe devant avec `
+      +`${fmt(ay.part_pct,1)} % contre ${fmt(ll.part_pct,1)} %. `
+      +`<br><br><b>Sur la mortalité</b>, seul Los Lagos est un chiffre publié tel quel ; les deux autres volumes `
+      +`sont reconstitués en appliquant les parts du Consejo del Salmón au total national. La somme donne `
+      +`1 160 kt contre 1 167 kt déclarés, soit 0,6 % d'écart de réconciliation, laissé tel quel. `
+      +`<br><br>Le gradient est spectaculaire : Magallanes perd `
+      +`${fmt((1-Math.pow(1-mg.mortalite_mer_mensuelle/100,12))*100,1)} % de son cheptel par an, contre `
+      +`${fmt((1-Math.pow(1-ll.mortalite_mer_mensuelle/100,12))*100,1)} % pour Los Lagos — presque trois fois moins. `
+      +`C'est la même logique qu'entre le Finnmark et le sud norvégien, mais l'écart est bien plus creusé.`;
+  })();
+
   // ---------- production ----------
   (function(){
     let h='<div class="eyebrow" style="margin-bottom:10px">Récolte annuelle</div>'
@@ -276,14 +379,103 @@ function renderAll(){
       b+=`<tr><td>${r.year}</td><td class="num">${fmt(r.biomasa_max_t/1000)} kt</td>`
         +`<td class="num" style="color:var(--mist)">${r.src}</td></tr>`;});
     b+='</table>';
-    b+='<div class="eyebrow" style="margin:22px 0 10px">Mortalité mensuelle moyenne 2025</div>'
-      +'<table><tr><th>Région</th><th>%/mois</th></tr>';
-    (D.mortalite_region||[]).forEach(r=>{
-      b+=`<tr><td>${r.region}</td><td class="num">${fmt(r.pct_mensuel_moyen,1)} %</td></tr>`;});
-    b+='</table><div class="note">Le gradient nord-sud est net : Magallanes, la plus australe et la plus '
-      +'froide, affiche moins de la moitié de la mortalité de Los Lagos. Même logique qu'
-      +'\u2019entre le Finnmark et le sud de la Norvège.</div>';
+    const mt=(D.mortalite_totale||[]).find(r=>r.year===2025);
+    b+='<div class="eyebrow" style="margin:22px 0 10px">Mortalité — cumul annuel</div>'
+      +'<table><tr><th>Année</th><th>Cumul</th><th>Source</th></tr>';
+    (D.mortalite_totale||[]).sort((a,b2)=>a.year-b2.year).forEach(r=>{
+      b+=`<tr${r.year===2025?' class="hi"':''}><td>${r.year}`
+        +(r.derive?'<span class="tag d">dérivé</span>':'')+`</td>`
+        +`<td class="num"><b>${fmt(r.pct_annuel,1)} %</b></td>`
+        +`<td class="num" style="color:var(--mist)">${r.src}</td></tr>`;});
+    b+='</table>';
+    const an=m=>(1-Math.pow(1-m/100,12))*100;
+    b+='<div class="eyebrow" style="margin:22px 0 10px">En mer par espèce, annualisé, S1 2025</div>'
+      +'<table><tr><th>Espèce</th><th>Par an</th><th>rappel /mois</th></tr>';
+    (D.mortalite_espece||[]).forEach(r=>{
+      b+=`<tr><td>${r.espece}</td><td class="num"><b>${fmt(an(r.pct_mensuel_moyen),1)} %</b></td>`
+        +`<td class="num" style="color:var(--mist)">${fmt(r.pct_mensuel_moyen,2)} %</td></tr>`;});
+    b+='</table>';
+    b+='<div class="eyebrow" style="margin:22px 0 10px">Eau douce, annualisé 2025</div>'
+      +'<table><tr><th>Région</th><th>Par an</th><th>rappel /mois</th></tr>';
+    (D.mortalite_region||[]).filter(r=>r.milieu==='eau douce').forEach(r=>{
+      b+=`<tr><td>${r.region}</td><td class="num pos"><b>${fmt(an(r.pct_mensuel_moyen),0)} %</b></td>`
+        +`<td class="num" style="color:var(--mist)">${fmt(r.pct_mensuel_moyen,1)} %</td></tr>`;});
+    b+='</table>';
+    b+='<div class="note"><b>Tout est annualisé ici</b>, par composition du taux mensuel — '
+      +'c\'est la seule base comparable d\'un pays à l\'autre. Le taux mensuel brut est rappelé en gris. '
+      +`Le cumul officiel toutes espèces s'établit à <b>${mt?fmt(mt.pct_annuel,1):'—'} %</b> pour 2025, `
+      +`en baisse de ${mt?fmt(Math.abs(mt.vs_n1_pct),1):'—'} point sur un an. `
+      +'<br><br>Cela place le Chili <b>au niveau de la Norvège</b>, qui tourne entre 10 et 12 % annuels — '
+      +'contrairement à sa réputation. Le gradient nord-sud est en revanche très marqué : Magallanes à '
+      +'0,35 %/mois fait le tiers de Los Lagos. Et le salar meurt <i>moins</i> que le coho et la truite. '
+      +'<br><br>L\'eau douce est un tout autre régime, à 4,4 à 5,3 %/mois — mais sur une phase courte '
+      +'et avec une mortalité largement volontaire, l\'élimination productive étant la première cause déclarée.</div>';
     document.getElementById('bioTable').innerHTML=b;
+  })();
+
+  // ---------- biomasse, serie comparable ----------
+  (function(){
+    const S=D.biomasse_serie||[]; if(!S.length) return;
+    const sv=document.getElementById('bioSerie'); sv.innerHTML='';
+    const W=980,H=260,mL=60,mR=20,mT=20,mB=44,pw=W-mL-mR,ph=H-mT-mB;
+    const hi=Math.max(...S.map(r=>r.total_t))*1.15;
+    const X=i=>mL+(i+.5)/S.length*pw, Y=v=>mT+ph-v/hi*ph;
+    for(let g=0;g<=600000;g+=200000){const y=Y(g);
+      sv.appendChild(el('line',{x1:mL,x2:mL+pw,y1:y,y2:y,stroke:'#274955','stroke-dasharray':'2,4'}));
+      const t=el('text',{x:mL-9,y:y+4,'text-anchor':'end',fill:'#8CA6B0','font-size':10.5,
+        'font-family':'IBM Plex Mono'}); t.textContent=fmt(g/1000); sv.appendChild(t);}
+    S.forEach((r,i)=>{
+      const bw=pw/S.length*.44, pic=r.type==='pic';
+      sv.appendChild(el('rect',{x:X(i)-bw/2,y:Y(r.total_t),width:bw,height:mT+ph-Y(r.total_t),
+        fill:pic?'rgba(95,211,196,.6)':'rgba(242,166,90,.45)',rx:2}));
+      const v=el('text',{x:X(i),y:Y(r.total_t)-9,'text-anchor':'middle',
+        fill:pic?'#5FD3C4':'#F2A65A','font-size':13,'font-family':'IBM Plex Mono','font-weight':600});
+      v.textContent=fmt(r.total_t/1000)+' kt'; sv.appendChild(v);
+      const l=el('text',{x:X(i),y:mT+ph+20,'text-anchor':'middle',fill:'#8CA6B0','font-size':11,
+        'font-family':'IBM Plex Mono'}); l.textContent=r.periode; sv.appendChild(l);
+      const l2=el('text',{x:X(i),y:mT+ph+35,'text-anchor':'middle',fill:'#3d515e','font-size':9.5,
+        'font-family':'IBM Plex Mono','letter-spacing':'.1em'});
+      l2.textContent=(pic?'PIC · ':'AVRIL · ')+r.src; sv.appendChild(l2);
+    });
+    const yl=el('text',{transform:`translate(16,${mT+ph/2}) rotate(-90)`,'text-anchor':'middle',
+      fill:'#8CA6B0','font-size':10,'font-family':'IBM Plex Mono','letter-spacing':'.1em'});
+    yl.textContent='MILLIERS DE TONNES'; sv.appendChild(yl);
+
+    const b26=(D.biomasse_2026||[]).find(r=>r.total_t);
+    let h='<table><tr><th>Espèce</th><th>Biomasse avril 2026</th><th>Part</th></tr>';
+    const E={salar:'Salar',coho:'Coho',trucha:'Truite'};
+    if(b26){
+      Object.keys(b26.especes_t||{}).forEach(k=>{
+        h+=`<tr><td>${E[k]||k}</td><td class="num">${fmt(b26.especes_t[k]/1000)} kt</td>`
+          +`<td class="num">${fmt(b26.especes_t[k]/b26.total_t*100,1)} %</td></tr>`;});
+      h+=`<tr class="hi"><td><b>Total</b></td><td class="num"><b>${fmt(b26.total_t/1000)} kt</b></td>`
+        +`<td class="num">${fmt(b26.centres_actifs)} centres</td></tr>`;}
+    h+='</table>';
+    document.getElementById('bio26').innerHTML=h;
+
+    const be=D.biomasse_entreprise||[], tot=b26?b26.total_t:0;
+    if(be.length){
+      let e='<table><tr><th>Entreprise</th><th>Biomasse</th><th>Part</th></tr>';
+      be.sort((a2,b2)=>b2.total_t-a2.total_t).forEach(r=>{
+        e+=`<tr><td>${r.entreprise}</td><td class="num">${fmt(r.total_t/1000)} kt</td>`
+          +`<td class="num">${fmt(r.total_t/tot*100,1)} %</td></tr>`;});
+      const s5=be.reduce((a2,c)=>a2+c.total_t,0);
+      e+=`<tr class="hi"><td><b>Cumul des cinq</b></td><td class="num"><b>${fmt(s5/1000)} kt</b></td>`
+        +`<td class="num"><b>${fmt(s5/tot*100,0)} %</b></td></tr></table>`;
+      document.getElementById('bioEnt').innerHTML=e;
+      document.getElementById('bioNote').innerHTML=
+        `<b>Les deux dernières barres ne se comparent pas directement.</b> Les trois premières sont des `
+        +`pics de juin mesurés par Sernapesca sur l'ensemble des centres déclarés. La dernière est un relevé `
+        +`d'avril, publié par Salmonexpert à partir des données Skills, sur 308 centres seulement. `
+        +`Avril n'est pas le pic saisonnier, et le périmètre est plus étroit : les 458 kt sont donc un `
+        +`plancher, pas une baisse par rapport aux 600 kt de juin 2025. `
+        +`<br><br><span class="warn">Les effectifs publiés avec ce relevé ne sont pas repris ici.</span> `
+        +`Ils annoncent 50 millions de salars quand Sernapesca en déclare 285 à 320 millions — un facteur six `
+        +`que ni l'écart de périmètre ni la saison n'expliquent. Le tonnage, lui, est cohérent avec les `
+        +`séries officielles. `
+        +`<br><br>Cinq groupes concentrent ${fmt(s5/tot*100,0)} % de cette biomasse, AquaChile seul `
+        +`${fmt(be[0].total_t/tot*100,0)} %. À titre de repère, 20 kt représentent ${fmt(20000/tot*100,1)} % du total.`;
+    }
   })();
 
   // ---------- evenements ----------
@@ -294,13 +486,18 @@ function renderAll(){
 
   // ---------- sources ----------
   (function(){
+    const L=D.liens||{};
     let h='<table><tr><th>Source</th><th>Intitulé</th><th>Cadence</th><th>Retard</th><th>Dernier point</th></tr>';
     (D.latence||[]).sort((a,b)=>a.retard_semaines-b.retard_semaines).forEach(r=>{
       const cl=r.retard_semaines<=6?'neg':(r.retard_semaines<=12?'':'pos');
       h+=`<tr><td>${r.source}</td><td style="color:var(--mist)">${(D.provenance||{})[r.source]||''}</td>`
         +`<td class="num">${r.cadence}</td><td class="num ${cl}">${r.retard_semaines} sem.</td>`
         +`<td class="num">${r.dernier}</td></tr>`;});
-    document.getElementById('srcTable').innerHTML=h+'</table>';
+    h+='</table><div class="eyebrow" style="margin:22px 0 10px">Accès direct aux sources</div><div class="links">';
+    Object.keys(D.provenance||{}).forEach(k=>{
+      if(!L[k]) return;
+      h+=`<a href="${L[k]}" target="_blank" rel="noopener"><b>${k}</b> ${(D.provenance||{})[k]}</a>`;});
+    document.getElementById('srcTable').innerHTML=h+'</div>';
   })();
 
   const m=D._meta||{};
