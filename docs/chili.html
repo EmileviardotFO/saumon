@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chili — suivi structurel salmonicole</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --abyss:#0C1A21; --hull:#132831; --deck:#1B3742; --line:#274955;
+  --bone:#E8F0F2; --mist:#8CA6B0;
+  --open:#F2A65A; --now:#5FD3C4; --shut:#E4715F; --cold:#7FA8FF;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--abyss);color:var(--bone);font-family:'Inter',system-ui,sans-serif;
+     font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:0 28px 96px}
+h1,h2,h3,.disp{font-family:'Barlow Condensed','Inter',sans-serif;text-transform:uppercase;
+     letter-spacing:.06em;font-weight:600;line-height:1.05}
+.mono{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.18em;
+     text-transform:uppercase;color:var(--mist)}
+header{border-bottom:1px solid var(--line);padding:38px 0 26px;margin-bottom:40px}
+header h1{font-size:clamp(30px,5.2vw,52px);letter-spacing:.04em}
+header h1 em{font-style:normal;color:var(--open)}
+.sub{color:var(--mist);font-size:14px;max-width:64ch;margin-top:12px}
+.verdict{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px;margin-bottom:52px}
+.card{background:var(--hull);border:1px solid var(--line);border-radius:3px;padding:22px 24px}
+.card.flag{border-left:3px solid var(--open)}
+.big{font-family:'Barlow Condensed',sans-serif;font-size:58px;font-weight:700;line-height:.9;
+     letter-spacing:-.01em;margin:12px 0 4px}
+.big small{font-size:22px;color:var(--mist);font-weight:500;margin-left:4px}
+.band{font-size:12.5px;color:var(--mist)}
+section{margin-bottom:54px}
+section>h2{font-size:23px;margin-bottom:6px}
+section>.lede{color:var(--mist);font-size:14px;max-width:76ch;margin-bottom:20px}
+svg{display:block;width:100%;height:auto;overflow:visible}
+.legend{display:flex;gap:20px;flex-wrap:wrap;margin-top:14px;font-size:12px;color:var(--mist)}
+.legend i{display:inline-block;width:16px;height:2px;vertical-align:middle;margin-right:7px}
+.legend i.sw{height:9px;border-radius:1px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:6px}
+th,td{padding:9px 10px;text-align:right;border-bottom:1px solid var(--line)}
+th{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.1em;
+   text-transform:uppercase;color:var(--mist);font-weight:500}
+td:first-child,th:first-child{text-align:left}
+td.num{font-family:'IBM Plex Mono',monospace}
+tr.hi td{background:rgba(95,211,196,.07)}
+.pos{color:var(--open)} .neg{color:var(--now)}
+.note{font-size:13px;color:var(--mist);border-left:2px solid var(--line);padding-left:16px;margin-top:20px}
+.note b{color:var(--bone);font-weight:600}
+.warn{color:var(--open)}
+.tag{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;padding:2px 6px;
+     border-radius:2px;background:var(--deck);color:var(--mist);margin-left:8px;vertical-align:middle}
+.tag.d{background:rgba(242,166,90,.16);color:var(--open)}
+.cov{display:grid;grid-template-columns:200px repeat(6,1fr);gap:3px;font-size:11px;
+     font-family:'IBM Plex Mono',monospace;margin-top:6px}
+.cov div{padding:7px 6px;text-align:center;border-radius:2px}
+.cov .lbl{text-align:left;color:var(--mist);background:none;font-size:12px}
+.cov .hd{color:var(--mist);background:none}
+.cov .e0{background:#1a2830;color:#3d515e} .cov .e1{background:rgba(95,211,196,.55);color:#06231e}
+.cov .e2{background:rgba(242,166,90,.5);color:#2a1a06}
+.ev{border-left:2px solid var(--open);padding:2px 0 2px 16px;margin-bottom:18px}
+.ev time{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--open);letter-spacing:.08em}
+.ev h3{font-size:16px;margin:3px 0 5px;text-transform:none;letter-spacing:0;font-family:'Inter';font-weight:600}
+.ev p{font-size:13px;color:var(--mist)}
+footer{border-top:1px solid var(--line);padding-top:22px;font-size:12.5px;color:var(--mist)}
+</style></head><body><div class="wrap">
+
+<header>
+  <div class="eyebrow">Hiddenfjord · veille concurrence · hémisphère sud</div>
+  <h1>Chili <em>—</em> suivi structurel</h1>
+  <div class="sub">Deuxième producteur mondial, cycles décalés de six mois par rapport à l'hémisphère
+  nord. Cette page rassemble ce que les sources publiques chiliennes permettent réellement de suivre —
+  et dit clairement ce qu'elles ne permettent pas.</div>
+</header>
+
+<div class="verdict" id="cards"></div>
+
+<section>
+  <h2>Ce que l'on sait, et ce que l'on ne sait pas</h2>
+  <div class="lede">Chaque cellule dit si la donnée existe pour cette année. <b>Aucune valeur n'est
+  interpolée</b> : une case vide reste vide. C'est la différence majeure avec le suivi norvégien, où le
+  Biomasseregisteret couvre tout, chaque mois, par zone.</div>
+  <div class="cov" id="cov"></div>
+  <div class="legend">
+    <span><i class="sw" style="background:rgba(95,211,196,.55)"></i>publié</span>
+    <span><i class="sw" style="background:rgba(242,166,90,.5)"></i>partiel ou estimé</span>
+    <span><i class="sw" style="background:#1a2830"></i>absent</span>
+  </div>
+  <div class="note" id="covNote"></div>
+</section>
+
+<section>
+  <h2>Exportations — volume contre prix</h2>
+  <div class="lede">La source la plus fraîche du dispositif : Aduanas publie au mois, avec cinq semaines
+  de retard. C'est le seul indicateur chilien réactif dont on dispose.</div>
+  <svg id="expChart" viewBox="0 0 980 300"></svg>
+  <div class="legend" id="legExp"></div>
+  <div id="expTable"></div>
+</section>
+
+<section>
+  <h2>Destinations</h2>
+  <div class="lede">Premier semestre 2026 contre premier semestre 2025, en volume et en prix moyen réalisé.</div>
+  <div id="destTable"></div>
+  <div class="note" id="destNote"></div>
+</section>
+
+<section>
+  <h2>Production et biomasse</h2>
+  <div class="lede">Le grain reste annuel ou semestriel, avec des délais longs — Sernapesca publie son
+  bilan sanitaire vingt-huit semaines après la période. C'est de la connaissance structurelle, pas du
+  pilotage.</div>
+  <div class="grid2" style="display:grid;grid-template-columns:1fr 1fr;gap:26px">
+    <div id="prodTable"></div>
+    <div id="bioTable"></div>
+  </div>
+</section>
+
+<section>
+  <h2>Événements structurels</h2>
+  <div id="events"></div>
+</section>
+
+<section>
+  <h2>Sources et fraîcheur</h2>
+  <div class="lede">Le délai de publication conditionne l'usage possible de chaque source. Rien ici
+  n'approche la réactivité de l'Akvafakta hebdomadaire norvégien.</div>
+  <div id="srcTable"></div>
+</section>
+
+<footer id="foot"></footer>
+</div>
+
+<script id="donnees" type="application/json">{"_meta":{"build":"2026-07-31","statut":"amorce enrichie","note":"Le grain reste annuel/semestriel. Les exportations sont trimestrielles car Aduanas publie au mois. Aucune valeur n'est interpolee : les champs derives sont calcules a l'affichage et signales comme tels.","generated":"2026-08-12","pays":"Chili"},"provenance":{"ADU":"Servicio Nacional de Aduanas, Comex","CDS":"Consejo del Salmon, reporte semestriel","SCH":"SalmonChile, Boletin de Exportaciones","SNP":"Sernapesca, Informe de Situacion Sanitaria","SPS":"Subpesca, Informe Sectorial","AQB":"Aquabench, indicateurs annuels (base WFE)","UB":"Urner Barry / Expana, filet frais salar chilien EEUU","ARC":"Arctic Securities / Kontali, note de marche","USTR":"Office of the US Trade Representative"},"latence":[{"source":"ADU","cadence":"mensuelle","retard_semaines":5,"dernier":"juin 2026"},{"source":"CDS","cadence":"semestrielle","retard_semaines":3,"dernier":"S1 2026"},{"source":"SPS","cadence":"mensuelle","retard_semaines":6,"dernier":"mai 2026"},{"source":"SNP","cadence":"semestrielle","retard_semaines":28,"dernier":"annee 2025"},{"source":"SCH","cadence":"trimestrielle","retard_semaines":4,"dernier":"T1 2026"}],"prod":[{"year":2023,"total_t":1113412,"base":"WFE","src":"AQB","especes":{"salar":772361,"coho":292974,"trucha":48077}},{"year":2024,"total_t":1033028,"base":"declare","src":"SCH","derive":true,"note":"reconstitue depuis le total 2025 et la croissance +13% publiee"},{"year":2025,"total_t":1167322,"base":"declare","src":"SCH","croissance_pct":13.0,"part_pct":{"salar":70,"coho":27,"trucha":4},"croissance_espece_pct":{"salar":15,"coho":14,"trucha":-24},"note":"parts publiees arrondies (somme 101%) — ecart de reconciliation ~1,5%"}],"sanitaire":[{"year":2022,"periode":"S1","biomasa_max_t":490000,"mois_pic":6,"src":"SNP"},{"year":2024,"periode":"S1","biomasa_max_t":510000,"mois_pic":6,"src":"SNP"},{"year":2025,"periode":"S1","biomasa_max_t":600000,"mois_pic":6,"src":"SNP"},{"year":2025,"periode":"AN","biomasa_vs_n1_pct":17.0,"mortalidad_vs_n1_pct":-1.5,"ica_vs_n1_pct":5.88,"src":"SNP"}],"biomasse_2026":[{"mois":3,"vs_n1_pct":-2.5,"src":"ARC","note":"estimation Kontali"},{"mois":4,"vs_n1_pct":-1.8,"src":"ARC","note":"nombre de poissons en mer"}],"recolte_2026":[{"mois":4,"croissance_pct":3.0,"cumul_ytd_pct":15.7,"src":"ARC"}],"mortalite_region":[{"year":2025,"region":"Los Lagos","pct_mensuel_moyen":0.9,"src":"SNP"},{"year":2025,"region":"Aysen","pct_mensuel_moyen":0.8,"src":"SNP"},{"year":2025,"region":"Magallanes","pct_mensuel_moyen":0.4,"src":"SNP"}],"mix_centres_espece":[{"year":2025,"salar_pct":66,"coho_pct":28,"trucha_pct":6,"src":"SNP"}],"export_periode":[{"year":2025,"periode":"T1","tons":218331,"usd_m":1838,"src":"ADU","derive":true},{"year":2025,"periode":"T4","tons":260313,"usd_m":1855,"src":"ADU"},{"year":2026,"periode":"T1","tons":260533,"usd_m":1990,"src":"ADU"},{"year":2025,"periode":"S1","tons":382000,"usd_m":3266,"src":"ADU"},{"year":2026,"periode":"S1","tons":440922,"usd_m":3488,"src":"CDS","note":"Aduanas publie 441 000 t / 3 506 MUSD — ecart de source normal"}],"export_destination":[{"year":2025,"periode":"S1","dest":"Etats-Unis","tons":118800,"usd_m":1326,"src":"ADU"},{"year":2026,"periode":"S1","dest":"Etats-Unis","tons":133600,"usd_m":1356,"src":"ADU"},{"year":2025,"periode":"S1","dest":"Bresil","tons":74910,"usd_m":473,"src":"ADU"},{"year":2026,"periode":"S1","dest":"Bresil","tons":85945,"usd_m":519,"src":"ADU"},{"year":2025,"periode":"S1","dest":"Chine","tons":11770,"usd_m":78,"src":"ADU"},{"year":2026,"periode":"S1","dest":"Chine","tons":26355,"usd_m":157,"src":"ADU"},{"year":2025,"periode":"S1","dest":"Russie","tons":22700,"usd_m":169,"src":"ADU"},{"year":2026,"periode":"S1","dest":"Russie","tons":14400,"usd_m":94,"src":"ADU"},{"year":2025,"periode":"S1","dest":"Mexique","tons":9309,"usd_m":98,"src":"ADU"},{"year":2026,"periode":"S1","dest":"Mexique","tons":11500,"usd_m":113,"src":"ADU"}],"export_mix_produit":[{"year":2025,"produit":"Filet frais salar","part_valeur_pct":24,"src":"SCH"},{"year":2025,"produit":"Filet congele salar","part_valeur_pct":18,"src":"SCH"},{"year":2025,"produit":"Entier frais","part_valeur_pct":15,"src":"SCH"},{"year":2025,"produit":"Coho H/G congele","part_valeur_pct":15,"src":"SCH"},{"year":2025,"produit":"Autres formats","part_valeur_pct":28,"src":"SCH","derive":true}],"prix_ub":[{"date":"2026-01","usd_lb":6.48,"src":"UB","approx":true},{"date":"2026-02","usd_lb":5.8,"src":"UB","approx":true},{"date":"2026-04","usd_lb":6.85,"src":"UB","approx":true},{"date":"2026-06","usd_lb":6.97,"src":"UB","approx":true}],"evenements":[{"date":"2026-07-24","type":"commercial","titre":"Droit de douane EEUU porte a 12,5%","detail":"Le taux provisoire de 10% est remplace par 12,5%. Le saumon d'elevage chilien n'a pas ete place en Annexe A (exemptions). Entree en vigueur 00h01 ET.","src":"USTR"},{"date":"2026-07-27","type":"commercial","titre":"Negociations bilaterales annoncees","detail":"Delegation USTR attendue au Chili fin aout pour negocier des exclusions.","src":"USTR"}],"tarif":{"taux_avant_pct":10.0,"taux_apres_pct":12.5,"entree_vigueur":"2026-07-24","assiette_usd_m_an":2600,"surcout_incremental_usd_m_an":65,"part_us_dans_envois_pct":39.9,"src":"SCH","note":"Surcout incremental = assiette x (12,5% - 10%). L'estimation gremiale d'un impact jusqu'a 500 MUSD couvre un perimetre plus large que le seul differentiel tarifaire."},"couverture":{"colonnes":["2021","2022","2023","2024","2025","2026"],"lignes":[{"champ":"recolte totale","etat":[0,0,1,2,1,0]},{"champ":"recolte par espece","etat":[0,0,1,0,1,0]},{"champ":"recolte par region","etat":[0,0,0,0,0,0]},{"champ":"biomasse pic (mer)","etat":[0,1,0,1,1,2]},{"champ":"mortalite par region","etat":[0,0,0,0,1,0]},{"champ":"export volume/valeur","etat":[0,0,0,0,1,1]},{"champ":"export par destination","etat":[0,0,0,0,1,1]},{"champ":"export par produit","etat":[0,0,0,0,1,0]},{"champ":"prix reference","etat":[0,0,0,0,0,2]},{"champ":"polygones ACS","etat":[0,0,0,0,0,0]}],"legende":{"0":"vide","1":"source","2":"partiel ou approximatif"}},"aduanas":{"_statut":"amorce manuelle — 5 marches, especes et formats non ventiles. fetch_aduanas.py remplace ce bloc par ~80 marches x espece x format.","_grain":"semestre","annees":[2025,2026],"periodes":["S1"],"especes":["tous"],"formats":["tous"],"lignes":[{"year":2025,"periode":"S1","pais":"Etats-Unis","espece":"tous","format":"tous","kg":118800000.0,"fob_usd":1326000000.0,"src":"ADU"},{"year":2026,"periode":"S1","pais":"Etats-Unis","espece":"tous","format":"tous","kg":133600000.0,"fob_usd":1356000000.0,"src":"ADU"},{"year":2025,"periode":"S1","pais":"Bresil","espece":"tous","format":"tous","kg":74910000.0,"fob_usd":473000000.0,"src":"ADU"},{"year":2026,"periode":"S1","pais":"Bresil","espece":"tous","format":"tous","kg":85945000.0,"fob_usd":519000000.0,"src":"ADU"},{"year":2025,"periode":"S1","pais":"Chine","espece":"tous","format":"tous","kg":11770000.0,"fob_usd":78000000.0,"src":"ADU"},{"year":2026,"periode":"S1","pais":"Chine","espece":"tous","format":"tous","kg":26355000.0,"fob_usd":157000000.0,"src":"ADU"},{"year":2025,"periode":"S1","pais":"Russie","espece":"tous","format":"tous","kg":22700000.0,"fob_usd":169000000.0,"src":"ADU"},{"year":2026,"periode":"S1","pais":"Russie","espece":"tous","format":"tous","kg":14400000.0,"fob_usd":94000000.0,"src":"ADU"},{"year":2025,"periode":"S1","pais":"Mexique","espece":"tous","format":"tous","kg":9309000.0,"fob_usd":98000000.0,"src":"ADU"},{"year":2026,"periode":"S1","pais":"Mexique","espece":"tous","format":"tous","kg":11500000.0,"fob_usd":113000000.0,"src":"ADU"}]}}</script>
+<script>
+const EMBEDDED = JSON.parse(document.getElementById('donnees').textContent);
+const DATA_URL = 'https://emileviardotfo.github.io/saumon/data/chili.json';
+let D = EMBEDDED;
+
+const fmt=(n,d=0)=> (n==null||isNaN(n)) ? '—' :
+  n.toLocaleString('fr-FR',{minimumFractionDigits:d,maximumFractionDigits:d});
+const sgn=(n,d=1)=> (n==null||isNaN(n)) ? '—' : (n>0?'+':'')+fmt(n,d);
+const pc =(a,b)=> (a==null||b==null||!b) ? null : 100*(a-b)/b;
+const kg =r=> (!r||r.usd_m==null||!r.tons) ? null : (r.usd_m*1e6)/(r.tons*1000);
+const cls=n=> n==null?'':(n<0?'neg':'pos');
+const NS='http://www.w3.org/2000/svg';
+const el=(t,a={})=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e;};
+const q=(y,p)=>(D.export_periode||[]).find(r=>r.year===y&&r.periode===p);
+
+function renderAll(){
+  // ---------- cartes ----------
+  const s25=q(2025,'S1'), s26=q(2026,'S1');
+  const dV=pc(s26&&s26.tons,s25&&s25.tons), dU=pc(s26&&s26.usd_m,s25&&s25.usd_m),
+        dP=pc(kg(s26),kg(s25));
+  const t=D.tarif||{};
+  const card=(h,v,u,d,c,tag,extra='')=>
+    `<div class="card${c==='flag'?' flag':''}"><div class="eyebrow">${h}<span class="tag${tag==='dérivé'?' d':''}">${tag}</span></div>`
+    +`<div class="big mono">${v}<small>${u}</small></div><div class="band ${cls(d)}">${extra}</div></div>`;
+  document.getElementById('cards').innerHTML =
+    card('Export S1 2026','flag',null,null,'flag','')
+      .replace('flag<small>null</small>', fmt(s26?s26.tons/1000:null)+'<small>kt</small>')
+      .replace('<div class="band ">','<div class="band">')
+      .replace('</div></div>', `Volume ${sgn(dV)} % · valeur ${sgn(dU)} % contre S1 2025</div></div>`)
+    + card('Prix moyen réalisé', fmt(kg(s26),2), 'USD/kg', dP, '', 'dérivé',
+        `${sgn(dP)} % en un an — le volume progresse plus vite que la valeur`)
+    + card('Droit de douane EEUU', fmt(t.taux_apres_pct,1), '%', null, '', 'publié',
+        `Depuis le ${t.entree_vigueur} · surcoût ${fmt(t.surcout_incremental_usd_m_an)} MUSD/an · ${fmt(t.part_us_dans_envois_pct,1)} % des envois`);
+
+  // ---------- couverture ----------
+  const cov=D.couverture, g=document.getElementById('cov');
+  g.innerHTML='<div class="hd lbl"></div>'+cov.colonnes.map(c=>`<div class="hd">${c}</div>`).join('')
+    + cov.lignes.map(l=>`<div class="lbl">${l.champ}</div>`
+        + l.etat.map(e=>`<div class="e${e}">${e===0?'·':(e===1?'✓':'~')}</div>`).join('')).join('');
+  let tot=0,f=0; cov.lignes.forEach(l=>l.etat.forEach(e=>{tot++;if(e>0)f++;}));
+  document.getElementById('covNote').innerHTML =
+    `<b>Couverture ${f} cellules sur ${tot}, soit ${Math.round(100*f/tot)} %.</b> `
+    + `La ligne <i>récolte par région</i> est entièrement vide, et c'est le point dur : Sernapesca a cessé `
+    + `de publier les fichiers de récolte par centre après 2017. Les ACS — l'équivalent chilien de vos zones `
+    + `de production — n'apparaissent que ponctuellement dans des PDF, jamais en série exploitable. `
+    + `<span class="warn">Un suivi chilien à la maille fine et mensuelle n'est donc pas réalisable sur sources publiques.</span> `
+    + `La donnée existe dans le système de déclaration SIFA, mais n'est pas ouverte.`;
+
+  // ---------- exportations ----------
+  (function(){
+    const rows=(D.export_periode||[]).filter(r=>r.periode&&r.periode[0]==='T')
+      .sort((a,b)=>a.year-b.year||a.periode.localeCompare(b.periode));
+    const s=document.getElementById('expChart'); s.innerHTML='';
+    const all=(D.export_periode||[]).filter(r=>r.tons);
+    if(!all.length) return;
+    const W=980,H=300,mL=64,mR=64,mT=18,mB=44,pw=W-mL-mR,ph=H-mT-mB;
+    const ser=all.sort((a,b)=>a.year-b.year||a.periode.localeCompare(b.periode));
+    const hiT=Math.max(...ser.map(r=>r.tons))*1.15, hiP=Math.max(...ser.map(r=>kg(r)||0))*1.15;
+    const X=i=>mL+(i+.5)/ser.length*pw, Yt=v=>mT+ph-v/hiT*ph, Yp=v=>mT+ph-v/hiP*ph;
+    ser.forEach((r,i)=>{
+      const bw=pw/ser.length*.5;
+      s.appendChild(el('rect',{x:X(i)-bw/2,y:Yt(r.tons),width:bw,height:mT+ph-Yt(r.tons),
+        fill:r.derive?'rgba(95,211,196,.3)':'rgba(95,211,196,.65)',rx:1}));
+      const lab=el('text',{x:X(i),y:Yt(r.tons)-7,'text-anchor':'middle',fill:'#5FD3C4',
+        'font-size':10.5,'font-family':'IBM Plex Mono'});
+      lab.textContent=fmt(r.tons/1000)+' kt'; s.appendChild(lab);
+      const u=el('text',{x:X(i),y:mT+ph+20,'text-anchor':'middle',fill:'#8CA6B0',
+        'font-size':10.5,'font-family':'IBM Plex Mono'});
+      u.textContent=r.periode+' '+String(r.year).slice(2); s.appendChild(u);
+    });
+    let d='';ser.forEach((r,i)=>{const p=kg(r); if(p==null)return; d+=(d?'L':'M')+X(i).toFixed(1)+','+Yp(p).toFixed(1);});
+    if(d){s.appendChild(el('path',{d:d,fill:'none',stroke:'#F2A65A','stroke-width':2.4}));
+      ser.forEach((r,i)=>{const p=kg(r); if(p==null)return;
+        s.appendChild(el('circle',{cx:X(i),cy:Yp(p),r:4,fill:'#F2A65A'}));
+        const t2=el('text',{x:X(i),y:Yp(p)-10,'text-anchor':'middle',fill:'#F2A65A',
+          'font-size':10,'font-family':'IBM Plex Mono'}); t2.textContent=fmt(p,2); s.appendChild(t2);});}
+    const yl=el('text',{transform:`translate(16,${mT+ph/2}) rotate(-90)`,'text-anchor':'middle',
+      fill:'#5FD3C4','font-size':10,'font-family':'IBM Plex Mono','letter-spacing':'.1em'});
+    yl.textContent='VOLUME'; s.appendChild(yl);
+    const yr=el('text',{transform:`translate(${W-18},${mT+ph/2}) rotate(90)`,'text-anchor':'middle',
+      fill:'#F2A65A','font-size':10,'font-family':'IBM Plex Mono','letter-spacing':'.1em'});
+    yr.textContent='USD / KG'; s.appendChild(yr);
+    document.getElementById('legExp').innerHTML=
+      '<span><i class="sw" style="background:rgba(95,211,196,.65)"></i>volume exporté</span>'
+     +'<span><i class="sw" style="background:rgba(95,211,196,.3)"></i>valeur dérivée, non publiée telle quelle</span>'
+     +'<span><i style="background:#F2A65A"></i>prix moyen réalisé</span>';
+    let h='<table><tr><th>Période</th><th>Volume</th><th>Valeur</th><th>Prix moyen</th><th>Source</th></tr>';
+    ser.forEach(r=>{h+=`<tr${r.year===2026?' class="hi"':''}><td>${r.periode} ${r.year}`
+      +(r.derive?'<span class="tag d">dérivé</span>':'')+`</td>`
+      +`<td class="num">${fmt(r.tons/1000)} kt</td><td class="num">${fmt(r.usd_m)} MUSD</td>`
+      +`<td class="num">${fmt(kg(r),2)}</td><td class="num" style="color:var(--mist)">${r.src}</td></tr>`;});
+    document.getElementById('expTable').innerHTML=h+'</table>';
+  })();
+
+  // ---------- destinations ----------
+  (function(){
+    const dd=D.export_destination||[];
+    const names=Array.from(new Set(dd.map(r=>r.dest)));
+    let h='<table><tr><th>Destination</th><th>S1 2025</th><th>S1 2026</th><th>Δ volume</th>'
+         +'<th>Prix 2025</th><th>Prix 2026</th><th>Δ prix</th></tr>';
+    const rows=names.map(n=>{
+      const a=dd.find(r=>r.dest===n&&r.year===2025), b=dd.find(r=>r.dest===n&&r.year===2026);
+      return {n:n,a:a,b:b,dv:pc(b&&b.tons,a&&a.tons),dp:pc(kg(b),kg(a))};
+    }).sort((x,y)=>(y.b?y.b.tons:0)-(x.b?x.b.tons:0));
+    rows.forEach(r=>{h+=`<tr><td>${r.n}</td>`
+      +`<td class="num">${fmt(r.a?r.a.tons/1000:null,1)} kt</td>`
+      +`<td class="num">${fmt(r.b?r.b.tons/1000:null,1)} kt</td>`
+      +`<td class="num ${cls(r.dv)}">${sgn(r.dv)} %</td>`
+      +`<td class="num">${fmt(kg(r.a),2)}</td><td class="num">${fmt(kg(r.b),2)}</td>`
+      +`<td class="num ${cls(r.dp)}">${sgn(r.dp)} %</td></tr>`;});
+    document.getElementById('destTable').innerHTML=h+'</table>';
+    const ch=rows.find(r=>r.n==='Chine'), ru=rows.find(r=>r.n==='Russie'), us=rows.find(r=>r.n==='Etats-Unis');
+    document.getElementById('destNote').innerHTML=
+      `<b>Deux mouvements opposés.</b> La Chine ${ch?'progresse de '+sgn(ch.dv)+' %':'—'} et la Russie recule `
+      +`${ru?'de '+sgn(ru.dv)+' %':'—'}, sur des volumes encore modestes. Les États-Unis restent le débouché `
+      +`dominant avec ${us?fmt(us.b.tons/1000,1)+' kt':'—'}, soit ${fmt((D.tarif||{}).part_us_dans_envois_pct,1)} % `
+      +`des envois — c'est ce qui rend le droit de douane structurant. `
+      +`<span style="color:var(--mist)">Le prix moyen par destination mélange les formats : un marché qui achète `
+      +`du filet affiche mécaniquement un prix au kilo supérieur à un marché qui achète de l'entier. `
+      +`Lire les variations, pas les niveaux entre pays.</span>`;
+  })();
+
+  // ---------- production ----------
+  (function(){
+    let h='<div class="eyebrow" style="margin-bottom:10px">Récolte annuelle</div>'
+         +'<table><tr><th>Année</th><th>Total</th><th>Base</th><th>Source</th></tr>';
+    (D.prod||[]).forEach(r=>{h+=`<tr><td>${r.year}`+(r.derive?'<span class="tag d">dérivé</span>':'')+`</td>`
+      +`<td class="num">${fmt(r.total_t/1000)} kt</td><td class="num" style="color:var(--mist)">${r.base}</td>`
+      +`<td class="num" style="color:var(--mist)">${r.src}</td></tr>`;});
+    h+='</table>';
+    const p25=(D.prod||[]).find(r=>r.year===2025);
+    if(p25&&p25.part_pct) h+=`<div class="note">Composition 2025 : salar ${p25.part_pct.salar} %, `
+      +`coho ${p25.part_pct.coho} %, truite ${p25.part_pct.trucha} %. `
+      +`<span class="warn">Les parts publiées somment à 101 %</span> — écart de réconciliation d'environ 1,5 % `
+      +`laissé tel quel plutôt que redressé.</div>`;
+    document.getElementById('prodTable').innerHTML=h;
+
+    let b='<div class="eyebrow" style="margin-bottom:10px">Biomasse en mer, pic de juin</div>'
+         +'<table><tr><th>Année</th><th>Pic</th><th>Source</th></tr>';
+    (D.sanitaire||[]).filter(r=>r.biomasa_max_t).forEach(r=>{
+      b+=`<tr><td>${r.year}</td><td class="num">${fmt(r.biomasa_max_t/1000)} kt</td>`
+        +`<td class="num" style="color:var(--mist)">${r.src}</td></tr>`;});
+    b+='</table>';
+    b+='<div class="eyebrow" style="margin:22px 0 10px">Mortalité mensuelle moyenne 2025</div>'
+      +'<table><tr><th>Région</th><th>%/mois</th></tr>';
+    (D.mortalite_region||[]).forEach(r=>{
+      b+=`<tr><td>${r.region}</td><td class="num">${fmt(r.pct_mensuel_moyen,1)} %</td></tr>`;});
+    b+='</table><div class="note">Le gradient nord-sud est net : Magallanes, la plus australe et la plus '
+      +'froide, affiche moins de la moitié de la mortalité de Los Lagos. Même logique qu'
+      +'\u2019entre le Finnmark et le sud de la Norvège.</div>';
+    document.getElementById('bioTable').innerHTML=b;
+  })();
+
+  // ---------- evenements ----------
+  document.getElementById('events').innerHTML=(D.evenements||[])
+    .sort((a,b)=>a.date<b.date?1:-1)
+    .map(e=>`<div class="ev"><time>${e.date} · ${e.type}</time><h3>${e.titre}</h3>`
+      +`<p>${e.detail||''}${e.src?' <span style="color:var(--line)">·</span> '+e.src:''}</p></div>`).join('');
+
+  // ---------- sources ----------
+  (function(){
+    let h='<table><tr><th>Source</th><th>Intitulé</th><th>Cadence</th><th>Retard</th><th>Dernier point</th></tr>';
+    (D.latence||[]).sort((a,b)=>a.retard_semaines-b.retard_semaines).forEach(r=>{
+      const cl=r.retard_semaines<=6?'neg':(r.retard_semaines<=12?'':'pos');
+      h+=`<tr><td>${r.source}</td><td style="color:var(--mist)">${(D.provenance||{})[r.source]||''}</td>`
+        +`<td class="num">${r.cadence}</td><td class="num ${cl}">${r.retard_semaines} sem.</td>`
+        +`<td class="num">${r.dernier}</td></tr>`;});
+    document.getElementById('srcTable').innerHTML=h+'</table>';
+  })();
+
+  const m=D._meta||{};
+  document.getElementById('foot').innerHTML=
+    `Sources : ${Object.entries(D.provenance||{}).map(([k,v])=>k+' — '+v).join(' · ')}.`
+    +`<br><br>${m.note||''}`
+    +`<br><br><b style="color:var(--bone)">À retenir sur la comparabilité.</b> Ce suivi n'a ni la maille, `
+    +`ni la fréquence, ni l'exhaustivité du dispositif norvégien. Les exportations sont exploitables au mois `
+    +`avec cinq semaines de retard ; tout le reste relève du semestriel ou de l'annuel. Toute lecture croisée `
+    +`avec la Norvège doit tenir compte de cet écart de résolution.`;
+}
+
+async function boot(){
+  let live=false;
+  try{
+    const res=await fetch(DATA_URL,{cache:'no-store'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const raw=await res.json();
+    if(!raw.export_periode||!raw.export_periode.length) throw new Error('donnees vides');
+    D=raw; live=true;
+  }catch(e){ console.warn('Donnees distantes indisponibles, repli local :',e.message); }
+  const b=document.createElement('div');
+  const dt=(D._meta&&(D._meta.generated||D._meta.build))||null;
+  b.style.cssText='padding:7px 14px;font-size:12px;text-align:center;font-family:monospace;'
+    +'letter-spacing:.03em;'+(live?'background:#123a33;color:#5FD3C4;':'background:#3a2a12;color:#ffb74d;');
+  b.textContent=(live?'Donnees a jour':'Hors ligne, donnees embarquees')
+    +(dt?' \u2014 fichier du '+dt:'')
+    +((D.latence&&D.latence.length)?' \u2014 exportations a '+D.latence.find(x=>x.source==='ADU').dernier:'');
+  document.body.insertBefore(b,document.body.firstChild);
+  renderAll();
+}
+boot();
+</script></body></html>
