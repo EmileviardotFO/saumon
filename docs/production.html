@@ -791,6 +791,12 @@ async function loadRemoteData() {
     if (!d.records || !d.records.length) throw new Error('donnees vides');
     RECORDS = d.records;
     COHORT  = d.cohort && d.cohort.length ? d.cohort : EMBEDDED_COHORT;
+    // Corrige une regression : le fetch distant ne mettait a jour ni RECORDS
+    // ni COUNTRY separement, et COUNTRY etait tout simplement oublie ici.
+    // Consequence en production : l'onglet Markets restait bloque sur les
+    // donnees embarquees dans le HTML, quelle que soit la fraicheur reelle
+    // de data.json sur GitHub -- d'ou juin absent malgre un data.json a jour.
+    if (d.country && d.country.length) COUNTRY = d.country;
     DATA_DATE = (d.meta && d.meta.generated) || null;
     // L'onglet calibre est derive de l'hebdomadaire : il doit etre recalcule,
     // sinon il resterait fige a la date de generation du fichier HTML.
