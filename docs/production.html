@@ -430,8 +430,315 @@ const EMBEDDED_COHORT = [{"po": 1, "cohort": 2016, "year": 2017, "month": 10, "a
 //  coupe, le tableau de bord fonctionne quand meme avec les donnees figees au
 //  jour de sa generation, et un bandeau orange le signale.
 // ===========================================================================
+// ===========================================================================
+//  Calculs derives, communs aux deux tableaux de bord.
+//  Tout part du JSON brut (records, cohort, weekly) : rien n'est fige.
+//  Portage en JS des scripts Python de preparation, pour que les pages se
+//  recalculent seules a chaque chargement des donnees distantes.
+// ===========================================================================
+(function (root) {
+  const CL = ['1-2','2-3','3-4','4-5','5-6','6-7','7-8','8-9','9+'];
+  const CL6 = ['6-7','7-8','8-9','9+'];
+  const CL7 = ['7-8','8-9','9+'];
+  const MID = {'1-2':1.5,'2-3':2.5,'3-4':3.5,'4-5':4.5,'5-6':5.5,
+               '6-7':6.5,'7-8':7.5,'8-9':8.5,'9+':9.7};
+
+  const K = (y, m) => y * 100 + m;
+  const shift = (k, n) => {
+    let y = Math.floor(k / 100), m = (k % 100) - 1 + n;
+    y += Math.floor(m / 12); m = ((m % 12) + 12) % 12;
+    return K(y, m + 1);
+  };
+  const mean = a => a.reduce((x, y) => x + y, 0) / a.length;
+
+  // ISO week -> date du jeudi de cette semaine
+  function isoThursday(year, week) {
+    const jan4 = new Date(Date.UTC(year, 0, 4));
+    const dow = (jan4.getUTCDay() + 6) % 7;          // lundi = 0
+    const monday = new Date(jan4.getTime() - dow * 864e5 + (week - 1) * 7 * 864e5);
+    return new Date(monday.getTime() + 3 * 864e5);
+  }
+
+  // Regression lineaire multiple par elimination de Gauss.
+  function ols(A, b) {
+    const n = A[0].length;
+    const M = [], v = [];
+    for (let a = 0; a < n; a++) {
+      M.push(new Array(n).fill(0)); v.push(0);
+    }
+    for (let i = 0; i < A.length; i++) {
+      for (let a = 0; a < n; a++) {
+        v[a] += A[i][a] * b[i];
+        for (let c = 0; c < n; c++) M[a][c] += A[i][a] * A[i][c];
+      }
+    }
+    for (let c = 0; c < n; c++) {
+      let p = c;
+      for (let r = c + 1; r < n; r++) if (Math.abs(M[r][c]) > Math.abs(M[p][c])) p = r;
+      [M[c], M[p]] = [M[p], M[c]]; [v[c], v[p]] = [v[p], v[c]];
+      if (Math.abs(M[c][c]) < 1e-10) continue;
+      for (let r = c + 1; r < n; r++) {
+        const f = M[r][c] / M[c][c];
+        if (!f) continue;
+        for (let c2 = c; c2 < n; c2++) M[r][c2] -= f * M[c][c2];
+        v[r] -= f * v[c];
+      }
+    }
+    const x = new Array(n).fill(0);
+    for (let c = n - 1; c >= 0; c--) {
+      if (Math.abs(M[c][c]) < 1e-10) { x[c] = 0; continue; }
+      let s = v[c];
+      for (let c2 = c + 1; c2 < n; c2++) s -= M[c][c2] * x[c2];
+      x[c] = s / M[c][c];
+    }
+    return x;
+  }
+
+  function computeAll(D) {
+    const R = D.records || [], C = D.cohort || [], W0 = D.weekly || [];
+
+    // ---- agregats nationaux mensuels
+    const nat = {};
+    R.forEach(r => {
+      const k = K(r.year, r.month);
+      const d = nat[k] || (nat[k] = { vol: 0, stk: 0, bio: 0, stock: 0 });
+      d.vol += r.uttak_kg || 0; d.stk += r.uttak_stk || 0;
+      d.bio += r.biomasse_kg || 0; d.stock += r.behfisk_stk || 0;
+    });
+
+    // ---- reservoir de cohortes au-dessus de 5 kg
+    const pip = {};
+    C.forEach(c => {
+      if (c.weight_kg === null || c.stock === null) return;
+      const k = K(c.year, c.month);
+      const d = pip[k] || (pip[k] = { t: 0, b: 0 });
+      d.t += c.stock * c.weight_kg;
+      if (c.weight_kg >= 5.0) d.b += c.stock * c.weight_kg;
+    });
+
+    // ---- hebdo : rattacher chaque semaine a son mois, calculer moyenne et
+    //      dispersion de la distribution, et la prime 6+ ponderee volume
+    const W = [];
+    W0.forEach(r => {
+      const o = Object.assign({}, r);
+      const dw = r.dist_week, pw = r.price_week;
+      if (r.sh_6plus !== undefined && dw) {
+        let y = r.report_year;
+        if (dw >= 50 && r.report_week <= 2) y -= 1;
+        const d = isoThursday(y, Math.min(dw, 53));
+        o.dk = K(d.getUTCFullYear(), d.getUTCMonth() + 1);
+        const tot = CL.reduce((s, c) => s + (r['sh_' + c] || 0), 0);
+        if (tot > 0) {
+          o.mu = CL.reduce((s, c) => s + r['sh_' + c] * MID[c], 0) / tot;
+          o.sd = Math.sqrt(CL.reduce((s, c) => s + r['sh_' + c] * Math.pow(MID[c] - o.mu, 2), 0) / tot + 1 / 12);
+          o.n6 = CL6.reduce((s, c) => s + r['sh_' + c], 0);
+          o.n7 = CL7.reduce((s, c) => s + r['sh_' + c], 0);
+          const t6 = CL6.reduce((s, c) => s + r['sh_' + c] * MID[c], 0);
+          const t7 = CL7.reduce((s, c) => s + r['sh_' + c] * MID[c], 0);
+          const tt = CL.reduce((s, c) => s + r['sh_' + c] * MID[c], 0);
+          o.t6 = tt > 0 ? t6 / tt * 100 : null;
+          o.t7 = tt > 0 ? t7 / tt * 100 : null;
+        }
+      }
+      if (r.p_avg !== undefined && pw && r['p_3-4'] > 20 && r['p_3-4'] < 200) {
+        let y = r.report_year;
+        if (pw >= 50 && r.report_week <= 2) y -= 1;
+        const d = isoThursday(y, Math.min(pw, 53));
+        o.pk = K(d.getUTCFullYear(), d.getUTCMonth() + 1);
+        o.pdate = d.toISOString().slice(0, 10);
+        if (r.sh_6plus !== undefined) {
+          const w6 = CL6.reduce((s, c) => s + (r['sh_' + c] || 0), 0);
+          const w7 = CL7.reduce((s, c) => s + (r['sh_' + c] || 0), 0);
+          if (w6 > 0) o.p6w = CL6.reduce((s, c) => s + r['sh_' + c] * r['p_' + c], 0) / w6 - r['p_3-4'];
+          if (w7 > 0) o.p7w = CL7.reduce((s, c) => s + r['sh_' + c] * r['p_' + c], 0) / w7 - r['p_3-4'];
+        }
+        o.slope = r['p_8-9'] - r['p_6-7'];
+      }
+      W.push(o);
+    });
+
+    // ---- series mensuelles
+    const md = {}, mp = {};
+    W.forEach(r => {
+      if (r.dk && r.sh_6plus !== undefined) (md[r.dk] || (md[r.dk] = [])).push(r);
+      if (r.pk && r.p6w !== undefined) (mp[r.pk] || (mp[r.pk] = [])).push(r);
+    });
+    const y6 = {}, sd = {}, prem6 = {}, prem7 = {};
+    Object.keys(md).forEach(k => {
+      y6[k] = +mean(md[k].map(x => x.sh_6plus)).toFixed(2);
+      sd[k] = +mean(md[k].map(x => x.sd)).toFixed(3);
+    });
+    Object.keys(mp).forEach(k => {
+      prem6[k] = +mean(mp[k].map(x => x.p6w)).toFixed(2);
+      const v7 = mp[k].filter(x => x.p7w !== undefined).map(x => x.p7w);
+      if (v7.length) prem7[k] = +mean(v7).toFixed(2);
+    });
+
+    const hw = {}, vol = {}, pipe = {};
+    Object.keys(nat).forEach(k => {
+      if (nat[k].stk > 0) hw[k] = +(nat[k].vol / nat[k].stk).toFixed(3);
+      if (nat[k].vol > 0) vol[k] = +(nat[k].vol / 1e6).toFixed(1);
+    });
+    Object.keys(pip).forEach(k => {
+      if (pip[k].t > 0) pipe[k] = +(pip[k].b / pip[k].t * 100).toFixed(2);
+    });
+
+    const yrs = Object.keys(y6).map(k => Math.floor(k / 100));
+    const maxYear = Math.max.apply(null, yrs);
+
+    // ---- normes saisonnieres, calculees sur les annees completes revolues
+    const seasOf = (src) => {
+      const o = {};
+      for (let m = 1; m <= 12; m++) {
+        const v = Object.keys(src)
+          .filter(k => (+k) % 100 === m && Math.floor(k / 100) < maxYear)
+          .map(k => src[k]);
+        if (v.length) o[m] = { mean: +mean(v).toFixed(2), lo: +Math.min.apply(null, v).toFixed(2), hi: +Math.max.apply(null, v).toFixed(2) };
+      }
+      return o;
+    };
+    const seas = seasOf(y6), prem6seas = seasOf(prem6);
+    const prem6cur = {};
+    for (let m = 1; m <= 12; m++) if (prem6[K(maxYear, m)] !== undefined) prem6cur[m] = prem6[K(maxYear, m)];
+
+    // ---- prevision a un mois : le seul horizon qui batte tous les naifs
+    const X = {};
+    Object.keys(nat).forEach(kk => {
+      const k = +kk, kp = shift(k, -1);
+      if (!pip[k] || pip[k].t <= 0 || nat[k].stock <= 0 || nat[k].stk <= 0) return;
+      X[k] = {
+        sw: nat[k].bio / nat[k].stock, hw: nat[k].vol / nat[k].stk,
+        r45: 0, r50: pip[k].b / pip[k].t * 100, r55: 0,
+        tk: (nat[kp] && nat[kp].stock > 0) ? nat[k].stk / nat[kp].stock : null
+      };
+    });
+    C.forEach(c => {
+      if (c.weight_kg === null || c.stock === null) return;
+      const k = K(c.year, c.month);
+      if (!X[k] || !pip[k] || pip[k].t <= 0) return;
+      if (c.weight_kg >= 4.5) X[k].r45 += c.stock * c.weight_kg / pip[k].t * 100;
+      if (c.weight_kg >= 5.5) X[k].r55 += c.stock * c.weight_kg / pip[k].t * 100;
+    });
+    const NAMES = ['r45','r50','r55','sw','hw','tk','pers'];
+    const design = (k) => {
+      const src = shift(k, -2);              // 1 mois d'horizon + 1 de publication
+      if (!X[src]) return null;
+      const out = [];
+      for (const n of NAMES) {
+        if (n === 'pers') {
+          const kp = shift(k, -1);
+          if (y6[kp] === undefined) return null;
+          out.push(y6[kp]);
+        } else {
+          const a = X[src][n];
+          if (a === null || a === undefined) return null;
+          out.push(a);
+        }
+      }
+      return out;
+    };
+    const ks = Object.keys(y6).map(Number).sort((a, b) => a - b);
+    const last = ks[ks.length - 1], nxt = shift(last, 1);
+    let forecast = null;
+    const A = [], b = [];
+    ks.forEach(q => { const d = design(q); if (d) { A.push([1].concat(d)); b.push(y6[q]); } });
+    const dn = design(nxt);
+    if (A.length > 30 && dn) {
+      const co = ols(A, b);
+      let p = co[0];
+      for (let i = 0; i < dn.length; i++) p += co[i + 1] * dn[i];
+      // erreur constatee, en marche avant sur les 4 dernieres annees
+      const errs = [];
+      ks.filter(k => k >= 202201).forEach(k => {
+        const A2 = [], b2 = [];
+        ks.forEach(q => {
+          if (q >= shift(k, -1)) return;
+          const d = design(q); if (d) { A2.push([1].concat(d)); b2.push(y6[q]); }
+        });
+        const d = design(k);
+        if (!d || A2.length < 30) return;
+        const c2 = ols(A2, b2);
+        let pr = c2[0];
+        for (let i = 0; i < d.length; i++) pr += c2[i + 1] * d[i];
+        errs.push(Math.abs(pr - y6[k]));
+      });
+      forecast = { month: nxt, value: +p.toFixed(1), mae: errs.length ? +mean(errs).toFixed(2) : null };
+    }
+
+    // ---- signal hebdomadaire : pente du haut de courbe
+    const sl = W.filter(r => r.slope !== undefined && r.pdate)
+                .sort((a, b2) => a.pdate < b2.pdate ? -1 : 1)
+                .map(r => ({ d: r.pdate, y: r.report_year, w: r.price_week,
+                             slope: +r.slope.toFixed(2), p6: r.sh_6plus }));
+    const slYears = {};
+    sl.forEach(x => {
+      const o = slYears[x.y] || (slYears[x.y] = { y: x.y, v: [], neg: 0 });
+      o.v.push(x.slope); if (x.slope < 0) o.neg++;
+    });
+    const slopestats = {
+      mean: +mean(sl.map(x => x.slope)).toFixed(2),
+      y: Object.keys(slYears).map(y => ({ y: +y, mean: +mean(slYears[y].v).toFixed(2),
+                                          neg: slYears[y].neg, n: slYears[y].v.length }))
+                             .sort((a, b2) => a.y - b2.y)
+    };
+
+    // ---- tableau calibre : par annee et par mois
+    const calMonths = [], calYears = [];
+    const allK = Array.from(new Set(Object.keys(md).concat(Object.keys(mp)))).map(Number).sort((a, b2) => a - b2);
+    allK.forEach(k => {
+      const g = md[k], p = mp[k], o = { k: k };
+      if (g) {
+        o.n6 = +mean(g.map(x => x.n6)).toFixed(1); o.n7 = +mean(g.map(x => x.n7)).toFixed(1);
+        o.t6 = +mean(g.map(x => x.t6)).toFixed(1); o.t7 = +mean(g.map(x => x.t7)).toFixed(1);
+        o.nw = g.length;
+      }
+      if (p) {
+        o.p6 = +mean(p.map(x => x.p6w)).toFixed(2);
+        const v7 = p.filter(x => x.p7w !== undefined).map(x => x.p7w);
+        if (v7.length) o.p7 = +mean(v7).toFixed(2);
+        o.px = +mean(p.map(x => x.p_avg)).toFixed(2);
+      }
+      if (hw[k] !== undefined) { o.hw = hw[k]; o.vol = vol[k]; }
+      calMonths.push(o);
+    });
+    const years = Array.from(new Set(allK.map(k => Math.floor(k / 100)))).sort();
+    years.forEach(y => {
+      const g = calMonths.filter(r => Math.floor(r.k / 100) === y);
+      const av = f => { const v = g.filter(r => r[f] !== undefined && r[f] !== null).map(r => r[f]);
+                        return v.length ? +mean(v).toFixed(2) : null; };
+      const mk = [];
+      for (let m = 1; m <= 12; m++) { const k = K(y, m); if (nat[k] && nat[k].stk > 0) mk.push(k); }
+      calYears.push({
+        y: y, months: mk.length,
+        hw: mk.length ? +(mk.reduce((s, k) => s + nat[k].vol, 0) / mk.reduce((s, k) => s + nat[k].stk, 0)).toFixed(2) : null,
+        vol: mk.length ? Math.round(mk.reduce((s, k) => s + nat[k].vol, 0) / 1e6) : null,
+        n6: av('n6'), n7: av('n7'), t6: av('t6'), t7: av('t7'),
+        p6: av('p6'), p7: av('p7'), px: av('px')
+      });
+    });
+
+    const lw = W.filter(r => r.sh_6plus !== undefined && r.dk).sort((a, b2) => a.dk - b2.dk || a.report_week - b2.report_week).pop();
+    const lp = W.filter(r => r.p_avg !== undefined && r.pdate).sort((a, b2) => a.pdate < b2.pdate ? -1 : 1).pop();
+
+    return {
+      y6, sd, seas, prem6, prem7, prem6seas, prem6_2026: prem6cur,
+      pipe, hw, vol, forecast, slope: sl.slice(-78), slopestats,
+      calibre: { years: calYears, months: calMonths },
+      lastweek: lw ? { iso: null, week: lw.dist_week, year: lw.report_year, p6: lw.sh_6plus,
+                       dist: CL.reduce((o, c) => (o[c] = lw['sh_' + c], o), {}) } : null,
+      lastprice: lp ? { iso: lp.pdate, week: lp.price_week,
+                        px: CL.reduce((o, c) => (o[c] = lp['p_' + c], o), {}), avg: lp.p_avg } : null,
+      slopes: { '5-6': -0.61, '6-7': -1.01, '7-8': -1.42, '8-9': -1.66, '9+': -1.64 },
+      meta: { weeks: W0.length, last: last, generated: (D.meta && D.meta.generated) || null }
+    };
+  }
+
+  root.computeAll = computeAll;
+})(typeof window !== 'undefined' ? window : this);
+
+let CALIBRE = null;
 const DATA_URL = 'https://emileviardotfo.github.io/saumon/data/data.json';
-let RECORDS = EMBEDDED_RECORDS, COHORT = EMBEDDED_COHORT, DATA_DATE = null;
+let RECORDS = EMBEDDED_RECORDS, COHORT = EMBEDDED_COHORT, DATA_DATE = null, LAST_WEEK = null;
 
 async function loadRemoteData() {
   try {
@@ -442,6 +749,17 @@ async function loadRemoteData() {
     RECORDS = d.records;
     COHORT  = d.cohort && d.cohort.length ? d.cohort : EMBEDDED_COHORT;
     DATA_DATE = (d.meta && d.meta.generated) || null;
+    // L'onglet calibre est derive de l'hebdomadaire : il doit etre recalcule,
+    // sinon il resterait fige a la date de generation du fichier HTML.
+    if (d.weekly && d.weekly.length) {
+      try {
+        const c = computeAll(d);
+        if (c.calibre && c.calibre.years.length) {
+          CALIBRE = c.calibre;
+          LAST_WEEK = c.lastweek;
+        }
+      } catch (e) { console.warn('Recalcul du calibre impossible :', e.message); }
+    }
     return true;
   } catch (e) {
     console.warn('Donnees distantes indisponibles, repli local :', e.message);
@@ -454,9 +772,9 @@ function showDataBanner(live) {
   b.style.cssText = 'padding:7px 14px;font-size:12px;text-align:center;'
     + 'font-family:monospace;letter-spacing:.03em;'
     + (live ? 'background:#123a33;color:#5FD3C4;' : 'background:#3a2a12;color:#ffb74d;');
-  b.textContent = live
-    ? 'Donnees a jour' + (DATA_DATE ? ' — generees le ' + DATA_DATE : '')
-    : 'Hors ligne : donnees embarquees, non mises a jour';
+  b.textContent = (live ? 'Donnees a jour' : 'Hors ligne, donnees embarquees')
+    + (DATA_DATE ? ' \u2014 fichier du ' + DATA_DATE : '')
+    + (LAST_WEEK ? ' \u2014 derniere semaine S' + LAST_WEEK.week + ' ' + LAST_WEEK.year : '');
   document.body.insertBefore(b, document.body.firstChild);
 }
 const PO_NAMES = {"1": "Svenskegrensen til Jæren", "2": "Ryfylket", "3": "Karmøy til Sotra", "4": "Nordhordland til Stadt", "5": "Stadt til Hustadvika", "6": "Nordmøre og Sør-Trøndelag", "7": "Nord-Trøndelag med Bindal", "8": "Helgeland til Bodø", "9": "Vestfjorden og Vesterålen", "10": "Andøya til Senja", "11": "Kvaløya til Loppa", "12": "Vest-Finnmark", "13": "Øst-Finnmark"};
@@ -1405,7 +1723,8 @@ document.querySelectorAll('#cohortModeToggle button').forEach(btn => {
   });
 });
 
-const CALIBRE = {"months": [{"k": 201712, "n6": 11.0, "n7": 4.0, "t6": 18.0, "t7": 7.4, "nw": 1, "p6": 8.78, "p7": 9.75, "px": 51.56, "hw": 4.85, "vol": 102.7}, {"k": 201801, "n6": 14.1, "n7": 5.6, "t6": 21.4, "t7": 9.5, "nw": 4, "p6": 4.92, "p7": 4.85, "px": 53.47, "hw": 4.88, "vol": 100.7}, {"k": 201802, "n6": 16.6, "n7": 6.0, "t6": 24.5, "t7": 10.0, "nw": 4, "p6": 5.03, "p7": 5.39, "px": 54.27, "hw": 4.97, "vol": 84.2}, {"k": 201803, "n6": 24.7, "n7": 11.1, "t6": 35.1, "t7": 17.5, "nw": 5, "p6": -0.2, "p7": -0.8, "px": 69.52, "hw": 5.03, "vol": 90.8}, {"k": 201804, "n6": 20.7, "n7": 8.2, "t6": 30.1, "t7": 13.5, "nw": 4, "p6": -0.14, "p7": -0.58, "px": 69.22, "hw": 4.92, "vol": 87.5}, {"k": 201805, "n6": 20.1, "n7": 8.1, "t6": 29.7, "t7": 13.4, "nw": 5, "p6": 2.66, "p7": 1.87, "px": 74.38, "hw": 4.78, "vol": 91.6}, {"k": 201806, "n6": 15.6, "n7": 6.1, "t6": 23.7, "t7": 10.5, "nw": 4, "p6": 4.31, "p7": 4.63, "px": 59.01, "hw": 4.78, "vol": 95.8}, {"k": 201807, "n6": 13.1, "n7": 4.8, "t6": 20.2, "t7": 8.3, "nw": 4, "p6": 5.7, "p7": 6.07, "px": 52.69, "hw": 4.78, "vol": 106.8}, {"k": 201808, "n6": 7.8, "n7": 2.1, "t6": 12.3, "t7": 3.8, "nw": 5, "p6": 12.41, "p7": 15.32, "px": 51.42, "hw": 4.81, "vol": 119.4}, {"k": 201809, "n6": 7.7, "n7": 1.9, "t6": 11.9, "t7": 3.4, "nw": 4, "p6": 17.48, "p7": 21.5, "px": 58.75, "hw": 4.75, "vol": 104.7}, {"k": 201810, "n6": 6.3, "n7": 2.1, "t6": 10.1, "t7": 3.8, "nw": 4, "p6": 15.99, "p7": 20.78, "px": 55.03, "hw": 4.66, "vol": 130.3}, {"k": 201811, "n6": 6.2, "n7": 2.1, "t6": 9.9, "t7": 3.8, "nw": 5, "p6": 12.06, "p7": 14.8, "px": 52.76, "hw": 4.59, "vol": 119.8}, {"k": 201812, "n6": 9.7, "n7": 3.1, "t6": 15.0, "t7": 5.4, "nw": 4, "p6": 9.74, "p7": 13.04, "px": 58.22, "hw": 4.73, "vol": 102.5}, {"k": 201901, "n6": 13.3, "n7": 4.8, "t6": 20.0, "t7": 8.1, "nw": 5, "p6": 4.43, "p7": 5.27, "px": 59.14, "hw": 4.83, "vol": 105.2}, {"k": 201902, "n6": 16.5, "n7": 6.3, "t6": 24.3, "t7": 10.5, "nw": 4, "p6": 1.7, "p7": 1.76, "px": 57.42, "hw": 4.89, "vol": 92.6}, {"k": 201903, "n6": 16.9, "n7": 6.9, "t6": 25.2, "t7": 11.6, "nw": 4, "p6": 2.13, "p7": 1.67, "px": 68.14, "hw": 4.88, "vol": 95.5}, {"k": 201904, "n6": 15.1, "n7": 7.5, "t6": 23.6, "t7": 12.9, "nw": 4, "p6": 3.0, "p7": 2.23, "px": 67.75, "hw": 4.84, "vol": 104.6}, {"k": 201905, "n6": 9.7, "n7": 4.5, "t6": 15.7, "t7": 8.2, "nw": 5, "p6": 10.97, "p7": 11.11, "px": 58.08, "hw": 4.72, "vol": 101.2}, {"k": 201906, "n6": 15.0, "n7": 8.0, "t6": 24.1, "t7": 14.2, "nw": 4, "p6": 6.51, "p7": 5.68, "px": 60.92, "hw": 4.75, "vol": 97.0}, {"k": 201907, "n6": 9.0, "n7": 3.2, "t6": 14.5, "t7": 5.9, "nw": 4, "p6": 9.44, "p7": 9.93, "px": 56.3, "hw": 4.58, "vol": 110.8}, {"k": 201908, "n6": 5.9, "n7": 1.9, "t6": 9.5, "t7": 3.4, "nw": 5, "p6": 22.28, "p7": 24.04, "px": 48.26, "hw": 4.62, "vol": 126.4}, {"k": 201909, "n6": 5.1, "n7": 1.4, "t6": 8.3, "t7": 2.6, "nw": 4, "p6": 18.38, "p7": 20.75, "px": 42.49, "hw": 4.7, "vol": 132.8}, {"k": 201910, "n6": 6.4, "n7": 2.1, "t6": 10.6, "t7": 3.9, "nw": 5, "p6": 11.27, "p7": 12.66, "px": 46.3, "hw": 4.68, "vol": 143.9}, {"k": 201911, "n6": 6.8, "n7": 2.1, "t6": 10.8, "t7": 3.9, "nw": 4, "p6": 7.95, "p7": 8.72, "px": 56.15, "hw": 4.71, "vol": 119.2}, {"k": 201912, "n6": 7.4, "n7": 2.3, "t6": 11.6, "t7": 4.1, "nw": 4, "p6": 16.59, "p7": 17.84, "px": 69.8, "hw": 4.72, "vol": 105.7}, {"k": 202001, "n6": 8.6, "n7": 2.6, "t6": 13.4, "t7": 4.5, "nw": 5, "p6": 14.99, "p7": 16.45, "px": 75.7, "hw": 4.71, "vol": 100.9}, {"k": 202002, "n6": 16.4, "n7": 5.1, "t6": 23.6, "t7": 8.3, "nw": 4, "p6": 1.11, "p7": 1.49, "px": 66.42, "hw": 4.98, "vol": 95.7}, {"k": 202003, "n6": 15.5, "n7": 5.7, "t6": 23.2, "t7": 9.5, "nw": 4, "p6": -2.13, "p7": -3.93, "px": 61.07, "hw": 4.97, "vol": 103.4}, {"k": 202004, "n6": 21.9, "n7": 8.5, "t6": 30.9, "t7": 13.4, "nw": 5, "p6": -3.42, "p7": -4.21, "px": 50.71, "hw": 5.2, "vol": 102.0}, {"k": 202005, "n6": 14.8, "n7": 7.3, "t6": 23.7, "t7": 13.0, "nw": 4, "p6": 0.7, "p7": -1.28, "px": 57.85, "hw": 4.71, "vol": 96.9}, {"k": 202006, "n6": 16.0, "n7": 6.5, "t6": 24.5, "t7": 11.2, "nw": 4, "p6": 4.94, "p7": 3.73, "px": 63.78, "hw": 4.57, "vol": 100.1}, {"k": 202007, "n6": 9.3, "n7": 2.5, "t6": 14.1, "t7": 4.3, "nw": 5, "p6": 13.65, "p7": 15.01, "px": 49.73, "hw": 4.63, "vol": 110.9}, {"k": 202008, "n6": 8.3, "n7": 1.4, "t6": 12.6, "t7": 2.4, "nw": 3, "p6": 11.45, "p7": 14.66, "px": 45.92, "hw": 4.62, "vol": 116.4}, {"k": 202009, "n6": 5.8, "n7": 1.2, "t6": 9.0, "t7": 2.2, "nw": 2, "p6": 15.37, "p7": 17.29, "px": 44.95, "hw": 4.56, "vol": 136.1}, {"k": 202010, "n6": 7.9, "n7": 2.1, "t6": 12.3, "t7": 3.6, "nw": 3, "p6": 6.7, "p7": 7.74, "px": 43.38, "hw": 4.69, "vol": 140.8}, {"k": 202011, "n6": 11.6, "n7": 3.9, "t6": 17.7, "t7": 6.7, "nw": 4, "p6": 1.53, "p7": 2.06, "px": 42.16, "hw": 4.67, "vol": 129.7}, {"k": 202012, "n6": 15.3, "n7": 4.6, "t6": 22.0, "t7": 7.5, "nw": 5, "p6": 0.22, "p7": 0.52, "px": 43.95, "hw": 4.88, "vol": 129.6}, {"k": 202101, "n6": 23.1, "n7": 8.7, "t6": 32.1, "t7": 13.4, "nw": 4, "p6": -1.59, "p7": -2.4, "px": 44.2, "hw": 5.08, "vol": 113.7}, {"k": 202102, "n6": 27.5, "n7": 10.0, "t6": 36.9, "t7": 14.9, "nw": 4, "p6": -1.23, "p7": -2.09, "px": 48.49, "hw": 5.23, "vol": 110.1}, {"k": 202103, "n6": 23.1, "n7": 9.6, "t6": 32.6, "t7": 15.0, "nw": 4, "p6": -0.93, "p7": -2.44, "px": 61.83, "hw": 5.11, "vol": 128.3}, {"k": 202104, "n6": 14.5, "n7": 5.6, "t6": 21.6, "t7": 9.3, "nw": 3, "p6": 7.27, "p7": 6.22, "px": 63.47, "hw": 4.89, "vol": 98.3}, {"k": 202105, "p6": null, "p7": null, "px": 67.52, "hw": 4.93, "vol": 102.5}, {"k": 202106, "n6": 11.3, "n7": 4.6, "t6": 18.3, "t7": 8.5, "nw": 4, "p6": 8.75, "p7": 6.74, "px": 57.69, "hw": 4.7, "vol": 116.2}, {"k": 202107, "n6": 10.4, "n7": 3.6, "t6": 16.4, "t7": 6.4, "nw": 5, "p6": 11.05, "p7": 10.53, "px": 60.0, "hw": 4.76, "vol": 116.1}, {"k": 202108, "n6": 11.0, "n7": 3.4, "t6": 16.6, "t7": 5.8, "nw": 4, "p6": 9.08, "p7": 10.47, "px": 54.0, "hw": 4.84, "vol": 144.5}, {"k": 202109, "n6": 15.3, "n7": 4.4, "t6": 22.0, "t7": 7.2, "nw": 5, "p6": 4.49, "p7": 5.49, "px": 49.78, "hw": 4.86, "vol": 164.7}, {"k": 202110, "n6": 15.9, "n7": 6.9, "t6": 28.4, "t7": 13.9, "nw": 4, "p6": 7.52, "p7": 9.27, "px": 55.51, "hw": 4.87, "vol": 149.3}, {"k": 202111, "n6": 19.8, "n7": 6.3, "t6": 27.7, "t7": 9.9, "nw": 4, "p6": 1.49, "p7": 1.82, "px": 56.16, "hw": 5.0, "vol": 154.0}, {"k": 202112, "n6": 17.0, "n7": 7.1, "t6": 25.1, "t7": 11.8, "nw": 5, "p6": 3.99, "p7": 3.65, "px": 65.94, "hw": 4.92, "vol": 133.4}, {"k": 202201, "n6": 19.8, "n7": 7.7, "t6": 28.4, "t7": 12.2, "nw": 4, "p6": 7.22, "p7": 7.36, "px": 69.78, "hw": 5.04, "vol": 118.2}, {"k": 202202, "n6": 23.4, "n7": 11.8, "t6": 33.6, "t7": 18.5, "nw": 4, "p6": 4.88, "p7": 4.02, "px": 83.85, "hw": 5.09, "vol": 105.5}, {"k": 202203, "n6": 27.0, "n7": 11.9, "t6": 35.7, "t7": 17.6, "nw": 5, "p6": 2.22, "p7": 1.94, "px": 83.5, "hw": 5.18, "vol": 120.3}, {"k": 202204, "n6": 22.0, "n7": 9.5, "t6": 32.8, "t7": 16.0, "nw": 4, "p6": 5.08, "p7": 4.35, "px": 110.85, "hw": 4.98, "vol": 91.3}, {"k": 202205, "n6": 18.5, "n7": 7.1, "t6": 27.8, "t7": 11.9, "nw": 4, "p6": 13.28, "p7": 12.74, "px": 105.14, "hw": 4.81, "vol": 100.6}, {"k": 202206, "n6": 18.3, "n7": 7.3, "t6": 27.5, "t7": 12.3, "nw": 5, "p6": 11.3, "p7": 11.2, "px": 102.14, "hw": 4.8, "vol": 103.1}, {"k": 202207, "n6": 15.8, "n7": 6.1, "t6": 23.8, "t7": 10.3, "nw": 4, "p6": 11.55, "p7": 12.43, "px": 83.92, "hw": 4.8, "vol": 112.3}, {"k": 202208, "n6": 13.9, "n7": 3.6, "t6": 20.3, "t7": 5.9, "nw": 4, "p6": 9.12, "p7": 12.85, "px": 67.15, "hw": 4.85, "vol": 152.3}, {"k": 202209, "n6": 8.5, "n7": 1.7, "t6": 12.8, "t7": 3.0, "nw": 5, "p6": 8.6, "p7": 13.44, "px": 60.46, "hw": 4.8, "vol": 165.6}, {"k": 202210, "n6": 12.3, "n7": 3.2, "t6": 18.3, "t7": 5.3, "nw": 3, "p6": 4.21, "p7": 5.52, "px": 69.27, "hw": 4.72, "vol": 161.7}, {"k": 202211, "n6": 7.5, "n7": 2.2, "t6": 12.0, "t7": 3.9, "nw": 4, "p6": 17.34, "p7": 19.9, "px": 69.88, "hw": 4.64, "vol": 153.5}, {"k": 202212, "n6": 11.3, "n7": 3.4, "t6": 17.7, "t7": 5.9, "nw": 5, "p6": 13.03, "p7": 14.62, "px": 78.47, "hw": 4.59, "vol": 131.4}, {"k": 202301, "n6": 15.7, "n7": 5.8, "t6": 23.9, "t7": 9.9, "nw": 4, "p6": 15.25, "p7": 15.5, "px": 89.84, "hw": 4.81, "vol": 108.8}, {"k": 202302, "n6": 12.9, "n7": 3.9, "t6": 19.0, "t7": 6.4, "nw": 4, "p6": 12.81, "p7": 15.7, "px": 99.3, "hw": 4.94, "vol": 100.3}, {"k": 202303, "n6": 24.2, "n7": 9.5, "t6": 34.1, "t7": 15.0, "nw": 5, "p6": 7.3, "p7": 5.27, "px": 120.16, "hw": 5.0, "vol": 110.4}, {"k": 202304, "n6": 17.9, "n7": 8.0, "t6": 27.5, "t7": 13.7, "nw": 4, "p6": 9.22, "p7": 8.4, "px": 115.11, "hw": 4.93, "vol": 98.1}, {"k": 202305, "n6": 12.3, "n7": 4.9, "t6": 19.6, "t7": 8.7, "nw": 4, "p6": 22.5, "p7": 22.44, "px": 107.37, "hw": 4.72, "vol": 102.2}, {"k": 202306, "n6": 13.0, "n7": 5.4, "t6": 21.1, "t7": 9.8, "nw": 5, "p6": 19.23, "p7": 19.81, "px": 97.19, "hw": 4.51, "vol": 113.1}, {"k": 202307, "n6": 8.6, "n7": 2.5, "t6": 14.4, "t7": 4.9, "nw": 4, "p6": 40.12, "p7": 44.83, "px": 86.48, "hw": 4.54, "vol": 114.2}, {"k": 202308, "n6": 5.5, "n7": 1.4, "t6": 8.8, "t7": 2.6, "nw": 5, "p6": 34.2, "p7": 44.31, "px": 72.86, "hw": 4.63, "vol": 154.3}, {"k": 202309, "n6": 7.7, "n7": 1.2, "t6": 12.1, "t7": 2.2, "nw": 4, "p6": 15.68, "p7": 32.98, "px": 73.7, "hw": 4.47, "vol": 158.0}, {"k": 202310, "n6": 10.4, "n7": 2.8, "t6": 15.9, "t7": 4.8, "nw": 4, "p6": 3.19, "p7": 4.77, "px": 79.95, "hw": 4.83, "vol": 165.5}, {"k": 202311, "n6": 10.3, "n7": 2.3, "t6": 15.6, "t7": 3.9, "nw": 5, "p6": 4.51, "p7": 6.69, "px": 78.67, "hw": 4.82, "vol": 153.6}, {"k": 202312, "n6": 9.1, "n7": 2.8, "t6": 14.4, "t7": 5.1, "nw": 4, "p6": 13.23, "p7": 17.51, "px": 87.33, "hw": 4.72, "vol": 124.3}, {"k": 202401, "n6": 9.6, "n7": 3.6, "t6": 15.4, "t7": 6.4, "nw": 4, "p6": 39.89, "p7": 41.82, "px": 104.65, "hw": 4.64, "vol": 113.9}, {"k": 202402, "n6": 10.8, "n7": 3.1, "t6": 16.8, "t7": 5.5, "nw": 5, "p6": 21.1, "p7": 24.06, "px": 110.23, "hw": 4.63, "vol": 96.7}, {"k": 202403, "n6": 16.6, "n7": 7.1, "t6": 25.0, "t7": 11.9, "nw": 4, "p6": 5.37, "p7": 4.26, "px": 112.91, "hw": 4.93, "vol": 101.4}, {"k": 202404, "n6": 17.7, "n7": 5.0, "t6": 25.7, "t7": 8.2, "nw": 4, "p6": 3.8, "p7": 2.43, "px": 128.66, "hw": 4.93, "vol": 94.6}, {"k": 202405, "n6": 16.3, "n7": 5.6, "t6": 24.2, "t7": 9.4, "nw": 5, "p6": 10.16, "p7": 7.49, "px": 121.05, "hw": 4.99, "vol": 97.6}, {"k": 202406, "n6": 8.9, "n7": 2.8, "t6": 14.1, "t7": 5.0, "nw": 4, "p6": 4.35, "p7": 1.1, "px": 79.64, "hw": 4.86, "vol": 110.6}, {"k": 202407, "n6": 7.4, "n7": 2.2, "t6": 11.9, "t7": 4.1, "nw": 4, "p6": 5.23, "p7": 3.54, "px": 75.48, "hw": 4.82, "vol": 132.7}, {"k": 202408, "n6": 3.0, "n7": 0.2, "t6": 5.2, "t7": 0.5, "nw": 4, "p6": 10.65, "p7": 13.29, "px": 71.36, "hw": 4.61, "vol": 148.5}, {"k": 202409, "n6": 1.0, "n7": 0.0, "t6": 1.7, "t7": 0.0, "nw": 4, "p6": 18.35, "p7": null, "px": 66.92, "hw": 4.26, "vol": 179.5}, {"k": 202410, "n6": 2.2, "n7": 0.4, "t6": 3.8, "t7": 0.8, "nw": 5, "p6": 16.36, "p7": 13.6, "px": 68.3, "hw": 4.32, "vol": 173.8}, {"k": 202411, "n6": 3.2, "n7": 0.2, "t6": 5.4, "t7": 0.5, "nw": 4, "p6": 28.5, "p7": 33.05, "px": 77.47, "hw": 4.33, "vol": 153.8}, {"k": 202412, "n6": 5.0, "n7": 1.0, "t6": 8.3, "t7": 1.9, "nw": 4, "p6": 41.35, "p7": 50.07, "px": 91.92, "hw": 4.47, "vol": 124.7}, {"k": 202501, "n6": 9.6, "n7": 2.8, "t6": 14.9, "t7": 4.9, "nw": 5, "p6": 25.72, "p7": 31.77, "px": 103.94, "hw": 4.64, "vol": 112.0}, {"k": 202502, "n6": 9.0, "n7": 2.2, "t6": 13.8, "t7": 3.9, "nw": 4, "p6": 9.38, "p7": 11.71, "px": 88.38, "hw": 4.68, "vol": 105.5}, {"k": 202503, "n6": 9.5, "n7": 2.5, "t6": 14.5, "t7": 4.3, "nw": 4, "p6": 3.85, "p7": 4.22, "px": 81.98, "hw": 4.94, "vol": 129.0}, {"k": 202504, "n6": 20.7, "n7": 8.0, "t6": 29.2, "t7": 12.6, "nw": 3, "p6": -2.02, "p7": -3.18, "px": 85.46, "hw": 5.17, "vol": 126.4}, {"k": 202505, "n6": 16.5, "n7": 6.8, "t6": 25.4, "t7": 11.7, "nw": 4, "p6": -2.02, "p7": -3.62, "px": 68.42, "hw": 5.09, "vol": 132.8}, {"k": 202506, "n6": 9.8, "n7": 3.0, "t6": 15.0, "t7": 5.2, "nw": 4, "p6": 3.31, "p7": 3.28, "px": 70.19, "hw": 4.86, "vol": 137.4}, {"k": 202507, "n6": 9.0, "n7": 2.4, "t6": 13.8, "t7": 4.2, "nw": 5, "p6": 6.29, "p7": 7.37, "px": 59.93, "hw": 4.8, "vol": 163.8}, {"k": 202508, "n6": 7.2, "n7": 1.0, "t6": 11.1, "t7": 1.7, "nw": 4, "p6": 7.68, "p7": 10.62, "px": 57.78, "hw": 4.71, "vol": 176.2}, {"k": 202509, "n6": 7.0, "n7": 1.0, "t6": 10.9, "t7": 1.8, "nw": 4, "p6": 8.95, "p7": 11.84, "px": 71.38, "hw": 4.57, "vol": 166.4}, {"k": 202510, "n6": 13.2, "n7": 3.4, "t6": 19.6, "t7": 5.7, "nw": 5, "p6": 3.36, "p7": 4.62, "px": 73.85, "hw": 4.6, "vol": 176.2}, {"k": 202511, "n6": 16.2, "n7": 4.8, "t6": 24.2, "t7": 7.9, "nw": 4, "p6": 0.19, "p7": -0.38, "px": 78.1, "hw": 4.73, "vol": 151.6}, {"k": 202512, "n6": 19.0, "n7": 6.5, "t6": 28.1, "t7": 10.8, "nw": 4, "p6": 0.78, "p7": -0.4, "px": 91.23, "hw": 4.95, "vol": 135.1}, {"k": 202601, "n6": 19.8, "n7": 7.2, "t6": 29.1, "t7": 11.9, "nw": 5, "p6": 0.3, "p7": -1.27, "px": 83.63, "hw": 5.28, "vol": 133.4}, {"k": 202602, "n6": 20.5, "n7": 8.2, "t6": 29.2, "t7": 13.2, "nw": 4, "p6": -2.04, "p7": -3.39, "px": 85.43, "hw": 5.21, "vol": 110.9}, {"k": 202603, "n6": 24.2, "n7": 9.8, "t6": 34.4, "t7": 15.5, "nw": 4, "p6": -3.5, "p7": -6.22, "px": 91.15, "hw": 5.41, "vol": 123.6}, {"k": 202604, "n6": 17.4, "n7": 6.8, "t6": 26.0, "t7": 11.4, "nw": 5, "p6": -1.31, "p7": -3.1, "px": 78.72, "hw": 5.26, "vol": 118.2}, {"k": 202605, "n6": 21.5, "n7": 9.0, "t6": 31.0, "t7": 14.6, "nw": 4, "p6": -1.32, "p7": -2.87, "px": 73.42, "hw": 5.22, "vol": 131.0}, {"k": 202606, "n6": 14.0, "n7": 4.2, "t6": 21.3, "t7": 7.4, "nw": 4, "p6": 1.3, "p7": 1.31, "px": 66.08, "hw": 4.92, "vol": 153.1}, {"k": 202607, "n6": 17.5, "n7": 5.0, "t6": 25.1, "t7": 8.1, "nw": 4, "p6": 3.29, "p7": 3.99, "px": 64.84}], "years": [{"y": 2018, "hw": 4.79, "vol": 1234.0, "n6": 13.55, "n7": 5.1, "t6": 20.32, "t7": 8.57, "p6": 7.5, "p7": 8.91, "px": 59.06, "months": 12}, {"y": 2019, "hw": 4.73, "vol": 1335.0, "n6": 10.59, "n7": 4.25, "t6": 16.52, "t7": 7.44, "p6": 9.55, "p7": 10.14, "px": 57.56, "months": 12}, {"y": 2020, "hw": 4.75, "vol": 1362.0, "n6": 12.62, "n7": 4.28, "t6": 18.92, "t7": 7.22, "p6": 5.43, "p7": 5.79, "px": 53.8, "months": 12}, {"y": 2021, "hw": 4.93, "vol": 1531.0, "n6": 17.17, "n7": 6.38, "t6": 25.25, "t7": 10.55, "p6": 4.54, "p7": 4.3, "px": 57.05, "months": 12}, {"y": 2022, "hw": 4.84, "vol": 1516.0, "n6": 16.52, "n7": 6.29, "t6": 24.23, "t7": 10.23, "p6": 8.99, "p7": 10.03, "px": 82.03, "months": 12}, {"y": 2023, "hw": 4.73, "vol": 1503.0, "n6": 12.3, "n7": 4.21, "t6": 18.87, "t7": 7.25, "p6": 16.44, "p7": 19.85, "px": 92.33, "months": 12}, {"y": 2024, "hw": 4.59, "vol": 1528.0, "n6": 8.47, "n7": 2.6, "t6": 13.12, "t7": 4.52, "p6": 17.09, "p7": 17.7, "px": 92.38, "months": 12}, {"y": 2025, "hw": 4.79, "vol": 1712.0, "n6": 12.22, "n7": 3.7, "t6": 18.38, "t7": 6.22, "p6": 5.46, "p7": 6.49, "px": 77.55, "months": 12}, {"y": 2026, "hw": 5.2, "vol": 770.0, "n6": 19.27, "n7": 7.17, "t6": 28.01, "t7": 11.73, "p6": -0.47, "p7": -1.65, "px": 77.61, "months": 6}]};
+const EMBEDDED_CALIBRE = {"months": [{"k": 201712, "n6": 11.0, "n7": 4.0, "t6": 18.0, "t7": 7.4, "nw": 1, "p6": 8.78, "p7": 9.75, "px": 51.56, "hw": 4.85, "vol": 102.7}, {"k": 201801, "n6": 14.1, "n7": 5.6, "t6": 21.4, "t7": 9.5, "nw": 4, "p6": 4.92, "p7": 4.85, "px": 53.47, "hw": 4.88, "vol": 100.7}, {"k": 201802, "n6": 16.6, "n7": 6.0, "t6": 24.5, "t7": 10.0, "nw": 4, "p6": 5.03, "p7": 5.39, "px": 54.27, "hw": 4.97, "vol": 84.2}, {"k": 201803, "n6": 24.7, "n7": 11.1, "t6": 35.1, "t7": 17.5, "nw": 5, "p6": -0.2, "p7": -0.8, "px": 69.52, "hw": 5.03, "vol": 90.8}, {"k": 201804, "n6": 20.7, "n7": 8.2, "t6": 30.1, "t7": 13.5, "nw": 4, "p6": -0.14, "p7": -0.58, "px": 69.22, "hw": 4.92, "vol": 87.5}, {"k": 201805, "n6": 20.1, "n7": 8.1, "t6": 29.7, "t7": 13.4, "nw": 5, "p6": 2.66, "p7": 1.87, "px": 74.38, "hw": 4.78, "vol": 91.6}, {"k": 201806, "n6": 15.6, "n7": 6.1, "t6": 23.7, "t7": 10.5, "nw": 4, "p6": 4.31, "p7": 4.63, "px": 59.01, "hw": 4.78, "vol": 95.8}, {"k": 201807, "n6": 13.1, "n7": 4.8, "t6": 20.2, "t7": 8.3, "nw": 4, "p6": 5.7, "p7": 6.07, "px": 52.69, "hw": 4.78, "vol": 106.8}, {"k": 201808, "n6": 7.8, "n7": 2.1, "t6": 12.3, "t7": 3.8, "nw": 5, "p6": 12.41, "p7": 15.32, "px": 51.42, "hw": 4.81, "vol": 119.4}, {"k": 201809, "n6": 7.7, "n7": 1.9, "t6": 11.9, "t7": 3.4, "nw": 4, "p6": 17.48, "p7": 21.5, "px": 58.75, "hw": 4.75, "vol": 104.7}, {"k": 201810, "n6": 6.3, "n7": 2.1, "t6": 10.1, "t7": 3.8, "nw": 4, "p6": 15.99, "p7": 20.78, "px": 55.03, "hw": 4.66, "vol": 130.3}, {"k": 201811, "n6": 6.2, "n7": 2.1, "t6": 9.9, "t7": 3.8, "nw": 5, "p6": 12.06, "p7": 14.8, "px": 52.76, "hw": 4.59, "vol": 119.8}, {"k": 201812, "n6": 9.7, "n7": 3.1, "t6": 15.0, "t7": 5.4, "nw": 4, "p6": 9.74, "p7": 13.04, "px": 58.22, "hw": 4.73, "vol": 102.5}, {"k": 201901, "n6": 13.3, "n7": 4.8, "t6": 20.0, "t7": 8.1, "nw": 5, "p6": 4.43, "p7": 5.27, "px": 59.14, "hw": 4.83, "vol": 105.2}, {"k": 201902, "n6": 16.5, "n7": 6.3, "t6": 24.3, "t7": 10.5, "nw": 4, "p6": 1.7, "p7": 1.76, "px": 57.42, "hw": 4.89, "vol": 92.6}, {"k": 201903, "n6": 16.9, "n7": 6.9, "t6": 25.2, "t7": 11.6, "nw": 4, "p6": 2.13, "p7": 1.67, "px": 68.14, "hw": 4.88, "vol": 95.5}, {"k": 201904, "n6": 15.1, "n7": 7.5, "t6": 23.6, "t7": 12.9, "nw": 4, "p6": 3.0, "p7": 2.23, "px": 67.75, "hw": 4.84, "vol": 104.6}, {"k": 201905, "n6": 9.7, "n7": 4.5, "t6": 15.7, "t7": 8.2, "nw": 5, "p6": 10.97, "p7": 11.11, "px": 58.08, "hw": 4.72, "vol": 101.2}, {"k": 201906, "n6": 15.0, "n7": 8.0, "t6": 24.1, "t7": 14.2, "nw": 4, "p6": 6.51, "p7": 5.68, "px": 60.92, "hw": 4.75, "vol": 97.0}, {"k": 201907, "n6": 9.0, "n7": 3.2, "t6": 14.5, "t7": 5.9, "nw": 4, "p6": 9.44, "p7": 9.93, "px": 56.3, "hw": 4.58, "vol": 110.8}, {"k": 201908, "n6": 5.9, "n7": 1.9, "t6": 9.5, "t7": 3.4, "nw": 5, "p6": 22.28, "p7": 24.04, "px": 48.26, "hw": 4.62, "vol": 126.4}, {"k": 201909, "n6": 5.1, "n7": 1.4, "t6": 8.3, "t7": 2.6, "nw": 4, "p6": 18.38, "p7": 20.75, "px": 42.49, "hw": 4.7, "vol": 132.8}, {"k": 201910, "n6": 6.4, "n7": 2.1, "t6": 10.6, "t7": 3.9, "nw": 5, "p6": 11.27, "p7": 12.66, "px": 46.3, "hw": 4.68, "vol": 143.9}, {"k": 201911, "n6": 6.8, "n7": 2.1, "t6": 10.8, "t7": 3.9, "nw": 4, "p6": 7.95, "p7": 8.72, "px": 56.15, "hw": 4.71, "vol": 119.2}, {"k": 201912, "n6": 7.4, "n7": 2.3, "t6": 11.6, "t7": 4.1, "nw": 4, "p6": 16.59, "p7": 17.84, "px": 69.8, "hw": 4.72, "vol": 105.7}, {"k": 202001, "n6": 8.6, "n7": 2.6, "t6": 13.4, "t7": 4.5, "nw": 5, "p6": 14.99, "p7": 16.45, "px": 75.7, "hw": 4.71, "vol": 100.9}, {"k": 202002, "n6": 16.4, "n7": 5.1, "t6": 23.6, "t7": 8.3, "nw": 4, "p6": 1.11, "p7": 1.49, "px": 66.42, "hw": 4.98, "vol": 95.7}, {"k": 202003, "n6": 15.5, "n7": 5.7, "t6": 23.2, "t7": 9.5, "nw": 4, "p6": -2.13, "p7": -3.93, "px": 61.07, "hw": 4.97, "vol": 103.4}, {"k": 202004, "n6": 21.9, "n7": 8.5, "t6": 30.9, "t7": 13.4, "nw": 5, "p6": -3.42, "p7": -4.21, "px": 50.71, "hw": 5.2, "vol": 102.0}, {"k": 202005, "n6": 14.8, "n7": 7.3, "t6": 23.7, "t7": 13.0, "nw": 4, "p6": 0.7, "p7": -1.28, "px": 57.85, "hw": 4.71, "vol": 96.9}, {"k": 202006, "n6": 16.0, "n7": 6.5, "t6": 24.5, "t7": 11.2, "nw": 4, "p6": 4.94, "p7": 3.73, "px": 63.78, "hw": 4.57, "vol": 100.1}, {"k": 202007, "n6": 9.3, "n7": 2.5, "t6": 14.1, "t7": 4.3, "nw": 5, "p6": 13.65, "p7": 15.01, "px": 49.73, "hw": 4.63, "vol": 110.9}, {"k": 202008, "n6": 8.3, "n7": 1.4, "t6": 12.6, "t7": 2.4, "nw": 3, "p6": 11.45, "p7": 14.66, "px": 45.92, "hw": 4.62, "vol": 116.4}, {"k": 202009, "n6": 5.8, "n7": 1.2, "t6": 9.0, "t7": 2.2, "nw": 2, "p6": 15.37, "p7": 17.29, "px": 44.95, "hw": 4.56, "vol": 136.1}, {"k": 202010, "n6": 7.9, "n7": 2.1, "t6": 12.3, "t7": 3.6, "nw": 3, "p6": 6.7, "p7": 7.74, "px": 43.38, "hw": 4.69, "vol": 140.8}, {"k": 202011, "n6": 11.6, "n7": 3.9, "t6": 17.7, "t7": 6.7, "nw": 4, "p6": 1.53, "p7": 2.06, "px": 42.16, "hw": 4.67, "vol": 129.7}, {"k": 202012, "n6": 15.3, "n7": 4.6, "t6": 22.0, "t7": 7.5, "nw": 5, "p6": 0.22, "p7": 0.52, "px": 43.95, "hw": 4.88, "vol": 129.6}, {"k": 202101, "n6": 23.1, "n7": 8.7, "t6": 32.1, "t7": 13.4, "nw": 4, "p6": -1.59, "p7": -2.4, "px": 44.2, "hw": 5.08, "vol": 113.7}, {"k": 202102, "n6": 27.5, "n7": 10.0, "t6": 36.9, "t7": 14.9, "nw": 4, "p6": -1.23, "p7": -2.09, "px": 48.49, "hw": 5.23, "vol": 110.1}, {"k": 202103, "n6": 23.1, "n7": 9.6, "t6": 32.6, "t7": 15.0, "nw": 4, "p6": -0.93, "p7": -2.44, "px": 61.83, "hw": 5.11, "vol": 128.3}, {"k": 202104, "n6": 14.5, "n7": 5.6, "t6": 21.6, "t7": 9.3, "nw": 3, "p6": 7.27, "p7": 6.22, "px": 63.47, "hw": 4.89, "vol": 98.3}, {"k": 202105, "p6": null, "p7": null, "px": 67.52, "hw": 4.93, "vol": 102.5}, {"k": 202106, "n6": 11.3, "n7": 4.6, "t6": 18.3, "t7": 8.5, "nw": 4, "p6": 8.75, "p7": 6.74, "px": 57.69, "hw": 4.7, "vol": 116.2}, {"k": 202107, "n6": 10.4, "n7": 3.6, "t6": 16.4, "t7": 6.4, "nw": 5, "p6": 11.05, "p7": 10.53, "px": 60.0, "hw": 4.76, "vol": 116.1}, {"k": 202108, "n6": 11.0, "n7": 3.4, "t6": 16.6, "t7": 5.8, "nw": 4, "p6": 9.08, "p7": 10.47, "px": 54.0, "hw": 4.84, "vol": 144.5}, {"k": 202109, "n6": 15.3, "n7": 4.4, "t6": 22.0, "t7": 7.2, "nw": 5, "p6": 4.49, "p7": 5.49, "px": 49.78, "hw": 4.86, "vol": 164.7}, {"k": 202110, "n6": 15.9, "n7": 6.9, "t6": 28.4, "t7": 13.9, "nw": 4, "p6": 7.52, "p7": 9.27, "px": 55.51, "hw": 4.87, "vol": 149.3}, {"k": 202111, "n6": 19.8, "n7": 6.3, "t6": 27.7, "t7": 9.9, "nw": 4, "p6": 1.49, "p7": 1.82, "px": 56.16, "hw": 5.0, "vol": 154.0}, {"k": 202112, "n6": 17.0, "n7": 7.1, "t6": 25.1, "t7": 11.8, "nw": 5, "p6": 3.99, "p7": 3.65, "px": 65.94, "hw": 4.92, "vol": 133.4}, {"k": 202201, "n6": 19.8, "n7": 7.7, "t6": 28.4, "t7": 12.2, "nw": 4, "p6": 7.22, "p7": 7.36, "px": 69.78, "hw": 5.04, "vol": 118.2}, {"k": 202202, "n6": 23.4, "n7": 11.8, "t6": 33.6, "t7": 18.5, "nw": 4, "p6": 4.88, "p7": 4.02, "px": 83.85, "hw": 5.09, "vol": 105.5}, {"k": 202203, "n6": 27.0, "n7": 11.9, "t6": 35.7, "t7": 17.6, "nw": 5, "p6": 2.22, "p7": 1.94, "px": 83.5, "hw": 5.18, "vol": 120.3}, {"k": 202204, "n6": 22.0, "n7": 9.5, "t6": 32.8, "t7": 16.0, "nw": 4, "p6": 5.08, "p7": 4.35, "px": 110.85, "hw": 4.98, "vol": 91.3}, {"k": 202205, "n6": 18.5, "n7": 7.1, "t6": 27.8, "t7": 11.9, "nw": 4, "p6": 13.28, "p7": 12.74, "px": 105.14, "hw": 4.81, "vol": 100.6}, {"k": 202206, "n6": 18.3, "n7": 7.3, "t6": 27.5, "t7": 12.3, "nw": 5, "p6": 11.3, "p7": 11.2, "px": 102.14, "hw": 4.8, "vol": 103.1}, {"k": 202207, "n6": 15.8, "n7": 6.1, "t6": 23.8, "t7": 10.3, "nw": 4, "p6": 11.55, "p7": 12.43, "px": 83.92, "hw": 4.8, "vol": 112.3}, {"k": 202208, "n6": 13.9, "n7": 3.6, "t6": 20.3, "t7": 5.9, "nw": 4, "p6": 9.12, "p7": 12.85, "px": 67.15, "hw": 4.85, "vol": 152.3}, {"k": 202209, "n6": 8.5, "n7": 1.7, "t6": 12.8, "t7": 3.0, "nw": 5, "p6": 8.6, "p7": 13.44, "px": 60.46, "hw": 4.8, "vol": 165.6}, {"k": 202210, "n6": 12.3, "n7": 3.2, "t6": 18.3, "t7": 5.3, "nw": 3, "p6": 4.21, "p7": 5.52, "px": 69.27, "hw": 4.72, "vol": 161.7}, {"k": 202211, "n6": 7.5, "n7": 2.2, "t6": 12.0, "t7": 3.9, "nw": 4, "p6": 17.34, "p7": 19.9, "px": 69.88, "hw": 4.64, "vol": 153.5}, {"k": 202212, "n6": 11.3, "n7": 3.4, "t6": 17.7, "t7": 5.9, "nw": 5, "p6": 13.03, "p7": 14.62, "px": 78.47, "hw": 4.59, "vol": 131.4}, {"k": 202301, "n6": 15.7, "n7": 5.8, "t6": 23.9, "t7": 9.9, "nw": 4, "p6": 15.25, "p7": 15.5, "px": 89.84, "hw": 4.81, "vol": 108.8}, {"k": 202302, "n6": 12.9, "n7": 3.9, "t6": 19.0, "t7": 6.4, "nw": 4, "p6": 12.81, "p7": 15.7, "px": 99.3, "hw": 4.94, "vol": 100.3}, {"k": 202303, "n6": 24.2, "n7": 9.5, "t6": 34.1, "t7": 15.0, "nw": 5, "p6": 7.3, "p7": 5.27, "px": 120.16, "hw": 5.0, "vol": 110.4}, {"k": 202304, "n6": 17.9, "n7": 8.0, "t6": 27.5, "t7": 13.7, "nw": 4, "p6": 9.22, "p7": 8.4, "px": 115.11, "hw": 4.93, "vol": 98.1}, {"k": 202305, "n6": 12.3, "n7": 4.9, "t6": 19.6, "t7": 8.7, "nw": 4, "p6": 22.5, "p7": 22.44, "px": 107.37, "hw": 4.72, "vol": 102.2}, {"k": 202306, "n6": 13.0, "n7": 5.4, "t6": 21.1, "t7": 9.8, "nw": 5, "p6": 19.23, "p7": 19.81, "px": 97.19, "hw": 4.51, "vol": 113.1}, {"k": 202307, "n6": 8.6, "n7": 2.5, "t6": 14.4, "t7": 4.9, "nw": 4, "p6": 40.12, "p7": 44.83, "px": 86.48, "hw": 4.54, "vol": 114.2}, {"k": 202308, "n6": 5.5, "n7": 1.4, "t6": 8.8, "t7": 2.6, "nw": 5, "p6": 34.2, "p7": 44.31, "px": 72.86, "hw": 4.63, "vol": 154.3}, {"k": 202309, "n6": 7.7, "n7": 1.2, "t6": 12.1, "t7": 2.2, "nw": 4, "p6": 15.68, "p7": 32.98, "px": 73.7, "hw": 4.47, "vol": 158.0}, {"k": 202310, "n6": 10.4, "n7": 2.8, "t6": 15.9, "t7": 4.8, "nw": 4, "p6": 3.19, "p7": 4.77, "px": 79.95, "hw": 4.83, "vol": 165.5}, {"k": 202311, "n6": 10.3, "n7": 2.3, "t6": 15.6, "t7": 3.9, "nw": 5, "p6": 4.51, "p7": 6.69, "px": 78.67, "hw": 4.82, "vol": 153.6}, {"k": 202312, "n6": 9.1, "n7": 2.8, "t6": 14.4, "t7": 5.1, "nw": 4, "p6": 13.23, "p7": 17.51, "px": 87.33, "hw": 4.72, "vol": 124.3}, {"k": 202401, "n6": 9.6, "n7": 3.6, "t6": 15.4, "t7": 6.4, "nw": 4, "p6": 39.89, "p7": 41.82, "px": 104.65, "hw": 4.64, "vol": 113.9}, {"k": 202402, "n6": 10.8, "n7": 3.1, "t6": 16.8, "t7": 5.5, "nw": 5, "p6": 21.1, "p7": 24.06, "px": 110.23, "hw": 4.63, "vol": 96.7}, {"k": 202403, "n6": 16.6, "n7": 7.1, "t6": 25.0, "t7": 11.9, "nw": 4, "p6": 5.37, "p7": 4.26, "px": 112.91, "hw": 4.93, "vol": 101.4}, {"k": 202404, "n6": 17.7, "n7": 5.0, "t6": 25.7, "t7": 8.2, "nw": 4, "p6": 3.8, "p7": 2.43, "px": 128.66, "hw": 4.93, "vol": 94.6}, {"k": 202405, "n6": 16.3, "n7": 5.6, "t6": 24.2, "t7": 9.4, "nw": 5, "p6": 10.16, "p7": 7.49, "px": 121.05, "hw": 4.99, "vol": 97.6}, {"k": 202406, "n6": 8.9, "n7": 2.8, "t6": 14.1, "t7": 5.0, "nw": 4, "p6": 4.35, "p7": 1.1, "px": 79.64, "hw": 4.86, "vol": 110.6}, {"k": 202407, "n6": 7.4, "n7": 2.2, "t6": 11.9, "t7": 4.1, "nw": 4, "p6": 5.23, "p7": 3.54, "px": 75.48, "hw": 4.82, "vol": 132.7}, {"k": 202408, "n6": 3.0, "n7": 0.2, "t6": 5.2, "t7": 0.5, "nw": 4, "p6": 10.65, "p7": 13.29, "px": 71.36, "hw": 4.61, "vol": 148.5}, {"k": 202409, "n6": 1.0, "n7": 0.0, "t6": 1.7, "t7": 0.0, "nw": 4, "p6": 18.35, "p7": null, "px": 66.92, "hw": 4.26, "vol": 179.5}, {"k": 202410, "n6": 2.2, "n7": 0.4, "t6": 3.8, "t7": 0.8, "nw": 5, "p6": 16.36, "p7": 13.6, "px": 68.3, "hw": 4.32, "vol": 173.8}, {"k": 202411, "n6": 3.2, "n7": 0.2, "t6": 5.4, "t7": 0.5, "nw": 4, "p6": 28.5, "p7": 33.05, "px": 77.47, "hw": 4.33, "vol": 153.8}, {"k": 202412, "n6": 5.0, "n7": 1.0, "t6": 8.3, "t7": 1.9, "nw": 4, "p6": 41.35, "p7": 50.07, "px": 91.92, "hw": 4.47, "vol": 124.7}, {"k": 202501, "n6": 9.6, "n7": 2.8, "t6": 14.9, "t7": 4.9, "nw": 5, "p6": 25.72, "p7": 31.77, "px": 103.94, "hw": 4.64, "vol": 112.0}, {"k": 202502, "n6": 9.0, "n7": 2.2, "t6": 13.8, "t7": 3.9, "nw": 4, "p6": 9.38, "p7": 11.71, "px": 88.38, "hw": 4.68, "vol": 105.5}, {"k": 202503, "n6": 9.5, "n7": 2.5, "t6": 14.5, "t7": 4.3, "nw": 4, "p6": 3.85, "p7": 4.22, "px": 81.98, "hw": 4.94, "vol": 129.0}, {"k": 202504, "n6": 20.7, "n7": 8.0, "t6": 29.2, "t7": 12.6, "nw": 3, "p6": -2.02, "p7": -3.18, "px": 85.46, "hw": 5.17, "vol": 126.4}, {"k": 202505, "n6": 16.5, "n7": 6.8, "t6": 25.4, "t7": 11.7, "nw": 4, "p6": -2.02, "p7": -3.62, "px": 68.42, "hw": 5.09, "vol": 132.8}, {"k": 202506, "n6": 9.8, "n7": 3.0, "t6": 15.0, "t7": 5.2, "nw": 4, "p6": 3.31, "p7": 3.28, "px": 70.19, "hw": 4.86, "vol": 137.4}, {"k": 202507, "n6": 9.0, "n7": 2.4, "t6": 13.8, "t7": 4.2, "nw": 5, "p6": 6.29, "p7": 7.37, "px": 59.93, "hw": 4.8, "vol": 163.8}, {"k": 202508, "n6": 7.2, "n7": 1.0, "t6": 11.1, "t7": 1.7, "nw": 4, "p6": 7.68, "p7": 10.62, "px": 57.78, "hw": 4.71, "vol": 176.2}, {"k": 202509, "n6": 7.0, "n7": 1.0, "t6": 10.9, "t7": 1.8, "nw": 4, "p6": 8.95, "p7": 11.84, "px": 71.38, "hw": 4.57, "vol": 166.4}, {"k": 202510, "n6": 13.2, "n7": 3.4, "t6": 19.6, "t7": 5.7, "nw": 5, "p6": 3.36, "p7": 4.62, "px": 73.85, "hw": 4.6, "vol": 176.2}, {"k": 202511, "n6": 16.2, "n7": 4.8, "t6": 24.2, "t7": 7.9, "nw": 4, "p6": 0.19, "p7": -0.38, "px": 78.1, "hw": 4.73, "vol": 151.6}, {"k": 202512, "n6": 19.0, "n7": 6.5, "t6": 28.1, "t7": 10.8, "nw": 4, "p6": 0.78, "p7": -0.4, "px": 91.23, "hw": 4.95, "vol": 135.1}, {"k": 202601, "n6": 19.8, "n7": 7.2, "t6": 29.1, "t7": 11.9, "nw": 5, "p6": 0.3, "p7": -1.27, "px": 83.63, "hw": 5.28, "vol": 133.4}, {"k": 202602, "n6": 20.5, "n7": 8.2, "t6": 29.2, "t7": 13.2, "nw": 4, "p6": -2.04, "p7": -3.39, "px": 85.43, "hw": 5.21, "vol": 110.9}, {"k": 202603, "n6": 24.2, "n7": 9.8, "t6": 34.4, "t7": 15.5, "nw": 4, "p6": -3.5, "p7": -6.22, "px": 91.15, "hw": 5.41, "vol": 123.6}, {"k": 202604, "n6": 17.4, "n7": 6.8, "t6": 26.0, "t7": 11.4, "nw": 5, "p6": -1.31, "p7": -3.1, "px": 78.72, "hw": 5.26, "vol": 118.2}, {"k": 202605, "n6": 21.5, "n7": 9.0, "t6": 31.0, "t7": 14.6, "nw": 4, "p6": -1.32, "p7": -2.87, "px": 73.42, "hw": 5.22, "vol": 131.0}, {"k": 202606, "n6": 14.0, "n7": 4.2, "t6": 21.3, "t7": 7.4, "nw": 4, "p6": 1.3, "p7": 1.31, "px": 66.08, "hw": 4.92, "vol": 153.1}, {"k": 202607, "n6": 17.5, "n7": 5.0, "t6": 25.1, "t7": 8.1, "nw": 4, "p6": 3.29, "p7": 3.99, "px": 64.84}], "years": [{"y": 2018, "hw": 4.79, "vol": 1234.0, "n6": 13.55, "n7": 5.1, "t6": 20.32, "t7": 8.57, "p6": 7.5, "p7": 8.91, "px": 59.06, "months": 12}, {"y": 2019, "hw": 4.73, "vol": 1335.0, "n6": 10.59, "n7": 4.25, "t6": 16.52, "t7": 7.44, "p6": 9.55, "p7": 10.14, "px": 57.56, "months": 12}, {"y": 2020, "hw": 4.75, "vol": 1362.0, "n6": 12.62, "n7": 4.28, "t6": 18.92, "t7": 7.22, "p6": 5.43, "p7": 5.79, "px": 53.8, "months": 12}, {"y": 2021, "hw": 4.93, "vol": 1531.0, "n6": 17.17, "n7": 6.38, "t6": 25.25, "t7": 10.55, "p6": 4.54, "p7": 4.3, "px": 57.05, "months": 12}, {"y": 2022, "hw": 4.84, "vol": 1516.0, "n6": 16.52, "n7": 6.29, "t6": 24.23, "t7": 10.23, "p6": 8.99, "p7": 10.03, "px": 82.03, "months": 12}, {"y": 2023, "hw": 4.73, "vol": 1503.0, "n6": 12.3, "n7": 4.21, "t6": 18.87, "t7": 7.25, "p6": 16.44, "p7": 19.85, "px": 92.33, "months": 12}, {"y": 2024, "hw": 4.59, "vol": 1528.0, "n6": 8.47, "n7": 2.6, "t6": 13.12, "t7": 4.52, "p6": 17.09, "p7": 17.7, "px": 92.38, "months": 12}, {"y": 2025, "hw": 4.79, "vol": 1712.0, "n6": 12.22, "n7": 3.7, "t6": 18.38, "t7": 6.22, "p6": 5.46, "p7": 6.49, "px": 77.55, "months": 12}, {"y": 2026, "hw": 5.2, "vol": 770.0, "n6": 19.27, "n7": 7.17, "t6": 28.01, "t7": 11.73, "p6": -0.47, "p7": -1.65, "px": 77.61, "months": 6}]};
+CALIBRE = EMBEDDED_CALIBRE;   // repli hors ligne
 const COHORT_COLORS = ['#2fb8a6','#ff8a65','#7ec8e3','#ffd54f','#ba68c8','#81c784','#e57373','#90a4ae','#4dd0e1','#f06292'];
 
 function renderCohortView() {
