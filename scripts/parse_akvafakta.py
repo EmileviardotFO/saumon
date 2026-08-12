@@ -169,7 +169,14 @@ def parse_monthly(path):
         L = 'A-Za-z\u00c6\u00d8\u00c5\u00e6\u00f8\u00e5'
         pat = (r'^\s*(?:(' + '|'.join(GROUPS) + r')\s+)?'
                r'([' + L + r'][' + L + r'\s\-\.]*?)\s{2,}(-?[\d\u00a0 ]+.*)$')
-        pays, groupe = [], None
+        # Le rapport ne liste pas systematiquement chaque pays : en dessous
+        # d'un seuil, le volume disparait de la liste et n'est plus visible
+        # que dans la ligne recapitulative "<Groupe> Totalt". Sommer les seuls
+        # pays nommes sous-estime donc le total reel, de facon variable d'un
+        # mois a l'autre (jusqu'a 6-7% observe). On capture ces lignes comme
+        # reference, et l'ecart residuel devient une entree 'Autres' plutot
+        # que d'etre silencieusement perdu.
+        pays, groupe, group_totals = [], None, {}
         for l in blk.split('\n'):
             mm = re.match(pat, l)
             if not mm:
@@ -177,9 +184,6 @@ def parse_monthly(path):
             if mm.group(1):
                 groupe = mm.group(1)
             land = mm.group(2).strip()
-            # Les totaux se recalculent par sommation. Attention, la mise en
-            # page varie : 'Total', 'Totalt', 'Grand Total', et parfois le nom
-            # du groupe est repete sur la ligne de total.
             # Fragments d'en-tete ou de pied de page qui passent le motif.
             if land.lower() in ('akvafakta', 'resten', 'kong', 'totalsum',
                                 'emirater', 'hovedmarked', 'land'):
@@ -187,16 +191,27 @@ def parse_monthly(path):
             # Variantes de nom pour un meme pays, harmonisees.
             land = {'Hongkong Sar': 'Hongkong',
                     'Hviterussland': 'Belarus'}.get(land, land)
-            if (land.lower() in ('total', 'totalt', 'grand total', 'sum')
-                    or land.lower().endswith(' total')
-                    or land.lower().endswith(' totalt')):
-                continue
+            is_total = (land.lower() in ('total', 'totalt', 'grand total', 'sum')
+                       or land.lower().endswith(' total')
+                       or land.lower().endswith(' totalt'))
             tail = re.sub(r'-?\s?\d+\s*%', '|', mm.group(3))
             v = [num(x) for x in re.findall(r'-?\d[\d\u00a0 ]*\d|\d', tail)]
             v = [x for x in v if x is not None]
             if len(v) < 2:
                 continue
+            if is_total:
+                if groupe and land.lower() != 'grand total':
+                    group_totals[groupe] = {'q': v[0], 'v': v[1]}
+                continue
             pays.append({'groupe': groupe, 'pays': land, 'q': v[0], 'v': v[1]})
+        # Combler l'ecart entre chaque total officiel et la somme des pays nommes.
+        for g, tot in group_totals.items():
+            sel = [p for p in pays if p['groupe'] == g]
+            sq, sv = sum(p['q'] for p in sel), sum(p['v'] for p in sel)
+            dq, dv = tot['q'] - sq, tot['v'] - sv
+            if dq > 0.5:
+                pays.append({'groupe': g, 'pays': 'Autres', 'q': round(dq, 1),
+                            'v': round(dv, 1), 'unlisted': True})
         if pays:
             rec['pays'] = pays
             AGG = {'kina': ['Kina', 'Hongkong'], 'usa': ['Usa'], 'japan': ['Japan']}
