@@ -2554,6 +2554,24 @@ function renderMarketsView() {
     });
   });
 
+  // Ligne totale, sous le detail des groupes. Elle suit le filtre de groupe
+  // deja applique a 'rows' plus haut : avec "EU27 only", c'est le total EU27
+  // qui s'affiche ici, pas le total tous marches.
+  const totQ = rows.reduce((s, r) => s + r.q, 0), totV = rows.reduce((s, r) => s + r.v, 0);
+  const totPQ = rows.reduce((s, r) => s + ((bAt(r) || {}).q || 0), 0);
+  const totPV = rows.reduce((s, r) => s + ((bAt(r) || {}).v || 0), 0);
+  const trTot = document.createElement('tr');
+  trTot.className = 'sep-row';
+  trTot.style.borderTop = '2px solid var(--line)';
+  trTot.innerHTML =
+    `<td class="name"><b>Total${mktGroup !== 'all' ? ' — ' + (GRP_LABEL[mktGroup] || mktGroup) : ''}</b></td>`
+    + `<td class="mkt-c-q"><b>${num(totQ / 1000, 1)} kt</b></td><td class="mkt-c-q">${num(totPQ / 1000, 1)} kt</td>` + dcell(totQ, totPQ, 'mkt-c-q')
+    + `<td class="sep-left mkt-c-p"><b>${num(totQ > 0 ? totV / totQ : null, 2)}</b></td>`
+    + `<td class="mkt-c-p">${num(totPQ > 0 ? totPV / totPQ : null, 2)}</td>`
+    + dcell(totQ > 0 ? totV / totQ : null, totPQ > 0 ? totPV / totPQ : null, 'mkt-c-p')
+    + `<td class="sep-left mkt-c-v"><b>${num(totV / 1e6, 2)} bn</b></td><td class="mkt-c-v">${num(totPV / 1e6, 2)} bn</td>` + dcell(totV, totPV, 'mkt-c-v');
+  tb.appendChild(trTot);
+
   // ---- note
   const gr = gOrder.slice().sort((a, b) => (pcOf(b.q, b.pq) || -999) - (pcOf(a.q, a.pq) || -999));
   const pctOf = g => { const p = pcOf(g.q, g.pq); return p === null ? 'n/a' : (p >= 0 ? '+' : '') + p.toFixed(1) + '%'; };
