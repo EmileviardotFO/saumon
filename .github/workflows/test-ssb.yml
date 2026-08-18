@@ -1,0 +1,40 @@
+name: Test extracteur SSB (manuel)
+on:
+  workflow_dispatch:
+    inputs:
+      start_month:
+        description: 'Premier mois, ex 2026M07'
+        required: true
+        default: '2026M07'
+      end_month:
+        description: 'Dernier mois (optionnel, laisser vide pour un seul mois)'
+        required: false
+        default: ''
+permissions:
+  contents: write
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Lancer l'extracteur SSB
+        run: |
+          if [ -z "${{ inputs.end_month }}" ]; then
+            python3 scripts/parse_ssb.py "${{ inputs.start_month }}"
+          else
+            python3 scripts/parse_ssb.py "${{ inputs.start_month }}" "${{ inputs.end_month }}"
+          fi
+      - name: Publier data.json si le test a reussi
+        run: |
+          git config user.name  "github-actions"
+          git config user.email "actions@github.com"
+          git add data/data.json
+          if git diff --staged --quiet; then
+            echo "Aucun changement."
+          else
+            git commit -m "Test extracteur SSB ($(date +%Y-%m-%d))"
+            git push
+          fi
