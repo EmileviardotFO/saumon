@@ -20,7 +20,7 @@ Structure ecrite, un objet par mois :
 
 Table 08799 : "External trade in goods, by commodity number (HS) and
 country". Variables confirmees le 18/08/2026 :
-    Varenummer   = code douanier (HS)
+    Varekoder   = code douanier (HS)
     ImpEks       = direction, "2" = Export
     Land         = pays partenaire (codes ISO 2 lettres)
     ContentsCode = Mengde1 (quantite) / Verdi (valeur NOK) / Mengde2
@@ -72,7 +72,7 @@ def build_url(tid_values):
     commodity = ",".join(HS_SALMON)
     tid = ",".join(tid_values)
     return (f"{BASE}?lang=en"
-            f"&valueCodes[Varenummer]={commodity}"
+            f"&valueCodes[Varekoder]={commodity}"
             f"&valueCodes[ImpEks]=2"
             f"&valueCodes[Land]=*"
             f"&valueCodes[ContentsCode]=Mengde1,Verdi"
