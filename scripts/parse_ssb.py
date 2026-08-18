@@ -82,8 +82,19 @@ def build_url(tid_values):
 
 def fetch(url):
     req = urllib.request.Request(url, headers={"Accept": "application/json"})
-    with urllib.request.urlopen(req, timeout=60) as r:
-        return json.loads(r.read().decode("utf-8"))
+    try:
+        with urllib.request.urlopen(req, timeout=60) as r:
+            return json.loads(r.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        # L'API SSB explique generalement en clair, dans le corps de la
+        # reponse, quel parametre a ete rejete -- urllib le masque par
+        # defaut derriere un simple "400 Bad Request". On l'affiche ici
+        # pour ne plus avoir a deviner d'un essai a l'autre.
+        body = e.read().decode('utf-8', errors='replace')
+        print("=== Reponse d'erreur de l'API SSB ===")
+        print(body)
+        print("======================================")
+        raise
 
 
 def parse_jsonstat2(data):
