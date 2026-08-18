@@ -1,0 +1,36 @@
+name: Mise a jour de la biomasse (Fiskeridirektoratet)
+on:
+  push:
+    paths:
+      - 'xlsx/biomasse/**'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Installer les dependances
+        run: pip install pandas openpyxl
+      - name: Trouver le fichier Excel le plus recent
+        id: find
+        run: |
+          FILE=$(ls -t xlsx/biomasse/*.xlsx | head -n 1)
+          echo "file=$FILE" >> "$GITHUB_OUTPUT"
+      - name: Reconstruire records et cohort
+        run: python3 scripts/update_biomasse.py "${{ steps.find.outputs.file }}"
+      - name: Publier data.json
+        run: |
+          git config user.name  "github-actions"
+          git config user.email "actions@github.com"
+          git add data/data.json
+          if git diff --staged --quiet; then
+            echo "Aucun changement."
+          else
+            git commit -m "Biomasse mise a jour ($(date +%Y-%m-%d))"
+            git push
+          fi
