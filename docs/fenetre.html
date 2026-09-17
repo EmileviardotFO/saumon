@@ -706,7 +706,7 @@ function niceStep(hi){const raw=hi/6,mag=Math.pow(10,Math.floor(Math.log10(raw||
  const norm=raw/mag;return(norm<1.5?1:norm<3?2:norm<7?5:10)*mag;}
 
 /* ---------- selection de calibres, partagee calendrier + prime ---------- */
-const CAL_CLASSES=['5-6','6-7','7-8','8-9','9+'];
+const CAL_CLASSES=['2-3','3-4','4-5','5-6','6-7','7-8','8-9','9+'];
 let calSel=['6-7','7-8','8-9','9+'];
 
 function calLabel(sel){
@@ -740,7 +740,7 @@ function buildSeries(classes){
 // selection active -- sert uniquement a l'infobulle de detail.
 function monthBreakdown(k){
  const rows=D.distW.filter(r=>r.k===k),out={};
- ['5-6','6-7','7-8','8-9','9+'].forEach(c=>{
+ CAL_CLASSES.forEach(c=>{
   const v=rows.map(r=>r[c]).filter(x=>x!==undefined);
   out[c]=v.length?mean(v):null;
  });
@@ -845,7 +845,7 @@ function renderCalSection(){
     const c=el('circle',{cx:X(m),cy:Y(ser.y[k]),r:5,fill:col,style:'cursor:pointer'});
     c.addEventListener('mousemove',e=>{
      const bd=monthBreakdown(k);
-     let rows='';['6-7','7-8','8-9','9+'].forEach(cl=>{
+     let rows='';CAL_CLASSES.forEach(cl=>{
       if(bd[cl]===null)return;
       rows+='<div>'+cl+'&nbsp;kg&nbsp;: <b>'+bd[cl].toFixed(1)+'%</b></div>';});
      showTT(e,'<b>'+MN[m-1]+' '+yy+'</b><br>'+lbl+' sélectionné : <b>'+ser.y[k].toFixed(1)+'%</b>'
