@@ -117,6 +117,11 @@ select.ctrl{font-family:'IBM Plex Mono',monospace;font-size:12px;background:var(
     <div class="chip-group" id="calChips"></div>
     <span class="hint" id="calSelLabel"></span>
   </div>
+  <div class="ctrl-row">
+    <span class="ctrl-label">Vue</span>
+    <div class="chip-group" id="calGranChips"></div>
+    <span class="hint">Semaine&nbsp;: tendance fine, plus bruitée. Mois&nbsp;: tendance lissée.</span>
+  </div>
   <svg id="calendar" viewBox="0 0 980 380"></svg>
   <div class="legend" id="legCal"></div>
   <div style="margin:30px 0 4px">
@@ -747,6 +752,63 @@ function monthBreakdown(k){
  return out;
 }
 
+/* ---------- granularite semaine, calendrier + prime ---------- */
+let calGran='month';
+
+// Semaine ISO (lundi-dimanche) d'une date "YYYY-MM-DD". La semaine 53 est
+// repliee sur 52 pour garder un axe a largeur fixe d'une annee sur l'autre.
+function isoWeekOf(dateStr){
+ const d=new Date(dateStr+'T00:00:00Z');
+ const day=(d.getUTCDay()+6)%7;
+ d.setUTCDate(d.getUTCDate()-day+3);
+ const isoYear=d.getUTCFullYear();
+ const jan4=new Date(Date.UTC(isoYear,0,4));
+ const jan4day=(jan4.getUTCDay()+6)%7;
+ let week=1+Math.round(((d-jan4)/86400000-3+jan4day)/7);
+ if(week>52)week=52;
+ if(week<1)week=1;
+ return{isoYear,week};
+}
+
+// Equivalent hebdomadaire de buildSeries : la part de volume par calibre
+// n'existe qu'au niveau mensuel dans distW, mais priceW porte les memes
+// parts (sh_*) avec une vraie date hebdomadaire -- c'est cette source qu'on
+// utilise ici pour obtenir une vraie granularite semaine.
+function buildWeekSeries(classes){
+ const byWeek={};
+ D.priceW.forEach(r=>{
+  if(!r.d)return;
+  let has=false,v=0;
+  classes.forEach(c=>{const s=r['sh_'+c]; if(s!==undefined){has=true;v+=s;}});
+  if(!has)return;
+  const iw=isoWeekOf(r.d),k=iw.isoYear*100+iw.week;
+  (byWeek[k]||(byWeek[k]=[])).push(v);
+ });
+ const y={};Object.keys(byWeek).forEach(k=>y[k]=mean(byWeek[k]));
+ const yrs=Object.keys(y).map(k=>Math.floor(k/100));
+ const maxYear=Math.max(...yrs);
+ const seas={};
+ for(let w=1;w<=52;w++){
+  const v=Object.keys(y).filter(k=>(+k)%100===w&&Math.floor(k/100)<maxYear).map(k=>y[k]);
+  if(v.length)seas[w]={mean:mean(v),lo:Math.min(...v),hi:Math.max(...v)};
+ }
+ return{y,seas,maxYear};
+}
+
+// Detail par calibre pour une semaine ISO donnee (meme role que monthBreakdown).
+function weekBreakdown(k){
+ const rows=D.priceW.filter(r=>{
+  if(!r.d)return false;
+  const iw=isoWeekOf(r.d);
+  return(iw.isoYear*100+iw.week)===k;
+ }),out={};
+ CAL_CLASSES.forEach(c=>{
+  const v=rows.map(r=>r['sh_'+c]).filter(x=>x!==undefined);
+  out[c]=v.length?mean(v):null;
+ });
+ return out;
+}
+
 // Prix pondere par les parts reellement vendues cette semaine-la, pour un
 // groupe de calibres. Replie sur une moyenne simple si les parts manquent.
 function weightedPx(r,classes){
@@ -806,49 +868,85 @@ function buildPremSeries(classes){
  return{prem,seas,cur,curPx,pSel,pRef,maxYear};
 }
 
+// Equivalent hebdomadaire de buildPremSeries -- meme calcul, regroupe par
+// semaine ISO (via isoWeekOf sur la date reelle) plutot que par mois de
+// rattachement.
+function buildWeekPremSeries(classes){
+ const byWeek={},pxSel={},pxRef={};
+ D.priceW.forEach(r=>{
+  if(!r.d)return;
+  const sel=weightedPx(r,classes),ref=weightedPx(r,['4-5','5-6']);
+  if(sel===null||ref===null)return;
+  const iw=isoWeekOf(r.d),k=iw.isoYear*100+iw.week;
+  (byWeek[k]||(byWeek[k]=[])).push(sel-ref);
+  (pxSel[k]||(pxSel[k]=[])).push(sel);
+  (pxRef[k]||(pxRef[k]=[])).push(ref);
+ });
+ const prem={},pSel={},pRef={};
+ Object.keys(byWeek).forEach(k=>{prem[k]=mean(byWeek[k]);pSel[k]=mean(pxSel[k]);pRef[k]=mean(pxRef[k]);});
+ const yrs=Object.keys(prem).map(k=>Math.floor(k/100));
+ const maxYear=Math.max(...yrs);
+ const seas={};
+ for(let w=1;w<=52;w++){
+  const v=Object.keys(prem).filter(k=>(+k)%100===w&&Math.floor(k/100)<maxYear).map(k=>prem[k]);
+  const vs=Object.keys(pSel).filter(k=>(+k)%100===w&&Math.floor(k/100)<maxYear).map(k=>pSel[k]);
+  const vr=Object.keys(pRef).filter(k=>(+k)%100===w&&Math.floor(k/100)<maxYear).map(k=>pRef[k]);
+  if(v.length)seas[w]={mean:mean(v),lo:Math.min(...v),hi:Math.max(...v),sel:mean(vs),ref:mean(vr)};
+ }
+ const cur={},curPx={};
+ for(let w=1;w<=52;w++){const k=maxYear*100+w;
+  if(prem[k]!==undefined){cur[w]=prem[k];curPx[w]={sel:pSel[k],ref:pRef[k]};}}
+ return{prem,seas,cur,curPx,pSel,pRef,maxYear};
+}
+
 function renderCalSection(){
  document.getElementById('calSelLabel').innerHTML='Sélection actuelle : <b style="color:var(--bone)">'+calLabel(calSel)+'</b>';
  const lbl=calLabel(calSel).replace(/&nbsp;/g,' ');
- document.getElementById('calPremTitle').textContent='Combien le '+lbl+' se paie en plus, mois par mois';
+ document.getElementById('calPremTitle').textContent='Combien le '+lbl+' se paie en plus, '+(calGran==='week'?'semaine par semaine':'mois par mois');
 
 /* ---------- calendrier ---------- */
 (function(){
- const ser=buildSeries(calSel);
+ const nP=calGran==='week'?52:12;
+ const ser=calGran==='week'?buildWeekSeries(calSel):buildSeries(calSel);
+ const breakdownFn=calGran==='week'?weekBreakdown:monthBreakdown;
+ const periodLabel=i=>calGran==='month'?MN[i-1]:((i%4===1)?('S'+i):'');
+ const periodTitle=(i,yy)=>calGran==='month'?(MN[i-1]+' '+yy):('Semaine '+i+', '+yy);
+ const bandLo=calGran==='month'?7.5:7.5*52/12, bandHi=calGran==='month'?10.5:10.5*52/12;
  const s=document.getElementById('calendar');s.innerHTML='';
  const W=980,H=380,mL=52,mR=20,mT=18,mB=42;
  const pw=W-mL-mR,ph=H-mT-mB;
  const yNow=ser.maxYear;
  const allVals=[];
- for(let m=1;m<=12;m++)if(ser.seas[m])allVals.push(ser.seas[m].hi);
- [yNow-1,yNow].forEach(yy=>{for(let m=1;m<=12;m++){const k=yy*100+m;if(ser.y[k]!==undefined)allVals.push(ser.y[k]);}});
+ for(let m=1;m<=nP;m++)if(ser.seas[m])allVals.push(ser.seas[m].hi);
+ [yNow-1,yNow].forEach(yy=>{for(let m=1;m<=nP;m++){const k=yy*100+m;if(ser.y[k]!==undefined)allVals.push(ser.y[k]);}});
  const hi=Math.max(...allVals,1)*1.18,step=niceStep(hi);
- const X=m=>mL+(m-.5)/12*pw, Y=v=>mT+ph-v/hi*ph;
+ const X=m=>mL+(m-.5)/nP*pw, Y=v=>mT+ph-v/hi*ph;
  for(let g=0;g<=hi;g+=step){const y=Y(g);
   s.appendChild(el('line',{x1:mL,x2:mL+pw,y1:y,y2:y,stroke:'#274955','stroke-width':1}));
   const t=el('text',{x:mL-9,y:y+4,'text-anchor':'end',fill:'#8CA6B0','font-size':11,'font-family':'IBM Plex Mono'});
   t.textContent=Math.round(g)+'%';s.appendChild(t);}
  let up='',dn='';
- for(let m=1;m<=12;m++)if(ser.seas[m])up+=(up===''?'M':'L')+X(m).toFixed(1)+','+Y(ser.seas[m].hi).toFixed(1);
- for(let m=12;m>=1;m--)if(ser.seas[m])dn+='L'+X(m).toFixed(1)+','+Y(ser.seas[m].lo).toFixed(1);
+ for(let m=1;m<=nP;m++)if(ser.seas[m])up+=(up===''?'M':'L')+X(m).toFixed(1)+','+Y(ser.seas[m].hi).toFixed(1);
+ for(let m=nP;m>=1;m--)if(ser.seas[m])dn+='L'+X(m).toFixed(1)+','+Y(ser.seas[m].lo).toFixed(1);
  if(up)s.appendChild(el('path',{d:up+dn+'Z',fill:'rgba(140,166,176,.16)',stroke:'none'}));
- let mn='';for(let m=1;m<=12;m++)if(ser.seas[m])mn+=(mn===''?'M':'L')+X(m).toFixed(1)+','+Y(ser.seas[m].mean).toFixed(1);
+ let mn='';for(let m=1;m<=nP;m++)if(ser.seas[m])mn+=(mn===''?'M':'L')+X(m).toFixed(1)+','+Y(ser.seas[m].mean).toFixed(1);
  if(mn)s.appendChild(el('path',{d:mn,fill:'none',stroke:'#8CA6B0','stroke-width':2,'stroke-dasharray':'5,4'}));
- s.appendChild(el('rect',{x:X(7.5),y:mT,width:X(10.5)-X(7.5),height:ph,fill:'rgba(242,166,90,.09)'}));
- const wt=el('text',{x:(X(7.5)+X(10.5))/2,y:mT+16,'text-anchor':'middle',fill:'#F2A65A',
+ s.appendChild(el('rect',{x:X(bandLo),y:mT,width:X(bandHi)-X(bandLo),height:ph,fill:'rgba(242,166,90,.09)'}));
+ const wt=el('text',{x:(X(bandLo)+X(bandHi))/2,y:mT+16,'text-anchor':'middle',fill:'#F2A65A',
    'font-size':11,'font-family':'IBM Plex Mono','letter-spacing':'.14em'});
  wt.textContent='FENÊTRE';s.appendChild(wt);
  [[yNow-1,'#7FA8FF',2,'4,3'],[yNow,'#5FD3C4',3,null]].forEach(([yy,col,w,dash])=>{
   let d='',started=false;
-  for(let m=1;m<=12;m++){const k=yy*100+m; if(ser.y[k]===undefined)continue;
+  for(let m=1;m<=nP;m++){const k=yy*100+m; if(ser.y[k]===undefined)continue;
    d+=(started?'L':'M')+X(m).toFixed(1)+','+Y(ser.y[k]).toFixed(1);started=true;
    if(yy===yNow){
-    const c=el('circle',{cx:X(m),cy:Y(ser.y[k]),r:5,fill:col,style:'cursor:pointer'});
+    const c=el('circle',{cx:X(m),cy:Y(ser.y[k]),r:calGran==='week'?3.2:5,fill:col,style:'cursor:pointer'});
     c.addEventListener('mousemove',e=>{
-     const bd=monthBreakdown(k);
+     const bd=breakdownFn(k);
      let rows='';CAL_CLASSES.forEach(cl=>{
       if(bd[cl]===null)return;
       rows+='<div>'+cl+'&nbsp;kg&nbsp;: <b>'+bd[cl].toFixed(1)+'%</b></div>';});
-     showTT(e,'<b>'+MN[m-1]+' '+yy+'</b><br>'+lbl+' sélectionné : <b>'+ser.y[k].toFixed(1)+'%</b>'
+     showTT(e,'<b>'+periodTitle(m,yy)+'</b><br>'+lbl+' sélectionné : <b>'+ser.y[k].toFixed(1)+'%</b>'
       +'<br><span class="tt-mist">Détail par calibre :</span>'+rows);
     });
     c.addEventListener('mouseleave',hideTT);
@@ -856,9 +954,10 @@ function renderCalSection(){
    }}
   if(d)s.appendChild(el('path',Object.assign({d:d,fill:'none',stroke:col,'stroke-width':w,'stroke-linejoin':'round'},dash?{'stroke-dasharray':dash}:{})));
  });
- for(let m=1;m<=12;m++){const t=el('text',{x:X(m),y:mT+ph+22,'text-anchor':'middle',
+ for(let m=1;m<=nP;m++){const lb=periodLabel(m); if(!lb)continue;
+  const t=el('text',{x:X(m),y:mT+ph+22,'text-anchor':'middle',
    fill:'#8CA6B0','font-size':11,'font-family':'IBM Plex Mono','letter-spacing':'.08em'});
-  t.textContent=MN[m-1];s.appendChild(t);}
+  t.textContent=lb;s.appendChild(t);}
  document.getElementById('legCal').innerHTML=
   `<span><i class="sw" style="background:rgba(140,166,176,.4)"></i>amplitude 2018–2025</span>
    <span><i style="border-top:2px dashed #8CA6B0"></i>moyenne</span>
@@ -868,56 +967,66 @@ function renderCalSection(){
 
 /* ---------- bandeau prime saisonniere ---------- */
 (function(){
- const pser=buildPremSeries(calSel);
- const yser=buildSeries(calSel);
+ const nP=calGran==='week'?52:12;
+ const pser=calGran==='week'?buildWeekPremSeries(calSel):buildPremSeries(calSel);
+ const yser=calGran==='week'?buildWeekSeries(calSel):buildSeries(calSel);
+ const periodLabel=i=>calGran==='month'?MN[i-1]:((i%4===1)?('S'+i):'');
+ const periodTitle=(i,yy)=>calGran==='month'?(yy!==undefined?(MN[i-1]+' '+yy):MN[i-1]):(yy!==undefined?('Semaine '+i+', '+yy):('Semaine '+i));
+ const bandLo=calGran==='month'?7.5:7.5*52/12, bandHi=calGran==='month'?10.5:10.5*52/12;
+ const isWin=calGran==='month'?(m=>m>=8&&m<=10):(m=>m>=bandLo&&m<=bandHi);
  const s=document.getElementById('calprem');s.innerHTML='';
  const W=980,H=200,mL=62,mR=20,mT=24,mB=32;
  const pw=W-mL-mR,ph=H-mT-mB;
- const vals=[];for(let m=1;m<=12;m++)if(pser.seas[m])vals.push(pser.seas[m].mean);
- const vcur=[];for(let m=1;m<=12;m++)if(pser.cur[m]!==undefined)vcur.push(pser.cur[m]);
+ const vals=[];for(let m=1;m<=nP;m++)if(pser.seas[m])vals.push(pser.seas[m].mean);
+ const vcur=[];for(let m=1;m<=nP;m++)if(pser.cur[m]!==undefined)vcur.push(pser.cur[m]);
  const all=vals.concat(vcur);
  const hi=Math.max(...all,1)*1.15,lo=Math.min(...all,0)*1.25;
- const X=m=>mL+(m-.5)/12*pw, Y=v=>mT+ph-(v-lo)/(hi-lo)*ph;
- s.appendChild(el('rect',{x:X(7.5),y:mT,width:X(10.5)-X(7.5),height:ph,fill:'rgba(242,166,90,.09)'}));
+ const X=m=>mL+(m-.5)/nP*pw, Y=v=>mT+ph-(v-lo)/(hi-lo)*ph;
+ s.appendChild(el('rect',{x:X(bandLo),y:mT,width:X(bandHi)-X(bandLo),height:ph,fill:'rgba(242,166,90,.09)'}));
  s.appendChild(el('line',{x1:mL,x2:mL+pw,y1:Y(0),y2:Y(0),stroke:'#8CA6B0','stroke-width':1.2}));
- for(let m=1;m<=12;m++){
+ for(let m=1;m<=nP;m++){
   if(!pser.seas[m])continue;
-  const v=pser.seas[m].mean,bw=pw/12*.52,x=X(m)-bw/2;
+  const v=pser.seas[m].mean,bw=pw/nP*.72,x=X(m)-bw/2;
   const top=Math.min(Y(v),Y(0)),hgt=Math.abs(Y(v)-Y(0));
-  const win=(m>=8&&m<=10);
+  const win=isWin(m);
   const rc=el('rect',{x:x,y:top,width:bw,height:Math.max(hgt,1),
     fill:win?'rgba(242,166,90,.85)':'rgba(242,166,90,.3)',rx:1,style:'cursor:pointer'});
   rc.addEventListener('mousemove',e=>{
    const part=yser.seas[m]?yser.seas[m].mean:null;
    const px=pser.seas[m];
-   showTT(e,'<b>'+MN[m-1]+'</b><br>Prime moyenne 2018–2025&nbsp;: <b>'+(v>0?'+':'')+v.toFixed(2)+' NOK/kg</b>'
+   showTT(e,'<b>'+periodTitle(m)+'</b><br>Prime moyenne 2018–2025&nbsp;: <b>'+(v>0?'+':'')+v.toFixed(2)+' NOK/kg</b>'
     +(px?'<br>'+lbl+'&nbsp;: <b>'+px.sel.toFixed(2)+'</b> &mdash; 4–6&nbsp;kg&nbsp;: <b>'+px.ref.toFixed(2)+'</b> NOK/kg':'')
-    +(part!==null?'<br>Part '+lbl+' ce mois-là&nbsp;: <b>'+part.toFixed(1)+'%</b>':''));
+    +(part!==null?'<br>Part '+lbl+' cette période&nbsp;: <b>'+part.toFixed(1)+'%</b>':''));
   });
   rc.addEventListener('mouseleave',hideTT);
   s.appendChild(rc);
-  const t=el('text',{x:X(m),y:(v>=0?Y(v)-7:Y(v)+15),'text-anchor':'middle',fill:win?'#F2A65A':'#8CA6B0',
-    'font-size':11,'font-family':'IBM Plex Mono'});
-  t.textContent=(v>0?'+':'')+v.toFixed(0);s.appendChild(t);
-  const u=el('text',{x:X(m),y:mT+ph+19,'text-anchor':'middle',fill:'#8CA6B0','font-size':10.5,
-    'font-family':'IBM Plex Mono','letter-spacing':'.08em'});u.textContent=MN[m-1];s.appendChild(u);}
+  if(calGran==='month'){
+   const t=el('text',{x:X(m),y:(v>=0?Y(v)-7:Y(v)+15),'text-anchor':'middle',fill:win?'#F2A65A':'#8CA6B0',
+     'font-size':11,'font-family':'IBM Plex Mono'});
+   t.textContent=(v>0?'+':'')+v.toFixed(0);s.appendChild(t);
+  }
+  const lb=periodLabel(m);
+  if(lb){const u=el('text',{x:X(m),y:mT+ph+19,'text-anchor':'middle',fill:'#8CA6B0','font-size':10.5,
+    'font-family':'IBM Plex Mono','letter-spacing':'.08em'});u.textContent=lb;s.appendChild(u);}}
  let d26='',started=false;
- for(let m=1;m<=12;m++){const v=pser.cur[m]; if(v===undefined)continue;
+ for(let m=1;m<=nP;m++){const v=pser.cur[m]; if(v===undefined)continue;
    d26+=(started?'L':'M')+X(m).toFixed(1)+','+Y(v).toFixed(1);started=true;}
  if(d26){s.appendChild(el('path',{d:d26,fill:'none',stroke:'#5FD3C4','stroke-width':2.6,'stroke-linejoin':'round'}));
-  for(let m=1;m<=12;m++){const v=pser.cur[m]; if(v===undefined)continue;
-   const c=el('circle',{cx:X(m),cy:Y(v),r:5,fill:'#5FD3C4',style:'cursor:pointer'});
+  for(let m=1;m<=nP;m++){const v=pser.cur[m]; if(v===undefined)continue;
+   const c=el('circle',{cx:X(m),cy:Y(v),r:calGran==='week'?3.2:5,fill:'#5FD3C4',style:'cursor:pointer'});
    c.addEventListener('mousemove',e=>{
     const part=yser.y[pser.maxYear*100+m];
     const px=pser.curPx[m];
-    showTT(e,'<b>'+MN[m-1]+' '+pser.maxYear+'</b><br>Prime '+lbl+' vs 4–6&nbsp;kg&nbsp;: <b>'+(v>0?'+':'')+v.toFixed(2)+' NOK/kg</b>'
+    showTT(e,'<b>'+periodTitle(m,pser.maxYear)+'</b><br>Prime '+lbl+' vs 4–6&nbsp;kg&nbsp;: <b>'+(v>0?'+':'')+v.toFixed(2)+' NOK/kg</b>'
      +(px?'<br>'+lbl+'&nbsp;: <b>'+px.sel.toFixed(2)+'</b> &mdash; 4–6&nbsp;kg&nbsp;: <b>'+px.ref.toFixed(2)+'</b> NOK/kg':'')
-     +(part!==undefined?'<br>Part '+lbl+' ce mois-là&nbsp;: <b>'+part.toFixed(1)+'%</b>':''));
+     +(part!==undefined?'<br>Part '+lbl+' cette période&nbsp;: <b>'+part.toFixed(1)+'%</b>':''));
    });
    c.addEventListener('mouseleave',hideTT);
    s.appendChild(c);
-   const t=el('text',{x:X(m),y:Y(v)+(v>=0?18:-9),'text-anchor':'middle',fill:'#5FD3C4','font-size':10,
-     'font-family':'IBM Plex Mono'});t.textContent=(v>0?'+':'')+v.toFixed(1);s.appendChild(t);}}
+   if(calGran==='month'){
+    const t=el('text',{x:X(m),y:Y(v)+(v>=0?18:-9),'text-anchor':'middle',fill:'#5FD3C4','font-size':10,
+      'font-family':'IBM Plex Mono'});t.textContent=(v>0?'+':'')+v.toFixed(1);s.appendChild(t);
+   }}}
  const step=niceStep(hi-lo);
  for(let g=Math.ceil(lo/step)*step;g<=hi;g+=step){const y=Y(g);
    if(Math.abs(g)>0.01)s.appendChild(el('line',{x1:mL,x2:mL+pw,y1:y,y2:y,stroke:'#274955','stroke-dasharray':'2,4'}));
@@ -945,6 +1054,19 @@ CAL_CLASSES.forEach(c=>{
   renderCalSection();
  });
  chipsEl.appendChild(b);
+});
+
+const granEl=document.getElementById('calGranChips');
+[['month','Mois'],['week','Semaine']].forEach(([val,label])=>{
+ const b=document.createElement('div');
+ b.className='chip'+(calGran===val?' on':'');
+ b.textContent=label;
+ b.addEventListener('click',()=>{
+  calGran=val;
+  Array.from(granEl.children).forEach(e2=>e2.classList.toggle('on',e2.textContent===label));
+  renderCalSection();
+ });
+ granEl.appendChild(b);
 });
 renderCalSection();
 
@@ -1205,12 +1327,31 @@ renderCalSection();
  const CL=['1-2','2-3','3-4','4-5','5-6','6-7','7-8','8-9','9+'];
  const wkLabel=D.lastprice&&D.lastprice.week?('S'+D.lastprice.week+' '+(D.lastprice.iso?D.lastprice.iso.slice(0,4):'')):'cette semaine';
  const wkEl=document.getElementById('pxWeek'); if(wkEl)wkEl.textContent=wkLabel.trim();
- let h=`<table><tr><th>Classe</th><th>Prix NOK/kg</th><th>% du volume</th></tr>`;
+ // Volume absolu estime : on repart du dernier total mensuel national connu
+ // (D.vol, en kt), qu'on ramene a une semaine (/4.345) puis qu'on repartit
+ // selon la part de chaque calibre cette semaine-la. C'est un ordre de
+ // grandeur -- le total est mensuel, la repartition est hebdomadaire -- pas
+ // une mesure exacte, d'ou la note sous le tableau.
+ const volKeys=D.vol?Object.keys(D.vol).sort():[];
+ const lastVolKey=volKeys.length?volKeys[volKeys.length-1]:null;
+ const volMonthly=lastVolKey?D.vol[lastVolKey]:null; // en kt (milliers de tonnes)
+ const weeklyTotalT=volMonthly!=null?volMonthly*1000/4.345:null; // tonnes/semaine
+ const volLabel=lastVolKey?(MN[(+lastVolKey%100)-1]+' '+Math.floor(lastVolKey/100)):'';
+ let h=`<table><tr><th>Classe</th><th>Prix NOK/kg</th><th>% du volume</th>`
+  +(weeklyTotalT!=null?'<th>Volume est. (t/sem)</th>':'')+`</tr>`;
  CL.forEach(c=>{const big=['6-7','7-8','8-9','9+'].includes(c);
+  const sh=D.lastweek.dist[c];
+  const volT=weeklyTotalT!=null&&sh!=null?Math.round(weeklyTotalT*sh/100):null;
   h+=`<tr${big?' class="hi"':''}><td>${c} kg</td><td class="num">${D.lastprice.px[c].toFixed(2)}</td>
-   <td class="num">${D.lastweek.dist[c].toFixed(0)}%</td></tr>`;});
+   <td class="num">${sh.toFixed(0)}%</td>`
+   +(weeklyTotalT!=null?`<td class="num">${volT!=null?volT.toLocaleString('fr-FR'):'—'}</td>`:'')+`</tr>`;});
  h+=`<tr><td><b>Moyenne</b></td><td class="num"><b>${D.lastprice.avg.toFixed(2)}</b></td>
-  <td class="num"><b>${D.lastweek.p6.toFixed(0)}%</b> en 6+</td></tr></table>`;
+  <td class="num"><b>${D.lastweek.p6.toFixed(0)}%</b> en 6+</td>`
+  +(weeklyTotalT!=null?`<td class="num"><b>${Math.round(weeklyTotalT).toLocaleString('fr-FR')}</b></td>`:'')+`</tr></table>`;
+ if(weeklyTotalT!=null)h+=`<div class="note" style="margin-top:10px;font-size:12px">
+  Volume estimé en répartissant le dernier total mensuel norvégien connu
+  (${volLabel}, ${volMonthly.toFixed(0)}&nbsp;kt) au prorata de la part de
+  chaque calibre cette semaine. Ordre de grandeur, pas une mesure hebdomadaire directe.</div>`;
  document.getElementById('tblPx').innerHTML=h;
 
  // Courbe de distribution : une ligne par semaine plutot que des barres
