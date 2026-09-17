@@ -1,0 +1,66 @@
+name: Telechargement + mise a jour automatique
+
+on:
+  schedule:
+    # lundi / mercredi / vendredi a 6h UTC -- large marge sur le mercredi
+    # (Akvafakta hebdo) et le 20 du mois (Fiskeridirektoratet)
+    - cron: '0 6 * * 1,3,5'
+  workflow_dispatch: {}   # bouton "Run workflow" manuel dans l'onglet Actions
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-and-update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installer pdftotext
+        run: sudo apt-get update && sudo apt-get install -y poppler-utils
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Installer les dependances Python
+        run: pip install pandas openpyxl
+
+      - name: Telecharger les derniers rapports Akvafakta (hebdo + mensuel)
+        run: python3 scripts/fetch_akvafakta.py
+
+      - name: Parser les nouveaux rapports Akvafakta
+        run: python3 scripts/parse_akvafakta.py
+
+      - name: Verifier et telecharger le fichier Biomasseregisteret
+        run: |
+          mkdir -p xlsx/biomasse
+          curl -sSL -o /tmp/biostat-total-omr.xlsx \
+            https://register.fiskeridir.no/biomassestatistikk/BIOSTAT-LAKS-OMR/biostat-total-omr.xlsx
+          NEW_HASH=$(sha256sum /tmp/biostat-total-omr.xlsx | cut -d' ' -f1)
+          OLD_HASH=$(cat xlsx/biomasse/.last-hash 2>/dev/null || echo "")
+          if [ "$NEW_HASH" != "$OLD_HASH" ]; then
+            DEST="xlsx/biomasse/biostat-total-omr-$(date -u +%Y-%m-%d).xlsx"
+            cp /tmp/biostat-total-omr.xlsx "$DEST"
+            echo "$NEW_HASH" > xlsx/biomasse/.last-hash
+            echo "dest=$DEST" >> "$GITHUB_ENV"
+            echo "Nouveau fichier biomasse : $DEST"
+          else
+            echo "Biomasse : rien de nouveau depuis le dernier passage."
+          fi
+
+      - name: Reconstruire records et cohort si nouveau fichier biomasse
+        if: env.dest != ''
+        run: python3 scripts/update_biomasse.py "${{ env.dest }}"
+
+      - name: Publier data.json (et les fichiers bruts telecharges)
+        run: |
+          git config user.name  "github-actions"
+          git config user.email "actions@github.com"
+          git add data/data.json pdf/ xlsx/biomasse/
+          if git diff --staged --quiet; then
+            echo "Aucun changement."
+          else
+            git commit -m "Mise a jour auto Akvafakta + Fiskeridirektoratet ($(date -u +%Y-%m-%d))"
+            git push
+          fi
