@@ -53,6 +53,24 @@ def load_excel(path):
     df.columns = [c.strip() for c in df.columns]
     df = df[(df['ARTSID'] == 'LAKS') &
             (df['PO_KODE'].apply(lambda x: isinstance(x, int)))].copy()
+
+    # Certaines lignes arrivent sans annee de mise a l'eau (UTSETTSAAR vide),
+    # ou plus rarement sans annee/mois. Vu en septembre 2026 : le fichier est
+    # passe de 3448 a 3480 lignes et certaines nouvelles n'ont pas de cohorte
+    # renseignee. Sans ce filtre, int(NaN) fait planter build_cohort.
+    # Ces lignes ne sont pas rattachables a une cohorte, donc inexploitables
+    # pour cohort ET pour records (qui agrege par cohorte) : on les ecarte en
+    # le signalant, plutot que de les convertir silencieusement en 0.
+    keys = ['PO_KODE', 'UTSETTSÅR', 'ÅR', 'MÅNED_KODE']
+    bad = df[df[keys].isna().any(axis=1)]
+    if len(bad):
+        print(f"  ATTENTION : {len(bad)} ligne(s) ecartee(s), cle incomplete "
+              f"({', '.join(k for k in keys if bad[k].isna().any())} vide)")
+        for col in ('BEHFISK_STK', 'BIOMASSE_KG', 'UTTAK_KG'):
+            if col in bad.columns and bad[col].sum():
+                print(f"    dont {col} = {bad[col].sum():,.0f} non comptabilise")
+        df = df.drop(bad.index)
+
     df = df.sort_values(['PO_KODE', 'UTSETTSÅR', 'ÅR', 'MÅNED_KODE'])
     return df
 
