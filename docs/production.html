@@ -373,21 +373,44 @@
     <div class="verdict v-flat" id="calibreNote"></div>
 
     <div class="sig-title" style="margin-top:26px;">Compare months</div>
-    <div class="sig-sub">Pick any two months to see the gap side by side. Useful for checking a month
-      against the same month a year earlier, or against the point you last took a harvesting decision.
-      Months still in progress carry fewer weekly reports — the week count is shown so you can judge
-      how solid each figure is.</div>
+    <div class="sig-sub">Two modes. <b>Two months</b> puts any two months side by side — a month against
+      the same month a year earlier, or against the point you last took a harvesting decision.
+      <b>Cumulative by year</b> adds up a chosen month range and shows one line per year, so you can read
+      a season across the whole series rather than one pair at a time.
+      Months still in progress carry fewer weekly reports — week counts are shown throughout so you can
+      judge how solid each figure is.</div>
     <div class="chart-controls">
+      <span class="cc-label">Mode</span>
+      <select class="ctrl" id="calCmpMode">
+        <option value="pair">Two months</option>
+        <option value="cum">Cumulative by year</option>
+      </select>
+    </div>
+    <div class="chart-controls" id="calCmpPairCtl">
       <span class="cc-label">Month A</span>
       <select class="ctrl" id="calCmpA"></select>
       <span class="cc-label">Month B</span>
       <select class="ctrl" id="calCmpB"></select>
       <button class="ctrl" id="calCmpYoY" title="Set A to the same month one year before B">Same month, 1 year apart</button>
     </div>
+    <div class="chart-controls" id="calCmpCumCtl" style="display:none">
+      <span class="cc-label">From month</span>
+      <select class="ctrl" id="calCumFrom"></select>
+      <span class="cc-label">To month</span>
+      <select class="ctrl" id="calCumTo"></select>
+      <span class="cc-label">From year</span>
+      <select class="ctrl" id="calCumYear"></select>
+    </div>
     <table class="sig-table" id="calCmpTable"><thead><tr>
       <th class="name">Indicator</th><th id="calCmpHdrA">A</th><th id="calCmpHdrB">B</th>
       <th class="sep-left">Δ</th><th>Δ %</th>
     </tr></thead><tbody id="tbodyCalCmp"></tbody></table>
+    <table class="sig-table" id="calCumTable" style="display:none"><thead><tr>
+      <th class="name">Year</th><th>Avg weight</th><th>Volume</th>
+      <th class="sep-left">6+ head</th><th>7+ head</th>
+      <th class="sep-left">6+ ton</th><th>7+ ton</th>
+      <th class="sep-left">Prem 6+</th><th>Prem 7+</th><th class="sep-left">Months</th><th>Weeks</th>
+    </tr></thead><tbody id="tbodyCalCum"></tbody></table>
     <div class="verdict v-flat" id="calCmpNote"></div>
 
     <div class="sig-title" style="margin-top:26px;">Monthly detail, last 24 months</div>
@@ -2910,39 +2933,61 @@ function renderCalCompare() {
       if (months.some(r => r.k === target)) { selA.value = target; renderCalCompare(); }
       else alert('Ce mois n\'existe pas dans la serie : ' + calMonthLabel(target));
     });
+
+    // --- controles du mode cumulatif
+    const mOpts = MONTHS_FR.map((n, i) => `<option value="${i+1}">${n}</option>`).join('');
+    const fr = document.getElementById('calCumFrom'), to = document.getElementById('calCumTo');
+    fr.innerHTML = mOpts; to.innerHTML = mOpts;
+    fr.value = 1;
+    to.value = lastK % 100;   // par defaut : janvier -> dernier mois connu
+    const yrs = Array.from(new Set(months.map(r => Math.floor(r.k / 100)))).sort();
+    document.getElementById('calCumYear').innerHTML =
+      yrs.map(y => `<option value="${y}">${y}</option>`).join('');
+    document.getElementById('calCumYear').value = yrs[0];
+    ['calCumFrom','calCumTo','calCumYear'].forEach(id =>
+      document.getElementById(id).addEventListener('change', renderCalCompare));
+    document.getElementById('calCmpMode').addEventListener('change', renderCalCompare);
     calCmpInit = true;
   }
 
+  const mode = document.getElementById('calCmpMode').value;
+  document.getElementById('calCmpPairCtl').style.display = mode === 'pair' ? '' : 'none';
+  document.getElementById('calCmpCumCtl').style.display = mode === 'cum' ? '' : 'none';
+  document.getElementById('calCmpTable').style.display = mode === 'pair' ? '' : 'none';
+  document.getElementById('calCumTable').style.display = mode === 'cum' ? '' : 'none';
+  if (mode === 'cum') return renderCalCumulative(months);
+  renderCalPair(months, selA, selB);
+}
+
+// Indicateurs partages par les deux modes. 'better' dit dans quel sens lire la
+// couleur : +1 = une hausse est favorable au vendeur de gros calibre (prime),
+// -1 = une hausse est une alerte (plus d'offre concurrente), 0 = neutre.
+const CAL_ROWS = [
+  { lab: 'Avg harvest weight', k: 'hw',  unit: ' kg', d: 2, better: 0 },
+  { lab: 'Harvested volume',   k: 'vol', unit: ' kt', d: 0, better: -1 },
+  { lab: 'Share 6+, headcount', k: 'n6', unit: ' %',  d: 1, better: -1 },
+  { lab: 'Share 7+, headcount', k: 'n7', unit: ' %',  d: 1, better: -1 },
+  { lab: 'Share 6+, tonnage',   k: 't6', unit: ' %',  d: 1, better: -1 },
+  { lab: 'Share 7+, tonnage',   k: 't7', unit: ' %',  d: 1, better: -1 },
+  { lab: 'Premium 6+',  k: 'p6', unit: ' NOK/kg', d: 2, better: +1 },
+  { lab: 'Premium 7+',  k: 'p7', unit: ' NOK/kg', d: 2, better: +1 },
+];
+
+function renderCalPair(months, selA, selB) {
   const A = months.find(r => r.k === +selA.value), B = months.find(r => r.k === +selB.value);
   if (!A || !B) return;
   document.getElementById('calCmpHdrA').textContent = calMonthLabel(A.k);
   document.getElementById('calCmpHdrB').textContent = calMonthLabel(B.k);
 
-  // 'better' dit dans quel sens lire la couleur : +1 = une hausse est
-  // favorable au vendeur de gros calibre (prime), -1 = une hausse est une
-  // alerte (plus d'offre concurrente), 0 = neutre, pas de couleur.
-  const rows = [
-    { lab: 'Avg harvest weight', k: 'hw',  unit: ' kg', d: 2, better: 0 },
-    { lab: 'Harvested volume',   k: 'vol', unit: ' kt', d: 0, better: -1 },
-    { lab: 'Share 6+, headcount', k: 'n6', unit: ' %',  d: 1, better: -1 },
-    { lab: 'Share 7+, headcount', k: 'n7', unit: ' %',  d: 1, better: -1 },
-    { lab: 'Share 6+, tonnage',   k: 't6', unit: ' %',  d: 1, better: -1 },
-    { lab: 'Share 7+, tonnage',   k: 't7', unit: ' %',  d: 1, better: -1 },
-    { lab: 'Premium 6+',  k: 'p6', unit: ' NOK/kg', d: 2, better: +1 },
-    { lab: 'Premium 7+',  k: 'p7', unit: ' NOK/kg', d: 2, better: +1 },
-  ];
-
   const tb = document.getElementById('tbodyCalCmp');
   tb.innerHTML = '';
-  rows.forEach(r => {
+  CAL_ROWS.forEach(r => {
     const a = A[r.k], b = B[r.k];
     const has = a !== null && a !== undefined && b !== null && b !== undefined;
     const fmt = v => (v === null || v === undefined) ? '—' : v.toFixed(r.d) + r.unit;
     let dCell = '<td class="sep-left delta-zero">—</td>', pCell = '<td class="delta-zero">—</td>';
     if (has) {
       const dv = b - a;
-      // r.better decide de la couleur ; a 0 on laisse en gris plutot que
-      // d'imposer un jugement sur un indicateur qui n'en porte pas.
       const good = r.better === 0 ? null : (dv * r.better > 0);
       const cls = dv === 0 ? 'delta-zero' : (good === null ? 'delta-zero' : (good ? 'delta-neg' : 'delta-pos'));
       dCell = `<td class="sep-left ${cls}">${dv > 0 ? '+' : ''}${dv.toFixed(r.d)}</td>`;
@@ -2971,6 +3016,95 @@ function renderCalCompare() {
   document.getElementById('calCmpNote').innerHTML =
     `<span style="color:var(--muted)">Weekly reports behind each column: `
     + `${calMonthLabel(A.k)} ${A.nw}, ${calMonthLabel(B.k)} ${B.nw}.</span>${warn}${volMissing}`;
+}
+
+function renderCalCumulative(months) {
+  const mFrom = +document.getElementById('calCumFrom').value;
+  const mTo   = +document.getElementById('calCumTo').value;
+  const yFrom = +document.getElementById('calCumYear').value;
+  const tb = document.getElementById('tbodyCalCum');
+  tb.innerHTML = '';
+
+  if (mFrom > mTo) {
+    tb.innerHTML = `<tr><td colspan="11" class="warn">"From month" is after "to month" — `
+      + `this comparator does not span a year boundary.</td></tr>`;
+    document.getElementById('calCmpNote').innerHTML = '';
+    return;
+  }
+
+  const yrs = Array.from(new Set(months.map(r => Math.floor(r.k / 100))))
+                   .filter(y => y >= yFrom).sort();
+  const rows = [];
+  yrs.forEach(y => {
+    const sel = months.filter(r => {
+      const yy = Math.floor(r.k / 100), mm = r.k % 100;
+      return yy === y && mm >= mFrom && mm <= mTo;
+    });
+    if (!sel.length) return;
+    const o = { y: y, nm: sel.length, nw: sel.reduce((s, r) => s + (r.nw || 0), 0) };
+
+    // Volume : somme simple. Poids moyen : on repasse par le nombre de
+    // poissons (vol/hw) pour ne pas faire une moyenne de moyennes, qui
+    // surponderait les petits mois.
+    const withVol = sel.filter(r => r.vol !== null && r.vol !== undefined
+                                 && r.hw !== null && r.hw !== undefined && r.hw > 0);
+    if (withVol.length) {
+      o.vol = withVol.reduce((s, r) => s + r.vol, 0);
+      const stk = withVol.reduce((s, r) => s + r.vol / r.hw, 0);
+      o.hw = stk > 0 ? o.vol / stk : null;
+      o.volMonths = withVol.length;
+    }
+
+    // Parts et primes : ce sont des moyennes hebdomadaires, on les repondere
+    // donc par le nombre de rapports de chaque mois (nw), pas par le volume,
+    // pour rester fidele a la facon dont la valeur mensuelle est construite.
+    ['n6','n7','t6','t7','p6','p7'].forEach(f => {
+      const v = sel.filter(r => r[f] !== null && r[f] !== undefined && r.nw);
+      if (v.length) {
+        const den = v.reduce((s, r) => s + r.nw, 0);
+        o[f] = v.reduce((s, r) => s + r[f] * r.nw, 0) / den;
+      }
+    });
+    rows.push(o);
+  });
+
+  if (!rows.length) {
+    tb.innerHTML = `<tr><td colspan="11" class="warn">No month available for this range.</td></tr>`;
+    document.getElementById('calCmpNote').innerHTML = '';
+    return;
+  }
+
+  const nMonths = mTo - mFrom + 1;
+  const pct = v => (v === null || v === undefined) ? '—' : v.toFixed(1) + ' %';
+  const kr = v => (v === null || v === undefined) ? '—' :
+    `<span class="${v>0?'delta-neg':(v<0?'delta-pos':'delta-zero')}">${v>0?'+':''}${v.toFixed(2)}</span>`;
+  rows.forEach(r => {
+    const partial = r.nm < nMonths;
+    const tr = document.createElement('tr');
+    if (partial) tr.style.opacity = .62;
+    tr.innerHTML = `<td class="name">${r.y}${partial ? ` <small>${r.nm}/${nMonths} months</small>` : ''}</td>`
+      + `<td>${r.hw ? r.hw.toFixed(2) + ' kg' : '—'}</td>`
+      + `<td>${r.vol ? r.vol.toFixed(0) + ' kt' : '—'}</td>`
+      + `<td class="sep-left">${pct(r.n6)}</td><td>${pct(r.n7)}</td>`
+      + `<td class="sep-left"><b>${pct(r.t6)}</b></td><td>${pct(r.t7)}</td>`
+      + `<td class="sep-left">${kr(r.p6)}</td><td>${kr(r.p7)}</td>`
+      + `<td class="sep-left" style="color:var(--muted)">${r.nm}</td>`
+      + `<td style="color:var(--muted)">${r.nw}</td>`;
+    tb.appendChild(tr);
+  });
+
+  const label = mFrom === mTo ? MONTHS_FR[mFrom-1] : `${MONTHS_FR[mFrom-1]}–${MONTHS_FR[mTo-1]}`;
+  const incomplete = rows.filter(r => r.nm < nMonths).map(r => r.y);
+  const volGap = rows.filter(r => r.volMonths !== undefined && r.volMonths < r.nm).map(r => r.y);
+  document.getElementById('calCmpNote').innerHTML =
+    `<b>${label}, one line per year from ${yFrom}.</b> Volume is summed; average weight is rebuilt from `
+    + `total volume ÷ total headcount, not averaged across months. Shares and premiums are weighted by `
+    + `the number of weekly reports in each month.`
+    + (incomplete.length ? `<br><span class="warn">Incomplete range: ${incomplete.join(', ')} `
+        + `— fewer than ${nMonths} months available, so not directly comparable to the full years above.</span>` : '')
+    + (volGap.length ? `<br><span style="color:var(--muted)">Weight and volume cover fewer months than the `
+        + `shares for ${volGap.join(', ')} — the Biomasseregisteret lags the weekly reports by about a month.`
+        + `</span>` : '');
 }
 
 function nationalMonthlySeries(poFilter) {
