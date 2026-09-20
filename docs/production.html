@@ -159,12 +159,12 @@
 
 <div class="top-controls">
   <div class="view-toggle" id="viewToggle">
-    <button data-v="po" class="active">By zone (PO)</button>
-    <button data-v="global">National view (Norway)</button>
+    <button data-v="global" class="active">National view (Norway)</button>
     <button data-v="multi">Multi-year comparison</button>
     <button data-v="outlook">Supply outlook</button>
     <button data-v="markets">Markets</button>
     <button data-v="calibre">Calibre &amp; premium</button>
+    <button data-v="po">By zone (PO)</button>
   </div>
   <div class="field" id="poFilterField" style="display:none;">
     <label for="poFilterSelect">Zone(s) included</label>
@@ -177,7 +177,7 @@
   
 </div>
 
-<div class="top-controls" id="metricRow">
+<div class="top-controls" id="metricRow" style="display:none;">
   <div class="metric-toggle" id="metricToggle">
     <button data-m="vol" class="active">Harvested volume (t)</button>
     <button data-m="stk">Individuals harvested</button>
@@ -237,7 +237,7 @@
      font-size:12.5px; color:#ffd9a0; line-height:1.5;"></div>
 
 <div class="content" id="mainContent">
-  <div class="panel" id="poView" style="flex: 1; min-width: 420px;">
+  <div class="panel" id="poView" style="flex: 1; min-width: 420px; display:none;">
     <table>
       <thead>
         <tr>
@@ -261,7 +261,7 @@
     </table>
   </div>
 
-  <div class="panel" id="globalView" style="flex:1; min-width: 420px; max-width: 620px; display:none;">
+  <div class="panel" id="globalView" style="flex:1; min-width: 420px; max-width: 620px;">
     <div class="period-summary" id="globalSelectionSummary" style="margin-bottom:10px;"></div>
     <table>
       <thead>
@@ -322,7 +322,12 @@
           <button data-cb="indicator" class="active">Indicator</button>
           <button data-cb="year">Year</button>
         </div>
-        <label class="cc-check"><input type="checkbox" id="showN2"> Show N−2</label>
+        <span class="cc-label">Show</span>
+        <label class="cc-check"><input type="checkbox" class="ratio-ind" data-ind="takeout" checked> Take-out</label>
+        <label class="cc-check"><input type="checkbox" class="ratio-ind" data-ind="growth" checked> Implied growth</label>
+        <label class="cc-check"><input type="checkbox" class="ratio-ind" data-ind="price" checked> Price</label>
+        <span class="cc-label">Back to</span>
+        <select class="ctrl" id="ratioFromYear"></select>
       </div>
       <svg id="ratioChart" viewBox="0 0 860 380" preserveAspectRatio="xMidYMid meet"></svg>
       <div class="legend-row" id="ratioLegend"></div>
@@ -1366,7 +1371,7 @@ function hideMapTooltip() {
 }
 
 // --- National view (Norway) ---
-let currentView = 'po';
+let currentView = 'global';
 document.querySelectorAll('#viewToggle button').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('#viewToggle button').forEach(b => b.classList.remove('active'));
@@ -2131,9 +2136,12 @@ function computeStructuralRatios(poFilter) {
 const RATIO_COL_TAKEOUT = '#2fb8a6';
 const RATIO_COL_GROWTH  = '#ff8a65';
 const RATIO_COL_PRICE   = '#c792ea';
-const YEAR_COLS         = ['#2fb8a6', '#ffb74d', '#8ea9ff'];   // N, N-1, N-2
+const YEAR_COLS         = ['#2fb8a6', '#ffb74d', '#8ea9ff', '#e0729a', '#b79cff', '#7be0c9'];
+// N, N-1, N-2, ... jusqu'a 6 millesimes ; au-dela on boucle sur la palette.
 let ratioColourBy = 'indicator';
-let ratioShowN2   = false;
+let ratioInds = { takeout: true, growth: true, price: true };
+let ratioFromYear = null;   // null = defaut calcule au premier rendu
+const RATIO_FLOOR_YEAR = 2021;   // profondeur maximale autorisee
 const RATIO_OP_N1       = 0.55;
 const RATIO_COL_N2      = '#3d515e';
 
@@ -2253,20 +2261,49 @@ function renderStructuralSignals(poFilter) {
 
   const fKr = v => num(v, 2) + ' NOK/kg';
   const IND = [
-    { nm: 'Take-out',       col: RATIO_COL_TAKEOUT, dash: null,  idx: R.takeoutIdx, raw: R.takeout,  fmt: fPct },
-    { nm: 'Implied growth', col: RATIO_COL_GROWTH,  dash: '5,4', idx: R.growthIdx,  raw: R.growth,   fmt: fPct },
-    { nm: 'Price',          col: RATIO_COL_PRICE,   dash: '1,4', idx: R.priceIdx,   raw: R.priceMap, fmt: fKr }
+    { id: 'takeout', nm: 'Take-out',       col: RATIO_COL_TAKEOUT, dash: null,  idx: R.takeoutIdx, raw: R.takeout,  fmt: fPct },
+    { id: 'growth',  nm: 'Implied growth', col: RATIO_COL_GROWTH,  dash: '5,4', idx: R.growthIdx,  raw: R.growth,   fmt: fPct },
+    { id: 'price',   nm: 'Price',          col: RATIO_COL_PRICE,   dash: '1,4', idx: R.priceIdx,   raw: R.priceMap, fmt: fKr }
   ];
-  const yearsShown = ratioShowN2 ? [2, 1, 0] : [1, 0];   // back to front
+
+  // Selecteur d'annee de depart : borne basse a RATIO_FLOOR_YEAR, et jamais
+  // au-dela de ce que la serie contient reellement.
+  const floorY = Math.max(RATIO_FLOOR_YEAR, availYears[0]);
+  const fySel = document.getElementById('ratioFromYear');
+  if (fySel) {
+    const wanted = [];
+    for (let y = yearN; y >= floorY; y--) wanted.push(y);
+    const sig = wanted.join(',');
+    if (fySel.dataset.sig !== sig) {
+      fySel.innerHTML = wanted.map(y => `<option value="${y}">${y}</option>`).join('');
+      fySel.dataset.sig = sig;
+      // Defaut historique : N-1, soit deux millesimes a l'ecran.
+      if (ratioFromYear === null) ratioFromYear = Math.max(floorY, yearN - 1);
+    }
+    if (ratioFromYear === null) ratioFromYear = Math.max(floorY, yearN - 1);
+    ratioFromYear = Math.min(Math.max(ratioFromYear, floorY), yearN);
+    fySel.value = ratioFromYear;
+  }
+
+  const activeInds = IND.filter(i => ratioInds[i.id]);
+  // back = nombre d'annees en arriere depuis N ; on trace du plus ancien au
+  // plus recent pour que l'annee en cours reste au premier plan.
+  const yearsShown = [];
+  for (let back = yearN - ratioFromYear; back >= 0; back--) yearsShown.push(back);
+
   const series = [];
   yearsShown.forEach(back => {
     const y = yearN - back;
-    IND.forEach(ind => {
+    activeInds.forEach(ind => {
       const byYear = ratioColourBy === 'year';
+      // Au-dela de N-1, les millesimes anciens passent en gris d'arriere-plan
+      // quand on colore par indicateur : sinon trois courbes de la meme
+      // couleur se superposent et le graphique devient illisible.
+      const old = back >= 2;
       series.push({
         label: `${ind.nm} ${y}`,
-        color: byYear ? YEAR_COLS[back] : (back === 2 ? RATIO_COL_N2 : ind.col),
-        op:    byYear ? 1 : (back === 0 ? 1 : (back === 1 ? RATIO_OP_N1 : 1)),
+        color: byYear ? YEAR_COLS[back % YEAR_COLS.length] : (old ? RATIO_COL_N2 : ind.col),
+        op:    byYear ? 1 : (back === 0 ? 1 : (back === 1 ? RATIO_OP_N1 : Math.max(0.28, 0.5 - 0.06 * back))),
         dash:  ind.dash,
         w:     back === 0 ? 2.8 : (back === 1 ? 2.0 : 1.3),
         dots:  back === 0,
@@ -2275,6 +2312,14 @@ function renderStructuralSignals(poFilter) {
       });
     });
   });
+
+  if (!series.length) {
+    document.getElementById('ratioChart').innerHTML =
+      '<text x="430" y="190" text-anchor="middle" fill="#8CA6B0" font-size="13" '
+      + 'font-family="IBM Plex Mono">Select at least one series to display</text>';
+    legend.innerHTML = '';
+    return;
+  }
 
   drawRatioIndexChart(series);
 
@@ -3326,15 +3371,30 @@ document.querySelectorAll('#ratioColourToggle button').forEach(btn => {
     if (currentView === 'outlook') renderOutlook();
   });
 });
-document.getElementById('showN2').addEventListener('change', (e) => {
-  ratioShowN2 = e.target.checked;
+document.querySelectorAll('.ratio-ind').forEach(cb => {
+  cb.addEventListener('change', () => {
+    ratioInds[cb.dataset.ind] = cb.checked;
+    if (currentView === 'outlook') renderOutlook();
+  });
+});
+document.getElementById('ratioFromYear').addEventListener('change', (e) => {
+  ratioFromYear = parseInt(e.target.value, 10);
   if (currentView === 'outlook') renderOutlook();
 });
 
 yearSel.addEventListener('change', () => { render(); if (currentView === 'global') renderGlobal(); if (currentView === 'outlook') renderOutlook(); });
 monthSel.addEventListener('change', () => { render(); if (currentView === 'global') renderGlobal(); if (currentView === 'multi') renderMulti(); if (currentView === 'markets') renderMarketsView(); });
 mktBind();
-loadRemoteData().then(live => { showDataBanner(live); render(); });
+loadRemoteData().then(live => {
+  showDataBanner(live);
+  // La vue par defaut est 'global' : on rend celle-ci, pas la vue PO.
+  // render() reste appele car le tableau PO alimente des agregats
+  // reutilises ailleurs, mais son panneau est masque.
+  render();
+  renderGlobal();
+  // Le filtre de zones est visible en vue National : l'afficher au demarrage.
+  document.getElementById('poFilterField').style.display = 'flex';
+});
 </script>
 </body>
 </html>
