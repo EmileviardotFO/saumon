@@ -371,6 +371,25 @@
       <tbody id="tbodyCalibre"></tbody>
     </table>
     <div class="verdict v-flat" id="calibreNote"></div>
+
+    <div class="sig-title" style="margin-top:26px;">Compare months</div>
+    <div class="sig-sub">Pick any two months to see the gap side by side. Useful for checking a month
+      against the same month a year earlier, or against the point you last took a harvesting decision.
+      Months still in progress carry fewer weekly reports — the week count is shown so you can judge
+      how solid each figure is.</div>
+    <div class="chart-controls">
+      <span class="cc-label">Month A</span>
+      <select class="ctrl" id="calCmpA"></select>
+      <span class="cc-label">Month B</span>
+      <select class="ctrl" id="calCmpB"></select>
+      <button class="ctrl" id="calCmpYoY" title="Set A to the same month one year before B">Same month, 1 year apart</button>
+    </div>
+    <table class="sig-table" id="calCmpTable"><thead><tr>
+      <th class="name">Indicator</th><th id="calCmpHdrA">A</th><th id="calCmpHdrB">B</th>
+      <th class="sep-left">Δ</th><th>Δ %</th>
+    </tr></thead><tbody id="tbodyCalCmp"></tbody></table>
+    <div class="verdict v-flat" id="calCmpNote"></div>
+
     <div class="sig-title" style="margin-top:26px;">Monthly detail, last 24 months</div>
     <table class="sig-table"><thead><tr>
       <th class="name">Month</th><th>Avg weight</th><th>Volume</th>
@@ -2815,8 +2834,13 @@ function mktBind() {
 
 function renderCalibreView() {
   const pct = (v,d=1) => (v === null || v === undefined) ? '—' : v.toFixed(d) + ' %';
+  // Les primes sont le seul indicateur de la page ou le signe s'interprete a
+  // l'envers du reste : ailleurs une hausse = plus d'offre concurrente (orange
+  // = alerte), ici une prime positive est une bonne nouvelle pour le vendeur
+  // de gros calibre. On inverse donc volontairement les classes ici, et
+  // seulement ici.
   const kr = v => (v === null || v === undefined) ? '—' :
-    `<span class="${v>0?'delta-pos':(v<0?'delta-neg':'delta-zero')}">${v>0?'+':''}${v.toFixed(2)}</span>`;
+    `<span class="${v>0?'delta-neg':(v<0?'delta-pos':'delta-zero')}">${v>0?'+':''}${v.toFixed(2)}</span>`;
   const tb = document.getElementById('tbodyCalibre');
   tb.innerHTML = '';
   CALIBRE.years.forEach(r => {
@@ -2852,6 +2876,101 @@ function renderCalibreView() {
       `<td class="sep-left" style="color:var(--muted)">${r.nw || '—'}</td>`;
     tm.appendChild(tr);
   });
+
+  renderCalCompare();
+}
+
+// ---------------------------------------------------------------------------
+//  Comparateur de mois libre (onglet calibre)
+// ---------------------------------------------------------------------------
+let calCmpInit = false;
+
+function calMonthLabel(k) { return MONTHS_FR[(k % 100) - 1] + ' ' + Math.floor(k / 100); }
+
+function renderCalCompare() {
+  const selA = document.getElementById('calCmpA'), selB = document.getElementById('calCmpB');
+  if (!selA || !selB) return;
+  const months = CALIBRE.months.filter(r => r.nw);   // uniquement les mois ayant au moins un rapport hebdo
+  if (!months.length) return;
+
+  if (!calCmpInit) {
+    // B = dernier mois disponible, A = meme mois un an avant si present,
+    // sinon le mois precedent : le defaut le plus souvent utile.
+    const opts = months.map(r => `<option value="${r.k}">${calMonthLabel(r.k)}</option>`).join('');
+    selA.innerHTML = opts; selB.innerHTML = opts;
+    const lastK = months[months.length - 1].k;
+    const yoyK = lastK - 100;
+    selB.value = lastK;
+    selA.value = months.some(r => r.k === yoyK) ? yoyK
+               : months[Math.max(0, months.length - 2)].k;
+    [selA, selB].forEach(s => s.addEventListener('change', renderCalCompare));
+    const btn = document.getElementById('calCmpYoY');
+    if (btn) btn.addEventListener('click', () => {
+      const target = (+selB.value) - 100;
+      if (months.some(r => r.k === target)) { selA.value = target; renderCalCompare(); }
+      else alert('Ce mois n\'existe pas dans la serie : ' + calMonthLabel(target));
+    });
+    calCmpInit = true;
+  }
+
+  const A = months.find(r => r.k === +selA.value), B = months.find(r => r.k === +selB.value);
+  if (!A || !B) return;
+  document.getElementById('calCmpHdrA').textContent = calMonthLabel(A.k);
+  document.getElementById('calCmpHdrB').textContent = calMonthLabel(B.k);
+
+  // 'better' dit dans quel sens lire la couleur : +1 = une hausse est
+  // favorable au vendeur de gros calibre (prime), -1 = une hausse est une
+  // alerte (plus d'offre concurrente), 0 = neutre, pas de couleur.
+  const rows = [
+    { lab: 'Avg harvest weight', k: 'hw',  unit: ' kg', d: 2, better: 0 },
+    { lab: 'Harvested volume',   k: 'vol', unit: ' kt', d: 0, better: -1 },
+    { lab: 'Share 6+, headcount', k: 'n6', unit: ' %',  d: 1, better: -1 },
+    { lab: 'Share 7+, headcount', k: 'n7', unit: ' %',  d: 1, better: -1 },
+    { lab: 'Share 6+, tonnage',   k: 't6', unit: ' %',  d: 1, better: -1 },
+    { lab: 'Share 7+, tonnage',   k: 't7', unit: ' %',  d: 1, better: -1 },
+    { lab: 'Premium 6+',  k: 'p6', unit: ' NOK/kg', d: 2, better: +1 },
+    { lab: 'Premium 7+',  k: 'p7', unit: ' NOK/kg', d: 2, better: +1 },
+  ];
+
+  const tb = document.getElementById('tbodyCalCmp');
+  tb.innerHTML = '';
+  rows.forEach(r => {
+    const a = A[r.k], b = B[r.k];
+    const has = a !== null && a !== undefined && b !== null && b !== undefined;
+    const fmt = v => (v === null || v === undefined) ? '—' : v.toFixed(r.d) + r.unit;
+    let dCell = '<td class="sep-left delta-zero">—</td>', pCell = '<td class="delta-zero">—</td>';
+    if (has) {
+      const dv = b - a;
+      // r.better decide de la couleur ; a 0 on laisse en gris plutot que
+      // d'imposer un jugement sur un indicateur qui n'en porte pas.
+      const good = r.better === 0 ? null : (dv * r.better > 0);
+      const cls = dv === 0 ? 'delta-zero' : (good === null ? 'delta-zero' : (good ? 'delta-neg' : 'delta-pos'));
+      dCell = `<td class="sep-left ${cls}">${dv > 0 ? '+' : ''}${dv.toFixed(r.d)}</td>`;
+      // Un pourcentage de variation n'a pas de sens sur une grandeur deja en
+      // points de pourcentage (les parts) ni sur une prime qui peut changer
+      // de signe : on l'affiche seulement pour poids et volume.
+      if ((r.k === 'hw' || r.k === 'vol') && a) {
+        const pv = 100 * dv / a;
+        pCell = `<td class="${cls}">${pv > 0 ? '+' : ''}${pv.toFixed(1)} %</td>`;
+      } else {
+        pCell = '<td class="delta-zero" title="Not meaningful for shares or premiums">—</td>';
+      }
+    }
+    tb.insertAdjacentHTML('beforeend',
+      `<tr><td class="name">${r.lab}</td><td>${fmt(a)}</td><td>${fmt(b)}</td>${dCell}${pCell}</tr>`);
+  });
+
+  const warn = (A.nw < 4 || B.nw < 4)
+    ? `<br><span class="warn">Careful: ${A.nw < 4 ? calMonthLabel(A.k) + ' has only ' + A.nw + ' weekly report(s)' : ''}`
+      + `${A.nw < 4 && B.nw < 4 ? ' and ' : ''}`
+      + `${B.nw < 4 ? calMonthLabel(B.k) + ' has only ' + B.nw + ' weekly report(s)' : ''}`
+      + ` — a partial month is not directly comparable to a full one.</span>` : '';
+  const volMissing = (A.vol === null || A.vol === undefined || B.vol === null || B.vol === undefined)
+    ? `<br><span style="color:var(--muted)">Weight and volume are missing for a month still awaiting its `
+      + `Biomasseregisteret release (published around the 20th of the following month).</span>` : '';
+  document.getElementById('calCmpNote').innerHTML =
+    `<span style="color:var(--muted)">Weekly reports behind each column: `
+    + `${calMonthLabel(A.k)} ${A.nw}, ${calMonthLabel(B.k)} ${B.nw}.</span>${warn}${volMissing}`;
 }
 
 function nationalMonthlySeries(poFilter) {
