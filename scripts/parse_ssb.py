@@ -55,6 +55,15 @@ STRUCTURE ECRITE
   nok = valeur FOB en couronnes
 Seules les cellules non nulles sont stockees.
 
+Verifie le 21/09/2026 sur un export Excel de la table (recoupe avec le
+Sjomatrad, ecart < 0,3 % sur juin 2024) :
+    - quantite en kg, valeur en couronnes ENTIERES (pas en milliers) ;
+    - pays en codes ISO 2 lettres ;
+    - codes marchandise SUFFIXES par l'annee de la nomenclature :
+      '03021411_2012', pas '03021411'. Le script lit donc les codes exacts
+      dans les metadonnees de la table au lieu de les supposer, et
+      ramene chaque ligne au code a 8 chiffres pour le stockage.
+
 Variables de la table 08799 confirmees le 18/08/2026 :
     Varekoder = code douanier (HS 8 chiffres)
     ImpEks    = direction, "2" = Export
@@ -160,23 +169,55 @@ def http_json(url):
         raise
 
 
-def available_months():
-    """Liste des mois publies, lue dans les metadonnees de la table plutot
-    que devinee depuis la date du jour. Renvoie None si la lecture echoue :
-    l'appelant bascule alors sur une estimation."""
+API_CODES = {c: c + '_2012' for c in CODES}   # repli si les metadonnees echouent
+
+
+def _cats(meta, dim):
+    idx = meta['dimension'][dim]['category']['index']
+    return sorted(idx, key=lambda c: idx[c]) if isinstance(idx, dict) else list(idx)
+
+
+def resolve_codes(varekoder):
+    """Pour chaque code a 8 chiffres, retrouve sa forme exacte dans la table
+    ('03021411_2012'). S'il en existe plusieurs versions, prend la plus
+    recente : c'est elle qui porte les mois actuels."""
+    out = {}
+    for base in CODES:
+        cand = [c for c in varekoder if c.split('_')[0] == base]
+        if not cand:
+            print(f"  ATTENTION : {base} introuvable dans la table -- repli sur {API_CODES[base]}")
+            out[base] = API_CODES[base]
+            continue
+        suffix = lambda c: int(c.split('_')[1]) if '_' in c and c.split('_')[1].isdigit() else 0
+        out[base] = max(cand, key=suffix)
+    return out
+
+
+def load_metadata():
+    """Lit les mois publies et les codes marchandise exacts. Met a jour
+    API_CODES en place. Renvoie la liste des mois, ou None si la lecture
+    echoue -- l'appelant bascule alors sur une estimation par la date."""
     try:
         meta = http_json(f"{BASE}/metadata?lang=en&outputFormat=json-stat2")
-        idx = meta['dimension']['Tid']['category']['index']
-        tids = sorted(idx, key=lambda c: idx[c]) if isinstance(idx, dict) else list(idx)
-        return [t for t in tids if len(t) == 7 and t[4] == 'M']
+        tids = [t for t in _cats(meta, 'Tid') if len(t) == 7 and t[4] == 'M']
+        try:
+            API_CODES.update(resolve_codes(_cats(meta, 'Varekoder')))
+        except KeyError:
+            print("  Dimension Varekoder absente des metadonnees -- codes suffixes _2012 par defaut.")
+        return tids
     except Exception as e:
         print(f"  Metadonnees illisibles ({e.__class__.__name__}: {e}) -- estimation par la date.")
         return None
 
 
+def base_code(api_code):
+    """'03021411_2012' -> '03021411'."""
+    return str(api_code).split('_')[0]
+
+
 def build_url(tids):
     return (f"{BASE}/data?lang=en"
-            f"&valueCodes[Varekoder]={','.join(CODES)}"
+            f"&valueCodes[Varekoder]={','.join(API_CODES[c] for c in CODES)}"
             f"&valueCodes[ImpEks]=2"
             f"&valueCodes[Land]=*"
             f"&valueCodes[ContentsCode]=Mengde1,Verdi"
@@ -228,7 +269,7 @@ def fetch(tids):
         rows, labels = parse_jsonstat2(http_json(build_url(part)))
         names.update(labels.get('Land', {}))
         for r in rows:
-            key = (tid_to_k(r['Tid']), r['Varekoder'], r['Land'])
+            key = (tid_to_k(r['Tid']), base_code(r['Varekoder']), r['Land'])
             slot = cells.setdefault(key, [0, 0])
             if r['ContentsCode'] == 'Mengde1':
                 slot[0] += r['value']
@@ -311,10 +352,11 @@ def main():
     stored = {int(k) for k in store.get('meta', {}).get('months', {})}
 
     if args.start:
+        load_metadata()   # pour les codes marchandise exacts
         tids = month_range(args.start, args.end) if args.end else [args.start]
         print(f"Mode manuel : {len(tids)} mois demandes.")
     else:
-        avail = available_months()
+        avail = load_metadata()
         if avail is None:
             # Repli : SSB publie le commerce exterieur avec environ un mois
             # de decalage. Un mois pas encore rempli reviendra vide et sera
