@@ -1,0 +1,54 @@
+name: Import Excel SSB (exports par pays et par produit)
+
+# Meme principe que update-biomasse.yml : deposer un export Statistikkbanken
+# (table 08799) dans xlsx/ssb/ declenche l'import. Plan B si l'API SSB refuse
+# les requetes du workflow automatique, ou pour charger un historique d'un coup.
+on:
+  push:
+    paths:
+      - 'xlsx/ssb/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Installer les dependances
+        run: pip install openpyxl
+
+      - name: Trouver l'export le plus recent
+        id: find
+        run: |
+          shopt -s nullglob
+          FILES=(xlsx/ssb/*.xlsx)
+          if [ ${#FILES[@]} -eq 0 ]; then
+            echo "Aucun fichier .xlsx dans xlsx/ssb/."
+            exit 1
+          fi
+          FILE=$(ls -t xlsx/ssb/*.xlsx | head -n 1)
+          echo "Fichier retenu : $FILE"
+          echo "file=$FILE" >> "$GITHUB_OUTPUT"
+
+      - name: Importer dans data.json
+        run: python3 scripts/parse_ssb.py --excel "${{ steps.find.outputs.file }}"
+
+      - name: Publier data.json
+        run: |
+          git config user.name  "github-actions"
+          git config user.email "actions@github.com"
+          git add data/data.json
+          if git diff --staged --quiet; then
+            echo "Aucun changement."
+          else
+            git commit -m "Import Excel SSB ($(date +%Y-%m-%d))"
+            git push
+          fi
