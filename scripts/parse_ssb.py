@@ -1,54 +1,94 @@
 #!/usr/bin/env python3
 """
-Extracteur SSB (Statistikkbanken, table 08799) pour les exports de saumon
-par pays -- alternative a la table 7 des rapports Akvafakta maned.
+Exports norvegiens de saumon par pays ET par produit, depuis SSB
+(Statistikkbanken, table 08799, mensuel).
 
 Usage :
-    python3 scripts/parse_ssb.py 2026M07              # un seul mois
-    python3 scripts/parse_ssb.py 2026M01 2026M07       # plage de mois
+    python3 scripts/parse_ssb.py                 # mode normal (automatisation)
+    python3 scripts/parse_ssb.py 2026M07         # un seul mois
+    python3 scripts/parse_ssb.py 2026M01 2026M07 # une plage de mois
+    python3 scripts/parse_ssb.py --dry-run       # affiche ce qui serait fait
 
-Ecrit/met a jour data/data.json, cle 'country_ssb' -- separee de 'country'
-(issue d'Akvafakta) pour pouvoir comparer les deux sources sans que l'une
-n'ecrase l'autre.
+Ecrit dans data/data.json, cle 'ssb_exports'. Les cles existantes
+('country' d'Akvafakta, 'country_ssb' d'essais anterieurs) ne sont pas touchees.
 
-Structure ecrite, un objet par mois :
-    {"year":2026,"month":7,"pays":[
-        {"pays":"Polen","q":..., "v":...}, ...
-    ]}
-    q en tonnes (poids rond), v en NOK (pas en milliers -- SSB donne des
-    valeurs en couronnes entieres, a verifier au premier import reel).
+POIDS PRODUIT, VOLONTAIREMENT
+-----------------------------
+SSB donne le poids net du produit tel qu'il passe la frontiere : un kilo de
+filet compte pour un kilo. Akvafakta, lui, ramene tout en equivalent poids
+rond. Les deux sont gardes separes a dessein : l'ecart entre eux renseigne
+sur le degre de transformation de chaque marche. On ne convertit donc rien,
+et on ne somme JAMAIS les quatre codes entre eux -- chaque produit reste
+une serie distincte.
 
-Table 08799 : "External trade in goods, by commodity number (HS) and
-country". Variables confirmees le 18/08/2026 :
-    Varekoder   = code douanier (HS)
-    ImpEks       = direction, "2" = Export
-    Land         = pays partenaire (codes ISO 2 lettres)
-    ContentsCode = Mengde1 (quantite) / Verdi (valeur NOK) / Mengde2
-    Tid          = mois, format AAAAMxx (ex. 2026M07)
+REVISIONS
+---------
+SSB publie un mois, puis le revise. D'apres le calendrier que SSB documente
+pour ses chiffres annuels : premiere publication, revision en mai de l'annee
+suivante, chiffres definitifs en mai de l'annee d'apres. Un mois de janvier
+de l'annee t n'est donc definitif qu'en mai t+2, soit 28 mois plus tard.
+
+A chaque passage, le script re-telecharge :
+  - tous les mois qui ne sont pas encore definitifs ;
+  - tout mois manquant dans data.json (auto-reparation apres un echec) ;
+  - au tout premier passage, l'historique complet depuis BACKFILL_FROM.
+Les mois deja definitifs et presents ne sont plus jamais interroges.
+
+Chaque mois porte un statut : 'provisional', 'revised' ou 'final'. Le
+tableau de bord peut s'en servir pour distinguer les chiffres fragiles.
+
+STRUCTURE ECRITE
+----------------
+    "ssb_exports": {
+      "meta": {
+        "products":  {"03021411": "Fresh whole ...", ...},
+        "cols":      ["k", "hs", "iso", "kg", "nok"],
+        "countries": {"PL": {"name": "Poland", "akva": "Polen"}, ...},
+        "months":    {"202607": {"status": "provisional", "fetched": "2026-09-21"}, ...},
+        "updated":   "2026-09-21"
+      },
+      "rows": [[202607, 0, "PL", 12345678, 987654321], ...]
+    }
+  k   = annee*100+mois (meme convention que le reste du tableau de bord)
+  hs  = index dans la liste des produits (compacite : ~40 000 lignes)
+  kg  = poids produit net, en kilos
+  nok = valeur FOB en couronnes
+Seules les cellules non nulles sont stockees.
+
+Variables de la table 08799 confirmees le 18/08/2026 :
+    Varekoder = code douanier (HS 8 chiffres)
+    ImpEks    = direction, "2" = Export
+    Land      = pays partenaire (codes ISO 2 lettres)
+    ContentsCode = Mengde1 (kg) / Verdi (NOK) / Mengde2 (inutilise ici)
+    Tid       = mois, format AAAAMxx
 """
-import sys, json, io, os, argparse
-import urllib.request
+import sys, json, io, os, argparse, time
+import datetime as dt
+import urllib.request, urllib.error
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, 'data', 'data.json')
 TABLE = "08799"
-BASE = f"https://data.ssb.no/api/pxwebapi/v2/tables/{TABLE}/data"
+BASE = f"https://data.ssb.no/api/pxwebapi/v2/tables/{TABLE}"
+KEY = 'ssb_exports'
 
-# Codes douaniers du saumon d'elevage. A confirmer au premier essai reel --
-# ce sont les codes generalement cites dans la documentation SSB (03024,
-# et les tables fillet 03044/03048), mais les tables changent parfois de
-# nomenclature d'une annee sur l'autre (ex. 2012 -> 03021411/03021419).
-HS_SALMON = [
-    '03021411', '03021419',   # entier, frais/refrigere
-    '03031311', '03031319',   # entier, congele
-    '03044100',                # filet, frais/refrigere
-    '03048100',                # filet, congele
-]
+# Les quatre codes retenus : 99,5 % du volume de saumon exporte en 2024.
+# L'ordre compte : l'index sert de reference compacte dans les lignes.
+PRODUCTS = {
+    '03021411': 'Fresh whole, farmed, head on',
+    '03044100': 'Fresh fillet',
+    '03048100': 'Frozen fillet',
+    '03031311': 'Frozen whole, farmed, head on',
+}
+CODES = list(PRODUCTS)
 
-# Codes ISO SSB (2 lettres) -> noms utilises cote Akvafakta dans data.json,
-# pour pouvoir comparer les deux sources sur les memes cles. Liste partielle
-# volontairement -- les pays absents d'ici s'affichent avec leur code ISO
-# brut plutot que de faire planter le script.
+BACKFILL_FROM = '2018M01'   # debut de la serie, aligne sur Akvafakta
+CHUNK = 12                  # mois par requete, pour rester sous la limite de cellules
+PAUSE = 1.0                 # secondes entre deux requetes, par courtoisie envers l'API
+
+# Codes ISO SSB -> noms utilises par Akvafakta dans data.json, pour pouvoir
+# joindre les deux sources dans le tableau de bord. Un pays absent d'ici
+# garde son nom anglais SSB, sans que rien ne casse.
 ISO_TO_AKVA = {
     'PL': 'Polen', 'DK': 'Danmark', 'NL': 'Nederland', 'FR': 'Frankrike',
     'ES': 'Spania', 'IT': 'Italia', 'DE': 'Tyskland', 'LT': 'Litauen',
@@ -67,151 +107,265 @@ ISO_TO_AKVA = {
 }
 
 
-def build_url(tid_values):
-    """tid_values : liste de mois au format '2026M07'."""
-    commodity = ",".join(HS_SALMON)
-    tid = ",".join(tid_values)
-    return (f"{BASE}?lang=en"
-            f"&valueCodes[Varekoder]={commodity}"
-            f"&valueCodes[ImpEks]=2"
-            f"&valueCodes[Land]=*"
-            f"&valueCodes[ContentsCode]=Mengde1,Verdi"
-            f"&valueCodes[Tid]={tid}"
-            f"&outputFormat=json-stat2")
+# ---------------------------------------------------------------------------
+#  Mois : conversions et statut de revision
+# ---------------------------------------------------------------------------
+def tid_to_k(tid):
+    """'2026M07' -> 202607"""
+    return int(tid[:4]) * 100 + int(tid[5:])
 
 
-def fetch(url):
+def k_to_tid(k):
+    return f"{k // 100}M{k % 100:02d}"
+
+
+def month_range(start_tid, end_tid):
+    y, m = int(start_tid[:4]), int(start_tid[5:])
+    ey, em = int(end_tid[:4]), int(end_tid[5:])
+    out = []
+    while (y, m) <= (ey, em):
+        out.append(f"{y}M{m:02d}")
+        m += 1
+        if m > 12:
+            m, y = 1, y + 1
+    return out
+
+
+def status_of(k, today):
+    """Statut d'un mois selon le calendrier de revision SSB : definitif en
+    mai de l'annee t+2, revise une premiere fois en mai de t+1."""
+    y = k // 100
+    if today >= dt.date(y + 2, 5, 1):
+        return 'final'
+    if today >= dt.date(y + 1, 5, 1):
+        return 'revised'
+    return 'provisional'
+
+
+# ---------------------------------------------------------------------------
+#  API SSB
+# ---------------------------------------------------------------------------
+def http_json(url):
     req = urllib.request.Request(url, headers={"Accept": "application/json"})
     try:
-        with urllib.request.urlopen(req, timeout=60) as r:
+        with urllib.request.urlopen(req, timeout=90) as r:
             return json.loads(r.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
-        # L'API SSB explique generalement en clair, dans le corps de la
-        # reponse, quel parametre a ete rejete -- urllib le masque par
-        # defaut derriere un simple "400 Bad Request". On l'affiche ici
-        # pour ne plus avoir a deviner d'un essai a l'autre.
+        # L'API SSB explique en clair, dans le corps de la reponse, quel
+        # parametre elle rejette ; urllib le masque derriere un simple code.
         body = e.read().decode('utf-8', errors='replace')
         print("=== Reponse d'erreur de l'API SSB ===")
-        print(body)
+        print(body[:2000])
         print("======================================")
         raise
 
 
+def available_months():
+    """Liste des mois publies, lue dans les metadonnees de la table plutot
+    que devinee depuis la date du jour. Renvoie None si la lecture echoue :
+    l'appelant bascule alors sur une estimation."""
+    try:
+        meta = http_json(f"{BASE}/metadata?lang=en&outputFormat=json-stat2")
+        idx = meta['dimension']['Tid']['category']['index']
+        tids = sorted(idx, key=lambda c: idx[c]) if isinstance(idx, dict) else list(idx)
+        return [t for t in tids if len(t) == 7 and t[4] == 'M']
+    except Exception as e:
+        print(f"  Metadonnees illisibles ({e.__class__.__name__}: {e}) -- estimation par la date.")
+        return None
+
+
+def build_url(tids):
+    return (f"{BASE}/data?lang=en"
+            f"&valueCodes[Varekoder]={','.join(CODES)}"
+            f"&valueCodes[ImpEks]=2"
+            f"&valueCodes[Land]=*"
+            f"&valueCodes[ContentsCode]=Mengde1,Verdi"
+            f"&valueCodes[Tid]={','.join(tids)}"
+            f"&outputFormat=json-stat2")
+
+
 def parse_jsonstat2(data):
-    """Decode une reponse json-stat2 generique (dimensions quelconques,
-    ordre donne par data['id']) en liste de dict {dim: valeur, ...,
-    'value': x}. Le decodage json-stat2 standard : chaque dimension a un
-    'category.index' qui mappe id -> position ; 'value' est un tableau a
-    plat parcouru en "row-major" selon l'ordre de data['id'], la derniere
+    """Decode une reponse json-stat2 quelconque en lignes {dim: code, ...,
+    'value': x}, et renvoie aussi les libelles par dimension. Les valeurs
+    sont parcourues en ordre 'row-major' selon data['id'], la derniere
     dimension variant le plus vite."""
     dims = data['id']
     sizes = [data['size'][i] for i in range(len(dims))]
-    cats = []
+    cats, labels = [], {}
     for d in dims:
-        idx = data['dimension'][d]['category']['index']
-        # idx peut etre un dict {code: position} ou une liste ordonnee
+        cat = data['dimension'][d]['category']
+        idx = cat['index']
         if isinstance(idx, dict):
-            ordered = sorted(idx.items(), key=lambda kv: kv[1])
-            cats.append([code for code, _ in ordered])
+            cats.append([c for c, _ in sorted(idx.items(), key=lambda kv: kv[1])])
         else:
             cats.append(list(idx))
+        labels[d] = cat.get('label', {})
 
-    values = data['value']
-    rows = []
-    n = len(values)
-    # position multi-dimensionnelle -> indices par dimension
     strides = [1] * len(dims)
     for i in range(len(dims) - 2, -1, -1):
         strides[i] = strides[i + 1] * sizes[i + 1]
 
-    for flat in range(n):
-        v = values[flat]
-        if v is None:
+    rows = []
+    for flat, v in enumerate(data['value']):
+        if v is None:          # cellule absente ou confidentielle
             continue
-        rem = flat
-        row = {}
+        rem, row = flat, {}
         for i, d in enumerate(dims):
-            pos = rem // strides[i]
-            rem = rem % strides[i]
-            row[d] = cats[i][pos]
+            row[d] = cats[i][rem // strides[i]]
+            rem %= strides[i]
         row['value'] = v
         rows.append(row)
-    return rows
+    return rows, labels
 
 
-def to_country_records(rows):
-    """Regroupe les lignes plates par (annee, mois, pays) -> {q, v}."""
-    by_key = {}
-    for r in rows:
-        tid = r['Tid']                       # ex. '2026M07'
-        year, month = int(tid[:4]), int(tid[5:])
-        land = r['Land']
-        pays = ISO_TO_AKVA.get(land, land)
-        content = r['ContentsCode']
-        key = (year, month, pays)
-        entry = by_key.setdefault(key, {'q': None, 'v': None})
-        if content == 'Mengde1':
-            entry['q'] = (entry['q'] or 0) + r['value']
-        elif content == 'Verdi':
-            entry['v'] = (entry['v'] or 0) + r['value']
+def fetch(tids):
+    """Telecharge des mois par paquets de CHUNK. Renvoie
+    ({(k, code, iso): [kg, nok]}, {iso: libelle})."""
+    cells, names = {}, {}
+    for i in range(0, len(tids), CHUNK):
+        part = tids[i:i + CHUNK]
+        print(f"  requete {part[0]} -> {part[-1]} ...")
+        rows, labels = parse_jsonstat2(http_json(build_url(part)))
+        names.update(labels.get('Land', {}))
+        for r in rows:
+            key = (tid_to_k(r['Tid']), r['Varekoder'], r['Land'])
+            slot = cells.setdefault(key, [0, 0])
+            if r['ContentsCode'] == 'Mengde1':
+                slot[0] += r['value']
+            elif r['ContentsCode'] == 'Verdi':
+                slot[1] += r['value']
+        if i + CHUNK < len(tids):
+            time.sleep(PAUSE)
+    return cells, names
 
-    by_month = {}
-    for (year, month, pays), vals in by_key.items():
-        if vals['q'] is None and vals['v'] is None:
+
+# ---------------------------------------------------------------------------
+#  Fusion dans data.json
+# ---------------------------------------------------------------------------
+def merge(store, cells, names, fetched_tids, today):
+    """Remplace dans 'store' tous les mois re-telecharges. Garde-fou : un mois
+    qui revient entierement vide n'ecrase PAS ce qui existe deja -- c'est
+    presque toujours un mois annonce mais pas encore rempli, pas un vrai zero."""
+    meta = store.setdefault('meta', {})
+    meta['products'] = PRODUCTS
+    meta['cols'] = ['k', 'hs', 'iso', 'kg', 'nok']
+    meta.setdefault('countries', {})
+    meta.setdefault('months', {})
+    rows = store.setdefault('rows', [])
+
+    fetched_k = {tid_to_k(t) for t in fetched_tids}
+    nonempty = {k for (k, _, _), (kg, nok) in cells.items() if kg or nok}
+    skipped = sorted(fetched_k - nonempty)
+    replace = fetched_k & nonempty
+
+    # Totaux avant, pour mesurer l'ampleur des revisions.
+    before = {}
+    for k, hs, iso, kg, nok in rows:
+        if k in replace:
+            before[(k, hs)] = before.get((k, hs), 0) + kg
+
+    rows[:] = [r for r in rows if r[0] not in replace]
+    added = 0
+    for (k, code, iso), (kg, nok) in sorted(cells.items()):
+        if k not in replace or code not in PRODUCTS or not (kg or nok):
             continue
-        m = by_month.setdefault((year, month), [])
-        m.append({'pays': pays, 'q': vals['q'] or 0, 'v': vals['v'] or 0})
-    return by_month
+        rows.append([k, CODES.index(code), iso, int(round(kg)), int(round(nok))])
+        added += 1
+        if iso not in meta['countries']:
+            entry = {'name': names.get(iso, iso)}
+            if iso in ISO_TO_AKVA:
+                entry['akva'] = ISO_TO_AKVA[iso]
+            meta['countries'][iso] = entry
+    rows.sort(key=lambda r: (r[0], r[1], r[2]))
+
+    for k in replace:
+        meta['months'][str(k)] = {'status': status_of(k, today),
+                                  'fetched': today.isoformat()}
+    meta['updated'] = today.isoformat()
+
+    # Rapport de revisions : on ne signale que les ecarts notables.
+    after = {}
+    for k, hs, iso, kg, nok in rows:
+        if k in replace:
+            after[(k, hs)] = after.get((k, hs), 0) + kg
+    revisions = []
+    for key, old in before.items():
+        new = after.get(key, 0)
+        if old and abs(new - old) / old > 0.005:
+            revisions.append((key, old, new))
+    return added, skipped, sorted(revisions)
 
 
+# ---------------------------------------------------------------------------
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('start', help="premier mois, ex 2026M01")
+    ap.add_argument('start', nargs='?', help="premier mois, ex 2026M01")
     ap.add_argument('end', nargs='?', help="dernier mois (optionnel)")
     ap.add_argument('--dry-run', action='store_true',
-                    help="affiche l'URL et un extrait sans ecrire data.json")
+                    help="affiche les mois et l'URL sans rien ecrire")
     args = ap.parse_args()
+    today = dt.date.today()
 
-    if args.end:
-        # construire la liste des mois entre start et end inclus
-        sy, sm = int(args.start[:4]), int(args.start[5:])
-        ey, em = int(args.end[:4]), int(args.end[5:])
-        months = []
-        y, m = sy, sm
-        while (y, m) <= (ey, em):
-            months.append(f"{y}M{m:02d}")
-            m += 1
-            if m > 12:
-                m = 1; y += 1
+    data = json.load(io.open(DATA, encoding='utf-8')) if os.path.exists(DATA) else {}
+    store = data.get(KEY, {})
+    stored = {int(k) for k in store.get('meta', {}).get('months', {})}
+
+    if args.start:
+        tids = month_range(args.start, args.end) if args.end else [args.start]
+        print(f"Mode manuel : {len(tids)} mois demandes.")
     else:
-        months = [args.start]
+        avail = available_months()
+        if avail is None:
+            # Repli : SSB publie le commerce exterieur avec environ un mois
+            # de decalage. Un mois pas encore rempli reviendra vide et sera
+            # ignore par le garde-fou de merge().
+            last = today.replace(day=1) - dt.timedelta(days=1)
+            avail = month_range(BACKFILL_FROM, f"{last.year}M{last.month:02d}")
+        avail = [t for t in avail if tid_to_k(t) >= tid_to_k(BACKFILL_FROM)]
+        tids = [t for t in avail
+                if tid_to_k(t) not in stored
+                or status_of(tid_to_k(t), today) != 'final']
+        if not stored:
+            print(f"Premier passage : historique complet depuis {BACKFILL_FROM}.")
+        print(f"Mode automatique : {len(tids)} mois a (re)telecharger "
+              f"sur {len(avail)} publies.")
 
-    url = build_url(months)
-    print("URL :", url)
+    if not tids:
+        print("Rien a faire.")
+        return
     if args.dry_run:
+        print("Mois :", ', '.join(tids))
+        print("Premiere URL :", build_url(tids[:CHUNK]))
         return
 
-    raw = fetch(url)
-    rows = parse_jsonstat2(raw)
-    print(f"{len(rows)} lignes decodees")
-    by_month = to_country_records(rows)
+    cells, names = fetch(tids)
+    added, skipped, revisions = merge(store, cells, names, tids, today)
+    data[KEY] = store
 
-    data = json.load(io.open(DATA)) if os.path.exists(DATA) else {}
-    data.setdefault('country_ssb', [])
-    existing = {(r['year'], r['month']) for r in data['country_ssb']}
+    # Ecriture atomique : un plantage en cours d'ecriture ne doit jamais
+    # laisser un data.json tronque, que tous les autres scripts relisent.
+    tmp = DATA + '.tmp'
+    io.open(tmp, 'w', encoding='utf-8').write(
+        json.dumps(data, ensure_ascii=False, separators=(',', ':')))
+    os.replace(tmp, DATA)
 
-    added = 0
-    for (year, month), pays in by_month.items():
-        key = (year, month)
-        data['country_ssb'] = [r for r in data['country_ssb']
-                               if (r['year'], r['month']) != key]
-        data['country_ssb'].append({'year': year, 'month': month, 'pays': pays})
-        if key not in existing:
-            added += 1
-
-    data['country_ssb'].sort(key=lambda r: (r['year'], r['month']))
-    io.open(DATA, 'w').write(json.dumps(data, ensure_ascii=False, separators=(',', ':')))
-    print(f"{added} nouveaux mois, {len(data['country_ssb'])} au total dans country_ssb")
+    months = store['meta']['months']
+    n_by = {s: sum(1 for m in months.values() if m['status'] == s)
+            for s in ('provisional', 'revised', 'final')}
+    print(f"\n{added} lignes ecrites pour {len(tids) - len(skipped)} mois.")
+    if skipped:
+        print(f"  {len(skipped)} mois revenus vides, NON ecrases : "
+              + ', '.join(k_to_tid(k) for k in skipped))
+    if revisions:
+        print(f"  {len(revisions)} revision(s) de plus de 0,5 % :")
+        for (k, hs), old, new in revisions[:15]:
+            print(f"    {k_to_tid(k)} {CODES[hs]} : {old/1000:,.0f} t -> "
+                  f"{new/1000:,.0f} t ({100*(new-old)/old:+.1f} %)")
+    print(f"Stock : {len(store['rows'])} lignes, {len(months)} mois "
+          f"({n_by['final']} definitifs, {n_by['revised']} revises, "
+          f"{n_by['provisional']} provisoires), "
+          f"{len(store['meta']['countries'])} pays.")
+    print(f"data.json : {os.path.getsize(DATA)/1e6:.1f} Mo")
 
 
 if __name__ == '__main__':
