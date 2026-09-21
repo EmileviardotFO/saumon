@@ -8,6 +8,16 @@ Usage :
     python3 scripts/parse_ssb.py 2026M07         # un seul mois
     python3 scripts/parse_ssb.py 2026M01 2026M07 # une plage de mois
     python3 scripts/parse_ssb.py --dry-run       # affiche ce qui serait fait
+    python3 scripts/parse_ssb.py --excel f.xlsx  # import d'un export Statistikkbanken
+
+IMPORT EXCEL
+------------
+Plan B si l'API refuse les requetes, ou pour charger d'un coup un historique
+exporte a la main depuis https://www.ssb.no/statbank/table/08799. Le fichier
+passe par la meme fusion que l'API (memes garde-fous, memes statuts de
+revision). Les deux ordres de dimensions produits par Statistikkbanken sont
+acceptes (pays puis produit, ou produit puis pays). Attention a cocher TOUS
+les pays a l'export : l'interface en selectionne parfois une partie seulement.
 
 Ecrit dans data/data.json, cle 'ssb_exports'. Les cles existantes
 ('country' d'Akvafakta, 'country_ssb' d'essais anterieurs) ne sont pas touchees.
@@ -91,7 +101,10 @@ PRODUCTS = {
 }
 CODES = list(PRODUCTS)
 
-BACKFILL_FROM = '2018M01'   # debut de la serie, aligne sur Akvafakta
+BACKFILL_FROM = '2018M01'
+# Un export Statistikkbanken complet liste ~260 pays (zeros compris). En
+# dessous de ce seuil, l'Excel est traite comme une selection partielle.
+FULL_COUNTRY_LIST = 200   # debut de la serie, aligne sur Akvafakta
 CHUNK = 12                  # mois par requete, pour rester sous la limite de cellules
 PAUSE = 1.0                 # secondes entre deux requetes, par courtoisie envers l'API
 
@@ -281,9 +294,81 @@ def fetch(tids):
 
 
 # ---------------------------------------------------------------------------
+#  Import d'un export Excel Statistikkbanken
+# ---------------------------------------------------------------------------
+def _num(x):
+    """Les cellules arrivent en nombre ou en texte ('0', '.', '..' pour une
+    valeur confidentielle ou absente) : tout ce qui n'est pas un nombre vaut 0."""
+    if x is None:
+        return 0.0
+    if isinstance(x, (int, float)):
+        return float(x)
+    try:
+        return float(str(x).replace(' ', '').replace('\u00a0', ''))
+    except ValueError:
+        return 0.0
+
+
+def read_excel(path):
+    """Renvoie (cells, names, tids) au meme format que fetch()."""
+    import re, openpyxl
+    rows = list(openpyxl.load_workbook(path, read_only=True).worksheets[0].iter_rows(values_only=True))
+
+    # En-tetes : la ligne des mesures, puis celle des mois, puis celle du sens.
+    hi = next(i for i, r in enumerate(rows) if any(str(v).startswith('Quantity 1') for v in r if v))
+    mrow, drow = rows[hi + 1], rows[hi + 2]
+    blocks = [(i, str(v)) for i, v in enumerate(rows[hi]) if v]
+    cols = {}   # (mesure, tid) -> colonne des EXPORTS
+    for bi, (st, lab) in enumerate(blocks):
+        en = blocks[bi + 1][0] if bi + 1 < len(blocks) else len(mrow)
+        measure = 'kg' if lab.startswith('Quantity 1') else ('nok' if lab.startswith('Value') else None)
+        if not measure:
+            continue
+        month = None
+        for c in range(st, en):
+            if mrow[c]:
+                month = str(mrow[c])
+            if month and drow[c] and str(drow[c]).startswith('Export'):
+                cols[(measure, month)] = c
+    tids = sorted({m for (_, m) in cols})
+
+    is_country = re.compile(r'^[A-Z0-9]{2} ')
+    is_code = re.compile(r'^\d{8}')
+    cells, names, present = {}, {}, set()
+    code = iso = None
+    for r in rows[hi + 3:]:
+        # Chaque ligne peut porter le produit, le pays, ou les deux, dans
+        # l'ordre choisi a l'export : on reconnait chacun a son format.
+        for v in r[:2]:
+            if v is None:
+                continue
+            v = str(v)
+            if is_code.match(v):
+                code = base_code(v.split(' ')[0])
+            elif is_country.match(v):
+                iso = v[:2]
+                names.setdefault(iso, v[3:].strip())
+                present.add(iso)
+        if not code or not iso or code not in PRODUCTS:
+            continue
+        for t in tids:
+            kg = _num(r[cols[('kg', t)]]) if ('kg', t) in cols else 0.0
+            nok = _num(r[cols[('nok', t)]]) if ('nok', t) in cols else 0.0
+            if kg or nok:
+                slot = cells.setdefault((tid_to_k(t), code, iso), [0, 0])
+                slot[0] += kg
+                slot[1] += nok
+    # Rien avant le debut de la serie : un export complet de Statistikkbanken
+    # remonte a 1988, inutile ici et lourd dans data.json.
+    tids = [t for t in tids if tid_to_k(t) >= tid_to_k(BACKFILL_FROM)]
+    cells = {k: v for k, v in cells.items() if k[0] >= tid_to_k(BACKFILL_FROM)}
+    return cells, names, tids, present
+
+
+# ---------------------------------------------------------------------------
 #  Fusion dans data.json
 # ---------------------------------------------------------------------------
-def merge(store, cells, names, fetched_tids, today):
+def merge(store, cells, names, fetched_tids, today, scope_iso=None, partial=False, source='api'):
     """Remplace dans 'store' tous les mois re-telecharges. Garde-fou : un mois
     qui revient entierement vide n'ecrase PAS ce qui existe deja -- c'est
     presque toujours un mois annonce mais pas encore rempli, pas un vrai zero."""
@@ -305,7 +390,10 @@ def merge(store, cells, names, fetched_tids, today):
         if k in replace:
             before[(k, hs)] = before.get((k, hs), 0) + kg
 
-    rows[:] = [r for r in rows if r[0] not in replace]
+    # Avec un perimetre (import Excel), seuls les pays presents dans le fichier
+    # sont remplaces : un export limite a l'Europe ne doit pas effacer l'Asie.
+    rows[:] = [r for r in rows
+               if not (r[0] in replace and (scope_iso is None or r[2] in scope_iso))]
     added = 0
     for (k, code, iso), (kg, nok) in sorted(cells.items()):
         if k not in replace or code not in PRODUCTS or not (kg or nok):
@@ -320,8 +408,15 @@ def merge(store, cells, names, fetched_tids, today):
     rows.sort(key=lambda r: (r[0], r[1], r[2]))
 
     for k in replace:
-        meta['months'][str(k)] = {'status': status_of(k, today),
-                                  'fetched': today.isoformat()}
+        prev = meta['months'].get(str(k))
+        # Un mois cree par un fichier partiel est marque : l'API le completera
+        # au passage suivant. Un mois deja complet ne devient pas partiel parce
+        # qu'un Excel en a corrige quelques pays.
+        still_partial = partial and (prev is None or prev.get('partial', False))
+        entry = {'status': status_of(k, today), 'fetched': today.isoformat(), 'source': source}
+        if still_partial:
+            entry['partial'] = True
+        meta['months'][str(k)] = entry
     meta['updated'] = today.isoformat()
 
     # Rapport de revisions : on ne signale que les ecarts notables.
@@ -342,6 +437,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('start', nargs='?', help="premier mois, ex 2026M01")
     ap.add_argument('end', nargs='?', help="dernier mois (optionnel)")
+    ap.add_argument('--excel', help="importer un export Excel Statistikkbanken")
     ap.add_argument('--dry-run', action='store_true',
                     help="affiche les mois et l'URL sans rien ecrire")
     args = ap.parse_args()
@@ -350,6 +446,22 @@ def main():
     data = json.load(io.open(DATA, encoding='utf-8')) if os.path.exists(DATA) else {}
     store = data.get(KEY, {})
     stored = {int(k) for k in store.get('meta', {}).get('months', {})}
+
+    if args.excel:
+        print(f"Import Excel : {args.excel}")
+        cells, names, tids, present = read_excel(args.excel)
+        partial = len(present) < FULL_COUNTRY_LIST
+        print(f"  {len(tids)} mois ({tids[0]} -> {tids[-1]}), {len(present)} pays dans le fichier, "
+              f"{len({c[2] for c in cells})} avec des exports"
+              + (" -- SELECTION PARTIELLE : seuls ces pays seront mis a jour" if partial else ""))
+        if args.dry_run:
+            return
+        added, skipped, revisions = merge(store, cells, names, tids, today,
+                                          scope_iso=present, partial=partial, source='excel')
+        data[KEY] = store
+        _write(data)
+        _report(store, tids, added, skipped, revisions)
+        return
 
     if args.start:
         load_metadata()   # pour les codes marchandise exacts
@@ -364,9 +476,11 @@ def main():
             last = today.replace(day=1) - dt.timedelta(days=1)
             avail = month_range(BACKFILL_FROM, f"{last.year}M{last.month:02d}")
         avail = [t for t in avail if tid_to_k(t) >= tid_to_k(BACKFILL_FROM)]
+        mmeta = store.get('meta', {}).get('months', {})
         tids = [t for t in avail
                 if tid_to_k(t) not in stored
-                or status_of(tid_to_k(t), today) != 'final']
+                or status_of(tid_to_k(t), today) != 'final'
+                or mmeta.get(str(tid_to_k(t)), {}).get('partial')]
         if not stored:
             print(f"Premier passage : historique complet depuis {BACKFILL_FROM}.")
         print(f"Mode automatique : {len(tids)} mois a (re)telecharger "
@@ -383,7 +497,11 @@ def main():
     cells, names = fetch(tids)
     added, skipped, revisions = merge(store, cells, names, tids, today)
     data[KEY] = store
+    _write(data)
+    _report(store, tids, added, skipped, revisions)
 
+
+def _write(data):
     # Ecriture atomique : un plantage en cours d'ecriture ne doit jamais
     # laisser un data.json tronque, que tous les autres scripts relisent.
     tmp = DATA + '.tmp'
@@ -391,6 +509,8 @@ def main():
         json.dumps(data, ensure_ascii=False, separators=(',', ':')))
     os.replace(tmp, DATA)
 
+
+def _report(store, tids, added, skipped, revisions):
     months = store['meta']['months']
     n_by = {s: sum(1 for m in months.values() if m['status'] == s)
             for s in ('provisional', 'revised', 'final')}
