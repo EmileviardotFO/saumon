@@ -115,6 +115,25 @@
   .sig-divider { border: none; border-top: 1px solid var(--border); margin: 26px 0 20px; }
   .chart-controls { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin: 10px 0 6px; }
   .cc-label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+  /* Onglet Product per market : menu produits et graphique par pays */
+  .pm-dd { position:relative; display:inline-block; }
+  .pm-dd-btn { padding:8px 28px 8px 10px; background:#0d1a24; color:var(--ink); border:1px solid var(--border);
+    border-radius:6px; font-size:14px; min-width:230px; text-align:left; cursor:pointer; position:relative; }
+  .pm-dd-btn::after { content:'▾'; position:absolute; right:10px; top:50%; transform:translateY(-50%); color:var(--muted); }
+  .pm-dd-menu { display:none; position:absolute; z-index:40; top:calc(100% + 4px); left:0; min-width:320px;
+    background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:10px 12px;
+    box-shadow:0 10px 28px rgba(0,0,0,.45); flex-direction:column; gap:9px; }
+  .pm-dd.open .pm-dd-menu { display:flex; }
+  .pm-dd-quick { display:flex; gap:4px; flex-wrap:wrap; padding-bottom:8px; border-bottom:1px solid var(--border); }
+  .pm-dd-quick button, .pm-mt button { padding:4px 9px; background:#0d1a24; color:var(--muted); border:1px solid var(--border);
+    border-radius:4px; font-size:11px; cursor:pointer; }
+  .pm-dd-quick button:hover { color:var(--ink); border-color:var(--accent); }
+  .pm-mt button.active { background:var(--accent); color:#06211d; border-color:var(--accent); font-weight:bold; }
+  .pm-code { color:var(--muted); font-family:monospace; font-size:11px; margin-left:auto; padding-left:14px; }
+  tr.pm-row { cursor:pointer; }
+  tr.pm-row:hover td { background:rgba(47,184,166,.06); }
+  tr.pm-open td { background:rgba(47,184,166,.11); }
+  tr.pm-chart-row td { background:#0d1a24; padding:14px 18px 16px; border-bottom:2px solid var(--accent); }
   .cc-check { font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px; cursor:pointer; }
   .cc-check input { accent-color: var(--accent); cursor:pointer; }
   #ratioColourToggle button { padding:6px 12px; font-size:11.5px; }
@@ -491,7 +510,8 @@
       one kilo, as it crosses the border — which is what makes this tab a complement to Akvafakta's round-weight
       figures in the Markets tab rather than a duplicate: the gap between the two tells you how processed each
       market's purchases are. Values are FOB, in Norwegian kroner. Recent months are provisional and are
-      revised by SSB for up to two years; the note under the table says how many of the months shown are.</div>
+      revised by SSB for up to two years; the note under the table says how many of the months shown are.
+      <b>Click a country</b> to see its month-by-month detail for the selected products.</div>
 
     <div class="chart-controls">
       <span class="cc-label">Period</span>
@@ -500,11 +520,23 @@
       <label class="cc-check" style="margin-left:14px"><input type="checkbox" id="pmRolling"> 12 months rolling</label>
     </div>
     <div class="chart-controls">
-      <span class="cc-label">Product</span>
-      <label class="cc-check"><input type="checkbox" class="pm-prod" data-hs="0" checked> Fresh whole</label>
-      <label class="cc-check"><input type="checkbox" class="pm-prod" data-hs="1" checked> Fresh fillet</label>
-      <label class="cc-check"><input type="checkbox" class="pm-prod" data-hs="2" checked> Frozen fillet</label>
-      <label class="cc-check"><input type="checkbox" class="pm-prod" data-hs="3" checked> Frozen whole</label>
+      <span class="cc-label">Products</span>
+      <div class="pm-dd" id="pmDD">
+        <button type="button" class="pm-dd-btn" id="pmDDBtn">All four products</button>
+        <div class="pm-dd-menu">
+          <div class="pm-dd-quick">
+            <button type="button" data-q="0,1,2,3">All</button>
+            <button type="button" data-q="0,3">Whole fish</button>
+            <button type="button" data-q="1,2">Fillets</button>
+            <button type="button" data-q="0,1">Fresh</button>
+            <button type="button" data-q="2,3">Frozen</button>
+          </div>
+          <label class="cc-check"><input type="checkbox" class="pm-prod" data-hs="0" checked> Fresh whole, head on <span class="pm-code">03021411</span></label>
+          <label class="cc-check"><input type="checkbox" class="pm-prod" data-hs="1" checked> Fresh fillet <span class="pm-code">03044100</span></label>
+          <label class="cc-check"><input type="checkbox" class="pm-prod" data-hs="2" checked> Frozen fillet <span class="pm-code">03048100</span></label>
+          <label class="cc-check"><input type="checkbox" class="pm-prod" data-hs="3" checked> Frozen whole, head on <span class="pm-code">03031311</span></label>
+        </div>
+      </div>
       <span class="cc-label" style="margin-left:14px">Show</span>
       <label class="cc-check"><input type="checkbox" class="pm-col" data-col="q" checked> Volume</label>
       <label class="cc-check"><input type="checkbox" class="pm-col" data-col="p" checked> Price</label>
@@ -2963,6 +2995,10 @@ const PM_FILLET = new Set([1, 2]);   // index des deux codes filet dans ssb_expo
 const PM_SHORT = ['fresh whole', 'fresh fillet', 'frozen fillet', 'frozen whole'];
 let pmSel = new Set([0, 1, 2, 3]);    // produits coches ; les quatre par defaut
 let pmGroupF = 'all', pmRolling = false;
+let pmOpenIso = null, pmJustOpened = false;       // pays dont le graphique est deplie
+let pmChartMetric = 'q', pmChartCompare = true;  // mesure du graphique, superposition de l'annee B
+const PM_COL = ['#5FD3C4', '#F2A65A', '#b79cff', '#7FA8FF'];
+const PM_LONG = ['Fresh whole', 'Fresh fillet', 'Frozen fillet', 'Frozen whole'];
 let pmCols = { q: true, p: true, v: true };
 
 function pmIndex() {
@@ -2999,7 +3035,9 @@ function pmKeys(y, m0, m1) {
     while (mm < 1) { mm += 12; yy -= 1; }
     ks.push(yy * 100 + mm);
   }
-  return ks;
+  // Ordre chronologique : indifferent pour les totaux, indispensable pour
+  // l'axe du graphique par pays.
+  return ks.reverse();
 }
 
 function renderProductsView() {
@@ -3015,8 +3053,9 @@ function renderProductsView() {
   const byK = pmIndex();
   const per = getEffectivePeriod();
   const yA = parseInt(toYearSel.value, 10), yB = parseInt(fromYearSel.value, 10);
-  const A = pmAgg(byK, pmKeys(yA, per.startMonth, per.endMonth));
-  const B = pmAgg(byK, pmKeys(yB, per.startMonth, per.endMonth));
+  const keysA = pmKeys(yA, per.startMonth, per.endMonth), keysB = pmKeys(yB, per.startMonth, per.endMonth);
+  const A = pmAgg(byK, keysA);
+  const B = pmAgg(byK, keysB);
   const plabel = pmRolling ? ('12 months to ' + MONTHS_FR[per.endMonth - 1]) : per.label;
   document.getElementById('pmPeriodLbl').textContent = `${plabel} · ${yA} against ${yB}`;
   ['pmH1', 'pmH3', 'pmH5', 'pmH7'].forEach(id => document.getElementById(id).textContent = `${plabel} ${yA}`);
@@ -3092,13 +3131,33 @@ function renderProductsView() {
 
   list.forEach((r, i) => {
     const tr = document.createElement('tr');
+    tr.className = 'pm-row' + (pmOpenIso === r.iso ? ' pm-open' : '');
+    tr.title = pmOpenIso === r.iso ? 'Click to close the chart' : 'Click for the month-by-month chart';
     tr.innerHTML =
       `<td class="name"><span style="display:inline-block;min-width:30px;color:var(--muted)">${i + 1}.</span>`
       + `<span style="color:${GRP_COLORS[r.groupe] || '#8CA6B0'}">■</span> ${name(r.iso)}`
       + `<small style="padding-left:30px">${tq ? num(r.a.q / tq * 100, 1) : '0.0'}% of the total · ${GRP_LABEL[r.groupe] || r.groupe}</small></td>`
       + cells(r.a.q, r.a.v, r.b ? r.b.q : null, r.b ? r.b.v : null, false)
       + mixCells(r.a, r.b);
+    tr.addEventListener('click', () => {
+      pmJustOpened = pmOpenIso !== r.iso;
+      pmOpenIso = pmOpenIso === r.iso ? null : r.iso;
+      renderProductsView();
+    });
     tb.appendChild(tr);
+    if (pmOpenIso === r.iso) {
+      const cr = document.createElement('tr');
+      cr.className = 'pm-chart-row';
+      // Le tableau peut etre plus large que le panneau (defilement horizontal) :
+      // le graphique est cale sur la largeur VISIBLE et fige a gauche, sinon sa
+      // partie droite serait hors champ.
+      const vw = Math.max(520, document.getElementById('productsView').clientWidth - 70);
+      cr.innerHTML = `<td colspan="13"><div style="position:sticky;left:18px;width:${vw}px">`
+        + `${pmChartHTML(byK, r.iso, name(r.iso), keysA, keysB, yA, yB, plabel)}</div></td>`;
+      tb.appendChild(cr);
+      pmBindChart(cr);
+      if (pmJustOpened) { pmJustOpened = false; cr.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+    }
   });
 
   // Colonnes. Le mix filet n'a de sens que si la selection melange filet et
@@ -3127,6 +3186,141 @@ function renderProductsView() {
         ? `<br><span class="warn">The price mixes fillet and whole fish</span> — a market that shifts toward fillet shows a higher price per kilo with no change in underlying salmon prices. The fillet-share column is there to tell the two apart.` : '');
 }
 
+// ---------------------------------------------------------------------------
+//  Graphique mensuel d'un pays (depliable sous sa ligne)
+// ---------------------------------------------------------------------------
+// SSB ne publie les exports par pays qu'au mois : c'est la granularite la plus
+// fine disponible. Une ligne par produit coche ; l'annee de comparaison en
+// pointille ; une ligne "total selection" des que plusieurs produits sont tracés.
+function pmMonthly(byK, iso, keys) {
+  // hs -> tableau aligne sur keys : {kg, nok}, ou null si le mois n'est pas publie
+  const out = {};
+  [0, 1, 2, 3].forEach(h => { out[h] = keys.map(k => byK[k] ? { kg: 0, nok: 0 } : null); });
+  keys.forEach((k, i) => (byK[k] || []).forEach(([kk, hs, is, kg, nok]) => {
+    if (is === iso) { out[hs][i].kg += kg; out[hs][i].nok += nok; }
+  }));
+  return out;
+}
+
+function pmChartHTML(byK, iso, cname, keysA, keysB, yA, yB, plabel) {
+  const mA = pmMonthly(byK, iso, keysA), mB = pmMonthly(byK, iso, keysB);
+  const val = o => {
+    if (o === null) return null;
+    if (pmChartMetric === 'q') return o.kg / 1000;
+    if (pmChartMetric === 'v') return o.nok / 1e6;
+    return o.kg > 0 ? o.nok / o.kg : null;             // prix : pas de prix sans volume
+  };
+  const unit = { q: 't', v: 'M NOK', p: 'NOK/kg' }[pmChartMetric];
+  const sel = Array.from(pmSel).sort();
+  const has = (m, h) => m[h].some(o => o && o.kg > 0);
+  const drawn = sel.filter(h => has(mA, h) || has(mB, h));
+  const absent = sel.filter(h => !drawn.includes(h));
+
+  const total = m => keysA.map((_, i) => {
+    const parts = drawn.map(h => m[h][i]).filter(o => o !== null);
+    if (!parts.length) return null;
+    return { kg: parts.reduce((s, o) => s + o.kg, 0), nok: parts.reduce((s, o) => s + o.nok, 0) };
+  });
+  const series = [];
+  drawn.forEach(h => {
+    series.push({ lab: PM_LONG[h], col: PM_COL[h], yr: yA, dash: null, w: 2.4, op: 1, pts: mA[h].map(val) });
+    if (pmChartCompare) series.push({ lab: PM_LONG[h], col: PM_COL[h], yr: yB, dash: '5,4', w: 1.6, op: .5, pts: mB[h].map(val) });
+  });
+  if (drawn.length > 1) {
+    series.push({ lab: 'Selection total', col: '#e7eef2', yr: yA, dash: null, w: 1.4, op: .85, pts: total(mA).map(val) });
+    if (pmChartCompare) series.push({ lab: 'Selection total', col: '#e7eef2', yr: yB, dash: '5,4', w: 1.1, op: .4, pts: total(mB).map(val) });
+  }
+
+  // Axe vertical : zero pour volume et valeur ; pour le prix, on part d'un
+  // plancher proche du minimum, sinon les variations disparaissent dans le plat.
+  const all = series.flatMap(s => s.pts).filter(v => v !== null && isFinite(v));
+  const W = 1080, H = 300, mL = 70, mR = 20, mT = 16, mBot = 40;
+  const pw = W - mL - mR, ph = H - mT - mBot, n = keysA.length;
+  let svg = '';
+  if (!all.length) {
+    svg = `<text x="${W / 2}" y="${H / 2}" text-anchor="middle" fill="#8fa4b0" font-size="13">No exports of the selected products to ${cname} in this period.</text>`;
+  } else {
+    let lo = pmChartMetric === 'p' ? Math.min(...all) * 0.92 : 0, hi = Math.max(...all) * 1.08;
+    if (hi <= lo) hi = lo + 1;
+    const raw = (hi - lo) / 5, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    const nn = raw / mag, step = (nn <= 1 ? 1 : nn <= 2 ? 2 : nn <= 2.5 ? 2.5 : nn <= 5 ? 5 : 10) * mag;
+    lo = Math.floor(lo / step) * step; hi = Math.ceil(hi / step) * step;
+    const X = i => mL + (n === 1 ? pw / 2 : i * pw / (n - 1));
+    const Y = v => mT + ph - (v - lo) / (hi - lo) * ph;
+    const fmt = v => v.toLocaleString('en-US', { maximumFractionDigits: pmChartMetric === 'p' ? 2 : (v < 10 ? 1 : 0) });
+    for (let g = lo; g <= hi + step / 2; g += step) {
+      svg += `<line x1="${mL}" x2="${W - mR}" y1="${Y(g)}" y2="${Y(g)}" stroke="#223642"/>`
+           + `<text x="${mL - 8}" y="${Y(g) + 4}" text-anchor="end" fill="#8fa4b0" font-size="11">${fmt(g)}</text>`;
+    }
+    keysA.forEach((k, i) => {
+      const st = (SSBX.meta.months[String(k)] || {}).status;
+      const lab = MONTHS_FR[(k % 100) - 1].slice(0, 3) + (pmRolling ? ' ' + String(Math.floor(k / 100)).slice(2) : '');
+      svg += `<text x="${X(i)}" y="${H - mBot + 18}" text-anchor="middle" fill="${st === 'provisional' ? '#ffb74d' : '#8fa4b0'}" font-size="11">${lab}${st === 'provisional' ? '°' : ''}</text>`;
+    });
+    series.forEach(s => {
+      // Un mois sans donnee coupe la ligne au lieu de la relier a travers le vide.
+      let d = '', pen = false;
+      s.pts.forEach((v, i) => {
+        if (v === null || !isFinite(v)) { pen = false; return; }
+        d += (pen ? 'L' : 'M') + X(i).toFixed(1) + ',' + Y(v).toFixed(1); pen = true;
+      });
+      if (d) svg += `<path d="${d}" fill="none" stroke="${s.col}" stroke-width="${s.w}" stroke-opacity="${s.op}"`
+                  + `${s.dash ? ` stroke-dasharray="${s.dash}"` : ''} stroke-linejoin="round"/>`;
+      s.pts.forEach((v, i) => {
+        if (v === null || !isFinite(v)) return;
+        const k = s.yr === yA ? keysA[i] : keysB[i];
+        const mon = MONTHS_FR[(k % 100) - 1] + ' ' + Math.floor(k / 100);
+        const st = (SSBX.meta.months[String(k)] || {}).status;
+        svg += `<circle cx="${X(i)}" cy="${Y(v)}" r="${s.yr === yA ? 3.4 : 2.4}" fill="${s.col}" fill-opacity="${s.op}">`
+             + `<title>${s.lab} — ${mon}${st === 'provisional' ? ' (provisional)' : ''}: ${fmt(v)} ${unit}</title></circle>`;
+      });
+    });
+  }
+
+  const leg = [...new Set(series.map(s => s.lab))].map(lab => {
+    const s = series.find(x => x.lab === lab);
+    return `<span style="display:inline-flex;align-items:center;gap:6px;margin-right:16px">`
+         + `<svg width="26" height="8"><line x1="0" x2="26" y1="4" y2="4" stroke="${s.col}" stroke-width="2.4"/></svg>${lab}</span>`;
+  }).join('');
+  const mt = [['q', 'Volume'], ['p', 'Price'], ['v', 'Value']].map(([k, l]) =>
+    `<button type="button" data-pm-m="${k}" class="${pmChartMetric === k ? 'active' : ''}">${l}</button>`).join('');
+  return `<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:8px">`
+    + `<b style="font-size:14px">${cname}</b>`
+    + `<span style="color:#8fa4b0;font-size:12px">${plabel} ${yA}, monthly · ${unit}</span>`
+    + `<span class="pm-mt" style="display:inline-flex;gap:4px">${mt}</span>`
+    + `<label class="cc-check"><input type="checkbox" class="pm-cmp" ${pmChartCompare ? 'checked' : ''}> Compare with ${yB} (dashed)</label>`
+    + `<button type="button" class="pm-close" style="margin-left:auto;background:none;border:1px solid var(--border);color:#8fa4b0;border-radius:4px;cursor:pointer;padding:2px 9px">Close ✕</button>`
+    + `</div>`
+    + `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">${svg}</svg>`
+    + `<div style="font-size:12px;color:#8fa4b0;margin-top:6px">${leg}</div>`
+    + `<div style="font-size:11px;color:#8fa4b0;margin-top:6px">Monthly is the finest level SSB publishes by country. `
+    + `<span style="color:#ffb74d">°</span> provisional month, will be revised. Hover a point for its exact value.`
+    + (pmChartMetric === 'p' ? ' No price is shown for a month without volume.' : '')
+    + (absent.length ? ` No exports of ${absent.map(h => PM_LONG[h].toLowerCase()).join(', ')} to ${cname} in either year.` : '')
+    + `</div>`;
+}
+
+function pmBindChart(row) {
+  // Les clics dans le graphique ne doivent pas refermer la ligne du pays.
+  row.addEventListener('click', e => e.stopPropagation());
+  row.querySelectorAll('[data-pm-m]').forEach(b => b.addEventListener('click', () => {
+    pmChartMetric = b.dataset.pmM; renderProductsView();
+  }));
+  const cmp = row.querySelector('.pm-cmp');
+  if (cmp) cmp.addEventListener('change', () => { pmChartCompare = cmp.checked; renderProductsView(); });
+  const cl = row.querySelector('.pm-close');
+  if (cl) cl.addEventListener('click', () => { pmOpenIso = null; renderProductsView(); });
+}
+
+// Libelle du bouton du menu produits
+function pmDDLabel() {
+  const sel = Array.from(pmSel).sort();
+  const lbl = sel.length === 4 ? 'All four products'
+    : sel.map(h => PM_SHORT[h]).join(', ').replace(/^./, c => c.toUpperCase());
+  const b = document.getElementById('pmDDBtn');
+  if (b) b.textContent = lbl;
+}
+
 function pmBind() {
   document.querySelectorAll('#productsView .pm-col').forEach(cb => {
     cb.addEventListener('change', () => {
@@ -3142,9 +3336,22 @@ function pmBind() {
       const h = +cb.dataset.hs;
       if (!cb.checked && pmSel.size === 1) { cb.checked = true; return; }
       if (cb.checked) pmSel.add(h); else pmSel.delete(h);
+      pmDDLabel();
       if (currentView === 'products') renderProductsView();
     });
   });
+  const dd = document.getElementById('pmDD');
+  if (dd) {
+    document.getElementById('pmDDBtn').addEventListener('click', e => { e.stopPropagation(); dd.classList.toggle('open'); });
+    dd.querySelector('.pm-dd-menu').addEventListener('click', e => e.stopPropagation());
+    document.addEventListener('click', () => dd.classList.remove('open'));
+    dd.querySelectorAll('.pm-dd-quick button').forEach(b => b.addEventListener('click', () => {
+      pmSel = new Set(b.dataset.q.split(',').map(Number));
+      dd.querySelectorAll('.pm-prod').forEach(cb => { cb.checked = pmSel.has(+cb.dataset.hs); });
+      pmDDLabel();
+      if (currentView === 'products') renderProductsView();
+    }));
+  }
   const roll = document.getElementById('pmRolling');
   if (roll) roll.addEventListener('change', e => { pmRolling = e.target.checked; if (currentView === 'products') renderProductsView(); });
   const gs = document.getElementById('pmGroupSel');
