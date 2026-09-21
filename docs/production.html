@@ -501,13 +501,10 @@
     </div>
     <div class="chart-controls">
       <span class="cc-label">Product</span>
-      <select id="pmProductSel">
-        <option value="0">Fresh whole, head on (03021411)</option>
-        <option value="1">Fresh fillet (03044100)</option>
-        <option value="2">Frozen fillet (03048100)</option>
-        <option value="3">Frozen whole, head on (03031311)</option>
-        <option value="all">All four products</option>
-      </select>
+      <label class="cc-check"><input type="checkbox" class="pm-prod" data-hs="0" checked> Fresh whole</label>
+      <label class="cc-check"><input type="checkbox" class="pm-prod" data-hs="1" checked> Fresh fillet</label>
+      <label class="cc-check"><input type="checkbox" class="pm-prod" data-hs="2" checked> Frozen fillet</label>
+      <label class="cc-check"><input type="checkbox" class="pm-prod" data-hs="3" checked> Frozen whole</label>
       <span class="cc-label" style="margin-left:14px">Show</span>
       <label class="cc-check"><input type="checkbox" class="pm-col" data-col="q" checked> Volume</label>
       <label class="cc-check"><input type="checkbox" class="pm-col" data-col="p" checked> Price</label>
@@ -525,11 +522,11 @@
 
     <table class="sig-table">
       <thead>
-        <tr><th class="name" rowspan="2">Market / destination</th>
+        <tr><th class="name" rowspan="2" style="min-width:250px">Market / destination</th>
             <th class="grp pm-c-q" colspan="3">Volume, product weight</th>
             <th class="grp sep-left pm-c-p" colspan="3">Price, NOK/kg FOB</th>
             <th class="grp sep-left pm-c-v" colspan="3">Value</th>
-            <th class="grp sep-left pm-c-m" colspan="3">Fillet share of volume</th></tr>
+            <th class="grp sep-left pm-c-m" colspan="3">Fillet share of selection</th></tr>
         <tr><th class="pm-c-q" id="pmH1"></th><th class="pm-c-q" id="pmH2"></th><th class="pm-c-q">Δ%</th>
             <th class="sep-left pm-c-p" id="pmH5"></th><th class="pm-c-p" id="pmH6"></th><th class="pm-c-p">Δ%</th>
             <th class="sep-left pm-c-v" id="pmH3"></th><th class="pm-c-v" id="pmH4"></th><th class="pm-c-v">Δ%</th>
@@ -2963,18 +2960,19 @@ function pmGroup(iso) {
   return 'Resten';
 }
 const PM_FILLET = new Set([1, 2]);   // index des deux codes filet dans ssb_exports
-let pmProduct = '0', pmGroupF = 'all', pmRolling = false;
+const PM_SHORT = ['fresh whole', 'fresh fillet', 'frozen fillet', 'frozen whole'];
+let pmSel = new Set([0, 1, 2, 3]);    // produits coches ; les quatre par defaut
+let pmGroupF = 'all', pmRolling = false;
 let pmCols = { q: true, p: true, v: true };
 
 function pmIndex() {
-  // k -> lignes du mois ; construit une fois par rendu, la table est petite.
   const byK = {};
   SSBX.rows.forEach(r => { (byK[r[0]] || (byK[r[0]] = [])).push(r); });
   return byK;
 }
 
-// Agrege une liste de mois : par pays, volume/valeur du produit choisi, plus
-// le volume filet et le volume total pour la colonne de mix.
+// Agrege une liste de mois par pays, sur les seuls produits coches. 'fil' est
+// la part filet A L'INTERIEUR de la selection, pour la colonne de mix.
 function pmAgg(byK, keys) {
   const out = {}; let found = 0; const status = { provisional: 0, revised: 0, final: 0 };
   keys.forEach(k => {
@@ -2984,13 +2982,13 @@ function pmAgg(byK, keys) {
     const st = (SSBX.meta.months[String(k)] || {}).status;
     if (st && status[st] !== undefined) status[st]++;
     rows.forEach(([kk, hs, iso, kg, nok]) => {
-      const o = out[iso] || (out[iso] = { iso: iso, groupe: pmGroup(iso), q: 0, v: 0, fil: 0, all: 0 });
-      o.all += kg;
+      if (!pmSel.has(hs)) return;
+      const o = out[iso] || (out[iso] = { iso: iso, groupe: pmGroup(iso), q: 0, v: 0, fil: 0 });
+      o.q += kg; o.v += nok;
       if (PM_FILLET.has(hs)) o.fil += kg;
-      if (pmProduct === 'all' || hs === +pmProduct) { o.q += kg; o.v += nok; }
     });
   });
-  return { rows: Object.values(out).filter(r => r.q > 0 || r.all > 0), found: found, asked: keys.length, status: status };
+  return { byIso: out, found: found, asked: keys.length, status: status };
 }
 
 function pmKeys(y, m0, m1) {
@@ -3010,7 +3008,7 @@ function renderProductsView() {
   tb.innerHTML = '';
   if (!SSBX) {
     tb.innerHTML = '<tr><td class="name">No SSB export data in data.json yet.'
-      + '<small>It appears automatically after the first run of the SSB step in the update workflow.</small></td></tr>';
+      + '<small>It appears after the first SSB import — API step of the update workflow, or an Excel dropped in xlsx/ssb/.</small></td></tr>';
     note.innerHTML = '';
     return;
   }
@@ -3024,7 +3022,6 @@ function renderProductsView() {
   ['pmH1', 'pmH3', 'pmH5', 'pmH7'].forEach(id => document.getElementById(id).textContent = `${plabel} ${yA}`);
   ['pmH2', 'pmH4', 'pmH6', 'pmH8'].forEach(id => document.getElementById(id).textContent = `${plabel} ${yB}`);
 
-  const bAt = {}; B.rows.forEach(r => { bAt[r.iso] = r; });
   const num = (v, d) => (v === null || v === undefined || !isFinite(v)) ? '—'
     : v.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
   const pcOf = (a, b) => (a === null || a === undefined || b === null || b === undefined || !b) ? null : (a - b) / b * 100;
@@ -3037,15 +3034,16 @@ function renderProductsView() {
   const tons = kg => num(kg / 1000, 0) + ' t';
   const mnok = v => num(v / 1e6, 1) + ' M';
   const price = (v, q) => q > 0 ? num(v / q, 2) : '—';
-  const share = o => (o && o.all > 0) ? 100 * o.fil / o.all : null;
   const mixCells = (a, b) => {
-    const sa = share(a), sb = share(b);
+    const sa = (a && a.q > 0) ? 100 * a.fil / a.q : null;
+    const sb = (b && b.q > 0) ? 100 * b.fil / b.q : null;
     let d = (sa === null || sb === null) ? null : sa - sb;
     if (d !== null && Math.abs(d) < 0.05) d = 0;   // evite l'affichage "-0.0"
     return `<td class="sep-left pm-c-m">${sa === null ? '—' : num(sa, 1) + ' %'}</td>`
       + `<td class="pm-c-m">${sb === null ? '—' : num(sb, 1) + ' %'}</td>`
       + `<td class="pm-c-m ${d === null ? 'delta-zero' : ''}">${d === null ? '—' : (d >= 0 ? '+' : '') + num(d, 1)}</td>`;
   };
+  // qb/vb a null = pas de donnee pour l'annee de comparaison (tiret, pas "0 t").
   const cells = (qa, va, qb, vb, bold) => {
     const w = x => bold ? `<b>${x}</b>` : x;
     return `<td class="pm-c-q">${w(tons(qa))}</td><td class="pm-c-q">${qb === null ? '—' : tons(qb)}</td>` + dcell(qa, qb, 'pm-c-q')
@@ -3054,11 +3052,20 @@ function renderProductsView() {
       + `<td class="sep-left pm-c-v">${w(mnok(va))}</td><td class="pm-c-v">${vb === null ? '—' : mnok(vb)}</td>` + dcell(va, vb, 'pm-c-v');
   };
 
-  let rows = A.rows.filter(r => r.q > 0);
-  if (pmGroupF !== 'all') rows = rows.filter(r => r.groupe === pmGroupF);
-  rows.sort((a, b) => b.q - a.q);
+  // Tous les pays presents sur l'une OU l'autre periode : un marche disparu
+  // cette annee reste visible en bas de liste, a 0 t et -100 %.
+  const isos = new Set([...Object.keys(A.byIso), ...Object.keys(B.byIso)]);
+  let list = Array.from(isos).map(iso => ({
+      iso: iso, groupe: pmGroup(iso),
+      a: A.byIso[iso] || { q: 0, v: 0, fil: 0 },
+      b: B.byIso[iso] || null
+    })).filter(r => r.a.q > 0 || (r.b && r.b.q > 0));
+  if (pmGroupF !== 'all') list = list.filter(r => r.groupe === pmGroupF);
+  // Tri unique, par volume decroissant sur la periode affichee, puis par
+  // volume de l'annee de comparaison pour departager les pays a zero.
+  list.sort((x, y) => (y.a.q - x.a.q) || ((y.b ? y.b.q : 0) - (x.b ? x.b.q : 0)));
 
-  if (!rows.length) {
+  if (!list.length) {
     const ks = Object.keys(byK).map(Number).sort((a, b) => a - b);
     const f = k => MONTHS_FR[(k % 100) - 1] + ' ' + Math.floor(k / 100);
     tb.innerHTML = `<tr><td class="name">No data for ${plabel} ${yA}.`
@@ -3067,81 +3074,57 @@ function renderProductsView() {
     return;
   }
 
-  const tot = rows.reduce((s, r) => s + r.q, 0);
-  const groups = {};
-  rows.forEach(r => {
-    const o = groups[r.groupe] || (groups[r.groupe] = { g: r.groupe, q: 0, v: 0, pq: 0, pv: 0, fil: 0, all: 0, pfil: 0, pall: 0, list: [] });
-    o.q += r.q; o.v += r.v; o.fil += r.fil; o.all += r.all; o.list.push(r);
-    const b = bAt[r.iso];
-    // hasB distingue "aucune donnee pour l'annee de comparaison" (tiret) d'un
-    // vrai zero : sans lui, un groupe sans historique afficherait "0 t".
-    if (b) { o.pq += b.q; o.pv += b.v; o.pfil += b.fil; o.pall += b.all; o.hasB = true; }
-  });
   const name = iso => ((SSBX.meta.countries || {})[iso] || {}).name || iso;
+  const sum = f => list.reduce((s, r) => s + (f(r) || 0), 0);
+  const tq = sum(r => r.a.q), tv = sum(r => r.a.v), tfil = sum(r => r.a.fil);
+  const hasB = list.some(r => r.b);
+  const bq = sum(r => r.b && r.b.q), bv = sum(r => r.b && r.b.v), bfil = sum(r => r.b && r.b.fil);
 
-  Object.values(groups).sort((a, b) => b.q - a.q).forEach(g => {
-    const tr = document.createElement('tr');
-    tr.className = 'sep-row';
-    tr.style.cursor = 'pointer';
-    tr.innerHTML =
-      `<td class="name"><span style="color:${GRP_COLORS[g.g] || '#8CA6B0'}">■</span> <b>${GRP_LABEL[g.g] || g.g}</b>`
-      + `<small>${g.list.length} destination${g.list.length > 1 ? 's' : ''} · click to fold</small></td>`
-      + cells(g.q, g.v, g.hasB ? g.pq : null, g.hasB ? g.pv : null, true)
-      + mixCells({ fil: g.fil, all: g.all }, { fil: g.pfil, all: g.pall });
-    tb.appendChild(tr);
-    const kids = [];
-    g.list.forEach(r => {
-      const b = bAt[r.iso];
-      const t2 = document.createElement('tr');
-      t2.innerHTML =
-        `<td class="name" style="padding-left:28px;color:var(--muted)">${name(r.iso)}`
-        + `<small>${num(r.q / tot * 100, 1)}% of the shown total</small></td>`
-        + cells(r.q, r.v, b ? b.q : null, b ? b.v : null, false)
-        + mixCells(r, b);
-      tb.appendChild(t2); kids.push(t2);
-    });
-    tr.addEventListener('click', () => {
-      const hide = kids[0] && kids[0].style.display !== 'none';
-      kids.forEach(x => x.style.display = hide ? 'none' : '');
-    });
-  });
-
-  const sum = (arr, f) => arr.reduce((s, r) => s + (f(r) || 0), 0);
-  const tq = sum(rows, r => r.q), tv = sum(rows, r => r.v);
-  const bq = sum(rows, r => (bAt[r.iso] || {}).q), bv = sum(rows, r => (bAt[r.iso] || {}).v);
+  // Total en tete : avec 130 pays, en bas de liste il serait hors de vue.
   const trTot = document.createElement('tr');
   trTot.className = 'sep-row';
-  trTot.style.borderTop = '2px solid var(--line)';
   trTot.innerHTML =
-    `<td class="name"><b>Total${pmGroupF !== 'all' ? ' — ' + (GRP_LABEL[pmGroupF] || pmGroupF) : ''}</b></td>`
-    + cells(tq, tv, rows.some(r => bAt[r.iso]) ? bq : null, rows.some(r => bAt[r.iso]) ? bv : null, true)
-    + mixCells({ fil: sum(rows, r => r.fil), all: sum(rows, r => r.all) },
-               { fil: sum(rows, r => (bAt[r.iso] || {}).fil), all: sum(rows, r => (bAt[r.iso] || {}).all) });
+    `<td class="name"><b>Total${pmGroupF !== 'all' ? ' — ' + (GRP_LABEL[pmGroupF] || pmGroupF) : ''}</b>`
+    + `<small>${list.length} destination${list.length > 1 ? 's' : ''}, by volume</small></td>`
+    + cells(tq, tv, hasB ? bq : null, hasB ? bv : null, true)
+    + mixCells({ q: tq, fil: tfil }, hasB ? { q: bq, fil: bfil } : null);
   tb.appendChild(trTot);
 
-  // Colonnes : le mix filet n'a de sens que sur l'ensemble des produits --
-  // sur un seul code, il vaudrait 0 % ou 100 % partout.
+  list.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      `<td class="name"><span style="display:inline-block;min-width:30px;color:var(--muted)">${i + 1}.</span>`
+      + `<span style="color:${GRP_COLORS[r.groupe] || '#8CA6B0'}">■</span> ${name(r.iso)}`
+      + `<small style="padding-left:30px">${tq ? num(r.a.q / tq * 100, 1) : '0.0'}% of the total · ${GRP_LABEL[r.groupe] || r.groupe}</small></td>`
+      + cells(r.a.q, r.a.v, r.b ? r.b.q : null, r.b ? r.b.v : null, false)
+      + mixCells(r.a, r.b);
+    tb.appendChild(tr);
+  });
+
+  // Colonnes. Le mix filet n'a de sens que si la selection melange filet et
+  // entier : sur des filets seuls il vaudrait 100 % partout, sur de l'entier 0 %.
+  const sel = Array.from(pmSel);
+  const mixed = sel.some(h => PM_FILLET.has(h)) && sel.some(h => !PM_FILLET.has(h));
   ['q', 'p', 'v'].forEach(c => document.querySelectorAll('#productsView .pm-c-' + c)
     .forEach(e => e.style.display = pmCols[c] ? '' : 'none'));
   document.querySelectorAll('#productsView .pm-c-m')
-    .forEach(e => e.style.display = pmProduct === 'all' ? '' : 'none');
+    .forEach(e => e.style.display = mixed ? '' : 'none');
 
-  // Note : couverture de la periode et fragilite des mois recents.
-  const prodLbl = pmProduct === 'all' ? 'all four products'
-    : (SSBX.meta.products || {})[Object.keys(SSBX.meta.products || {})[+pmProduct]] || 'selected product';
+  const prodLbl = sel.length === 4 ? 'All four products'
+    : sel.sort().map(h => PM_SHORT[h]).join(' + ').replace(/^./, c => c.toUpperCase());
   const prov = s => s.provisional ? `${s.provisional} provisional` : '';
   const cov = (X, y) => `${y}: ${X.found}/${X.asked} month${X.asked > 1 ? 's' : ''}`
     + (X.status.provisional || X.status.revised
         ? ` (${[prov(X.status), X.status.revised ? X.status.revised + ' revised once' : ''].filter(Boolean).join(', ')})` : '');
   note.innerHTML =
-    `<b>${prodLbl.charAt(0).toUpperCase() + prodLbl.slice(1)}, ${plabel}.</b> `
+    `<b>${prodLbl}, ${plabel}.</b> `
     + `<span style="color:var(--muted)">Coverage — ${cov(A, yA)} · ${cov(B, yB)}.</span>`
     + ((A.found < A.asked || B.found < B.asked)
         ? `<br><span class="warn">Incomplete period: a month missing from one year and not the other makes the Δ% misleading.</span>` : '')
     + ((A.status.provisional || B.status.provisional)
         ? `<br><span style="color:var(--muted)">Provisional months will be revised by SSB; the update workflow re-downloads them automatically until they are final.</span>` : '')
-    + (pmProduct === 'all'
-        ? `<br><span class="warn">Price across all four products mixes fillet and whole fish</span> — a market that shifts toward fillet shows a higher price per kilo with no change in underlying salmon prices. The fillet-share column is there to tell the two apart.` : '');
+    + (mixed
+        ? `<br><span class="warn">The price mixes fillet and whole fish</span> — a market that shifts toward fillet shows a higher price per kilo with no change in underlying salmon prices. The fillet-share column is there to tell the two apart.` : '');
 }
 
 function pmBind() {
@@ -3153,10 +3136,17 @@ function pmBind() {
       if (currentView === 'products') renderProductsView();
     });
   });
+  // Au moins un produit reste coche : une liste vide n'a pas de sens.
+  document.querySelectorAll('#productsView .pm-prod').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const h = +cb.dataset.hs;
+      if (!cb.checked && pmSel.size === 1) { cb.checked = true; return; }
+      if (cb.checked) pmSel.add(h); else pmSel.delete(h);
+      if (currentView === 'products') renderProductsView();
+    });
+  });
   const roll = document.getElementById('pmRolling');
   if (roll) roll.addEventListener('change', e => { pmRolling = e.target.checked; if (currentView === 'products') renderProductsView(); });
-  const ps = document.getElementById('pmProductSel');
-  if (ps) ps.addEventListener('change', () => { pmProduct = ps.value; if (currentView === 'products') renderProductsView(); });
   const gs = document.getElementById('pmGroupSel');
   if (gs) gs.addEventListener('change', () => { pmGroupF = gs.value; if (currentView === 'products') renderProductsView(); });
 }
