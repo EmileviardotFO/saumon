@@ -53,6 +53,14 @@ jobs:
         if: env.dest != ''
         run: python3 scripts/update_biomasse.py "${{ env.dest }}"
 
+      - name: Exports par pays et par produit (SSB, avec revisions)
+        # Source complementaire : un echec de l'API SSB ne doit pas bloquer
+        # la publication des donnees Akvafakta et biomasse deja traitees.
+        # Au premier passage, le script remonte seul jusqu'a 2018 ; ensuite il
+        # ne re-telecharge que les mois pas encore definitifs.
+        continue-on-error: true
+        run: python3 scripts/parse_ssb.py
+
       - name: Publier data.json (et les fichiers bruts telecharges)
         run: |
           git config user.name  "github-actions"
@@ -61,6 +69,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "Aucun changement."
           else
-            git commit -m "Mise a jour auto Akvafakta + Fiskeridirektoratet ($(date -u +%Y-%m-%d))"
+            git commit -m "Mise a jour auto Akvafakta + Fiskeridirektoratet + SSB ($(date -u +%Y-%m-%d))"
             git push
           fi
