@@ -66,6 +66,8 @@
   th { color: var(--muted); font-weight: normal; text-transform: uppercase; font-size: 10.5px; letter-spacing: .03em; }
   td.name, th.name { text-align: left; color: var(--ink); font-weight: bold; }
   td.name.sub { font-weight: normal; padding-left: 26px; color: var(--muted); }
+  td.name.sub.est { font-style: italic; }
+  tr.subrow td:not(.name) { font-size: 11px; }
   td.name.strong { font-weight: 900; color: var(--accent); }
   tr:hover td { background: #0d1a24; }
   .delta-pos { color: var(--up); }
@@ -1572,10 +1574,11 @@ const METRIC_LABELS = {
 
 const MULTI_METRIC_ORDER = ['vol','stk','pma','biomasse','stock','stockweight','croissance','mer','feed','fcr','mortnb','mort','smolt500','smolt','smoltmid','gap','entry'];
 // Sub-rows shown indented and not bold under "Global smolt released" in the indicator tables.
-const SUB_ROW_LABELS = { smolt: '– &lt; 250 g', smoltmid: '– 250–500 g' };
+const SUB_ROW_LABELS = { smolt: '– &lt; 250 g', smoltmid: '– 250–500 g', gap: '– Estimated &gt; 500 g' };
+const EST_ROWS = new Set(['gap']);   // estimate, shown in italics
 const BOLD_ROWS = new Set(['smolt500']);
 function rowNameCell(key, label) {
-  if (SUB_ROW_LABELS[key]) return `<td class="name sub">${SUB_ROW_LABELS[key]}</td>`;
+  if (SUB_ROW_LABELS[key]) return `<td class="name sub${EST_ROWS.has(key) ? ' est' : ''}">${SUB_ROW_LABELS[key]}</td>`;
   if (BOLD_ROWS.has(key))  return `<td class="name strong">${label}</td>`;
   return `<td class="name">${label}</td>`;
 }
@@ -1738,6 +1741,7 @@ function renderMulti() {
     headRow.innerHTML = `<th class="name">${rowHeader}</th>` + yearCols.map(cl => `<th>${colLabel(cl)}</th>`).join('');
     rows.forEach(row => {
       const tr = document.createElement('tr');
+      if (multiBreakdown !== 'po' && SUB_ROW_LABELS[row.key]) tr.className = 'subrow';
       tr.innerHTML = (multiBreakdown === 'po' ? `<td class="name">${row.label}</td>` : rowNameCell(row.key, row.label)) + yearCols.map(cl => cellFor(row, cl)).join('');
       tbody.appendChild(tr);
     });
@@ -1939,6 +1943,7 @@ function renderGlobal() {
     const deltaPctText = isFinite(deltaPct) ? (deltaPct >= 0 ? '+' : '') + deltaPct.toLocaleString('en-US', {maximumFractionDigits:1}) + '%' : '—';
     const fmt = METRIC_CONF[key].fmt;
     const tr = document.createElement('tr');
+    if (SUB_ROW_LABELS[key]) tr.className = 'subrow';
     tr.innerHTML = `
       ${rowNameCell(key, METRIC_LABELS[key])}
       <td>${fmt(vPrev)}</td>
