@@ -47,6 +47,11 @@ import pandas as pd
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, 'data', 'data.json')
 
+# Colonnes de pertes hors abattage et mortalite. TAP_ANNET_NY_STK porte un
+# espace final dans l'Excel source, retire par le strip() des en-tetes.
+OTHER_LOSS_COLS = ['UTKAST_STK', 'RØMMING_STK', 'ANDRE_STK',
+                   'TAP_ANNET_NY_STK', 'TAP_TELLEFEIL_STK']
+
 
 def load_excel(path):
     df = pd.read_excel(path, sheet_name='Biomasse-prod-omr', skiprows=5)
@@ -165,6 +170,14 @@ def build_records(df, cohort_rows):
             'biomasse_kg': float(sub['BIOMASSE_KG'].sum()),
             'mortality_pct': (100 * dodfisk / behfisk) if behfisk else None,
             'smolt_stk': float(sub['UTSETT_SMOLT_STK'].sum()),
+            # Smolts < 500 g (contient deja les < 250 g de smolt_stk : ne
+            # jamais additionner les deux). Le tableau de bord en deduit la
+            # tranche 250-500 g et le total "Global smolt released".
+            'smolt500_stk': float(sub['UTSETT_SMOLT_STK_MINDRE_ENN_500G'].sum()),
+            # Autres pertes (rejets, evasions, autres, erreurs de comptage),
+            # pour le bilan de masse et l'estimation des post-smolts > 500 g.
+            'other_loss_stk': float(sum(sub[c].sum() for c in OTHER_LOSS_COLS
+                                        if c in sub.columns)),
             'age_months': age_months,
             'growth_kg': growth_kg,
             'feed_kg': float(sub['FORFORBRUK_KG'].sum()),
