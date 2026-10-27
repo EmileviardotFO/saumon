@@ -462,14 +462,14 @@
         <tr>
           <th class="name" rowspan="2">Zone</th>
           <th rowspan="2">Active sites</th>
-          <th class="grp sep-left" colspan="3">Adult female lice / fish</th>
+          <th class="grp sep-left" colspan="4">Adult female lice / fish</th>
           <th class="grp sep-left" colspan="2">Sites above legal limit</th>
           <th class="grp sep-left" colspan="2">Sea temperature</th>
           <th class="grp sep-left" colspan="3">Disease (sites)</th>
           <th class="grp sep-left" rowspan="2">Lice treatments<br>(site-weeks)</th>
         </tr>
         <tr>
-          <th class="sep-left" id="hlThN">N</th><th id="hlThP">N-1</th><th>Δ%</th>
+          <th class="sep-left" id="hlThN">N</th><th id="hlThP">N-1</th><th>Δ%</th><th title="Last 3 weeks against the 3 weeks before">3-wk trend</th>
           <th class="sep-left">Share</th><th>N-1</th>
           <th class="sep-left">°C</th><th>Δ °C</th>
           <th class="sep-left">PD</th><th>ILA</th><th>Other</th>
@@ -478,6 +478,33 @@
       <tbody id="tbodyHealth"></tbody>
       <tfoot id="tfootHealth"></tfoot>
     </table>
+
+    <div id="hlDisWrap">
+      <div class="sig-title" style="margin-top:26px;">Diseases and lice treatments — period against the same weeks of N-1</div>
+      <div class="chart-controls">
+        <span class="cc-label">Zone</span>
+        <select class="ctrl" id="hlDZone"></select>
+      </div>
+      <table class="sig-table" id="hlDisTable">
+        <thead>
+          <tr><th class="name" rowspan="2">Disease</th>
+              <th class="grp sep-left" colspan="3">New cases over the period</th>
+              <th class="grp sep-left" colspan="3">Sites with an active case (weekly average)</th></tr>
+          <tr><th class="sep-left" id="hlDThN1">N</th><th id="hlDThP1">N-1</th><th>Δ%</th>
+              <th class="sep-left" id="hlDThN2">N</th><th id="hlDThP2">N-1</th><th>Δ%</th></tr>
+        </thead>
+        <tbody id="tbodyDis"></tbody>
+        <tfoot id="tfootDis"></tfoot>
+      </table>
+      <div class="sig-title" style="margin-top:22px;">New disease cases</div>
+      <div class="sig-sub" id="hlNewSub"></div>
+      <table class="sig-table" id="hlNewTable">
+        <thead><tr><th class="name">Week</th><th style="text-align:left">Zone</th><th style="text-align:left">Site</th>
+          <th style="text-align:left">Disease</th><th style="text-align:left">Company</th></tr></thead>
+        <tbody id="tbodyNew"></tbody>
+      </table>
+      <div id="hlNewMore" style="margin-top:8px;"></div>
+    </div>
 
     <div id="hlChartWrap">
     <div class="sig-title" style="margin-top:26px;">Weekly trend — this year against the two previous</div>
@@ -1563,7 +1590,7 @@ function renderHealth() {
   // the biomass data-quality banner is about the monthly register, not this view
   document.getElementById('dataQualityBanner').style.display = 'none';
   const show = !!BW;
-  ['hlCtl', 'hlChartWrap'].forEach(id => document.getElementById(id).style.display = show ? '' : 'none');
+  ['hlCtl', 'hlChartWrap', 'hlDisWrap'].forEach(id => document.getElementById(id).style.display = show ? '' : 'none');
   if (!BW) {
     updateMapSelectionHighlight([]);
     empty.style.display = 'block'; table.style.display = 'none';
@@ -1632,12 +1659,24 @@ function renderHealth() {
   const pct = (a, b) => (isFinite(a) && isFinite(b) && b > 0) ? (a / b - 1) * 100 : NaN;
   const dTd = (v, key, txt) => `<td class="${deltaClass(key, v)}">${txt}</td>`;
   const disCell = (n, key, title) => `<td class="${n > 0 ? 'delta-bad' : 'delta-zero'}"${title ? ` title="${title}"` : ''}>${n || '·'}</td>`;
-  const rowHtml = (name, a, b, cls) => {
+  // 3-week lice trend: mean of the last 3 weeks (to the selected week) against the 3 weeks before.
+  const trendOf = pos => {
+    const last = [0, 1, 2].map(i => hlShift(k, -i)), before = [3, 4, 5].map(i => hlShift(k, -i));
+    const x = hlAgg(idx, last, pos, k), y = hlAgg(idx, before, pos, k);
+    return pct(x.lice, y.lice);
+  };
+  const trendCell = p => {
+    if (!isFinite(p)) return '<td class="delta-zero">—</td>';
+    const arrow = p > 10 ? '↑' : (p < -10 ? '↓' : '→');
+    const cls = p > 10 ? 'delta-bad' : (p < -10 ? 'delta-good' : 'delta-zero');
+    return `<td class="${cls}" title="${(p >= 0 ? '+' : '') + p.toFixed(0)}% vs the 3 previous weeks"><b style="font-size:15px">${arrow}</b> <small>${(p >= 0 ? '+' : '') + p.toFixed(0)}%</small></td>`;
+  };
+  const rowHtml = (name, a, b, cls, tr) => {
     const dl = pct(a.lice, b.lice), dt = (isFinite(a.t) && isFinite(b.t)) ? a.t - b.t : NaN;
     const otherTitle = Object.keys(a.dis).filter(d => !HL_DIS[d]).map(d => `${d}: ${a.dis[d]}`).join(', ');
     return `<tr${cls ? ` class="${cls}"` : ''}><td class="name">${name}</td><td>${a.na || '—'}</td>` +
       `<td class="sep-left">${f2(a.lice)}</td><td>${f2(b.lice)}</td>` +
-      dTd(dl, 'mort', isFinite(dl) ? (dl >= 0 ? '+' : '') + dl.toFixed(0) + '%' : '—') +
+      dTd(dl, 'mort', isFinite(dl) ? (dl >= 0 ? '+' : '') + dl.toFixed(0) + '%' : '—') + trendCell(tr) +
       `<td class="sep-left ${deltaClass('mort', a.ovShare - b.ovShare)}">${f0p(a.ovShare)}</td><td>${f0p(b.ovShare)}</td>` +
       `<td class="sep-left">${f1(a.t)}</td><td style="color:var(--muted)">${isFinite(dt) ? (dt >= 0 ? '+' : '') + dt.toFixed(1) : '—'}</td>` +
       `<td class="sep-left ${a.pd ? 'delta-bad' : 'delta-zero'}">${a.pd || '·'}</td>` + disCell(a.ila) + disCell(a.other, null, otherTitle) +
@@ -1648,16 +1687,18 @@ function renderHealth() {
   const mapVals = {}, mapHtml = {};
   for (let po = 13; po >= 1; po--) {
     const a = hlAgg(idx, keysN, [po], k), b = hlAgg(idx, keysP, [po], k - 100);
-    if (!a.any && !b.any) { html += `<tr><td class="name">${po}. ${PO_NAMES[po]}</td><td colspan="12" style="color:var(--muted);text-align:left;">no reporting site</td></tr>`; continue; }
-    html += rowHtml(`${po}. ${PO_NAMES[po]}`, a, b);
+    if (!a.any && !b.any) { html += `<tr><td class="name">${po}. ${PO_NAMES[po]}</td><td colspan="13" style="color:var(--muted);text-align:left;">no reporting site</td></tr>`; continue; }
+    html += rowHtml(`${po}. ${PO_NAMES[po]}`, a, b, '', trendOf([po]));
     mapVals[po] = a.lice;
-    mapHtml[po] = `Adult female lice: ${f2(a.lice)} (${yN - 1}: ${f2(b.lice)})<br>Above limit: ${f0p(a.ovShare)} of sites<br>` +
+    const tp = trendOf([po]);
+    mapHtml[po] = `Adult female lice: ${f2(a.lice)} (${yN - 1}: ${f2(b.lice)})${isFinite(tp) ? ` · 3-wk trend ${tp > 10 ? '↑' : tp < -10 ? '↓' : '→'} ${(tp >= 0 ? '+' : '') + tp.toFixed(0)}%` : ''}<br>Above limit: ${f0p(a.ovShare)} of sites<br>` +
       `Sea temperature: ${f1(a.t)} °C<br>PD ${a.pd} · ILA ${a.ila}${a.other ? ' · other ' + a.other : ''}<br>Lice treatments: ${a.nonmed + a.med} site-weeks`;
   }
   tbody.innerHTML = html;
   const all = [1,2,3,4,5,6,7,8,9,10,11,12,13];
   document.getElementById('tfootHealth').innerHTML =
-    rowHtml('Norway', hlAgg(idx, keysN, all, k), hlAgg(idx, keysP, all, k - 100));
+    rowHtml('Norway', hlAgg(idx, keysN, all, k), hlAgg(idx, keysP, all, k - 100), '', trendOf(all));
+  renderHealthDiseases(idx, keysN, keysP, yN, per);
   updateMapValues(mapVals, v => v.toFixed(2), `Adult female lice · ${per}`);
   lastMapValues.html = mapHtml;
 
@@ -1671,6 +1712,89 @@ function renderHealth() {
     `<span class="warn">The latest week is still incomplete</span> for a few days after it closes (reports are due the following Tuesday) and is refreshed on later runs. ` +
     `Coverage: ${m.first ? m.first.join('-W') : '?'} to ${m.last ? m.last.join('-W') : '?'}` +
     `${m.complete_from_start === false ? ' — history still being rebuilt back to 2018 over the next runs' : ''}.`;
+}
+const HL_SHORT = { PANKREASSYKDOM: 'PD', INFEKSIOES_LAKSEANEMI: 'ILA', BAKTERIELL_NYRESYKE: 'BKD',
+  SYSTEMISK_INFEKSJON_MED_FLAVOBACTERIUM_PSYCHROPHILUM: 'FLAVO', FRANCISELLOSE: 'FRANC' };
+const HL_DLABEL = { PD: 'Pancreas disease (PD)', ILA: 'Infectious salmon anaemia (ISA / ILA)', BKD: 'Bacterial kidney disease (BKD)',
+  FLAVO: 'Flavobacteriosis', FRANC: 'Francisellosis' };
+let hlNewAll = false;
+function renderHealthDiseases(idx, keysN, keysP, yN, per) {
+  const zSel = document.getElementById('hlDZone');
+  if (!zSel.options.length) {
+    zSel.innerHTML = '<option value="0">Norway</option>' +
+      Array.from({length: 13}, (_, i) => 13 - i).map(po => `<option value="${po}">${po}. ${PO_NAMES[po]}</option>`).join('');
+    zSel.addEventListener('change', () => { hlNewAll = false; renderHealth(); });
+  }
+  const zone = +zSel.value, pos = zone ? [zone] : [1,2,3,4,5,6,7,8,9,10,11,12,13];
+  ['hlDThN1', 'hlDThN2'].forEach(id => document.getElementById(id).textContent = yN);
+  ['hlDThP1', 'hlDThP2'].forEach(id => document.getElementById(id).textContent = yN - 1);
+  const ev = BW.events || [];
+  const setN = new Set(keysN), setP = new Set(keysP), posSet = new Set(pos);
+  const newCount = (set, code) => ev.filter(e => set.has(e[0] * 100 + e[1]) && posSet.has(e[2]) && (code === null || e[4] === code)).length;
+  // weekly average of sites with an active case, over weeks that have data
+  const avgSites = (keys, code) => {
+    let sum = 0, n = 0;
+    keys.forEach(kk => {
+      let any = false, c = 0;
+      pos.forEach(po => {
+        const r = idx[`${Math.floor(kk / 100)}|${kk % 100}|${po}`]; if (!r) return; any = true;
+        Object.keys(r.dis || {}).forEach(d => { if (code === null || (HL_SHORT[d] || d) === code) c += r.dis[d]; });
+      });
+      if (any) { sum += c; n++; }
+    });
+    return n ? sum / n : NaN;
+  };
+  const trt = keys => keys.reduce((s, kk) => s + pos.reduce((t, po) => {
+    const r = idx[`${Math.floor(kk / 100)}|${kk % 100}|${po}`];
+    return t + (r ? Object.values(r.trt || {}).reduce((a, b) => a + b, 0) : 0);
+  }, 0), 0);
+  const pc = (a, b) => b > 0 ? (a / b - 1) * 100 : (a > 0 ? Infinity : NaN);
+  const dCell = (a, b) => {
+    const p = pc(a, b);
+    if (p === Infinity) return '<td class="delta-bad">new</td>';
+    return `<td class="${deltaClass('mort', p)}">${isFinite(p) ? (p >= 0 ? '+' : '') + p.toFixed(0) + '%' : '—'}</td>`;
+  };
+  const codes = Object.keys(HL_DLABEL);
+  ev.forEach(e => { if (!codes.includes(e[4])) codes.push(e[4]); });
+  const hasEv = !!BW.events;
+  let html = '';
+  codes.forEach(c => {
+    const nN = newCount(setN, c), nP = newCount(setP, c), aN = avgSites(keysN, c), aP = avgSites(keysP, c);
+    if (!nN && !nP && !(aN > 0) && !(aP > 0)) return;
+    html += `<tr><td class="name">${HL_DLABEL[c] || c}</td>` +
+      (hasEv ? `<td class="sep-left">${nN}</td><td>${nP}</td>${dCell(nN, nP)}` : '<td class="sep-left">…</td><td>…</td><td class="delta-zero">—</td>') +
+      `<td class="sep-left">${isFinite(aN) ? aN.toFixed(1) : '—'}</td><td>${isFinite(aP) ? aP.toFixed(1) : '—'}</td>${dCell(aN, aP)}</tr>`;
+  });
+  document.getElementById('tbodyDis').innerHTML = html || '<tr><td class="name" colspan="7" style="color:var(--muted)">No disease case in this period.</td></tr>';
+  const tN = trt(keysN), tP = trt(keysP);
+  const nAll = newCount(setN, null), pAll = newCount(setP, null);
+  document.getElementById('tfootDis').innerHTML =
+    `<tr><td class="name">All diseases</td>` + (hasEv ? `<td class="sep-left">${nAll}</td><td>${pAll}</td>${dCell(nAll, pAll)}` : '<td class="sep-left">…</td><td>…</td><td>—</td>') +
+    `<td class="sep-left">${avgSites(keysN, null).toFixed(1)}</td><td>${(avgSites(keysP, null) || 0).toFixed(1)}</td>${dCell(avgSites(keysN, null), avgSites(keysP, null))}</tr>` +
+    `<tr><td class="name">Lice treatments <small>site-weeks with a treatment${yN - 1 <= 2023 ? ' — not comparable before 2024' : ''}</small></td>` +
+    `<td class="sep-left">${tN}</td><td>${tP}</td>${dCell(tN, tP)}<td class="sep-left" colspan="3" style="color:var(--muted);text-align:left;">per type: coming with the treatment detail</td></tr>`;
+
+  // ---- list of new cases in the period, newest first
+  const names = BW.names || {};
+  const list = ev.filter(e => setN.has(e[0] * 100 + e[1]) && posSet.has(e[2]))
+                 .sort((a, b) => (b[0] * 100 + b[1]) - (a[0] * 100 + a[1]) || a[2] - b[2]);
+  const LIM = 25, shown = hlNewAll ? list : list.slice(0, LIM);
+  document.getElementById('hlNewSub').innerHTML = hasEv
+    ? `${list.length} new case${list.length > 1 ? 's' : ''} in ${per}${zone ? ' — zone ' + zone : ''}, newest first. ` +
+      `A case is "new" when the disease appears at a site where it was absent the 4 previous weeks. ` +
+      `<span style="color:var(--muted)">Company names arrive with the next step (site register).</span>`
+    : '<span class="warn">Available after the next run of the update workflow</span> — it rebuilds the site-by-site disease history.';
+  document.getElementById('tbodyNew').innerHTML = shown.map(e =>
+    `<tr><td class="name">W${String(e[1]).padStart(2, '0')} ${e[0]}</td><td style="text-align:left">${e[2]}. ${PO_NAMES[e[2]] || ''}</td>` +
+    `<td style="text-align:left">${names[e[3]] || ''} <small style="color:var(--muted)">#${e[3]}</small></td>` +
+    `<td style="text-align:left" class="delta-bad">${HL_DLABEL[e[4]] || e[4]}</td>` +
+    `<td style="text-align:left;color:var(--muted)">${(BW.orgs && BW.orgs[e[3]]) || '—'}</td></tr>`).join('');
+  const more = document.getElementById('hlNewMore');
+  more.innerHTML = list.length > LIM
+    ? `<button type="button" id="hlNewBtn" style="padding:6px 12px;background:#0d1a24;color:var(--muted);border:1px solid var(--border);border-radius:6px;cursor:pointer;">`
+      + (hlNewAll ? `Show the ${LIM} most recent only` : `Show all ${list.length}`) + `</button>` : '';
+  const b = document.getElementById('hlNewBtn');
+  if (b) b.addEventListener('click', () => { hlNewAll = !hlNewAll; renderHealth(); });
 }
 function drawHealthChart(idx, yN) {
   const svg = document.getElementById('hlChart');
