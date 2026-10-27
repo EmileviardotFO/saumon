@@ -585,6 +585,13 @@
         <tfoot id="tfootRgGrp"></tfoot>
       </table>
       <div id="rgGrpMore" style="margin-top:8px;"></div>
+      <div class="sig-title" style="margin-top:26px;">2b · Land-based food-fish licences (not included above)</div>
+      <div class="sig-sub" id="rgLandSub"></div>
+      <table class="sig-table">
+        <thead><tr><th class="name">Licence holder</th><th style="text-align:left">Zone</th><th style="text-align:left">Site(s)</th><th>Licences</th><th>Licensed capacity (t)</th></tr></thead>
+        <tbody id="tbodyRgLand"></tbody>
+        <tfoot id="tfootRgLand"></tfoot>
+      </table>
       <div class="sig-title" style="margin-top:26px;">3 · Slaughter holding cages (ventemerder)</div>
       <div class="sig-sub">Pens next to a slaughterhouse where fish wait a few days before slaughter — in practice, a map of where salmon is slaughtered and by whom. No throughput is published.</div>
       <table class="sig-table">
@@ -2101,7 +2108,8 @@ function renderRegister() {
   const mlab = `${MONTHS_FR[month - 1]} ${year}`, mlabP = `${MONTHS_FR[month - 1]} ${year - 1}`;
   document.getElementById('rgSub').innerHTML =
     `From the BarentsWatch site sheets (Akvakulturregisteret data), read ${m.generated || '?'}: ${m.sites || '?'} sites, ` +
-    `${m.licences_kept || '?'} commercial food-fish salmon licences out of ${m.licences_total || '?'} licences.`;
+    `${m.licences_kept || '?'} sea-based food-fish salmon licences` + (m.licences_land ? ` (plus ${m.licences_land} land-based, shown apart)` : '') +
+    ` out of ${m.licences_total || '?'} licences of all kinds.`;
   // biomass per zone at the end of the selected month (Biomasseregisteret, salmon)
   const bio = (y, mo) => { const o = {}; RECORDS.forEach(r => { if (r.year === y && r.month === mo) o[r.po] = (o[r.po] || 0) + r.biomasse_kg / 1000; }); return o; };
   const bN = bio(year, month), bP = bio(year - 1, month);
@@ -2186,6 +2194,20 @@ function renderRegister() {
     ? `<button type="button" id="rgGrpBtn" style="padding:6px 12px;background:#0d1a24;color:var(--muted);border:1px solid var(--border);border-radius:6px;cursor:pointer;">${rgGrpAll ? 'Show top ' + LIM + ' only' : 'Show all ' + rows.length}</button>` : '';
   const gb = document.getElementById('rgGrpBtn');
   if (gb) gb.addEventListener('click', () => { rgGrpAll = !rgGrpAll; renderRegister(); });
+
+  // land-based farms: licensed on land, not under the sea MTB system
+  const land = BWR.mtb_land || [];
+  const lt = land.reduce((t, r) => t + r.mtb, 0);
+  document.getElementById('rgLandSub').innerHTML = land.length
+    ? `${land.length} companies hold land-based licences for ${f0(lt)} t of salmon. These capacities are authorisations for projects, most of them ` +
+      `not built or far from full output, so they are kept out of the sea MTB above.`
+    : 'Land-based licences are listed after the next register update.';
+  document.getElementById('tbodyRgLand').innerHTML = land.map(r =>
+    `<tr><td class="name">${r.holder}${r.group && r.group.toLowerCase() !== r.holder.toLowerCase() ? `<small>group: ${r.group}</small>` : ''}</td>` +
+    `<td style="text-align:left">${r.po ? r.po + '. ' + (PO_NAMES[r.po] || '') : '—'}</td>` +
+    `<td style="text-align:left">${(r.sites || []).join(', ')}</td><td>${r.licences}</td><td>${f0(r.mtb)}</td></tr>`).join('');
+  document.getElementById('tfootRgLand').innerHTML = land.length
+    ? `<tr><td class="name">Total</td><td></td><td></td><td>${land.reduce((t, r) => t + r.licences, 0)}</td><td>${f0(lt)}</td></tr>` : '';
 
   // slaughter holding cages
   const cages = BWR.slaughter_cages || [];
