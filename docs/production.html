@@ -1171,6 +1171,12 @@ async function loadRemoteData() {
     // donnees embarquees dans le HTML, quelle que soit la fraicheur reelle
     // de data.json sur GitHub -- d'ou juin absent malgre un data.json a jour.
     if (d.country && d.country.length) COUNTRY = d.country;
+    // Prix mensuel Akvafakta (valeur / volume d'export) : la serie PRICES etait
+    // figee a la generation du HTML, d'ou une courbe de prix arretee en mai.
+    (d.monthly_akvafakta || []).forEach(r => {
+      if (r && r.year && r.month && isFinite(r.price_nok_kg) && r.price_nok_kg > 0)
+        PRICES[String(r.year * 100 + r.month)] = r.price_nok_kg;
+    });
     if (d.bw_weekly && d.bw_weekly.rows && d.bw_weekly.rows.length) BW = d.bw_weekly;
     if (d.bw_register && d.bw_register.mtb_po) BWR = d.bw_register;
     if (d.establishments && d.establishments.rows) ESTAB = d.establishments;
