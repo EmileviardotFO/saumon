@@ -61,12 +61,14 @@ DIS_SHORT = {'PANKREASSYKDOM': 'PD', 'INFEKSIOES_LAKSEANEMI': 'ILA',
              'BAKTERIELL_NYRESYKE': 'BKD',
              'SYSTEMISK_INFEKSJON_MED_FLAVOBACTERIUM_PSYCHROPHILUM': 'FLAVO',
              'FRANCISELLOSE': 'FRANC'}
-# Detail des traitements contre les poux, lu dans la fiche de chaque site traite
-# (la liste hebdomadaire ne dit que "medicamenteux / non medicamenteux").
+# Detail des traitements contre les poux : un appel par site ET par annee
+# (GET /v1/geodata/fishhealth/locality/{site}/liceMedicationEvents/{annee}),
+# qui donne toutes les semaines traitees de l'annee avec le type de traitement
+# non medicamenteux et la substance des traitements medicamenteux.
 TRT_FILE = os.path.join(ROOT, 'data', 'bw_treatments.json')
-TRT_FROM = (2024, 1)          # historique detaille limite : un appel par site traite
-TRT_BUDGET = 1200             # appels de fiche au plus par execution
-TRT_REFRESH = 2               # semaines les plus recentes toujours relues
+TRT_FROM_YEAR = 2024          # historique detaille a partir de cette annee
+TRT_BUDGET = 2800             # appels au plus par execution (annee en cours ~1 100 + rattrapage)
+TRT_FROM = (TRT_FROM_YEAR, 1)
 NEW_CASE_GAP = 4      # une maladie est un "nouveau cas" si absente du site les 4 semaines d'avant
 TOKEN_URL = 'https://id.barentswatch.no/connect/token'
 API = 'https://www.barentswatch.no/bwapi'
@@ -221,61 +223,94 @@ def aggregate_week(api, y, w, loc_po):
     return rows, lookups, sick
 
 
-def treatment_keys(lt):
-    """Cles 'categorie|type' d'un bloc liceTreatments, quel que soit son format exact."""
+def _label(e, *fields):
+    if isinstance(e, str):
+        return e
+    if isinstance(e, dict):
+        for f in fields:
+            v = e.get(f)
+            if isinstance(v, str) and v.strip():
+                return v.strip()
+            if isinstance(v, dict) and isinstance(v.get('name'), str):
+                return v['name'].strip()
+    return None
+
+
+def treatment_keys_week(wk):
+    """Cles 'categorie|detail' pour une semaine d'un site (format liceMedicationEvents)."""
     keys = set()
-    if not isinstance(lt, dict):
-        return keys
-    for cat, val in lt.items():
-        if cat.startswith('daysSince') or not val:
-            continue
-        entries = val if isinstance(val, list) else [val]
-        for e in entries:
-            sub = None
-            if isinstance(e, dict):
-                for k in ('type', 'treatmentType', 'nonMedicinalTreatmentType', 'method', 'name',
-                          'substance', 'activeSubstance', 'description'):
-                    v = e.get(k)
-                    if isinstance(v, str) and v.strip():
-                        sub = v.strip(); break
-            elif isinstance(e, str):
-                sub = e
-            keys.add(cat + ('|' + sub if sub else ''))
+    def med(lst, prefix='medicinal'):
+        for e in lst or []:
+            name = _label(e, 'name', 'substance')
+            kind = _label(e, 'type', 'treatmentType')
+            keys.add(f'{prefix}|{kind or "?"}|{name or "?"}')
+    def nonmed(lst):
+        for e in lst or []:
+            keys.add('nonmedicinal|' + (_label(e, 'type', 'name', 'treatmentType') or '?'))
+    med(wk.get('medicinalTreatments'))
+    nonmed(wk.get('nonMedicinalTreatments'))
+    for c in wk.get('combinationTreatments') or []:
+        keys.add('combination')
+        if isinstance(c, dict):
+            med(c.get('medicinalTreatments')); nonmed(c.get('nonMedicinalTreatments'))
+    for e in wk.get('cleanerFishTreatments') or []:
+        keys.add('cleanerfish|' + (_label(e, 'name', 'species', 'type') or '?'))
+    if wk.get('mechanicalRemoval'):
+        keys.add('mechanicalremoval')
     return keys
 
 
 def update_treatments(api, loc_po, all_weeks):
-    trt = json.load(io.open(TRT_FILE, encoding='utf-8')) if os.path.exists(TRT_FILE) else {'weeks': {}, 'samples': []}
-    weeks = [wk for wk in all_weeks if wk >= TRT_FROM]
-    recent = weeks[-TRT_REFRESH:]
-    todo = list(reversed(recent)) + [wk for wk in reversed(weeks) if f'{wk[0]}-{wk[1]:02d}' not in trt['weeks'] and wk not in recent]
+    """Releve par site et par annee ; renvoie {(annee, semaine): {zone: {cle: sites}}}."""
+    trt = json.load(io.open(TRT_FILE, encoding='utf-8')) if os.path.exists(TRT_FILE) else {}
+    if 'site_year' not in trt:
+        trt = {'site_year': {}, 'samples': []}       # ancien format : on repart de zero
+    this_year, this_week = all_weeks[-1]
+    # L'annee en cours est relue a CHAQUE execution (lundi, mercredi, vendredi) :
+    # les declarations de la semaine W arrivent jusqu'au mardi de W+1, et les
+    # traitements medicamenteux ne sont plus signales dans la liste hebdomadaire,
+    # donc seule une relecture complete les capte au plus pres.
+    stamp = dt.date.today().isoformat()
+    sites = sorted(no for no, po in loc_po.items() if po and 1 <= int(po) <= 13)
+    todo = []
+    for y in range(TRT_FROM_YEAR, this_year + 1):
+        for no in sites:
+            rec = trt['site_year'].get(f'{no}|{y}')
+            if rec is None:
+                todo.append((no, y))
+            elif y >= this_year - (1 if this_week <= 8 else 0) and rec.get('fetched') != stamp:
+                todo.append((no, y))                  # annee en cours : relue une fois par semaine
+    # annee en cours d'abord, puis on remonte
+    todo.sort(key=lambda t: -t[1])
     calls = 0
-    for (y, w) in todo:
-        if calls >= TRT_BUDGET:
-            break
-        sites = api.call('POST', f'/v2/geodata/fishhealth/locality/{y}/{w}', body={}) or []
+    for no, y in todo[:TRT_BUDGET]:
+        d = api.call('GET', f'/v1/geodata/fishhealth/locality/{no}/liceMedicationEvents/{y}')
         calls += 1
-        per_po = {}
-        for s in sites:
-            if not s.get('liceTreatments'):
-                continue
-            no = str((s.get('locality') or {}).get('no'))
-            po = loc_po.get(no)
-            if not po:
-                continue
-            det = api.call('GET', f'/v2/geodata/fishhealth/locality/{no}/{y}/{w}')
-            calls += 1
-            lt = (det or {}).get('liceTreatments')
-            keys = treatment_keys(lt) or {'unspecified'}
-            if lt and len(trt['samples']) < 12 and any(lt.values() if isinstance(lt, dict) else []):
-                trt['samples'].append({'site': no, 'week': f'{y}-{w:02d}', 'liceTreatments': lt})
-            d = per_po.setdefault(str(po), {})
+        weeks = {}
+        for wk in (d or {}).get('data') or []:
+            k = treatment_keys_week(wk)
+            if k and wk.get('week'):
+                weeks[str(wk['week'])] = sorted(k)
+                if len(trt['samples']) < 15 and (wk.get('nonMedicinalTreatments') or wk.get('cleanerFishTreatments')):
+                    trt['samples'].append({'site': no, 'year': y, 'week': wk})
+        trt['site_year'][f'{no}|{y}'] = {'fetched': stamp, 'weeks': weeks}
+    io.open(TRT_FILE, 'w', encoding='utf-8').write(json.dumps(trt, ensure_ascii=False, separators=(',', ':'), sort_keys=True))
+    remaining = max(0, len(todo) - TRT_BUDGET)
+    print(f'Traitements : {calls} sites-annees relus, {remaining} restants pour les prochains passages.')
+    # agregation par zone et par semaine
+    agg = {}
+    for key, rec in trt['site_year'].items():
+        no, y = key.split('|')
+        po = loc_po.get(no)
+        if not po:
+            continue
+        for w, keys in rec.get('weeks', {}).items():
+            d = agg.setdefault((int(y), int(w)), {}).setdefault(str(po), {})
             for k in keys:
                 d[k] = d.get(k, 0) + 1
-        trt['weeks'][f'{y}-{w:02d}'] = per_po
-    io.open(TRT_FILE, 'w', encoding='utf-8').write(json.dumps(trt, ensure_ascii=False, separators=(',', ':'), sort_keys=True))
-    print(f'Traitements detailles : {len(trt["weeks"])} semaines depuis {TRT_FROM[0]}, {calls} appels cette fois.')
-    return trt
+    complete_years = {y for y in range(TRT_FROM_YEAR, this_year + 1)
+                      if all(f'{no}|{y}' in trt['site_year'] for no in sites)}
+    return agg, complete_years
 
 
 def main():
@@ -344,14 +379,16 @@ def main():
     }
     # Detail des traitements, rattache aux lignes zone x semaine (cle 'trd')
     try:
-        trt = update_treatments(api, loc_po, all_weeks)
+        agg, complete_years = update_treatments(api, loc_po, all_weeks)
         for (y, w), rows in by_week.items():
-            per_po = trt['weeks'].get(f'{y}-{w:02d}')
-            if per_po is None:
+            if y not in complete_years:
+                for r in rows:
+                    r.pop('trd', None)        # annee incomplete : pas de detail partiel trompeur
                 continue
+            per_po = agg.get((y, w), {})
             for r in rows:
                 r['trd'] = per_po.get(str(r['po']), {})
-        store['meta']['treatment_detail_from'] = list(TRT_FROM)
+        store['meta']['treatment_detail_years'] = sorted(complete_years)
     except RuntimeError as e:
         print('Detail des traitements indisponible :', e)
     store['rows'] = [r for k in sorted(by_week) for r in by_week[k]]
