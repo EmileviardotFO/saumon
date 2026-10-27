@@ -61,13 +61,15 @@ DIS_SHORT = {'PANKREASSYKDOM': 'PD', 'INFEKSIOES_LAKSEANEMI': 'ILA',
              'BAKTERIELL_NYRESYKE': 'BKD',
              'SYSTEMISK_INFEKSJON_MED_FLAVOBACTERIUM_PSYCHROPHILUM': 'FLAVO',
              'FRANCISELLOSE': 'FRANC'}
-# Detail des traitements contre les poux : un appel par site ET par annee
-# (GET /v1/geodata/fishhealth/locality/{site}/liceMedicationEvents/{annee}),
-# qui donne toutes les semaines traitees de l'annee avec le type de traitement
-# non medicamenteux et la substance des traitements medicamenteux.
+# Detail des traitements contre les poux. La liste hebdomadaire dit seulement
+# quels sites ont traite (medicamenteux ou non) ; pour ces sites-semaines-la, la
+# fiche du site (GET /v2/geodata/fishhealth/locality/{site}/{annee}/{semaine})
+# donne le type exact : thermique, mecanique, eau douce, nettoyeurs,
+# bain ou aliment medicamenteux et substance. Environ 60 sites-semaines par
+# semaine en Norvege.
 TRT_FILE = os.path.join(ROOT, 'data', 'bw_treatments.json')
 TRT_FROM_YEAR = 2024          # historique detaille a partir de cette annee
-TRT_BUDGET = 2800             # appels au plus par execution (annee en cours ~1 100 + rattrapage)
+TRT_BUDGET = 3000             # fiches lues au plus par execution (semaines recentes + rattrapage)
 TRT_FROM = (TRT_FROM_YEAR, 1)
 NEW_CASE_GAP = 4      # une maladie est un "nouveau cas" si absente du site les 4 semaines d'avant
 TOKEN_URL = 'https://id.barentswatch.no/connect/token'
@@ -77,6 +79,10 @@ KEY = 'bw_weekly'
 START = (2018, 1)
 REFRESH_WEEKS = 4
 PAUSE = 0.15          # secondes entre deux appels : BarentsWatch demande un seul fil
+# Garde-fous de duree (l'etape du workflow est coupee a 60 min et perdrait tout) :
+T_START = time.time()
+WEEKS_UNTIL = 33 * 60     # releve des semaines arrete apres 33 min
+DETAIL_UNTIL = 52 * 60    # fiches des sites traites arretees apres 52 min
 
 
 def LIMIT(po, week):
@@ -160,10 +166,11 @@ def num(x):
 def aggregate_week(api, y, w, loc_po):
     sites = api.call('POST', f'/v2/geodata/fishhealth/locality/{y}/{w}', body={})
     if not isinstance(sites, list):
-        return None, 0, {}
+        return None, 0, {}, {}
     acc = {}
     lookups = 0
     sick = {}          # site -> [po, nom, [codes maladie]]
+    treated = {}       # site -> [po, [types de la liste hebdomadaire]]
     for s in sites:
         loc = s.get('locality') or {}
         no = loc.get('no')
@@ -196,6 +203,8 @@ def aggregate_week(api, y, w, loc_po):
         for t in set(treats):
             if t:
                 a['trt'][t] = a['trt'].get(t, 0) + 1
+        if any(treats):
+            treated[key] = [po, sorted({t for t in treats if t})]
         if rep.get('isFallow'):
             a['nf'] += 1
             continue
@@ -220,7 +229,7 @@ def aggregate_week(api, y, w, loc_po):
                      'ov': a['ov'], 'lim': LIMIT(po, w),
                      't': round(a['ts'] / a['nt'], 2) if a['nt'] else None, 'nt': a['nt'],
                      'dis': a['dis'], 'trt': a['trt']})
-    return rows, lookups, sick
+    return rows, lookups, sick, treated
 
 
 def _label(e, *fields):
@@ -236,97 +245,127 @@ def _label(e, *fields):
     return None
 
 
-def treatment_keys_week(wk):
-    """Cles 'categorie|detail' pour une semaine d'un site (format liceMedicationEvents)."""
+def _names(lst, *fields):
+    out = []
+    for e in lst or []:
+        n = _label(e, *fields)
+        if n:
+            out.append(n)
+    return out
+
+
+def treatment_keys_detail(lt, fallback):
+    """Cles 'categorie|detail' a partir du bloc liceTreatments d'une fiche de site."""
     keys = set()
-    def med(lst, prefix='medicinal'):
+    if not isinstance(lt, dict):
+        lt = {}
+
+    def med(lst, kind=None):
         for e in lst or []:
-            name = _label(e, 'name', 'substance')
-            kind = _label(e, 'type', 'treatmentType')
-            keys.add(f'{prefix}|{kind or "?"}|{name or "?"}')
+            if not isinstance(e, dict):
+                continue
+            k = kind or _label(e, 'treatmentType', 'type') or '?'
+            subs = [_label(d.get('substance') or {}, 'name') or _label(d, 'name', 'substanceName')
+                    for d in e.get('treatmentDetail') or [] if isinstance(d, dict)]
+            subs = [x for x in subs if x] or [_label(e, 'name', 'substance') or '?']
+            for sname in subs:
+                keys.add(f'medicinal|{k}|{sname}')
+
     def nonmed(lst):
         for e in lst or []:
             keys.add('nonmedicinal|' + (_label(e, 'type', 'name', 'treatmentType') or '?'))
-    med(wk.get('medicinalTreatments'))
-    nonmed(wk.get('nonMedicinalTreatments'))
-    for c in wk.get('combinationTreatments') or []:
+
+    med(lt.get('medicinalTreatments'))
+    med(lt.get('bathTreatments'), 'Bath')
+    med(lt.get('inFeedTreatments'), 'InFeed')
+    nonmed(lt.get('nonMedicinalTreatments'))
+    for c in lt.get('combinationTreatments') or []:
         keys.add('combination')
         if isinstance(c, dict):
-            med(c.get('medicinalTreatments')); nonmed(c.get('nonMedicinalTreatments'))
-    for e in wk.get('cleanerFishTreatments') or []:
-        keys.add('cleanerfish|' + (_label(e, 'name', 'species', 'type') or '?'))
-    if wk.get('mechanicalRemoval'):
+            med(c.get('medicinalTreatments')); med(c.get('bathTreatments'), 'Bath')
+            med(c.get('inFeedTreatments'), 'InFeed'); nonmed(c.get('nonMedicinalTreatments'))
+    cf = lt.get('cleanerFishTreatment')
+    if cf:
+        sp = _names((cf or {}).get('cleanerFish') or (cf or {}).get('species') or [], 'name', 'species', 'type') \
+            if isinstance(cf, dict) else []
+        keys.add('cleanerfish|' + (', '.join(sorted(set(sp))) or 'cleaner fish'))
+    if lt.get('mechanicalRemovalTreatment'):
         keys.add('mechanicalremoval')
+    if not keys:
+        # la liste disait "traite" mais la fiche ne detaille rien
+        for t in fallback:
+            keys.add(('medicinal|?|?' if t == 'MEDIKAMENTELL' else 'nonmedicinal|?'))
     return keys
 
 
-def update_treatments(api, loc_po, all_weeks):
-    """Releve par site et par annee ; renvoie {(annee, semaine): {zone: {cle: sites}}}."""
+def update_treatments(api, loc_po, all_weeks, dis):
+    """Fiche de chaque site-semaine traite depuis TRT_FROM ; renvoie
+    ({(annee, semaine): {zone: {cle: sites}}}, annees completes, export site par site)."""
     trt = json.load(io.open(TRT_FILE, encoding='utf-8')) if os.path.exists(TRT_FILE) else {}
-    if 'site_year' not in trt:
-        trt = {'site_year': {}, 'samples': []}       # ancien format : on repart de zero
-    this_year, this_week = all_weeks[-1]
-    # L'annee en cours est relue a CHAQUE execution (lundi, mercredi, vendredi) :
-    # les declarations de la semaine W arrivent jusqu'au mardi de W+1, et les
-    # traitements medicamenteux ne sont plus signales dans la liste hebdomadaire,
-    # donc seule une relecture complete les capte au plus pres.
-    stamp = dt.date.today().isoformat()
-    sites = sorted(no for no, po in loc_po.items() if po and 1 <= int(po) <= 13)
+    if trt.get('v') != 2:
+        trt = {'v': 2, 'site_week': {}, 'samples': []}   # ancien format (par annee) : abandonne
+    sw = trt['site_week']
+    wk_key = lambda y, w: f'{y}-{w:02d}'
+    recent = set(all_weeks[-REFRESH_WEEKS:])
+    weeks = [wk for wk in all_weeks if wk >= TRT_FROM]
     todo = []
-    for y in range(TRT_FROM_YEAR, this_year + 1):
-        for no in sites:
-            rec = trt['site_year'].get(f'{no}|{y}')
-            if rec is None:
-                todo.append((no, y))
-            elif y >= this_year - (1 if this_week <= 8 else 0) and rec.get('fetched') != stamp:
-                todo.append((no, y))                  # annee en cours : relue une fois par semaine
-    # annee en cours d'abord, puis on remonte
-    todo.sort(key=lambda t: -t[1])
+    for (y, w) in weeks:
+        lst = dis.get('trt_weeks', {}).get(wk_key(y, w))
+        if lst is None:
+            continue
+        for no, (po, types) in lst.items():
+            k = f'{no}|{y}|{w}'
+            if k not in sw or ((y, w) in recent and sw[k].get('types') != types):
+                todo.append((y, w, no, types))
+    # semaines recentes d'abord, puis on remonte
+    todo.sort(key=lambda t: (-t[0], -t[1]))
     calls = 0
-    for no, y in todo[:TRT_BUDGET]:
-        d = api.call('GET', f'/v1/geodata/fishhealth/locality/{no}/liceMedicationEvents/{y}')
+    for (y, w, no, types) in todo[:TRT_BUDGET]:
+        if time.time() - T_START > DETAIL_UNTIL:
+            print('  arret des fiches (duree), reprise au prochain passage')
+            break
+        try:
+            det = api.call('GET', f'/v2/geodata/fishhealth/locality/{no}/{y}/{w}')
+        except RuntimeError as e:
+            print('  ', no, y, w, e); continue
         calls += 1
-        weeks = {}
-        for wk in (d or {}).get('data') or []:
-            k = treatment_keys_week(wk)
-            if k and wk.get('week'):
-                weeks[str(wk['week'])] = sorted(k)
-                if len(trt['samples']) < 15 and (wk.get('nonMedicinalTreatments') or wk.get('cleanerFishTreatments')):
-                    trt['samples'].append({'site': no, 'year': y, 'week': wk})
-        trt['site_year'][f'{no}|{y}'] = {'fetched': stamp, 'weeks': weeks}
+        lt = (det or {}).get('liceTreatments')
+        sw[f'{no}|{y}|{w}'] = {'types': types, 'keys': sorted(treatment_keys_detail(lt, types))}
+        if len(trt['samples']) < 12 and isinstance(lt, dict) and any(lt.get(x) for x in lt):
+            trt['samples'].append({'site': no, 'year': y, 'week': w, 'liceTreatments': lt})
+    # on ne garde que les sites-semaines encore signales comme traites
+    valid = {f'{no}|{y}|{w}' for (y, w) in weeks
+             for no in (dis.get('trt_weeks', {}).get(wk_key(y, w)) or {})}
+    for k in [k for k in sw if k not in valid]:
+        del sw[k]
     io.open(TRT_FILE, 'w', encoding='utf-8').write(json.dumps(trt, ensure_ascii=False, separators=(',', ':'), sort_keys=True))
-    remaining = max(0, len(todo) - TRT_BUDGET)
-    print(f'Traitements : {calls} sites-annees relus, {remaining} restants pour les prochains passages.')
-    # agregation par zone et par semaine
-    agg = {}
-    for key, rec in trt['site_year'].items():
-        no, y = key.split('|')
+    remaining = max(0, len(todo) - calls)
+    print(f'Traitements : {calls} fiches site-semaine lues, {remaining} restantes pour les prochains passages.')
+    agg, keys, kidx, site_rows = {}, [], {}, []
+    for k, rec in sorted(sw.items(), key=lambda t: (int(t[0].split('|')[1]), int(t[0].split('|')[2]), int(t[0].split('|')[0]))):
+        no, y, w = k.split('|')
         po = loc_po.get(no)
         if not po:
             continue
-        for w, keys in rec.get('weeks', {}).items():
-            d = agg.setdefault((int(y), int(w)), {}).setdefault(str(po), {})
-            for k in keys:
-                d[k] = d.get(k, 0) + 1
-    complete_years = {y for y in range(TRT_FROM_YEAR, this_year + 1)
-                      if all(f'{no}|{y}' in trt['site_year'] for no in sites)}
-    # export compact site par site pour le tableau de bord : une ligne par
-    # site-semaine traitee, [site, zone, annee, semaine, [indices de cles]]
-    keys, kidx, site_rows = [], {}, []
-    for key, rec in sorted(trt['site_year'].items()):
-        no, y = key.split('|')
-        po = loc_po.get(no)
-        if not po:
-            continue
-        for w, ks in sorted(rec.get('weeks', {}).items(), key=lambda t: int(t[0])):
-            ids = []
-            for k in ks:
-                if k not in kidx:
-                    kidx[k] = len(keys); keys.append(k)
-                ids.append(kidx[k])
-            site_rows.append([int(no), int(po), int(y), int(w), ids])
-    site_export = {'keys': keys, 'rows': site_rows, 'years': sorted(complete_years)}
-    return agg, complete_years, site_export
+        d = agg.setdefault((int(y), int(w)), {}).setdefault(str(po), {})
+        ids = []
+        for key in rec.get('keys') or []:
+            d[key] = d.get(key, 0) + 1
+            if key not in kidx:
+                kidx[key] = len(keys); keys.append(key)
+            ids.append(kidx[key])
+        site_rows.append([int(no), int(po), int(y), int(w), ids])
+    # annee complete : toutes ses semaines ont leur liste de sites traites, et
+    # tous ces sites-semaines ont leur fiche
+    done_keys = set(sw)
+    complete_years = set()
+    for yr in sorted({y for y, _ in weeks}):
+        ws = [wk for wk in weeks if wk[0] == yr]
+        if all(wk_key(*wk) in dis.get('trt_weeks', {}) for wk in ws) and \
+                all(f'{no}|{y}|{w}' in done_keys for (y, w) in ws
+                    for no in dis['trt_weeks'][wk_key(y, w)]):
+            complete_years.add(yr)
+    return agg, complete_years, {'keys': keys, 'rows': site_rows, 'years': sorted(complete_years)}
 
 
 def main():
@@ -339,6 +378,7 @@ def main():
     store = data.get(KEY) or {'rows': [], 'meta': {}}
     loc_po = json.load(io.open(LOC_CACHE)) if os.path.exists(LOC_CACHE) else {}
     dis = json.load(io.open(DIS_FILE, encoding='utf-8')) if os.path.exists(DIS_FILE) else {'weeks': {}, 'names': {}}
+    dis.setdefault('trt_weeks', {})
     wk_key = lambda y, w: f'{y}-{w:02d}'
 
     # Derniere semaine close : celle d'il y a 7 jours (rapports deposes le
@@ -346,7 +386,9 @@ def main():
     last = (dt.date.today() - dt.timedelta(days=7)).isocalendar()[:2]
     all_weeks = iso_weeks(START, last)
     # une semaine est "acquise" si on a a la fois ses agregats et ses maladies site par site
+    # depuis TRT_FROM, il faut aussi la liste des sites traites de la semaine
     have = {(r['y'], r['w']) for r in store['rows']} & {tuple(map(int, k.split('-'))) for k in dis['weeks']}
+    have = {wk for wk in have if wk < TRT_FROM or wk_key(*wk) in dis['trt_weeks']}
     recent = set(all_weeks[-REFRESH_WEEKS:])
     missing = [wk for wk in all_weeks if wk not in have and wk not in recent]
     todo = sorted(recent) + missing[-args.max_weeks:][::-1]   # recentes d'abord, puis on remonte
@@ -360,8 +402,11 @@ def main():
         by_week.setdefault((r['y'], r['w']), []).append(r)
     t0 = time.time()
     for (y, w) in todo:
+        if time.time() - T_START > WEEKS_UNTIL and (y, w) not in recent:
+            print(f'  arret du releve des semaines (duree) apres {done} semaines, reprise au prochain passage')
+            break
         try:
-            rows, lk, sick = aggregate_week(api, y, w, loc_po)
+            rows, lk, sick, treated = aggregate_week(api, y, w, loc_po)
         except RuntimeError as e:
             print(f'  {y}-S{w:02d} : {e}')
             failed.append((y, w))
@@ -372,6 +417,8 @@ def main():
             continue
         by_week[(y, w)] = rows
         dis['weeks'][wk_key(y, w)] = {no: v[2] for no, v in sick.items()}
+        if (y, w) >= TRT_FROM:
+            dis['trt_weeks'][wk_key(y, w)] = treated
         for no, v in sick.items():
             dis['names'][no] = v[1]
             loc_po.setdefault(no, v[0])
@@ -399,7 +446,7 @@ def main():
     }
     # Detail des traitements, rattache aux lignes zone x semaine (cle 'trd')
     try:
-        agg, complete_years, site_export = update_treatments(api, loc_po, all_weeks)
+        agg, complete_years, site_export = update_treatments(api, loc_po, all_weeks, dis)
         store['site_trt'] = site_export
         for (y, w), rows in by_week.items():
             if y not in complete_years:
