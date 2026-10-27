@@ -146,6 +146,11 @@
   .pm-code { color:var(--muted); font-family:monospace; font-size:11px; margin-left:auto; padding-left:14px; }
   tr.pm-row, tr.hl-zone { cursor:pointer; }
   tr.hl-zone:hover td { background:rgba(47,184,166,.06); }
+  tr.hl-detail-row > td { padding:14px 12px 16px !important; text-align:left; white-space:normal; }
+  .hl-detail table { font-size:12px; }
+  #tbodyHealth .hl-detail table td, #tbodyHealth .hl-detail table th { padding:5px 8px; background:transparent; border-bottom:1px solid var(--border); }
+  #tbodyHealth .hl-detail table tr:hover td { background:rgba(47,184,166,.05); }
+  .hl-detail .sig-title { font-size:12.5px; }
   tr.pm-row:hover td { background:rgba(47,184,166,.06); }
   tr.pm-open td { background:rgba(47,184,166,.11); }
   tr.pm-chart-row td { background:#0d1a24; padding:14px 18px 16px; border-bottom:2px solid var(--accent); }
@@ -469,7 +474,7 @@
           <th class="grp sep-left" colspan="4">Adult female lice / fish</th>
           <th class="grp sep-left" colspan="2">Sites above legal limit</th>
           <th class="grp sep-left" colspan="2">Sea temperature</th>
-          <th class="grp sep-left" colspan="3">Disease (sites)</th>
+          <th class="grp sep-left" colspan="3" id="hlThDis">Disease — sites in the last week</th>
           <th class="grp sep-left" colspan="5">Lice treatments (site-weeks)</th>
         </tr>
         <tr>
@@ -484,7 +489,7 @@
       <tfoot id="tfootHealth"></tfoot>
     </table>
 
-    <div id="hlSiteWrap" style="display:none;margin-top:18px;">
+    <div id="hlSiteHome" style="display:none;"><div id="hlSiteWrap" style="display:none;">
       <div class="sig-title" id="hlSiteTitle"></div>
       <div class="sig-sub" id="hlSiteSub"></div>
       <table class="sig-table" id="hlOpTable" style="margin-bottom:18px;">
@@ -501,7 +506,7 @@
         <tbody id="tbodyHlSites"></tbody>
       </table>
       <div id="hlSiteMore" style="margin-top:8px;"></div>
-    </div>
+    </div></div>
 
     <div id="hlDisWrap">
       <div class="sig-title" style="margin-top:26px;">Diseases and lice treatments — period against the same weeks of N-1</div>
@@ -1600,7 +1605,7 @@ for (const po of Object.keys(ZONE_POLYGONS)) {
   poly.addEventListener('click', () => {
     if (currentView !== 'health' || typeof renderHealth !== 'function') return;
     hlSitePo = hlSitePo === +po ? null : +po; hlSiteAll = false; renderHealth();
-    if (hlSitePo) document.getElementById('hlSiteWrap').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    if (hlSitePo) { const d = document.querySelector('#tbodyHealth .hl-detail-row'); if (d) d.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
   });
 }
 
@@ -1738,6 +1743,7 @@ function renderHealth() {
   const per = span === 1 ? `Week ${wN} ${yN}` : `Weeks ${w0}–${wN} ${yN}`;
   document.getElementById('hlThN').textContent = yN;
   document.getElementById('hlThP').textContent = yN - 1;
+  document.getElementById('hlThDis').textContent = `Disease — sites in week ${wN}`;
   document.getElementById('hlThTN').textContent = yN;
   document.getElementById('hlThTP').textContent = yN - 1;
   document.getElementById('hlSub').innerHTML =
@@ -1792,10 +1798,24 @@ function renderHealth() {
     mapHtml[po] = `<i style="color:var(--muted)">click the zone row for site detail</i><br>Adult female lice: ${f2(a.lice)} (${yN - 1}: ${f2(b.lice)})${isFinite(tp) ? ` · 3-wk trend ${tp > 10 ? '↑' : tp < -10 ? '↓' : '→'} ${(tp >= 0 ? '+' : '') + tp.toFixed(0)}%` : ''}<br>Above limit: ${f0p(a.ovShare)} of sites<br>` +
       `Sea temperature: ${f1(a.t)} °C<br>PD ${a.pd} · ILA ${a.ila}${a.other ? ' · other ' + a.other : ''}<br>Lice treatments: ${a.nonmed + a.med} site-weeks (${yN - 1}: ${b.nonmed + b.med})`;
   }
+  // the detail block lives in a hidden parking div between renders, so that
+  // rebuilding the table does not destroy it
+  document.getElementById('hlSiteHome').appendChild(document.getElementById('hlSiteWrap'));
   tbody.innerHTML = html;
+  if (hlSitePo) {
+    const zr = tbody.querySelector(`tr[data-po="${hlSitePo}"]`);
+    if (zr) {
+      const dr = document.createElement('tr');
+      dr.className = 'pm-chart-row hl-detail-row';
+      const vw = Math.max(640, document.getElementById('healthView').clientWidth - 60);
+      dr.innerHTML = `<td colspan="17"><div class="hl-detail" style="position:sticky;left:12px;width:${vw}px;overflow-x:auto"></div></td>`;
+      zr.after(dr);
+      dr.querySelector('.hl-detail').appendChild(document.getElementById('hlSiteWrap'));
+    }
+  }
   tbody.querySelectorAll('tr[data-po]').forEach(tr => tr.addEventListener('click', () => {
     const po = +tr.dataset.po; hlSitePo = hlSitePo === po ? null : po; hlSiteAll = false; renderHealth();
-    if (hlSitePo) document.getElementById('hlSiteWrap').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    if (hlSitePo) { const d = document.querySelector('#tbodyHealth .hl-detail-row'); if (d) d.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
   }));
   renderHealthSites(keysN, keysP, yN, per);
   const all = [1,2,3,4,5,6,7,8,9,10,11,12,13];
