@@ -148,8 +148,10 @@
   tr.hl-zone:hover td { background:rgba(47,184,166,.06); }
   tr.hl-detail-row > td { padding:14px 12px 16px !important; text-align:left; white-space:normal; }
   .hl-detail table { font-size:12px; }
-  #tbodyHealth .hl-detail table td, #tbodyHealth .hl-detail table th { padding:5px 8px; background:transparent; border-bottom:1px solid var(--border); }
-  #tbodyHealth .hl-detail table tr:hover td { background:rgba(47,184,166,.05); }
+  #tbodyHealth .hl-detail table td, #tbodyHealth .hl-detail table th,
+  #tbodyRgPo .hl-detail table td, #tbodyRgPo .hl-detail table th { padding:5px 8px; background:transparent; border-bottom:1px solid var(--border); }
+  #tbodyHealth .hl-detail table tr:hover td, #tbodyRgPo .hl-detail table tr:hover td { background:rgba(47,184,166,.05); }
+  #tbodyRgPo .hl-detail table tfoot td { font-weight:bold; border-bottom:none; }
   .hl-detail .sig-title { font-size:12.5px; }
   tr.pm-row:hover td { background:rgba(47,184,166,.06); }
   tr.pm-open td { background:rgba(47,184,166,.11); }
@@ -1868,11 +1870,15 @@ const HL_DLABEL = { PD: 'Pancreas disease (PD)', ILA: 'Infectious salmon anaemia
   FLAVO: 'Flavobacteriosis', FRANC: 'Francisellosis' };
 let hlNewAll = false, hlSitePo = null, hlSiteAll = false;
 const HL_NONMED = { TERMISK_BEHANDLING: 'thermal', MEKANISK_BEHANDLING: 'mechanical', FERSKVANNSBEHANDLING: 'freshwater',
-  FERSKVANN: 'freshwater', LASER: 'laser', ANNEN: 'other' };
+  FERSKVANN: 'freshwater', LASER: 'laser', ANNEN: 'other', ANNEN_BEHANDLING: 'other' };
+const HL_MEDKIND = { BADEBEHANDLING: 'bath', FORBEHANDLING: 'in-feed', InFeed: 'in-feed', Bath: 'bath' };
 function hlTrtLabel(t) {
   const p = t.split('|');
   if (p[0] === 'nonmedicinal') return HL_NONMED[p[1]] || (p[1] || '?').toLowerCase().replace(/_/g, ' ');
-  if (p[0] === 'medicinal') return (p[2] && p[2] !== '?' ? p[2] : 'medicinal') + (p[1] && p[1] !== '?' ? ' (' + p[1].replace('InFeed', 'in-feed').replace('Bath', 'bath').toLowerCase() + ')' : '');
+  if (p[0] === 'medicinal') {
+    const kind = p[1] && p[1] !== '?' ? (HL_MEDKIND[p[1]] || p[1].toLowerCase()) : '';
+    return (p[2] && p[2] !== '?' ? p[2] + (kind ? ' (' + kind + ')' : '') : 'medicinal' + (kind ? ', ' + kind : ''));
+  }
   if (p[0] === 'combination') return 'combined';
   if (p[0] === 'mechanicalremoval') return 'mechanical removal';
   if (p[0] === 'cleanerfish') return 'cleaner fish' + (p[1] && p[1] !== '?' ? ' (' + p[1] + ')' : '');
@@ -1934,8 +1940,9 @@ function renderHealthSites(keysN, keysP, yN, per) {
   const cnt = (v, bad) => `<td class="${v && bad ? 'delta-bad' : 'delta-zero'}">${v || '·'}</td>`;
   document.getElementById('tbodyHlOps').innerHTML = Object.values(ops).sort((a, b) => b.n - a.n || b.sites - a.sites).map(q => {
     const dp = q.p > 0 ? (q.n / q.p - 1) * 100 : NaN;
-    return `<tr><td class="name">${q.k}</td><td>${q.sites}</td><td class="sep-left"><b>${q.n || '·'}</b></td><td style="color:var(--muted)">${q.p || '·'}</td>` +
-      `<td class="${deltaClass('mort', dp)}">${isFinite(dp) ? (dp >= 0 ? '+' : '') + dp.toFixed(0) + '%' : (q.n && !q.p ? 'new' : '—')}</td>` +
+    return `<tr><td class="name">${q.k}</td><td>${q.sites}</td><td class="sep-left"><b>${q.n || '·'}</b></td><td style="color:var(--muted)">${okP ? (q.p || '·') : '…'}</td>` +
+      (okN && okP ? `<td class="${deltaClass('mort', dp)}">${isFinite(dp) ? (dp >= 0 ? '+' : '') + dp.toFixed(0) + '%' : (q.n && !q.p ? 'new' : '—')}</td>`
+                  : '<td class="delta-zero" title="Year not fully collected yet">—</td>') +
       `<td class="sep-left ${q.PD ? 'delta-bad' : 'delta-zero'}">${q.PD || '·'}</td>` + cnt(q.ILA, true) + cnt(q.other, true) +
       `<td class="sep-left ${q.newc ? 'delta-bad' : 'delta-zero'}">${q.newc || '·'}</td></tr>`;
   }).join('') || '<tr><td class="name" colspan="9" style="color:var(--muted)">Nothing to report in this zone over the period.</td></tr>';
@@ -1950,8 +1957,9 @@ function renderHealthSites(keysN, keysP, yN, per) {
     const d = o.n - o.p, types = Object.entries(o.types).sort((a, b) => b[1] - a[1]).map(([l, c]) => `${l} ${c}`).join(' · ');
     return `<tr><td class="name">${name(o.no) || '#' + o.no} <small style="color:var(--muted);display:inline">#${o.no}</small></td>` +
       `<td style="text-align:left">${org(o.no) || '<span style="color:var(--muted)">—</span>'}</td>` +
-      `<td class="sep-left"><b>${o.n || '·'}</b></td><td style="color:var(--muted)">${o.p || '·'}</td>` +
-      `<td class="${deltaClass('mort', d)}">${d > 0 ? '+' + d : d < 0 ? d : '='}</td>` +
+      `<td class="sep-left"><b>${o.n || '·'}</b></td><td style="color:var(--muted)">${okP ? (o.p || '·') : '…'}</td>` +
+      (okN && okP ? `<td class="${deltaClass('mort', d)}">${d > 0 ? '+' + d : d < 0 ? d : '='}</td>`
+                  : '<td class="delta-zero" title="Year not fully collected yet">—</td>') +
       `<td class="sep-left" style="text-align:left;font-size:11.5px">${types || '<span style="color:var(--muted)">—</span>'}</td>` +
       `<td style="color:var(--muted)">${o.last ? 'W' + String(o.last % 100).padStart(2, '0') : '—'}</td>` +
       `<td class="sep-left" style="text-align:left;font-size:11.5px">${Object.entries(o.dis).map(([c, sp]) =>
@@ -2001,7 +2009,8 @@ function renderHealthDiseases(idx, keysN, keysP, yN, per) {
   };
   // lice treatments by category / type (site-weeks), from the site sheets (2024 onwards)
   const NONMED = { TERMISK_BEHANDLING: 'thermal', MEKANISK_BEHANDLING: 'mechanical', FERSKVANNSBEHANDLING: 'freshwater',
-    FERSKVANN: 'freshwater', LASER: 'laser', ANNEN: 'other' };
+    FERSKVANN: 'freshwater', LASER: 'laser', ANNEN: 'other', ANNEN_BEHANDLING: 'other' };
+const HL_MEDKIND = { BADEBEHANDLING: 'bath', FORBEHANDLING: 'in-feed', InFeed: 'in-feed', Bath: 'bath' };
   const trtLabel = t => {
     const p = t.split('|');
     if (p[0] === 'nonmedicinal') return 'Non-medicinal — ' + (NONMED[p[1]] || (p[1] || '?').toLowerCase().replace(/_/g, ' '));
@@ -2074,7 +2083,7 @@ function renderHealthDiseases(idx, keysN, keysP, yN, per) {
   const b = document.getElementById('hlNewBtn');
   if (b) b.addEventListener('click', () => { hlNewAll = !hlNewAll; renderHealth(); });
 }
-let rgGrpAll = false;
+let rgGrpAll = false, rgZoneOpen = null;   // zone depliee dans le tableau 1
 let esAll = false;
 // Activity codes as printed in the Mattilsynet list. Meanings still to be confirmed against
 // Mattilsynet's legend page ("Forklaring til produksjonsformer"); kept as raw codes until then.
@@ -2110,6 +2119,62 @@ function renderEstablishments() {
   const b = document.getElementById('esBtn');
   if (b) b.addEventListener('click', () => { esAll = !esAll; renderEstablishments(); });
 }
+// Detail d'une zone : exploitants, MTB, part, et biomasse estimee. La biomasse
+// par eleveur n'est pas publique : elle est repartie au prorata de la MTB de
+// chacun, ponderee par la part de ses sites de la zone qui ont du poisson
+// (BarentsWatch, 4 dernieres semaines).
+function rgZoneDetail(po, bio, fishM, mlab) {
+  const level = document.getElementById('rgLevel').value === 'holder' && BWR.mtb_holders ? 'holder' : 'group';
+  const rows0 = (level === 'holder' ? BWR.mtb_holders : BWR.mtb_groups) || [];
+  const norm = x => (x || '').toLowerCase().trim();
+  const groupOf = r => level === 'holder' ? r.group : r.group;
+  // sites de la zone par exploitant (nom de groupe ou nom brut), et leur activite
+  const act = (BW && BW.site_act && BW.site_act.sites) || null;
+  const sitePo = BWR.site_po || {};
+  const byOp = {};
+  let zA = 0, zF = 0;
+  Object.entries(BWR.site_org || {}).forEach(([no, org]) => {
+    if (+sitePo[no] !== po) return;
+    const o = byOp[norm(org)] || (byOp[norm(org)] = { n: 0, a: 0, f: 0 });
+    o.n++;
+    const st = act && act[no];
+    if (st) { o.a += st[0]; o.f += st[1]; zA += st[0]; zF += st[1]; }
+  });
+  const zAct = zA + zF ? zA / (zA + zF) : 1;
+  const list = rows0.map(r => {
+    const mtb = (r.po || {})[String(po)] || 0;
+    const o = byOp[norm(groupOf(r))] || null;
+    const ar = o && (o.a + o.f) ? o.a / (o.a + o.f) : zAct;
+    return { r, mtb, o, ar, w: mtb * ar };
+  }).filter(x => x.mtb > 0).sort((a, b) => b.mtb - a.mtb);
+  const tm = list.reduce((t, x) => t + x.mtb, 0), tw = list.reduce((t, x) => t + x.w, 0);
+  const f0 = v => isFinite(v) ? Math.round(v).toLocaleString('en-US') : '—';
+  const haveAct = !!act;
+  const body = list.map((x, i) => {
+    const sh = tm ? x.mtb / tm : 0, bs = tw ? x.w / tw : sh;
+    const nm = level === 'holder' ? x.r.holder : x.r.group;
+    const sub = level === 'holder' && x.r.group && norm(x.r.group) !== norm(x.r.holder) ? `<small>group: ${x.r.group}</small>` : '';
+    const sites = x.o ? `${x.o.n}` : '—';
+    const actTxt = haveAct && x.o && (x.o.a + x.o.f) ? `${Math.round(100 * x.ar)}%` : '<span style="color:var(--muted)">—</span>';
+    return `<tr><td class="name"><span style="display:inline-block;min-width:24px;color:var(--muted)">${i + 1}.</span>${nm}${sub}</td>` +
+      `<td>${f0(x.mtb)}</td><td>${(100 * sh).toFixed(1)}%</td>` +
+      `<td class="sep-left">${sites}</td><td>${actTxt}</td>` +
+      `<td class="sep-left"><b>${f0(bio * bs)}</b></td><td>${(100 * bs).toFixed(1)}%</td>` +
+      `<td>${isFinite(fishM) ? (fishM * bs).toFixed(1) : '—'}</td></tr>`;
+  }).join('');
+  return `<div class="hl-detail" style="padding:6px 4px 12px">` +
+    `<div style="font-weight:bold;margin:2px 0 4px">Zone ${po}. ${PO_NAMES[po]} — operators <span class="rg-zclose" style="color:var(--muted);font-weight:normal;cursor:pointer">✕ close</span></div>` +
+    `<div class="sig-sub" style="margin-bottom:6px">${list.length} ${level === 'holder' ? 'licence holders' : 'groups'} with food-fish MTB in the zone (switch with the "Level" selector of section 2). ` +
+    `<span class="warn">Biomass per farmer is not published</span>: the estimate shares the zone's ${mlab} biomass (${f0(bio)} t, ${isFinite(fishM) ? fishM.toFixed(1) : '—'} M fish) ` +
+    `in proportion to each operator's MTB${haveAct ? ', weighted by the share of its sites in the zone holding fish over the last 4 weeks (BarentsWatch: lice reported, not fallow)' : ' (site activity arrives with the next update)'}. ` +
+    `It is an order of magnitude, not a declared figure. MTB excludes research, display, education and slaughter-cage licences.</div>` +
+    `<table class="sig-table"><thead><tr><th class="name">${level === 'holder' ? 'Licence holder' : 'Group'}</th><th>MTB in zone (t)</th><th>Share of MTB</th>` +
+    `<th class="sep-left">Sites operated${level === 'holder' ? ' (whole group)' : ''}</th><th title="Share of site-weeks with fish over the last 4 weeks">Sites with fish</th>` +
+    `<th class="sep-left">Est. biomass (t)</th><th>Est. share</th><th>Est. fish (M)</th></tr></thead><tbody>${body}</tbody>` +
+    `<tfoot><tr><td class="name">Total</td><td>${f0(tm)}</td><td>100%</td><td class="sep-left"></td><td>${haveAct ? Math.round(100 * zAct) + '%' : ''}</td>` +
+    `<td class="sep-left">${f0(bio)}</td><td>100%</td><td>${isFinite(fishM) ? fishM.toFixed(1) : '—'}</td></tr></tfoot></table></div>`;
+}
+
 function renderRegister() {
   const empty = document.getElementById('rgEmpty'), body = document.getElementById('rgBody');
   document.getElementById('dataQualityBanner').style.display = 'none';
@@ -2169,7 +2234,7 @@ function renderRegister() {
     const mtb = (BWR.mtb_po_all || BWR.mtb_po)[String(po)] || 0, a = bN[po], b = bP[po];
     const u = up(a, mtb), uP = up(b, mtb);
     tm += mtb; tb += a || 0; tbp += b || 0; tf += fN[po] || 0; tfp += fP[po] || 0; tbm += bM[po] || 0;
-    html += `<tr><td class="name">${po}. ${PO_NAMES[po]}</td><td>${f0(mtb)}</td>` +
+    html += `<tr data-po="${po}" class="rg-zrow${rgZoneOpen === po ? ' pm-open' : ''}" style="cursor:pointer" title="Click for the operators of this zone"><td class="name">${po}. ${PO_NAMES[po]}${rgZoneOpen === po ? ' ▾' : ''}</td><td>${f0(mtb)}</td>` +
       `<td class="sep-left">${f0(a)}</td><td style="color:var(--muted)">${f0(b)}</td>` +
       `<td class="sep-left" title="Average weight ${isFinite(a / fN[po]) ? (a / fN[po] / 1000).toFixed(2) : '—'} kg">${f1m(fN[po])}</td><td style="color:var(--muted)">${f1m(fP[po])}</td>` +
       `<td class="sep-left barcell">${bar(u)}</td><td class="${ucls(u)}"><b>${isFinite(u) ? u.toFixed(0) + '%' : '—'}</b></td>` +
@@ -2178,7 +2243,22 @@ function renderRegister() {
     mapVals[po] = u;
     mapHtml[po] = `MTB ${f0(mtb)} t<br>Biomass ${mlab}: ${f0(a)} t · ${f1m(fN[po])} M fish<br>Use of capacity: ${isFinite(u) ? u.toFixed(0) + '%' : '—'} (${mlabP}: ${isFinite(uP) ? uP.toFixed(0) + '%' : '—'})`;
   }
-  document.getElementById('tbodyRgPo').innerHTML = html;
+  const tbz = document.getElementById('tbodyRgPo');
+  tbz.innerHTML = html;
+  tbz.querySelectorAll('tr.rg-zrow').forEach(tr => tr.addEventListener('click', () => {
+    const po = +tr.dataset.po; rgZoneOpen = rgZoneOpen === po ? null : po; renderRegister();
+  }));
+  if (rgZoneOpen) {
+    const zr = tbz.querySelector(`tr[data-po="${rgZoneOpen}"]`);
+    if (zr) {
+      const dr = document.createElement('tr');
+      dr.className = 'pm-chart-row hl-detail-row';
+      dr.innerHTML = `<td colspan="10">${rgZoneDetail(rgZoneOpen, bN[rgZoneOpen], fN[rgZoneOpen], mlab)}</td>`;
+      zr.after(dr);
+      const x = dr.querySelector('.rg-zclose');
+      if (x) x.addEventListener('click', ev => { ev.stopPropagation(); rgZoneOpen = null; renderRegister(); });
+    }
+  }
   const U = up(tb, tm), UP = up(tbp, tm);
   document.getElementById('tfootRgPo').innerHTML = `<tr><td class="name">Norway</td><td>${f0(tm)}</td><td class="sep-left">${f0(tb)}</td><td>${f0(tbp)}</td>` +
     `<td class="sep-left">${f1m(tf)}</td><td>${f1m(tfp)}</td>` +
