@@ -2123,7 +2123,7 @@ function renderEstablishments() {
 // par eleveur n'est pas publique : elle est repartie au prorata de la MTB de
 // chacun, ponderee par la part de ses sites de la zone qui ont du poisson
 // (BarentsWatch, 4 dernieres semaines).
-function rgZoneDetail(po, bio, fishM, mlab) {
+function rgZoneDetail(po, bio, fishM, mlab, mtbAll) {
   const level = document.getElementById('rgLevel').value === 'holder' && BWR.mtb_holders ? 'holder' : 'group';
   const rows0 = (level === 'holder' ? BWR.mtb_holders : BWR.mtb_groups) || [];
   const norm = x => (x || '').toLowerCase().trim();
@@ -2147,11 +2147,16 @@ function rgZoneDetail(po, bio, fishM, mlab) {
     const ar = o && (o.a + o.f) ? o.a / (o.a + o.f) : zAct;
     return { r, mtb, o, ar, w: mtb * ar };
   }).filter(x => x.mtb > 0).sort((a, b) => b.mtb - a.mtb);
-  const tm = list.reduce((t, x) => t + x.mtb, 0), tw = list.reduce((t, x) => t + x.w, 0);
+  const tm = list.reduce((t, x) => t + x.mtb, 0);
+  // Les licences hors classement (recherche, vitrine, enseignement, cages
+  // d'attente) ont aussi du poisson dans la biomasse de la zone : elles
+  // prennent leur part avant repartition entre les eleveurs.
+  const oth = Math.max(0, mtbAll - tm), wOth = oth * zAct;
+  const tw = list.reduce((t, x) => t + x.w, 0) + wOth, tAll = tm + oth;
   const f0 = v => isFinite(v) ? Math.round(v).toLocaleString('en-US') : '—';
   const haveAct = !!act;
   const body = list.map((x, i) => {
-    const sh = tm ? x.mtb / tm : 0, bs = tw ? x.w / tw : sh;
+    const sh = tAll ? x.mtb / tAll : 0, bs = tw ? x.w / tw : sh;
     const nm = level === 'holder' ? x.r.holder : x.r.group;
     const sub = level === 'holder' && x.r.group && norm(x.r.group) !== norm(x.r.holder) ? `<small>group: ${x.r.group}</small>` : '';
     const sites = x.o ? `${x.o.n}` : '—';
@@ -2162,16 +2167,20 @@ function rgZoneDetail(po, bio, fishM, mlab) {
       `<td class="sep-left"><b>${f0(bio * bs)}</b></td><td>${(100 * bs).toFixed(1)}%</td>` +
       `<td>${isFinite(fishM) ? (fishM * bs).toFixed(1) : '—'}</td></tr>`;
   }).join('');
+  const bo = tw ? wOth / tw : 0;
+  const othRow = oth > 0 ? `<tr style="color:var(--muted)"><td class="name" style="color:var(--muted);font-weight:normal">Other licences (research, display, education, slaughter cages)</td>` +
+    `<td>${f0(oth)}</td><td>${(100 * oth / tAll).toFixed(1)}%</td><td class="sep-left"></td><td></td>` +
+    `<td class="sep-left">${f0(bio * bo)}</td><td>${(100 * bo).toFixed(1)}%</td><td>${isFinite(fishM) ? (fishM * bo).toFixed(1) : '—'}</td></tr>` : '';
   return `<div class="hl-detail" style="padding:6px 4px 12px">` +
     `<div style="font-weight:bold;margin:2px 0 4px">Zone ${po}. ${PO_NAMES[po]} — operators <span class="rg-zclose" style="color:var(--muted);font-weight:normal;cursor:pointer">✕ close</span></div>` +
     `<div class="sig-sub" style="margin-bottom:6px">${list.length} ${level === 'holder' ? 'licence holders' : 'groups'} with food-fish MTB in the zone (switch with the "Level" selector of section 2). ` +
     `<span class="warn">Biomass per farmer is not published</span>: the estimate shares the zone's ${mlab} biomass (${f0(bio)} t, ${isFinite(fishM) ? fishM.toFixed(1) : '—'} M fish) ` +
-    `in proportion to each operator's MTB${haveAct ? ', weighted by the share of its sites in the zone holding fish over the last 4 weeks (BarentsWatch: lice reported, not fallow)' : ' (site activity arrives with the next update)'}. ` +
-    `It is an order of magnitude, not a declared figure. MTB excludes research, display, education and slaughter-cage licences.</div>` +
+    `in proportion to each operator's MTB (so every operator is assumed as full as the zone, ${tAll ? Math.round(100 * bio / tAll) : '—'}% of its MTB)${haveAct ? ', weighted by the share of its sites in the zone holding fish over the last 4 weeks (BarentsWatch: lice reported, not fallow)' : ' (site activity arrives with the next update)'}. ` +
+    `It is an order of magnitude, not a declared figure.</div>` +
     `<table class="sig-table"><thead><tr><th class="name">${level === 'holder' ? 'Licence holder' : 'Group'}</th><th>MTB in zone (t)</th><th>Share of MTB</th>` +
     `<th class="sep-left">Sites operated${level === 'holder' ? ' (whole group)' : ''}</th><th title="Share of site-weeks with fish over the last 4 weeks">Sites with fish</th>` +
-    `<th class="sep-left">Est. biomass (t)</th><th>Est. share</th><th>Est. fish (M)</th></tr></thead><tbody>${body}</tbody>` +
-    `<tfoot><tr><td class="name">Total</td><td>${f0(tm)}</td><td>100%</td><td class="sep-left"></td><td>${haveAct ? Math.round(100 * zAct) + '%' : ''}</td>` +
+    `<th class="sep-left">Est. biomass (t)</th><th>Est. share</th><th>Est. fish (M)</th></tr></thead><tbody>${body}${othRow}</tbody>` +
+    `<tfoot><tr><td class="name">Total</td><td>${f0(tAll)}</td><td>100%</td><td class="sep-left"></td><td>${haveAct ? Math.round(100 * zAct) + '%' : ''}</td>` +
     `<td class="sep-left">${f0(bio)}</td><td>100%</td><td>${isFinite(fishM) ? fishM.toFixed(1) : '—'}</td></tr></tfoot></table></div>`;
 }
 
@@ -2253,7 +2262,7 @@ function renderRegister() {
     if (zr) {
       const dr = document.createElement('tr');
       dr.className = 'pm-chart-row hl-detail-row';
-      dr.innerHTML = `<td colspan="10">${rgZoneDetail(rgZoneOpen, bN[rgZoneOpen], fN[rgZoneOpen], mlab)}</td>`;
+      dr.innerHTML = `<td colspan="10">${rgZoneDetail(rgZoneOpen, bN[rgZoneOpen], fN[rgZoneOpen], mlab, (BWR.mtb_po_all || BWR.mtb_po)[String(rgZoneOpen)] || 0)}</td>`;
       zr.after(dr);
       const x = dr.querySelector('.rg-zclose');
       if (x) x.addEventListener('click', ev => { ev.stopPropagation(); rgZoneOpen = null; renderRegister(); });
