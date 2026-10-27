@@ -10,6 +10,11 @@ on:
 permissions:
   contents: write
 
+# Chaque source est independante : une etape en echec n'empeche ni les autres
+# ni la publication (continue-on-error). Le resultat de chaque etape est ecrit
+# dans data.json (panneau "Sources" du tableau de bord), et la derniere etape
+# fait echouer le passage s'il y a eu un probleme, pour que GitHub previenne
+# par e-mail.
 jobs:
   fetch-and-update:
     runs-on: ubuntu-latest
@@ -24,18 +29,24 @@ jobs:
           python-version: '3.11'
 
       - name: Installer les dependances Python
-        run: pip install pandas openpyxl
+        run: pip install pandas openpyxl playwright
 
       - name: Telecharger les derniers rapports Akvafakta (hebdo + mensuel)
+        id: akva_fetch
+        continue-on-error: true
         run: python3 scripts/fetch_akvafakta.py
 
       - name: Parser les nouveaux rapports Akvafakta
+        id: akva_parse
+        continue-on-error: true
         run: python3 scripts/parse_akvafakta.py
 
       - name: Verifier et telecharger le fichier Biomasseregisteret
+        id: biomasse_fetch
+        continue-on-error: true
         run: |
           mkdir -p xlsx/biomasse
-          curl -sSL -o /tmp/biostat-total-omr.xlsx \
+          curl -sSfL -o /tmp/biostat-total-omr.xlsx \
             https://register.fiskeridir.no/biomassestatistikk/BIOSTAT-LAKS-OMR/biostat-total-omr.xlsx
           NEW_HASH=$(sha256sum /tmp/biostat-total-omr.xlsx | cut -d' ' -f1)
           OLD_HASH=$(cat xlsx/biomasse/.last-hash 2>/dev/null || echo "")
@@ -50,22 +61,22 @@ jobs:
           fi
 
       - name: Reconstruire records et cohort si nouveau fichier biomasse
+        id: biomasse_build
         if: env.dest != ''
+        continue-on-error: true
         run: python3 scripts/update_biomasse.py "${{ env.dest }}"
 
       - name: Exports par pays et par produit (SSB, avec revisions)
-        # Source complementaire : un echec de l'API SSB ne doit pas bloquer
-        # la publication des donnees Akvafakta et biomasse deja traitees.
         # Au premier passage, le script remonte seul jusqu'a 2018 ; ensuite il
         # ne re-telecharge que les mois pas encore definitifs.
+        id: ssb
         continue-on-error: true
         run: python3 scripts/parse_ssb.py
 
       - name: Sante des poissons par zone (BarentsWatch)
         # Poux, temperature de la mer, maladies et traitements, par zone et par
-        # semaine. Source complementaire : un echec ne bloque pas la publication.
-        # Premier passage : remonte a 2018 par tranches de 160 semaines par
-        # execution (environ 3 executions pour tout l'historique).
+        # semaine. Le script s'arrete seul avant la limite de 60 min.
+        id: bw_health
         continue-on-error: true
         timeout-minutes: 60
         env:
@@ -77,6 +88,7 @@ jobs:
         # Fiche de chaque site : licences, capacite (MTB), exploitants, cages
         # d'attente d'abattage. Relu en entier tous les 28 jours ; un passage
         # interrompu reprend la ou il s'etait arrete.
+        id: bw_sites
         continue-on-error: true
         timeout-minutes: 45
         env:
@@ -85,17 +97,42 @@ jobs:
         run: python3 scripts/update_bw_sites.py
 
       - name: Etablissements agrees (Mattilsynet)
-        # Liste officielle des etablissements qui manipulent des produits de la
-        # mer (numero d'agrement, societe, adresse, activites). Petit fichier.
+        id: estab
         continue-on-error: true
         run: python3 scripts/fetch_establishments.py --update
 
+      - name: Tester le tableau de bord avec les nouvelles donnees
+        # Ouvre docs/production.html avec le data.json produit, clique sur
+        # chaque onglet et verifie qu'il n'y a ni erreur ni onglet vide.
+        id: smoke
+        continue-on-error: true
+        timeout-minutes: 10
+        run: |
+          python3 -m playwright install --with-deps chromium
+          python3 scripts/smoke_test.py data/smoke.json
+
+      - name: Enregistrer l'etat des sources dans data.json
+        if: always()
+        env:
+          STEP_AKVA_FETCH: ${{ steps.akva_fetch.outcome }}
+          STEP_AKVA_PARSE: ${{ steps.akva_parse.outcome }}
+          STEP_BIOMASSE_FETCH: ${{ steps.biomasse_fetch.outcome }}
+          STEP_BIOMASSE_BUILD: ${{ steps.biomasse_build.outcome }}
+          STEP_SSB: ${{ steps.ssb.outcome }}
+          STEP_BW_HEALTH: ${{ steps.bw_health.outcome }}
+          STEP_BW_SITES: ${{ steps.bw_sites.outcome }}
+          STEP_ESTAB: ${{ steps.estab.outcome }}
+          STEP_SMOKE: ${{ steps.smoke.outcome }}
+        run: |
+          python3 scripts/write_status.py
+          rm -f data/smoke.json
+
       - name: Publier data.json (et les fichiers bruts telecharges)
+        if: always()
         run: |
           git config user.name  "github-actions"
           git config user.email "actions@github.com"
-          # data/ entier : data.json et le cache des sites BarentsWatch, qui
-          # n'existe pas tant que le premier passage n'a pas abouti.
+          # data/ entier : data.json et les caches BarentsWatch.
           git add data/ pdf/ xlsx/biomasse/
           if git diff --staged --quiet; then
             echo "Aucun changement."
@@ -105,3 +142,24 @@ jobs:
             git pull --rebase
             git push
           fi
+
+      - name: Signaler les problemes (e-mail de GitHub)
+        # Les donnees sont deja publiees. Cette etape fait seulement passer le
+        # passage en rouge si une source ou le test a echoue.
+        if: always()
+        run: |
+          FAILED=""
+          [ "${{ steps.akva_fetch.outcome }}" = "failure" ] && FAILED="$FAILED Akvafakta-telechargement"
+          [ "${{ steps.akva_parse.outcome }}" = "failure" ] && FAILED="$FAILED Akvafakta-lecture"
+          [ "${{ steps.biomasse_fetch.outcome }}" = "failure" ] && FAILED="$FAILED Biomasse-telechargement"
+          [ "${{ steps.biomasse_build.outcome }}" = "failure" ] && FAILED="$FAILED Biomasse-reconstruction"
+          [ "${{ steps.ssb.outcome }}" = "failure" ] && FAILED="$FAILED SSB"
+          [ "${{ steps.bw_health.outcome }}" = "failure" ] && FAILED="$FAILED BarentsWatch-sante"
+          [ "${{ steps.bw_sites.outcome }}" = "failure" ] && FAILED="$FAILED BarentsWatch-registre"
+          [ "${{ steps.estab.outcome }}" = "failure" ] && FAILED="$FAILED Mattilsynet"
+          [ "${{ steps.smoke.outcome }}" = "failure" ] && FAILED="$FAILED Test-du-tableau-de-bord"
+          if [ -n "$FAILED" ]; then
+            echo "::error::Etapes en echec :$FAILED (les autres donnees ont bien ete publiees)"
+            exit 1
+          fi
+          echo "Tout s'est bien passe."
