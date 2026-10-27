@@ -61,6 +61,12 @@ DIS_SHORT = {'PANKREASSYKDOM': 'PD', 'INFEKSIOES_LAKSEANEMI': 'ILA',
              'BAKTERIELL_NYRESYKE': 'BKD',
              'SYSTEMISK_INFEKSJON_MED_FLAVOBACTERIUM_PSYCHROPHILUM': 'FLAVO',
              'FRANCISELLOSE': 'FRANC'}
+# Detail des traitements contre les poux, lu dans la fiche de chaque site traite
+# (la liste hebdomadaire ne dit que "medicamenteux / non medicamenteux").
+TRT_FILE = os.path.join(ROOT, 'data', 'bw_treatments.json')
+TRT_FROM = (2024, 1)          # historique detaille limite : un appel par site traite
+TRT_BUDGET = 1200             # appels de fiche au plus par execution
+TRT_REFRESH = 2               # semaines les plus recentes toujours relues
 NEW_CASE_GAP = 4      # une maladie est un "nouveau cas" si absente du site les 4 semaines d'avant
 TOKEN_URL = 'https://id.barentswatch.no/connect/token'
 API = 'https://www.barentswatch.no/bwapi'
@@ -215,6 +221,63 @@ def aggregate_week(api, y, w, loc_po):
     return rows, lookups, sick
 
 
+def treatment_keys(lt):
+    """Cles 'categorie|type' d'un bloc liceTreatments, quel que soit son format exact."""
+    keys = set()
+    if not isinstance(lt, dict):
+        return keys
+    for cat, val in lt.items():
+        if cat.startswith('daysSince') or not val:
+            continue
+        entries = val if isinstance(val, list) else [val]
+        for e in entries:
+            sub = None
+            if isinstance(e, dict):
+                for k in ('type', 'treatmentType', 'nonMedicinalTreatmentType', 'method', 'name',
+                          'substance', 'activeSubstance', 'description'):
+                    v = e.get(k)
+                    if isinstance(v, str) and v.strip():
+                        sub = v.strip(); break
+            elif isinstance(e, str):
+                sub = e
+            keys.add(cat + ('|' + sub if sub else ''))
+    return keys
+
+
+def update_treatments(api, loc_po, all_weeks):
+    trt = json.load(io.open(TRT_FILE, encoding='utf-8')) if os.path.exists(TRT_FILE) else {'weeks': {}, 'samples': []}
+    weeks = [wk for wk in all_weeks if wk >= TRT_FROM]
+    recent = weeks[-TRT_REFRESH:]
+    todo = list(reversed(recent)) + [wk for wk in reversed(weeks) if f'{wk[0]}-{wk[1]:02d}' not in trt['weeks'] and wk not in recent]
+    calls = 0
+    for (y, w) in todo:
+        if calls >= TRT_BUDGET:
+            break
+        sites = api.call('POST', f'/v2/geodata/fishhealth/locality/{y}/{w}', body={}) or []
+        calls += 1
+        per_po = {}
+        for s in sites:
+            if not s.get('liceTreatments'):
+                continue
+            no = str((s.get('locality') or {}).get('no'))
+            po = loc_po.get(no)
+            if not po:
+                continue
+            det = api.call('GET', f'/v2/geodata/fishhealth/locality/{no}/{y}/{w}')
+            calls += 1
+            lt = (det or {}).get('liceTreatments')
+            keys = treatment_keys(lt) or {'unspecified'}
+            if lt and len(trt['samples']) < 12 and any(lt.values() if isinstance(lt, dict) else []):
+                trt['samples'].append({'site': no, 'week': f'{y}-{w:02d}', 'liceTreatments': lt})
+            d = per_po.setdefault(str(po), {})
+            for k in keys:
+                d[k] = d.get(k, 0) + 1
+        trt['weeks'][f'{y}-{w:02d}'] = per_po
+    io.open(TRT_FILE, 'w', encoding='utf-8').write(json.dumps(trt, ensure_ascii=False, separators=(',', ':'), sort_keys=True))
+    print(f'Traitements detailles : {len(trt["weeks"])} semaines depuis {TRT_FROM[0]}, {calls} appels cette fois.')
+    return trt
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--max-weeks', type=int, default=160,
@@ -279,6 +342,20 @@ def main():
         'source': 'BarentsWatch Fish Health API (NLOD), donnees declarees par les eleveurs',
         'limit_rule': '0,5 femelle adulte ; 0,2 en S16-21 (zones 1-7) et S21-26 (zones 8-13)',
     }
+    # Detail des traitements, rattache aux lignes zone x semaine (cle 'trd')
+    try:
+        trt = update_treatments(api, loc_po, all_weeks)
+        for (y, w), rows in by_week.items():
+            per_po = trt['weeks'].get(f'{y}-{w:02d}')
+            if per_po is None:
+                continue
+            for r in rows:
+                r['trd'] = per_po.get(str(r['po']), {})
+        store['meta']['treatment_detail_from'] = list(TRT_FROM)
+    except RuntimeError as e:
+        print('Detail des traitements indisponible :', e)
+    store['rows'] = [r for k in sorted(by_week) for r in by_week[k]]
+
     # Nouveaux cas : maladie presente sur un site et absente des NEW_CASE_GAP
     # semaines precedentes (toutes disponibles, sinon on ne conclut pas).
     seq = all_weeks
