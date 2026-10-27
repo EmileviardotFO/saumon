@@ -1,0 +1,798 @@
+{
+ "run_utc": "2026-10-27T12:42:39",
+ "ref_year": 2026,
+ "ref_week": 42,
+ "calls": [
+  {
+   "name": "locality_week_list",
+   "method": "POST",
+   "path": "/v2/geodata/fishhealth/locality/2026/42",
+   "params": null,
+   "body": {},
+   "status": 200,
+   "content_type": "application/json; charset=utf-8",
+   "bytes": 1226661,
+   "structure": [
+    {
+     "localityWeekId": "int",
+     "isFiltered": "bool",
+     "locality": {
+      "no": "int",
+      "name": "str",
+      "isOnLand": "bool"
+     },
+     "geometry": {
+      "type": "str",
+      "coordinates": [
+       "float",
+       "len=2"
+      ]
+     },
+     "municipality": {
+      "no": "str",
+      "name": "str"
+     },
+     "hasSalmonoidLicense": "bool",
+     "isSlaughterHoldingCage": "bool",
+     "diseases": [],
+     "liceReport": {
+      "hasReported": "bool",
+      "isFallow": "bool",
+      "adultFemaleLice": {
+       "average": "NoneType",
+       "averageOfPreviousWeek": "NoneType",
+       "trend": "NoneType"
+      },
+      "mobileLice": {
+       "average": "NoneType",
+       "averageOfPreviousWeek": "NoneType",
+       "trend": "NoneType"
+      },
+      "stationaryLice": {
+       "average": "NoneType",
+       "averageOfPreviousWeek": "NoneType",
+       "trend": "NoneType"
+      },
+      "totalLice": {
+       "average": "NoneType",
+       "averageOfPreviousWeek": "NoneType",
+       "trend": "NoneType"
+      },
+      "seaTemperature": "NoneType"
+     },
+     "liceTreatments": []
+    },
+    "len=1779"
+   ],
+   "n_items": 1779,
+   "saved_as": "locality_week_list.json"
+  },
+  {
+   "name": "national_week",
+   "method": "POST",
+   "path": "/v2/geodata/fishhealth/2026/42",
+   "params": null,
+   "body": {},
+   "status": 200,
+   "content_type": "application/json; charset=utf-8",
+   "bytes": 5328,
+   "structure": {
+    "diseaseOutbreaks": [],
+    "diseaseStatistics": [
+     {
+      "name": "str",
+      "count": "int"
+     },
+     "len=3"
+    ],
+    "annualDiseaseStatistics": {
+     "isFiltered": "bool",
+     "diseaseStatistics": [
+      {
+       "name": "str",
+       "count": "int"
+      },
+      "len=4"
+     ],
+     "filteredDiseaseStatistics": [
+      {
+       "name": "str",
+       "count": "int"
+      },
+      "len=4"
+     ],
+     "weeklyDiseaseStatistics": {
+      "1": [],
+      "2": [
+       "dict",
+       "len=1"
+      ],
+      "3": [
+       "dict",
+       "len=1"
+      ],
+      "4": [
+       "dict",
+       "len=2"
+      ],
+      "5": [
+       "dict",
+       "len=1"
+      ],
+      "6": [
+       "dict",
+       "len=1"
+      ],
+      "7": [
+       "dict",
+       "len=2"
+      ],
+      "8": [
+       "dict",
+       "len=2"
+      ],
+      "9": [
+       "dict",
+       "len=1"
+      ],
+      "10": [],
+      "11": [
+       "dict",
+       "len=1"
+      ],
+      "12": [
+       "dict",
+       "len=1"
+      ],
+      "13": [
+       "dict",
+       "len=1"
+      ],
+      "14": [],
+      "15": [],
+      "16": [
+       "dict",
+       "len=1"
+      ],
+      "17": [
+       "dict",
+       "len=1"
+      ],
+      "18": [],
+      "19": [],
+      "20": [
+       "dict",
+       "len=2"
+      ],
+      "21": [],
+      "22": [
+       "dict",
+       "len=1"
+      ],
+      "23": [
+       "dict",
+       "len=2"
+      ],
+      "24": [],
+      "25": [],
+      "26": [],
+      "27": [
+       "dict",
+       "len=1"
+      ],
+      "28": [
+       "dict",
+       "len=2"
+      ],
+      "29": [],
+      "30": [],
+      "31": [
+       "dict",
+       "len=1"
+      ],
+      "32": [],
+      "33": [
+       "dict",
+       "len=2"
+      ],
+      "34": [],
+      "35": [
+       "dict",
+       "len=2"
+      ],
+      "36": [
+       "dict",
+       "len=2"
+      ],
+      "37": [
+       "dict",
+       "len=1"
+      ],
+      "38": [
+       "dict",
+       "len=1"
+      ],
+      "39": [],
+      "40": [],
+      "41": [],
+      "42": [],
+      "43": [],
+      "44": [],
+      "45": [],
+      "46": [],
+      "47": [],
+      "48": [],
+      "49": [],
+      "50": [],
+      "51": [],
+      "52": [],
+      "53": []
+     }
+    },
+    "liceStatistics": {
+     "aboveThreshold": {
+      "count": "int",
+      "percentage": "float"
+     },
+     "belowThreshold": {
+      "count": "int",
+      "percentage": "float"
+     },
+     "belowMinimumThreshold": {
+      "count": "int",
+      "percentage": "float"
+     }
+    },
+    "annualLiceStatistics": {
+     "isFiltered": "bool",
+     "liceStatistics": {
+      "aboveThreshold": "int"
+     },
+     "filteredLiceStatistics": {
+      "aboveThreshold": "int"
+     },
+     "weeklyLiceStatistics": {
+      "1": {
+       "aboveThreshold": "int"
+      },
+      "2": {
+       "aboveThreshold": "int"
+      },
+      "3": {
+       "aboveThreshold": "int"
+      },
+      "4": {
+       "aboveThreshold": "int"
+      },
+      "5": {
+       "aboveThreshold": "int"
+      },
+      "6": {
+       "aboveThreshold": "int"
+      },
+      "7": {
+       "aboveThreshold": "int"
+      },
+      "8": {
+       "aboveThreshold": "int"
+      },
+      "9": {
+       "aboveThreshold": "int"
+      },
+      "10": {
+       "aboveThreshold": "int"
+      },
+      "11": {
+       "aboveThreshold": "int"
+      },
+      "12": {
+       "aboveThreshold": "int"
+      },
+      "13": {
+       "aboveThreshold": "int"
+      },
+      "14": {
+       "aboveThreshold": "int"
+      },
+      "15": {
+       "aboveThreshold": "int"
+      },
+      "16": {
+       "aboveThreshold": "int"
+      },
+      "17": {
+       "aboveThreshold": "int"
+      },
+      "18": {
+       "aboveThreshold": "int"
+      },
+      "19": {
+       "aboveThreshold": "int"
+      },
+      "20": {
+       "aboveThreshold": "int"
+      },
+      "21": {
+       "aboveThreshold": "int"
+      },
+      "22": {
+       "aboveThreshold": "int"
+      },
+      "23": {
+       "aboveThreshold": "int"
+      },
+      "24": {
+       "aboveThreshold": "int"
+      },
+      "25": {
+       "aboveThreshold": "int"
+      },
+      "26": {
+       "aboveThreshold": "int"
+      },
+      "27": {
+       "aboveThreshold": "int"
+      },
+      "28": {
+       "aboveThreshold": "int"
+      },
+      "29": {
+       "aboveThreshold": "int"
+      },
+      "30": {
+       "aboveThreshold": "int"
+      },
+      "31": {
+       "aboveThreshold": "int"
+      },
+      "32": {
+       "aboveThreshold": "int"
+      },
+      "33": {
+       "aboveThreshold": "int"
+      },
+      "34": {
+       "aboveThreshold": "int"
+      },
+      "35": {
+       "aboveThreshold": "int"
+      },
+      "36": {
+       "aboveThreshold": "int"
+      },
+      "37": {
+       "aboveThreshold": "int"
+      },
+      "38": {
+       "aboveThreshold": "int"
+      },
+      "39": {
+       "aboveThreshold": "int"
+      },
+      "40": {
+       "aboveThreshold": "int"
+      },
+      "41": {
+       "aboveThreshold": "int"
+      },
+      "42": {
+       "aboveThreshold": "int"
+      },
+      "43": {
+       "aboveThreshold": "int"
+      },
+      "44": {
+       "aboveThreshold": "int"
+      },
+      "45": {
+       "aboveThreshold": "NoneType"
+      },
+      "46": {
+       "aboveThreshold": "NoneType"
+      },
+      "47": {
+       "aboveThreshold": "NoneType"
+      },
+      "48": {
+       "aboveThreshold": "NoneType"
+      },
+      "49": {
+       "aboveThreshold": "NoneType"
+      },
+      "50": {
+       "aboveThreshold": "NoneType"
+      },
+      "51": {
+       "aboveThreshold": "NoneType"
+      },
+      "52": {
+       "aboveThreshold": "NoneType"
+      },
+      "53": {
+       "aboveThreshold": "NoneType"
+      }
+     }
+    },
+    "farmedFishEscapes": [
+     {
+      "locality": {
+       "no": "int",
+       "name": "str",
+       "isOnLand": "bool"
+      },
+      "species": "str",
+      "date": "str",
+      "count": "NoneType",
+      "estimatedCount": "str",
+      "estimationSource": "str",
+      "size": "float"
+     },
+     "len=1"
+    ],
+    "annualEscapeStatistics": {
+     "isFiltered": "bool",
+     "escapeStatistics": {
+      "count": "int"
+     },
+     "filteredEscapeStatistics": {
+      "count": "int"
+     },
+     "weeklyEscapeStatistics": {
+      "1": {
+       "count": "int"
+      },
+      "27": {
+       "count": "int"
+      },
+      "32": {
+       "count": "int"
+      },
+      "39": {
+       "count": "int"
+      },
+      "42": {
+       "count": "int"
+      },
+      "4": {
+       "count": "int"
+      },
+      "25": {
+       "count": "int"
+      },
+      "38": {
+       "count": "int"
+      },
+      "33": {
+       "count": "int"
+      },
+      "7": {
+       "count": "int"
+      },
+      "23": {
+       "count": "int"
+      },
+      "20": {
+       "count": "int"
+      },
+      "43": {
+       "count": "int"
+      },
+      "6": {
+       "count": "int"
+      },
+      "2": {
+       "count": "int"
+      },
+      "31": {
+       "count": "int"
+      },
+      "40": {
+       "count": "int"
+      },
+      "15": {
+       "count": "int"
+      },
+      "18": {
+       "count": "int"
+      },
+      "13": {
+       "count": "int"
+      },
+      "16": {
+       "count": "int"
+      },
+      "17": {
+       "count": "int"
+      },
+      "19": {
+       "count": "int"
+      },
+      "24": {
+       "count": "int"
+      },
+      "37": {
+       "count": "int"
+      },
+      "41": {
+       "count": "int"
+      },
+      "3": {
+       "count": "int"
+      },
+      "5": {
+       "count": "int"
+      },
+      "8": {
+       "count": "int"
+      },
+      "9": {
+       "count": "int"
+      },
+      "10": {
+       "count": "int"
+      },
+      "11": {
+       "count": "int"
+      },
+      "12": {
+       "count": "int"
+      },
+      "14": {
+       "count": "int"
+      },
+      "21": {
+       "count": "int"
+      },
+      "22": {
+       "count": "int"
+      },
+      "26": {
+       "count": "int"
+      },
+      "28": {
+       "count": "int"
+      },
+      "29": {
+       "count": "int"
+      },
+      "30": {
+       "count": "int"
+      },
+      "34": {
+       "count": "int"
+      },
+      "35": {
+       "count": "int"
+      },
+      "36": {
+       "count": "int"
+      },
+      "44": {
+       "count": "int"
+      },
+      "45": {
+       "count": "NoneType"
+      },
+      "46": {
+       "count": "NoneType"
+      },
+      "47": {
+       "count": "NoneType"
+      },
+      "48": {
+       "count": "NoneType"
+      },
+      "49": {
+       "count": "NoneType"
+      },
+      "50": {
+       "count": "NoneType"
+      },
+      "51": {
+       "count": "NoneType"
+      },
+      "52": {
+       "count": "NoneType"
+      },
+      "53": {
+       "count": "NoneType"
+      }
+     }
+    }
+   },
+   "saved_as": "national_week.json"
+  },
+  {
+   "name": "locality_detail",
+   "method": "GET",
+   "path": "/v2/geodata/fishhealth/locality/30196/2026/42",
+   "params": null,
+   "body": null,
+   "status": 200,
+   "content_type": "application/json; charset=utf-8",
+   "bytes": 5366,
+   "structure": {
+    "locality": {
+     "no": "int",
+     "name": "str",
+     "isOnLand": "bool"
+    },
+    "geometry": {
+     "type": "str",
+     "coordinates": [
+      "float",
+      "len=2"
+     ]
+    },
+    "municipality": {
+     "no": "str",
+     "name": "str"
+    },
+    "productionArea": {
+     "id": "int",
+     "name": "str",
+     "color": "NoneType"
+    },
+    "aquaCultureRegister": {
+     "placement": "str",
+     "capacity": "float",
+     "unit": "str",
+     "licenses": [
+      {
+       "licenseNo": "str",
+       "licensee": "str",
+       "grantDate": "str",
+       "expirationDate": "NoneType",
+       "localities": "list",
+       "capacity": "float",
+       "purpose": "str",
+       "productionType": "str",
+       "isGreen": "bool",
+       "species": "list",
+       "speciesCategory": "str",
+       "unit": "str"
+      },
+      "len=1"
+     ],
+     "hasGreenLicense": "bool",
+     "hasSalmonoidLicense": "bool",
+     "productionTypes": [
+      "str",
+      "len=1"
+     ],
+     "purposes": [
+      "str",
+      "len=1"
+     ],
+     "isSlaughterHoldingCage": "bool",
+     "organizations": [
+      {
+       "name": "str",
+       "organizationNo": "str",
+       "address": "str",
+       "postalCode": "str",
+       "city": "str",
+       "localities": "list"
+      },
+      "len=1"
+     ],
+     "species": [
+      "str",
+      "len=3"
+     ]
+    },
+    "controlAreas": [],
+    "exportRestrictionAreas": [],
+    "pdZoneId": "str",
+    "diseases": [],
+    "farmedFishEscapes": [],
+    "liceReport": {
+     "hasReported": "bool",
+     "isFallow": "bool",
+     "adultFemaleLice": {
+      "average": "float",
+      "averageOfPreviousWeek": "float",
+      "trend": "str"
+     },
+     "mobileLice": {
+      "average": "float",
+      "averageOfPreviousWeek": "float",
+      "trend": "str"
+     },
+     "stationaryLice": {
+      "average": "float",
+      "averageOfPreviousWeek": "float",
+      "trend": "str"
+     },
+     "totalLice": {
+      "average": "float",
+      "averageOfPreviousWeek": "float",
+      "trend": "str"
+     },
+     "seaTemperature": "float"
+    },
+    "liceTreatments": {
+     "combinationTreatments": [],
+     "medicinalTreatments": [],
+     "nonMedicinalTreatments": [],
+     "bathTreatments": [],
+     "cleanerFishTreatment": "NoneType",
+     "inFeedTreatments": [],
+     "mechanicalRemovalTreatment": "NoneType",
+     "daysSinceLastChitinSynthesisInhibitorTreatment": "NoneType"
+    }
+   },
+   "saved_as": "locality_detail.json"
+  },
+  {
+   "name": "locality_disease_year",
+   "method": "GET",
+   "path": "/v3/geodata/fishhealth/locality/30196/disease/2026",
+   "params": null,
+   "body": null,
+   "status": 200,
+   "content_type": "application/json; charset=utf-8",
+   "bytes": 2,
+   "structure": [],
+   "n_items": 0,
+   "saved_as": "locality_disease_year.json"
+  },
+  {
+   "name": "download_licereport_v1",
+   "method": "GET",
+   "path": "/v1/geodata/download/fishhealth",
+   "params": {
+    "reporttype": "licereport",
+    "filetype": "csv",
+    "fromyear": 2026,
+    "fromweek": 39,
+    "toyear": 2026,
+    "toweek": 42
+   },
+   "body": null,
+   "status": 400,
+   "content_type": "application/problem+json; charset=utf-8",
+   "bytes": 343,
+   "saved_as": "download_licereport_v1.txt",
+   "error_excerpt": "{\"errors\":{\"reporttype\":[\"The value 'licereport' is not valid for ReportType.\",\"A value for the 'reporttype' parameter or property was not provided.\"]},\"type\":\"https://tools.ietf.org/html/rfc9110#section-15.5.1\",\"title\":\"One or more validation errors occurred.\",\"status\":400,\"traceId\":\"00-205c7e09ceca4261867120e7d67d6a70-4835ec00f723f9c9-00\"}"
+  },
+  {
+   "name": "download_licereport_v2",
+   "method": "GET",
+   "path": "/v1/geodata/download/fishhealth",
+   "params": {
+    "reportType": "licereport",
+    "fileType": "csv",
+    "fromYear": 2026,
+    "fromWeek": 39,
+    "toYear": 2026,
+    "toWeek": 42
+   },
+   "body": null,
+   "status": 400,
+   "content_type": "application/problem+json; charset=utf-8",
+   "bytes": 343,
+   "saved_as": "download_licereport_v2.txt",
+   "error_excerpt": "{\"errors\":{\"reporttype\":[\"The value 'licereport' is not valid for ReportType.\",\"A value for the 'reporttype' parameter or property was not provided.\"]},\"type\":\"https://tools.ietf.org/html/rfc9110#section-15.5.1\",\"title\":\"One or more validation errors occurred.\",\"status\":400,\"traceId\":\"00-6a93206c45b34dc493aba163776cf46d-6b783c1b8c60f779-00\"}"
+  },
+  {
+   "name": "download_licereport_v3",
+   "method": "GET",
+   "path": "/v1/geodata/download/fishhealth",
+   "params": {
+    "reporttype": "licereport",
+    "filetype": "json",
+    "fromyear": 2026,
+    "fromweek": 39,
+    "toyear": 2026,
+    "toweek": 42
+   },
+   "body": null,
+   "status": 400,
+   "content_type": "application/problem+json; charset=utf-8",
+   "bytes": 458,
+   "saved_as": "download_licereport_v3.txt",
+   "error_excerpt": "{\"errors\":{\"filetype\":[\"The value 'json' is not valid.\",\"A value for the 'filetype' parameter or property was not provided.\"],\"reporttype\":[\"The value 'licereport' is not valid for ReportType.\",\"A value for the 'reporttype' parameter or property was not provided.\"]},\"type\":\"https://tools.ietf.org/html/rfc9110#section-15.5.1\",\"title\":\"One or more validation errors occurred.\",\"status\":400,\"traceId\":\"00-22435889eab54cbebb526b17d00ba65e-a04fc84faa3f2958-00\"}"
+  }
+ ]
+}

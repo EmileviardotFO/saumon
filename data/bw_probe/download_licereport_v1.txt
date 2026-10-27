@@ -1,0 +1,1 @@
+{"errors":{"reporttype":["The value 'licereport' is not valid for ReportType.","A value for the 'reporttype' parameter or property was not provided."]},"type":"https://tools.ietf.org/html/rfc9110#section-15.5.1","title":"One or more validation errors occurred.","status":400,"traceId":"00-205c7e09ceca4261867120e7d67d6a70-4835ec00f723f9c9-00"}
