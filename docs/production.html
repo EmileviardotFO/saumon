@@ -469,13 +469,14 @@
           <th class="grp sep-left" colspan="2">Sites above legal limit</th>
           <th class="grp sep-left" colspan="2">Sea temperature</th>
           <th class="grp sep-left" colspan="3">Disease (sites)</th>
-          <th class="grp sep-left" rowspan="2">Lice treatments<br>(site-weeks)</th>
+          <th class="grp sep-left" colspan="3">Lice treatments (site-weeks)</th>
         </tr>
         <tr>
           <th class="sep-left" id="hlThN">N</th><th id="hlThP">N-1</th><th>Δ%</th><th title="Last 3 weeks against the 3 weeks before">3-wk trend</th>
           <th class="sep-left">Share</th><th>N-1</th>
           <th class="sep-left">°C</th><th>Δ °C</th>
           <th class="sep-left">PD</th><th>ILA</th><th>Other</th>
+          <th class="sep-left" id="hlThTN">N</th><th id="hlThTP">N-1</th><th>Δ%</th>
         </tr>
       </thead>
       <tbody id="tbodyHealth"></tbody>
@@ -533,6 +534,7 @@
     <div class="sig-sub" id="rgSub"></div>
     <div id="rgEmpty" class="verdict v-warn" style="display:none;"></div>
     <div id="rgBody">
+      <div id="rgMain">
       <div class="sig-title" style="margin-top:6px;">1 · Licensed capacity (MTB) against standing biomass, by zone</div>
       <div class="sig-sub" id="rgPoSub"></div>
       <table class="sig-table">
@@ -564,6 +566,21 @@
         <thead><tr><th class="name">Zone</th><th style="text-align:left">Site</th><th style="text-align:left">Municipality</th><th style="text-align:left">Operator</th><th>Capacity (t)</th></tr></thead>
         <tbody id="tbodyRgCage"></tbody>
       </table>
+      </div>
+      <div class="sig-title" style="margin-top:26px;">4 · Approved fishery establishments (Mattilsynet)</div>
+      <div class="sig-sub" id="esSub"></div>
+      <div class="chart-controls">
+        <span class="cc-label">Activity</span>
+        <select class="ctrl" id="esCode"></select>
+        <span class="cc-label">Search</span>
+        <input class="ctrl" id="esSearch" type="search" placeholder="name, town, approval no." style="padding:7px 10px;background:#0d1a24;color:var(--ink);border:1px solid var(--border);border-radius:6px;min-width:240px;">
+      </div>
+      <table class="sig-table">
+        <thead><tr><th class="name">Approval no.</th><th style="text-align:left">Establishment</th><th style="text-align:left">Town</th>
+          <th style="text-align:left">Activity codes</th><th>Org. no.</th></tr></thead>
+        <tbody id="tbodyEs"></tbody>
+      </table>
+      <div id="esMore" style="margin-top:8px;"></div>
       <div class="note" id="rgNote" style="margin-top:16px; text-align:left; max-width:none;"></div>
     </div>
   </div>
@@ -1096,6 +1113,7 @@ const EMBEDDED_SMOLT_EXTRA = {"1|2017|10":[0,2244],"1|2017|11":[0,7999],"1|2017|
 let CALIBRE = null;
 let BW = null;   // BarentsWatch weekly fish health by zone (data.json -> bw_weekly)
 let BWR = null;  // BarentsWatch site register aggregates (data.json -> bw_register)
+let ESTAB = null; // Mattilsynet approved fishery establishments (data.json -> establishments)
 const DATA_URL = 'https://emileviardotfo.github.io/saumon/data/data.json';
 let RECORDS = EMBEDDED_RECORDS, COHORT = EMBEDDED_COHORT, DATA_DATE = null, LAST_WEEK = null;
 
@@ -1115,6 +1133,7 @@ async function loadRemoteData() {
     if (d.country && d.country.length) COUNTRY = d.country;
     if (d.bw_weekly && d.bw_weekly.rows && d.bw_weekly.rows.length) BW = d.bw_weekly;
     if (d.bw_register && d.bw_register.mtb_po) BWR = d.bw_register;
+    if (d.establishments && d.establishments.rows) ESTAB = d.establishments;
     // Exports SSB par pays et par produit (parse_ssb.py). Pas de copie
     // embarquee dans le HTML : l'onglet indique simplement que la donnee
     // arrivera au premier passage du script si elle est absente.
@@ -1692,6 +1711,8 @@ function renderHealth() {
   const per = span === 1 ? `Week ${wN} ${yN}` : `Weeks ${w0}–${wN} ${yN}`;
   document.getElementById('hlThN').textContent = yN;
   document.getElementById('hlThP').textContent = yN - 1;
+  document.getElementById('hlThTN').textContent = yN;
+  document.getElementById('hlThTP').textContent = yN - 1;
   document.getElementById('hlSub').innerHTML =
     `${per}${ptype === 'cumul' ? ' (cumulative from week 1)' : ''}, compared with the same week${span > 1 ? 's' : ''} of ${yN - 1}. ` +
     `Zones north (13) to south (1). Lice, share above limit and temperature are ${span > 1 ? 'averaged over the period (every site-week counts once)' : 'for the week'}; ` +
@@ -1725,19 +1746,21 @@ function renderHealth() {
       `<td class="sep-left ${deltaClass('mort', a.ovShare - b.ovShare)}">${f0p(a.ovShare)}</td><td>${f0p(b.ovShare)}</td>` +
       `<td class="sep-left">${f1(a.t)}</td><td style="color:var(--muted)">${isFinite(dt) ? (dt >= 0 ? '+' : '') + dt.toFixed(1) : '—'}</td>` +
       `<td class="sep-left ${a.pd ? 'delta-bad' : 'delta-zero'}">${a.pd || '·'}</td>` + disCell(a.ila) + disCell(a.other, null, otherTitle) +
-      `<td class="sep-left">${(a.nonmed + a.med) || '·'}</td></tr>`;
+      (() => { const tn = a.nonmed + a.med, tp = b.nonmed + b.med, dp = tp > 0 ? (tn / tp - 1) * 100 : NaN;
+        return `<td class="sep-left">${tn || '·'}</td><td style="color:var(--muted)">${b.any ? (tp || '·') : '—'}</td>` +
+               `<td class="${deltaClass('mort', dp)}">${isFinite(dp) ? (dp >= 0 ? '+' : '') + dp.toFixed(0) + '%' : (tn && !tp && b.any ? 'new' : '—')}</td></tr>`; })();
   };
   const tbody = document.getElementById('tbodyHealth');
   let html = '';
   const mapVals = {}, mapHtml = {};
   for (let po = 13; po >= 1; po--) {
     const a = hlAgg(idx, keysN, [po], k), b = hlAgg(idx, keysP, [po], k - 100);
-    if (!a.any && !b.any) { html += `<tr><td class="name">${po}. ${PO_NAMES[po]}</td><td colspan="13" style="color:var(--muted);text-align:left;">no reporting site</td></tr>`; continue; }
+    if (!a.any && !b.any) { html += `<tr><td class="name">${po}. ${PO_NAMES[po]}</td><td colspan="15" style="color:var(--muted);text-align:left;">no reporting site</td></tr>`; continue; }
     html += rowHtml(`${po}. ${PO_NAMES[po]}`, a, b, '', trendOf([po]));
     mapVals[po] = a.lice;
     const tp = trendOf([po]);
     mapHtml[po] = `Adult female lice: ${f2(a.lice)} (${yN - 1}: ${f2(b.lice)})${isFinite(tp) ? ` · 3-wk trend ${tp > 10 ? '↑' : tp < -10 ? '↓' : '→'} ${(tp >= 0 ? '+' : '') + tp.toFixed(0)}%` : ''}<br>Above limit: ${f0p(a.ovShare)} of sites<br>` +
-      `Sea temperature: ${f1(a.t)} °C<br>PD ${a.pd} · ILA ${a.ila}${a.other ? ' · other ' + a.other : ''}<br>Lice treatments: ${a.nonmed + a.med} site-weeks`;
+      `Sea temperature: ${f1(a.t)} °C<br>PD ${a.pd} · ILA ${a.ila}${a.other ? ' · other ' + a.other : ''}<br>Lice treatments: ${a.nonmed + a.med} site-weeks (${yN - 1}: ${b.nonmed + b.med})`;
   }
   tbody.innerHTML = html;
   const all = [1,2,3,4,5,6,7,8,9,10,11,12,13];
@@ -1800,9 +1823,17 @@ function renderHealthDiseases(idx, keysN, keysP, yN, per) {
     return `<td class="${deltaClass('mort', p)}">${isFinite(p) ? (p >= 0 ? '+' : '') + p.toFixed(0) + '%' : '—'}</td>`;
   };
   // lice treatments by category / type (site-weeks), from the site sheets (2024 onwards)
-  const TRT_CAT = { nonMedicinalTreatments: 'Non-medicinal', medicinalTreatments: 'Medicinal', bathTreatments: 'Bath',
-    inFeedTreatments: 'In-feed', cleanerFishTreatment: 'Cleaner fish', mechanicalRemovalTreatment: 'Mechanical removal',
-    combinationTreatments: 'Combination', unspecified: 'Unspecified' };
+  const NONMED = { TERMISK_BEHANDLING: 'thermal', MEKANISK_BEHANDLING: 'mechanical', FERSKVANNSBEHANDLING: 'freshwater',
+    FERSKVANN: 'freshwater', LASER: 'laser', ANNEN: 'other' };
+  const trtLabel = t => {
+    const p = t.split('|');
+    if (p[0] === 'nonmedicinal') return 'Non-medicinal — ' + (NONMED[p[1]] || (p[1] || '?').toLowerCase().replace(/_/g, ' '));
+    if (p[0] === 'medicinal') return 'Medicinal' + (p[1] && p[1] !== '?' ? ', ' + p[1].replace('InFeed', 'in-feed').replace('Bath', 'bath').toLowerCase() : '') + (p[2] && p[2] !== '?' ? ' — ' + p[2] : '');
+    if (p[0] === 'combination') return 'Combined treatment';
+    if (p[0] === 'mechanicalremoval') return 'Mechanical removal';
+    if (p[0] === 'cleanerfish') return 'Cleaner fish' + (p[1] && p[1] !== '?' ? ' — ' + p[1] : '');
+    return t;
+  };
   const trd = keys => {
     const o = {}; let has = false;
     keys.forEach(kk => pos.forEach(po => {
@@ -1815,11 +1846,10 @@ function renderHealthDiseases(idx, keysN, keysP, yN, per) {
   const trtTypeRows = () => {
     const a = trd(keysN), b = trd(keysP);
     if (!a) return `<tr><td class="name" style="padding-left:26px;font-weight:normal;color:var(--muted)">by type</td>` +
-      `<td class="sep-left" colspan="6" style="text-align:left;color:var(--muted)">available from 2024 once the treatment detail has been collected by the update workflow</td></tr>`;
+      `<td class="sep-left" colspan="6" style="text-align:left;color:var(--muted)">detail by type available from 2024, once a full year has been collected by the update workflow (a few runs)</td></tr>`;
     const keys = Object.keys(Object.assign({}, a, b || {})).sort((x, y) => (a[y] || 0) - (a[x] || 0));
     return keys.map(t => {
-      const [cat, sub] = t.split('|');
-      const lbl = (TRT_CAT[cat] || cat) + (sub ? ' — ' + sub.toLowerCase().replace(/_/g, ' ') : '');
+      const lbl = trtLabel(t);
       const x = a[t] || 0, y = b ? (b[t] || 0) : NaN;
       return `<tr><td class="name" style="padding-left:26px;font-weight:normal">${lbl}</td>` +
         `<td class="sep-left">${x}</td><td>${isFinite(y) ? y : '—'}</td>${isFinite(y) ? dCell(x, y) : '<td class="delta-zero">—</td>'}<td class="sep-left" colspan="3"></td></tr>`;
@@ -1868,16 +1898,53 @@ function renderHealthDiseases(idx, keysN, keysP, yN, per) {
   if (b) b.addEventListener('click', () => { hlNewAll = !hlNewAll; renderHealth(); });
 }
 let rgGrpAll = false;
+let esAll = false;
+// Activity codes as printed in the Mattilsynet list. Meanings still to be confirmed against
+// Mattilsynet's legend page ("Forklaring til produksjonsformer"); kept as raw codes until then.
+const ES_CODES = {};
+function renderEstablishments() {
+  const tb = document.getElementById('tbodyEs'), sub = document.getElementById('esSub');
+  if (!ESTAB) {
+    sub.innerHTML = '<span class="warn">Not loaded yet</span> — the list is downloaded by the update workflow (step "Etablissements agrees").';
+    tb.innerHTML = ''; document.getElementById('esMore').innerHTML = ''; return;
+  }
+  const cSel = document.getElementById('esCode'), q = document.getElementById('esSearch');
+  if (!cSel.options.length) {
+    const cnt = {};
+    ESTAB.rows.forEach(r => r[6].forEach(c => { cnt[c] = (cnt[c] || 0) + 1; }));
+    cSel.innerHTML = `<option value="">All activities (${ESTAB.rows.length})</option>` +
+      Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a]).map(c => `<option value="${c}"${c === 'FFPP-SA' ? ' selected' : ''}>${c}${ES_CODES[c] ? ' — ' + ES_CODES[c] : ''} (${cnt[c]})</option>`).join('');
+    cSel.addEventListener('change', () => { esAll = false; renderEstablishments(); });
+    q.addEventListener('input', () => { esAll = false; renderEstablishments(); });
+  }
+  const code = cSel.value, term = q.value.trim().toLowerCase();
+  const list = ESTAB.rows.filter(r => (!code || r[6].includes(code)) &&
+    (!term || (r[0] + ' ' + r[1] + ' ' + r[5] + ' ' + r[2]).toLowerCase().includes(term)));
+  const m = ESTAB.meta || {};
+  sub.innerHTML = `${list.length} establishment${list.length > 1 ? 's' : ''} out of ${m.n || ESTAB.rows.length}. ` +
+    `Official list of establishments approved to handle fishery products, with their approval number (the sanitary code printed on the boxes). ` +
+    `Downloaded ${m.fetched || '?'}. <span style="color:var(--muted)">FFPP-SA is the code carried by the salmon slaughterhouses; the meaning of each code will be added from Mattilsynet's legend.</span>`;
+  const LIM = 60, shown = esAll ? list : list.slice(0, LIM);
+  tb.innerHTML = shown.map(r => `<tr><td class="name">${r[0]}</td><td style="text-align:left">${r[1]}</td><td style="text-align:left">${r[5]}</td>` +
+    `<td style="text-align:left;font-size:11.5px">${r[6].map(c => `<span title="${ES_CODES[c] || ''}" style="display:inline-block;padding:1px 6px;margin:1px 3px 1px 0;border:1px solid var(--border);border-radius:4px;${c === code ? 'color:var(--accent);border-color:var(--accent)' : ''}">${c}</span>`).join('')}</td>` +
+    `<td style="color:var(--muted)">${r[2]}</td></tr>`).join('');
+  document.getElementById('esMore').innerHTML = list.length > LIM
+    ? `<button type="button" id="esBtn" style="padding:6px 12px;background:#0d1a24;color:var(--muted);border:1px solid var(--border);border-radius:6px;cursor:pointer;">${esAll ? 'Show first ' + LIM + ' only' : 'Show all ' + list.length}</button>` : '';
+  const b = document.getElementById('esBtn');
+  if (b) b.addEventListener('click', () => { esAll = !esAll; renderEstablishments(); });
+}
 function renderRegister() {
   const empty = document.getElementById('rgEmpty'), body = document.getElementById('rgBody');
   document.getElementById('dataQualityBanner').style.display = 'none';
+  renderEstablishments();
+  const main = document.getElementById('rgMain');
   if (!BWR) {
-    empty.style.display = 'block'; body.style.display = 'none'; updateMapSelectionHighlight([]);
+    empty.style.display = 'block'; main.style.display = 'none'; updateMapSelectionHighlight([]);
     empty.innerHTML = '<b>Site register not built yet</b>It is built by the update workflow (step "Registre des sites d\'elevage"), ' +
       'about 15 minutes the first time, then refreshed every 4 weeks.';
     return;
   }
-  empty.style.display = 'none'; body.style.display = '';
+  empty.style.display = 'none'; main.style.display = '';
   const m = BWR.meta || {};
   const year = parseInt(yearSel.value, 10), month = parseInt(monthSel.value, 10);
   const mlab = `${MONTHS_FR[month - 1]} ${year}`, mlabP = `${MONTHS_FR[month - 1]} ${year - 1}`;
