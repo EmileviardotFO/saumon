@@ -1,0 +1,39 @@
+name: Test BarentsWatch (sonde)
+
+# Lancement manuel uniquement : onglet Actions -> "Test BarentsWatch (sonde)"
+# -> Run workflow. Verifie les identifiants et enregistre des echantillons de
+# reponse dans data/bw_probe/ pour construire le script definitif.
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Interroger l'API BarentsWatch
+        env:
+          BW_CLIENT_ID: ${{ secrets.BW_CLIENT_ID }}
+          BW_CLIENT_SECRET: ${{ secrets.BW_CLIENT_SECRET }}
+        run: python3 scripts/probe_barentswatch.py
+
+      - name: Publier les echantillons
+        run: |
+          git config user.name  "github-actions"
+          git config user.email "actions@github.com"
+          git add data/bw_probe/
+          if git diff --staged --quiet; then
+            echo "Aucun echantillon nouveau."
+          else
+            git commit -m "Sonde BarentsWatch ($(date -u +%Y-%m-%d))"
+            git pull --rebase
+            git push
+          fi
