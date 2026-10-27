@@ -25,11 +25,15 @@ jobs:
           BW_CLIENT_SECRET: ${{ secrets.BW_CLIENT_SECRET }}
         run: python3 scripts/probe_barentswatch.py
 
+      - name: Listes d'etablissements agrees (Mattilsynet, douanes chinoises)
+        continue-on-error: true
+        run: python3 scripts/fetch_establishments.py
+
       - name: Publier les echantillons
         run: |
           git config user.name  "github-actions"
           git config user.email "actions@github.com"
-          git add data/bw_probe/
+          git add data/bw_probe/ data/establishments/
           if git diff --staged --quiet; then
             echo "Aucun echantillon nouveau."
           else
