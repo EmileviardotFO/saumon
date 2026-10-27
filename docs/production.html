@@ -175,7 +175,15 @@
   .pm-mix .bar { flex:1; display:flex; height:16px; border-radius:3px; overflow:hidden; }
   .pm-mix .bar span { display:block; height:100%; font-size:10px; color:#06211d; text-align:center; line-height:16px; overflow:hidden; white-space:nowrap; }
   table.pm-mkt td.barcell { text-align:left; }
-  table.rg-ops td.zc, table.rg-ops th.zc { font-size:11px; padding:6px 5px; min-width:46px; }
+  table.rg-ops td.zc, table.rg-ops th.zc { font-size:10.5px; padding:5px 3px; min-width:0; }
+  /* Fish health et Farm register : tout tient dans le cadre, sans barre de defilement */
+  #healthView, #registerView { overflow-x: visible; min-width: 0; }
+  #healthView table, #registerView table { font-size: 11.5px; table-layout: auto; width: 100%; }
+  #healthView th, #registerView th { white-space: normal; font-size: 9.5px; padding: 5px 4px; vertical-align: bottom; line-height: 1.25; }
+  #healthView td, #registerView td { padding: 5px 4px; }
+  #healthView td.name, #registerView td.name { white-space: normal; min-width: 90px; }
+  #registerView td[style*="text-align:left"] { white-space: normal; }
+  #healthView td small, #registerView td small { font-size: 9.5px; }
   table.rg-ops td.zc.z0 { color:#3a4d58; }
   .pm-vbar { position:relative; height:12px; width:100%; background:#0d1a24; border-radius:2px; }
   .pm-vbar .a { position:absolute; left:0; top:0; height:100%; border-radius:2px; }
@@ -448,7 +456,7 @@
     <div class="note" id="outlookNote" style="margin-top:16px; text-align:left; max-width:none;"></div>
   </div>
 
-  <div class="panel" id="healthView" style="flex:1; min-width: 760px; max-width: 1320px; display:none; overflow-x:auto;">
+  <div class="panel" id="healthView" style="flex:1; min-width: 0; max-width: 1320px; display:none;">
     <div class="sig-title">Fish health by production area — BarentsWatch</div>
     <div class="sig-sub" id="hlSub"></div>
     <div class="chart-controls" id="hlCtl">
@@ -554,7 +562,7 @@
     </div>
   </div>
 
-  <div class="panel" id="registerView" style="flex:1; min-width: 760px; max-width: 1320px; display:none; overflow-x:auto;">
+  <div class="panel" id="registerView" style="flex:1; min-width: 0; max-width: 1320px; display:none;">
     <div class="sig-title">Farm register — licensed capacity, operators, slaughter holding cages</div>
     <div class="sig-sub" id="rgSub"></div>
     <div id="rgEmpty" class="verdict v-warn" style="display:none;"></div>
@@ -564,8 +572,8 @@
       <div class="sig-sub" id="rgPoSub"></div>
       <table class="sig-table">
         <thead><tr><th class="name" rowspan="2">Zone</th><th rowspan="2" title="All sea-based salmon food-fish licences in the zone, including research, display, education and slaughter-cage licences, whose fish are counted in the biomass">MTB (t)</th>
-          <th class="grp sep-left" colspan="2">Salmon biomass (t)</th><th class="grp sep-left" colspan="2">Fish in the sea (millions)</th><th class="grp sep-left" colspan="3">Use of licensed capacity</th></tr>
-          <tr><th class="sep-left" id="rgThB1"></th><th id="rgThB2"></th><th class="sep-left" id="rgThF1"></th><th id="rgThF2"></th><th class="sep-left" style="text-align:left;min-width:180px" id="rgThU"></th><th id="rgThU1"></th><th id="rgThU2"></th></tr></thead>
+          <th class="grp sep-left" colspan="2">Salmon biomass (t)</th><th class="grp sep-left" colspan="2">Fish in the sea (millions)</th><th class="grp sep-left" colspan="4">Use of licensed capacity (biomass / MTB)</th></tr>
+          <tr><th class="sep-left" id="rgThB1"></th><th id="rgThB2"></th><th class="sep-left" id="rgThF1"></th><th id="rgThF2"></th><th class="sep-left" style="text-align:left;min-width:90px" id="rgThU"></th><th id="rgThU1"></th><th id="rgThUm" title="Change of the ratio against the previous month, in percentage points; biomass change in brackets">vs M-1</th><th id="rgThU2"></th></tr></thead>
         <tbody id="tbodyRgPo"></tbody><tfoot id="tfootRgPo"></tfoot>
       </table>
       <div class="sig-title" style="margin-top:26px;">2 · Licensed capacity by operator</div>
@@ -1814,8 +1822,7 @@ function renderHealth() {
     if (zr) {
       const dr = document.createElement('tr');
       dr.className = 'pm-chart-row hl-detail-row';
-      const vw = Math.max(640, document.getElementById('healthView').clientWidth - 60);
-      dr.innerHTML = `<td colspan="17"><div class="hl-detail" style="position:sticky;left:12px;width:${vw}px;overflow-x:auto"></div></td>`;
+      dr.innerHTML = `<td colspan="17"><div class="hl-detail"></div></td>`;
       zr.after(dr);
       dr.querySelector('.hl-detail').appendChild(document.getElementById('hlSiteWrap'));
     }
@@ -2113,15 +2120,30 @@ function renderRegister() {
   // biomass per zone at the end of the selected month (Biomasseregisteret, salmon)
   const bio = (y, mo) => { const o = {}; RECORDS.forEach(r => { if (r.year === y && r.month === mo) o[r.po] = (o[r.po] || 0) + r.biomasse_kg / 1000; }); return o; };
   const bN = bio(year, month), bP = bio(year - 1, month);
+  const ym1 = month === 1 ? [year - 1, 12] : [year, month - 1];
+  const bM = bio(ym1[0], ym1[1]);
+  const mlabM = `${MONTHS_FR[ym1[1] - 1]} ${ym1[0]}`;
+  // variation du taux de remplissage contre le mois precedent, en points, fleche et couleur
+  const mCell = (u, uM, a, am) => {
+    if (!isFinite(u) || !isFinite(uM)) return '<td class="delta-zero">—</td>';
+    const d = u - uM, bp = am > 0 ? 100 * (a - am) / am : NaN;
+    const arrow = d > 1 ? '↑' : (d < -1 ? '↓' : '→');
+    const cls = d > 1 ? 'delta-good' : (d < -1 ? 'delta-bad' : 'delta-zero');
+    return `<td class="${cls}" title="${mlabM}: ${uM.toFixed(0)}% · biomass ${isFinite(bp) ? (bp >= 0 ? '+' : '') + bp.toFixed(0) + '%' : '—'} vs ${mlabM}">` +
+      `<b style="font-size:14px">${arrow}</b> ${(d >= 0 ? '+' : '') + d.toFixed(0)} pt` +
+      (isFinite(bp) ? `<small style="display:block;color:var(--muted);font-size:10px">biomass ${(bp >= 0 ? '+' : '') + bp.toFixed(0)}%</small>` : '') + `</td>`;
+  };
   const fish = (y, mo) => { const o = {}; RECORDS.forEach(r => { if (r.year === y && r.month === mo) o[r.po] = (o[r.po] || 0) + r.behfisk_stk / 1e6; }); return o; };
   const fN = fish(year, month), fP = fish(year - 1, month);
   const f1m = v => isFinite(v) ? v.toFixed(1) : '—';
-  ['rgThB1', 'rgThU1', 'rgThF1'].forEach(id => document.getElementById(id).textContent = mlab);
+  ['rgThB1', 'rgThF1'].forEach(id => document.getElementById(id).textContent = mlab);
+  document.getElementById('rgThU1').textContent = '%';
   ['rgThB2', 'rgThU2', 'rgThF2'].forEach(id => document.getElementById(id).textContent = mlabP);
-  document.getElementById('rgThU').textContent = `Biomass ÷ MTB (how full), ${mlab}`;
+  document.getElementById('rgThU').textContent = mlab;
+  document.getElementById('rgThUm').textContent = `vs ${mlabM}`;
   document.getElementById('rgPoSub').innerHTML =
     `Standing salmon biomass at the end of ${mlab} (Biomasseregisteret) divided by the licensed maximum (MTB) of the zone — ` +
-    `<b>biomass ÷ MTB</b>, i.e. how full the zone is. MTB here counts every sea-based salmon licence, including research, display, education and slaughter-cage licences, since their fish are in the biomass. ` +
+    `<b>biomass divided by MTB</b>, i.e. how full the zone is. MTB here counts every sea-based salmon licence, including research, display, education and slaughter-cage licences, since their fish are in the biomass. ` +
     `MTB is enforced per company and per county, not per zone, so a zone can read slightly above 100% when a company keeps more fish there and less in a neighbouring zone of the same county (zones 3 and 7 typically). ` +
     `Above ~85–90% farmers are close to the ceiling and must harvest; low values leave room to grow fish on. ` +
     `Set the month with the selectors at the top.`;
@@ -2129,16 +2151,17 @@ function renderRegister() {
   const up = (b, mtb) => mtb > 0 && isFinite(b) ? 100 * b / mtb : NaN;
   const ucls = u => !isFinite(u) ? '' : u >= 90 ? 'delta-bad' : u >= 80 ? '' : 'delta-good';
   const bar = u => isFinite(u) ? `<div class="pm-vbar"><div class="a" style="width:${Math.min(100, u)}%;background:${u >= 90 ? '#ff8a65' : u >= 80 ? '#ffb74d' : '#2fb8a6'}"></div></div>` : '';
-  let html = '', tm = 0, tb = 0, tbp = 0, tf = 0, tfp = 0;
+  let html = '', tm = 0, tb = 0, tbp = 0, tf = 0, tfp = 0, tbm = 0;
   const mapVals = {}, mapHtml = {};
   for (let po = 13; po >= 1; po--) {
     const mtb = (BWR.mtb_po_all || BWR.mtb_po)[String(po)] || 0, a = bN[po], b = bP[po];
     const u = up(a, mtb), uP = up(b, mtb);
-    tm += mtb; tb += a || 0; tbp += b || 0; tf += fN[po] || 0; tfp += fP[po] || 0;
+    tm += mtb; tb += a || 0; tbp += b || 0; tf += fN[po] || 0; tfp += fP[po] || 0; tbm += bM[po] || 0;
     html += `<tr><td class="name">${po}. ${PO_NAMES[po]}</td><td>${f0(mtb)}</td>` +
       `<td class="sep-left">${f0(a)}</td><td style="color:var(--muted)">${f0(b)}</td>` +
       `<td class="sep-left" title="Average weight ${isFinite(a / fN[po]) ? (a / fN[po] / 1000).toFixed(2) : '—'} kg">${f1m(fN[po])}</td><td style="color:var(--muted)">${f1m(fP[po])}</td>` +
       `<td class="sep-left barcell">${bar(u)}</td><td class="${ucls(u)}"><b>${isFinite(u) ? u.toFixed(0) + '%' : '—'}</b></td>` +
+      mCell(u, up(bM[po], mtb), a, bM[po]) +
       `<td style="color:var(--muted)">${isFinite(uP) ? uP.toFixed(0) + '%' : '—'}</td></tr>`;
     mapVals[po] = u;
     mapHtml[po] = `MTB ${f0(mtb)} t<br>Biomass ${mlab}: ${f0(a)} t · ${f1m(fN[po])} M fish<br>Use of capacity: ${isFinite(u) ? u.toFixed(0) + '%' : '—'} (${mlabP}: ${isFinite(uP) ? uP.toFixed(0) + '%' : '—'})`;
@@ -2147,8 +2170,9 @@ function renderRegister() {
   const U = up(tb, tm), UP = up(tbp, tm);
   document.getElementById('tfootRgPo').innerHTML = `<tr><td class="name">Norway</td><td>${f0(tm)}</td><td class="sep-left">${f0(tb)}</td><td>${f0(tbp)}</td>` +
     `<td class="sep-left">${f1m(tf)}</td><td>${f1m(tfp)}</td>` +
-    `<td class="sep-left barcell">${bar(U)}</td><td>${isFinite(U) ? U.toFixed(0) + '%' : '—'}</td><td>${isFinite(UP) ? UP.toFixed(0) + '%' : '—'}</td></tr>`;
-  updateMapValues(mapVals, v => v.toFixed(0) + '%', `Biomass ÷ MTB · ${mlab}`);
+    `<td class="sep-left barcell">${bar(U)}</td><td>${isFinite(U) ? U.toFixed(0) + '%' : '—'}</td>` + mCell(U, up(tbm, tm), tb, tbm) +
+    `<td>${isFinite(UP) ? UP.toFixed(0) + '%' : '—'}</td></tr>`;
+  updateMapValues(mapVals, v => v.toFixed(0) + '%', `Biomass / MTB · ${mlab}`);
   lastMapValues.html = mapHtml;
 
   // operators: licence holders or groups, all zones or one zone
