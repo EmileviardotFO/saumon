@@ -163,6 +163,11 @@ def num(x):
     return x if isinstance(x, (int, float)) and not isinstance(x, bool) else None
 
 
+# Statut de chaque site par semaine releve pendant cette execution :
+# {(annee, semaine): {site: 'a' (poisson, poux declares) ou 'f' (jachere)}}
+STATUS = {}
+
+
 def aggregate_week(api, y, w, loc_po):
     sites = api.call('POST', f'/v2/geodata/fishhealth/locality/{y}/{w}', body={})
     if not isinstance(sites, list):
@@ -207,10 +212,12 @@ def aggregate_week(api, y, w, loc_po):
             treated[key] = [po, sorted({t for t in treats if t})]
         if rep.get('isFallow'):
             a['nf'] += 1
+            STATUS.setdefault((y, w), {})[key] = 'f'
             continue
         if not rep.get('hasReported'):
             continue
         a['na'] += 1
+        STATUS.setdefault((y, w), {})[key] = 'a'
         lice = num((rep.get('adultFemaleLice') or {}).get('average'))
         if lice is not None:
             a['ls'] += lice
@@ -505,6 +512,17 @@ def main():
     names = {str(e[3]): dis['names'].get(str(e[3]), '') for e in events}
     names.update({str(r[0]): dis['names'].get(str(r[0]), '') for r in spans})
     store['names'] = names
+    # Sites en production sur les REFRESH_WEEKS dernieres semaines (relues a
+    # chaque execution) : nombre de semaines avec poisson / en jachere, par site.
+    # Sert a l'onglet Farm register pour ponderer la MTB par l'activite reelle.
+    act = {}
+    rw = sorted(wk for wk in STATUS if wk in recent)
+    for wk in rw:
+        for no, st in STATUS[wk].items():
+            a = act.setdefault(no, [0, 0])
+            a[0 if st == 'a' else 1] += 1
+    if act:
+        store['site_act'] = {'weeks': [list(wk) for wk in rw], 'sites': act}
     store['meta']['events'] = len(events)
     store['meta']['new_case_rule'] = f'disease present at a site and absent from it in the {NEW_CASE_GAP} previous weeks'
     data[KEY] = store
