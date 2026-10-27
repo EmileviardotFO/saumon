@@ -157,19 +157,39 @@ def main():
     else:
         print('  (aucun numero de site trouve dans la liste : detail non teste)')
 
-    # 4. Telechargement groupe (une fenetre de 4 semaines) : plusieurs
-    #    variantes de parametres, la documentation ne les precise pas.
-    variants = [
-        {'reporttype': 'licereport', 'filetype': 'csv',
-         'fromyear': y4, 'fromweek': w4, 'toyear': year, 'toweek': week},
-        {'reportType': 'licereport', 'fileType': 'csv',
-         'fromYear': y4, 'fromWeek': w4, 'toYear': year, 'toWeek': week},
-        {'reporttype': 'licereport', 'filetype': 'json',
-         'fromyear': y4, 'fromweek': w4, 'toyear': year, 'toweek': week},
-    ]
-    for i, p in enumerate(variants, 1):
-        st, _, _ = probe(f'download_licereport_v{i}', 'GET', '/v1/geodata/download/fishhealth',
-                         params=p, fname=f'download_licereport_v{i}.txt')
+    # 4. Detail des traitements contre les poux : la liste hebdomadaire ne dit
+    #    que "medicamenteux / non medicamenteux". Le type (thermique, mecanique,
+    #    eau douce, bain, aliment...) est dans la fiche du site. On lit quelques
+    #    sites traites cette semaine, et une semaine de 2023 ou les traitements
+    #    medicamenteux etaient encore signales dans la liste.
+    def treated(lst, label=None, n=4):
+        out = []
+        for x in (lst or []):
+            t = x.get('liceTreatments') or []
+            if t and (label is None or label in t):
+                out.append((x.get('locality') or {}).get('no'))
+            if len(out) >= n:
+                break
+        return [o for o in out if o]
+    for no in treated(sites, 'IKKE_MEDIKAMENTELL', 4):
+        probe(f'treat_nonmed_{no}', 'GET', f'/v2/geodata/fishhealth/locality/{no}/{year}/{week}',
+              fname=f'treat_nonmed_{no}.json')
+    st23, sites23, _ = probe('locality_week_list_2023w40', 'POST', '/v2/geodata/fishhealth/locality/2023/40', body={})
+    med = treated(sites23, 'MEDIKAMENTELL', 3)
+    for no in med:
+        probe(f'treat_med_{no}', 'GET', f'/v2/geodata/fishhealth/locality/{no}/2023/40',
+              fname=f'treat_med_{no}.json')
+    if med:
+        probe('lice_medication_events', 'GET',
+              f'/v1/geodata/fishhealth/locality/{med[0]}/liceMedicationEvents/2023',
+              fname='lice_medication_events.json')
+
+    # 5. Specification OpenAPI : donne la liste exacte des types de traitement.
+    global MAX_SAVE
+    MAX_SAVE = 3_000_000
+    for i, path in enumerate(['/openapi/v1/openapi.json', '/openapi/v2/openapi.json',
+                              '/swagger/v1/swagger.json', '/openapi/openapi.json'], 1):
+        st, _, _ = probe(f'openapi_spec_{i}', 'GET', path, fname=f'openapi_spec_{i}.json')
         if st == 200:
             break
 
