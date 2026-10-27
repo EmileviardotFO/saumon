@@ -1566,19 +1566,25 @@ function renderHealth() {
   const weeks = hlWeeksList();
   const wSel = document.getElementById('hlWeek');
   if (!wSel.options.length) {
+    // reporting sites in a week (all zones); used to flag weeks still filling in
+    const act = k => BW.rows.filter(r => r.y * 100 + r.w === k).reduce((s, r) => s + r.na, 0);
     weeks.slice().reverse().forEach(k => {
       const o = document.createElement('option');
-      o.value = k; o.textContent = `${Math.floor(k / 100)} – week ${String(k % 100).padStart(2, '0')}`;
+      o.value = k; o.textContent = `${Math.floor(k / 100)} – week ${String(k % 100).padStart(2, '0')}` + (act(k) < 0.9 * act(hlShift(k, -1)) ? ' (incomplete)' : '');
       wSel.appendChild(o);
     });
     const zSel = document.getElementById('hlZone');
     zSel.innerHTML = '<option value="0">Norway</option>' +
       Array.from({length: 13}, (_, i) => 13 - i).map(po => `<option value="${po}">${po}. ${PO_NAMES[po]}</option>`).join('');
     // Default: last week where most zones have reported (the newest week fills in over a few days).
+    // A week counts as complete once its reporting sites reach 90% of the median
+    // of the four weeks before it (late reports keep arriving for a few days).
     let def = weeks[weeks.length - 1];
-    for (let i = weeks.length - 1; i >= Math.max(0, weeks.length - 3); i--) {
-      const nRep = BW.rows.filter(r => r.y * 100 + r.w === weeks[i] && r.na > 0).length;
-      if (nRep >= 10) { def = weeks[i]; break; }
+    for (let i = weeks.length - 1; i >= Math.max(4, weeks.length - 3); i--) {
+      const ref = weeks.slice(i - 4, i).map(act).sort((a, b) => a - b);
+      const med = (ref[1] + ref[2]) / 2;
+      if (act(weeks[i]) >= 0.9 * med) { def = weeks[i]; break; }
+      def = weeks[i - 1];
     }
     wSel.value = def;
   }
