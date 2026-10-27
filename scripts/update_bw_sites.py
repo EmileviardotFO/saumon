@@ -142,6 +142,19 @@ def build_register(sites):
         by_po[po] += l['cap']
         H = by_holder[l.get('holder') or '?']
         H['total'] += l['cap']; H['n'] += 1; H['po'][po] += l['cap']
+    # Capacite en mer de TOUTES les licences de grossissement de saumon, y compris
+    # recherche, vitrine, enseignement et cages d'attente : leurs poissons sont
+    # comptes dans la biomasse du Biomasseregisteret, donc c'est le bon
+    # denominateur pour le taux d'utilisation par zone.
+    sea_all = lambda l: ((l.get('ptype') or '').startswith(('Matfisk', 'Økologisk'))
+                         and any('Laks' in x for x in l.get('species') or [])
+                         and (l.get('unit') in (None, 'TN')) and isinstance(l.get('cap'), (int, float))
+                         and not on_land(l))
+    by_po_all = collections.Counter()
+    for no, l in licences.items():
+        if sea_all(l):
+            pos = [po_of_site.get(x) for x in l.get('sites') or [] if po_of_site.get(x)]
+            by_po_all[collections.Counter(pos).most_common(1)[0][0] if pos else 0] += l['cap']
     land_rows = sorted(({'holder': h, 'group': group_of(h), 'mtb': round(v['total']), 'licences': v['n'],
                          'po': v['po'], 'sites': sorted(v['sites'])} for h, v in land.items()),
                        key=lambda x: -x['mtb'])
@@ -171,6 +184,7 @@ def build_register(sites):
                          'the 5% increases, green and converted licences), each licence counted once; '
                          'zone = majority zone of the sites it is attached to; land-based farms shown apart'},
         'mtb_po': {str(k): round(v) for k, v in sorted(by_po.items())},
+        'mtb_po_all': {str(k): round(v) for k, v in sorted(by_po_all.items())},
         'mtb_groups': groups,
         'mtb_holders': holders,
         'mtb_land': land_rows,
