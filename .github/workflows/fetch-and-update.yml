@@ -101,5 +101,7 @@ jobs:
             echo "Aucun changement."
           else
             git commit -m "Mise a jour auto Akvafakta + Fiskeridirektoratet + SSB ($(date -u +%Y-%m-%d))"
+            # un fichier envoye a la main pendant l'execution ne doit pas faire echouer la publication
+            git pull --rebase
             git push
           fi
