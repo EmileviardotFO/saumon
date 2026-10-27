@@ -2129,7 +2129,7 @@ function renderRegister() {
     const d = u - uM, bp = am > 0 ? 100 * (a - am) / am : NaN;
     const arrow = d > 1 ? '↑' : (d < -1 ? '↓' : '→');
     const cls = d > 1 ? 'delta-good' : (d < -1 ? 'delta-bad' : 'delta-zero');
-    return `<td class="${cls}" title="${mlabM}: ${uM.toFixed(0)}% · biomass ${isFinite(bp) ? (bp >= 0 ? '+' : '') + bp.toFixed(0) + '%' : '—'} vs ${mlabM}">` +
+    return `<td class="${cls}" title="${mlabM}: ${uM.toFixed(0)}% → ${mlab}: ${u.toFixed(0)}% · biomass ${isFinite(bp) ? (bp >= 0 ? '+' : '') + bp.toFixed(0) + '%' : '—'} over the month">` +
       `<b style="font-size:14px">${arrow}</b> ${(d >= 0 ? '+' : '') + d.toFixed(0)} pt` +
       (isFinite(bp) ? `<small style="display:block;color:var(--muted);font-size:10px">biomass ${(bp >= 0 ? '+' : '') + bp.toFixed(0)}%</small>` : '') + `</td>`;
   };
