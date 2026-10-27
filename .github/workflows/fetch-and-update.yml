@@ -84,6 +84,12 @@ jobs:
           BW_CLIENT_SECRET: ${{ secrets.BW_CLIENT_SECRET }}
         run: python3 scripts/update_bw_sites.py
 
+      - name: Etablissements agrees (Mattilsynet)
+        # Liste officielle des etablissements qui manipulent des produits de la
+        # mer (numero d'agrement, societe, adresse, activites). Petit fichier.
+        continue-on-error: true
+        run: python3 scripts/fetch_establishments.py --update
+
       - name: Publier data.json (et les fichiers bruts telecharges)
         run: |
           git config user.name  "github-actions"
