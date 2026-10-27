@@ -421,13 +421,18 @@
     <div class="sig-title">Fish health by production area — BarentsWatch</div>
     <div class="sig-sub" id="hlSub"></div>
     <div class="chart-controls" id="hlCtl">
-      <span class="cc-label">Week</span>
-      <select class="ctrl" id="hlWeek"></select>
-      <span class="cc-label">Period</span>
-      <select class="ctrl" id="hlSpan">
-        <option value="1">Single week</option>
-        <option value="4" selected>Last 4 weeks (average)</option>
+      <span class="cc-label">Year N</span>
+      <select class="ctrl" id="hlYear"></select>
+      <span class="cc-label">Period type</span>
+      <select class="ctrl" id="hlPType">
+        <option value="cumul" selected>Cumulative (week 1 → week)</option>
+        <option value="single">Single week</option>
+        <option value="range">Custom period</option>
       </select>
+      <span class="cc-label" id="hlFromLbl" style="display:none;">From week</span>
+      <select class="ctrl" id="hlFrom" style="display:none;"></select>
+      <span class="cc-label" id="hlToLbl">Through week</span>
+      <select class="ctrl" id="hlTo"></select>
     </div>
     <div id="hlEmpty" class="verdict v-warn" style="display:none;"></div>
     <table class="sig-table" id="hlTable">
@@ -439,14 +444,13 @@
           <th class="grp sep-left" colspan="2">Sites above legal limit</th>
           <th class="grp sep-left" colspan="2">Sea temperature</th>
           <th class="grp sep-left" colspan="3">Disease (sites)</th>
-          <th class="grp sep-left" colspan="2">Lice treatments (sites)</th>
+          <th class="grp sep-left" rowspan="2">Lice treatments<br>(site-weeks)</th>
         </tr>
         <tr>
           <th class="sep-left" id="hlThN">N</th><th id="hlThP">N-1</th><th>Δ%</th>
           <th class="sep-left">Share</th><th>N-1</th>
           <th class="sep-left">°C</th><th>Δ °C</th>
           <th class="sep-left">PD</th><th>ILA</th><th>Other</th>
-          <th class="sep-left">Non-med.</th><th>Medicinal</th>
         </tr>
       </thead>
       <tbody id="tbodyHealth"></tbody>
@@ -1564,42 +1568,58 @@ function renderHealth() {
   }
   empty.style.display = 'none'; table.style.display = '';
   const weeks = hlWeeksList();
-  const wSel = document.getElementById('hlWeek');
-  if (!wSel.options.length) {
-    // reporting sites in a week (all zones); used to flag weeks still filling in
-    const act = k => BW.rows.filter(r => r.y * 100 + r.w === k).reduce((s, r) => s + r.na, 0);
-    weeks.slice().reverse().forEach(k => {
-      const o = document.createElement('option');
-      o.value = k; o.textContent = `${Math.floor(k / 100)} – week ${String(k % 100).padStart(2, '0')}` + (act(k) < 0.9 * act(hlShift(k, -1)) ? ' (incomplete)' : '');
-      wSel.appendChild(o);
-    });
+  // reporting sites in a week (all zones); a week is "complete" once it reaches
+  // 90% of the median of the four weeks before it (late reports trickle in).
+  const act = k => BW.rows.filter(r => r.y * 100 + r.w === k).reduce((s, r) => s + r.na, 0);
+  const isIncomplete = k => {
+    const i = weeks.indexOf(k);
+    if (i < 4) return false;
+    const ref = weeks.slice(i - 4, i).map(act).sort((a, b) => a - b);
+    return act(k) < 0.9 * (ref[1] + ref[2]) / 2;
+  };
+  const ySel = document.getElementById('hlYear'), tSel = document.getElementById('hlTo'),
+        fSel = document.getElementById('hlFrom'), pSel = document.getElementById('hlPType');
+  const fillWeeks = (year, keepTo, keepFrom) => {
+    const ws = weeks.filter(k => Math.floor(k / 100) === year).map(k => k % 100);
+    const opt = w => `<option value="${w}">Week ${String(w).padStart(2, '0')}${isIncomplete(year * 100 + w) ? ' (incomplete)' : ''}</option>`;
+    tSel.innerHTML = ws.map(opt).join('');
+    fSel.innerHTML = ws.map(opt).join('');
+    // default "through" week = last complete week of that year
+    const complete = ws.filter(w => !isIncomplete(year * 100 + w));
+    const defTo = complete.length ? complete[complete.length - 1] : ws[ws.length - 1];
+    tSel.value = (keepTo && ws.includes(keepTo)) ? keepTo : defTo;
+    fSel.value = (keepFrom && ws.includes(keepFrom)) ? keepFrom : ws[0];
+  };
+  if (!ySel.options.length) {
+    const years = Array.from(new Set(weeks.map(k => Math.floor(k / 100)))).sort((a, b) => b - a);
+    ySel.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join('');
+    ySel.value = years[0];                     // always opens on the latest data
+    fillWeeks(years[0]);
+    ySel.addEventListener('change', () => { fillWeeks(+ySel.value, +tSel.value, +fSel.value); renderHealth(); });
     const zSel = document.getElementById('hlZone');
     zSel.innerHTML = '<option value="0">Norway</option>' +
       Array.from({length: 13}, (_, i) => 13 - i).map(po => `<option value="${po}">${po}. ${PO_NAMES[po]}</option>`).join('');
-    // Default: last week where most zones have reported (the newest week fills in over a few days).
-    // A week counts as complete once its reporting sites reach 90% of the median
-    // of the four weeks before it (late reports keep arriving for a few days).
-    let def = weeks[weeks.length - 1];
-    for (let i = weeks.length - 1; i >= Math.max(4, weeks.length - 3); i--) {
-      const ref = weeks.slice(i - 4, i).map(act).sort((a, b) => a - b);
-      const med = (ref[1] + ref[2]) / 2;
-      if (act(weeks[i]) >= 0.9 * med) { def = weeks[i]; break; }
-      def = weeks[i - 1];
-    }
-    wSel.value = def;
   }
+  const ptype = pSel.value;
+  document.getElementById('hlFromLbl').style.display = ptype === 'range' ? '' : 'none';
+  fSel.style.display = ptype === 'range' ? '' : 'none';
+  document.getElementById('hlToLbl').textContent = ptype === 'single' ? 'Week' : 'Through week';
+
   const idx = hlIndex();
-  const k = +wSel.value, span = +document.getElementById('hlSpan').value;
+  const yN = +ySel.value, wN = +tSel.value;
+  let w0 = ptype === 'cumul' ? 1 : ptype === 'single' ? wN : Math.min(+fSel.value, wN);
   const keysN = [], keysP = [];
-  for (let i = 0; i < span; i++) { keysN.push(hlShift(k, -i)); keysP.push(hlShift(k, -i) - 100); }
-  const yN = Math.floor(k / 100), wN = k % 100;
-  const per = span === 1 ? `week ${wN} ${yN}` : `weeks ${hlShift(k, -span + 1) % 100}–${wN} ${yN}`;
+  for (let w = w0; w <= wN; w++) { keysN.push(yN * 100 + w); keysP.push((yN - 1) * 100 + w); }
+  const k = yN * 100 + wN;
+  const span = keysN.length;
+  const per = span === 1 ? `Week ${wN} ${yN}` : `Weeks ${w0}–${wN} ${yN}`;
   document.getElementById('hlThN').textContent = yN;
   document.getElementById('hlThP').textContent = yN - 1;
   document.getElementById('hlSub').innerHTML =
-    `${per}, compared with the same week${span > 1 ? 's' : ''} of ${yN - 1}. Zones north (13) to south (1). ` +
-    `Lice, share above limit and temperature are ${span > 1 ? 'averaged over the period' : 'for the week'}; ` +
-    `disease counts are sites with an active case in week ${wN}; treatments are site-weeks over the period.`;
+    `${per}${ptype === 'cumul' ? ' (cumulative from week 1)' : ''}, compared with the same week${span > 1 ? 's' : ''} of ${yN - 1}. ` +
+    `Zones north (13) to south (1). Lice, share above limit and temperature are ${span > 1 ? 'averaged over the period (every site-week counts once)' : 'for the week'}; ` +
+    `active sites and disease counts are the situation in week ${wN}; treatments are the number of site-weeks with a treatment over the period.` +
+    (isIncomplete(k) ? ` <span class="warn">Week ${wN} is still incomplete — reports arrive until the following Tuesday.</span>` : '');
 
   const f2 = v => isFinite(v) ? v.toFixed(2) : '—';
   const f0p = v => isFinite(v) ? v.toFixed(0) + '%' : '—';
@@ -1616,18 +1636,18 @@ function renderHealth() {
       `<td class="sep-left ${deltaClass('mort', a.ovShare - b.ovShare)}">${f0p(a.ovShare)}</td><td>${f0p(b.ovShare)}</td>` +
       `<td class="sep-left">${f1(a.t)}</td><td style="color:var(--muted)">${isFinite(dt) ? (dt >= 0 ? '+' : '') + dt.toFixed(1) : '—'}</td>` +
       `<td class="sep-left ${a.pd ? 'delta-bad' : 'delta-zero'}">${a.pd || '·'}</td>` + disCell(a.ila) + disCell(a.other, null, otherTitle) +
-      `<td class="sep-left">${a.nonmed || '·'}</td><td>${a.med || '·'}</td></tr>`;
+      `<td class="sep-left">${(a.nonmed + a.med) || '·'}</td></tr>`;
   };
   const tbody = document.getElementById('tbodyHealth');
   let html = '';
   const mapVals = {}, mapHtml = {};
   for (let po = 13; po >= 1; po--) {
     const a = hlAgg(idx, keysN, [po], k), b = hlAgg(idx, keysP, [po], k - 100);
-    if (!a.any && !b.any) { html += `<tr><td class="name">${po}. ${PO_NAMES[po]}</td><td colspan="13" style="color:var(--muted);text-align:left;">no reporting site</td></tr>`; continue; }
+    if (!a.any && !b.any) { html += `<tr><td class="name">${po}. ${PO_NAMES[po]}</td><td colspan="12" style="color:var(--muted);text-align:left;">no reporting site</td></tr>`; continue; }
     html += rowHtml(`${po}. ${PO_NAMES[po]}`, a, b);
     mapVals[po] = a.lice;
     mapHtml[po] = `Adult female lice: ${f2(a.lice)} (${yN - 1}: ${f2(b.lice)})<br>Above limit: ${f0p(a.ovShare)} of sites<br>` +
-      `Sea temperature: ${f1(a.t)} °C<br>PD ${a.pd} · ILA ${a.ila}${a.other ? ' · other ' + a.other : ''}<br>Treatments: ${a.nonmed} non-med., ${a.med} medicinal`;
+      `Sea temperature: ${f1(a.t)} °C<br>PD ${a.pd} · ILA ${a.ila}${a.other ? ' · other ' + a.other : ''}<br>Lice treatments: ${a.nonmed + a.med} site-weeks`;
   }
   tbody.innerHTML = html;
   const all = [1,2,3,4,5,6,7,8,9,10,11,12,13];
@@ -1642,6 +1662,7 @@ function renderHealth() {
     `<b>Source.</b> ${m.source || 'BarentsWatch'} — sites at sea with a salmonid licence, excluding slaughter holding cages. ` +
     `Lice = simple average of adult female lice per fish across reporting sites (each site counts once, as on BarentsWatch). ` +
     `Legal limit: ${m.limit_rule || '0.5'} — the spring split by zone is an approximation of the regional rule. ` +
+    `<span class="warn">Treatments:</span> since 2024 the BarentsWatch weekly list flags almost only non-medicinal treatments (thermal, mechanical, freshwater); medicinal ones are no longer marked there, so the count is not comparable with 2023 and earlier. ` +
     `<span class="warn">The latest week is still incomplete</span> for a few days after it closes (reports are due the following Tuesday) and is refreshed on later runs. ` +
     `Coverage: ${m.first ? m.first.join('-W') : '?'} to ${m.last ? m.last.join('-W') : '?'}` +
     `${m.complete_from_start === false ? ' — history still being rebuilt back to 2018 over the next runs' : ''}.`;
@@ -1686,7 +1707,7 @@ function drawHealthChart(idx, yN) {
   document.getElementById('hlLegend').innerHTML = years.slice().reverse().map(y =>
     `<span class="legend-item"><span class="legend-swatch" style="background:${cols[y]}"></span>${y}</span>`).join('');
 }
-['hlWeek', 'hlSpan', 'hlMetric', 'hlZone'].forEach(id =>
+['hlPType', 'hlFrom', 'hlTo', 'hlMetric', 'hlZone'].forEach(id =>
   document.getElementById(id).addEventListener('change', () => { if (currentView === 'health') renderHealth(); }));
 
 // --- Smolt size breakdown by zone (PO view, button "Smolt size breakdown") ---
