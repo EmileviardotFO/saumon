@@ -382,6 +382,10 @@ def main():
             # sauvegarde intermediaire du cache, pour ne pas tout perdre en cas d'arret
             io.open(LOC_CACHE, 'w').write(json.dumps(loc_po, separators=(',', ':'), sort_keys=True))
 
+    # Caches enregistres tout de suite : si une etape suivante echoue, les
+    # 30 a 40 minutes de releve ne sont pas perdues.
+    io.open(LOC_CACHE, 'w').write(json.dumps(loc_po, separators=(',', ':'), sort_keys=True))
+    io.open(DIS_FILE, 'w', encoding='utf-8').write(json.dumps(dis, ensure_ascii=False, separators=(',', ':'), sort_keys=True))
     store['rows'] = [r for k in sorted(by_week) for r in by_week[k]]
     weeks_in = sorted(by_week)
     store['meta'] = {
@@ -450,8 +454,10 @@ def main():
                 open_[(no, c)] = [int(no), int(loc_po.get(no) or 0), c, yw, yw]
     spans.extend(open_.values())
     store['site_dis'] = sorted(spans, key=lambda r: (r[1], r[0], r[3]))
-    store['names'].update({str(r[0]): dis['names'].get(str(r[0]), '') for r in spans})
-    store['names'] = {str(e[3]): dis['names'].get(str(e[3]), '') for e in events}
+    # noms des sites cites (nouveaux cas et periodes de maladie)
+    names = {str(e[3]): dis['names'].get(str(e[3]), '') for e in events}
+    names.update({str(r[0]): dis['names'].get(str(r[0]), '') for r in spans})
+    store['names'] = names
     store['meta']['events'] = len(events)
     store['meta']['new_case_rule'] = f'disease present at a site and absent from it in the {NEW_CASE_GAP} previous weeks'
     data[KEY] = store
