@@ -310,7 +310,23 @@ def update_treatments(api, loc_po, all_weeks):
                 d[k] = d.get(k, 0) + 1
     complete_years = {y for y in range(TRT_FROM_YEAR, this_year + 1)
                       if all(f'{no}|{y}' in trt['site_year'] for no in sites)}
-    return agg, complete_years
+    # export compact site par site pour le tableau de bord : une ligne par
+    # site-semaine traitee, [site, zone, annee, semaine, [indices de cles]]
+    keys, kidx, site_rows = [], {}, []
+    for key, rec in sorted(trt['site_year'].items()):
+        no, y = key.split('|')
+        po = loc_po.get(no)
+        if not po:
+            continue
+        for w, ks in sorted(rec.get('weeks', {}).items(), key=lambda t: int(t[0])):
+            ids = []
+            for k in ks:
+                if k not in kidx:
+                    kidx[k] = len(keys); keys.append(k)
+                ids.append(kidx[k])
+            site_rows.append([int(no), int(po), int(y), int(w), ids])
+    site_export = {'keys': keys, 'rows': site_rows, 'years': sorted(complete_years)}
+    return agg, complete_years, site_export
 
 
 def main():
@@ -379,7 +395,8 @@ def main():
     }
     # Detail des traitements, rattache aux lignes zone x semaine (cle 'trd')
     try:
-        agg, complete_years = update_treatments(api, loc_po, all_weeks)
+        agg, complete_years, site_export = update_treatments(api, loc_po, all_weeks)
+        store['site_trt'] = site_export
         for (y, w), rows in by_week.items():
             if y not in complete_years:
                 for r in rows:
@@ -414,6 +431,26 @@ def main():
                 if c not in before:
                     events.append([y, w, int(loc_po.get(no) or 0), int(no), c])
     store['events'] = events
+    # Maladies site par site en periodes continues, pour le detail par zone du
+    # tableau de bord : [site, zone, code, debut (annee*100+semaine), fin]
+    spans, open_ = [], {}
+    for (y, w) in [wk for wk in seq if wk >= (TRT_FROM_YEAR - 1, 1)]:
+        cur = dis['weeks'].get(wk_key(y, w))
+        if cur is None:
+            continue
+        yw = y * 100 + w
+        present = {(no, c) for no, codes in cur.items() for c in codes}
+        for key in list(open_):
+            if key not in present:
+                spans.append(open_.pop(key))
+        for (no, c) in present:
+            if (no, c) in open_:
+                open_[(no, c)][4] = yw
+            else:
+                open_[(no, c)] = [int(no), int(loc_po.get(no) or 0), c, yw, yw]
+    spans.extend(open_.values())
+    store['site_dis'] = sorted(spans, key=lambda r: (r[1], r[0], r[3]))
+    store['names'].update({str(r[0]): dis['names'].get(str(r[0]), '') for r in spans})
     store['names'] = {str(e[3]): dis['names'].get(str(e[3]), '') for e in events}
     store['meta']['events'] = len(events)
     store['meta']['new_case_rule'] = f'disease present at a site and absent from it in the {NEW_CASE_GAP} previous weeks'
