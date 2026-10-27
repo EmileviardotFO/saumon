@@ -104,24 +104,47 @@ def build_register(sites):
         for l in s.get('lic') or []:
             if l.get('no') and l['no'] not in licences:
                 licences[l['no']] = l
-    keep = lambda l: (l.get('purpose') == 'Kommersiell' and l.get('ptype') == 'Matfisk'
+    # Licences de production de saumon pour la consommation : commerciales et
+    # de developpement, toutes variantes "Matfisk" (5 % MTB, vertes A/B/C,
+    # converties) et bio. Hors champ : recherche, vitrine, enseignement, cages
+    # d'attente (Slaktemerd), smolt et geniteurs.
+    keep = lambda l: (l.get('purpose') in ('Kommersiell', 'Utvikling')
+                      and (l.get('ptype') or '').startswith(('Matfisk', 'Økologisk'))
                       and any('Laks' in x for x in l.get('species') or [])
                       and (l.get('unit') in (None, 'TN')) and isinstance(l.get('cap'), (int, float)))
+    # Les licences a terre (fermes terrestres) ne relevent pas du meme regime
+    # que la mer : elles sont mises a part, sinon elles gonflent la MTB des
+    # zones (environ 400 000 t autorisees, tres peu produites).
+    site_of = {s['no']: s for s in sites.values() if s.get('no')}
+    on_land = lambda l: bool(l.get('sites')) and all(
+        (site_of.get(x) or {}).get('placement') == 'LAND' or (site_of.get(x) or {}).get('onLand')
+        for x in l['sites'] if x in site_of) and any(x in site_of for x in l['sites'])
     by_group = collections.defaultdict(lambda: {'total': 0.0, 'n': 0, 'po': collections.Counter(), 'holders': set()})
     by_po = collections.Counter()
     # MTB par titulaire de licence (la societe juridique), avec son groupe
     by_holder = collections.defaultdict(lambda: {'total': 0.0, 'n': 0, 'po': collections.Counter()})
+    land = collections.defaultdict(lambda: {'total': 0.0, 'n': 0, 'po': 0, 'sites': set()})
+    n_sea = 0
     for no, l in licences.items():
         if not keep(l):
             continue
         pos = [po_of_site.get(x) for x in l.get('sites') or [] if po_of_site.get(x)]
         po = collections.Counter(pos).most_common(1)[0][0] if pos else 0
+        if on_land(l):
+            L = land[l.get('holder') or '?']
+            L['total'] += l['cap']; L['n'] += 1; L['po'] = L['po'] or po
+            L['sites'].update((site_of.get(x) or {}).get('name') or str(x) for x in l['sites'] if x in site_of)
+            continue
+        n_sea += 1
         g = group_of(l.get('holder'))
         G = by_group[g]
         G['total'] += l['cap']; G['n'] += 1; G['po'][po] += l['cap']; G['holders'].add(l.get('holder'))
         by_po[po] += l['cap']
         H = by_holder[l.get('holder') or '?']
         H['total'] += l['cap']; H['n'] += 1; H['po'][po] += l['cap']
+    land_rows = sorted(({'holder': h, 'group': group_of(h), 'mtb': round(v['total']), 'licences': v['n'],
+                         'po': v['po'], 'sites': sorted(v['sites'])} for h, v in land.items()),
+                       key=lambda x: -x['mtb'])
     groups = sorted(({'group': g, 'mtb': round(v['total']), 'licences': v['n'],
                       'po': {str(k): round(c) for k, c in v['po'].items()},
                       'holders': sorted(h for h in v['holders'] if h)}
@@ -143,12 +166,14 @@ def build_register(sites):
     return {
         'meta': {'generated': dt.date.today().isoformat(), 'sites': len(sites),
                  'licences_total': len(licences),
-                 'licences_kept': sum(1 for l in licences.values() if keep(l)),
-                 'rule': 'commercial food-fish licences with salmon, each licence counted once; '
-                         'zone = majority zone of the sites it is attached to'},
+                 'licences_kept': n_sea, 'licences_land': sum(v['n'] for v in land.values()),
+                 'rule': 'sea-based food-fish licences for salmon (commercial and development, including '
+                         'the 5% increases, green and converted licences), each licence counted once; '
+                         'zone = majority zone of the sites it is attached to; land-based farms shown apart'},
         'mtb_po': {str(k): round(v) for k, v in sorted(by_po.items())},
         'mtb_groups': groups,
         'mtb_holders': holders,
+        'mtb_land': land_rows,
         'site_org': site_org,
         'site_name': {str(s['no']): s.get('name') or '' for s in sites.values() if s.get('no')},
         'slaughter_cages': cages,
