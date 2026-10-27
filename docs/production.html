@@ -766,8 +766,14 @@
     <div class="chart-controls">
       <span class="cc-label">Period</span>
       <span class="mono" id="pmPeriodLbl" style="color:var(--bone);font-size:13px"></span>
-      <span style="color:var(--muted);font-size:12px">— set with the year and month selectors at the top of the page</span>
-      <label class="cc-check" style="margin-left:14px"><input type="checkbox" id="pmRolling"> 12 months rolling</label>
+      <span style="color:var(--muted);font-size:12px" id="pmPeriodHint">— set with the year and month selectors at the top of the page</span>
+      <label class="cc-check" style="margin-left:14px"><input type="checkbox" class="pm-mode" data-mode="roll" id="pmRolling"> 12 months rolling</label>
+      <label class="cc-check"><input type="checkbox" class="pm-mode" data-mode="last" id="pmLast"> Last month</label>
+      <label class="cc-check"><input type="checkbox" class="pm-mode" data-mode="custom" id="pmCustom"> Custom period</label>
+      <span id="pmCustomBox" style="display:none;align-items:center;gap:6px;flex-wrap:wrap">
+        <span class="cc-label">From</span><select class="ctrl" id="pmFromM"></select><select class="ctrl" id="pmFromY"></select>
+        <span class="cc-label">to</span><select class="ctrl" id="pmToM"></select><select class="ctrl" id="pmToY"></select>
+      </span>
     </div>
     <div class="chart-controls">
       <span class="cc-label">Markets</span>
@@ -4049,6 +4055,9 @@ const PM_FILLET = new Set([1, 2]);   // index des deux codes filet dans ssb_expo
 const PM_SHORT = ['fresh whole', 'fresh fillet', 'frozen fillet', 'frozen whole'];
 let pmSel = new Set([0, 1, 2, 3]);    // produits coches ; les quatre par defaut
 let pmGroupF = 'all', pmRolling = false;
+// Periode de l'onglet : 'top' (selecteurs du haut), 'roll' (12 mois glissants),
+// 'last' (dernier mois publie par SSB), 'custom' (de mois/annee a mois/annee).
+let pmMode = 'top', pmFrom = null, pmTo = null;
 let pmOpenIso = null, pmJustOpened = false;       // pays dont le graphique est deplie
 let pmChartMetric = 'q', pmChartCompare = true;  // mesure du graphique, superposition de l'annee B
 const PM_COL = ['#5FD3C4', '#F2A65A', '#b79cff', '#7FA8FF'];
@@ -4082,6 +4091,25 @@ function pmAgg(byK, keys) {
   return { byIso: out, found: found, asked: keys.length, status: status };
 }
 
+// Remplit les listes Du/Au (annees disponibles dans SSB) ; par defaut, les 3
+// derniers mois publies.
+function pmInitCustom(byK) {
+  const fy = document.getElementById('pmFromY');
+  if (!fy || fy.options.length) return;
+  const ks = Object.keys(byK).map(Number).sort((a, b) => a - b);
+  if (!ks.length) return;
+  const y0 = Math.floor(ks[0] / 100), y1 = Math.floor(ks[ks.length - 1] / 100);
+  const yo = Array.from({length: y1 - y0 + 1}, (_, i) => y1 - i).map(y => `<option value="${y}">${y}</option>`).join('');
+  const mo = MONTHS_FR.map((m, i) => `<option value="${i + 1}">${m}</option>`).join('');
+  ['pmFromY', 'pmToY'].forEach(id => document.getElementById(id).innerHTML = yo);
+  ['pmFromM', 'pmToM'].forEach(id => document.getElementById(id).innerHTML = mo);
+  const last = ks[ks.length - 1];
+  let fy0 = Math.floor(last / 100), fm0 = last % 100 - 2; if (fm0 < 1) { fm0 += 12; fy0--; }
+  document.getElementById('pmFromY').value = fy0; document.getElementById('pmFromM').value = fm0;
+  document.getElementById('pmToY').value = Math.floor(last / 100); document.getElementById('pmToM').value = last % 100;
+  pmFrom = fy0 * 100 + fm0; pmTo = last;
+}
+
 function pmKeys(y, m0, m1) {
   const ks = [];
   if (!pmRolling) { for (let m = m0; m <= m1; m++) ks.push(y * 100 + m); return ks; }
@@ -4095,6 +4123,38 @@ function pmKeys(y, m0, m1) {
   return ks.reverse();
 }
 
+// Mois consecutifs de (y0, m0) a (y1, m1) inclus, cles annee*100+mois.
+function pmSpan(y0, m0, y1, m1) {
+  const ks = []; let y = y0, m = m0;
+  while (y * 100 + m <= y1 * 100 + m1 && ks.length < 240) { ks.push(y * 100 + m); m++; if (m > 12) { m = 1; y++; } }
+  return ks;
+}
+const pmMonLbl = k => MONTHS_FR[(k % 100) - 1].slice(0, 3) + ' ' + Math.floor(k / 100);
+// Periode A et periode de comparaison B (memes mois, un an plus tot), avec leurs libelles.
+function pmResolvePeriod(byK) {
+  const per = getEffectivePeriod();
+  const yA = parseInt(yearSel.value, 10);
+  const lastK = Math.max(...Object.keys(byK).map(Number));
+  let A, label;
+  if (pmMode === 'last') {
+    A = [lastK]; label = 'Last month published';
+  } else if (pmMode === 'custom' && pmFrom && pmTo) {
+    const [f, t] = pmFrom <= pmTo ? [pmFrom, pmTo] : [pmTo, pmFrom];
+    A = pmSpan(Math.floor(f / 100), f % 100, Math.floor(t / 100), t % 100); label = 'Custom period';
+  } else if (pmMode === 'roll') {
+    A = pmSpan(per.endMonth === 12 ? yA : yA - 1, per.endMonth === 12 ? 1 : per.endMonth + 1, yA, per.endMonth); label = '12 months rolling';
+  } else {
+    A = pmSpan(yA, per.startMonth, yA, per.endMonth); label = per.label + ' ' + yA;
+  }
+  const B = A.map(k => k - 100);
+  const span = ks => ks.length === 1 ? pmMonLbl(ks[0]) : `${pmMonLbl(ks[0])} – ${pmMonLbl(ks[ks.length - 1])}`;
+  const sameYear = Math.floor(A[0] / 100) === Math.floor(A[A.length - 1] / 100);
+  const short = ks => pmMode === 'top' ? String(Math.floor(ks[0] / 100))
+                    : (ks.length === 1 ? pmMonLbl(ks[0]) : (sameYear ? String(Math.floor(ks[0] / 100)) : 'to ' + pmMonLbl(ks[ks.length - 1])));
+  return { keysA: A, keysB: B, labA: short(A), labB: short(B), spanA: span(A), spanB: span(B), label,
+           end: A[A.length - 1], multiYear: !sameYear };
+}
+
 function renderProductsView() {
   const tb = document.getElementById('tbodyProducts');
   const note = document.getElementById('pmNote');
@@ -4105,12 +4165,13 @@ function renderProductsView() {
     note.innerHTML = ''; return;
   }
   const byK = pmIndex();
-  const per = getEffectivePeriod();
-  // Year N from the main selector, always compared with the year before.
-  const yA = parseInt(yearSel.value, 10), yB = yA - 1;
-  const keysA = pmKeys(yA, per.startMonth, per.endMonth), keysB = pmKeys(yB, per.startMonth, per.endMonth);
-  const plabel = pmRolling ? ('12 months to ' + MONTHS_FR[per.endMonth - 1]) : per.label;
-  document.getElementById('pmPeriodLbl').textContent = `${plabel} · ${yA} against ${yB}`;
+  pmInitCustom(byK);
+  const P = pmResolvePeriod(byK);
+  // Period A against the same months one year earlier (B).
+  const keysA = P.keysA, keysB = P.keysB, yA = P.labA, yB = P.labB, plabel = '';
+  const endY = Math.floor(P.end / 100), endM = P.end % 100;
+  document.getElementById('pmPeriodLbl').textContent = `${P.spanA} against ${P.spanB}`;
+  document.getElementById('pmPeriodHint').style.display = pmMode === 'top' ? '' : 'none';
   const inGroup = iso => pmGroupF === 'all' || pmGroup(iso) === pmGroupF;
   const grpLbl = pmGroupF === 'all' ? 'all markets' : (GRP_LABEL[pmGroupF] || pmGroupF);
 
@@ -4144,8 +4205,8 @@ function renderProductsView() {
 
   // ---- 12-month sparkline per product (independent of the period, for shape)
   const spark = hs => {
-    const end = yA * 100 + per.endMonth, ks = [];
-    for (let i = 11; i >= 0; i--) { let y = yA, m = per.endMonth - i; while (m < 1) { m += 12; y--; } ks.push(y * 100 + m); }
+    const ks = [];
+    for (let i = 11; i >= 0; i--) { let y = endY, m = endM - i; while (m < 1) { m += 12; y--; } ks.push(y * 100 + m); }
     const vol = k => (byK[k] || []).reduce((s, r) => s + (r[1] === hs && inGroup(r[2]) ? r[3] : 0), 0) / 1000;
     const a = ks.map(vol), b = ks.map(k => vol(k - 100));
     const hi = Math.max(1, ...a, ...b), W = 200, H = 38;
@@ -4156,15 +4217,15 @@ function renderProductsView() {
 
   // ---- 1. product cards
   document.getElementById('pmCardsSub').innerHTML =
-    `${plabel} ${yA} against ${yB}, ${grpLbl}, product weight. Click a product to see its markets below. ` +
-    `The small curve is the last 12 months to ${MONTHS_FR[per.endMonth - 1]} ${yA} (dashed: a year earlier).`;
+    `${P.spanA} against ${P.spanB}, ${grpLbl}, product weight. Click a product to see its markets below. ` +
+    `The small curve is the last 12 months to ${pmMonLbl(P.end)} (dashed: a year earlier).`;
   cards.innerHTML = [0, 1, 2, 3].map(hs => {
     const a = A.prod[hs], b = B.prod[hs];
     const pa = a.q ? a.v / a.q : NaN, pb = b.q ? b.v / b.q : NaN;
     return `<div class="pm-card${hs === pmProd ? ' active' : ''}" data-hs="${hs}" style="--pmc:${PM_COL[hs]}">`
       + `<div class="t">${PM_LONG[hs]}</div>`
       + `<div class="v">${tons(a.q)}</div>`
-      + `<div class="d">${hasB ? dSpan(pc(a.q, b.q)) + ` <span style="color:var(--muted)">vs ${tons(b.q)} in ${yB}</span>` : ''}</div>`
+      + `<div class="d">${hasB ? dSpan(pc(a.q, b.q)) + ` <span style="color:var(--muted)">vs ${tons(b.q)} ${/^\d{4}$/.test(yB) ? 'in ' + yB : 'a year earlier'}</span>` : ''}</div>`
       + `<div class="k"><span>Share of total <b>${totA ? num(100 * a.q / totA, 1) : '—'}%</b></span>`
       + `<span>Price <b>${num(pa, 2)}</b> NOK/kg ${hasB ? dSpan(pc(pa, pb)) : ''}</span></div>`
       + spark(hs) + `</div>`;
@@ -4195,7 +4256,7 @@ function renderProductsView() {
   const tq = A.prod[hs].q;
   const name = iso => ((SSBX.meta.countries || {})[iso] || {}).name || iso;
   document.getElementById('pmMktSub').innerHTML =
-    `${list.length} destinations, ranked by volume in ${plabel} ${yA}. Δ% against ${yB}. ` +
+    `${list.length} destinations, ranked by volume in ${P.spanA}. Δ% against ${P.spanB}. ` +
     `<b>Click a market</b> for its month-by-month detail.`;
   const LIMIT = 15, shown = pmShowAll ? list : list.slice(0, LIMIT);
   const maxQ = Math.max(1, ...shown.map(r => Math.max(r.a.q, r.b.q)));
@@ -4316,7 +4377,7 @@ function pmChartHTML(byK, iso, cname, keysA, keysB, yA, yB, plabel) {
     }
     keysA.forEach((k, i) => {
       const st = (SSBX.meta.months[String(k)] || {}).status;
-      const lab = MONTHS_FR[(k % 100) - 1].slice(0, 3) + (pmRolling ? ' ' + String(Math.floor(k / 100)).slice(2) : '');
+      const lab = MONTHS_FR[(k % 100) - 1].slice(0, 3) + (Math.floor(keysA[0] / 100) !== Math.floor(keysA[keysA.length - 1] / 100) ? ' ' + String(Math.floor(k / 100)).slice(2) : '');
       svg += `<text x="${X(i)}" y="${H - mBot + 18}" text-anchor="middle" fill="${st === 'provisional' ? '#ffb74d' : '#8fa4b0'}" font-size="11">${lab}${st === 'provisional' ? '°' : ''}</text>`;
     });
     series.forEach(s => {
@@ -4348,7 +4409,7 @@ function pmChartHTML(byK, iso, cname, keysA, keysB, yA, yB, plabel) {
     `<button type="button" data-pm-m="${k}" class="${pmChartMetric === k ? 'active' : ''}">${l}</button>`).join('');
   return `<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:8px">`
     + `<b style="font-size:14px">${cname}</b>`
-    + `<span style="color:#8fa4b0;font-size:12px">${plabel} ${yA}, monthly · ${unit}</span>`
+    + `<span style="color:#8fa4b0;font-size:12px">${yA}, monthly · ${unit}</span>`
     + `<span class="pm-mt" style="display:inline-flex;gap:4px">${mt}</span>`
     + `<label class="cc-check"><input type="checkbox" class="pm-cmp" ${pmChartCompare ? 'checked' : ''}> Compare with ${yB} (dashed)</label>`
     + `<button type="button" class="pm-close" style="margin-left:auto;background:none;border:1px solid var(--border);color:#8fa4b0;border-radius:4px;cursor:pointer;padding:2px 9px">Close ✕</button>`
@@ -4414,8 +4475,20 @@ function pmBind() {
       if (currentView === 'products') renderProductsView();
     }));
   }
-  const roll = document.getElementById('pmRolling');
-  if (roll) roll.addEventListener('change', e => { pmRolling = e.target.checked; if (currentView === 'products') renderProductsView(); });
+  // Les cases de periode s'excluent : en cocher une decoche les autres ; tout
+  // decocher revient aux selecteurs du haut de page.
+  document.querySelectorAll('.pm-mode').forEach(cb => cb.addEventListener('change', e => {
+    document.querySelectorAll('.pm-mode').forEach(o => { if (o !== e.target) o.checked = false; });
+    pmMode = e.target.checked ? e.target.dataset.mode : 'top';
+    pmRolling = pmMode === 'roll';
+    document.getElementById('pmCustomBox').style.display = pmMode === 'custom' ? 'inline-flex' : 'none';
+    if (currentView === 'products') renderProductsView();
+  }));
+  ['pmFromM', 'pmFromY', 'pmToM', 'pmToY'].forEach(id => document.getElementById(id).addEventListener('change', () => {
+    const g = i => +document.getElementById(i).value;
+    pmFrom = g('pmFromY') * 100 + g('pmFromM'); pmTo = g('pmToY') * 100 + g('pmToM');
+    if (currentView === 'products') renderProductsView();
+  }));
   const gs = document.getElementById('pmGroupSel');
   if (gs) gs.addEventListener('change', () => { pmGroupF = gs.value; if (currentView === 'products') renderProductsView(); });
 }
