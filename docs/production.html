@@ -144,7 +144,8 @@
   .pm-dd-quick button:hover { color:var(--ink); border-color:var(--accent); }
   .pm-mt button.active { background:var(--accent); color:#06211d; border-color:var(--accent); font-weight:bold; }
   .pm-code { color:var(--muted); font-family:monospace; font-size:11px; margin-left:auto; padding-left:14px; }
-  tr.pm-row { cursor:pointer; }
+  tr.pm-row, tr.hl-zone { cursor:pointer; }
+  tr.hl-zone:hover td { background:rgba(47,184,166,.06); }
   tr.pm-row:hover td { background:rgba(47,184,166,.06); }
   tr.pm-open td { background:rgba(47,184,166,.11); }
   tr.pm-chart-row td { background:#0d1a24; padding:14px 18px 16px; border-bottom:2px solid var(--accent); }
@@ -442,7 +443,7 @@
     <div class="note" id="outlookNote" style="margin-top:16px; text-align:left; max-width:none;"></div>
   </div>
 
-  <div class="panel" id="healthView" style="flex:1; min-width: 760px; max-width: 1080px; display:none; overflow-x:auto;">
+  <div class="panel" id="healthView" style="flex:1; min-width: 760px; max-width: 1320px; display:none; overflow-x:auto;">
     <div class="sig-title">Fish health by production area — BarentsWatch</div>
     <div class="sig-sub" id="hlSub"></div>
     <div class="chart-controls" id="hlCtl">
@@ -469,19 +470,38 @@
           <th class="grp sep-left" colspan="2">Sites above legal limit</th>
           <th class="grp sep-left" colspan="2">Sea temperature</th>
           <th class="grp sep-left" colspan="3">Disease (sites)</th>
-          <th class="grp sep-left" colspan="3">Lice treatments (site-weeks)</th>
+          <th class="grp sep-left" colspan="5">Lice treatments (site-weeks)</th>
         </tr>
         <tr>
           <th class="sep-left" id="hlThN">N</th><th id="hlThP">N-1</th><th>Δ%</th><th title="Last 3 weeks against the 3 weeks before">3-wk trend</th>
           <th class="sep-left">Share</th><th>N-1</th>
           <th class="sep-left">°C</th><th>Δ °C</th>
           <th class="sep-left">PD</th><th>ILA</th><th>Other</th>
-          <th class="sep-left" id="hlThTN">N</th><th id="hlThTP">N-1</th><th>Δ%</th>
+          <th class="sep-left" id="hlThTN">N</th><th id="hlThTP">N-1</th><th>Δ%</th><th class="sep-left" title="Treatments over the period divided by the average number of active sites">Per site N</th><th>Per site N-1</th>
         </tr>
       </thead>
       <tbody id="tbodyHealth"></tbody>
       <tfoot id="tfootHealth"></tfoot>
     </table>
+
+    <div id="hlSiteWrap" style="display:none;margin-top:18px;">
+      <div class="sig-title" id="hlSiteTitle"></div>
+      <div class="sig-sub" id="hlSiteSub"></div>
+      <table class="sig-table" id="hlOpTable" style="margin-bottom:18px;">
+        <thead><tr><th class="name">Operator</th><th>Sites listed</th>
+          <th class="sep-left" id="hlOpN">Treated weeks N</th><th id="hlOpP">N-1</th><th>Δ%</th>
+          <th class="sep-left">PD</th><th>ILA</th><th>Other</th><th class="sep-left">New cases</th></tr></thead>
+        <tbody id="tbodyHlOps"></tbody>
+      </table>
+      <table class="sig-table">
+        <thead><tr><th class="name">Site</th><th style="text-align:left">Operator</th>
+          <th class="sep-left" id="hlStN">Treated weeks N</th><th id="hlStP">N-1</th><th>Δ</th>
+          <th class="sep-left" style="text-align:left">Treatments over the period (weeks)</th><th>Last</th>
+          <th class="sep-left" style="text-align:left">Disease over the period</th></tr></thead>
+        <tbody id="tbodyHlSites"></tbody>
+      </table>
+      <div id="hlSiteMore" style="margin-top:8px;"></div>
+    </div>
 
     <div id="hlDisWrap">
       <div class="sig-title" style="margin-top:26px;">Diseases and lice treatments — period against the same weeks of N-1</div>
@@ -1577,6 +1597,11 @@ for (const po of Object.keys(ZONE_POLYGONS)) {
 
   poly.addEventListener('mousemove', (e) => showMapTooltip(e, po));
   poly.addEventListener('mouseleave', hideMapTooltip);
+  poly.addEventListener('click', () => {
+    if (currentView !== 'health' || typeof renderHealth !== 'function') return;
+    hlSitePo = hlSitePo === +po ? null : +po; hlSiteAll = false; renderHealth();
+    if (hlSitePo) document.getElementById('hlSiteWrap').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  });
 }
 
 function divergingColor(pct, capAbs) {
@@ -1627,12 +1652,13 @@ function hlShift(k, n) {           // k = year*100+week, move n ISO weeks
 }
 // Aggregate a set of zones over a list of week keys.
 function hlAgg(idx, keys, pos, latestKey) {
-  let na = 0, ls = 0, nl = 0, ov = 0, ts = 0, nt = 0, nonmed = 0, med = 0, any = false;
+  let na = 0, ls = 0, nl = 0, ov = 0, ts = 0, nt = 0, nonmed = 0, med = 0, any = false, naSum = 0;
+  const wSeen = new Set();
   const dis = {};
   keys.forEach(k => pos.forEach(po => {
     const r = idx[`${Math.floor(k / 100)}|${k % 100}|${po}`];
     if (!r) return;
-    any = true;
+    any = true; naSum += r.na || 0; wSeen.add(k);
     if (r.lice !== null && r.nl) { ls += r.lice * r.nl; nl += r.nl; ov += r.ov; }
     if (r.t !== null && r.nt) { ts += r.t * r.nt; nt += r.nt; }
     Object.keys(r.trt || {}).forEach(t => {
@@ -1646,7 +1672,8 @@ function hlAgg(idx, keys, pos, latestKey) {
   const pd = dis.PANKREASSYKDOM || 0, ila = dis.INFEKSIOES_LAKSEANEMI || 0;
   const other = Object.keys(dis).filter(d => !HL_DIS[d]).reduce((s, d) => s + dis[d], 0);
   return { any, na, lice: nl ? ls / nl : NaN, ovShare: nl ? 100 * ov / nl : NaN,
-           t: nt ? ts / nt : NaN, pd, ila, other, dis, nonmed, med };
+           t: nt ? ts / nt : NaN, pd, ila, other, dis, nonmed, med,
+           avgActive: wSeen.size ? naSum / wSeen.size : NaN };
 }
 function renderHealth() {
   const empty = document.getElementById('hlEmpty');
@@ -1737,32 +1764,40 @@ function renderHealth() {
     const cls = p > 10 ? 'delta-bad' : (p < -10 ? 'delta-good' : 'delta-zero');
     return `<td class="${cls}" title="${(p >= 0 ? '+' : '') + p.toFixed(0)}% vs the 3 previous weeks"><b style="font-size:15px">${arrow}</b> <small>${(p >= 0 ? '+' : '') + p.toFixed(0)}%</small></td>`;
   };
-  const rowHtml = (name, a, b, cls, tr) => {
+  const rowHtml = (name, a, b, cls, tr, po) => {
     const dl = pct(a.lice, b.lice), dt = (isFinite(a.t) && isFinite(b.t)) ? a.t - b.t : NaN;
     const otherTitle = Object.keys(a.dis).filter(d => !HL_DIS[d]).map(d => `${d}: ${a.dis[d]}`).join(', ');
-    return `<tr${cls ? ` class="${cls}"` : ''}><td class="name">${name}</td><td>${a.na || '—'}</td>` +
+    return `<tr${cls ? ` class="${cls}"` : ''}${po ? ` data-po="${po}" title="Click for the treatments site by site"` : ''}><td class="name">${name}${po && hlSitePo === po ? ' ▾' : ''}</td><td>${a.na || '—'}</td>` +
       `<td class="sep-left">${f2(a.lice)}</td><td>${f2(b.lice)}</td>` +
       dTd(dl, 'mort', isFinite(dl) ? (dl >= 0 ? '+' : '') + dl.toFixed(0) + '%' : '—') + trendCell(tr) +
       `<td class="sep-left ${deltaClass('mort', a.ovShare - b.ovShare)}">${f0p(a.ovShare)}</td><td>${f0p(b.ovShare)}</td>` +
       `<td class="sep-left">${f1(a.t)}</td><td style="color:var(--muted)">${isFinite(dt) ? (dt >= 0 ? '+' : '') + dt.toFixed(1) : '—'}</td>` +
       `<td class="sep-left ${a.pd ? 'delta-bad' : 'delta-zero'}">${a.pd || '·'}</td>` + disCell(a.ila) + disCell(a.other, null, otherTitle) +
       (() => { const tn = a.nonmed + a.med, tp = b.nonmed + b.med, dp = tp > 0 ? (tn / tp - 1) * 100 : NaN;
+        const psN = a.avgActive > 0 ? tn / a.avgActive : NaN, psP = b.avgActive > 0 ? tp / b.avgActive : NaN;
         return `<td class="sep-left">${tn || '·'}</td><td style="color:var(--muted)">${b.any ? (tp || '·') : '—'}</td>` +
-               `<td class="${deltaClass('mort', dp)}">${isFinite(dp) ? (dp >= 0 ? '+' : '') + dp.toFixed(0) + '%' : (tn && !tp && b.any ? 'new' : '—')}</td></tr>`; })();
+               `<td class="${deltaClass('mort', dp)}">${isFinite(dp) ? (dp >= 0 ? '+' : '') + dp.toFixed(0) + '%' : (tn && !tp && b.any ? 'new' : '—')}</td>` +
+               `<td class="sep-left ${deltaClass('mort', psN - psP)}"><b>${isFinite(psN) ? psN.toFixed(1) : '—'}</b></td>` +
+               `<td style="color:var(--muted)">${isFinite(psP) ? psP.toFixed(1) : '—'}</td></tr>`; })();
   };
   const tbody = document.getElementById('tbodyHealth');
   let html = '';
   const mapVals = {}, mapHtml = {};
   for (let po = 13; po >= 1; po--) {
     const a = hlAgg(idx, keysN, [po], k), b = hlAgg(idx, keysP, [po], k - 100);
-    if (!a.any && !b.any) { html += `<tr><td class="name">${po}. ${PO_NAMES[po]}</td><td colspan="15" style="color:var(--muted);text-align:left;">no reporting site</td></tr>`; continue; }
-    html += rowHtml(`${po}. ${PO_NAMES[po]}`, a, b, '', trendOf([po]));
+    if (!a.any && !b.any) { html += `<tr><td class="name">${po}. ${PO_NAMES[po]}</td><td colspan="17" style="color:var(--muted);text-align:left;">no reporting site</td></tr>`; continue; }
+    html += rowHtml(`${po}. ${PO_NAMES[po]}`, a, b, 'hl-zone' + (hlSitePo === po ? ' pm-open' : ''), trendOf([po]), po);
     mapVals[po] = a.lice;
     const tp = trendOf([po]);
-    mapHtml[po] = `Adult female lice: ${f2(a.lice)} (${yN - 1}: ${f2(b.lice)})${isFinite(tp) ? ` · 3-wk trend ${tp > 10 ? '↑' : tp < -10 ? '↓' : '→'} ${(tp >= 0 ? '+' : '') + tp.toFixed(0)}%` : ''}<br>Above limit: ${f0p(a.ovShare)} of sites<br>` +
+    mapHtml[po] = `<i style="color:var(--muted)">click the zone row for site detail</i><br>Adult female lice: ${f2(a.lice)} (${yN - 1}: ${f2(b.lice)})${isFinite(tp) ? ` · 3-wk trend ${tp > 10 ? '↑' : tp < -10 ? '↓' : '→'} ${(tp >= 0 ? '+' : '') + tp.toFixed(0)}%` : ''}<br>Above limit: ${f0p(a.ovShare)} of sites<br>` +
       `Sea temperature: ${f1(a.t)} °C<br>PD ${a.pd} · ILA ${a.ila}${a.other ? ' · other ' + a.other : ''}<br>Lice treatments: ${a.nonmed + a.med} site-weeks (${yN - 1}: ${b.nonmed + b.med})`;
   }
   tbody.innerHTML = html;
+  tbody.querySelectorAll('tr[data-po]').forEach(tr => tr.addEventListener('click', () => {
+    const po = +tr.dataset.po; hlSitePo = hlSitePo === po ? null : po; hlSiteAll = false; renderHealth();
+    if (hlSitePo) document.getElementById('hlSiteWrap').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }));
+  renderHealthSites(keysN, keysP, yN, per);
   const all = [1,2,3,4,5,6,7,8,9,10,11,12,13];
   document.getElementById('tfootHealth').innerHTML =
     rowHtml('Norway', hlAgg(idx, keysN, all, k), hlAgg(idx, keysP, all, k - 100), '', trendOf(all));
@@ -1785,7 +1820,103 @@ const HL_SHORT = { PANKREASSYKDOM: 'PD', INFEKSIOES_LAKSEANEMI: 'ILA', BAKTERIEL
   SYSTEMISK_INFEKSJON_MED_FLAVOBACTERIUM_PSYCHROPHILUM: 'FLAVO', FRANCISELLOSE: 'FRANC' };
 const HL_DLABEL = { PD: 'Pancreas disease (PD)', ILA: 'Infectious salmon anaemia (ISA / ILA)', BKD: 'Bacterial kidney disease (BKD)',
   FLAVO: 'Flavobacteriosis', FRANC: 'Francisellosis' };
-let hlNewAll = false;
+let hlNewAll = false, hlSitePo = null, hlSiteAll = false;
+const HL_NONMED = { TERMISK_BEHANDLING: 'thermal', MEKANISK_BEHANDLING: 'mechanical', FERSKVANNSBEHANDLING: 'freshwater',
+  FERSKVANN: 'freshwater', LASER: 'laser', ANNEN: 'other' };
+function hlTrtLabel(t) {
+  const p = t.split('|');
+  if (p[0] === 'nonmedicinal') return HL_NONMED[p[1]] || (p[1] || '?').toLowerCase().replace(/_/g, ' ');
+  if (p[0] === 'medicinal') return (p[2] && p[2] !== '?' ? p[2] : 'medicinal') + (p[1] && p[1] !== '?' ? ' (' + p[1].replace('InFeed', 'in-feed').replace('Bath', 'bath').toLowerCase() + ')' : '');
+  if (p[0] === 'combination') return 'combined';
+  if (p[0] === 'mechanicalremoval') return 'mechanical removal';
+  if (p[0] === 'cleanerfish') return 'cleaner fish' + (p[1] && p[1] !== '?' ? ' (' + p[1] + ')' : '');
+  return t;
+}
+function renderHealthSites(keysN, keysP, yN, per) {
+  const wrap = document.getElementById('hlSiteWrap');
+  if (!hlSitePo) { wrap.style.display = 'none'; return; }
+  wrap.style.display = '';
+  const po = hlSitePo, ST = BW.site_trt;
+  document.getElementById('hlSiteTitle').innerHTML = `Zone ${po}. ${PO_NAMES[po]} — lice treatments site by site <span style="color:var(--muted);font-weight:normal;cursor:pointer" id="hlSiteClose">✕ close</span>`;
+  document.getElementById('hlSiteClose').addEventListener('click', () => { hlSitePo = null; renderHealth(); });
+  document.getElementById('hlStN').textContent = `Treated weeks ${yN}`;
+  document.getElementById('hlStP').textContent = yN - 1;
+  const tb = document.getElementById('tbodyHlSites');
+  const SD = BW.site_dis;
+  if ((!ST || !ST.rows) && !SD) {
+    document.getElementById('hlSiteSub').innerHTML = '<span class="warn">Site-level detail not collected yet</span> — treatments and diseases site by site arrive with the next runs of the update workflow.';
+    tb.innerHTML = ''; document.getElementById('tbodyHlOps').innerHTML = ''; document.getElementById('hlSiteMore').innerHTML = ''; return;
+  }
+  const setN = new Set(keysN), setP = new Set(keysP), years = new Set((ST && ST.years) || []);
+  const site = {};
+  const blank = no => ({ no, n: 0, p: 0, types: {}, last: 0, dis: {}, disP: {}, newc: 0 });
+  ((ST && ST.rows) || []).forEach(([no, p, y, w, ids]) => {
+    if (p !== po) return;
+    const k = y * 100 + w, inN = setN.has(k), inP = setP.has(k);
+    if (!inN && !inP) return;
+    const o = site[no] || (site[no] = blank(no));
+    if (inN) { o.n++; o.last = Math.max(o.last, k); ids.forEach(i => { const l = hlTrtLabel(ST.keys[i]); o.types[l] = (o.types[l] || 0) + 1; }); }
+    if (inP) o.p++;
+  });
+  // diseases: periods [site, zone, code, start, end] overlapping the period
+  const lo = Math.min(...keysN), hi = Math.max(...keysN), loP = Math.min(...keysP), hiP = Math.max(...keysP);
+  (SD || []).forEach(([no, p, c, a, b]) => {
+    if (p !== po) return;
+    if (a <= hi && b >= lo) {
+      const o = site[no] || (site[no] = blank(no));
+      const s0 = Math.max(a, lo), s1 = Math.min(b, hi);
+      (o.dis[c] = o.dis[c] || []).push([s0, s1]);
+    }
+    if (a <= hiP && b >= loP) { const o = site[no] || (site[no] = blank(no)); o.disP[c] = true; }
+  });
+  (BW.events || []).forEach(e => { if (e[2] === po && setN.has(e[0] * 100 + e[1])) { const o = site[e[3]] || (site[e[3]] = blank(e[3])); o.newc++; } });
+  const list = Object.values(site).sort((a, b) => b.n - a.n || Object.keys(b.dis).length - Object.keys(a.dis).length || b.p - a.p);
+  const okN = years.has(yN), okP = years.has(yN - 1);
+  const name = no => (BWR && BWR.site_name && BWR.site_name[no]) || (BW.names && BW.names[no]) || '';
+  const org = no => (BWR && BWR.site_org && BWR.site_org[no]) || '';
+  const nTreated = list.filter(o => o.n).length, nSick = list.filter(o => Object.keys(o.dis).length).length;
+  // ---- operator summary
+  const ops = {};
+  list.forEach(o => {
+    const k = org(o.no) || '— unknown operator';
+    const q = ops[k] || (ops[k] = { k, sites: 0, n: 0, p: 0, PD: 0, ILA: 0, other: 0, newc: 0 });
+    q.sites++; q.n += o.n; q.p += o.p; q.newc += o.newc;
+    Object.keys(o.dis).forEach(c => { if (c === 'PD' || c === 'ILA') q[c]++; else q.other++; });
+  });
+  document.getElementById('hlOpN').textContent = `Treated weeks ${yN}`;
+  document.getElementById('hlOpP').textContent = yN - 1;
+  const cnt = (v, bad) => `<td class="${v && bad ? 'delta-bad' : 'delta-zero'}">${v || '·'}</td>`;
+  document.getElementById('tbodyHlOps').innerHTML = Object.values(ops).sort((a, b) => b.n - a.n || b.sites - a.sites).map(q => {
+    const dp = q.p > 0 ? (q.n / q.p - 1) * 100 : NaN;
+    return `<tr><td class="name">${q.k}</td><td>${q.sites}</td><td class="sep-left"><b>${q.n || '·'}</b></td><td style="color:var(--muted)">${q.p || '·'}</td>` +
+      `<td class="${deltaClass('mort', dp)}">${isFinite(dp) ? (dp >= 0 ? '+' : '') + dp.toFixed(0) + '%' : (q.n && !q.p ? 'new' : '—')}</td>` +
+      `<td class="sep-left ${q.PD ? 'delta-bad' : 'delta-zero'}">${q.PD || '·'}</td>` + cnt(q.ILA, true) + cnt(q.other, true) +
+      `<td class="sep-left ${q.newc ? 'delta-bad' : 'delta-zero'}">${q.newc || '·'}</td></tr>`;
+  }).join('') || '<tr><td class="name" colspan="9" style="color:var(--muted)">Nothing to report in this zone over the period.</td></tr>';
+  document.getElementById('hlSiteSub').innerHTML =
+    `${nTreated} site${nTreated > 1 ? 's' : ''} treated and ${nSick} with a disease in ${per}. First by operator, then site by site (most treated first). ` +
+    `Disease columns count sites with an active case during the period; "new cases" are first appearances. ` +
+    `A treated week counts once whatever the number of treatments that week; the detail column counts weeks per treatment type.` +
+    (!okN || !okP ? ` <span class="warn">${[!okN ? yN : null, !okP ? yN - 1 : null].filter(Boolean).join(' and ')} not fully collected yet — figures incomplete.</span>` : '') +
+    (!BWR ? ` <span style="color:var(--muted)">Operators appear once the site register is built.</span>` : '');
+  const LIM = 40, shown = hlSiteAll ? list : list.slice(0, LIM);
+  tb.innerHTML = shown.map(o => {
+    const d = o.n - o.p, types = Object.entries(o.types).sort((a, b) => b[1] - a[1]).map(([l, c]) => `${l} ${c}`).join(' · ');
+    return `<tr><td class="name">${name(o.no) || '#' + o.no} <small style="color:var(--muted);display:inline">#${o.no}</small></td>` +
+      `<td style="text-align:left">${org(o.no) || '<span style="color:var(--muted)">—</span>'}</td>` +
+      `<td class="sep-left"><b>${o.n || '·'}</b></td><td style="color:var(--muted)">${o.p || '·'}</td>` +
+      `<td class="${deltaClass('mort', d)}">${d > 0 ? '+' + d : d < 0 ? d : '='}</td>` +
+      `<td class="sep-left" style="text-align:left;font-size:11.5px">${types || '<span style="color:var(--muted)">—</span>'}</td>` +
+      `<td style="color:var(--muted)">${o.last ? 'W' + String(o.last % 100).padStart(2, '0') : '—'}</td>` +
+      `<td class="sep-left" style="text-align:left;font-size:11.5px">${Object.entries(o.dis).map(([c, sp]) =>
+        `<span class="delta-bad" title="${HL_DLABEL[c] || c}">${c}</span> <span style="color:var(--muted)">${sp.map(([a, b]) => 'W' + (a % 100) + (b !== a ? '–' + (b % 100) : '')).join(', ')}</span>`).join(' · ')
+        || '<span style="color:var(--muted)">—</span>'}${o.newc ? ' <small class="delta-bad" style="display:inline">(new)</small>' : ''}</td></tr>`;
+  }).join('') || `<tr><td class="name" colspan="8" style="color:var(--muted)">No treatment or disease recorded in this zone over the period.</td></tr>`;
+  document.getElementById('hlSiteMore').innerHTML = list.length > LIM
+    ? `<button type="button" id="hlSiteBtn" style="padding:6px 12px;background:#0d1a24;color:var(--muted);border:1px solid var(--border);border-radius:6px;cursor:pointer;">${hlSiteAll ? 'Show top ' + LIM + ' only' : 'Show all ' + list.length + ' sites'}</button>` : '';
+  const bt = document.getElementById('hlSiteBtn');
+  if (bt) bt.addEventListener('click', () => { hlSiteAll = !hlSiteAll; renderHealth(); });
+}
 function renderHealthDiseases(idx, keysN, keysP, yN, per) {
   const zSel = document.getElementById('hlDZone');
   if (!zSel.options.length) {
