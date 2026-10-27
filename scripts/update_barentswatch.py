@@ -54,6 +54,14 @@ import urllib.request
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, 'data', 'data.json')
 LOC_CACHE = os.path.join(ROOT, 'data', 'bw_localities.json')
+# Maladies site par site et semaine par semaine (sites malades seulement), pour
+# reperer les NOUVEAUX cas. Fichier a part : le tableau de bord ne le charge pas.
+DIS_FILE = os.path.join(ROOT, 'data', 'bw_disease_sites.json')
+DIS_SHORT = {'PANKREASSYKDOM': 'PD', 'INFEKSIOES_LAKSEANEMI': 'ILA',
+             'BAKTERIELL_NYRESYKE': 'BKD',
+             'SYSTEMISK_INFEKSJON_MED_FLAVOBACTERIUM_PSYCHROPHILUM': 'FLAVO',
+             'FRANCISELLOSE': 'FRANC'}
+NEW_CASE_GAP = 4      # une maladie est un "nouveau cas" si absente du site les 4 semaines d'avant
 TOKEN_URL = 'https://id.barentswatch.no/connect/token'
 API = 'https://www.barentswatch.no/bwapi'
 UA = 'saumon-dashboard (github.com/emileviardotfo/saumon)'
@@ -144,9 +152,10 @@ def num(x):
 def aggregate_week(api, y, w, loc_po):
     sites = api.call('POST', f'/v2/geodata/fishhealth/locality/{y}/{w}', body={})
     if not isinstance(sites, list):
-        return None, 0
+        return None, 0, {}
     acc = {}
     lookups = 0
+    sick = {}          # site -> [po, nom, [codes maladie]]
     for s in sites:
         loc = s.get('locality') or {}
         no = loc.get('no')
@@ -173,6 +182,9 @@ def aggregate_week(api, y, w, loc_po):
         for d in diseases:
             if d:
                 a['dis'][d] = a['dis'].get(d, 0) + 1
+        codes = sorted({DIS_SHORT.get(d, d) for d in diseases if d})
+        if codes:
+            sick[key] = [po, loc.get('name') or '', codes]
         for t in set(treats):
             if t:
                 a['trt'][t] = a['trt'].get(t, 0) + 1
@@ -200,7 +212,7 @@ def aggregate_week(api, y, w, loc_po):
                      'ov': a['ov'], 'lim': LIMIT(po, w),
                      't': round(a['ts'] / a['nt'], 2) if a['nt'] else None, 'nt': a['nt'],
                      'dis': a['dis'], 'trt': a['trt']})
-    return rows, lookups
+    return rows, lookups, sick
 
 
 def main():
@@ -212,12 +224,15 @@ def main():
     data = json.load(io.open(DATA, encoding='utf-8')) if os.path.exists(DATA) else {}
     store = data.get(KEY) or {'rows': [], 'meta': {}}
     loc_po = json.load(io.open(LOC_CACHE)) if os.path.exists(LOC_CACHE) else {}
+    dis = json.load(io.open(DIS_FILE, encoding='utf-8')) if os.path.exists(DIS_FILE) else {'weeks': {}, 'names': {}}
+    wk_key = lambda y, w: f'{y}-{w:02d}'
 
     # Derniere semaine close : celle d'il y a 7 jours (rapports deposes le
     # mardi suivant au plus tard). Les REFRESH_WEEKS dernieres sont refaites.
     last = (dt.date.today() - dt.timedelta(days=7)).isocalendar()[:2]
     all_weeks = iso_weeks(START, last)
-    have = {(r['y'], r['w']) for r in store['rows']}
+    # une semaine est "acquise" si on a a la fois ses agregats et ses maladies site par site
+    have = {(r['y'], r['w']) for r in store['rows']} & {tuple(map(int, k.split('-'))) for k in dis['weeks']}
     recent = set(all_weeks[-REFRESH_WEEKS:])
     missing = [wk for wk in all_weeks if wk not in have and wk not in recent]
     todo = sorted(recent) + missing[-args.max_weeks:][::-1]   # recentes d'abord, puis on remonte
@@ -232,7 +247,7 @@ def main():
     t0 = time.time()
     for (y, w) in todo:
         try:
-            rows, lk = aggregate_week(api, y, w, loc_po)
+            rows, lk, sick = aggregate_week(api, y, w, loc_po)
         except RuntimeError as e:
             print(f'  {y}-S{w:02d} : {e}')
             failed.append((y, w))
@@ -242,6 +257,10 @@ def main():
             failed.append((y, w))
             continue
         by_week[(y, w)] = rows
+        dis['weeks'][wk_key(y, w)] = {no: v[2] for no, v in sick.items()}
+        for no, v in sick.items():
+            dis['names'][no] = v[1]
+            loc_po.setdefault(no, v[0])
         done += 1
         if done % 20 == 0:
             print(f'  ... {done}/{len(todo)} semaines, {lookups} sites localises, '
@@ -260,9 +279,35 @@ def main():
         'source': 'BarentsWatch Fish Health API (NLOD), donnees declarees par les eleveurs',
         'limit_rule': '0,5 femelle adulte ; 0,2 en S16-21 (zones 1-7) et S21-26 (zones 8-13)',
     }
+    # Nouveaux cas : maladie presente sur un site et absente des NEW_CASE_GAP
+    # semaines precedentes (toutes disponibles, sinon on ne conclut pas).
+    seq = all_weeks
+    pos_of = {wk: i for i, wk in enumerate(seq)}
+    events = []
+    for (y, w) in seq:
+        cur = dis['weeks'].get(wk_key(y, w))
+        if cur is None:
+            continue
+        i = pos_of[(y, w)]
+        prev_keys = [wk_key(*seq[j]) for j in range(i - NEW_CASE_GAP, i) if j >= 0]
+        if len(prev_keys) < NEW_CASE_GAP or any(k not in dis['weeks'] for k in prev_keys):
+            continue
+        for no, codes in cur.items():
+            before = set()
+            for k in prev_keys:
+                before.update(dis['weeks'][k].get(no, []))
+            for c in codes:
+                if c not in before:
+                    events.append([y, w, int(loc_po.get(no) or 0), int(no), c])
+    store['events'] = events
+    store['names'] = {str(e[3]): dis['names'].get(str(e[3]), '') for e in events}
+    store['meta']['events'] = len(events)
+    store['meta']['new_case_rule'] = f'disease present at a site and absent from it in the {NEW_CASE_GAP} previous weeks'
     data[KEY] = store
     io.open(DATA, 'w', encoding='utf-8').write(json.dumps(data, ensure_ascii=False, separators=(',', ':')))
     io.open(LOC_CACHE, 'w').write(json.dumps(loc_po, separators=(',', ':'), sort_keys=True))
+    io.open(DIS_FILE, 'w', encoding='utf-8').write(json.dumps(dis, ensure_ascii=False, separators=(',', ':'), sort_keys=True))
+    print(f'Nouveaux cas de maladie identifies : {len(events)}')
     print(f'\n{done} semaines traitees, {lookups} nouveaux sites localises '
           f'({len(loc_po)} en cache), {len(failed)} echecs.')
     print(f"Couverture : {store['meta']['first']} -> {store['meta']['last']}, "
