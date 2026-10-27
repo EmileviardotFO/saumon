@@ -150,6 +150,7 @@ def build_register(sites):
         'mtb_groups': groups,
         'mtb_holders': holders,
         'site_org': site_org,
+        'site_name': {str(s['no']): s.get('name') or '' for s in sites.values() if s.get('no')},
         'slaughter_cages': cages,
     }
 
