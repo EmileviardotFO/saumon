@@ -73,6 +73,17 @@ jobs:
           BW_CLIENT_SECRET: ${{ secrets.BW_CLIENT_SECRET }}
         run: python3 scripts/update_barentswatch.py
 
+      - name: Registre des sites d'elevage (BarentsWatch, une fois par mois)
+        # Fiche de chaque site : licences, capacite (MTB), exploitants, cages
+        # d'attente d'abattage. Relu en entier tous les 28 jours ; un passage
+        # interrompu reprend la ou il s'etait arrete.
+        continue-on-error: true
+        timeout-minutes: 45
+        env:
+          BW_CLIENT_ID: ${{ secrets.BW_CLIENT_ID }}
+          BW_CLIENT_SECRET: ${{ secrets.BW_CLIENT_SECRET }}
+        run: python3 scripts/update_bw_sites.py
+
       - name: Publier data.json (et les fichiers bruts telecharges)
         run: |
           git config user.name  "github-actions"
