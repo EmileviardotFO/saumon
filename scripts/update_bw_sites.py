@@ -190,6 +190,8 @@ def build_register(sites):
         'mtb_land': land_rows,
         'site_org': site_org,
         'site_name': {str(s['no']): s.get('name') or '' for s in sites.values() if s.get('no')},
+        'site_po': {str(s['no']): s.get('po') for s in sites.values() if s.get('no') and s.get('po')
+                    and s.get('placement') != 'LAND' and not s.get('slaughter')},
         'slaughter_cages': cages,
     }
 
