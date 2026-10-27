@@ -1,0 +1,55 @@
+{
+ "run_utc": "2026-10-27T19:05:48+00:00",
+ "pages": [
+  {
+   "name": "mattilsynet_fishery",
+   "url": "https://www.mattilsynet.no/godkjente-produkter-og-virksomheter/fisk-og-fiskerivarer-fish-and-fishery-products-virksomheter-som-h%C3%A5ndterer-fiskerivarer-fishery-establishments",
+   "status": 200,
+   "content_type": "text/html",
+   "bytes": 685850,
+   "file_links": [
+    "https://mattilsynet-xp7prod.enonic.cloud/_/attachment/inline/1af0e9c5-8719-4cf9-91bf-ce19a4c2f078:d17a5906690780a84e0c42b20cff28cbc415a91a/v_virklist_fishery_establishements.csv"
+   ]
+  },
+  {
+   "name": "mattilsynet_index",
+   "url": "https://www.mattilsynet.no/godkjente-produkter-og-virksomheter",
+   "status": 200,
+   "content_type": "text/html",
+   "bytes": 92948,
+   "file_links": []
+  },
+  {
+   "name": "mattilsynet_china",
+   "url": "https://www.mattilsynet.no/mat-og-drikke/eksport-av-mat-og-drikke/eksport-av-fisk-og-sjomat/eksport-av-fisk-og-sjomat/landoversikt/eksport-av-fisk-og-sjomat-til-kina/krav-til-produsent-eksport-av-fisk-og-sjomat-til-kina",
+   "status": 200,
+   "content_type": "text/html",
+   "bytes": 161448,
+   "file_links": [
+    "https://mattilsynet-xp7prod.enonic.cloud/_/attachment/inline/21d6d030-0a70-4af7-83e8-a1f0ed6fbe55:e4bf297479248b1fe6f3a89c230991a6500f2cd5/Tilsynskampanje%202021%20-%20Listeriatiltak%20i%20lakseslakteri%20-%20Sluttrapport.pdf",
+    "https://mattilsynet-xp7prod.enonic.cloud/_/attachment/inline/895bbb36-5d40-4355-b07d-16c481a00aa4:9c9d46b6ec081384408ecf9c47252181c74ae36b/Registration%20Conditions%20and%20Inspection%20Focuses%20-%20specimen.pdf",
+    "https://mattilsynet-xp7prod.enonic.cloud/_/attachment/inline/bb79998d-de4a-4efd-86c4-45adb9a4429c:96402ffaf22e58bacf36d098f031a83475c5c19c/Tolkning%20av%20dekret%20249%20-%20artikkel%20for%20artikkel.pdf",
+    "https://nofima.no/wp-content/uploads/2015/03/Veileder_Listeria_laks.pdf",
+    "https://www.regjeringen.no/contentassets/00dab48a2b2e44709bd0bcd48f74f307/lakseprotokoll-norge-kina-20052019.pdf",
+    "https://www.regjeringen.no/contentassets/00dab48a2b2e44709bd0bcd48f74f307/protokoll-mel-og-olje-norge-kina-20052019.pdf"
+   ]
+  },
+  {
+   "name": "gacc_cifer_query",
+   "url": "https://ciferquery.singlewindow.cn/",
+   "status": 200,
+   "content_type": "text/html;charset=UTF-8",
+   "bytes": 22349,
+   "file_links": []
+  }
+ ],
+ "files": [
+  {
+   "link": "https://mattilsynet-xp7prod.enonic.cloud/_/attachment/inline/1af0e9c5-8719-4cf9-91bf-ce19a4c2f078:d17a5906690780a84e0c42b20cff28cbc415a91a/v_virklist_fishery_establishements.csv",
+   "status": 200,
+   "content_type": "text/csv",
+   "bytes": 137238,
+   "saved_as": "mattilsynet_fishery_file1.csv"
+  }
+ ]
+}

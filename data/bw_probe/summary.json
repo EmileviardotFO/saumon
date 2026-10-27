@@ -1,5 +1,5 @@
 {
- "run_utc": "2026-10-27T12:42:39",
+ "run_utc": "2026-10-27T19:05:37",
  "ref_year": 2026,
  "ref_week": 42,
  "calls": [
@@ -75,7 +75,7 @@
    "body": {},
    "status": 200,
    "content_type": "application/json; charset=utf-8",
-   "bytes": 5328,
+   "bytes": 5362,
    "structure": {
     "diseaseOutbreaks": [],
     "diseaseStatistics": [
@@ -217,7 +217,10 @@
       "41": [],
       "42": [],
       "43": [],
-      "44": [],
+      "44": [
+       "dict",
+       "len=1"
+      ],
       "45": [],
       "46": [],
       "47": [],
@@ -738,61 +741,1087 @@
    "saved_as": "locality_disease_year.json"
   },
   {
-   "name": "download_licereport_v1",
+   "name": "treat_nonmed_11800",
    "method": "GET",
-   "path": "/v1/geodata/download/fishhealth",
-   "params": {
-    "reporttype": "licereport",
-    "filetype": "csv",
-    "fromyear": 2026,
-    "fromweek": 39,
-    "toyear": 2026,
-    "toweek": 42
-   },
+   "path": "/v2/geodata/fishhealth/locality/11800/2026/42",
+   "params": null,
    "body": null,
-   "status": 400,
-   "content_type": "application/problem+json; charset=utf-8",
-   "bytes": 343,
-   "saved_as": "download_licereport_v1.txt",
-   "error_excerpt": "{\"errors\":{\"reporttype\":[\"The value 'licereport' is not valid for ReportType.\",\"A value for the 'reporttype' parameter or property was not provided.\"]},\"type\":\"https://tools.ietf.org/html/rfc9110#section-15.5.1\",\"title\":\"One or more validation errors occurred.\",\"status\":400,\"traceId\":\"00-205c7e09ceca4261867120e7d67d6a70-4835ec00f723f9c9-00\"}"
+   "status": 200,
+   "content_type": "application/json; charset=utf-8",
+   "bytes": 4827,
+   "structure": {
+    "locality": {
+     "no": "int",
+     "name": "str",
+     "isOnLand": "bool"
+    },
+    "geometry": {
+     "type": "str",
+     "coordinates": [
+      "float",
+      "len=2"
+     ]
+    },
+    "municipality": {
+     "no": "str",
+     "name": "str"
+    },
+    "productionArea": {
+     "id": "int",
+     "name": "str",
+     "color": "NoneType"
+    },
+    "aquaCultureRegister": {
+     "placement": "str",
+     "capacity": "float",
+     "unit": "str",
+     "licenses": [
+      {
+       "licenseNo": "str",
+       "licensee": "str",
+       "grantDate": "str",
+       "expirationDate": "NoneType",
+       "localities": "list",
+       "capacity": "float",
+       "purpose": "str",
+       "productionType": "str",
+       "isGreen": "bool",
+       "species": "list",
+       "speciesCategory": "str",
+       "unit": "str"
+      },
+      "len=3"
+     ],
+     "hasGreenLicense": "bool",
+     "hasSalmonoidLicense": "bool",
+     "productionTypes": [
+      "str",
+      "len=2"
+     ],
+     "purposes": [
+      "str",
+      "len=1"
+     ],
+     "isSlaughterHoldingCage": "bool",
+     "organizations": [
+      {
+       "name": "str",
+       "organizationNo": "str",
+       "address": "str",
+       "postalCode": "str",
+       "city": "str",
+       "localities": "list"
+      },
+      "len=2"
+     ],
+     "species": [
+      "str",
+      "len=3"
+     ]
+    },
+    "controlAreas": [],
+    "exportRestrictionAreas": [],
+    "pdZoneId": "str",
+    "diseases": [],
+    "farmedFishEscapes": [],
+    "liceReport": {
+     "hasReported": "bool",
+     "isFallow": "bool",
+     "adultFemaleLice": {
+      "average": "float",
+      "averageOfPreviousWeek": "float",
+      "trend": "str"
+     },
+     "mobileLice": {
+      "average": "float",
+      "averageOfPreviousWeek": "float",
+      "trend": "str"
+     },
+     "stationaryLice": {
+      "average": "float",
+      "averageOfPreviousWeek": "float",
+      "trend": "str"
+     },
+     "totalLice": {
+      "average": "float",
+      "averageOfPreviousWeek": "float",
+      "trend": "str"
+     },
+     "seaTemperature": "float"
+    },
+    "liceTreatments": {
+     "combinationTreatments": [],
+     "medicinalTreatments": [],
+     "nonMedicinalTreatments": [
+      {
+       "id": "int",
+       "type": "str",
+       "doneBeforeLiceCount": "bool",
+       "entireLocality": "bool",
+       "numberOfCages": "int"
+      },
+      "len=1"
+     ],
+     "bathTreatments": [],
+     "cleanerFishTreatment": "NoneType",
+     "inFeedTreatments": [],
+     "mechanicalRemovalTreatment": "NoneType",
+     "daysSinceLastChitinSynthesisInhibitorTreatment": "NoneType"
+    }
+   },
+   "saved_as": "treat_nonmed_11800.json"
   },
   {
-   "name": "download_licereport_v2",
+   "name": "treat_nonmed_29016",
    "method": "GET",
-   "path": "/v1/geodata/download/fishhealth",
-   "params": {
-    "reportType": "licereport",
-    "fileType": "csv",
-    "fromYear": 2026,
-    "fromWeek": 39,
-    "toYear": 2026,
-    "toWeek": 42
-   },
+   "path": "/v2/geodata/fishhealth/locality/29016/2026/42",
+   "params": null,
    "body": null,
-   "status": 400,
-   "content_type": "application/problem+json; charset=utf-8",
-   "bytes": 343,
-   "saved_as": "download_licereport_v2.txt",
-   "error_excerpt": "{\"errors\":{\"reporttype\":[\"The value 'licereport' is not valid for ReportType.\",\"A value for the 'reporttype' parameter or property was not provided.\"]},\"type\":\"https://tools.ietf.org/html/rfc9110#section-15.5.1\",\"title\":\"One or more validation errors occurred.\",\"status\":400,\"traceId\":\"00-6a93206c45b34dc493aba163776cf46d-6b783c1b8c60f779-00\"}"
+   "status": 200,
+   "content_type": "application/json; charset=utf-8",
+   "bytes": 17456,
+   "structure": {
+    "locality": {
+     "no": "int",
+     "name": "str",
+     "isOnLand": "bool"
+    },
+    "geometry": {
+     "type": "str",
+     "coordinates": [
+      "float",
+      "len=2"
+     ]
+    },
+    "municipality": {
+     "no": "str",
+     "name": "str"
+    },
+    "productionArea": {
+     "id": "int",
+     "name": "str",
+     "color": "NoneType"
+    },
+    "aquaCultureRegister": {
+     "placement": "str",
+     "capacity": "float",
+     "unit": "str",
+     "licenses": [
+      {
+       "licenseNo": "str",
+       "licensee": "str",
+       "grantDate": "str",
+       "expirationDate": "NoneType",
+       "localities": "list",
+       "capacity": "float",
+       "purpose": "str",
+       "productionType": "str",
+       "isGreen": "bool",
+       "species": "list",
+       "speciesCategory": "str",
+       "unit": "str"
+      },
+      "len=8"
+     ],
+     "hasGreenLicense": "bool",
+     "hasSalmonoidLicense": "bool",
+     "productionTypes": [
+      "str",
+      "len=1"
+     ],
+     "purposes": [
+      "str",
+      "len=2"
+     ],
+     "isSlaughterHoldingCage": "bool",
+     "organizations": [
+      {
+       "name": "str",
+       "organizationNo": "str",
+       "address": "str",
+       "postalCode": "str",
+       "city": "str",
+       "localities": "list"
+      },
+      "len=4"
+     ],
+     "species": [
+      "str",
+      "len=3"
+     ]
+    },
+    "controlAreas": [
+     {
+      "diseaseName": "str",
+      "type": "str",
+      "regulation": {
+       "nr": "str",
+       "name": "str",
+       "link": "str"
+      }
+     },
+     "len=1"
+    ],
+    "exportRestrictionAreas": [],
+    "pdZoneId": "str",
+    "diseases": [],
+    "farmedFishEscapes": [],
+    "liceReport": {
+     "hasReported": "bool",
+     "isFallow": "bool",
+     "adultFemaleLice": {
+      "average": "float",
+      "averageOfPreviousWeek": "float",
+      "trend": "str"
+     },
+     "mobileLice": {
+      "average": "float",
+      "averageOfPreviousWeek": "float",
+      "trend": "str"
+     },
+     "stationaryLice": {
+      "average": "float",
+      "averageOfPreviousWeek": "float",
+      "trend": "str"
+     },
+     "totalLice": {
+      "average": "float",
+      "averageOfPreviousWeek": "float",
+      "trend": "str"
+     },
+     "seaTemperature": "float"
+    },
+    "liceTreatments": {
+     "combinationTreatments": [],
+     "medicinalTreatments": [],
+     "nonMedicinalTreatments": [
+      {
+       "id": "int",
+       "type": "str",
+       "doneBeforeLiceCount": "bool",
+       "entireLocality": "bool",
+       "numberOfCages": "int"
+      },
+      "len=1"
+     ],
+     "bathTreatments": [],
+     "cleanerFishTreatment": "NoneType",
+     "inFeedTreatments": [],
+     "mechanicalRemovalTreatment": "NoneType",
+     "daysSinceLastChitinSynthesisInhibitorTreatment": "NoneType"
+    }
+   },
+   "saved_as": "treat_nonmed_29016.json"
   },
   {
-   "name": "download_licereport_v3",
+   "name": "treat_nonmed_10862",
    "method": "GET",
-   "path": "/v1/geodata/download/fishhealth",
-   "params": {
-    "reporttype": "licereport",
-    "filetype": "json",
-    "fromyear": 2026,
-    "fromweek": 39,
-    "toyear": 2026,
-    "toweek": 42
-   },
+   "path": "/v2/geodata/fishhealth/locality/10862/2026/42",
+   "params": null,
    "body": null,
-   "status": 400,
-   "content_type": "application/problem+json; charset=utf-8",
-   "bytes": 458,
-   "saved_as": "download_licereport_v3.txt",
-   "error_excerpt": "{\"errors\":{\"filetype\":[\"The value 'json' is not valid.\",\"A value for the 'filetype' parameter or property was not provided.\"],\"reporttype\":[\"The value 'licereport' is not valid for ReportType.\",\"A value for the 'reporttype' parameter or property was not provided.\"]},\"type\":\"https://tools.ietf.org/html/rfc9110#section-15.5.1\",\"title\":\"One or more validation errors occurred.\",\"status\":400,\"traceId\":\"00-22435889eab54cbebb526b17d00ba65e-a04fc84faa3f2958-00\"}"
+   "status": 200,
+   "content_type": "application/json; charset=utf-8",
+   "bytes": 20545,
+   "structure": {
+    "locality": {
+     "no": "int",
+     "name": "str",
+     "isOnLand": "bool"
+    },
+    "geometry": {
+     "type": "str",
+     "coordinates": [
+      "float",
+      "len=2"
+     ]
+    },
+    "municipality": {
+     "no": "str",
+     "name": "str"
+    },
+    "productionArea": {
+     "id": "int",
+     "name": "str",
+     "color": "NoneType"
+    },
+    "aquaCultureRegister": {
+     "placement": "str",
+     "capacity": "float",
+     "unit": "str",
+     "licenses": [
+      {
+       "licenseNo": "str",
+       "licensee": "str",
+       "grantDate": "str",
+       "expirationDate": "str",
+       "localities": "list",
+       "capacity": "float",
+       "purpose": "str",
+       "productionType": "str",
+       "isGreen": "bool",
+       "species": "list",
+       "speciesCategory": "str",
+       "unit": "str"
+      },
+      "len=8"
+     ],
+     "hasGreenLicense": "bool",
+     "hasSalmonoidLicense": "bool",
+     "productionTypes": [
+      "str",
+      "len=1"
+     ],
+     "purposes": [
+      "str",
+      "len=3"
+     ],
+     "isSlaughterHoldingCage": "bool",
+     "organizations": [
+      {
+       "name": "str",
+       "organizationNo": "str",
+       "address": "str",
+       "postalCode": "str",
+       "city": "str",
+       "localities": "list"
+      },
+      "len=6"
+     ],
+     "species": [
+      "str",
+      "len=3"
+     ]
+    },
+    "controlAreas": [],
+    "exportRestrictionAreas": [],
+    "pdZoneId": "str",
+    "diseases": [],
+    "farmedFishEscapes": [],
+    "liceReport": {
+     "hasReported": "bool",
+     "isFallow": "bool",
+     "adultFemaleLice": {
+      "average": "float",
+      "averageOfPreviousWeek": "float",
+      "trend": "str"
+     },
+     "mobileLice": {
+      "average": "float",
+      "averageOfPreviousWeek": "float",
+      "trend": "str"
+     },
+     "stationaryLice": {
+      "average": "float",
+      "averageOfPreviousWeek": "float",
+      "trend": "str"
+     },
+     "totalLice": {
+      "average": "float",
+      "averageOfPreviousWeek": "float",
+      "trend": "str"
+     },
+     "seaTemperature": "float"
+    },
+    "liceTreatments": {
+     "combinationTreatments": [],
+     "medicinalTreatments": [],
+     "nonMedicinalTreatments": [
+      {
+       "id": "int",
+       "type": "str",
+       "doneBeforeLiceCount": "bool",
+       "entireLocality": "bool",
+       "numberOfCages": "int"
+      },
+      "len=1"
+     ],
+     "bathTreatments": [],
+     "cleanerFishTreatment": "NoneType",
+     "inFeedTreatments": [],
+     "mechanicalRemovalTreatment": "NoneType",
+     "daysSinceLastChitinSynthesisInhibitorTreatment": "NoneType"
+    }
+   },
+   "saved_as": "treat_nonmed_10862.json"
+  },
+  {
+   "name": "treat_nonmed_22455",
+   "method": "GET",
+   "path": "/v2/geodata/fishhealth/locality/22455/2026/42",
+   "params": null,
+   "body": null,
+   "status": 200,
+   "content_type": "application/json; charset=utf-8",
+   "bytes": 22348,
+   "structure": {
+    "locality": {
+     "no": "int",
+     "name": "str",
+     "isOnLand": "bool"
+    },
+    "geometry": {
+     "type": "str",
+     "coordinates": [
+      "float",
+      "len=2"
+     ]
+    },
+    "municipality": {
+     "no": "str",
+     "name": "str"
+    },
+    "productionArea": {
+     "id": "int",
+     "name": "str",
+     "color": "NoneType"
+    },
+    "aquaCultureRegister": {
+     "placement": "str",
+     "capacity": "float",
+     "unit": "str",
+     "licenses": [
+      {
+       "licenseNo": "str",
+       "licensee": "str",
+       "grantDate": "str",
+       "expirationDate": "NoneType",
+       "localities": "list",
+       "capacity": "float",
+       "purpose": "str",
+       "productionType": "str",
+       "isGreen": "bool",
+       "species": "list",
+       "speciesCategory": "str",
+       "unit": "str"
+      },
+      "len=8"
+     ],
+     "hasGreenLicense": "bool",
+     "hasSalmonoidLicense": "bool",
+     "productionTypes": [
+      "str",
+      "len=1"
+     ],
+     "purposes": [
+      "str",
+      "len=1"
+     ],
+     "isSlaughterHoldingCage": "bool",
+     "organizations": [
+      {
+       "name": "str",
+       "organizationNo": "str",
+       "address": "str",
+       "postalCode": "str",
+       "city": "str",
+       "localities": "list"
+      },
+      "len=1"
+     ],
+     "species": [
+      "str",
+      "len=3"
+     ]
+    },
+    "controlAreas": [],
+    "exportRestrictionAreas": [],
+    "pdZoneId": "str",
+    "diseases": [],
+    "farmedFishEscapes": [],
+    "liceReport": {
+     "hasReported": "bool",
+     "isFallow": "bool",
+     "adultFemaleLice": {
+      "average": "float",
+      "averageOfPreviousWeek": "float",
+      "trend": "str"
+     },
+     "mobileLice": {
+      "average": "float",
+      "averageOfPreviousWeek": "float",
+      "trend": "str"
+     },
+     "stationaryLice": {
+      "average": "float",
+      "averageOfPreviousWeek": "float",
+      "trend": "str"
+     },
+     "totalLice": {
+      "average": "float",
+      "averageOfPreviousWeek": "float",
+      "trend": "str"
+     },
+     "seaTemperature": "float"
+    },
+    "liceTreatments": {
+     "combinationTreatments": [
+      {
+       "id": "int",
+       "liceReportId": "int",
+       "nonMedicinalTreatments": "list",
+       "medicinalTreatments": "list"
+      },
+      "len=1"
+     ],
+     "medicinalTreatments": [],
+     "nonMedicinalTreatments": [],
+     "bathTreatments": [],
+     "cleanerFishTreatment": "NoneType",
+     "inFeedTreatments": [],
+     "mechanicalRemovalTreatment": "NoneType",
+     "daysSinceLastChitinSynthesisInhibitorTreatment": "NoneType"
+    }
+   },
+   "saved_as": "treat_nonmed_22455.json"
+  },
+  {
+   "name": "locality_week_list_2023w40",
+   "method": "POST",
+   "path": "/v2/geodata/fishhealth/locality/2023/40",
+   "params": null,
+   "body": {},
+   "status": 200,
+   "content_type": "application/json; charset=utf-8",
+   "bytes": 1201703,
+   "structure": [
+    {
+     "localityWeekId": "int",
+     "isFiltered": "bool",
+     "locality": {
+      "no": "int",
+      "name": "str",
+      "isOnLand": "bool"
+     },
+     "geometry": {
+      "type": "str",
+      "coordinates": [
+       "float",
+       "len=2"
+      ]
+     },
+     "municipality": {
+      "no": "str",
+      "name": "str"
+     },
+     "hasSalmonoidLicense": "bool",
+     "isSlaughterHoldingCage": "bool",
+     "diseases": [],
+     "liceReport": {
+      "hasReported": "bool",
+      "isFallow": "bool",
+      "adultFemaleLice": {
+       "average": "NoneType",
+       "averageOfPreviousWeek": "NoneType",
+       "trend": "NoneType"
+      },
+      "mobileLice": {
+       "average": "NoneType",
+       "averageOfPreviousWeek": "NoneType",
+       "trend": "NoneType"
+      },
+      "stationaryLice": {
+       "average": "NoneType",
+       "averageOfPreviousWeek": "NoneType",
+       "trend": "NoneType"
+      },
+      "totalLice": {
+       "average": "NoneType",
+       "averageOfPreviousWeek": "NoneType",
+       "trend": "NoneType"
+      },
+      "seaTemperature": "NoneType"
+     },
+     "liceTreatments": []
+    },
+    "len=1740"
+   ],
+   "n_items": 1740
+  },
+  {
+   "name": "treat_med_37557",
+   "method": "GET",
+   "path": "/v2/geodata/fishhealth/locality/37557/2023/40",
+   "params": null,
+   "body": null,
+   "status": 200,
+   "content_type": "application/json; charset=utf-8",
+   "bytes": 56400,
+   "structure": {
+    "locality": {
+     "no": "int",
+     "name": "str",
+     "isOnLand": "bool"
+    },
+    "geometry": {
+     "type": "str",
+     "coordinates": [
+      "float",
+      "len=2"
+     ]
+    },
+    "municipality": {
+     "no": "str",
+     "name": "str"
+    },
+    "productionArea": {
+     "id": "int",
+     "name": "str",
+     "color": "NoneType"
+    },
+    "aquaCultureRegister": {
+     "placement": "str",
+     "capacity": "float",
+     "unit": "str",
+     "licenses": [
+      {
+       "licenseNo": "str",
+       "licensee": "str",
+       "grantDate": "str",
+       "expirationDate": "NoneType",
+       "localities": "list",
+       "capacity": "float",
+       "purpose": "str",
+       "productionType": "str",
+       "isGreen": "bool",
+       "species": "list",
+       "speciesCategory": "str",
+       "unit": "str"
+      },
+      "len=27"
+     ],
+     "hasGreenLicense": "bool",
+     "hasSalmonoidLicense": "bool",
+     "productionTypes": [
+      "str",
+      "len=3"
+     ],
+     "purposes": [
+      "str",
+      "len=1"
+     ],
+     "isSlaughterHoldingCage": "bool",
+     "organizations": [
+      {
+       "name": "str",
+       "organizationNo": "str",
+       "address": "str",
+       "postalCode": "str",
+       "city": "str",
+       "localities": "list"
+      },
+      "len=1"
+     ],
+     "species": [
+      "str",
+      "len=3"
+     ]
+    },
+    "controlAreas": [],
+    "exportRestrictionAreas": [],
+    "pdZoneId": "str",
+    "diseases": [],
+    "farmedFishEscapes": [],
+    "liceReport": {
+     "hasReported": "bool",
+     "isFallow": "bool",
+     "adultFemaleLice": {
+      "average": "float",
+      "averageOfPreviousWeek": "float",
+      "trend": "str"
+     },
+     "mobileLice": {
+      "average": "float",
+      "averageOfPreviousWeek": "float",
+      "trend": "str"
+     },
+     "stationaryLice": {
+      "average": "float",
+      "averageOfPreviousWeek": "float",
+      "trend": "str"
+     },
+     "totalLice": {
+      "average": "float",
+      "averageOfPreviousWeek": "float",
+      "trend": "str"
+     },
+     "seaTemperature": "float"
+    },
+    "liceTreatments": {
+     "combinationTreatments": [],
+     "medicinalTreatments": [],
+     "nonMedicinalTreatments": [],
+     "bathTreatments": [],
+     "cleanerFishTreatment": "NoneType",
+     "inFeedTreatments": [
+      {
+       "id": "int",
+       "treatmentType": "str",
+       "startDate": "str",
+       "endDate": "str",
+       "entireLocality": "bool",
+       "treatmentDetail": "list"
+      },
+      "len=1"
+     ],
+     "mechanicalRemovalTreatment": "NoneType",
+     "daysSinceLastChitinSynthesisInhibitorTreatment": "NoneType"
+    }
+   },
+   "saved_as": "treat_med_37557.json"
+  },
+  {
+   "name": "treat_med_34717",
+   "method": "GET",
+   "path": "/v2/geodata/fishhealth/locality/34717/2023/40",
+   "params": null,
+   "body": null,
+   "status": 200,
+   "content_type": "application/json; charset=utf-8",
+   "bytes": 6627,
+   "structure": {
+    "locality": {
+     "no": "int",
+     "name": "str",
+     "isOnLand": "bool"
+    },
+    "geometry": {
+     "type": "str",
+     "coordinates": [
+      "float",
+      "len=2"
+     ]
+    },
+    "municipality": {
+     "no": "str",
+     "name": "str"
+    },
+    "productionArea": {
+     "id": "int",
+     "name": "str",
+     "color": "NoneType"
+    },
+    "aquaCultureRegister": {
+     "placement": "str",
+     "capacity": "float",
+     "unit": "str",
+     "licenses": [
+      {
+       "licenseNo": "str",
+       "licensee": "str",
+       "grantDate": "str",
+       "expirationDate": "NoneType",
+       "localities": "list",
+       "capacity": "float",
+       "purpose": "str",
+       "productionType": "str",
+       "isGreen": "bool",
+       "species": "list",
+       "speciesCategory": "str",
+       "unit": "str"
+      },
+      "len=4"
+     ],
+     "hasGreenLicense": "bool",
+     "hasSalmonoidLicense": "bool",
+     "productionTypes": [
+      "str",
+      "len=1"
+     ],
+     "purposes": [
+      "str",
+      "len=2"
+     ],
+     "isSlaughterHoldingCage": "bool",
+     "organizations": [
+      {
+       "name": "str",
+       "organizationNo": "str",
+       "address": "str",
+       "postalCode": "str",
+       "city": "str",
+       "localities": "list"
+      },
+      "len=1"
+     ],
+     "species": [
+      "str",
+      "len=3"
+     ]
+    },
+    "controlAreas": [],
+    "exportRestrictionAreas": [],
+    "pdZoneId": "str",
+    "diseases": [],
+    "farmedFishEscapes": [],
+    "liceReport": {
+     "hasReported": "bool",
+     "isFallow": "bool",
+     "adultFemaleLice": {
+      "average": "float",
+      "averageOfPreviousWeek": "NoneType",
+      "trend": "NoneType"
+     },
+     "mobileLice": {
+      "average": "float",
+      "averageOfPreviousWeek": "NoneType",
+      "trend": "NoneType"
+     },
+     "stationaryLice": {
+      "average": "float",
+      "averageOfPreviousWeek": "NoneType",
+      "trend": "NoneType"
+     },
+     "totalLice": {
+      "average": "float",
+      "averageOfPreviousWeek": "NoneType",
+      "trend": "NoneType"
+     },
+     "seaTemperature": "float"
+    },
+    "liceTreatments": {
+     "combinationTreatments": [],
+     "medicinalTreatments": [],
+     "nonMedicinalTreatments": [],
+     "bathTreatments": [],
+     "cleanerFishTreatment": "NoneType",
+     "inFeedTreatments": [
+      {
+       "id": "int",
+       "treatmentType": "str",
+       "startDate": "str",
+       "endDate": "str",
+       "entireLocality": "bool",
+       "treatmentDetail": "list"
+      },
+      "len=2"
+     ],
+     "mechanicalRemovalTreatment": "NoneType",
+     "daysSinceLastChitinSynthesisInhibitorTreatment": "NoneType"
+    }
+   },
+   "saved_as": "treat_med_34717.json"
+  },
+  {
+   "name": "treat_med_31797",
+   "method": "GET",
+   "path": "/v2/geodata/fishhealth/locality/31797/2023/40",
+   "params": null,
+   "body": null,
+   "status": 200,
+   "content_type": "application/json; charset=utf-8",
+   "bytes": 23617,
+   "structure": {
+    "locality": {
+     "no": "int",
+     "name": "str",
+     "isOnLand": "bool"
+    },
+    "geometry": {
+     "type": "str",
+     "coordinates": [
+      "float",
+      "len=2"
+     ]
+    },
+    "municipality": {
+     "no": "str",
+     "name": "str"
+    },
+    "productionArea": {
+     "id": "int",
+     "name": "str",
+     "color": "NoneType"
+    },
+    "aquaCultureRegister": {
+     "placement": "str",
+     "capacity": "float",
+     "unit": "str",
+     "licenses": [
+      {
+       "licenseNo": "str",
+       "licensee": "str",
+       "grantDate": "str",
+       "expirationDate": "NoneType",
+       "localities": "list",
+       "capacity": "float",
+       "purpose": "str",
+       "productionType": "str",
+       "isGreen": "bool",
+       "species": "list",
+       "speciesCategory": "str",
+       "unit": "str"
+      },
+      "len=10"
+     ],
+     "hasGreenLicense": "bool",
+     "hasSalmonoidLicense": "bool",
+     "productionTypes": [
+      "str",
+      "len=2"
+     ],
+     "purposes": [
+      "str",
+      "len=1"
+     ],
+     "isSlaughterHoldingCage": "bool",
+     "organizations": [
+      {
+       "name": "str",
+       "organizationNo": "str",
+       "address": "str",
+       "postalCode": "str",
+       "city": "str",
+       "localities": "list"
+      },
+      "len=1"
+     ],
+     "species": [
+      "str",
+      "len=3"
+     ]
+    },
+    "controlAreas": [
+     {
+      "diseaseName": "str",
+      "type": "str",
+      "regulation": {
+       "nr": "str",
+       "name": "str",
+       "link": "str"
+      }
+     },
+     "len=1"
+    ],
+    "exportRestrictionAreas": [],
+    "pdZoneId": "str",
+    "diseases": [],
+    "farmedFishEscapes": [],
+    "liceReport": {
+     "hasReported": "bool",
+     "isFallow": "bool",
+     "adultFemaleLice": {
+      "average": "float",
+      "averageOfPreviousWeek": "float",
+      "trend": "str"
+     },
+     "mobileLice": {
+      "average": "float",
+      "averageOfPreviousWeek": "float",
+      "trend": "str"
+     },
+     "stationaryLice": {
+      "average": "float",
+      "averageOfPreviousWeek": "float",
+      "trend": "str"
+     },
+     "totalLice": {
+      "average": "float",
+      "averageOfPreviousWeek": "float",
+      "trend": "str"
+     },
+     "seaTemperature": "float"
+    },
+    "liceTreatments": {
+     "combinationTreatments": [],
+     "medicinalTreatments": [],
+     "nonMedicinalTreatments": [],
+     "bathTreatments": [],
+     "cleanerFishTreatment": "NoneType",
+     "inFeedTreatments": [
+      {
+       "id": "int",
+       "treatmentType": "str",
+       "startDate": "str",
+       "endDate": "str",
+       "entireLocality": "bool",
+       "treatmentDetail": "list"
+      },
+      "len=1"
+     ],
+     "mechanicalRemovalTreatment": "NoneType",
+     "daysSinceLastChitinSynthesisInhibitorTreatment": "NoneType"
+    }
+   },
+   "saved_as": "treat_med_31797.json"
+  },
+  {
+   "name": "lice_medication_events",
+   "method": "GET",
+   "path": "/v1/geodata/fishhealth/locality/37557/liceMedicationEvents/2023",
+   "params": null,
+   "body": null,
+   "status": 200,
+   "content_type": "application/json; charset=utf-8",
+   "bytes": 341,
+   "structure": {
+    "localityNo": "int",
+    "year": "int",
+    "data": [
+     {
+      "week": "int",
+      "cleanerFishTreatments": [],
+      "mechanicalRemoval": "bool",
+      "mechanicalRemovalEntireLocality": "bool",
+      "medicinalTreatments": [
+       "dict",
+       "len=1"
+      ],
+      "nonMedicinalTreatments": [],
+      "combinationTreatments": [],
+      "version": "int"
+     },
+     "len=1"
+    ]
+   },
+   "saved_as": "lice_medication_events.json"
+  },
+  {
+   "name": "openapi_spec_1",
+   "method": "GET",
+   "path": "/openapi/v1/openapi.json",
+   "params": null,
+   "body": null,
+   "status": 404,
+   "content_type": "application/json; charset=utf-8",
+   "bytes": 138,
+   "saved_as": "openapi_spec_1.json",
+   "error_excerpt": "{\"type\":\"https://httpstatuses.io/404\",\"title\":\"NotFound\",\"status\":404,\"traceId\":\"00-aa4d433353184302bcc8ad9ca7c11919-08452639417e6b02-00\"}"
+  },
+  {
+   "name": "openapi_spec_2",
+   "method": "GET",
+   "path": "/openapi/v2/openapi.json",
+   "params": null,
+   "body": null,
+   "status": 404,
+   "content_type": "application/json; charset=utf-8",
+   "bytes": 138,
+   "saved_as": "openapi_spec_2.json",
+   "error_excerpt": "{\"type\":\"https://httpstatuses.io/404\",\"title\":\"NotFound\",\"status\":404,\"traceId\":\"00-9eb19093533041f0974e119808b55cc5-a60f54f9d5380f52-00\"}"
+  },
+  {
+   "name": "openapi_spec_3",
+   "method": "GET",
+   "path": "/swagger/v1/swagger.json",
+   "params": null,
+   "body": null,
+   "status": 404,
+   "content_type": "application/json; charset=utf-8",
+   "bytes": 138,
+   "saved_as": "openapi_spec_3.json",
+   "error_excerpt": "{\"type\":\"https://httpstatuses.io/404\",\"title\":\"NotFound\",\"status\":404,\"traceId\":\"00-4239705c85c14de89ee4fae7ca3fe680-a87ee339bc7043dc-00\"}"
+  },
+  {
+   "name": "openapi_spec_4",
+   "method": "GET",
+   "path": "/openapi/openapi.json",
+   "params": null,
+   "body": null,
+   "status": 404,
+   "content_type": "application/json; charset=utf-8",
+   "bytes": 138,
+   "saved_as": "openapi_spec_4.json",
+   "error_excerpt": "{\"type\":\"https://httpstatuses.io/404\",\"title\":\"NotFound\",\"status\":404,\"traceId\":\"00-0c3080bf379444c98631d7bfc31335f5-10e1922173771b54-00\"}"
   }
  ]
 }

@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<title id="jgbasq">进口食品境外生产企业注册信息</title>
+	<base href="../../" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta content="width=device-width, height=device-height,initial-scale=1.0">
+	<link rel="stylesheet" type="text/css" href="../../cfppwebserver/static/css/bootstrap.min.css" />
+	<link rel="stylesheet" href="../../cfppwebserver/static/css/fillingPasta.css" />
+	<link rel="stylesheet" type="text/css" href="../../cfppwebserver/static/css/font-awesome.min.css" />
+	<link rel="stylesheet" href="../../cfppwebserver/static/css/specialDiet.css" />
+	<link type="text/css" rel="stylesheet" href="../../cfppwebserver/static/js/cfpp/autocompleter/jquery.autocompleter.css">
+	<link type="text/css" rel="stylesheet" href="../../cfppwebserver/static/js/cfpp/autocompleter/jquery.autocompleter-suggest.css">
+	<link type="text/css" rel="stylesheet" href="../../cfppwebserver/static/css/bootstrap-table.min.css">
+	<link type="text/css" rel="stylesheet" href="../../cfppwebserver/static/css/style.css">
+	<link type="text/css" rel="stylesheet" href="../../cfppwebserver/static/css/dec_style.css">
+	<link rel="stylesheet" type="text/css" href="../../cfppwebserver/static/js/layer/skin/default/layer.css" />
+	<style>
+		body{
+			min-width:1200px;
+			overflow:auto;
+		}
+		#table{
+			width:90%;
+		}
+
+		.materal{
+			width:13px;
+			height:13px;
+			margin-left:20px !important;
+			margin-right:10px !important;
+		}
+		.formFlex div{
+			display: flex;
+			justify-content: space-between;
+		}
+		.formFlex div div{
+			width: 200px;
+			justify-content: end;
+			padding:10px;
+		}
+		.formFlex div div input{
+			margin-right: 8px;
+		}
+		.footer{
+			text-align: center;
+			width:100%;
+			z-index:11111;
+		}
+		.form-group {
+			width: 100%;
+		}
+
+		.steps {
+			float: right;
+			padding-bottom: 80px;
+			margin-right: 10%;
+		}
+
+		.formFlex {
+			float: left;
+			width: 100%;
+		}
+		.btn-primary{
+			background-color: #096AC6 !important;
+			padding:6px 12px !important;
+			height:auto !important;
+		}
+		table{
+			table-layout: fixed;
+			font-size:12px;
+		}
+		td{
+			word-break: break-all;
+			word-wrap: break-word;
+			font-size:12px;
+		}
+		.control-label{
+			padding-right:15px;
+
+		}
+		.autocompleter{
+			top:44px;
+		}
+		.spanFontSize{
+			font-size:12px;
+			margin-top: -8px;
+			display: inherit;
+		}
+		.th-inner span{
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+		.bootstrap-table .table>tbody>tr>td{
+			padding:1px 10px !important;
+		}
+		.table-bordered{
+			border:none !important;
+		}
+		.fixed-table-container{
+			border:none !important;
+		}
+		.itswTable>thead>tr>th{
+			border-color:#e6d5d5 !important;
+		}
+		/* 			.table>tbody>tr>td:nth-child(3),.table>tbody>tr>td:nth-child(4),.table>tbody>tr>td:nth-child(5),.table>tbody>tr>td:nth-child(6),.table>tbody>tr>td:nth-child(7){ */
+		/* 				text-align:left !important; */
+		/* 			} */
+		.header{
+			background:url(../../cfppwebserver/static/img/head_bg.jpg) repeat-x;
+			/* 				height:196px; */
+			/* 				height:124px; */
+			padding:30px 0;
+			display:flex;
+			align-items:center;
+			padding-left:100px;
+		}
+		.header img{
+			height:71px;
+		}
+		.footer{
+			background:url(../../cfppwebserver/static/img/head_bg.jpg) repeat-x;
+			height:70px;
+			text-align:center;
+			margin:0;
+		}
+		.footer p{
+			color:#fff;
+		}
+		.topTestMr h2{
+			color:#727272;
+			font-size:20px;
+			text-align:center;padding-top:20px;margin-top:0;font-family: '华文中宋'
+		}
+		.topTestMr h4{
+			color:#ccc;
+			font-size:14px;
+			font-weight:500;
+		}
+		.topText{
+			position:relative;
+			color:#333;
+			font-weight:bold;
+		}
+		.topText h2{
+			font-weight:bold;
+			color:#333;
+		}
+		.topText h4{
+			color:#333;
+		}
+		.topText::after{
+			content: "";
+			position: absolute;
+			width: 156px;
+			height: 2px;
+			background-color: #16407a;
+			bottom: -11px;
+			left: 50%;
+			margin-left: -78px;
+
+		}
+
+		.shuoming{
+			margin-left:2.5%;
+			line-height:28px;
+			padding-bottom:15px;
+		}
+		.shuoming div,.shuoming p{
+			font-size:14px;
+		}
+		.shuoming div{
+			color:#333;
+		}
+		.shuoming p{
+			color:#ccc;
+			line-height:24px;
+			margin-bottom:0;
+		}
+		/*标题文字*/
+		.title{
+			width:1200px;
+			margin:0 auto;
+			display:flex;
+			border-bottom:1px solid #9c9c9c;
+		}
+		.title1 div{
+			font-size:18px;
+			font-weight: 900;
+			line-height: 20px;
+		}
+		.title .title1{
+			width:90%;
+			padding-top:20px;
+			padding-bottom:10px;
+		}
+		.title .title2{
+			width:10%;
+			padding-top: 38px;
+		}
+		.title .title2 a{
+			color:#23527c;
+			font-size:16px;
+			border-bottom:1px solid #23527c;
+		}
+		/*企业基本信息*/
+		.qiye_xx{
+			width:1200px;
+			margin:0 auto;
+			background:#f0f0f0;
+			border:1px solid #b6b6b6;
+			padding-left:24px;
+			margin-top:16px;
+			padding-top:20px;
+			padding-bottom: 10px;
+		}
+		.qiye_xx li{
+			line-height: 38px;
+			display:flex;
+		}
+		.qiye_xx li span{
+			color: #333;
+			font-size:14px;
+			font-weight: 900;
+		}
+		/*鼠标画上文字加粗*/
+		.table-hover>tbody>tr:hover{
+			cursor: pointer;
+		}
+		.table-hover>tbody>tr:hover td{
+			font-weight:bold;
+		}
+		.shuoming .isJpn{
+			color:#f00;
+			display:none;
+		}
+		#status{
+			width:100%;
+			height:100%;
+			border: none;
+			height: 31px;
+			appearance: none;
+			-moz-appearance: none;
+			-webkit-appearance: none;
+		}
+		#sanjiaoxing:after {
+			position: absolute;
+			right: 7%;
+			top: 57%;
+			content: " ";
+			width: 0;
+			height: 0;
+			border-left: 4px solid transparent;
+			border-right: 4px solid transparent;
+			border-top: 4px solid black;
+			pointer-events: none;
+		}
+	</style>
+</head>
+
+<body>
+
+
+<div class="">
+	<div class="header">
+		<img src="../../cfppwebserver/static/img/logo2.png"/>
+	</div>
+	<div style="margin:10px;margin-top:0; background:#fff;" class = "queryListInfo">
+		<div id="queryList">
+			<div style="width:95%;display:flex;margin:0 auto;margin-bottom:10px;border-bottom:1px solid #ccc;padding-bottom:10px;" id="header">
+				<div style="text-align:center;flex:1;" class="topText topTestMr topText1" onclick="tabClick('0')">
+					<h2 style="">进口食品境外生产企业注册信息</h2>
+					<h4 style="text-align:center;">Registration information of overseas manufacturers of imported food</h4>
+					<span></span>
+				</div>
+				<div style="text-align:center;flex:1;" class="topTestMr topText2" onclick="tabClick('1')">
+					<h2 style="">港澳台地区生产企业注册信息</h2>
+					<!-- <h4 style="text-align:center;">Registration information of overseas manufacturers of imported food</h4> -->
+				</div>
+			</div>
+			<form id="form" class="form-horizontal form" role="from" style="width: 95%;position: relative;margin:0 auto;border-bottom:1px solid #ccc;">
+				<div style="display:flex;justify-content: space-between;margin:0 auto;padding:10px;padding-top:0;padding-bottom:0;">
+					<div class="flexDiv" style="display:flex;    margin: 0 auto;">
+						<label for="firstname" class="control-label"  style="width:160px;display: flex;flex-direction: column;">
+							<p style="margin-bottom:5px;">产品类别</p>
+							<p style="margin-bottom: 0;align-items: flex-end;">CATEGORY</p>
+						</label>
+						<div class="flexDivDiv" style="width:250px;position: relative;    align-items: flex-end;">
+							<input type="hidden" class="form-control" id="registerType" name="registerType">
+							<input type="text" class="form-control" id="registerTypeName" placeholder="按空格键检索支持模糊查询" name="registerTypeName"/>
+							<div class="input-group-btn" style="position: absolute;right: 35px;top: 7px;height:31px;">
+								<button type="button" class="btn btn-white dropdown-toggle btn_select"
+										data-toggle="dropdown"  style="border: none;background: none">
+									<span class="caret"></span>
+								</button>
+								<ul class="dropdown-menu dropdown-menu-right" role="menu">
+								</ul>
+							</div>
+						</div>
+					</div>
+
+					<div class="flexDiv" style="display:flex;    margin: 0 auto;">
+						<label for="firstname" class="control-label"  style="width:160px;display: flex;flex-direction: column;">
+							<p style="margin-bottom:5px;" class="country">所在国家（地区）</p>
+							<p style="margin-bottom: 0;align-items: flex-end;"  class="countryCn">COUNTRY(REGION)</p>
+						</label>
+						<div class="flexDivDiv" style="width:250px;position: relative;    align-items: flex-end;">
+							<input type="hidden" class="form-control" id="country" name="country">
+							<input type="text" class="form-control" id="countryName" placeholder="按空格键检索支持模糊查询" name="countryName"/>
+							<div class="input-group-btn" style="position: absolute;right: 35px;top: 7px;height:31px;">
+								<button type="button" class="btn btn-white dropdown-toggle btn_select"
+										data-toggle="dropdown"  style="border: none;background:none">
+									<span class="caret"></span>
+								</button>
+								<ul class="dropdown-menu dropdown-menu-right" role="menu">
+								</ul>
+							</div>
+						</div>
+					</div>
+					<div class="flexDiv" style="display:flex;    margin: 0 auto;">
+						<label for="firstname" class=" control-label"  style="width:160px;display: flex;flex-direction: column;">
+							<p style="margin-bottom:5px;" class="countrCode">所在国家（地区）注册编号</p>
+							<p style="margin-bottom: 0;align-items: flex-end;">OVERSEAS REG. NO.</p>
+						</label>
+						<div class="flexDivDiv" style="width:250px;    align-items: flex-end;">
+							<input type="text" name="orgNo" class="form-control" placeholder="请输入所在国家（地区）注册编号" id="orgNo"  />
+						</div>
+					</div>
+				</div>
+
+
+				<div style="display:flex;justify-content: space-between;margin:0 auto;padding:10px;padding-bottom:0;padding-top:8px;">
+
+					<div class="flexDiv" style="display:flex;    margin: 0 auto;">
+						<label for="firstname" class=" control-label" style="width:160px;display: flex;flex-direction: column;">
+							<p style="margin-bottom:5px;">在华注册编号</p>
+							<p style="margin-bottom: 0;align-items: flex-end;">CHINA REG. NO.</p>
+						</label>
+						<div class="flexDivDiv" style="width:250px;    align-items: flex-end;">
+							<input type="text" name="regCo" class="form-control" placeholder="请输入在华注册编号" id="regCo"  />
+						</div>
+
+					</div>
+
+					<div class="flexDiv" style="display:flex;    margin: 0 auto;">
+						<label for="firstname" class=" control-label" style="width:160px;display: flex;flex-direction: column;">
+							<p style="margin-bottom:5px;">状态</p>
+							<p style="margin-bottom: 0;align-items: flex-end;">STATE</p>
+						</label>
+						<div class="flexDivDiv" style="width:250px; position: relative;   align-items: flex-end;"  id="sanjiaoxing">
+							<select name="status" id="status" class="form-control select" placeholder="请选择状态">
+								<option value="ALL" >全部</option>
+								<option value="R" >有效</option>
+								<option value="P" >暂停进口</option>
+							</select>
+						</div>
+
+					</div>
+					<div class="flexDiv" style="display:flex;    margin: 0 auto;">
+						<label for="firstname" class=" control-label" style="width:160px;display: flex;flex-direction: column;">
+							<p style="margin-bottom:5px;">企业名称</p>
+							<p style="margin-bottom: 0;align-items: flex-end;">ENTERPRISE NAME</p>
+						</label>
+						<div class="flexDivDiv" style="width:250px;    align-items: flex-end;">
+							<input type="text" name="enterpriseName" class="form-control" placeholder="请输入企业名称" id="enterpriseName1"  />
+						</div>
+					</div>
+
+				</div>
+				<div style="display:flex;justify-content:flex-end;margin:0 auto;padding:10px;padding-bottom:0;padding-top:8px;margin-right: 11.5%">
+					<p style="margin-bottom: 0;color: red;display: none"id="selectCountry">请选择所在国家（地区）</br>Please select the country(region)</p>
+				</div>
+				<div style="padding:0 20px;text-align: center;padding-top:10px;">
+					<button type="button" onclick="chaxun()" class="btn btn-primary" style="font-size: 12px;padding: 2px;"><i class="fa fa-search"></i>&nbsp;<span id="chaxun">查询</span></button>
+					<button type="button" onclick="chongzhi()" class="btn btn-primary" style="font-size: 12px;padding: 2px;"><i class="fa fa-refresh"></i>&nbsp;<span id="Reset">重置</span></button>
+					<!--					<button type="button" onclick="productList()" class="btn btn-primary" style="font-size: 12px;padding: 2px;"><i class="fa fa-list-alt"></i>&nbsp;<span id="productInfo">可注册产品</span></button>-->
+				</div>
+			</form>
+
+			<div class="form" style="width:96.5%;margin-left:7px;margin:0 auto;">
+				<div style="">
+					<div class="col-sm-12 table-responsive">
+						<div class="row itswRow">
+							<table id="ciferMessStatVoList" class="itswTable table-fixed" style="padding-bottom: 30px;">
+								<thead>
+								<tr>
+									<th data-field="orderNumber" class="text-center" title="序号 No." data-formatter='initFormatter' data-width="50px" id="thOrderNo">
+										序号<br/><span class="spanFontSize">NO.</span>
+									</th>
+									<th data-field="countryName" class="text-center" data-width="100px" title="国家（地区）COUNTRY(REGION)" id="sqlshao">
+										<span class="countryTable">国家（地区）</span><br/>
+										<span class="spanFontSize countryTableCn">COUNTRY(REGION)</span>
+									</th>
+									<th data-field="registerTypeName" data-width="100px" class="text-center" title="产品类别  TYPE" id="szgzcbh1">
+										产品类别<br/>
+										<span class="spanFontSize">CATEGORY</span>
+									</th>
+									<th data-field="regCo" class="text-center" data-width="130px" title="在华注册编号   CHINA REG.NO." id="qymc">
+										在华注册编号<br/>
+										<span class="spanFontSize">CHINA REG. NO.</span>
+									</th>
+									<th data-field="orgNo" class="text-center" data-width="150px" title="所在国家（地区）注册编号   OVERSEAS REG. NO." id="sqsjian">
+										<span class="countryCodeTable">所在国家（地区）注册编号</span><br/>
+										<span class="spanFontSize">OVERSEAS REG. NO.</span>
+									</th>
+									<th data-field="enterpriseName" class="text-center" data-width="220px"  data-width="" title="企业名称   NAME" id="cplbie1">
+										企业名称<br/>
+										<span class="spanFontSize">NAME</span>
+									</th>
+									<th data-field="enterpriseAddress" data-width="220px" title="生产场所地址   ADDRESS" data-width="" class="text-center" id="sqlxing">
+										生产场所地址<br/>
+										<span class="spanFontSize">ADDRESS</span>
+									</th>
+									<th data-field="startDate"  data-width="80px" title="注册日期   REG. DATE" class="text-center" id="sqztai">
+										注册日期<br/>
+										<span class="spanFontSize">REG. DATE</span>
+									</th>
+									<th data-field="endDate"  data-width="80px" title="注册有效期   REG. EXPIRE DATE" class="text-center" id="sqztai">
+										注册有效期<br/>
+										<span class="spanFontSize">EXP. DATE</span>
+									</th>
+									<th data-field="statusName" title="状态  STATE" class="text-center" data-width="80px" id="thOpear">
+										状态<br/>
+										<span class="spanFontSize">STATE</span>
+									</th>
+									<!--												<th data-field="action" class="text-center" title="操作 ACTION" data-formatter='actionCz' data-width="50px" id="Action">-->
+									<!--													操作<br/><span class="spanFontSize">ACTION</span>-->
+									<!--												</th>-->
+								</tr>
+								</thead>
+							</table>
+
+						</div>
+					</div>
+					<div style="clear:both;"></div>
+				</div>
+
+			</div>
+		</div>
+		<div id="queryStatus" style="display:none;">
+			<div style="padding:0 20px;text-align: left;;margin-top: 10px;margin-left: 7px;">
+				<button type="button" onclick="returnClick()" class="btn btn-primary" style="font-size: 12px;padding: 2px;"><i class="fa fa-arrow-left"></i>&nbsp;<span >返回</span></button>
+			</div>
+			<div class="form" style="width:96.5%;margin-left:7px;margin:0 auto;">
+				<div style="">
+					<div class="col-sm-12 table-responsive">
+						<div class="row itswRow">
+							<table id="ciferStatusList" class="itswTable table-fixed" style="padding-bottom: 30px;">
+								<thead>
+								<tr>
+									<th data-field="orderNumber" class="text-center" title="序号 No." data-formatter='initStatusOrder' data-width="50px" id="statusOrderNo">
+										序号<br/><span class="spanFontSize">NO.</span>
+									</th>
+									<th data-field="busiTypeName" title="暂停进口/恢复进口  IMPORT SUSPENSION/IMPORT RESUMPTION" class="text-center" data-width="150px" id="thOpear">
+										暂停进口/恢复进口<br/>
+										<span class="spanFontSize">IMPORT SUSPENSION/IMPORT RESUMPTION</span>
+									</th>
+									<th data-field="effectiveDate" title="生效时间  VALID TIME" class="text-center" data-width="150px" id="thOpear">
+										生效时间<br/>
+										<span class="spanFontSize">VALID TIME</span>
+									</th>
+								</tr>
+								</thead>
+							</table>
+
+						</div>
+					</div>
+					<div style="clear:both;"></div>
+				</div>
+
+			</div>
+		</div>
+		<div class="shuoming">
+			<div style="">说明：</div>
+			<p>1.“产品类别”栏内容，指该企业产品所属类别，准许向中国境内出口的具体产品以注册系统内批准的产品信息为准</p>
+			<p>2.“注册有效期”栏内容，指该企业有效期截止时间</p>
+			<p>3.“状态”栏中，“暂停进口”所列时间，指自该日期起启运的食品暂停向中国境内出口</p>
+		</div>
+	</div>
+
+	<div class="productInfo" style="display:none;">
+		<div class="title">
+			<div class="title1">
+				<div class="title1Cn">进口食品境外生产企业产品注册信息</div>
+				<div class="title1En">The product registration information of overseas manufacturers of imported foods</div>
+			</div>
+			<div class="title2">
+				<a href="javascript:;" onclick="fanhui()">返回</a>
+			</div>
+		</div>
+		<div class="qiye_xx">
+			<ul>
+				<li>
+					<span style="flex-shrink: 0;width:150px;">企业名称（NAME）:</span>
+					<span style="display:inline-block;word-break: break-all;white-space: normal;" id="enterpriseName">LAITERIE DE MONTAIGU-SAS SABOURIN</span>
+				</li>
+				<li>
+					<span style="flex-shrink: 0;width:296px;">所在国家(地区) 注册编号(CHINA REG.NO.) : </span>
+					<span style="display:inline-block;word-break: break-all;white-space: normal;" id="orgNo1">5690000-00401979-0101</span>
+				</li>
+				<li>
+					<span style="flex-shrink: 0;width:225px;">在华注册编号(CHINA REG.NO.) :</span>
+					<span style="display:inline-block;word-break: break-all;white-space: normal;" id="regCo1">CAUS17011404300001</span>
+				</li>
+				<li>
+					<span style="flex-shrink: 0;width:162px;">产品类别(CATEGORY) :</span>
+					<span style="display:inline-block;word-break: break-all;white-space: normal;" id="registerTypeName1">婴幼儿配方乳品</span>
+				</li>
+			</ul>
+		</div>
+
+		<div class="form" style="width:1200px;margin-left:7px;margin:0 auto;">
+			<div style="">
+				<div class="col-sm-12 table-responsive">
+					<div class="row itswRow">
+						<table id="ciferMessStatVoList1" class="itswTable table-fixed" style="padding-bottom: 30px;">
+							<thead>
+							<tr>
+								<th data-field="orderNumber" class="text-center" title="序号 No." data-formatter='initFormatter' data-width="50px" id="thOrderNo">
+									序号<br/><span class="spanFontSize">NO.</span>
+								</th>
+								<th data-field="hsCode" class="text-center" data-width="100px" title="HS编码 HS CODE" id="HSCODE">
+									<span class="countryTable">HS编码</span><br/>
+									<span class="spanFontSize countryTableCn">HS CODE</span>
+								</th>
+								<th data-field="hsCodeName" data-width="100px" class="text-center" title="商品名称 PRODUCT NAME" id="PRODUCTNAME">
+									商品名称<br/>
+									<span class="spanFontSize">PRODUCT NAME</span>
+								</th>
+								<th data-field="ciqCode" class="text-center" data-width="130px" title="检验检疫编码  CIQ CODE" id="CIQCODE">
+									检验检疫编码<br/>
+									<span class="spanFontSize">CIQ CODE</span>
+								</th>
+								<th data-field="ciqCodeName" class="text-center" data-width="150px" title="检验检疫名称  CIQ NAME" id="CIQNAME">
+									<span class="countryCodeTable">检验检疫名称</span><br/>
+									<span class="spanFontSize">CIQ NAME</span>
+								</th>
+
+							</tr>
+							</thead>
+						</table>
+
+					</div>
+				</div>
+				<div style="clear:both;"></div>
+			</div>
+
+		</div>
+	</div>
+
+
+</div>
+
+<div class="footer">
+	<p>版权所有：中华人民共和国海关总署 未经协议授权禁止转载</p>
+	<p>运行维护单位：中国电子口岸数据中心</p>
+</div>
+<script src="../../cfppwebserver/static/js/jquery.min.js"></script>
+<script src="../../cfppwebserver/static/js/jquery-formHelp.js"></script>
+<script src="../../cfppwebserver/static/js/jquery.validate.js"></script>
+<script src="../../cfppwebserver/static/js/jquery.form.js"></script>
+<script src="../../cfppwebserver/static/js/bootstrap.min.js"></script>
+<script src="../../cfppwebserver/static/js/layer/layer.js"></script>
+<script src="../../cfppwebserver/static/js/laydate.js"></script>
+<script src="../../cfppwebserver/static/js/Mu64.js"></script>
+<script src="../../cfppwebserver/static/js/SwCaHu_p.js"></script>
+<script src="../../cfppwebserver/static/js/cfpp/cifer_enum.js"></script>
+<script src="../../cfppwebserver/static/js/cfpp/cifer_common.js"></script>
+<!-- 		<script type="text/javascript" src="../../cfppwebserver/static/js/swutils/swUtil.js"></script> -->
+<script type="text/javascript" src="../../cfppwebserver/static/js/cfpp/autocompleter/jquery.autocompleter.js"></script>
+<script type="text/javascript" src="../../cfppwebserver/static/js/cfpp/autocompleter/autocomp.js"></script>
+<script src="../../cfppwebserver/static/js/bootstrap-table/bootstrap-table-1.14.1.js"></script>
+<script src="../../cfppwebserver/static/js/bootstrap-table/bootstrap-table-export.js"></script>
+<script src="../../cfppwebserver/static/js/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js"></script>
+<!--<script src="../../cfppwebserver/static/js/swutils/swUtil.js"></script>-->
+<script src="../../cfppwebserver/static/js/cfpp/index.js"></script>
+</body>
+
+</html>
