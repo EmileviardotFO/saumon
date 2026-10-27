@@ -1,5 +1,5 @@
 {
- "run_utc": "2026-10-27T19:05:37",
+ "run_utc": "2026-10-27T23:13:43",
  "ref_year": 2026,
  "ref_week": 42,
  "calls": [
@@ -11,7 +11,7 @@
    "body": {},
    "status": 200,
    "content_type": "application/json; charset=utf-8",
-   "bytes": 1226661,
+   "bytes": 1226648,
    "structure": [
     {
      "localityWeekId": "int",
@@ -1785,7 +1785,7 @@
    "content_type": "application/json; charset=utf-8",
    "bytes": 138,
    "saved_as": "openapi_spec_1.json",
-   "error_excerpt": "{\"type\":\"https://httpstatuses.io/404\",\"title\":\"NotFound\",\"status\":404,\"traceId\":\"00-aa4d433353184302bcc8ad9ca7c11919-08452639417e6b02-00\"}"
+   "error_excerpt": "{\"type\":\"https://httpstatuses.io/404\",\"title\":\"NotFound\",\"status\":404,\"traceId\":\"00-100c62a32cf848d6ae3e8d5dbe8f63c1-cce3b1534c5e8d02-00\"}"
   },
   {
    "name": "openapi_spec_2",
@@ -1797,7 +1797,7 @@
    "content_type": "application/json; charset=utf-8",
    "bytes": 138,
    "saved_as": "openapi_spec_2.json",
-   "error_excerpt": "{\"type\":\"https://httpstatuses.io/404\",\"title\":\"NotFound\",\"status\":404,\"traceId\":\"00-9eb19093533041f0974e119808b55cc5-a60f54f9d5380f52-00\"}"
+   "error_excerpt": "{\"type\":\"https://httpstatuses.io/404\",\"title\":\"NotFound\",\"status\":404,\"traceId\":\"00-4d3af3eae4bc448aae9650a676d45978-eb07a83326040026-00\"}"
   },
   {
    "name": "openapi_spec_3",
@@ -1809,7 +1809,7 @@
    "content_type": "application/json; charset=utf-8",
    "bytes": 138,
    "saved_as": "openapi_spec_3.json",
-   "error_excerpt": "{\"type\":\"https://httpstatuses.io/404\",\"title\":\"NotFound\",\"status\":404,\"traceId\":\"00-4239705c85c14de89ee4fae7ca3fe680-a87ee339bc7043dc-00\"}"
+   "error_excerpt": "{\"type\":\"https://httpstatuses.io/404\",\"title\":\"NotFound\",\"status\":404,\"traceId\":\"00-c096b762f0e84b67b6748f0790fb0e2b-93343f8777a87a08-00\"}"
   },
   {
    "name": "openapi_spec_4",
@@ -1821,7 +1821,7 @@
    "content_type": "application/json; charset=utf-8",
    "bytes": 138,
    "saved_as": "openapi_spec_4.json",
-   "error_excerpt": "{\"type\":\"https://httpstatuses.io/404\",\"title\":\"NotFound\",\"status\":404,\"traceId\":\"00-0c3080bf379444c98631d7bfc31335f5-10e1922173771b54-00\"}"
+   "error_excerpt": "{\"type\":\"https://httpstatuses.io/404\",\"title\":\"NotFound\",\"status\":404,\"traceId\":\"00-466f3d82ddfe46e690cb2e9ee4dc1656-5b2bf45b6e17ca75-00\"}"
   }
  ]
 }

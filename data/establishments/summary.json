@@ -1,5 +1,5 @@
 {
- "run_utc": "2026-10-27T19:05:48+00:00",
+ "run_utc": "2026-10-27T23:13:54+00:00",
  "pages": [
   {
    "name": "mattilsynet_fishery",
@@ -16,7 +16,7 @@
    "url": "https://www.mattilsynet.no/godkjente-produkter-og-virksomheter",
    "status": 200,
    "content_type": "text/html",
-   "bytes": 92948,
+   "bytes": 102436,
    "file_links": []
   },
   {
@@ -41,6 +41,14 @@
    "content_type": "text/html;charset=UTF-8",
    "bytes": 22349,
    "file_links": []
+  },
+  {
+   "name": "mattilsynet_codes",
+   "url": "https://www.mattilsynet.no/mat-og-drikke/matproduksjon/fisk-og-sjomat/forklaring-til-produksjonsformer-for-mottak-slakting-og-produksjon-av-fiskerivarer-og-muslinger",
+   "status": 200,
+   "content_type": "text/html",
+   "bytes": 129340,
+   "file_links": []
   }
  ],
  "files": [
@@ -50,6 +58,54 @@
    "content_type": "text/csv",
    "bytes": 137238,
    "saved_as": "mattilsynet_fishery_file1.csv"
+  },
+  {
+   "link": "https://ciferquery.singlewindow.cn/cfppwebserver/static/js/Mu64.js",
+   "status": 200,
+   "bytes": 3621,
+   "saved_as": "gacc_js_8.js"
+  },
+  {
+   "link": "https://ciferquery.singlewindow.cn/cfppwebserver/static/js/SwCaHu_p.js",
+   "status": 200,
+   "bytes": 28156,
+   "saved_as": "gacc_js_9.js"
+  },
+  {
+   "link": "https://ciferquery.singlewindow.cn/cfppwebserver/static/js/cfpp/cifer_enum.js",
+   "status": 200,
+   "bytes": 23892,
+   "saved_as": "gacc_js_10.js"
+  },
+  {
+   "link": "https://ciferquery.singlewindow.cn/cfppwebserver/static/js/cfpp/cifer_common.js",
+   "status": 200,
+   "bytes": 9425,
+   "saved_as": "gacc_js_11.js"
+  },
+  {
+   "link": "https://ciferquery.singlewindow.cn/cfppwebserver/static/js/swutils/swUtil.js",
+   "status": 200,
+   "bytes": 68386,
+   "saved_as": "gacc_js_12.js"
+  },
+  {
+   "link": "https://ciferquery.singlewindow.cn/cfppwebserver/static/js/cfpp/autocompleter/autocomp.js",
+   "status": 200,
+   "bytes": 22362,
+   "saved_as": "gacc_js_14.js"
+  },
+  {
+   "link": "https://ciferquery.singlewindow.cn/cfppwebserver/static/js/swutils/swUtil.js",
+   "status": 200,
+   "bytes": 68386,
+   "saved_as": "gacc_js_18.js"
+  },
+  {
+   "link": "https://ciferquery.singlewindow.cn/cfppwebserver/static/js/cfpp/index.js",
+   "status": 200,
+   "bytes": 42191,
+   "saved_as": "gacc_js_19.js"
   }
  ]
 }
