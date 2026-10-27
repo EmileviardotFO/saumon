@@ -563,7 +563,7 @@
       <div class="sig-title" style="margin-top:6px;">1 · Licensed capacity (MTB) against standing biomass, by zone</div>
       <div class="sig-sub" id="rgPoSub"></div>
       <table class="sig-table">
-        <thead><tr><th class="name" rowspan="2">Zone</th><th rowspan="2">MTB (t)</th>
+        <thead><tr><th class="name" rowspan="2">Zone</th><th rowspan="2" title="All sea-based salmon food-fish licences in the zone, including research, display, education and slaughter-cage licences, whose fish are counted in the biomass">MTB (t)</th>
           <th class="grp sep-left" colspan="2">Salmon biomass (t)</th><th class="grp sep-left" colspan="2">Fish in the sea (millions)</th><th class="grp sep-left" colspan="3">Use of licensed capacity</th></tr>
           <tr><th class="sep-left" id="rgThB1"></th><th id="rgThB2"></th><th class="sep-left" id="rgThF1"></th><th id="rgThF2"></th><th class="sep-left" style="text-align:left;min-width:180px" id="rgThU"></th><th id="rgThU1"></th><th id="rgThU2"></th></tr></thead>
         <tbody id="tbodyRgPo"></tbody><tfoot id="tfootRgPo"></tfoot>
@@ -2118,9 +2118,11 @@ function renderRegister() {
   const f1m = v => isFinite(v) ? v.toFixed(1) : '—';
   ['rgThB1', 'rgThU1', 'rgThF1'].forEach(id => document.getElementById(id).textContent = mlab);
   ['rgThB2', 'rgThU2', 'rgThF2'].forEach(id => document.getElementById(id).textContent = mlabP);
-  document.getElementById('rgThU').textContent = `Biomass ÷ MTB, ${mlab}`;
+  document.getElementById('rgThU').textContent = `Biomass ÷ MTB (how full), ${mlab}`;
   document.getElementById('rgPoSub').innerHTML =
-    `Standing salmon biomass at the end of ${mlab} (Biomasseregisteret) divided by the licensed maximum (MTB) of the zone. ` +
+    `Standing salmon biomass at the end of ${mlab} (Biomasseregisteret) divided by the licensed maximum (MTB) of the zone — ` +
+    `<b>biomass ÷ MTB</b>, i.e. how full the zone is. MTB here counts every sea-based salmon licence, including research, display, education and slaughter-cage licences, since their fish are in the biomass. ` +
+    `MTB is enforced per company and per county, not per zone, so a zone can read slightly above 100% when a company keeps more fish there and less in a neighbouring zone of the same county (zones 3 and 7 typically). ` +
     `Above ~85–90% farmers are close to the ceiling and must harvest; low values leave room to grow fish on. ` +
     `Set the month with the selectors at the top.`;
   const f0 = v => isFinite(v) ? Math.round(v).toLocaleString('en-US') : '—';
@@ -2130,7 +2132,7 @@ function renderRegister() {
   let html = '', tm = 0, tb = 0, tbp = 0, tf = 0, tfp = 0;
   const mapVals = {}, mapHtml = {};
   for (let po = 13; po >= 1; po--) {
-    const mtb = BWR.mtb_po[String(po)] || 0, a = bN[po], b = bP[po];
+    const mtb = (BWR.mtb_po_all || BWR.mtb_po)[String(po)] || 0, a = bN[po], b = bP[po];
     const u = up(a, mtb), uP = up(b, mtb);
     tm += mtb; tb += a || 0; tbp += b || 0; tf += fN[po] || 0; tfp += fP[po] || 0;
     html += `<tr><td class="name">${po}. ${PO_NAMES[po]}</td><td>${f0(mtb)}</td>` +
