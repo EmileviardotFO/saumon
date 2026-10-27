@@ -61,11 +61,25 @@ jobs:
         continue-on-error: true
         run: python3 scripts/parse_ssb.py
 
+      - name: Sante des poissons par zone (BarentsWatch)
+        # Poux, temperature de la mer, maladies et traitements, par zone et par
+        # semaine. Source complementaire : un echec ne bloque pas la publication.
+        # Premier passage : remonte a 2018 par tranches de 160 semaines par
+        # execution (environ 3 executions pour tout l'historique).
+        continue-on-error: true
+        timeout-minutes: 60
+        env:
+          BW_CLIENT_ID: ${{ secrets.BW_CLIENT_ID }}
+          BW_CLIENT_SECRET: ${{ secrets.BW_CLIENT_SECRET }}
+        run: python3 scripts/update_barentswatch.py
+
       - name: Publier data.json (et les fichiers bruts telecharges)
         run: |
           git config user.name  "github-actions"
           git config user.email "actions@github.com"
-          git add data/data.json pdf/ xlsx/biomasse/
+          # data/ entier : data.json et le cache des sites BarentsWatch, qui
+          # n'existe pas tant que le premier passage n'a pas abouti.
+          git add data/ pdf/ xlsx/biomasse/
           if git diff --staged --quiet; then
             echo "Aucun changement."
           else
