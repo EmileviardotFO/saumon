@@ -192,6 +192,10 @@ def build_register(sites):
         'site_name': {str(s['no']): s.get('name') or '' for s in sites.values() if s.get('no')},
         'site_po': {str(s['no']): s.get('po') for s in sites.values() if s.get('no') and s.get('po')
                     and s.get('placement') != 'LAND' and not s.get('slaughter')},
+        # capacite autorisee du site (lokalitets-MTB, tonnes) : taille du site
+        'site_cap': {str(s['no']): round(s['cap']) for s in sites.values() if s.get('no') and s.get('po')
+                     and s.get('placement') != 'LAND' and not s.get('slaughter')
+                     and isinstance(s.get('cap'), (int, float)) and s.get('unit') in (None, 'TN')},
         'slaughter_cages': cages,
     }
 
