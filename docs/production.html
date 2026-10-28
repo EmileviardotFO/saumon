@@ -4249,7 +4249,7 @@ let pmGroupF = 'all', pmRolling = false;
 // 'last' (dernier mois publie par SSB), 'custom' (de mois/annee a mois/annee).
 let pmMode = 'top', pmFrom = null, pmTo = null;
 let pmOpenIso = null, pmJustOpened = false;       // pays dont le graphique est deplie
-let pmChartMetric = 'q', pmChartCompare = true;  // mesure du graphique, superposition de l'annee B
+let pmChartMetrics = new Set(['q']), pmChartCompare = true;  // mesure du graphique, superposition de l'annee B
 const PM_COL = ['#5FD3C4', '#F2A65A', '#b79cff', '#7FA8FF'];
 const PM_LONG = ['Fresh whole', 'Fresh fillet', 'Frozen fillet', 'Frozen whole'];
 let pmCols = { q: true, p: true, v: true };
@@ -4517,55 +4517,58 @@ function pmMonthly(byK, iso, keys) {
 
 function pmChartHTML(byK, iso, cname, keysA, keysB, yA, yB, plabel) {
   const mA = pmMonthly(byK, iso, keysA), mB = pmMonthly(byK, iso, keysB);
-  const val = o => {
-    if (o === null) return null;
-    if (pmChartMetric === 'q') return o.kg / 1000;
-    if (pmChartMetric === 'v') return o.nok / 1e6;
-    return o.kg > 0 ? o.nok / o.kg : null;             // prix : pas de prix sans volume
-  };
-  const unit = { q: 't', v: 'M NOK', p: 'NOK/kg' }[pmChartMetric];
   const sel = Array.from(pmSel).sort();
   const has = (m, h) => m[h].some(o => o && o.kg > 0);
   const drawn = sel.filter(h => has(mA, h) || has(mB, h));
   const absent = sel.filter(h => !drawn.includes(h));
-
   const total = m => keysA.map((_, i) => {
     const parts = drawn.map(h => m[h][i]).filter(o => o !== null);
     if (!parts.length) return null;
     return { kg: parts.reduce((s, o) => s + o.kg, 0), nok: parts.reduce((s, o) => s + o.nok, 0) };
   });
-  const series = [];
-  drawn.forEach(h => {
-    series.push({ lab: PM_LONG[h], col: PM_COL[h], yr: yA, dash: null, w: 2.4, op: 1, pts: mA[h].map(val) });
-    if (pmChartCompare) series.push({ lab: PM_LONG[h], col: PM_COL[h], yr: yB, dash: '5,4', w: 1.6, op: .5, pts: mB[h].map(val) });
-  });
-  if (drawn.length > 1) {
-    series.push({ lab: 'Selection total', col: '#e7eef2', yr: yA, dash: null, w: 1.4, op: .85, pts: total(mA).map(val) });
-    if (pmChartCompare) series.push({ lab: 'Selection total', col: '#e7eef2', yr: yB, dash: '5,4', w: 1.1, op: .4, pts: total(mB).map(val) });
-  }
-
-  // Axe vertical : zero pour volume et valeur ; pour le prix, on part d'un
-  // plancher proche du minimum, sinon les variations disparaissent dans le plat.
-  const all = series.flatMap(s => s.pts).filter(v => v !== null && isFinite(v));
-  const W = 1080, H = 300, mL = 70, mR = 20, mT = 16, mBot = 40;
-  const pw = W - mL - mR, ph = H - mT - mBot, n = keysA.length;
-  let svg = '';
-  if (!all.length) {
-    svg = `<text x="${W / 2}" y="${H / 2}" text-anchor="middle" fill="#8fa4b0" font-size="13">No exports of the selected products to ${cname} in this period.</text>`;
-  } else {
-    let lo = pmChartMetric === 'p' ? Math.min(...all) * 0.92 : 0, hi = Math.max(...all) * 1.08;
+  // Une ou plusieurs mesures cochees : un graphique par mesure, empiles, chacun
+  // avec son axe titre (tonnes / NOK par kg / millions de NOK).
+  const METRIC = {
+    q: { name: 'Volume', axis: 'Tonnes per month', unit: 't', val: o => o.kg / 1000 },
+    p: { name: 'Price', axis: 'NOK per kg', unit: 'NOK/kg', val: o => (o.kg > 0 ? o.nok / o.kg : null) },
+    v: { name: 'Value', axis: 'Million NOK per month', unit: 'M NOK', val: o => o.nok / 1e6 },
+  };
+  const metrics = ['q', 'p', 'v'].filter(m => pmChartMetrics.has(m));
+  const multi = metrics.length > 1;
+  const panel = (mk, isLast) => {
+    const M = METRIC[mk], val = o => (o === null ? null : M.val(o));
+    const series = [];
+    drawn.forEach(h => {
+      series.push({ lab: PM_LONG[h], col: PM_COL[h], yr: yA, dash: null, w: 2.4, op: 1, pts: mA[h].map(val) });
+      if (pmChartCompare) series.push({ lab: PM_LONG[h], col: PM_COL[h], yr: yB, dash: '5,4', w: 1.6, op: .5, pts: mB[h].map(val) });
+    });
+    if (drawn.length > 1) {
+      series.push({ lab: 'Selection total', col: '#e7eef2', yr: yA, dash: null, w: 1.4, op: .85, pts: total(mA).map(val) });
+      if (pmChartCompare) series.push({ lab: 'Selection total', col: '#e7eef2', yr: yB, dash: '5,4', w: 1.1, op: .4, pts: total(mB).map(val) });
+    }
+    const all = series.flatMap(s => s.pts).filter(v => v !== null && isFinite(v));
+    const W = 1080, H = multi ? (isLast ? 210 : 180) : 300, mL = 92, mR = 20, mT = 14, mBot = isLast ? 40 : 12;
+    const pw = W - mL - mR, ph = H - mT - mBot, n = keysA.length;
+    let svg = '';
+    if (!all.length) {
+      svg = `<text x="${W / 2}" y="${H / 2}" text-anchor="middle" fill="#8fa4b0" font-size="13">No exports of the selected products to ${cname} in this period.</text>`;
+      return { svg, W, H, series };
+    }
+    // Volume et valeur partent de zero ; le prix d'un plancher proche du minimum.
+    let lo = mk === 'p' ? Math.min(...all) * 0.92 : 0, hi = Math.max(...all) * 1.08;
     if (hi <= lo) hi = lo + 1;
-    const raw = (hi - lo) / 5, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    const raw = (hi - lo) / (multi ? 4 : 5), mag = Math.pow(10, Math.floor(Math.log10(raw)));
     const nn = raw / mag, step = (nn <= 1 ? 1 : nn <= 2 ? 2 : nn <= 2.5 ? 2.5 : nn <= 5 ? 5 : 10) * mag;
     lo = Math.floor(lo / step) * step; hi = Math.ceil(hi / step) * step;
     const X = i => mL + (n === 1 ? pw / 2 : i * pw / (n - 1));
     const Y = v => mT + ph - (v - lo) / (hi - lo) * ph;
-    const fmt = v => v.toLocaleString('en-US', { maximumFractionDigits: pmChartMetric === 'p' ? 2 : (v < 10 ? 1 : 0) });
+    const fmt = v => v.toLocaleString('en-US', { maximumFractionDigits: mk === 'p' ? 2 : (v < 10 ? 1 : 0) });
+    svg += `<text transform="translate(16,${mT + ph / 2}) rotate(-90)" text-anchor="middle" fill="#cfdde4" font-size="12" font-weight="bold">${M.axis}</text>`;
     for (let g = lo; g <= hi + step / 2; g += step) {
       svg += `<line x1="${mL}" x2="${W - mR}" y1="${Y(g)}" y2="${Y(g)}" stroke="#223642"/>`
            + `<text x="${mL - 8}" y="${Y(g) + 4}" text-anchor="end" fill="#8fa4b0" font-size="11">${fmt(g)}</text>`;
     }
-    keysA.forEach((k, i) => {
+    if (isLast) keysA.forEach((k, i) => {
       const st = (SSBX.meta.months[String(k)] || {}).status;
       const lab = MONTHS_FR[(k % 100) - 1].slice(0, 3) + (Math.floor(keysA[0] / 100) !== Math.floor(keysA[keysA.length - 1] / 100) ? ' ' + String(Math.floor(k / 100)).slice(2) : '');
       svg += `<text x="${X(i)}" y="${H - mBot + 18}" text-anchor="middle" fill="${st === 'provisional' ? '#ffb74d' : '#8fa4b0'}" font-size="11">${lab}${st === 'provisional' ? '°' : ''}</text>`;
@@ -4585,30 +4588,33 @@ function pmChartHTML(byK, iso, cname, keysA, keysB, yA, yB, plabel) {
         const mon = MONTHS_FR[(k % 100) - 1] + ' ' + Math.floor(k / 100);
         const st = (SSBX.meta.months[String(k)] || {}).status;
         svg += `<circle cx="${X(i)}" cy="${Y(v)}" r="${s.yr === yA ? 3.4 : 2.4}" fill="${s.col}" fill-opacity="${s.op}">`
-             + `<title>${s.lab} — ${mon}${st === 'provisional' ? ' (provisional)' : ''}: ${fmt(v)} ${unit}</title></circle>`;
+             + `<title>${M.name}, ${s.lab} — ${mon}${st === 'provisional' ? ' (provisional)' : ''}: ${fmt(v)} ${M.unit}</title></circle>`;
       });
     });
-  }
-
+    return { svg, W, H, series };
+  };
+  const panels = metrics.map((mk, i) => panel(mk, i === metrics.length - 1));
+  const series = panels.length ? panels[0].series : [];
   const leg = [...new Set(series.map(s => s.lab))].map(lab => {
     const s = series.find(x => x.lab === lab);
     return `<span style="display:inline-flex;align-items:center;gap:6px;margin-right:16px">`
          + `<svg width="26" height="8"><line x1="0" x2="26" y1="4" y2="4" stroke="${s.col}" stroke-width="2.4"/></svg>${lab}</span>`;
   }).join('');
   const mt = [['q', 'Volume'], ['p', 'Price'], ['v', 'Value']].map(([k, l]) =>
-    `<button type="button" data-pm-m="${k}" class="${pmChartMetric === k ? 'active' : ''}">${l}</button>`).join('');
+    `<label class="cc-check"><input type="checkbox" data-pm-m="${k}" ${pmChartMetrics.has(k) ? 'checked' : ''}> ${l}</label>`).join('');
   return `<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:8px">`
     + `<b style="font-size:14px">${cname}</b>`
-    + `<span style="color:#8fa4b0;font-size:12px">${yA}, monthly · ${unit}</span>`
-    + `<span class="pm-mt" style="display:inline-flex;gap:4px">${mt}</span>`
+    + `<span style="color:#8fa4b0;font-size:12px">${yA}, monthly</span>`
+    + `<span class="pm-mt" style="display:inline-flex;gap:10px">${mt}</span>`
     + `<label class="cc-check"><input type="checkbox" class="pm-cmp" ${pmChartCompare ? 'checked' : ''}> Compare with ${yB} (dashed)</label>`
     + `<button type="button" class="pm-close" style="margin-left:auto;background:none;border:1px solid var(--border);color:#8fa4b0;border-radius:4px;cursor:pointer;padding:2px 9px">Close ✕</button>`
     + `</div>`
-    + `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">${svg}</svg>`
+    + panels.map((P, i) => `<svg viewBox="0 0 ${P.W} ${P.H}" style="width:100%;height:auto;display:block${i ? ';margin-top:14px;border-top:1px dashed #223642;padding-top:6px' : ''}">${P.svg}</svg>`).join('')
     + `<div style="font-size:12px;color:#8fa4b0;margin-top:6px">${leg}</div>`
-    + `<div style="font-size:11px;color:#8fa4b0;margin-top:6px">Monthly is the finest level SSB publishes by country. `
+    + `<div style="font-size:11px;color:#8fa4b0;margin-top:6px">Exports of the selected product(s) to ${cname}, each month, in product weight (SSB). `
+    + `Monthly is the finest level SSB publishes by country. `
     + `<span style="color:#ffb74d">°</span> provisional month, will be revised. Hover a point for its exact value.`
-    + (pmChartMetric === 'p' ? ' No price is shown for a month without volume.' : '')
+    + (pmChartMetrics.has('p') ? ' No price is shown for a month without volume.' : '')
     + (absent.length ? ` No exports of ${absent.map(h => PM_LONG[h].toLowerCase()).join(', ')} to ${cname} in either year.` : '')
     + `</div>`;
 }
@@ -4616,8 +4622,12 @@ function pmChartHTML(byK, iso, cname, keysA, keysB, yA, yB, plabel) {
 function pmBindChart(row) {
   // Les clics dans le graphique ne doivent pas refermer la ligne du pays.
   row.addEventListener('click', e => e.stopPropagation());
-  row.querySelectorAll('[data-pm-m]').forEach(b => b.addEventListener('click', () => {
-    pmChartMetric = b.dataset.pmM; renderProductsView();
+  // Plusieurs mesures peuvent etre cochees ; au moins une reste cochee.
+  row.querySelectorAll('[data-pm-m]').forEach(b => b.addEventListener('change', () => {
+    const m = b.dataset.pmM;
+    if (!b.checked && pmChartMetrics.size === 1) { b.checked = true; return; }
+    if (b.checked) pmChartMetrics.add(m); else pmChartMetrics.delete(m);
+    renderProductsView();
   }));
   const cmp = row.querySelector('.pm-cmp');
   if (cmp) cmp.addEventListener('change', () => { pmChartCompare = cmp.checked; renderProductsView(); });
