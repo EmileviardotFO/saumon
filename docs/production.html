@@ -1386,6 +1386,9 @@ function sourceStatus() {
   if (d.status && d.status.eurostat && d.status.eurostat.last_period) { const e = d.status.eurostat, k = e.last_period;
     add('Eurostat — EU salmon flows', mlab(Math.floor(k / 100), k % 100), ym(Math.floor(k / 100), k % 100) < nowYM - 3,
       'monthly, about 6–8 weeks after the month', steps.EUROSTAT); }
+  if (d.status && d.status.national) { const n = d.status.national;
+    [['FO', 'Faroe export statistics (Hagstova)'], ['IS', 'Iceland export statistics (Hagstofa)']].forEach(([c, lab]) => { const k = n[c] && n[c].last;
+      add(lab, k ? mlab(Math.floor(k / 100), k % 100) : '—', !k || ym(Math.floor(k / 100), k % 100) < nowYM - 3, 'monthly, by destination country', steps.NATIONAL); }); }
   if (d.china && d.china.meta) { const g = daysSince(d.china.meta.fetched);
     add('GACC — Norwegian establishments registered for China', d.china.meta.fetched || '—', g === null || g > 10, 'every update run (customs search page, fragile source)', steps.CHINA); }
   if (ESTAB && ESTAB.meta) { const g = daysSince(ESTAB.meta.fetched);
@@ -5814,7 +5817,7 @@ function renderSummary() {
 //  EU flows (Eurostat Comext) : fichier data/eurostat.json, charge a la
 //  premiere ouverture de l'onglet.
 // ===========================================================================
-let EU = null, EU_LOADING = false, euHub = 'PL', euOpen = null, euMode = 'origin', euOrig = 'NO';
+let NAT = null, EU = null, EU_LOADING = false, euHub = 'PL', euOpen = null, euMode = 'origin', euOrig = 'NO';
 const EU_EUROPE = new Set(['AT','BE','BG','CY','CZ','DE','DK','EE','ES','FI','FR','GR','HR','HU','IE','IT','LT','LU','LV','MT','NL','PL','PT','RO','SE','SI','SK',
   'GB','NO','CH','IS','FO','LI','UA','RS','BA','ME','MK','AL','MD','BY','XK','AD','MC','SM','GI','XI','XL']);
 const euName = (() => { let dn = null; try { dn = new Intl.DisplayNames(['en'], { type: 'region' }); } catch (e) {}
@@ -5861,6 +5864,8 @@ async function loadEurostat() {
   EU_LOADING = true;
   try {
     const r = await fetch(DATA_URL.replace('data.json', 'eurostat.json'), { cache: 'no-store' });
+    const [r2] = await Promise.all([fetch(DATA_URL.replace('data.json', 'national_trade.json'), { cache: 'no-store' }).catch(() => null)]);
+    if (r2 && r2.ok) { try { NAT = await r2.json(); } catch (e) { NAT = null; } }
     if (r.ok) { EU = await r.json(); cleanEurostat(EU); }
   } catch (e) { console.warn('eurostat.json indisponible', e.message); }
   EU_LOADING = false;
@@ -5915,7 +5920,11 @@ function tmBuild() {
       const x = box[key] || (box[key] = [0, 0]); x[0] += t; x[1] += v;
     } else (exp[ym] || (exp[ym] = [])).push([rep, part, pi, t, v]);
   });
-  TM = { src: EU, imp, exp, mix: {}, months: [...months].sort((a, b) => a - b), last: M.last_period };
+  TM = { src: EU, imp, exp, mix: {}, months: [...months].sort((a, b) => a - b), last: M.last_period, nati: {}, natLast: {}, natFirst: {} };
+  // statistiques nationales (Feroe, Islande) : destination declaree a l'export
+  if (NAT && NAT.rows) NAT.rows.forEach(([ym, o, iso, pi, t, kl, ke]) => {
+    const A = TM.nati[o] || (TM.nati[o] = {}), B = A[iso] || (A[iso] = {}), C = B[ym] || (B[ym] = {}), x = C[pi] || (C[pi] = [0, 0]);
+    x[0] += t; x[1] += ke || 0; TM.natLast[o] = Math.max(TM.natLast[o] || 0, ym); TM.natFirst[o] = Math.min(TM.natFirst[o] || 999999, ym); });
   return TM;
 }
 // Composition par origine de ce qu'importe chaque pays de l'UE (un mois, toutes formes
@@ -5942,10 +5951,11 @@ function tmMix(ym) {
 function tmOrigins(rep, ym, pi) {
   const C = ((TM.imp[ym] || {})[rep] || {})[pi], out = {};
   if (!C) return out;
-  const add = (o, t, v) => { const y = out[o] || (out[o] = [0, 0]); y[0] += t; y[1] += v; };
-  Object.entries(C.d).forEach(([o, x]) => add(o, x[0], x[1]));
+  // [tonnes, k€, dont tonnes declarees directement avec l'origine, dont k€ directs]
+  const add = (o, t, v, dir) => { const y = out[o] || (out[o] = [0, 0, 0, 0]); y[0] += t; y[1] += v; if (dir) { y[2] += t; y[3] += v; } };
+  Object.entries(C.d).forEach(([o, x]) => add(o, x[0], x[1], true));
   if (Object.keys(C.h).length) { const m = tmMix(ym);
-    Object.entries(C.h).forEach(([h, x]) => { const mh = m[h] || { OTH: 1 }; Object.entries(mh).forEach(([o, s]) => { if (s) add(o, x[0] * s, x[1] * s); }); }); }
+    Object.entries(C.h).forEach(([h, x]) => { const mh = m[h] || { OTH: 1 }; Object.entries(mh).forEach(([o, s]) => { if (s) add(o, x[0] * s, x[1] * s, false); }); }); }
   return out;
 }
 // Exportations d'un pays producteur. scope 'eu' : entrees dans l'UE (Eurostat, EUR) ;
@@ -5957,6 +5967,11 @@ function tmProducer(prod, scope) {
     const hs = Object.keys(SSBX.meta.products);
     SSBX.rows.forEach(([k, h, iso, kg, nok]) => { const pi = SSB_PI[hs[h]]; if (pi !== undefined) rows.push([k, iso, pi, kg / 1000, nok / 1000]); });
     return { cur: 'NOK', last: rows.reduce((m, r) => Math.max(m, r[0]), 0), rows, src: 'Norwegian export statistics (SSB), all destinations' };
+  }
+  if (scope === 'all' && TM.nati[prod]) {
+    Object.entries(TM.nati[prod]).forEach(([iso, B]) => Object.entries(B).forEach(([ym, C]) => Object.entries(C).forEach(([pi, x]) => rows.push([+ym, iso, +pi, x[0], x[1]]))));
+    const src = (((NAT || {}).meta || {}).sources || {})[prod] || {};
+    return { cur: 'EUR', last: TM.natLast[prod], rows, src: `${prod === 'FO' ? 'Faroese' : 'Icelandic'} export statistics, all destinations (${prod === 'FO' ? 'Hagstova' : 'Hagstofa'}; converted to €)` };
   }
   if (scope === 'all' && prod === 'IE' && TM.months.some(ym => (TM.exp[ym] || []).some(r => r[0] === 'IE'))) {
     TM.months.forEach(ym => (TM.exp[ym] || []).forEach(([rep, part, pi, t, v]) => { if (rep === 'IE') rows.push([ym, part, pi, t, v]); }));
@@ -6073,6 +6088,9 @@ function renderProducers() {
     if (pr === 'NO' && SSBX) { const n = tmProducer('NO', 'all'), byN = {}; n.rows.forEach(([ym, , , t]) => byN[ym] = (byN[ym] || 0) + t);
       const kk = tmRange(n.last, 12), A = kk.reduce((s, k) => s + (byN[k] || 0), 0), B = kk.reduce((s, k) => s + (byN[k - 100] || 0), 0), q = tmPc(A, B);
       extra = `<div class="ln">All destinations: <b style="color:var(--ink)">${tmF0(A / 1000)} kt</b> <span class="${tmCls(q)}">${q >= 0 ? '+' : ''}${q.toFixed(0)}%</span> (to ${tmMl(n.last)})</div>`; }
+    if (TM.nati[pr]) { const n = tmProducer(pr, 'all'), byN = {}; n.rows.forEach(([ym, , , t]) => byN[ym] = (byN[ym] || 0) + t);
+      const kk = tmRange(n.last, 12), A = kk.reduce((s, k) => s + (byN[k] || 0), 0), B = kk.reduce((s, k) => s + (byN[k - 100] || 0), 0), q = tmPc(A, B);
+      extra = `<div class="ln">All destinations: <b style="color:var(--ink)">${tmF0(A / 1000)} kt</b>${isFinite(q) ? ` <span class="${tmCls(q)}">${q >= 0 ? '+' : ''}${q.toFixed(0)}%</span>` : ''} (to ${tmMl(n.last)})</div>`; }
     return `<div class="pr-card${pr === prSel ? ' active' : ''}" data-p="${pr}"><div class="nm"><i style="background:${ORIG_COL[pr]}"></i>${PROD_LAB[pr]}</div>` +
       `<div class="big">${tmF0(a[0] / 1000)} kt <span class="${tmCls(p)}" style="font-size:13px">${isFinite(p) ? (p >= 0 ? '+' : '') + p.toFixed(0) + '%' : ''}</span></div>` +
       `<div class="ln">to the EU, last 12 months · ${isFinite(pa) ? pa.toFixed(2) + ' €/kg' : '—'}${isFinite(pa) && isFinite(pb) ? ` <span class="${tmCls(tmPc(pa, pb))}">(${tmPc(pa, pb) >= 0 ? '+' : ''}${tmPc(pa, pb).toFixed(0)}%)</span>` : ''}</div>${extra}` +
@@ -6081,9 +6099,9 @@ function renderProducers() {
   document.getElementById('prCards').innerHTML = cards.join('');
   document.querySelectorAll('#prCards .pr-card').forEach(c => c.addEventListener('click', () => { prSel = c.dataset.p; renderProducers(); }));
   // portee
-  const canAll = prSel === 'NO' ? !!SSBX : prSel === 'IE' ? tmProducer('IE', 'all').src.startsWith('Irish') : false;
+  const canAll = prSel === 'NO' ? !!SSBX : TM.nati[prSel] ? true : prSel === 'IE' ? tmProducer('IE', 'all').src.startsWith('Irish') : false;
   if (!canAll) prScope = 'eu';
-  document.getElementById('prScope').innerHTML = [['eu', 'Into the EU (Eurostat, €)'], ['all', prSel === 'NO' ? 'All destinations (SSB, NOK)' : 'All destinations']]
+  document.getElementById('prScope').innerHTML = [['eu', 'Into the EU (Eurostat, €)'], ['all', prSel === 'NO' ? 'All destinations (SSB, NOK)' : TM.nati[prSel] ? 'All destinations (national statistics, €)' : 'All destinations']]
     .map(([k, l]) => `<button type="button" data-s="${k}" class="${prScope === k ? 'active' : ''}"${k === 'all' && !canAll ? ' disabled title="National statistics not collected yet" style="opacity:.4;cursor:not-allowed"' : ''}>${l}</button>`).join('');
   document.querySelectorAll('#prScope button:not([disabled])').forEach(b => b.addEventListener('click', () => { prScope = b.dataset.s; renderProducers(); }));
   const D = tmProducer(prSel, prScope), cur = D.cur, lastP = D.last;
@@ -6172,8 +6190,42 @@ function renderEuFlows() {
     Object.entries(M.incomplete || {}).map(([k, r]) => ` <span class="warn">${tmMl(+k)} left out: not yet reported in full by ${r.map(euName).join(', ')}.</span>`).join('') +
     ((M.dropped || []).length ? ` <span class="warn">${M.dropped.length} aberrant line${M.dropped.length > 1 ? 's' : ''} ignored</span> (${M.dropped.slice(0, 2).map(r => `${euName(r[1])} ${tmMl(r[0])}: ${tmF0(r[5])} t from ${euName(r[2])}`).join('; ')}).` : '');
   // origines par pays, sur un ensemble de mois
-  const orgSum = (rep, ks) => { const o = {}; ks.forEach(k => forms.forEach(pi => Object.entries(tmOrigins(rep, k, pi)).forEach(([g, x]) => { const y = o[g] || (o[g] = [0, 0]); y[0] += x[0]; y[1] += x[1]; }))); return o; };
-  const atl = o => ORIGS.filter(g => g !== 'PAC').reduce((a, g) => a + (o[g] ? o[g][0] : 0), 0);
+  // Origine par pays : on ne reconstitue plus rien par moyenne. Le saumon feroien ou islandais
+  // vendu directement a un client espagnol est dedouane au Danemark, aux Pays-Bas ou en
+  // Allemagne : l'Espagne le declare "venant du Danemark", sans origine. On utilise donc :
+  //  - Norvege : statistiques norvegiennes (pays de destination declare a l'export, quel que
+  //    soit le pays de dedouanement) pour l'entier et les filets ;
+  //  - autres origines : ce qui arrive declare avec son origine (hors UE, direct) ;
+  //  - le reste : "via un autre pays de l'UE, origine non declaree".
+  // Quand les statistiques des Feroe, de l'Islande et du Royaume-Uni seront collectees, elles
+  // prendront la meme place que celles de la Norvege.
+  if (!TM.ssbi) { TM.ssbi = {}; TM.ssbLast = 0;
+    if (SSBX) { const hs = Object.keys(SSBX.meta.products);
+      SSBX.rows.forEach(([k, h, iso, kg, nok]) => { const pi = SSB_PI[hs[h]]; if (pi === undefined) return; TM.ssbLast = Math.max(TM.ssbLast, k);
+        const A = TM.ssbi[iso] || (TM.ssbi[iso] = {}), B = A[k] || (A[k] = {}), x = B[pi] || (B[pi] = [0, 0]); x[0] += kg / 1000; x[1] += nok / 1000; }); } }
+  const CAT = ['NO', 'GB', 'FO', 'IS', 'IE', 'CL', 'OTH', 'VIA'];
+  const CLAB = Object.assign({}, ORIG_LAB, { VIA: 'Via another EU country — origin not declared', OTH: 'Other origins (declared)' });
+  const CCOL = Object.assign({}, ORIG_COL, { VIA: '#3d5462' });
+  const ssbOK = (pi, k) => pi <= 3 && k <= TM.ssbLast && !!SSBX;
+  const NATO = Object.keys(TM.nati), natOK = (g, k) => !!TM.nati[g] && k >= TM.natFirst[g] && k <= TM.natLast[g];
+  // [tonnes, k€ (declares a l'arrivee), k NOK (stat. norvegiennes)] ; o._hub = arrivees brutes par pays d'expedition ; o._over
+  const orgSum = (rep, ks) => { const o = { _hub: {}, _over: 0 }, tot = {}, known = {};
+    const add = (g, t, v, nok) => { const y = o[g] || (o[g] = [0, 0, 0]); y[0] += t; y[1] += v; y[2] += nok; };
+    ks.forEach(k => forms.forEach(pi => {
+      const C = ((TM.imp[k] || {})[rep] || {})[pi], useSsb = ssbOK(pi, k);
+      tot[pi] = tot[pi] || 0; known[pi] = known[pi] || 0;
+      if (C) {
+        Object.entries(C.d).forEach(([g, x]) => { if (g !== 'PAC') tot[pi] += x[0]; });
+        Object.entries(C.h).forEach(([h, x]) => { tot[pi] += x[0]; o._hub[h] = (o._hub[h] || 0) + x[0]; });
+        Object.entries(C.d).forEach(([g, x]) => { if (g === 'PAC') { add('PAC', x[0], x[1], 0); return; } if ((g === 'NO' && useSsb) || natOK(g, k)) return; add(g, x[0], x[1], 0); known[pi] += x[0]; });
+      }
+      if (useSsb) { const sv = ((TM.ssbi[rep] || {})[k] || {})[pi]; if (sv) { add('NO', sv[0], 0, sv[1]); known[pi] += sv[0]; } }
+      NATO.forEach(g => { if (!natOK(g, k)) return; const nv = (((TM.nati[g] || {})[rep] || {})[k] || {})[pi]; if (nv) { add(g, nv[0], nv[1], 0); known[pi] += nv[0]; } });
+    }));
+    // le reste (origine non declaree) se calcule sur toute la periode, forme par forme
+    forms.forEach(pi => { const d = (tot[pi] || 0) - (known[pi] || 0); if (d >= 0) add('VIA', d, 0, 0); else o._over += -d; });
+    return o; };
+  const atl = o => CAT.reduce((a, g) => a + (o[g] ? o[g][0] : 0), 0);
 
   // ---------- 1. origine du saumon d'un pays ----------
   const reps = M.reporters_up.filter(r => r !== 'SE');
@@ -6185,35 +6237,38 @@ function renderEuFlows() {
   more.innerHTML = `<option value="">Other country…</option>` + reps.filter(r => !main.includes(r)).sort((a, b) => vol[b] - vol[a]).map(r => `<option value="${r}"${r === euCty ? ' selected' : ''}>${euName(r)} (${tmF0(vol[r])} t)</option>`).join('');
   const N = orgSum(euCty, keys), Pv = orgSum(euCty, kP), tN = atl(N), tP = atl(Pv);
   const k24 = tmRange(last, 24), mon = k24.map(k => orgSum(euCty, [k]));
-  const shown = ORIGS.filter(g => g !== 'PAC' && mon.some(o => o[g] && o[g][0] > 0.5));
+  const shown = CAT.filter(g => mon.some(o => o[g] && o[g][0] > 0.5));
   const prevTot = k24.map(k => atl(orgSum(euCty, [k - 100])));
-  document.getElementById('euCtySub').innerHTML = `<b>${euName(euCty)}</b>, ${form === 'all' ? 'all forms' : P[+form].toLowerCase()}: Atlantic salmon by <b>country of origin</b>, last 24 months. ` +
-    `Arrivals from outside the EU are declared with their origin. Arrivals from another EU country (Norwegian salmon cleared in Sweden, salmon processed in Poland or the Netherlands…) are declared with the shipping country: ` +
-    `they are <b>re-allocated to an origin in proportion to what that country itself imports</b> — an estimate, not an official figure.` +
-    vzLegend(shown.map(g => [ORIG_LAB[g], ORIG_COL[g], false, true]).concat([['Total, a year earlier', '#e7eef2', true]]));
-  document.getElementById('euCtyChart').innerHTML = vzStack(k24, shown.map(g => ({ lab: ORIG_LAB[g], col: ORIG_COL[g], vals: mon.map(o => o[g] ? o[g][0] : 0) })),
+  const noSsb = forms.some(i => i > 3);
+  document.getElementById('euCtySub').innerHTML = `<b>${euName(euCty)}</b>, ${form === 'all' ? 'all forms' : P[+form].toLowerCase()}: Atlantic salmon by origin, last 24 months. ` +
+    `<b>Norway</b> = Norwegian export statistics (country of destination declared in Norway, wherever the salmon is cleared)${noSsb ? ' for whole fish and fillets; for smoked and prepared salmon only what arrives straight from Norway' : ''}. ` +
+    (NATO.length ? `<b>${NATO.map(g => ORIG_LAB[g]).join(' and ')}</b> = their own export statistics, by destination declared at export, like Norway. ` : '') +
+    `<b>Other origins</b> = what arrives declared with its origin. <b>Grey</b> = arrivals from another EU country whose origin is not declared` +
+    (NATO.length === 2 ? ` (mainly Scottish salmon cleared in another EU country, and gaps between the statistics of the two sides).` : ` — this is where Faroese, Icelandic and Scottish salmon sold to this market but cleared in Denmark, the Netherlands or Germany ends up, until their national statistics are added.`) +
+    vzLegend(shown.map(g => [CLAB[g], CCOL[g], false, true]).concat([['Total, a year earlier', '#e7eef2', true]]));
+  document.getElementById('euCtyChart').innerHTML = vzStack(k24, shown.map(g => ({ lab: CLAB[g], col: CCOL[g], vals: mon.map(o => o[g] ? o[g][0] : 0) })),
     { axis: 'Tonnes per month', unit: 't', lines: [{ lab: 'a year earlier', col: '#e7eef2', pts: prevTot }] });
-  // controle avec les statistiques norvegiennes
-  let ssbChk = '';
-  if (SSBX && forms.every(i => i <= 3)) { const hs = Object.keys(SSBX.meta.products), sN = new Set(keys);
-    const ssb = SSBX.rows.reduce((a, [k, h, iso, kg]) => a + (iso === euCty && sN.has(k) && forms.includes(SSB_PI[hs[h]]) ? kg / 1000 : 0), 0);
-    if (keys.every(k => k <= SSBX.rows.reduce((m, r) => Math.max(m, r[0]), 0))) ssbChk = `Norwegian statistics, salmon declared for ${euName(euCty)}: <b>${tmF0(ssb)} t</b>`; }
-  document.getElementById('theadEuCty').innerHTML = `<tr><th class="name">Origin, ${plab}</th><th>Tonnes</th><th>Share</th><th>Δ t vs N-1</th><th>Δ %</th><th>€/kg</th><th class="sep-left" style="text-align:left">Check</th></tr>`;
-  document.getElementById('tbodyEuCty').innerHTML = ORIGS.filter(g => (N[g] && N[g][0] > 0.5) || (Pv[g] && Pv[g][0] > 0.5)).sort((a, b) => (a === 'PAC') - (b === 'PAC') || (N[b] ? N[b][0] : 0) - (N[a] ? N[a][0] : 0)).map(g => {
-    const a = N[g] || [0, 0], b = Pv[g] || [0, 0], pac = g === 'PAC';
-    return `<tr${pac ? ' style="opacity:.55"' : ''}><td class="name"><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${ORIG_COL[g]};margin-right:6px"></i>${ORIG_LAB[g]}</td><td><b>${tmF0(a[0])}</b></td>` +
-      `<td>${pac ? '—' : tN ? (100 * a[0] / tN).toFixed(1) + '%' : '—'}</td><td class="${tmCls(a[0] - b[0], 50)}">${tmSg(a[0] - b[0])}</td>${tmPct(a[0], b[0])}<td>${a[0] > 0 ? (a[1] / a[0]).toFixed(2) : '—'}</td>` +
-      `<td class="sep-left" style="text-align:left;font-size:11px">${g === 'NO' ? ssbChk : ''}</td></tr>`; }).join('') +
-    `<tr><td class="name" style="color:var(--accent)">Total Atlantic salmon</td><td><b>${tmF0(tN)}</b></td><td>100%</td><td class="${tmCls(tN - tP, 50)}">${tmSg(tN - tP)}</td>${tmPct(tN, tP)}<td></td><td class="sep-left"></td></tr>`;
+  const hubTxt = Object.entries(N._hub).filter(([, t]) => t >= 1).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([h, t]) => `${euName(h)} ${tmF0(t)} t`).join(' · ');
+  document.getElementById('theadEuCty').innerHTML = `<tr><th class="name">Origin, ${plab}</th><th>Tonnes</th><th>Share</th><th>Δ t vs N-1</th><th>Δ %</th><th class="sep-left" title="Price of the tonnes declared with this origin (EUR on arrival; Norway: NOK, Norwegian export price)">Price</th><th class="sep-left" style="text-align:left">Source</th></tr>`;
+  document.getElementById('tbodyEuCty').innerHTML = CAT.concat(['PAC']).filter(g => (N[g] && N[g][0] > 0.5) || (Pv[g] && Pv[g][0] > 5)).map(g => {
+    const a = N[g] || [0, 0, 0], b = Pv[g] || [0, 0, 0], pac = g === 'PAC', via = g === 'VIA';
+    const price = g === 'NO' && a[2] > 0 ? `${(a[2] / a[0]).toFixed(2)} NOK` : (!via && !pac && a[0] >= 20 && a[1] > 0) ? `${(a[1] / a[0]).toFixed(2)} €` : '—';
+    const src = g === 'NO' ? (noSsb ? 'Norwegian statistics (whole, fillets) + direct arrivals' : 'Norwegian export statistics') : TM.nati[g] ? `${g === 'FO' ? 'Faroese' : 'Icelandic'} export statistics (destination declared at export)` : via ? 'Shipping country only (see below)' : pac ? 'US, China, Russia — excluded' : 'Declared on arrival';
+    return `<tr${pac ? ' style="opacity:.55"' : ''}><td class="name"><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${CCOL[g]};margin-right:6px"></i>${pac ? ORIG_LAB.PAC : CLAB[g]}</td><td><b>${tmF0(a[0])}</b></td>` +
+      `<td>${pac ? '—' : tN ? (100 * a[0] / tN).toFixed(1) + '%' : '—'}</td><td class="${tmCls(a[0] - b[0], 50)}">${tmSg(a[0] - b[0])}</td>${tmPct(a[0], b[0])}` +
+      `<td class="sep-left">${price}</td><td class="sep-left" style="text-align:left;font-size:11px">${src}</td></tr>`; }).join('') +
+    `<tr><td class="name" style="color:var(--accent)">Total Atlantic salmon</td><td><b>${tmF0(tN)}</b></td><td>100%</td><td class="${tmCls(tN - tP, 50)}">${tmSg(tN - tP)}</td>${tmPct(tN, tP)}<td class="sep-left"></td><td class="sep-left"></td></tr>` +
+    `<tr><td colspan="7" class="name" style="font-weight:normal;color:var(--muted);font-size:11px;white-space:normal">All arrivals from other EU countries, gross (they include Norwegian salmon already counted under Norway): ${hubTxt || '—'}.</td></tr>` +
+    (N._over > 1 ? `<tr><td colspan="7" class="name" style="font-weight:normal;color:#ffb74d;font-size:11px">Norwegian statistics exceed the imports recorded by ${euName(euCty)} by ${tmF0(N._over)} t over the period (timing, or salmon declared for ${euName(euCty)} but cleared and recorded elsewhere): the total shown is the higher figure.</td></tr>` : '');
 
   // ---------- 2. croissance ou substitution ----------
   const HUBS = new Set(M.hubs || []);
   const gr = reps.map(r => { const a = orgSum(r, keys), b = orgSum(r, kP), A = atl(a), B = atl(b);
-    return { r, A, B, segs: ORIGS.filter(g => g !== 'PAC').map(g => ({ lab: ORIG_LAB[g], col: ORIG_COL[g], v: (a[g] ? a[g][0] : 0) - (b[g] ? b[g][0] : 0) })) }; })
+    return { r, A, B, segs: CAT.map(g => ({ lab: CLAB[g], col: CCOL[g], v: (a[g] ? a[g][0] : 0) - (b[g] ? b[g][0] : 0) })) }; })
     .filter(x => x.A > Math.max(3000, keys.length * 250)).sort((a, b) => b.A - a.A);
-  document.getElementById('euGrowSub').innerHTML = `Change in Atlantic salmon imports, ${plab} vs a year earlier, split by origin: bars to the right = origins that gained, to the left = origins that lost; the <b>white mark is the net change</b>. ` +
+  document.getElementById('euGrowSub').innerHTML = `Change in Atlantic salmon imports, ${plab} vs a year earlier, split by origin (same sources as above): bars to the right = origins that gained, to the left = origins that lost; the <b>white mark is the net change</b>. ` +
     `A white mark near zero with large bars on both sides = one origin replaced another. Countries importing more than ${tmF0(Math.max(3000, keys.length * 250))} t over the period; Sweden is left out (Norwegian salmon is cleared there and sent on). ` +
-    `<span class="warn">Imports are not consumption</span>: the hubs (marked) re-export a large part.` + vzLegend(ORIGS.filter(g => g !== 'PAC').map(g => [ORIG_LAB[g], ORIG_COL[g], false, true]));
+    `<span class="warn">Imports are not consumption</span>: the hubs (marked) re-export a large part.` + vzLegend(CAT.map(g => [CLAB[g], CCOL[g], false, true]));
   document.getElementById('euGrowChart').innerHTML = gr.length ? vzDiverge(gr.map(x => ({ lab: euName(x.r), tag: HUBS.has(x.r) ? 'hub' : '', segs: x.segs, net: x.A - x.B, pct: tmPc(x.A, x.B) })), { unit: 't' }) : '';
 
   // ---------- 3. hubs de transformation ----------
@@ -6255,7 +6310,8 @@ function renderEuFlows() {
   document.getElementById('tfootEuDown').innerHTML = '';
   document.getElementById('euNote').innerHTML = `<b>Method.</b> Eurostat Comext DS-045409 (EU trade by CN8, monthly): CN 0302 14 (fresh whole), 0303 13 (frozen whole), 0304 41 / 0304 81 (fresh / frozen fillets), 0305 41 (smoked), 1604 11 (prepared). ` +
     `Whole-fish codes cover Atlantic salmon only; fillet, smoked and prepared codes also cover Pacific salmon, so those arriving from the US, China, Russia and a few other non-farming countries are classed as Pacific and left out — they make up 98% of the non-Atlantic salmon identified. ` +
-    `Code 0304 52 (salmonid meat) is not used because it includes trout. Salmon re-shipped from another EU country is treated as Atlantic and re-allocated to an origin in proportion to that country's own imports. ` +
+    `Code 0304 52 (salmonid meat) is not used because it includes trout. Salmon re-shipped from another EU country is treated as Atlantic. ` +
+    `Origins by market: Norway from the Norwegian export statistics (destination declared in Norway); other origins only when declared on arrival. Faroese and Icelandic salmon is cleared in Denmark, the Netherlands or Germany even when sold directly to a buyer elsewhere, so it stays in "origin not declared" until the Faroese and Icelandic statistics are added. ` +
     `Hub exports: the species of processed exports is not declared; the "of which Pacific" column shows how much Pacific salmon the hub takes in. Partners below 0.5% of a country's trade are grouped. Latest months are revised by Eurostat for a while.`;
 }
 
