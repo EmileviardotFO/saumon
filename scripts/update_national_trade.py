@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 """
-Exportations de saumon des Iles Feroe et de l'Islande, par pays de destination
-et par mois, depuis les statistiques nationales (API PxWeb) :
+Exportations de saumon des Iles Feroe, de l'Islande et du Royaume-Uni (Ecosse),
+par pays de destination et par mois, depuis les statistiques nationales :
 
   - Feroe   : Hagstova Foroya, table UH01046 "Inn- og utflutningur skiftur a
               vorunummar og land" (uh_cn_t.px), mensuelle depuis 2023, CN8.
   - Islande : Hagstofa Islands, table UTA02801 "Utflutningur eftir
               tollskrarnumerum 2024-2026, kafli 1-40", numeros tarifaires
               islandais a 8 chiffres (saumon d'elevage atlantique separe).
+  - Royaume-Uni : HMRC, API OData publique uktradeinfo (OTS), CN8 ; le saumon
+              d'elevage britannique est ecossais (quelques reexportations de
+              saumon norvegien incluses).
 
 Comme les statistiques norvegiennes, elles donnent le pays de destination
 declare a l'export, meme quand le saumon est dedouane au Danemark ou aux
@@ -37,6 +40,7 @@ import re
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -58,10 +62,20 @@ SOURCES = {
         'urls': ['https://px.hagstofa.is/pxen/api/v1/en/Efnahagur/utanrikisverslun/1_voruvidskipti/02_uttollskra/UTA02801.px',
                  'https://px.hagstofa.is/pxis/api/v1/is/Efnahagur/utanrikisverslun/1_voruvidskipti/02_uttollskra/UTA02801.px'],
         'currency': 'ISK',
+        # Hagstofa remplace cette table chaque annee (2024-2026, puis 2025-2027...) : on cherche
+        # d'abord dans le dossier la table "chapitres 1-40" la plus recente.
+        'folder': 'https://px.hagstofa.is/pxen/api/v1/en/Efnahagur/utanrikisverslun/1_voruvidskipti/02_uttollskra',
+        'pick': r'(\d{4})\s*-\s*(\d{4}).*(chapter|kafli)s?\s*1\s*-\s*40',
         # numeros islandais : saumon atlantique d'elevage (et filets congeles de saumon atlantique)
         'codes': {'03021401': 0, '03031301': 1, '03044111': 2, '03048101': 3, '03048110': 3, '03048120': 3,
                   '03054100': 5, '16041100': 6, '16041101': 6, '16041109': 6},
     },
+}
+SOURCES['GB'] = {
+    'kind': 'hmrc',
+    'name': 'HMRC overseas trade statistics (uktradeinfo API), United Kingdom — farmed salmon is Scottish',
+    'currency': 'GBP',
+    'codes': {'03021400': 0, '03031300': 1, '03044100': 2, '03048100': 3, '03054100': 5, '16041100': 6},
 }
 DKK_PER_EUR = 7.46038       # parite centrale MCE II
 
@@ -183,14 +197,14 @@ def iso_map():
     return f
 
 
-def isk_rates():
-    """Taux moyens mensuels ISK pour 1 EUR (Eurostat ert_bil_eur_m)."""
+def eur_rates(cur):
+    """Taux moyens mensuels : unites de monnaie pour 1 EUR (Eurostat ert_bil_eur_m)."""
     url = ('https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/ert_bil_eur_m'
-           '?format=JSON&lang=EN&currency=ISK&statinfo=AVG&sinceTimePeriod=2022-01')
+           f'?format=JSON&lang=EN&currency={cur}&statinfo=AVG&sinceTimePeriod=2018-01')
     st, raw = http(url)
     out = {}
     if st != 200:
-        print(f'  taux ISK indisponibles ({st})')
+        print(f'  taux {cur} indisponibles ({st})')
         return out
     j = json.loads(raw)
     idx = j['dimension']['time']['category']['index']
@@ -199,13 +213,92 @@ def isk_rates():
         if v:
             y, m = t.split('-') if '-' in t else t.split('M')
             out[int(y) * 100 + int(m)] = float(v)
-    print(f'  {len(out)} taux ISK mensuels')
+    print(f'  {len(out)} taux {cur} mensuels')
     return out
+
+
+def to_eur(val, ym, cur, fx):
+    if cur == 'DKK':
+        return val / DKK_PER_EUR
+    r = fx.get(cur, {})
+    rate = r.get(ym) or (r[max(k for k in r if k <= ym)] if any(k <= ym for k in r) else (r[min(r)] if r else None))
+    return val / rate if rate else None
+
+
+def fetch_hmrc(key, src, to_iso, fx):
+    """Royaume-Uni : HMRC, API OData publique de uktradeinfo (OTS = commerce par produit et pays)."""
+    base = 'https://api.uktradeinfo.com'
+    os.makedirs(DBG, exist_ok=True)
+
+    def pages(url):
+        out = []
+        while url:
+            st, raw = http(url)
+            if st != 200:
+                raise RuntimeError(f'{url[:120]} -> {st} {raw[:200]!r}')
+            j = json.loads(raw)
+            out += j.get('value', [])
+            url = j.get('@odata.nextLink')
+        return out
+    flows = pages(base + '/FlowType')
+    json.dump(flows, open(os.path.join(DBG, 'hmrc_flowtypes.json'), 'w'), indent=0)
+    exp_ids = [f['FlowTypeId'] for f in flows if re.search(r'xport', ' '.join(str(v) for v in f.values()), re.I)]
+    print(f'  {key} : types de flux export : {exp_ids}')
+    if not exp_ids:
+        raise RuntimeError('types de flux export introuvables')
+    ctry = pages(base + '/Country')
+    json.dump(ctry[:400], open(os.path.join(DBG, 'hmrc_countries.json'), 'w'), indent=0, ensure_ascii=False)
+    cmap = {}
+    for c in ctry:
+        alpha = c.get('CountryCodeAlpha') or c.get('CountryCodeAlpha2') or ''
+        cmap[c['CountryId']] = to_iso(alpha, c.get('CountryName'))
+    agg, start = {}, 202301
+    for code, pi in src['codes'].items():
+        cid = int(code)
+        flt = f'CommodityId eq {cid} and MonthId ge {start} and (' + ' or '.join(f'FlowTypeId eq {i}' for i in exp_ids) + ')'
+        rows = pages(base + '/OTS?$filter=' + urllib.parse.quote(flt) + '&$select=MonthId,FlowTypeId,CountryId,NetMass,Value')
+        print(f'  {key} : {code} -> {len(rows)} lignes')
+        if rows and code == '03021400':
+            json.dump(rows[:50], open(os.path.join(DBG, 'hmrc_sample.json'), 'w'), indent=0)
+        for r in rows:
+            iso = cmap.get(r.get('CountryId'))
+            if not iso:
+                continue
+            k = (int(r['MonthId']), iso, pi)
+            x = agg.setdefault(k, [0.0, 0.0])
+            x[0] += float(r.get('NetMass') or 0)
+            x[1] += float(r.get('Value') or 0)
+    out = []
+    for (ym, iso, pi), (kg, val) in sorted(agg.items()):
+        if kg <= 0 and val <= 0:
+            continue
+        e = to_eur(val, ym, 'GBP', fx)
+        out.append([ym, key, iso, pi, round(kg / 1000, 3), round(val / 1000, 2), round(e / 1000, 2) if e is not None else None])
+    t0 = sum(r[4] for r in out if r[3] == 0)
+    if t0:
+        print(f'  {key} : entier frais, prix moyen {sum(r[6] or 0 for r in out if r[3] == 0) / t0:.2f} EUR/kg')
+    return out, {'source': src['name'], 'url': base + '/OTS', 'currency': 'GBP',
+                 'last': max((r[0] for r in out), default=None), 'first': min((r[0] for r in out), default=None)}
 
 
 def fetch_source(key, src, to_iso, fx):
     meta = url = None
-    for u in src['urls']:
+    urls = list(src['urls'])
+    if src.get('folder'):
+        st, raw = http(src['folder'])
+        try:
+            best = None
+            for it in json.loads(raw) if st == 200 else []:
+                m = re.search(src['pick'], it.get('text', ''), re.I)
+                if it.get('type') == 't' and m and (best is None or int(m.group(2)) > best[0]):
+                    best = (int(m.group(2)), it['id'])
+            if best:
+                u = src['folder'] + '/' + best[1]
+                print(f'  {key} : table la plus recente du dossier : {best[1]} (jusqu\'a {best[0]})')
+                urls = [u] + [x for x in urls if x != u]
+        except ValueError:
+            pass
+    for u in urls:
         st, raw = http(u)
         if st == 200:
             try:
@@ -297,8 +390,8 @@ def fetch_source(key, src, to_iso, fx):
     for (ym, iso, pi), (kg, val) in sorted(agg.items()):
         if kg <= 0 and val <= 0:
             continue
-        rate = DKK_PER_EUR if src['currency'] == 'DKK' else fx.get(ym) or (fx[max(fx)] if fx else None)
-        keur = round(val / rate / 1000, 2) if rate else None
+        e = to_eur(val, ym, src['currency'], fx)
+        keur = round(e / 1000, 2) if e is not None else None
         rows.append([ym, key, iso, pi, round(kg / 1000, 3), round(val / 1000, 2), keur])
     tot_kg = sum(r[4] for r in rows if r[3] == 0)
     tot_v = sum(r[6] or 0 for r in rows if r[3] == 0)
@@ -310,16 +403,21 @@ def fetch_source(key, src, to_iso, fx):
 
 def main():
     to_iso = iso_map()
-    fx = isk_rates()
+    fx = {c: eur_rates(c) for c in ('ISK', 'GBP', 'NOK')}
     old = json.load(io.open(OUT, encoding='utf-8')) if os.path.exists(OUT) else {'meta': {}, 'rows': []}
     rows, meta, failed = [], {}, []
     for key, src in SOURCES.items():
         print(f'{key} :')
         try:
-            r, m = fetch_source(key, src, to_iso, fx)
+            r, m = (fetch_hmrc if src.get('kind') == 'hmrc' else fetch_source)(key, src, to_iso, fx)
             if not r:
                 raise RuntimeError('aucune ligne')
-            rows += r
+            # les mois que la nouvelle table ne couvre plus (table islandaise glissante) restent
+            keep = [x for x in old['rows'] if x[1] == key and x[0] < m['first']]
+            if keep:
+                print(f'  {key} : {len(keep)} lignes plus anciennes conservees du fichier precedent')
+                m['first'] = min(x[0] for x in keep)
+            rows += keep + r
             meta[key] = m
             print(f'  {key} : {len(r)} lignes, {m["first"]} -> {m["last"]}')
         except Exception as e:
@@ -328,7 +426,11 @@ def main():
             rows += [x for x in old['rows'] if x[1] == key]
             if key in old.get('meta', {}):
                 meta[key] = old['meta'][key]
-    out = {'meta': {'fetched': dt.date.today().isoformat(), 'sources': meta, 'failed': failed,
+    # taux de change (unites pour 1 EUR) gardes pour le tableau de bord (conversion des NOK norvegiennes)
+    fxm = {c: {str(k): v for k, v in r.items()} for c, r in fx.items() if r}
+    if not fxm and old.get('meta', {}).get('fx'):
+        fxm = old['meta']['fx']
+    out = {'meta': {'fetched': dt.date.today().isoformat(), 'sources': meta, 'failed': failed, 'fx': fxm,
                     'cols': ['ym', 'origin', 'destination', 'form', 'tonnes', 'k_local', 'k_eur'],
                     'forms': {'0': 'Fresh whole', '1': 'Frozen whole', '2': 'Fresh fillets', '3': 'Frozen fillets',
                               '5': 'Smoked', '6': 'Prepared / preserved'}},
