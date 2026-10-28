@@ -195,11 +195,11 @@
   table.pm-mkt td.barcell { text-align:left; }
   table.rg-ops td.zc, table.rg-ops th.zc { font-size:10.5px; padding:5px 3px; min-width:0; }
   /* Fish health et Farm register : tout tient dans le cadre, sans barre de defilement */
-  #healthView, #registerView { overflow-x: visible; min-width: 0; }
-  #healthView table, #registerView table { font-size: 11.5px; table-layout: auto; width: 100%; }
-  #healthView th, #registerView th { white-space: normal; font-size: 9.5px; padding: 5px 4px; vertical-align: bottom; line-height: 1.25; }
-  #healthView td, #registerView td { padding: 5px 4px; }
-  #healthView td.name, #registerView td.name { white-space: normal; min-width: 90px; }
+  #healthView, #registerView, #outlookView { overflow-x: visible; min-width: 0; }
+  #healthView table, #registerView table, #outlookView table { font-size: 11.5px; table-layout: auto; width: 100%; }
+  #healthView th, #registerView th, #outlookView th { white-space: normal; font-size: 9.5px; padding: 5px 4px; vertical-align: bottom; line-height: 1.25; }
+  #healthView td, #registerView td, #outlookView td { padding: 5px 4px; }
+  #healthView td.name, #registerView td.name, #outlookView td.name { white-space: normal; min-width: 90px; }
   #registerView td[style*="text-align:left"] { white-space: normal; }
   #healthView td small, #registerView td small { font-size: 9.5px; }
   table.rg-ops td.zc.z0 { color:#3a4d58; }
@@ -418,7 +418,7 @@
     <div class="note" id="multiConvNote" style="margin-top:14px; text-align:left; max-width:none; display:none;"></div>
   </div>
 
-  <div class="panel" id="outlookView" style="flex:1; min-width: 620px; max-width: 900px; display:none;">
+  <div class="panel" id="outlookView" style="flex:1; min-width: 0; max-width: 1080px; display:none;">
     <div class="period-summary" id="outlookSummary" style="margin-bottom:10px;"></div>
     <div class="sig-block">
       <div class="sig-title" id="sigTitle">Structural signals</div>
@@ -483,13 +483,26 @@
       <tbody id="tbodyOutlook"></tbody>
     </table>
     <div class="sig-title" style="margin-top:22px">By quarter</div>
-    <table class="sig-table"><thead><tr><th class="name">Quarter</th><th>Harvest (t)</th><th>Δ% YoY</th><th>Months projected</th><th>Error band</th></tr></thead>
+    <table class="sig-table"><thead><tr><th class="name">Quarter</th><th>Harvest (t)</th><th>Δ% YoY</th><th>Months projected</th><th>Error band</th>
+      <th class="sep-left" title="Fish in the sea x share usually harvested, with its recent bias">Headcount method</th><th title="Last year x biomass change x half the change in stock rotation">Rotation method</th><th title="Biomass ratio and 12-month drift">Previous method</th></tr></thead>
       <tbody id="tbodyOutlookQ"></tbody></table>
     <div class="sig-title" style="margin-top:22px">Test on a period already known</div>
     <div class="sig-sub" id="outlookBtSub"></div>
     <table class="sig-table"><thead><tr><th class="name">Month</th><th>Actual (t)</th><th>Projected (t)</th><th>Error</th><th class="sep-left">Previous method</th><th>Error</th></tr></thead>
       <tbody id="tbodyOutlookBt"></tbody><tfoot id="tfootOutlookBt"></tfoot></table>
     <div class="sig-sub" id="outlookAcc" style="margin-top:10px"></div>
+    <hr class="sig-divider">
+    <div class="sig-title">Stock rotation — how fast the fish in the sea are turned into harvest</div>
+    <div class="sig-sub" id="rotSub"></div>
+    <div class="sig-title" style="font-size:12px;margin-top:10px">By year (12 months to the latest reported month)</div>
+    <table class="sig-table"><thead><tr><th class="name">12 months to</th><th>Harvest (t)</th><th>Avg biomass in the sea (t)</th><th>MTB (t)</th><th>Biomass / MTB</th>
+      <th class="sep-left">Biomass rotation</th><th>Fish rotation</th><th>Avg harvest weight (kg)</th></tr></thead><tbody id="tbodyRotY"></tbody></table>
+    <div class="sig-title" style="font-size:12px;margin-top:18px">Month by month</div>
+    <table class="sig-table"><thead><tr><th class="name">Month</th><th>Harvest (t)</th><th>Avg biomass (t)</th>
+      <th class="sep-left">Biomass rotation in the month</th><th>vs a year earlier</th><th class="sep-left">Share of fish harvested</th><th>vs a year earlier</th><th class="sep-left">12-month rotation</th><th>vs a year earlier</th></tr></thead><tbody id="tbodyRotM"></tbody></table>
+    <div class="sig-title" style="font-size:12px;margin-top:18px">By zone (12 months to the latest reported month)</div>
+    <table class="sig-table"><thead><tr><th class="name">Zone</th><th>Harvest (t)</th><th>Avg biomass (t)</th><th class="sep-left">Biomass rotation</th><th>a year earlier</th><th>Δ</th>
+      <th class="sep-left">Fish rotation</th><th>a year earlier</th></tr></thead><tbody id="tbodyRotZ"></tbody></table>
     <div class="note" id="outlookNote" style="margin-top:16px; text-align:left; max-width:none;"></div>
   </div>
 
@@ -5083,12 +5096,26 @@ function renderOutlook() {
     }
     return past.length >= 6 ? p * ew(past, 0.7) : p;
   };
-  // final projection: average of the previous method and the headcount estimator
+  // ---- Rotation estimator: same month last year x change in standing biomass
+  //  x half the change in 12-month biomass rotation (harvest / average biomass).
+  //  Half, because the backtest shows a full extrapolation of rotation overshoots.
+  const rot12 = i => {
+    if (i < 11) return null;
+    let h = 0, b = 0;
+    for (let k = i - 11; k <= i; k++) { h += s[k].vol; b += s[k].bio; }
+    return b > 0 ? h / (b / 12) : null;
+  };
+  const rotEst = (i, h) => {
+    const j = i + h - 12;
+    if (j < 0 || j > i || i < 23 || !(s[i - 12].bio > 0)) return null;
+    const r = rot12(i), r0 = rot12(i - 12);
+    if (!r || !r0) return null;
+    return s[j].vol * (s[i].bio / s[i - 12].bio) * (1 + 0.5 * (r / r0 - 1));
+  };
+  // final projection: average of the three methods available at that date
   const projectVol = (i, h) => {
-    const a = projectOld(i, h), b = cwCorr(i, h);
-    if (a === null) return b;
-    if (b === null) return a;
-    return (a + b) / 2;
+    const v = [projectOld(i, h), cwCorr(i, h), rotEst(i, h)].filter(x => x !== null && isFinite(x));
+    return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null;
   };
 
   // empirical error band: walk the projection forward over the whole history
@@ -5233,11 +5260,11 @@ function renderOutlook() {
   const lastQ = q => q;
   {
     const items = [];
-    for (let i = Math.max(0, s.length - 3); i < s.length; i++) items.push({ y: s[i].year, m: s[i].month, v: s[i].vol, proj: false, e: 0 });
+    for (let i = Math.max(0, s.length - 3); i < s.length; i++) items.push({ y: s[i].year, m: s[i].month, v: s[i].vol, proj: false, e: 0, a: s[i].vol, b: s[i].vol, c: s[i].vol });
     for (let k = 1; k <= OUTLOOK_HORIZON; k++) {
       const pv = projectVol(lastIdx, k);
       const mm = (last.month - 1 + k) % 12 + 1, yy = last.year + Math.floor((last.month - 1 + k) / 12);
-      if (pv !== null) items.push({ y: yy, m: mm, v: pv, proj: true, h: k });
+      if (pv !== null) items.push({ y: yy, m: mm, v: pv, proj: true, h: k, a: cwCorr(lastIdx, k), b: rotEst(lastIdx, k), c: projectOld(lastIdx, k) });
     }
     // erreur trimestrielle mesuree sur le passe : memes horizons, mois reportes connus
     const qErr = (hs, nRep) => {
@@ -5258,11 +5285,74 @@ function renderOutlook() {
       const tot = arr.reduce((t, x) => t + x.v, 0), np = arr.filter(x => x.proj).length;
       const prev = [1, 2, 3].map(j => byKey[(yy - 1) * 100 + (qq - 1) * 3 + j]).reduce((t, r) => t + (r ? r.vol : NaN), 0);
       const eQ = np ? qErr(arr.filter(x => x.proj).map(x => x.h), 3 - np) : 0;
+      const mth = f => { if (!np || arr.some(x => x[f] === null || x[f] === undefined)) return '<td class="sep-left">—</td>';
+        const t = arr.reduce((u, x) => u + x[f], 0); const p = prev > 0 ? (t / prev - 1) * 100 : NaN;
+        return `<td style="color:var(--muted)">${isFinite(p) ? (p >= 0 ? '+' : '') + p.toFixed(1) + '%' : '—'}</td>`; };
       qRows.push(`<tr${np ? ' style="font-style:italic"' : ''}><td class="name">Q${qq} ${yy}</td><td>${num0(tot / 1000)}</td>${pctCell(tot / 1000, prev / 1000)}` +
-        `<td>${np ? np + ' of 3' : 'reported'}</td><td>${np ? '±' + eQ.toFixed(1) + '%' : '—'}</td></tr>`);
+        `<td>${np ? np + ' of 3' : 'reported'}</td><td>${np ? '±' + eQ.toFixed(1) + '%' : '—'}</td>` +
+        mth('a').replace('<td style', '<td class="sep-left" style') + mth('b') + mth('c') + `</tr>`);
     });
   }
   document.getElementById('tbodyOutlookQ').innerHTML = qRows.join('');
+
+  // ---- stock rotation: by year, by month, by zone
+  {
+    const ml = r => `${MONTHS_FR[r.month - 1].slice(0, 3)} ${r.year}`;
+    const f2 = v => isFinite(v) ? v.toFixed(2) : '—';
+    const pp = (a, b) => { if (!isFinite(a) || !isFinite(b)) return '<td class="delta-zero">—</td>';
+      const d = a - b; return `<td class="${d > 0.05 ? 'delta-good' : d < -0.05 ? 'delta-bad' : 'delta-zero'}">${d >= 0 ? '+' : ''}${d.toFixed(2)} pt</td>`; };
+    const rx = (a, b) => { if (!isFinite(a) || !isFinite(b)) return '<td class="delta-zero">—</td>';
+      const d = a - b; return `<td class="${d > 0.01 ? 'delta-good' : d < -0.01 ? 'delta-bad' : 'delta-zero'}">${d >= 0 ? '+' : ''}${d.toFixed(2)}</td>`; };
+    const sum12 = (i, f) => { let t = 0; for (let k = i - 11; k <= i; k++) t += s[k][f]; return t; };
+    const fishRot = i => { let c = 0, n = 0; for (let k = i - 11; k <= i; k++) { c += s[k].stk; n += s[k].stock; } return n > 0 ? c / (n / 12) : NaN; };
+    // MTB : seul le registre actuel est connu (pas d'historique des licences)
+    const mtbNow = (BWR && (BWR.mtb_po_all || BWR.mtb_po)) ? poFilter.reduce((t, po) => t + ((BWR.mtb_po_all || BWR.mtb_po)[String(po)] || 0), 0) : null;
+    let yr = '';
+    for (let i = s.length - 1; i >= 11; i -= 12) {
+      const h = sum12(i, 'vol'), b = sum12(i, 'bio') / 12, c = sum12(i, 'stk');
+      const mtb = i === s.length - 1 ? mtbNow : null;
+      yr += `<tr><td class="name">${ml(s[i])}</td><td>${num0(h / 1000)}</td><td>${num0(b / 1000)}</td>` +
+        `<td>${mtb ? num0(mtb) : '<span style="color:var(--muted)">n/a</span>'}</td><td>${mtb ? Math.round(100 * b / 1000 / mtb) + '%' : '—'}</td>` +
+        `<td class="sep-left"><b>${f2(h / b)}×</b></td><td>${f2(fishRot(i))}</td><td>${f2(h / c)}</td></tr>`;
+    }
+    document.getElementById('tbodyRotY').innerHTML = yr;
+    // mensuel : rotation du mois = recolte / biomasse moyenne du mois ; part des poissons = poissons recoltes / stock d'ouverture
+    const mRot = i => i > 0 && (s[i].bio + s[i - 1].bio) > 0 ? 100 * s[i].vol / ((s[i].bio + s[i - 1].bio) / 2) : NaN;
+    const mFish = i => i > 0 && s[i - 1].stock > 0 ? 100 * s[i].stk / s[i - 1].stock : NaN;
+    let mr = '';
+    for (let i = s.length - 1; i >= Math.max(13, s.length - 13); i--) {
+      const r12 = rot12(i), r12p = i >= 23 ? rot12(i - 12) : NaN;
+      mr += `<tr><td class="name">${ml(s[i])}</td><td>${num0(s[i].vol / 1000)}</td><td>${num0((s[i].bio + s[i - 1].bio) / 2000)}</td>` +
+        `<td class="sep-left">${mRot(i).toFixed(1)}%</td>${pp(mRot(i), mRot(i - 12))}` +
+        `<td class="sep-left">${mFish(i).toFixed(1)}%</td>${pp(mFish(i), mFish(i - 12))}` +
+        `<td class="sep-left"><b>${f2(r12)}×</b></td>${rx(r12, r12p)}</tr>`;
+    }
+    document.getElementById('tbodyRotM').innerHTML = mr;
+    // par zone
+    const Z = {};
+    RECORDS.forEach(r => { if (!poFilter.includes(r.po)) return; const k = r.year * 100 + r.month;
+      const z = Z[r.po] || (Z[r.po] = {}); z[k] = r; });
+    const lk = last.year * 100 + last.month;
+    const back = (k, n) => { let y = Math.floor(k / 100), m = k % 100 - n; while (m < 1) { m += 12; y--; } return y * 100 + m; };
+    const zr = (po, endK) => { let h = 0, b = 0, c = 0, n = 0, ok = 0;
+      for (let j = 0; j < 12; j++) { const r = Z[po] && Z[po][back(endK, j)]; if (!r) continue; ok++; h += r.uttak_kg || 0; b += r.biomasse_kg || 0; c += r.uttak_stk || 0; n += r.behfisk_stk || 0; }
+      return ok === 12 && b > 0 ? { h, b: b / 12, rot: h / (b / 12), fr: n > 0 ? c / (n / 12) : NaN } : null; };
+    let zh = '';
+    for (let po = 13; po >= 1; po--) {
+      if (!poFilter.includes(po)) continue;
+      const a = zr(po, lk), p = zr(po, lk - 100);
+      if (!a) continue;
+      zh += `<tr><td class="name">${po}. ${PO_NAMES[po]}</td><td>${num0(a.h / 1000)}</td><td>${num0(a.b / 1000)}</td>` +
+        `<td class="sep-left"><b>${f2(a.rot)}×</b></td><td style="color:var(--muted)">${p ? f2(p.rot) + '×' : '—'}</td>${p ? rx(a.rot, p.rot) : '<td>—</td>'}` +
+        `<td class="sep-left">${f2(a.fr)}</td><td style="color:var(--muted)">${p ? f2(p.fr) : '—'}</td></tr>`;
+    }
+    document.getElementById('tbodyRotZ').innerHTML = zh;
+    document.getElementById('rotSub').innerHTML =
+      `<b>Biomass rotation</b> = tonnes harvested over 12 months ÷ average standing biomass: how many times a year the biomass in the sea is turned into harvest. ` +
+      `<b>Fish rotation</b> = fish harvested ÷ average number of fish in the sea. With biomass capped by the licences (MTB), a faster rotation — larger smolts, ` +
+      `shorter time at sea, more cycles per licence — is the only way to harvest more. Month by month the ratio is seasonal, so each month is read against the same month a year earlier. ` +
+      `<span style="color:var(--muted)">MTB by year is not available: only the current licence register is collected (BarentsWatch, ${BWR && BWR.meta ? BWR.meta.generated : '—'}); earlier years will build up from now on.</span>`;
+  }
 
   // ---- test on a period already known: forecasts issued 12 months ago
   {
@@ -5290,7 +5380,8 @@ function renderOutlook() {
   const bandTxt = [1,3,6,9].filter(k => bandOf[k]).map(k => `${k} mo ±${bandOf[k].mae.toFixed(1)}%`).join(' · ');
   const wr9 = wFit[9] ? wFit[9].r : null;
   document.getElementById('outlookNote').innerHTML =
-    `<b>Method — volume.</b> The projection is the average of two independent methods, tested month by month on the past. ` +
+    `<b>Method — volume.</b> The projection is the average of three methods, each tested month by month on the past; their own results are shown by quarter. ` +
+    `<b>Rotation:</b> same month last year × the change in standing biomass × half the change in 12-month stock rotation (harvest ÷ average biomass). ` +
     `<b>1 · Headcount:</b> fish in the sea × the share of the stock usually harvested that many months later in that calendar month, × an average harvest ` +
     `weight (same month last year, scaled by the change in average stock weight), with its own past bias removed walk-forward. ` +
     `<b>2 · Previous method:</b> two estimators blended by horizon. <b>A:</b> standing biomass in the last reported month × an ` +
@@ -5362,6 +5453,13 @@ function renderSummary() {
   });
   const mKeys = Object.keys(M).map(Number).sort((a, b) => a - b);
   const prevM = k => (k % 100 === 1 ? k - 100 + 11 : k - 1);
+  // rotation du stock sur 12 mois glissants (recolte / biomasse moyenne) et rotation du mois
+  mKeys.forEach((k, n) => {
+    if (n >= 11) { let h = 0, b = 0; for (let j = n - 11; j <= n; j++) { h += M[mKeys[j]].harv; b += M[mKeys[j]].bio; } M[k].rot = b > 0 ? h / (b / 12) : NaN; }
+    else M[k].rot = NaN;
+    const pk = mKeys[n - 1];
+    M[k].rotM = pk && (M[k].bio + M[pk].bio) > 0 ? 100 * M[k].harv / ((M[k].bio + M[pk].bio) / 2) : NaN;
+  });
   const last = mKeys[mKeys.length - 1], ly = Math.floor(last / 100), lm = last % 100;
 
   // phrases d'evenement pour une serie mensuelle
@@ -5439,6 +5537,12 @@ function renderSummary() {
     valSub: () => `average ${(M[last].bio / M[last].fish * 1000).toFixed(2)} kg` });
   bio += bioRow('feed', 'Feed consumption', 'feed used during the month', fmtT, { noun: 'feed consumption', upGood: true, stable: 0.02 });
   bio += bioRow('smolt', 'Smolt release', 'fish released below 500 g, month', fmtM, smoltCfg);
+  {
+    const kY2 = last - 100;
+    bio += bioRow('rot', 'Stock rotation', 'harvest ÷ average biomass, 12 months rolling', v => v.toFixed(2) + '×',
+      { noun: 'stock rotation', upGood: true, stable: 0.01,
+        valSub: () => `${mlab(ly, lm)}: ${M[last].rotM.toFixed(1)}% of the biomass harvested` + (M[kY2] && isFinite(M[kY2].rotM) ? ` (${M[kY2].rotM.toFixed(1)}% a year earlier)` : '') });
+  }
 
   // ---------- poux, traitements, maladies (BarentsWatch, hebdomadaire) ----------
   let hlHtml = '';
@@ -5535,7 +5639,10 @@ function renderSummary() {
   document.getElementById('smNote').innerHTML =
     `<b>How the sentences are produced.</b> A month is flagged when it is the lowest or highest for that calendar month since the series starts, ` +
     `the lowest or highest of the year so far (stocks), when it switches above or below its year-earlier level (with the last time that happened), ` +
-    `or when it extends a run of 3 months or more on the same side. "Stable" means within ±1% (biomass, fish), ±2% (feed, harvest, exports) or ±5% (smolts). ` +
+    `or when it extends a run of 3 months or more on the same side. Stock rotation = tonnes harvested over 12 months ÷ average standing biomass: with biomass capped by the licences, ` +
+    `it is how fast the industry turns its fish into harvest (larger smolts, shorter time at sea). ` +
+    `"Stable" thresholds below apply to it as ±1%. ` +
+    ` "Stable" means within ±1% (biomass, fish), ±2% (feed, harvest, exports) or ±5% (smolts). ` +
     `Smolt release counts fish declared below 500 g; post-smolts released above 500 g are not in the source. Health: a new case is a disease ` +
     `appearing on a site free of it for the 4 previous weeks; a lice surge is a zone whose 3-week average rises by 50% or more to 0.25 or above.`;
 }
