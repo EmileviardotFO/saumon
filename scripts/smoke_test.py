@@ -53,6 +53,9 @@ def main():
         EUF = os.path.join(ROOT, 'data', 'eurostat.json')
         page.route('**/eurostat.json', lambda route: route.fulfill(path=EUF, content_type='application/json')
                    if os.path.exists(EUF) else route.fulfill(status=404, body='missing'))
+        NTF = os.path.join(ROOT, 'data', 'national_trade.json')
+        page.route('**/national_trade.json', lambda route: route.fulfill(path=NTF, content_type='application/json')
+                   if os.path.exists(NTF) else route.fulfill(status=404, body='missing'))
         page.goto('file://' + PAGE)
         page.wait_for_timeout(4000)
 

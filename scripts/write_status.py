@@ -30,6 +30,7 @@ STEPS = [
     ('ESTAB', 'Mattilsynet — establishments'),
     ('CHINA', 'GACC — establishments registered for China'),
     ('EUROSTAT', 'Eurostat — EU salmon flows'),
+    ('NATIONAL', 'Faroe & Iceland export statistics'),
     ('SMOKE', 'Dashboard test'),
 ]
 
@@ -53,8 +54,18 @@ def main():
             eu = {'fetched': m.get('fetched'), 'last_period': m.get('last_period'), 'source_update': m.get('source_update')}
         except (ValueError, KeyError):
             eu = None
+    nat = None
+    NTF = os.path.join(ROOT, 'data', 'national_trade.json')
+    if os.path.exists(NTF):
+        try:
+            m = json.load(io.open(NTF, encoding='utf-8'))['meta']
+            nat = {k: {'last': v.get('last'), 'source': v.get('source')} for k, v in m.get('sources', {}).items()}
+            nat['fetched'] = m.get('fetched')
+        except (ValueError, KeyError):
+            nat = None
     data['status'] = {
         'eurostat': eu,
+        'national': nat,
         'run_utc': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'),
         'run_url': f'{server}/{repo}/actions/runs/{run}' if server and repo and run else None,
         'steps': steps,
