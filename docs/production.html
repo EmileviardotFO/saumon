@@ -636,7 +636,10 @@
     <div id="prCards" class="pr-cards"></div>
     <div class="chart-controls">
       <span class="cc-label">Destinations</span><span id="prScope" class="pm-mt" style="display:inline-flex;gap:6px"></span>
-      <span class="cc-label">Range</span>
+      <span class="cc-label">Period</span>
+      <select class="ctrl" id="prPeriod"><option value="last" selected>Last month available</option><option value="3">Last 3 months</option><option value="12">Last 12 months</option><option value="ytd">Year to date</option><option value="custom">Custom period…</option></select>
+      <span id="prCustom" style="display:none;align-items:center;gap:6px"><select class="ctrl" id="prFrom"></select><span class="cc-label">to</span><select class="ctrl" id="prTo"></select></span>
+      <span class="cc-label">Chart range</span>
       <select class="ctrl" id="prRange"><option value="12">Last 12 months</option><option value="24" selected>Last 24 months</option><option value="36">Last 36 months</option><option value="60">Last 5 years</option></select>
     </div>
     <div class="chart-controls"><span class="cc-label">Forms</span><span id="prForms" style="display:inline-flex;gap:12px;flex-wrap:wrap"></span></div>
@@ -657,7 +660,8 @@
     <div class="sig-sub" id="euSub"></div>
     <div class="chart-controls">
       <span class="cc-label">Period</span>
-      <select class="ctrl" id="euPeriod"><option value="12">Last 12 months</option><option value="3">Last 3 months</option><option value="1">Last month</option><option value="ytd">Year to date</option></select>
+      <select class="ctrl" id="euPeriod"><option value="last" selected>Last month available</option><option value="3">Last 3 months</option><option value="12">Last 12 months</option><option value="ytd">Year to date</option><option value="custom">Custom period…</option></select>
+      <span id="euCustom" style="display:none;align-items:center;gap:6px"><select class="ctrl" id="euFrom"></select><span class="cc-label">to</span><select class="ctrl" id="euTo"></select></span>
       <span class="cc-label">Form</span>
       <select class="ctrl" id="euForm"></select>
     </div>
@@ -5897,7 +5901,10 @@ const tmF0 = v => isFinite(v) ? Math.round(v).toLocaleString('en-US') : '—';
 const tmPc = (a, b) => b > 0 ? (a / b - 1) * 100 : NaN;
 const tmSg = v => (v >= 0 ? '+' : '−') + tmF0(Math.abs(v));
 const tmCls = (p, th = 2) => !isFinite(p) ? 'delta-zero' : p > th ? 'delta-good' : p < -th ? 'delta-bad' : 'delta-zero';
-const tmPct = (a, b) => { const p = tmPc(a, b); return `<td class="${tmCls(p)}">${isFinite(p) ? (p >= 0 ? '+' : '') + p.toFixed(0) + '%' : (a > 0 ? 'new' : '—')}</td>`; };
+const tmKt = t => t >= 20000 ? `${(t / 1000).toLocaleString('en-US', { maximumFractionDigits: t >= 100000 ? 0 : 1 })} kt` : `${Math.round(t).toLocaleString('en-US')} t`;
+const tmArrow = (p, th = 2) => !isFinite(p) ? '' : p > th ? '▲' : p < -th ? '▼' : '►';
+const tmVar = (p, th = 2) => isFinite(p) ? `<span class="${tmCls(p, th)}" style="white-space:nowrap">${tmArrow(p, th)} ${p >= 0 ? '+' : ''}${Math.abs(p) < 10 ? p.toFixed(1) : p.toFixed(0)}%</span>` : '';
+const tmPct = (a, b) => { const p = tmPc(a, b); return `<td class="${tmCls(p)}" style="white-space:nowrap">${isFinite(p) ? tmArrow(p) + ' ' + (p >= 0 ? '+' : '') + (Math.abs(p) < 10 ? p.toFixed(1) : p.toFixed(0)) + '%' : (a > 0 ? 'new' : '—')}</td>`; };
 
 function tmBuild() {
   if (TM && TM.src === EU) return TM;
@@ -5925,7 +5932,33 @@ function tmBuild() {
   if (NAT && NAT.rows) NAT.rows.forEach(([ym, o, iso, pi, t, kl, ke]) => {
     const A = TM.nati[o] || (TM.nati[o] = {}), B = A[iso] || (A[iso] = {}), C = B[ym] || (B[ym] = {}), x = C[pi] || (C[pi] = [0, 0]);
     x[0] += t; x[1] += ke || 0; TM.natLast[o] = Math.max(TM.natLast[o] || 0, ym); TM.natFirst[o] = Math.min(TM.natFirst[o] || 999999, ym); });
+  // dernier mois complet dans TOUTES les sources (Eurostat, statistiques norvegiennes, feroiennes, islandaises)
+  TM.ssbLastAll = SSBX ? SSBX.rows.reduce((m, r) => Math.max(m, r[0]), 0) : 0;
+  TM.common = Math.min(TM.last, ...(TM.ssbLastAll ? [TM.ssbLastAll] : []), ...Object.values(TM.natLast));
   return TM;
+}
+// Periode choisie, terminee au dernier mois disponible partout : 'last', '3', '12', 'ytd'
+function tmPeriod(per, pre) {
+  const L = TM.common;
+  let keys;
+  if (per === 'custom' && pre) {
+    const f = +document.getElementById(pre + 'From').value, t = +document.getElementById(pre + 'To').value, a = Math.min(f, t), b = Math.max(f, t);
+    keys = TM.months.filter(k => k >= a && k <= b);
+  } else keys = per === 'last' ? [L] : per === 'ytd' ? Array.from({ length: L % 100 }, (_, i) => Math.floor(L / 100) * 100 + i + 1) : tmRange(L, +per);
+  return { keys, prev: keys.map(k => k - 100), lab: keys.length === 1 ? tmMl(keys[0]) : `${tmMl(keys[0])} – ${tmMl(keys[keys.length - 1])}` };
+}
+function tmPeriodLabels(sel, pre, rerender) {
+  const o = [...sel.options].find(x => x.value === 'last');
+  if (o) o.textContent = `Last month available (${tmMl(TM.common)})`;
+  const box = document.getElementById(pre + 'Custom'), f = document.getElementById(pre + 'From'), t = document.getElementById(pre + 'To');
+  if (!f.options.length) {
+    const ms = TM.months.filter(k => k <= TM.common && k >= 202201).reverse();
+    const html = ms.map(k => `<option value="${k}">${tmMl(k)}</option>`).join('');
+    f.innerHTML = html; t.innerHTML = html;
+    f.value = String(tmBack(TM.common, 11)); t.value = String(TM.common);
+    f.addEventListener('change', rerender); t.addEventListener('change', rerender);
+  }
+  box.style.display = sel.value === 'custom' ? 'inline-flex' : 'none';
 }
 // Composition par origine de ce qu'importe chaque pays de l'UE (un mois, toutes formes
 // confondues : un pays qui fume ou filete du saumon le fait a partir de ce qu'il importe
@@ -6048,10 +6081,10 @@ function vzHBars(rows, o) {
       `<rect x="${mL}" y="${y + 4}" width="${Math.max(w, 1).toFixed(1)}" height="${rh - 9}" fill="${r.col}" rx="2"><title>${r.lab}: ${tmF0(r.v)} ${o.unit}${r.vp ? `, a year earlier ${tmF0(r.vp)}` : ''}</title></rect>` +
       (r.vp ? `<line x1="${(mL + wp).toFixed(1)}" x2="${(mL + wp).toFixed(1)}" y1="${y + 1}" y2="${y + rh - 2}" stroke="#e7eef2" stroke-width="2" stroke-opacity=".7"/>` : '') +
       `<text x="${mL + Math.max(w, wp) + 8}" y="${y + 15}" fill="#cfdde4" font-size="12">${tmF0(r.v)}` +
-      (isFinite(p) ? ` <tspan fill="${p > 2 ? '#7be0c9' : p < -2 ? '#ff8a65' : '#8fa4b0'}">${p >= 0 ? '+' : ''}${p.toFixed(0)}%</tspan>` : r.v > 0 ? ' <tspan fill="#8fa4b0">new</tspan>' : '') + `</text>`;
+      (isFinite(p) ? ` <tspan fill="${p > 2 ? '#7be0c9' : p < -2 ? '#ff8a65' : '#8fa4b0'}">${tmArrow(p)} ${p >= 0 ? '+' : ''}${p.toFixed(0)}%</tspan>` : r.v > 0 ? ' <tspan fill="#8fa4b0">new</tspan>' : '') + `</text>`;
     if (o.price) { const q = tmPc(r.pr, r.prp);
       s += `<text x="${xP}" y="${y + 15}" text-anchor="end" fill="#e7eef2" font-size="12" font-weight="bold">${isFinite(r.pr) ? r.pr.toFixed(2) : '—'}</text>` +
-        `<text x="${xD}" y="${y + 15}" text-anchor="end" fill="${!isFinite(q) ? '#8fa4b0' : q > 2 ? '#7be0c9' : q < -2 ? '#ff8a65' : '#8fa4b0'}" font-size="12">${isFinite(q) ? (q >= 0 ? '+' : '') + q.toFixed(0) + '%' + (isFinite(r.prp) ? ` <tspan fill="#8fa4b0">(${r.prp.toFixed(2)})</tspan>` : '') : '—'}</text>`; }
+        `<text x="${xD}" y="${y + 15}" text-anchor="end" fill="${!isFinite(q) ? '#8fa4b0' : q > 2 ? '#7be0c9' : q < -2 ? '#ff8a65' : '#8fa4b0'}" font-size="12">${isFinite(q) ? tmArrow(q) + ' ' + (q >= 0 ? '+' : '') + q.toFixed(0) + '%' + (isFinite(r.prp) ? ` <tspan fill="#8fa4b0">(${r.prp.toFixed(2)})</tspan>` : '') : '—'}</text>`; }
   });
   return `<div class="viz"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">${s}</svg></div>`;
 }
@@ -6069,7 +6102,7 @@ function vzDiverge(rows, o) {
       s += `<rect x="${Xv(a).toFixed(1)}" width="${Math.max(0.5, Xv(b) - Xv(a)).toFixed(1)}" y="${y + 4}" height="${rh - 10}" fill="${g.col}"><title>${r.lab} — ${g.lab}: ${tmSg(g.v)} ${o.unit}</title></rect>`;
       if (g.v > 0) pos += g.v; else neg += g.v; });
     s += `<line x1="${Xv(r.net)}" x2="${Xv(r.net)}" y1="${y + 1}" y2="${y + rh - 3}" stroke="#ffffff" stroke-width="3"><title>Net change: ${tmSg(r.net)} ${o.unit}</title></line>`;
-    s += `<text x="${W - mR + 10}" y="${y + 16}" fill="${r.net > 0 ? '#7be0c9' : r.net < 0 ? '#ff8a65' : '#8fa4b0'}" font-size="12" font-weight="bold">${tmSg(r.net)} t${isFinite(r.pct) ? ` (${r.pct >= 0 ? '+' : ''}${r.pct.toFixed(0)}%)` : ''}</text>`; });
+    s += `<text x="${W - mR + 10}" y="${y + 16}" fill="${r.net > 0 ? '#7be0c9' : r.net < 0 ? '#ff8a65' : '#8fa4b0'}" font-size="12" font-weight="bold">${tmArrow(r.pct)} ${tmSg(r.net)} t${isFinite(r.pct) ? ` (${r.pct >= 0 ? '+' : ''}${r.pct.toFixed(0)}%)` : ''}</text>`; });
   return `<div class="viz"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">${s}</svg></div>`;
 }
 const vzSpark = (vals, col) => { const v = vals.map(x => x || 0), mx = Math.max(...v, 1), n = v.length;
@@ -6083,25 +6116,29 @@ function renderProducers() {
   if (!EU) { sub.innerHTML = EU_LOADING ? 'Loading Eurostat data…' : 'Loading…'; loadEurostat(); return; }
   tmBuild();
   const P = EU.meta.products, last = TM.last;
-  sub.innerHTML = `Monthly exports of each salmon-farming country, by form, with prices. Data to <b>${tmMl(last)}</b>. ` +
-    `<b>Faroe Islands, Iceland, United Kingdom and Chile: what enters the EU only</b> (Eurostat, the EU country where the salmon is cleared) — their exports to the US, Asia, the UK or Russia are not in this source yet. ` +
-    `Norway: also all destinations (Norwegian statistics). Atlantic salmon only: fillet, smoked and prepared codes from the US, China and Russia (Pacific salmon) are left out; trout is not included.`;
-  // cartes : 12 derniers mois vers l'UE, comparables entre pays
-  const k12 = tmRange(last, 12), k12p = k12.map(k => k - 100), k24 = tmRange(last, 24);
+  sub.innerHTML = `Monthly exports of each salmon-farming country, by form, with prices. <b>Last month available in every source: ${tmMl(TM.common)}</b> (Eurostat ${tmMl(TM.last)}${TM.ssbLastAll ? `, Norway ${tmMl(TM.ssbLastAll)}` : ''}${Object.entries(TM.natLast).map(([o, k]) => `, ${ORIG_LAB[o]} ${tmMl(k)}`).join('')}). ` +
+    `<b>Into the EU</b> = arrivals recorded by Eurostat (EU country where the salmon is cleared), comparable for every producer. <b>All destinations</b> = the producer's own export statistics: Norway (SSB), Faroe Islands (Hagstova), Iceland (Hagstofa), Ireland (Eurostat). ` +
+    `United Kingdom and Chile: into the EU only for now. Atlantic salmon only: fillet, smoked and prepared codes from the US, China and Russia (Pacific salmon) are left out; trout is not included.`;
+  const perSel = document.getElementById('prPeriod'); tmPeriodLabels(perSel, 'pr', renderProducers);
+  if (!perSel.dataset.w) { perSel.dataset.w = 1; perSel.addEventListener('change', renderProducers); }
+  const PER = tmPeriod(perSel.value, 'pr');
+  // cartes : periode choisie, vers l'UE (comparable entre pays) + toutes destinations si disponible
+  const k12 = PER.keys, k12p = PER.prev, k24 = tmRange(TM.common, 24);
   const cards = PRODUCERS.map(pr => {
     const d = tmProducer(pr, 'eu'), by = {}; d.rows.forEach(([ym, , pi, t, v]) => { const x = by[ym] || (by[ym] = [0, 0]); x[0] += t; x[1] += v; });
     const S = ks => ks.reduce((a, k) => [a[0] + (by[k] ? by[k][0] : 0), a[1] + (by[k] ? by[k][1] : 0)], [0, 0]);
     const a = S(k12), b = S(k12p), p = tmPc(a[0], b[0]), pa = a[0] ? a[1] / a[0] : NaN, pb = b[0] ? b[1] / b[0] : NaN;
     let extra = '';
     if (pr === 'NO' && SSBX) { const n = tmProducer('NO', 'all'), byN = {}; n.rows.forEach(([ym, , , t]) => byN[ym] = (byN[ym] || 0) + t);
-      const kk = tmRange(n.last, 12), A = kk.reduce((s, k) => s + (byN[k] || 0), 0), B = kk.reduce((s, k) => s + (byN[k - 100] || 0), 0), q = tmPc(A, B);
-      extra = `<div class="ln">All destinations: <b style="color:var(--ink)">${tmF0(A / 1000)} kt</b> <span class="${tmCls(q)}">${q >= 0 ? '+' : ''}${q.toFixed(0)}%</span> (to ${tmMl(n.last)})</div>`; }
+      const kk = PER.keys, A = kk.reduce((s, k) => s + (byN[k] || 0), 0), B = kk.reduce((s, k) => s + (byN[k - 100] || 0), 0), q = tmPc(A, B);
+      extra = `<div class="ln">All destinations: <b style="color:var(--ink)">${tmKt(A)}</b> ${tmVar(q)} <span style="font-size:10px">vs N-1</span></div>`; }
     if (TM.nati[pr]) { const n = tmProducer(pr, 'all'), byN = {}; n.rows.forEach(([ym, , , t]) => byN[ym] = (byN[ym] || 0) + t);
-      const kk = tmRange(n.last, 12), A = kk.reduce((s, k) => s + (byN[k] || 0), 0), B = kk.reduce((s, k) => s + (byN[k - 100] || 0), 0), q = tmPc(A, B);
-      extra = `<div class="ln">All destinations: <b style="color:var(--ink)">${tmF0(A / 1000)} kt</b>${isFinite(q) ? ` <span class="${tmCls(q)}">${q >= 0 ? '+' : ''}${q.toFixed(0)}%</span>` : ''} (to ${tmMl(n.last)})</div>`; }
+      const kk = PER.keys, A = kk.reduce((s, k) => s + (byN[k] || 0), 0), B = kk.reduce((s, k) => s + (byN[k - 100] || 0), 0), q = tmPc(A, B);
+      extra = `<div class="ln">All destinations: <b style="color:var(--ink)">${tmKt(A)}</b> ${tmVar(q)} <span style="font-size:10px">vs N-1</span></div>`; }
     return `<div class="pr-card${pr === prSel ? ' active' : ''}" data-p="${pr}"><div class="nm"><i style="background:${ORIG_COL[pr]}"></i>${PROD_LAB[pr]}</div>` +
-      `<div class="big">${tmF0(a[0] / 1000)} kt <span class="${tmCls(p)}" style="font-size:13px">${isFinite(p) ? (p >= 0 ? '+' : '') + p.toFixed(0) + '%' : ''}</span></div>` +
-      `<div class="ln">to the EU, last 12 months · ${isFinite(pa) ? pa.toFixed(2) + ' €/kg' : '—'}${isFinite(pa) && isFinite(pb) ? ` <span class="${tmCls(tmPc(pa, pb))}">(${tmPc(pa, pb) >= 0 ? '+' : ''}${tmPc(pa, pb).toFixed(0)}%)</span>` : ''}</div>${extra}` +
+      `<div class="big">${tmKt(a[0])} <span style="font-size:13px">${tmVar(p)}</span> <span style="font-size:10px;color:var(--muted);font-weight:normal">vs N-1</span></div>` +
+      (PER.keys.length === 1 ? `<div class="ln">vs previous month: ${tmVar(tmPc(a[0], S([tmBack(PER.keys[0], 1)])[0]))}</div>` : '') +
+      `<div class="ln">to the EU, ${PER.lab} · <b style="color:var(--ink)">${isFinite(pa) ? pa.toFixed(2) + ' €/kg' : '—'}</b> ${isFinite(pa) && isFinite(pb) ? tmVar(tmPc(pa, pb)) : ''}</div>${extra}` +
       vzSpark(k24.map(k => by[k] ? by[k][0] : 0), ORIG_COL[pr]) + `</div>`;
   });
   document.getElementById('prCards').innerHTML = cards.join('');
@@ -6146,30 +6183,31 @@ function renderProducers() {
     vzLegend(lines.map(s => [s.lab, s.col, !!s.dash]));
   document.getElementById('prChart').innerHTML = sel.length ? html : '<div class="sig-sub">Tick at least one form.</div>';
   // tableau par forme
-  const kp = tmBack(lastP, 1), kN = tmRange(lastP, 12), kNp = kN.map(k => k - 100), g = (o, k) => o[k] || [0, 0];
+  const LM = TM.common, kp = tmBack(LM, 1), kN = PER.keys, kNp = PER.prev, g = (o, k) => o[k] || [0, 0];
   const sumK = (o, ks) => ks.reduce((a, k) => [a[0] + g(o, k)[0], a[1] + g(o, k)[1]], [0, 0]), pr = x => x[0] > 0 ? x[1] / x[0] : NaN;
   const f2 = v => isFinite(v) ? v.toFixed(2) : '—';
   document.getElementById('prFormTitle').textContent = `${PROD_LAB[prSel]} — by form (${D.euOnly ? 'into the EU' : 'all destinations'})`;
-  document.getElementById('theadPrF').innerHTML = `<tr><th class="name" rowspan="2">Form</th><th class="grp" colspan="3">${tmMl(lastP)}</th><th class="grp sep-left" colspan="3">Last 12 months</th><th class="grp sep-left" colspan="3">Price, ${cur}/kg</th></tr>` +
-    `<tr><th>Tonnes</th><th>vs M-1</th><th>vs N-1</th><th class="sep-left">Tonnes</th><th>Share</th><th>vs N-1</th><th class="sep-left">${tmMl(lastP)}</th><th>vs N-1</th><th>12 months</th></tr>`;
+  const one = kN.length === 1, kM1 = one ? tmBack(kN[0], 1) : null;
+  document.getElementById('theadPrF').innerHTML = `<tr><th class="name" rowspan="2">Form</th><th class="grp" colspan="${one ? 6 : 5}">${PER.lab}</th>${one ? '' : `<th class="grp sep-left" colspan="3">Last month available, ${tmMl(LM)}</th>`}</tr>` +
+    `<tr><th>Tonnes</th><th>Share</th>${one ? '<th>vs M-1</th>' : ''}<th>vs N-1</th><th>${cur}/kg</th><th>price vs N-1</th>${one ? '' : '<th class="sep-left">Tonnes</th><th>vs M-1</th><th>vs N-1</th>'}</tr>`;
   const T12 = sumK(tot, kN)[0];
-  const row = (lab, o, strong) => { const L = g(o, lastP), Lm = g(o, kp), Ly = g(o, lastP - 100), A = sumK(o, kN), B = sumK(o, kNp);
-    return `<tr><td class="name"${strong ? ' style="color:var(--accent)"' : ''}>${lab}</td><td><b>${tmF0(L[0])}</b></td>${tmPct(L[0], Lm[0])}${tmPct(L[0], Ly[0])}` +
-      `<td class="sep-left"><b>${tmF0(A[0])}</b></td><td>${T12 ? (100 * A[0] / T12).toFixed(1) + '%' : '—'}</td>${tmPct(A[0], B[0])}` +
-      `<td class="sep-left">${f2(pr(L))}</td>${tmPct(pr(L), pr(Ly))}<td>${f2(pr(A))}</td></tr>`; };
+  const row = (lab, o, strong) => { const L = g(o, LM), Lm = g(o, kp), Ly = g(o, LM - 100), A = sumK(o, kN), B = sumK(o, kNp);
+    return `<tr><td class="name"${strong ? ' style="color:var(--accent)"' : ''}>${lab}</td><td><b>${tmF0(A[0])}</b></td><td>${T12 ? (100 * A[0] / T12).toFixed(1) + '%' : '—'}</td>` +
+      (one ? tmPct(A[0], g(o, kM1)[0]) : '') + `${tmPct(A[0], B[0])}<td><b>${f2(pr(A))}</b></td>${tmPct(pr(A), pr(B))}` +
+      (one ? '' : `<td class="sep-left">${tmF0(L[0])}</td>${tmPct(L[0], Lm[0])}${tmPct(L[0], Ly[0])}`) + `</tr>`; };
   document.getElementById('tbodyPrF').innerHTML = sel.map(i => row(`<i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${FORM_COL[i]};margin-right:6px"></i>${P[i]}`, by[i])).join('') + (sel.length > 1 ? row('Total', tot, true) : '');
   // destinations
   const dst = {}; D.rows.forEach(([ym, de, pi, t, v]) => { if (!by[pi]) return; const n = kN.includes(ym), p = kNp.includes(ym); if (!n && !p) return;
     const x = dst[de] || (dst[de] = [0, 0, 0, 0]); x[n ? 0 : 1] += t; x[n ? 2 : 3] += v || 0; });
   const top = Object.entries(dst).filter(([, x]) => x[0] >= 1 || x[1] >= 1).sort((a, b) => b[1][0] - a[1][0]).slice(0, 18);
-  document.getElementById('prDestTitle').textContent = `${PROD_LAB[prSel]} — ${D.euOnly ? 'EU country of arrival' : 'destinations'}, last 12 months`;
-  document.getElementById('prDestSub').innerHTML = `Selected forms, ${tmMl(kN[0])} – ${tmMl(kN[11])}. The white tick marks the volume of the same 12 months a year earlier; on the right, the average price per destination and its change (price a year earlier in brackets). Prices mix forms when several are ticked: select one form for a like-for-like comparison.` +
+  document.getElementById('prDestTitle').textContent = `${PROD_LAB[prSel]} — ${D.euOnly ? 'EU country of arrival' : 'destinations'}, ${PER.lab}`;
+  document.getElementById('prDestSub').innerHTML = `Selected forms, ${PER.lab}. The white tick marks the volume of the same period a year earlier; on the right, the average price per destination and its change (price a year earlier in brackets). Prices mix forms when several are ticked: select one form for a like-for-like comparison.` +
     (D.euOnly ? ` <span class="warn">EU country of arrival = where customs clearance takes place</span>, not always where the salmon is eaten (see the EU markets tab for the reconstructed origins of each market).` : '');
   document.getElementById('prDest').innerHTML = top.length ? vzHBars(top.map(([de, x]) => ({ lab: euName(de), v: x[0], vp: x[1], col: ORIG_COL[prSel],
-    pr: x[0] >= 1 && x[2] > 0 ? x[2] / x[0] : NaN, prp: x[1] >= 1 && x[3] > 0 ? x[3] / x[1] : NaN })), { unit: 't', price: `${cur}/kg, 12 months` }) : '';
+    pr: x[0] >= 1 && x[2] > 0 ? x[2] / x[0] : NaN, prp: x[1] >= 1 && x[3] > 0 ? x[3] / x[1] : NaN })), { unit: 't', price: `${cur}/kg` }) : '';
   document.getElementById('prNote').innerHTML = `<b>Sources.</b> Eurostat Comext DS-045409 (monthly EU trade by CN8 product, in € and tonnes of product weight; latest months revised for a while, incomplete months left out). ` +
-    `Norwegian statistics: SSB (fresh and frozen whole fish, fresh and frozen fillets; NOK). ` +
-    `Totals for the Faroes (Hagstova), Iceland (Hagstofa), the UK (HMRC) and Chile will be added once their statistics are collected.`;
+    `Norwegian statistics: SSB (fresh and frozen whole fish, fresh and frozen fillets; NOK). Faroese statistics: Hagstova table UH01046 (DKK, converted at the fixed rate). ` +
+    `Icelandic statistics: Hagstofa, exports by tariff number (farmed Atlantic salmon codes; ISK converted at Eurostat monthly average rates). The UK (HMRC) and Chile are not collected yet.`;
 }
 
 // ===================== Onglet EU markets =====================
@@ -6192,8 +6230,8 @@ function renderEuFlows() {
     more.addEventListener('change', () => { if (more.value) { euCty = more.value; renderEuFlows(); } });
   }
   const form = fSel.value, per = pSel.value, forms = form === 'all' ? FORMS_OK : [+form];
-  const last = TM.last, ly = Math.floor(last / 100), lm = last % 100;
-  const keys = per === 'ytd' ? Array.from({ length: lm }, (_, i) => ly * 100 + i + 1) : tmRange(last, +per);
+  tmPeriodLabels(pSel, 'eu', renderEuFlows);
+  const last = TM.common, PERe = tmPeriod(per, 'eu'), keys = PERe.keys;
   const kP = keys.map(k => k - 100), plab = keys.length === 1 ? tmMl(keys[0]) : `${tmMl(keys[0])} – ${tmMl(keys[keys.length - 1])}`;
   sub.innerHTML = `Eurostat Comext, monthly trade by CN8 product, data to <b>${tmMl(last)}</b> (published ${M.source_update || M.fetched}). Period: <b>${plab}</b> vs the same months a year earlier. Tonnes of product weight. ` +
     `<b>Atlantic salmon only</b>: fillets, smoked and prepared salmon from the US, China and Russia (Pacific salmon) are left out.` +
