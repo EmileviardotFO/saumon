@@ -110,8 +110,8 @@ jobs:
         timeout-minutes: 30
         run: python3 scripts/update_eurostat.py
 
-      - name: Exportations des Feroe et de l'Islande (statistiques nationales)
-        # Hagstova Foroya et Hagstofa Islands (API PxWeb) : saumon par pays de
+      - name: Exportations des Feroe, de l'Islande et du Royaume-Uni (statistiques nationales)
+        # Hagstova Foroya, Hagstofa Islands (API PxWeb) et HMRC (API uktradeinfo) : saumon par pays de
         # destination et par mois, pour l'onglet Producers et l'origine du
         # saumon dans chaque pays de l'UE. Nouvelle source : un echec ne bloque rien.
         id: national
