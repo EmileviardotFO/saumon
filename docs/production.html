@@ -168,6 +168,7 @@
   #tbodyRgPo .hl-detail table td, #tbodyRgPo .hl-detail table th { padding:5px 8px; background:transparent; border-bottom:1px solid var(--border); }
   #tbodyHealth .hl-detail table tr:hover td, #tbodyRgPo .hl-detail table tr:hover td { background:rgba(47,184,166,.05); }
   #tbodyRgPo .hl-detail table tfoot td { font-weight:bold; border-bottom:none; }
+  #tbodyEuUp .hl-detail table td, #tbodyEuUp .hl-detail table th { padding:5px 8px; background:transparent; border-bottom:1px solid var(--border); }
   .hl-detail .sig-title { font-size:12.5px; }
   tr.pm-row:hover td { background:rgba(47,184,166,.06); }
   tr.pm-open td { background:rgba(47,184,166,.11); }
@@ -195,11 +196,11 @@
   table.pm-mkt td.barcell { text-align:left; }
   table.rg-ops td.zc, table.rg-ops th.zc { font-size:10.5px; padding:5px 3px; min-width:0; }
   /* Fish health et Farm register : tout tient dans le cadre, sans barre de defilement */
-  #healthView, #registerView, #outlookView, #productsView { overflow-x: visible; min-width: 0; }
-  #healthView table, #registerView table, #outlookView table, #productsView table { font-size: 11.5px; table-layout: auto; width: 100%; }
-  #healthView th, #registerView th, #outlookView th, #productsView th { white-space: normal; font-size: 9.5px; padding: 5px 4px; vertical-align: bottom; line-height: 1.25; }
-  #healthView td, #registerView td, #outlookView td, #productsView td { padding: 5px 4px; }
-  #healthView td.name, #registerView td.name, #outlookView td.name, #productsView td.name { white-space: normal; min-width: 90px; }
+  #healthView, #registerView, #outlookView, #productsView, #euView { overflow-x: visible; min-width: 0; }
+  #healthView table, #registerView table, #outlookView table, #productsView table, #euView table { font-size: 11.5px; table-layout: auto; width: 100%; }
+  #healthView th, #registerView th, #outlookView th, #productsView th, #euView th { white-space: normal; font-size: 9.5px; padding: 5px 4px; vertical-align: bottom; line-height: 1.25; }
+  #healthView td, #registerView td, #outlookView td, #productsView td, #euView td { padding: 5px 4px; }
+  #healthView td.name, #registerView td.name, #outlookView td.name, #productsView td.name, #euView td.name { white-space: normal; min-width: 90px; }
   #registerView td[style*="text-align:left"] { white-space: normal; }
   #healthView td small, #registerView td small { font-size: 9.5px; }
   table.rg-ops td.zc.z0 { color:#3a4d58; }
@@ -258,6 +259,7 @@
     <button data-v="po">By zone (PO)</button>
     <button data-v="health">Fish health</button>
     <button data-v="register">Farm register</button>
+    <button data-v="euflows">EU flows</button>
   </div>
   <div class="field" id="poFilterField" style="display:none;">
     <label for="poFilterSelect">Zone(s) included</label>
@@ -611,6 +613,29 @@
     <div class="legend-row" id="hlLegend"></div>
     <div class="note" id="hlNote" style="margin-top:16px; text-align:left; max-width:none;"></div>
     </div>
+  </div>
+
+  <div class="panel" id="euView" style="flex:1; min-width:0; max-width:1320px; display:none;">
+    <div class="sig-title">EU flows — who imports salmon from where, and where the processing hubs send it</div>
+    <div class="sig-sub" id="euSub"></div>
+    <div class="chart-controls">
+      <span class="cc-label">Period</span>
+      <select class="ctrl" id="euPeriod"><option value="12">Last 12 months</option><option value="3">Last 3 months</option><option value="1">Last month</option><option value="ytd">Year to date</option></select>
+      <span class="cc-label">Form</span>
+      <select class="ctrl" id="euForm"></select>
+    </div>
+    <div class="sig-title" style="margin-top:14px">1 · Upstream — how much each producing country ships to the EU, where, and in what form</div>
+    <div class="chart-controls"><span class="cc-label">View</span><span id="euModeBtns" class="pm-mt" style="display:inline-flex;gap:6px"></span>
+      <span class="cc-label" id="euOrigLbl">Origin</span><span id="euOrigBtns" class="pm-mt" style="display:inline-flex;gap:6px;flex-wrap:wrap"></span></div>
+    <div class="sig-sub" id="euUpSub"></div>
+    <table class="sig-table" id="euOrigForms"><thead id="theadEuOF"></thead><tbody id="tbodyEuOF"></tbody></table>
+    <table class="sig-table"><thead id="theadEuUp"></thead><tbody id="tbodyEuUp"></tbody></table>
+    <div class="sig-title" style="margin-top:26px">2 · Downstream — what the processing hubs export, by form and destination</div>
+    <div class="chart-controls"><span class="cc-label">Hub</span><span id="euHubBtns" class="pm-mt" style="display:inline-flex;gap:6px"></span></div>
+    <div class="sig-sub" id="euDownSub"></div>
+    <table class="sig-table"><thead id="theadEuForms"></thead><tbody id="tbodyEuForms"></tbody></table>
+    <table class="sig-table" style="margin-top:14px"><thead id="theadEuDown"></thead><tbody id="tbodyEuDown"></tbody><tfoot id="tfootEuDown"></tfoot></table>
+    <div class="note" id="euNote" style="text-align:left;max-width:none;margin-top:16px"></div>
   </div>
 
   <div class="panel" id="registerView" style="flex:1; min-width: 0; max-width: 1320px; display:none;">
@@ -1317,6 +1342,9 @@ function sourceStatus() {
     add('BarentsWatch fish health', l.length ? `W${l[1]} ${l[0]}` : '—', l.length ? wdiff(l[0], l[1]) > 2 : true, 'weekly; ' + hist.join('; '), steps.BW_HEALTH); }
   if (BWR && BWR.meta) { const g = daysSince(BWR.meta.generated);
     add('BarentsWatch site register (MTB, operators)', BWR.meta.generated || '—', g === null || g > 35, 'rebuilt every 4 weeks', steps.BW_SITES); }
+  if (d.status && d.status.eurostat && d.status.eurostat.last_period) { const e = d.status.eurostat, k = e.last_period;
+    add('Eurostat — EU salmon flows', mlab(Math.floor(k / 100), k % 100), ym(Math.floor(k / 100), k % 100) < nowYM - 3,
+      'monthly, about 6–8 weeks after the month', steps.EUROSTAT); }
   if (d.china && d.china.meta) { const g = daysSince(d.china.meta.fetched);
     add('GACC — Norwegian establishments registered for China', d.china.meta.fetched || '—', g === null || g > 10, 'every update run (customs search page, fragile source)', steps.CHINA); }
   if (ESTAB && ESTAB.meta) { const g = daysSince(ESTAB.meta.fetched);
@@ -2770,12 +2798,13 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     document.getElementById('productsView').style.display = currentView === 'products' ? 'block' : 'none';
     document.getElementById('healthView').style.display = currentView === 'health' ? 'block' : 'none';
     document.getElementById('registerView').style.display = currentView === 'register' ? 'block' : 'none';
+    document.getElementById('euView').style.display = currentView === 'euflows' ? 'block' : 'none';
     // The year / period selectors do not apply to the weekly fish-health view.
-    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary') ? 'none' : '';
+    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows') ? 'none' : '';
     // La carte des zones ne sert qu'aux vues qui raisonnent par PO. Les onglets
     // Markets et Calibre sont nationaux, elle n'y afficherait rien d'utile.
     const mw = document.querySelector('.panel.mapwrap');
-    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary') ? 'none' : '';
+    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows') ? 'none' : '';
     document.getElementById('poFilterField').style.display = (currentView === 'global' || currentView === 'multi' || currentView === 'outlook') ? 'flex' : 'none';
     document.getElementById('yearField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'none' : 'flex';
     document.getElementById('yearRangeField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'flex' : 'none';
@@ -2792,6 +2821,7 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     else if (currentView === 'calibre') { renderCalibreView(); }
     else if (currentView === 'health') { renderHealth(); }
     else if (currentView === 'register') { renderRegister(); }
+    else if (currentView === 'euflows') { renderEuFlows(); }
     else { render(); }
   });
 });
@@ -5735,6 +5765,179 @@ function renderSummary() {
     ` "Stable" means within ±1% (biomass, fish), ±2% (feed, harvest, exports) or ±5% (smolts). ` +
     `Smolt release counts fish declared below 500 g; post-smolts released above 500 g are not in the source. Health: a new case is a disease ` +
     `appearing on a site free of it for the 4 previous weeks; a lice surge is a zone whose 3-week average rises by 50% or more to 0.25 or above.`;
+}
+
+// ===========================================================================
+//  EU flows (Eurostat Comext) : fichier data/eurostat.json, charge a la
+//  premiere ouverture de l'onglet.
+// ===========================================================================
+let EU = null, EU_LOADING = false, euHub = 'PL', euOpen = null, euMode = 'origin', euOrig = 'NO';
+const EU_EUROPE = new Set(['AT','BE','BG','CY','CZ','DE','DK','EE','ES','FI','FR','GR','HR','HU','IE','IT','LT','LU','LV','MT','NL','PL','PT','RO','SE','SI','SK',
+  'GB','NO','CH','IS','FO','LI','UA','RS','BA','ME','MK','AL','MD','BY','XK','AD','MC','SM','GI','XI','XL']);
+const euName = (() => { let dn = null; try { dn = new Intl.DisplayNames(['en'], { type: 'region' }); } catch (e) {}
+  return c => c === 'ZZ' ? 'Others (small partners)' : c === 'XI' ? 'Northern Ireland' : c === 'XL' ? 'Not specified' : (dn ? (dn.of(c) || c) : c); })();
+async function loadEurostat() {
+  if (EU || EU_LOADING) return;
+  EU_LOADING = true;
+  try {
+    const r = await fetch(DATA_URL.replace('data.json', 'eurostat.json'), { cache: 'no-store' });
+    if (r.ok) EU = await r.json();
+  } catch (e) { console.warn('eurostat.json indisponible', e.message); }
+  EU_LOADING = false;
+  if (currentView === 'euflows') renderEuFlows();
+}
+function renderEuFlows() {
+  const sub = document.getElementById('euSub');
+  if (!EU) {
+    sub.innerHTML = EU_LOADING || !document.getElementById('euUpSub').dataset.tried ? 'Loading Eurostat data…'
+      : '<span class="warn">Eurostat data not collected yet</span> — it arrives with the next update run (step "Eurostat").';
+    document.getElementById('euUpSub').dataset.tried = '1';
+    ['theadEuUp','tbodyEuUp','theadEuForms','tbodyEuForms','theadEuDown','tbodyEuDown','tfootEuDown'].forEach(id => document.getElementById(id).innerHTML = '');
+    loadEurostat();
+    return;
+  }
+  const M = EU.meta, P = M.products;
+  const fSel = document.getElementById('euForm'), pSel = document.getElementById('euPeriod');
+  if (!fSel.options.length) {
+    fSel.innerHTML = `<option value="all">All forms</option>` + P.map((n, i) => `<option value="${i}">${n}</option>`).join('');
+    fSel.addEventListener('change', renderEuFlows); pSel.addEventListener('change', renderEuFlows);
+  }
+  const form = fSel.value, per = pSel.value;
+  // periode N et la meme periode un an plus tot
+  const last = M.last_period, ly = Math.floor(last / 100), lm = last % 100;
+  const back = (k, n) => { let y = Math.floor(k / 100), m = k % 100 - n; while (m < 1) { m += 12; y--; } return y * 100 + m; };
+  let keys = [];
+  if (per === 'ytd') for (let m = 1; m <= lm; m++) keys.push(ly * 100 + m);
+  else for (let i = +per - 1; i >= 0; i--) keys.push(back(last, i));
+  const setN = new Set(keys), setP = new Set(keys.map(k => k - 100));
+  const ml = k => `${MONTHS_FR[k % 100 - 1].slice(0, 3)} ${Math.floor(k / 100)}`;
+  const plab = keys.length === 1 ? ml(keys[0]) : `${ml(keys[0])} – ${ml(keys[keys.length - 1])}`;
+  const inForm = i => form === 'all' || +form === i;
+  const f0 = v => isFinite(v) ? Math.round(v).toLocaleString('en-US') : '—';
+  const pc = (a, b) => b > 0 ? (a / b - 1) * 100 : NaN;
+  const dTd = (a, b) => { const p = pc(a, b); return `<td class="${!isFinite(p) ? 'delta-zero' : p > 2 ? 'delta-good' : p < -2 ? 'delta-bad' : 'delta-zero'}">${isFinite(p) ? (p >= 0 ? '+' : '') + p.toFixed(0) + '%' : (a > 0 ? 'new' : '—')}</td>`; };
+  sub.innerHTML = `Eurostat Comext, monthly trade by CN8 product, data to <b>${ml(last)}</b> (published ${M.source_update || M.fetched}). ` +
+    `Period shown: <b>${plab}</b>, compared with the same months a year earlier. Volumes in tonnes of product weight.`;
+
+  // ---------- 1. amont ----------
+  const EUset0 = new Set(M.reporters_up);
+  document.getElementById('euModeBtns').innerHTML = [['origin', 'By producing country'], ['importer', 'By importing EU country']]
+    .map(([k, l]) => `<button type="button" data-m="${k}" class="${euMode === k ? 'active' : ''}">${l}</button>`).join('');
+  document.querySelectorAll('#euModeBtns button').forEach(b => b.addEventListener('click', () => { euMode = b.dataset.m; euOpen = null; renderEuFlows(); }));
+  document.getElementById('euOrigLbl').style.display = euMode === 'origin' ? '' : 'none';
+  document.getElementById('euOrigBtns').style.display = euMode === 'origin' ? '' : 'none';
+  document.getElementById('euOrigForms').style.display = euMode === 'origin' ? '' : 'none';
+  if (euMode === 'origin') {
+    // volumes par origine hors UE (les flux entre pays de l'UE sont des reexpeditions, pas une origine)
+    const byO = {};
+    EU.rows.forEach(([ym, rep, part, pi, flow, t]) => { if (flow === 1 && setN.has(ym) && !EUset0.has(part) && part !== 'ZZ') byO[part] = (byO[part] || 0) + t; });
+    const origins = Object.keys(byO).filter(o => byO[o] > 0).sort((a, b) => byO[b] - byO[a]).slice(0, 10);
+    if (!origins.includes(euOrig)) euOrig = origins[0] || 'NO';
+    document.getElementById('euOrigBtns').innerHTML = origins.map(o => `<button type="button" data-o="${o}" class="${o === euOrig ? 'active' : ''}">${euName(o)}</button>`).join('');
+    document.querySelectorAll('#euOrigBtns button').forEach(b => b.addEventListener('click', () => { euOrig = b.dataset.o; renderEuFlows(); }));
+    const dest = {}, fN = P.map(() => ({ t: 0, tp: 0, v: 0 }));
+    EU.rows.forEach(([ym, rep, part, pi, flow, t, ke]) => {
+      if (flow !== 1 || part !== euOrig) return;
+      const n = setN.has(ym), pv = setP.has(ym);
+      if (!n && !pv) return;
+      if (n) { fN[pi].t += t; fN[pi].v += ke; } else fN[pi].tp += t;
+      if (!inForm(pi)) return;
+      const D = dest[rep] || (dest[rep] = { t: 0, tp: 0, v: 0, f: P.map(() => 0) });
+      if (n) { D.t += t; D.v += ke; D.f[pi] += t; } else D.tp += t;
+    });
+    const totF = fN.reduce((a, x) => a + x.t, 0);
+    document.getElementById('theadEuOF').innerHTML = `<tr><th class="name">Form shipped by ${euName(euOrig)} to the EU</th><th>Tonnes</th><th>Δ vs N-1</th><th>€/kg</th><th>Share</th></tr>`;
+    document.getElementById('tbodyEuOF').innerHTML = P.map((n, i) => (fN[i].t || fN[i].tp) ? `<tr><td class="name">${n}</td><td><b>${f0(fN[i].t)}</b></td>${dTd(fN[i].t, fN[i].tp)}` +
+      `<td>${fN[i].t > 0 ? (fN[i].v / fN[i].t).toFixed(2) : '—'}</td><td>${totF ? (100 * fN[i].t / totF).toFixed(1) + '%' : '—'}</td></tr>` : '').join('') +
+      `<tr><td class="name" style="color:var(--accent)">Total</td><td><b>${f0(totF)}</b></td>${dTd(totF, fN.reduce((a, x) => a + x.tp, 0))}<td>${totF ? (fN.reduce((a, x) => a + x.v, 0) / totF).toFixed(2) : '—'}</td><td>100%</td></tr>`;
+    const ds = Object.entries(dest).filter(([, D]) => D.t > 0 || D.tp > 0).sort((a, b) => b[1].t - a[1].t);
+    const fi = P.map((_, i) => i).filter(i => inForm(i) && ds.some(([, D]) => D.f[i] > 0));
+    const tot = ds.reduce((t, [, D]) => t + D.t, 0);
+    document.getElementById('euUpSub').innerHTML = `<b>${euName(euOrig)}</b> → EU countries, ${plab}: ${f0(tot)} t (${form === 'all' ? 'all forms' : P[+form].toLowerCase()}). ` +
+      `<span class="warn">Destination = the EU country where the goods are cleared through customs</span>, not always where they are eaten: salmon cleared in Sweden or Denmark and trucked on to Poland counts for Sweden or Denmark. ` +
+      `For Norway, the final destination by country is in the Product per market tab (Norwegian statistics). The UK, Switzerland and Norway are not EU members, so Eurostat has no import figures for them.`;
+    document.getElementById('theadEuUp').innerHTML = `<tr><th class="name">EU country receiving</th><th>Tonnes</th><th>Share</th><th>Δ vs N-1</th><th>€/kg</th>` + fi.map(i => `<th class="sep-left">${P[i]}</th>`).join('') + `</tr>`;
+    document.getElementById('tbodyEuUp').innerHTML = ds.map(([r, D]) => `<tr><td class="name">${euName(r)}</td><td><b>${f0(D.t)}</b></td><td>${tot ? (100 * D.t / tot).toFixed(1) + '%' : '—'}</td>${dTd(D.t, D.tp)}` +
+      `<td>${D.t > 0 ? (D.v / D.t).toFixed(2) : '—'}</td>` + fi.map(i => `<td class="sep-left">${D.f[i] ? f0(D.f[i]) : '·'}</td>`).join('') + `</tr>`).join('') ||
+      `<tr><td class="name" colspan="5" style="color:var(--muted)">No shipments in this period.</td></tr>`;
+  }
+  const up = {};      // reporter -> {tot, totP, val, partners:{p:{t,tp,v,f:[...]}}}
+  EU.rows.forEach(([ym, rep, part, pi, flow, t, ke]) => {
+    if (flow !== 1 || !inForm(pi)) return;
+    const n = setN.has(ym), pv = setP.has(ym);
+    if (!n && !pv) return;
+    const R = up[rep] || (up[rep] = { t: 0, tp: 0, v: 0, parts: {} });
+    const Q = R.parts[part] || (R.parts[part] = { t: 0, tp: 0, v: 0, f: P.map(() => 0) });
+    if (n) { R.t += t; R.v += ke; Q.t += t; Q.v += ke; Q.f[pi] += t; } else { R.tp += t; Q.tp += t; }
+  });
+  const reps = Object.keys(up).sort((a, b) => up[b].t - up[a].t);
+  if (euMode === 'importer') {
+  document.getElementById('euUpSub').innerHTML = `${reps.length} EU countries ranked by salmon imports (${form === 'all' ? 'all forms' : P[+form].toLowerCase()}). ` +
+    `<b>Click a country</b> for all its partners, by form. <span class="warn">Partner = country of origin for imports from outside the EU, but country of consignment for imports from another EU country</span> — ` +
+    `Norwegian salmon cleared through customs in Sweden or Denmark shows up in Poland as coming from Sweden or Denmark.`;
+  document.getElementById('theadEuUp').innerHTML = `<tr><th class="name">Importing country</th><th>Tonnes</th><th>Δ vs N-1</th><th>€/kg</th>` +
+    `<th class="sep-left">Norway</th><th>Other non-EU</th><th>From EU countries</th><th class="sep-left" style="text-align:left">Main partners</th></tr>`;
+  const EUset = new Set(M.reporters_up);
+  let html = '';
+  reps.forEach(r => {
+    const R = up[r], parts = Object.entries(R.parts).sort((a, b) => b[1].t - a[1].t);
+    const no = (R.parts.NO || { t: 0 }).t, eu = parts.filter(([p]) => EUset.has(p)).reduce((t, [, q]) => t + q.t, 0), oth = R.t - no - eu;
+    const sh = v => R.t > 0 ? (100 * v / R.t).toFixed(0) + '%' : '—';
+    html += `<tr class="eu-row${euOpen === r ? ' pm-open' : ''}" data-r="${r}" style="cursor:pointer"><td class="name">${euName(r)}${euOpen === r ? ' ▾' : ''}</td><td><b>${f0(R.t)}</b></td>${dTd(R.t, R.tp)}` +
+      `<td>${R.t > 0 ? (R.v / R.t).toFixed(2) : '—'}</td><td class="sep-left">${sh(no)}</td><td>${sh(oth)}</td><td>${sh(eu)}</td>` +
+      `<td class="sep-left" style="text-align:left;font-size:11px">${parts.slice(0, 3).filter(([, q]) => q.t > 0).map(([p, q]) => `${euName(p)} ${sh(q.t)}`).join(' · ')}</td></tr>`;
+    if (euOpen === r) {
+      const fi = P.map((_, i) => i).filter(i => inForm(i) && parts.some(([, q]) => q.f[i] > 0));
+      html += `<tr class="pm-chart-row hl-detail-row"><td colspan="8"><div class="hl-detail"><table class="sig-table"><thead><tr><th class="name">Partner</th><th>Tonnes</th><th>Share</th><th>Δ vs N-1</th><th>€/kg</th>` +
+        fi.map(i => `<th class="sep-left">${P[i]}</th>`).join('') + `</tr></thead><tbody>` +
+        parts.filter(([, q]) => q.t > 0 || q.tp > 0).map(([p, q]) => `<tr><td class="name">${euName(p)}${EUset.has(p) ? ' <small style="display:inline;color:var(--muted)">(EU, consignment)</small>' : ''}</td>` +
+          `<td>${f0(q.t)}</td><td>${sh(q.t)}</td>${dTd(q.t, q.tp)}<td>${q.t > 0 ? (q.v / q.t).toFixed(2) : '—'}</td>` +
+          fi.map(i => `<td class="sep-left">${q.f[i] ? f0(q.f[i]) : '·'}</td>`).join('') + `</tr>`).join('') +
+        `</tbody></table></div></td></tr>`;
+    }
+  });
+  const tb = document.getElementById('tbodyEuUp');
+  tb.innerHTML = html;
+  tb.querySelectorAll('tr.eu-row').forEach(tr => tr.addEventListener('click', () => { euOpen = euOpen === tr.dataset.r ? null : tr.dataset.r; renderEuFlows(); }));
+  }
+
+  // ---------- 2. aval ----------
+  const hubs = M.hubs || [];
+  if (!hubs.includes(euHub)) euHub = hubs[0];
+  document.getElementById('euHubBtns').innerHTML = hubs.map(h => `<button type="button" data-h="${h}" class="${h === euHub ? 'active' : ''}">${euName(h)}</button>`).join('');
+  document.querySelectorAll('#euHubBtns button').forEach(b => b.addEventListener('click', () => { euHub = b.dataset.h; renderEuFlows(); }));
+  const dst = {}, byF = P.map(() => ({ t: 0, tp: 0, v: 0, out: 0 })), imp = P.map(() => ({ t: 0 }));
+  EU.rows.forEach(([ym, rep, part, pi, flow, t, ke]) => {
+    if (rep !== euHub) return;
+    const n = setN.has(ym), pv = setP.has(ym);
+    if (!n && !pv) return;
+    if (flow === 1) { if (n) imp[pi].t += t; return; }
+    if (n) { byF[pi].t += t; byF[pi].v += ke; if (!EU_EUROPE.has(part)) byF[pi].out += t; } else byF[pi].tp += t;
+    if (!inForm(pi)) return;
+    const D = dst[part] || (dst[part] = { t: 0, tp: 0, v: 0, f: P.map(() => 0) });
+    if (n) { D.t += t; D.v += ke; D.f[pi] += t; } else D.tp += t;
+  });
+  const totE = byF.reduce((a, x) => a + x.t, 0), totI = imp.reduce((a, x) => a + x.t, 0);
+  document.getElementById('euDownSub').innerHTML = `<b>${euName(euHub)}</b>, ${plab}: imports ${f0(totI)} t of salmon products, exports ${f0(totE)} t. ` +
+    `For exports the origin of the fish is not tracked once processed; the form is what matters.`;
+  document.getElementById('theadEuForms').innerHTML = `<tr><th class="name">Form</th><th>Imported (t)</th><th class="sep-left">Exported (t)</th><th>Δ vs N-1</th><th>€/kg</th><th>Share of exports</th><th class="sep-left">Of which outside Europe</th></tr>`;
+  document.getElementById('tbodyEuForms').innerHTML = P.map((n, i) => (imp[i].t || byF[i].t || byF[i].tp) ? `<tr><td class="name">${n}</td><td>${f0(imp[i].t)}</td>` +
+    `<td class="sep-left"><b>${f0(byF[i].t)}</b></td>${dTd(byF[i].t, byF[i].tp)}<td>${byF[i].t > 0 ? (byF[i].v / byF[i].t).toFixed(2) : '—'}</td>` +
+    `<td>${totE ? (100 * byF[i].t / totE).toFixed(1) + '%' : '—'}</td><td class="sep-left">${f0(byF[i].out)}${byF[i].t ? ` <small style="display:inline;color:var(--muted)">(${(100 * byF[i].out / byF[i].t).toFixed(0)}%)</small>` : ''}</td></tr>` : '').join('');
+  const fi = P.map((_, i) => i).filter(i => inForm(i) && Object.values(dst).some(D => D.f[i] > 0));
+  document.getElementById('theadEuDown').innerHTML = `<tr><th class="name">Destination</th><th>Tonnes</th><th>Δ vs N-1</th><th>€/kg</th>` + fi.map(i => `<th class="sep-left">${P[i]}</th>`).join('') + `</tr>`;
+  const ds = Object.entries(dst).filter(([, D]) => D.t > 0 || D.tp > 0);
+  const rowOf = ([p, D]) => `<tr><td class="name">${euName(p)}</td><td><b>${f0(D.t)}</b></td>${dTd(D.t, D.tp)}<td>${D.t > 0 ? (D.v / D.t).toFixed(2) : '—'}</td>` +
+    fi.map(i => `<td class="sep-left">${D.f[i] ? f0(D.f[i]) : '·'}</td>`).join('') + `</tr>`;
+  const outE = ds.filter(([p]) => !EU_EUROPE.has(p) && p !== 'ZZ').sort((a, b) => b[1].t - a[1].t), inE = ds.filter(([p]) => EU_EUROPE.has(p) || p === 'ZZ').sort((a, b) => b[1].t - a[1].t);
+  const sumT = arr => arr.reduce((t, [, D]) => t + D.t, 0), sumP = arr => arr.reduce((t, [, D]) => t + D.tp, 0);
+  const head = (lbl, arr) => `<tr><td class="name" style="color:var(--accent)">${lbl}</td><td><b>${f0(sumT(arr))}</b></td>${dTd(sumT(arr), sumP(arr))}<td></td>${fi.map(i => `<td class="sep-left">${f0(arr.reduce((t, [, D]) => t + D.f[i], 0))}</td>`).join('')}</tr>`;
+  document.getElementById('tbodyEuDown').innerHTML = head('Outside Europe', outE) + outE.map(rowOf).join('') + head('Europe', inE) + inE.map(rowOf).join('');
+  document.getElementById('tfootEuDown').innerHTML = '';
+  document.getElementById('euNote').innerHTML = `<b>Source.</b> Eurostat Comext, dataset DS-045409 (EU trade by CN8, monthly): CN ${M.cn8.join(', ')}. ` +
+    `Partners below 0.5% of a country's trade over the whole period are grouped as "Others". The latest months are revised by Eurostat for a while. ` +
+    `Fresh and frozen fillet codes include Pacific salmon; smoked and prepared codes cover all salmon species — in practice almost all Atlantic salmon in these flows. ` +
+    `Collected from ${M.start}; refreshed by the update workflow whenever Eurostat publishes.`;
 }
 
 loadRemoteData().then(live => {
