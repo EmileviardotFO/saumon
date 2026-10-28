@@ -6259,7 +6259,7 @@ function renderEuFlows() {
       `<td class="sep-left">${price}</td><td class="sep-left" style="text-align:left;font-size:11px">${src}</td></tr>`; }).join('') +
     `<tr><td class="name" style="color:var(--accent)">Total Atlantic salmon</td><td><b>${tmF0(tN)}</b></td><td>100%</td><td class="${tmCls(tN - tP, 50)}">${tmSg(tN - tP)}</td>${tmPct(tN, tP)}<td class="sep-left"></td><td class="sep-left"></td></tr>` +
     `<tr><td colspan="7" class="name" style="font-weight:normal;color:var(--muted);font-size:11px;white-space:normal">All arrivals from other EU countries, gross (they include Norwegian salmon already counted under Norway): ${hubTxt || '—'}.</td></tr>` +
-    (N._over > 1 ? `<tr><td colspan="7" class="name" style="font-weight:normal;color:#ffb74d;font-size:11px">Norwegian statistics exceed the imports recorded by ${euName(euCty)} by ${tmF0(N._over)} t over the period (timing, or salmon declared for ${euName(euCty)} but cleared and recorded elsewhere): the total shown is the higher figure.</td></tr>` : '');
+    (N._over > 1 ? `<tr><td colspan="7" class="name" style="font-weight:normal;color:#ffb74d;font-size:11px">The producing countries' export statistics (${['Norway'].concat(NATO.map(g => ORIG_LAB[g])).join(', ')}) declare ${tmF0(N._over)} t more for ${euName(euCty)} than ${euName(euCty)} records as imports over the period — small importers exempt from EU-internal trade declarations, timing, or salmon re-sold before arrival. The total shown is the higher figure.</td></tr>` : '');
 
   // ---------- 2. croissance ou substitution ----------
   const HUBS = new Set(M.hubs || []);
