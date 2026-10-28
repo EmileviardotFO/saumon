@@ -101,6 +101,15 @@ jobs:
         continue-on-error: true
         run: python3 scripts/fetch_establishments.py --update
 
+      - name: Flux de saumon dans l'UE (Eurostat Comext)
+        # Importations des 27 pays par origine, exportations du Danemark, de la
+        # Pologne et des Pays-Bas par destination et par forme. Ne retelecharge
+        # que si Eurostat a publie depuis le dernier passage.
+        id: eurostat
+        continue-on-error: true
+        timeout-minutes: 30
+        run: python3 scripts/update_eurostat.py
+
       - name: Installer le navigateur sans ecran (Playwright)
         continue-on-error: true
         run: python3 -m playwright install --with-deps chromium
@@ -134,6 +143,7 @@ jobs:
           STEP_BW_SITES: ${{ steps.bw_sites.outcome }}
           STEP_ESTAB: ${{ steps.estab.outcome }}
           STEP_CHINA: ${{ steps.china.outcome }}
+          STEP_EUROSTAT: ${{ steps.eurostat.outcome }}
           STEP_SMOKE: ${{ steps.smoke.outcome }}
         run: |
           python3 scripts/write_status.py
@@ -169,6 +179,7 @@ jobs:
           [ "${{ steps.bw_health.outcome }}" = "failure" ] && FAILED="$FAILED BarentsWatch-sante"
           [ "${{ steps.bw_sites.outcome }}" = "failure" ] && FAILED="$FAILED BarentsWatch-registre"
           [ "${{ steps.estab.outcome }}" = "failure" ] && FAILED="$FAILED Mattilsynet"
+          [ "${{ steps.eurostat.outcome }}" = "failure" ] && FAILED="$FAILED Eurostat"
           [ "${{ steps.smoke.outcome }}" = "failure" ] && FAILED="$FAILED Test-du-tableau-de-bord"
           if [ -n "$FAILED" ]; then
             echo "::error::Etapes en echec :$FAILED (les autres donnees ont bien ete publiees)"
