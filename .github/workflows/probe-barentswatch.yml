@@ -29,11 +29,15 @@ jobs:
         continue-on-error: true
         run: python3 scripts/fetch_establishments.py
 
+      - name: Sonde Eurostat Comext (flux de saumon dans l'UE)
+        continue-on-error: true
+        run: python3 scripts/probe_eurostat.py
+
       - name: Publier les echantillons
         run: |
           git config user.name  "github-actions"
           git config user.email "actions@github.com"
-          git add data/bw_probe/ data/establishments/
+          git add data/bw_probe/ data/establishments/ data/eurostat_probe/
           if git diff --staged --quiet; then
             echo "Aucun echantillon nouveau."
           else
