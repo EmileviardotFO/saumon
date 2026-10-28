@@ -1,14 +1,14 @@
 {
- "run_utc": "2026-10-27T23:13:54+00:00",
+ "run_utc": "2026-10-28T19:07:48+00:00",
  "pages": [
   {
    "name": "mattilsynet_fishery",
    "url": "https://www.mattilsynet.no/godkjente-produkter-og-virksomheter/fisk-og-fiskerivarer-fish-and-fishery-products-virksomheter-som-h%C3%A5ndterer-fiskerivarer-fishery-establishments",
    "status": 200,
    "content_type": "text/html",
-   "bytes": 685850,
+   "bytes": 686170,
    "file_links": [
-    "https://mattilsynet-xp7prod.enonic.cloud/_/attachment/inline/1af0e9c5-8719-4cf9-91bf-ce19a4c2f078:d17a5906690780a84e0c42b20cff28cbc415a91a/v_virklist_fishery_establishements.csv"
+    "https://mattilsynet-xp7prod.enonic.cloud/_/attachment/inline/1af0e9c5-8719-4cf9-91bf-ce19a4c2f078:cc73f597b7bd6a50ff9232c61c262cfe2248119a/v_virklist_fishery_establishements.csv"
    ]
   },
   {
@@ -16,7 +16,7 @@
    "url": "https://www.mattilsynet.no/godkjente-produkter-og-virksomheter",
    "status": 200,
    "content_type": "text/html",
-   "bytes": 102436,
+   "bytes": 99670,
    "file_links": []
   },
   {
@@ -53,10 +53,10 @@
  ],
  "files": [
   {
-   "link": "https://mattilsynet-xp7prod.enonic.cloud/_/attachment/inline/1af0e9c5-8719-4cf9-91bf-ce19a4c2f078:d17a5906690780a84e0c42b20cff28cbc415a91a/v_virklist_fishery_establishements.csv",
+   "link": "https://mattilsynet-xp7prod.enonic.cloud/_/attachment/inline/1af0e9c5-8719-4cf9-91bf-ce19a4c2f078:cc73f597b7bd6a50ff9232c61c262cfe2248119a/v_virklist_fishery_establishements.csv",
    "status": 200,
    "content_type": "text/csv",
-   "bytes": 137238,
+   "bytes": 137301,
    "saved_as": "mattilsynet_fishery_file1.csv"
   },
   {

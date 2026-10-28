@@ -1,5 +1,5 @@
 {
- "run_utc": "2026-10-27T23:13:43",
+ "run_utc": "2026-10-28T19:07:37",
  "ref_year": 2026,
  "ref_week": 42,
  "calls": [
@@ -11,7 +11,7 @@
    "body": {},
    "status": 200,
    "content_type": "application/json; charset=utf-8",
-   "bytes": 1226648,
+   "bytes": 1226653,
    "structure": [
     {
      "localityWeekId": "int",
@@ -444,10 +444,10 @@
       "1": {
        "count": "int"
       },
-      "27": {
+      "32": {
        "count": "int"
       },
-      "32": {
+      "44": {
        "count": "int"
       },
       "39": {
@@ -484,6 +484,9 @@
        "count": "int"
       },
       "2": {
+       "count": "int"
+      },
+      "27": {
        "count": "int"
       },
       "31": {
@@ -568,9 +571,6 @@
        "count": "int"
       },
       "36": {
-       "count": "int"
-      },
-      "44": {
        "count": "int"
       },
       "45": {
@@ -1785,7 +1785,7 @@
    "content_type": "application/json; charset=utf-8",
    "bytes": 138,
    "saved_as": "openapi_spec_1.json",
-   "error_excerpt": "{\"type\":\"https://httpstatuses.io/404\",\"title\":\"NotFound\",\"status\":404,\"traceId\":\"00-100c62a32cf848d6ae3e8d5dbe8f63c1-cce3b1534c5e8d02-00\"}"
+   "error_excerpt": "{\"type\":\"https://httpstatuses.io/404\",\"title\":\"NotFound\",\"status\":404,\"traceId\":\"00-f65dd8c7a37b45bcb4d9d94e4f1e968e-a785b709cc6bafc9-00\"}"
   },
   {
    "name": "openapi_spec_2",
@@ -1797,7 +1797,7 @@
    "content_type": "application/json; charset=utf-8",
    "bytes": 138,
    "saved_as": "openapi_spec_2.json",
-   "error_excerpt": "{\"type\":\"https://httpstatuses.io/404\",\"title\":\"NotFound\",\"status\":404,\"traceId\":\"00-4d3af3eae4bc448aae9650a676d45978-eb07a83326040026-00\"}"
+   "error_excerpt": "{\"type\":\"https://httpstatuses.io/404\",\"title\":\"NotFound\",\"status\":404,\"traceId\":\"00-7ed0db9e779f4f0888ef96bdf2780db8-665b9cd59c72ba51-00\"}"
   },
   {
    "name": "openapi_spec_3",
@@ -1809,7 +1809,7 @@
    "content_type": "application/json; charset=utf-8",
    "bytes": 138,
    "saved_as": "openapi_spec_3.json",
-   "error_excerpt": "{\"type\":\"https://httpstatuses.io/404\",\"title\":\"NotFound\",\"status\":404,\"traceId\":\"00-c096b762f0e84b67b6748f0790fb0e2b-93343f8777a87a08-00\"}"
+   "error_excerpt": "{\"type\":\"https://httpstatuses.io/404\",\"title\":\"NotFound\",\"status\":404,\"traceId\":\"00-55970a7865d54600b97afc31f6e9aa04-465f65bdfc39257b-00\"}"
   },
   {
    "name": "openapi_spec_4",
@@ -1821,7 +1821,7 @@
    "content_type": "application/json; charset=utf-8",
    "bytes": 138,
    "saved_as": "openapi_spec_4.json",
-   "error_excerpt": "{\"type\":\"https://httpstatuses.io/404\",\"title\":\"NotFound\",\"status\":404,\"traceId\":\"00-466f3d82ddfe46e690cb2e9ee4dc1656-5b2bf45b6e17ca75-00\"}"
+   "error_excerpt": "{\"type\":\"https://httpstatuses.io/404\",\"title\":\"NotFound\",\"status\":404,\"traceId\":\"00-d8f6dd46070f4527a84f17bc89cdd127-3a047ba64d275ad7-00\"}"
   }
  ]
 }
