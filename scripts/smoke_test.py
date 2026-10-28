@@ -28,7 +28,7 @@ PAGE = os.path.join(ROOT, 'docs', 'production.html')
 DATA = os.path.join(ROOT, 'data', 'data.json')
 OUT = sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT, 'data', 'smoke.json')
 
-TABS = ['National view (Norway)', 'Multi-year comparison', 'Supply outlook', 'Markets',
+TABS = ['Summary', 'National view (Norway)', 'Multi-year comparison', 'Supply outlook', 'Markets',
         'Product per market', 'Calibre & premium', 'By zone (PO)', 'Fish health', 'Farm register']
 
 
@@ -77,7 +77,7 @@ def main():
                 continue
             info = page.evaluate("""() => { const v = [...document.querySelectorAll('.panel')].find(x => x.offsetParent && x.id && x.id.endsWith('View'));
                                     if (!v) return null;
-                                    return { id: v.id, rows: v.querySelectorAll('tbody tr').length,
+                                    return { id: v.id, rows: v.querySelectorAll('tbody tr, .sm-row').length,
                                              marks: v.querySelectorAll('svg path, svg circle, svg rect, svg polyline').length }; }""")
             new = errors[before:]
             ok = info is not None and (info['rows'] > 0 or info['marks'] > 0) and not new
