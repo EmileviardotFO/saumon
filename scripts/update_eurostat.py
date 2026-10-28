@@ -5,7 +5,10 @@ commerce exterieur mensuel par produit CN8), pour l'onglet "EU flows".
 
   Amont : importations de chacun des 27 pays de l'UE, par pays d'origine.
   Aval  : exportations des pays de transformation (Danemark, Pologne,
-          Pays-Bas) par pays de destination.
+          Pays-Bas) et de l'Irlande (pays eleveur) par pays de destination.
+  Le code 03045200 (chair de salmonides, truite comprise) est collecte mais
+  ignore par le tableau de bord ; les filets, le fume et le prepare couvrent
+  aussi le saumon du Pacifique, que le tableau de bord ecarte par origine.
   Formes suivies (CN8) : entier frais, entier congele, filets frais, filets
   congeles, autre chair fraiche de salmonides, fume, prepare/conserve.
 
@@ -45,6 +48,8 @@ PRODUCTS = [('03021400', 'Fresh whole'), ('03031300', 'Frozen whole'), ('0304410
 EU27 = ['AT', 'BE', 'BG', 'CY', 'CZ', 'DE', 'DK', 'EE', 'ES', 'FI', 'FR', 'GR', 'HR', 'HU', 'IE', 'IT',
         'LT', 'LU', 'LV', 'MT', 'NL', 'PL', 'PT', 'RO', 'SE', 'SI', 'SK']
 HUBS = ['DK', 'PL', 'NL']
+# pays de l'UE qui elevent du saumon : leurs exportations vers toutes destinations (onglet Producers)
+PRODUCER_EXPORTERS = ['IE']
 MIN_SHARE = 0.005
 # pays producteurs jamais regroupes, meme petits (vue "par origine" de l'onglet)
 ORIGINS = ['NO', 'FO', 'GB', 'IS', 'CL', 'AU', 'CA', 'US', 'NZ', 'TR', 'CN', 'VN', 'TH', 'UA', 'RU']
@@ -111,13 +116,15 @@ def main():
     if st == 200:
         for r in csv.DictReader(io.StringIO(txt)):
             probe_update = r.get('LAST UPDATE'); break
-    if old and not force and probe_update and old['meta'].get('source_update') == probe_update:
+    jobs = [(r, 1) for r in EU27] + [(h, 2) for h in HUBS + PRODUCER_EXPORTERS]
+    have = {(r[1], r[4]) for r in old['rows']} if old else set()
+    missing = [j for j in jobs if j not in have and j[1] == 2]
+    if old and not force and probe_update and old['meta'].get('source_update') == probe_update and not missing:
         print(f'Eurostat inchange depuis le dernier passage ({probe_update}) : rien a faire.')
         return
     print(f'Mise a jour Eurostat : {probe_update}')
 
     rows, failed = [], []
-    jobs = [(r, 1) for r in EU27] + [(h, 2) for h in HUBS]
     for reporter, flow in jobs:
         st, txt = query(reporter, flow)
         if st != 200:
@@ -167,7 +174,7 @@ def main():
         'meta': {'source': 'Eurostat Comext DS-045409 (EU trade by CN8, monthly)', 'source_update': probe_update,
                  'fetched': dt.date.today().isoformat(), 'start': START, 'last_period': last,
                  'products': [n for _, n in PRODUCTS], 'cn8': [p for p, _ in PRODUCTS],
-                 'reporters_up': EU27, 'hubs': HUBS, 'origins': ORIGINS, 'failed': failed,
+                 'reporters_up': EU27, 'hubs': HUBS, 'producer_exporters': PRODUCER_EXPORTERS, 'origins': ORIGINS, 'failed': failed,
                  'cols': ['ym', 'reporter', 'partner', 'product', 'flow', 'tonnes', 'k_eur'],
                  'note': 'partner ZZ = partners below 0.5% of the reporter total, grouped'},
         'rows': rows,
