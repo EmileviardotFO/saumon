@@ -1,5 +1,5 @@
 {
- "run_utc": "2026-10-28T19:07:37",
+ "run_utc": "2026-10-28T19:26:51",
  "ref_year": 2026,
  "ref_week": 42,
  "calls": [
@@ -1785,7 +1785,7 @@
    "content_type": "application/json; charset=utf-8",
    "bytes": 138,
    "saved_as": "openapi_spec_1.json",
-   "error_excerpt": "{\"type\":\"https://httpstatuses.io/404\",\"title\":\"NotFound\",\"status\":404,\"traceId\":\"00-f65dd8c7a37b45bcb4d9d94e4f1e968e-a785b709cc6bafc9-00\"}"
+   "error_excerpt": "{\"type\":\"https://httpstatuses.io/404\",\"title\":\"NotFound\",\"status\":404,\"traceId\":\"00-bca7b04e29fc4be68cee5c731731cde4-7499ff371bea1919-00\"}"
   },
   {
    "name": "openapi_spec_2",
@@ -1797,7 +1797,7 @@
    "content_type": "application/json; charset=utf-8",
    "bytes": 138,
    "saved_as": "openapi_spec_2.json",
-   "error_excerpt": "{\"type\":\"https://httpstatuses.io/404\",\"title\":\"NotFound\",\"status\":404,\"traceId\":\"00-7ed0db9e779f4f0888ef96bdf2780db8-665b9cd59c72ba51-00\"}"
+   "error_excerpt": "{\"type\":\"https://httpstatuses.io/404\",\"title\":\"NotFound\",\"status\":404,\"traceId\":\"00-c9b4c5bae8ea47d28dee84cf480f78f2-d5a334c90ffdfc8a-00\"}"
   },
   {
    "name": "openapi_spec_3",
@@ -1809,7 +1809,7 @@
    "content_type": "application/json; charset=utf-8",
    "bytes": 138,
    "saved_as": "openapi_spec_3.json",
-   "error_excerpt": "{\"type\":\"https://httpstatuses.io/404\",\"title\":\"NotFound\",\"status\":404,\"traceId\":\"00-55970a7865d54600b97afc31f6e9aa04-465f65bdfc39257b-00\"}"
+   "error_excerpt": "{\"type\":\"https://httpstatuses.io/404\",\"title\":\"NotFound\",\"status\":404,\"traceId\":\"00-e7d5a3dec7a14109b6995b9e0e642746-99ea33ff1064ae1a-00\"}"
   },
   {
    "name": "openapi_spec_4",
@@ -1821,7 +1821,7 @@
    "content_type": "application/json; charset=utf-8",
    "bytes": 138,
    "saved_as": "openapi_spec_4.json",
-   "error_excerpt": "{\"type\":\"https://httpstatuses.io/404\",\"title\":\"NotFound\",\"status\":404,\"traceId\":\"00-d8f6dd46070f4527a84f17bc89cdd127-3a047ba64d275ad7-00\"}"
+   "error_excerpt": "{\"type\":\"https://httpstatuses.io/404\",\"title\":\"NotFound\",\"status\":404,\"traceId\":\"00-2ac08253209842af8e537ecdaa464dcd-f8fd3622d00f0a1c-00\"}"
   }
  ]
 }
