@@ -8,6 +8,7 @@ par pays de destination et par mois, depuis les statistiques nationales :
   - Islande : Hagstofa Islands, table UTA02801 "Utflutningur eftir
               tollskrarnumerum 2024-2026, kafli 1-40", numeros tarifaires
               islandais a 8 chiffres (saumon d'elevage atlantique separe).
+  - Chili   : ONU Comtrade (API publique, donnees declarees par le Chili, SH6).
   - Royaume-Uni : HMRC, API OData publique uktradeinfo (OTS), CN8 ; le saumon
               d'elevage britannique est ecossais (quelques reexportations de
               saumon norvegien incluses).
@@ -76,6 +77,14 @@ SOURCES['GB'] = {
     'name': 'HMRC overseas trade statistics (uktradeinfo API), United Kingdom — farmed salmon is Scottish',
     'currency': 'GBP',
     'codes': {'03021400': 0, '03031300': 1, '03044100': 2, '03048100': 3, '03054100': 5, '16041100': 6},
+}
+SOURCES['CL'] = {
+    'kind': 'comtrade',
+    'name': 'UN Comtrade, exports reported by Chile (HS6, monthly; FOB in USD)',
+    'currency': 'USD',
+    # HS6 : 030214 entier frais atlantique, 030313 entier congele atlantique,
+    # 030441 / 030481 filets frais / congeles (saumon atlantique et du Pacifique : coho inclus)
+    'codes': {'030214': 0, '030313': 1, '030441': 2, '030481': 3, '030541': 5, '160411': 6},
 }
 DKK_PER_EUR = 7.46038       # parite centrale MCE II
 
@@ -401,15 +410,85 @@ def fetch_source(key, src, to_iso, fx):
                   'last': max((r[0] for r in rows), default=None), 'first': min((r[0] for r in rows), default=None)}
 
 
+def iso3_map():
+    try:
+        import pycountry
+        return lambda a3: (pycountry.countries.get(alpha_3=a3).alpha_2 if a3 and pycountry.countries.get(alpha_3=a3) else None)
+    except ImportError:
+        return lambda a3: None
+
+
+def fetch_comtrade(key, src, to_iso, fx):
+    """Chili : ONU Comtrade, API publique 'preview' (sans cle, 500 lignes par appel), un appel par mois."""
+    base = 'https://comtradeapi.un.org/public/v1/preview/C/M/HS'
+    a3 = iso3_map()
+    codes = ','.join(src['codes'])
+    os.makedirs(DBG, exist_ok=True)
+    today = dt.date.today()
+    months, y, m = [], 2023, 1
+    while y * 100 + m <= today.year * 100 + today.month:
+        months.append(y * 100 + m)
+        m += 1
+        if m > 12:
+            y, m = y + 1, 1
+    agg, empty_tail, sample_done = {}, 0, False
+    for ym in months:
+        url = f'{base}?reporterCode=152&period={ym}&cmdCode={codes}&flowCode=X&includeDesc=true'
+        st, raw = http(url)
+        if st == 429:
+            time.sleep(30)
+            st, raw = http(url)
+        if st != 200:
+            print(f'  {key} : {ym} -> {st} {raw[:150]!r}')
+            continue
+        j = json.loads(raw)
+        rows = j.get('data') or []
+        if not sample_done and rows:
+            json.dump(rows[:20], open(os.path.join(DBG, 'comtrade_cl_sample.json'), 'w'), indent=0, ensure_ascii=False)
+            sample_done = True
+        if len(rows) >= 500:
+            print(f'  {key} : {ym} : 500 lignes, la limite de la preview est peut-etre atteinte')
+        n = 0
+        for r in rows:
+            pc = r.get('partnerCode')
+            if pc in (0, None) or str(r.get('flowCode')) != 'X':
+                continue
+            iso = a3(r.get('partnerISO')) or to_iso('', r.get('partnerDesc'))
+            if not iso:
+                continue
+            pi = src['codes'].get(str(r.get('cmdCode')))
+            if pi is None:
+                continue
+            kg = float(r.get('netWgt') or 0)
+            usd = float(r.get('fobvalue') or r.get('primaryValue') or 0)
+            x = agg.setdefault((ym, iso, pi), [0.0, 0.0])
+            x[0] += kg
+            x[1] += usd
+            n += 1
+        print(f'  {key} : {ym} : {n} lignes')
+        time.sleep(2)
+    out = []
+    for (ym, iso, pi), (kg, val) in sorted(agg.items()):
+        if kg <= 0 and val <= 0:
+            continue
+        e = to_eur(val, ym, 'USD', fx)
+        out.append([ym, key, iso, pi, round(kg / 1000, 3), round(val / 1000, 2), round(e / 1000, 2) if e is not None else None])
+    t0 = sum(r[4] for r in out if r[3] == 0)
+    if t0:
+        print(f'  {key} : entier frais, prix moyen {sum(r[6] or 0 for r in out if r[3] == 0) / t0:.2f} EUR/kg')
+    return out, {'source': src['name'], 'url': base, 'currency': 'USD',
+                 'last': max((r[0] for r in out), default=None), 'first': min((r[0] for r in out), default=None)}
+
+
 def main():
     to_iso = iso_map()
-    fx = {c: eur_rates(c) for c in ('ISK', 'GBP', 'NOK')}
+    fx = {c: eur_rates(c) for c in ('ISK', 'GBP', 'NOK', 'USD')}
     old = json.load(io.open(OUT, encoding='utf-8')) if os.path.exists(OUT) else {'meta': {}, 'rows': []}
     rows, meta, failed = [], {}, []
     for key, src in SOURCES.items():
         print(f'{key} :')
         try:
-            r, m = (fetch_hmrc if src.get('kind') == 'hmrc' else fetch_source)(key, src, to_iso, fx)
+            r, m = {'hmrc': fetch_hmrc, 'comtrade': fetch_comtrade}.get(src.get('kind'), fetch_source)(key, src, to_iso, fx)
             if not r:
                 raise RuntimeError('aucune ligne')
             # les mois que la nouvelle table ne couvre plus (table islandaise glissante) restent
