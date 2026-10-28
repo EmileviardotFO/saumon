@@ -159,6 +159,20 @@
     border-radius:4px; font-size:11px; cursor:pointer; }
   .pm-dd-quick button:hover { color:var(--ink); border-color:var(--accent); }
   .pm-mt button.active { background:var(--accent); color:#06211d; border-color:var(--accent); font-weight:bold; }
+  .pr-cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); gap:10px; margin:12px 0 6px; }
+  .pr-card { background:#0d1a24; border:1px solid var(--border); border-radius:8px; padding:10px 12px; cursor:pointer; min-width:0; }
+  .pr-card:hover { border-color:#3a5566; }
+  .pr-card.active { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent) inset; }
+  .pr-card .nm { font-weight:bold; font-size:13px; display:flex; align-items:center; gap:6px; }
+  .pr-card .nm i { width:10px; height:10px; border-radius:2px; display:inline-block; }
+  .pr-card .big { font-size:20px; font-weight:bold; margin-top:4px; }
+  .pr-card .ln { font-size:11px; color:var(--muted); margin-top:2px; }
+  .pr-card svg { display:block; width:100%; height:34px; margin-top:6px; }
+  .viz svg { display:block; width:100%; height:auto; }
+  .viz-legend { display:flex; flex-wrap:wrap; gap:6px 16px; font-size:12px; color:var(--muted); margin:6px 0 2px; }
+  .viz-legend span { display:inline-flex; align-items:center; gap:6px; }
+  .viz-legend i { width:14px; height:4px; border-radius:2px; display:inline-block; }
+  .viz-legend i.sq { height:10px; width:10px; }
   .pm-code { color:var(--muted); font-family:monospace; font-size:11px; margin-left:auto; padding-left:14px; }
   tr.pm-row, tr.hl-zone { cursor:pointer; }
   tr.hl-zone:hover td { background:rgba(47,184,166,.06); }
@@ -259,7 +273,8 @@
     <button data-v="po">By zone (PO)</button>
     <button data-v="health">Fish health</button>
     <button data-v="register">Farm register</button>
-    <button data-v="euflows">EU flows</button>
+    <button data-v="producers">Producers</button>
+    <button data-v="euflows">EU markets</button>
   </div>
   <div class="field" id="poFilterField" style="display:none;">
     <label for="poFilterSelect">Zone(s) included</label>
@@ -615,8 +630,30 @@
     </div>
   </div>
 
+  <div class="panel" id="producersView" style="flex:1; min-width:0; max-width:1320px; display:none;">
+    <div class="sig-title">Producing countries — monthly exports, by form, with prices</div>
+    <div class="sig-sub" id="prSub"></div>
+    <div id="prCards" class="pr-cards"></div>
+    <div class="chart-controls">
+      <span class="cc-label">Destinations</span><span id="prScope" class="pm-mt" style="display:inline-flex;gap:6px"></span>
+      <span class="cc-label">Range</span>
+      <select class="ctrl" id="prRange"><option value="12">Last 12 months</option><option value="24" selected>Last 24 months</option><option value="36">Last 36 months</option><option value="60">Last 5 years</option></select>
+    </div>
+    <div class="chart-controls"><span class="cc-label">Forms</span><span id="prForms" style="display:inline-flex;gap:12px;flex-wrap:wrap"></span></div>
+    <div class="chart-controls"><span class="cc-label">Show</span><span id="prMetrics" style="display:inline-flex;gap:12px"></span>
+      <label class="cc-check"><input type="checkbox" id="prCompare" checked> same month a year earlier (dashed)</label></div>
+    <div class="sig-sub" id="prChartSub"></div>
+    <div id="prChart"></div>
+    <div class="sig-title" style="margin-top:18px" id="prFormTitle"></div>
+    <table class="sig-table"><thead id="theadPrF"></thead><tbody id="tbodyPrF"></tbody></table>
+    <div class="sig-title" style="margin-top:22px" id="prDestTitle"></div>
+    <div class="sig-sub" id="prDestSub"></div>
+    <div id="prDest"></div>
+    <div class="note" id="prNote" style="text-align:left;max-width:none;margin-top:16px"></div>
+  </div>
+
   <div class="panel" id="euView" style="flex:1; min-width:0; max-width:1320px; display:none;">
-    <div class="sig-title">EU flows — who imports salmon from where, and where the processing hubs send it</div>
+    <div class="sig-title">EU markets — where each country's salmon comes from, and what the processing hubs send on</div>
     <div class="sig-sub" id="euSub"></div>
     <div class="chart-controls">
       <span class="cc-label">Period</span>
@@ -624,15 +661,19 @@
       <span class="cc-label">Form</span>
       <select class="ctrl" id="euForm"></select>
     </div>
-    <div class="sig-title" style="margin-top:14px">1 · Upstream — how much each producing country ships to the EU, where, and in what form</div>
-    <div class="chart-controls"><span class="cc-label">View</span><span id="euModeBtns" class="pm-mt" style="display:inline-flex;gap:6px"></span>
-      <span class="cc-label" id="euOrigLbl">Origin</span><span id="euOrigBtns" class="pm-mt" style="display:inline-flex;gap:6px;flex-wrap:wrap"></span></div>
-    <div class="sig-sub" id="euUpSub"></div>
-    <table class="sig-table" id="euOrigForms"><thead id="theadEuOF"></thead><tbody id="tbodyEuOF"></tbody></table>
-    <table class="sig-table"><thead id="theadEuUp"></thead><tbody id="tbodyEuUp"></tbody></table>
-    <div class="sig-title" style="margin-top:26px">2 · Downstream — what the processing hubs export, by form and destination</div>
+    <div class="sig-title" style="margin-top:14px">1 · Origin of the salmon arriving in each country</div>
+    <div class="chart-controls"><span class="cc-label">Country</span><span id="euCtyBtns" class="pm-mt" style="display:inline-flex;gap:6px;flex-wrap:wrap"></span>
+      <select class="ctrl" id="euCtyMore"></select></div>
+    <div class="sig-sub" id="euCtySub"></div>
+    <div id="euCtyChart"></div>
+    <table class="sig-table" style="margin-top:10px"><thead id="theadEuCty"></thead><tbody id="tbodyEuCty"></tbody></table>
+    <div class="sig-title" style="margin-top:26px">2 · Did each market grow, or did one origin replace another?</div>
+    <div class="sig-sub" id="euGrowSub"></div>
+    <div id="euGrowChart"></div>
+    <div class="sig-title" style="margin-top:26px">3 · Processing hubs — what they export, in what form, and where</div>
     <div class="chart-controls"><span class="cc-label">Hub</span><span id="euHubBtns" class="pm-mt" style="display:inline-flex;gap:6px"></span></div>
     <div class="sig-sub" id="euDownSub"></div>
+    <div id="euDownChart"></div>
     <table class="sig-table"><thead id="theadEuForms"></thead><tbody id="tbodyEuForms"></tbody></table>
     <table class="sig-table" style="margin-top:14px"><thead id="theadEuDown"></thead><tbody id="tbodyEuDown"></tbody><tfoot id="tfootEuDown"></tfoot></table>
     <div class="note" id="euNote" style="text-align:left;max-width:none;margin-top:16px"></div>
@@ -2799,12 +2840,13 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     document.getElementById('healthView').style.display = currentView === 'health' ? 'block' : 'none';
     document.getElementById('registerView').style.display = currentView === 'register' ? 'block' : 'none';
     document.getElementById('euView').style.display = currentView === 'euflows' ? 'block' : 'none';
+    document.getElementById('producersView').style.display = currentView === 'producers' ? 'block' : 'none';
     // The year / period selectors do not apply to the weekly fish-health view.
-    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows') ? 'none' : '';
+    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers') ? 'none' : '';
     // La carte des zones ne sert qu'aux vues qui raisonnent par PO. Les onglets
     // Markets et Calibre sont nationaux, elle n'y afficherait rien d'utile.
     const mw = document.querySelector('.panel.mapwrap');
-    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows') ? 'none' : '';
+    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers') ? 'none' : '';
     document.getElementById('poFilterField').style.display = (currentView === 'global' || currentView === 'multi' || currentView === 'outlook') ? 'flex' : 'none';
     document.getElementById('yearField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'none' : 'flex';
     document.getElementById('yearRangeField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'flex' : 'none';
@@ -2822,6 +2864,7 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     else if (currentView === 'health') { renderHealth(); }
     else if (currentView === 'register') { renderRegister(); }
     else if (currentView === 'euflows') { renderEuFlows(); }
+    else if (currentView === 'producers') { renderProducers(); }
     else { render(); }
   });
 });
@@ -5822,203 +5865,398 @@ async function loadEurostat() {
   } catch (e) { console.warn('eurostat.json indisponible', e.message); }
   EU_LOADING = false;
   if (currentView === 'euflows') renderEuFlows();
+  if (currentView === 'producers') renderProducers();
 }
+// ===================== Salmon trade model (Eurostat + SSB) =====================
+// Codes douaniers : l'entier frais (0302 14) et l'entier congele (0303 13) ne couvrent
+// que le saumon atlantique. Les filets (0304 41 / 0304 81), le fume (0305 41) et les
+// preparations (1604 11) couvrent aussi le saumon du Pacifique : ce qui arrive des
+// Etats-Unis, de Chine, de Russie (et de quelques autres pays non eleveurs) est classe
+// "Pacific & wild" et ecarte. Tout le reste, y compris ce qui est reexpedie par un pays
+// de l'UE, est compte comme atlantique (98 % du non-atlantique identifie vient de ces
+// trois pays). Le code 0304 52 (chair de salmonides, truite comprise) est ignore.
+const PAC_SRC = new Set(['US', 'CN', 'RU', 'TH', 'VN', 'JP', 'KR', 'NZ', 'TW', 'ID', 'PH', 'MY']);
+const ORIGS = ['NO', 'GB', 'FO', 'IS', 'IE', 'CL', 'OTH', 'PAC'];
+const ORIG_LAB = { NO: 'Norway', GB: 'United Kingdom', FO: 'Faroe Islands', IS: 'Iceland', IE: 'Ireland', CL: 'Chile', OTH: 'Other / unspecified', PAC: 'Pacific & wild salmon (excluded)' };
+const ORIG_COL = { NO: '#4fc3f7', GB: '#ffb74d', FO: '#2fb8a6', IS: '#ba68c8', IE: '#81c784', CL: '#e57373', OTH: '#78909c', PAC: '#8d6e63' };
+const PRODUCERS = ['NO', 'FO', 'IS', 'GB', 'IE', 'CL'];
+const PROD_LAB = { NO: 'Norway', FO: 'Faroe Islands', IS: 'Iceland', GB: 'Scotland (UK)', IE: 'Ireland', CL: 'Chile' };
+const FORMS_OK = [0, 1, 2, 3, 5, 6];
+const FORM_COL = ['#4fc3f7', '#90a4ae', '#2fb8a6', '#9575cd', null, '#ffb74d', '#e57373'];
+const SSB_PI = { '03021411': 0, '03031311': 1, '03044100': 2, '03048100': 3 };
+let TM = null;
+const tmBack = (k, n) => { let y = Math.floor(k / 100), m = k % 100 - n; while (m < 1) { m += 12; y--; } while (m > 12) { m -= 12; y++; } return y * 100 + m; };
+const tmRange = (last, n) => { const o = []; for (let i = n - 1; i >= 0; i--) o.push(tmBack(last, i)); return o; };
+const tmMl = k => `${MONTHS_FR[k % 100 - 1].slice(0, 3)} ${Math.floor(k / 100)}`;
+const tmF0 = v => isFinite(v) ? Math.round(v).toLocaleString('en-US') : '—';
+const tmPc = (a, b) => b > 0 ? (a / b - 1) * 100 : NaN;
+const tmSg = v => (v >= 0 ? '+' : '−') + tmF0(Math.abs(v));
+const tmCls = (p, th = 2) => !isFinite(p) ? 'delta-zero' : p > th ? 'delta-good' : p < -th ? 'delta-bad' : 'delta-zero';
+const tmPct = (a, b) => { const p = tmPc(a, b); return `<td class="${tmCls(p)}">${isFinite(p) ? (p >= 0 ? '+' : '') + p.toFixed(0) + '%' : (a > 0 ? 'new' : '—')}</td>`; };
+
+function tmBuild() {
+  if (TM && TM.src === EU) return TM;
+  const M = EU.meta, EU27 = new Set(M.reporters_up);
+  const orig = (part, pi) => {
+    if (part === 'XI' || part === 'GB') return 'GB';
+    if (part === 'IE') return 'IE';
+    if (EU27.has(part)) return null;                                  // pays d'expedition dans l'UE
+    if (['NO', 'FO', 'IS', 'CL'].includes(part)) return part;
+    if (pi >= 2 && PAC_SRC.has(part)) return 'PAC';
+    return 'OTH';
+  };
+  const imp = {}, exp = {}, months = new Set();
+  EU.rows.forEach(([ym, rep, part, pi, fl, t, v]) => {
+    if (pi === 4 || ym > M.last_period) return;
+    months.add(ym);
+    if (fl === 1) {
+      const A = (imp[ym] || (imp[ym] = {})), R = A[rep] || (A[rep] = {}), C = R[pi] || (R[pi] = { d: {}, h: {} });
+      const o = orig(part, pi), box = o ? C.d : C.h, key = o || part;
+      const x = box[key] || (box[key] = [0, 0]); x[0] += t; x[1] += v;
+    } else (exp[ym] || (exp[ym] = [])).push([rep, part, pi, t, v]);
+  });
+  TM = { src: EU, imp, exp, mix: {}, months: [...months].sort((a, b) => a - b), last: M.last_period };
+  return TM;
+}
+// Composition par origine de ce qu'importe chaque pays de l'UE (un mois, toutes formes
+// confondues : un pays qui fume ou filete du saumon le fait a partir de ce qu'il importe
+// entier), en remontant les reexpeditions entre pays de l'UE. Le saumon du Pacifique n'est
+// pas propage : ce qu'un pays de l'UE reexpedie est compte comme atlantique.
+function tmMix(ym) {
+  if (TM.mix[ym]) return TM.mix[ym];
+  const A = TM.imp[ym] || {}, reps = Object.keys(A), ATL = ORIGS.filter(o => o !== 'PAC');
+  const norm = v => { const s = ATL.reduce((a, o) => a + (v[o] || 0), 0), r = {}; ATL.forEach(o => r[o] = s > 0 ? (v[o] || 0) / s : 0); if (s <= 0) r.OTH = 1; return r; };
+  const each = (r, fd, fh) => Object.values(A[r]).forEach(C => { Object.entries(C.d).forEach(([o, x]) => fd(o, x[0])); Object.entries(C.h).forEach(([h, x]) => fh(h, x[0])); });
+  let m = {};
+  reps.forEach(r => { const v = {}; each(r, (o, t) => v[o] = (v[o] || 0) + t, () => {}); m[r] = norm(v); });
+  for (let it = 0; it < 6; it++) {
+    const nm = {};
+    reps.forEach(r => { const v = {};
+      each(r, (o, t) => v[o] = (v[o] || 0) + t, (h, t) => { const mh = m[h] || { OTH: 1 }; ATL.forEach(o => { if (mh[o]) v[o] = (v[o] || 0) + t * mh[o]; }); });
+      nm[r] = norm(v); });
+    m = nm;
+  }
+  return TM.mix[ym] = m;
+}
+// Importations d'un pays par origine reconstituee : { origine: [tonnes, milliers d'euros] }
+function tmOrigins(rep, ym, pi) {
+  const C = ((TM.imp[ym] || {})[rep] || {})[pi], out = {};
+  if (!C) return out;
+  const add = (o, t, v) => { const y = out[o] || (out[o] = [0, 0]); y[0] += t; y[1] += v; };
+  Object.entries(C.d).forEach(([o, x]) => add(o, x[0], x[1]));
+  if (Object.keys(C.h).length) { const m = tmMix(ym);
+    Object.entries(C.h).forEach(([h, x]) => { const mh = m[h] || { OTH: 1 }; Object.entries(mh).forEach(([o, s]) => { if (s) add(o, x[0] * s, x[1] * s); }); }); }
+  return out;
+}
+// Exportations d'un pays producteur. scope 'eu' : entrees dans l'UE (Eurostat, EUR) ;
+// 'all' : statistiques norvegiennes (SSB, NOK) ou exportations de l'Irlande (Eurostat).
+// Retour : { cur, last, rows: [[ym, destination, forme, tonnes, valeur en milliers]] }
+function tmProducer(prod, scope) {
+  const rows = [];
+  if (scope === 'all' && prod === 'NO' && SSBX) {
+    const hs = Object.keys(SSBX.meta.products);
+    SSBX.rows.forEach(([k, h, iso, kg, nok]) => { const pi = SSB_PI[hs[h]]; if (pi !== undefined) rows.push([k, iso, pi, kg / 1000, nok / 1000]); });
+    return { cur: 'NOK', last: rows.reduce((m, r) => Math.max(m, r[0]), 0), rows, src: 'Norwegian export statistics (SSB), all destinations' };
+  }
+  if (scope === 'all' && prod === 'IE' && TM.months.some(ym => (TM.exp[ym] || []).some(r => r[0] === 'IE'))) {
+    TM.months.forEach(ym => (TM.exp[ym] || []).forEach(([rep, part, pi, t, v]) => { if (rep === 'IE') rows.push([ym, part, pi, t, v]); }));
+    return { cur: 'EUR', last: TM.last, rows, src: 'Irish exports, all destinations (Eurostat)' };
+  }
+  TM.months.forEach(ym => Object.entries(TM.imp[ym] || {}).forEach(([rep, R]) => Object.entries(R).forEach(([pi, C]) => {
+    const x = C.d[prod]; if (x && x[0] > 0) rows.push([ym, rep, +pi, x[0], x[1]]); })));
+  return { cur: 'EUR', last: TM.last, rows, src: 'Arrivals in the EU (Eurostat)', euOnly: true };
+}
+
+// ---------- graphiques SVG ----------
+function vzScale(lo, hi, n) {
+  if (hi <= lo) hi = lo + 1;
+  const raw = (hi - lo) / n, mag = Math.pow(10, Math.floor(Math.log10(raw))), nn = raw / mag;
+  const step = (nn <= 1 ? 1 : nn <= 2 ? 2 : nn <= 2.5 ? 2.5 : nn <= 5 ? 5 : 10) * mag;
+  return { lo: Math.floor(lo / step) * step, hi: Math.ceil(hi / step) * step, step };
+}
+const vzFmt = (v, d) => v.toLocaleString('en-US', { maximumFractionDigits: d === undefined ? (Math.abs(v) < 10 ? 1 : 0) : d });
+function vzXLabels(keys, X, y) {
+  const every = keys.length > 40 ? 6 : keys.length > 24 ? 3 : keys.length > 13 ? 2 : 1;
+  return keys.map((k, i) => (i % every && i !== keys.length - 1) ? '' :
+    `<text x="${X(i)}" y="${y}" text-anchor="middle" fill="#8fa4b0" font-size="11">${MONTHS_FR[k % 100 - 1].slice(0, 3)}${(k % 100 === 1 || i === 0) ? ' ' + String(Math.floor(k / 100)).slice(2) : ''}</text>`).join('');
+}
+// Courbes : series = [{lab, col, pts, dash, w, op}]
+function vzLines(keys, series, o) {
+  const W = 1080, H = o.H || 260, mL = 84, mR = 18, mT = 12, mB = o.xAxis === false ? 10 : 34, pw = W - mL - mR, ph = H - mT - mB, n = keys.length;
+  const all = series.flatMap(s => s.pts).filter(v => v !== null && isFinite(v));
+  if (!all.length) return `<div class="sig-sub">No data for this selection.</div>`;
+  const sc = vzScale(o.zero === false ? Math.min(...all) * 0.94 : 0, Math.max(...all) * 1.06, 4);
+  const X = i => mL + (n === 1 ? pw / 2 : i * pw / (n - 1)), Y = v => mT + ph - (v - sc.lo) / (sc.hi - sc.lo) * ph;
+  let s = `<text transform="translate(14,${mT + ph / 2}) rotate(-90)" text-anchor="middle" fill="#cfdde4" font-size="12" font-weight="bold">${o.axis}</text>`;
+  for (let g = sc.lo; g <= sc.hi + sc.step / 2; g += sc.step)
+    s += `<line x1="${mL}" x2="${W - mR}" y1="${Y(g)}" y2="${Y(g)}" stroke="#223642"/><text x="${mL - 8}" y="${Y(g) + 4}" text-anchor="end" fill="#8fa4b0" font-size="11">${vzFmt(g, o.digits)}</text>`;
+  if (o.xAxis !== false) s += vzXLabels(keys, X, H - 12);
+  series.forEach(se => {
+    let d = '', pen = false;
+    se.pts.forEach((v, i) => { if (v === null || !isFinite(v)) { pen = false; return; } d += (pen ? 'L' : 'M') + X(i).toFixed(1) + ',' + Y(v).toFixed(1); pen = true; });
+    if (d) s += `<path d="${d}" fill="none" stroke="${se.col}" stroke-width="${se.w || 2.2}" stroke-opacity="${se.op || 1}"${se.dash ? ` stroke-dasharray="${se.dash}"` : ''} stroke-linejoin="round"/>`;
+    if (!se.dash) se.pts.forEach((v, i) => { if (v === null || !isFinite(v)) return;
+      s += `<circle cx="${X(i)}" cy="${Y(v)}" r="${n > 30 ? 2 : 3}" fill="${se.col}"><title>${se.lab} — ${tmMl(keys[i])}: ${vzFmt(v, o.digits)} ${o.unit}</title></circle>`; });
+  });
+  return `<div class="viz"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">${s}</svg></div>`;
+}
+// Barres empilees par mois : stacks = [{lab, col, vals}], line = [{lab, col, pts, dash}] en surimpression
+function vzStack(keys, stacks, o) {
+  const W = 1080, H = o.H || 280, mL = 84, mR = 18, mT = 12, mB = 34, pw = W - mL - mR, ph = H - mT - mB, n = keys.length;
+  const tot = keys.map((_, i) => stacks.reduce((a, st) => a + (st.vals[i] || 0), 0));
+  const lineMax = Math.max(0, ...(o.lines || []).flatMap(l => l.pts.filter(v => v !== null && isFinite(v))));
+  const sc = vzScale(0, Math.max(...tot, lineMax, 1) * 1.05, 4);
+  const bw = pw / n, Y = v => mT + ph - (v - sc.lo) / (sc.hi - sc.lo) * ph, X = i => mL + bw * (i + 0.5);
+  let s = `<text transform="translate(14,${mT + ph / 2}) rotate(-90)" text-anchor="middle" fill="#cfdde4" font-size="12" font-weight="bold">${o.axis}</text>`;
+  for (let g = sc.lo; g <= sc.hi + sc.step / 2; g += sc.step)
+    s += `<line x1="${mL}" x2="${W - mR}" y1="${Y(g)}" y2="${Y(g)}" stroke="#223642"/><text x="${mL - 8}" y="${Y(g) + 4}" text-anchor="end" fill="#8fa4b0" font-size="11">${vzFmt(g)}</text>`;
+  s += vzXLabels(keys, X, H - 12);
+  keys.forEach((k, i) => { let base = 0;
+    stacks.forEach(st => { const v = st.vals[i] || 0; if (v <= 0) return;
+      s += `<rect x="${(X(i) - bw * 0.38).toFixed(1)}" width="${(bw * 0.76).toFixed(1)}" y="${Y(base + v).toFixed(1)}" height="${(Y(base) - Y(base + v)).toFixed(1)}" fill="${st.col}"><title>${tmMl(k)} — ${st.lab}: ${tmF0(v)} ${o.unit} (${(100 * v / tot[i]).toFixed(0)}%)</title></rect>`;
+      base += v; }); });
+  (o.lines || []).forEach(l => { let d = '', pen = false;
+    l.pts.forEach((v, i) => { if (v === null || !isFinite(v)) { pen = false; return; } d += (pen ? 'L' : 'M') + X(i).toFixed(1) + ',' + Y(v).toFixed(1); pen = true; });
+    if (d) s += `<path d="${d}" fill="none" stroke="${l.col}" stroke-width="1.8" stroke-dasharray="${l.dash || '5,4'}"/>`; });
+  return `<div class="viz"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">${s}</svg></div>`;
+}
+// Barres horizontales : rows = [{lab, v, vp, col}] (vp = annee precedente, pour la variation)
+function vzHBars(rows, o) {
+  const W = 1080, rh = 24, mL = 210, mR = 150, H = rows.length * rh + 10, max = Math.max(...rows.map(r => Math.max(r.v, r.vp || 0)), 1), pw = W - mL - mR;
+  let s = '';
+  rows.forEach((r, i) => { const y = 5 + i * rh, w = r.v / max * pw, wp = (r.vp || 0) / max * pw, p = tmPc(r.v, r.vp);
+    s += `<text x="${mL - 10}" y="${y + 15}" text-anchor="end" fill="#e7eef2" font-size="12">${r.lab}</text>` +
+      `<rect x="${mL}" y="${y + 4}" width="${Math.max(w, 1).toFixed(1)}" height="${rh - 9}" fill="${r.col}" rx="2"><title>${r.lab}: ${tmF0(r.v)} ${o.unit}${r.vp ? `, a year earlier ${tmF0(r.vp)}` : ''}</title></rect>` +
+      (r.vp ? `<line x1="${(mL + wp).toFixed(1)}" x2="${(mL + wp).toFixed(1)}" y1="${y + 1}" y2="${y + rh - 2}" stroke="#e7eef2" stroke-width="2" stroke-opacity=".7"/>` : '') +
+      `<text x="${mL + Math.max(w, wp) + 8}" y="${y + 15}" fill="#cfdde4" font-size="12">${tmF0(r.v)}` +
+      (isFinite(p) ? ` <tspan fill="${p > 2 ? '#7be0c9' : p < -2 ? '#ff8a65' : '#8fa4b0'}">${p >= 0 ? '+' : ''}${p.toFixed(0)}%</tspan>` : r.v > 0 ? ' <tspan fill="#8fa4b0">new</tspan>' : '') + `</text>`; });
+  return `<div class="viz"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">${s}</svg></div>`;
+}
+// Variations empilees de part et d'autre de zero : rows = [{lab, segs:[{col, lab, v}], net, pct, tag}]
+function vzDiverge(rows, o) {
+  const W = 1080, rh = 28, mL = 170, mR = 190, H = rows.length * rh + 36, pw = W - mL - mR;
+  const ext = Math.max(1, ...rows.map(r => Math.max(r.segs.filter(x => x.v > 0).reduce((a, x) => a + x.v, 0), -r.segs.filter(x => x.v < 0).reduce((a, x) => a + x.v, 0))));
+  const sc = vzScale(-ext, ext, 4), Xv = v => mL + (v - sc.lo) / (sc.hi - sc.lo) * pw;
+  let s = '';
+  for (let g = sc.lo; g <= sc.hi + sc.step / 2; g += sc.step)
+    s += `<line x1="${Xv(g)}" x2="${Xv(g)}" y1="4" y2="${H - 26}" stroke="${g === 0 ? '#5d7a8a' : '#223642'}"/><text x="${Xv(g)}" y="${H - 10}" text-anchor="middle" fill="#8fa4b0" font-size="11">${g > 0 ? '+' : ''}${vzFmt(g)}</text>`;
+  rows.forEach((r, i) => { const y = 6 + i * rh; let pos = 0, neg = 0;
+    s += `<text x="${mL - 10}" y="${y + 16}" text-anchor="end" fill="#e7eef2" font-size="12">${r.lab}${r.tag ? ` <tspan fill="#8fa4b0" font-size="10">${r.tag}</tspan>` : ''}</text>`;
+    r.segs.forEach(g => { if (!g.v) return; const a = g.v > 0 ? pos : neg + g.v, b = g.v > 0 ? pos + g.v : neg;
+      s += `<rect x="${Xv(a).toFixed(1)}" width="${Math.max(0.5, Xv(b) - Xv(a)).toFixed(1)}" y="${y + 4}" height="${rh - 10}" fill="${g.col}"><title>${r.lab} — ${g.lab}: ${tmSg(g.v)} ${o.unit}</title></rect>`;
+      if (g.v > 0) pos += g.v; else neg += g.v; });
+    s += `<line x1="${Xv(r.net)}" x2="${Xv(r.net)}" y1="${y + 1}" y2="${y + rh - 3}" stroke="#ffffff" stroke-width="3"><title>Net change: ${tmSg(r.net)} ${o.unit}</title></line>`;
+    s += `<text x="${W - mR + 10}" y="${y + 16}" fill="${r.net > 0 ? '#7be0c9' : r.net < 0 ? '#ff8a65' : '#8fa4b0'}" font-size="12" font-weight="bold">${tmSg(r.net)} t${isFinite(r.pct) ? ` (${r.pct >= 0 ? '+' : ''}${r.pct.toFixed(0)}%)` : ''}</text>`; });
+  return `<div class="viz"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">${s}</svg></div>`;
+}
+const vzSpark = (vals, col) => { const v = vals.map(x => x || 0), mx = Math.max(...v, 1), n = v.length;
+  return `<svg viewBox="0 0 200 34" preserveAspectRatio="none">${v.map((x, i) => `<rect x="${(i * 200 / n + 0.5).toFixed(1)}" width="${(200 / n - 1).toFixed(1)}" y="${(33 - x / mx * 31).toFixed(1)}" height="${(x / mx * 31).toFixed(1)}" fill="${col}" fill-opacity="${i >= n - 12 ? 1 : 0.45}"/>`).join('')}</svg>`; };
+const vzLegend = items => `<div class="viz-legend">${items.map(([lab, col, dash, sq]) => `<span><i class="${sq ? 'sq' : ''}" style="background:${dash ? 'transparent;border-top:2px dashed ' + col : col}"></i>${lab}</span>`).join('')}</div>`;
+
+// ===================== Onglet Producers =====================
+let prSel = 'NO', prScope = 'eu', prForms = new Set(FORMS_OK), prMetrics = new Set(['q', 'p']);
+function renderProducers() {
+  const sub = document.getElementById('prSub');
+  if (!EU) { sub.innerHTML = EU_LOADING ? 'Loading Eurostat data…' : 'Loading…'; loadEurostat(); return; }
+  tmBuild();
+  const P = EU.meta.products, last = TM.last;
+  sub.innerHTML = `Monthly exports of each salmon-farming country, by form, with prices. Data to <b>${tmMl(last)}</b>. ` +
+    `<b>Faroe Islands, Iceland, United Kingdom and Chile: what enters the EU only</b> (Eurostat, the EU country where the salmon is cleared) — their exports to the US, Asia, the UK or Russia are not in this source yet. ` +
+    `Norway: also all destinations (Norwegian statistics). Atlantic salmon only: fillet, smoked and prepared codes from the US, China and Russia (Pacific salmon) are left out; trout is not included.`;
+  // cartes : 12 derniers mois vers l'UE, comparables entre pays
+  const k12 = tmRange(last, 12), k12p = k12.map(k => k - 100), k24 = tmRange(last, 24);
+  const cards = PRODUCERS.map(pr => {
+    const d = tmProducer(pr, 'eu'), by = {}; d.rows.forEach(([ym, , pi, t, v]) => { const x = by[ym] || (by[ym] = [0, 0]); x[0] += t; x[1] += v; });
+    const S = ks => ks.reduce((a, k) => [a[0] + (by[k] ? by[k][0] : 0), a[1] + (by[k] ? by[k][1] : 0)], [0, 0]);
+    const a = S(k12), b = S(k12p), p = tmPc(a[0], b[0]), pa = a[0] ? a[1] / a[0] : NaN, pb = b[0] ? b[1] / b[0] : NaN;
+    let extra = '';
+    if (pr === 'NO' && SSBX) { const n = tmProducer('NO', 'all'), byN = {}; n.rows.forEach(([ym, , , t]) => byN[ym] = (byN[ym] || 0) + t);
+      const kk = tmRange(n.last, 12), A = kk.reduce((s, k) => s + (byN[k] || 0), 0), B = kk.reduce((s, k) => s + (byN[k - 100] || 0), 0), q = tmPc(A, B);
+      extra = `<div class="ln">All destinations: <b style="color:var(--ink)">${tmF0(A / 1000)} kt</b> <span class="${tmCls(q)}">${q >= 0 ? '+' : ''}${q.toFixed(0)}%</span> (to ${tmMl(n.last)})</div>`; }
+    return `<div class="pr-card${pr === prSel ? ' active' : ''}" data-p="${pr}"><div class="nm"><i style="background:${ORIG_COL[pr]}"></i>${PROD_LAB[pr]}</div>` +
+      `<div class="big">${tmF0(a[0] / 1000)} kt <span class="${tmCls(p)}" style="font-size:13px">${isFinite(p) ? (p >= 0 ? '+' : '') + p.toFixed(0) + '%' : ''}</span></div>` +
+      `<div class="ln">to the EU, last 12 months · ${isFinite(pa) ? pa.toFixed(2) + ' €/kg' : '—'}${isFinite(pa) && isFinite(pb) ? ` <span class="${tmCls(tmPc(pa, pb))}">(${tmPc(pa, pb) >= 0 ? '+' : ''}${tmPc(pa, pb).toFixed(0)}%)</span>` : ''}</div>${extra}` +
+      vzSpark(k24.map(k => by[k] ? by[k][0] : 0), ORIG_COL[pr]) + `</div>`;
+  });
+  document.getElementById('prCards').innerHTML = cards.join('');
+  document.querySelectorAll('#prCards .pr-card').forEach(c => c.addEventListener('click', () => { prSel = c.dataset.p; renderProducers(); }));
+  // portee
+  const canAll = prSel === 'NO' ? !!SSBX : prSel === 'IE' ? tmProducer('IE', 'all').src.startsWith('Irish') : false;
+  if (!canAll) prScope = 'eu';
+  document.getElementById('prScope').innerHTML = [['eu', 'Into the EU (Eurostat, €)'], ['all', prSel === 'NO' ? 'All destinations (SSB, NOK)' : 'All destinations']]
+    .map(([k, l]) => `<button type="button" data-s="${k}" class="${prScope === k ? 'active' : ''}"${k === 'all' && !canAll ? ' disabled title="National statistics not collected yet" style="opacity:.4;cursor:not-allowed"' : ''}>${l}</button>`).join('');
+  document.querySelectorAll('#prScope button:not([disabled])').forEach(b => b.addEventListener('click', () => { prScope = b.dataset.s; renderProducers(); }));
+  const D = tmProducer(prSel, prScope), cur = D.cur, lastP = D.last;
+  const formsAvail = FORMS_OK.filter(i => D.rows.some(r => r[2] === i));
+  document.getElementById('prForms').innerHTML = formsAvail.map(i => `<label class="cc-check"><input type="checkbox" data-f="${i}" ${prForms.has(i) ? 'checked' : ''}> <i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${FORM_COL[i]}"></i> ${P[i]}</label>`).join('') +
+    `<button type="button" class="ctrl" id="prFormsAll" style="padding:2px 8px">All</button>`;
+  document.querySelectorAll('#prForms input').forEach(c => c.addEventListener('change', () => { const f = +c.dataset.f; c.checked ? prForms.add(f) : prForms.delete(f); renderProducers(); }));
+  document.getElementById('prFormsAll').onclick = () => { prForms = new Set(FORMS_OK); renderProducers(); };
+  document.getElementById('prMetrics').innerHTML = [['q', 'Volume'], ['p', 'Price'], ['v', 'Value']]
+    .map(([k, l]) => `<label class="cc-check"><input type="checkbox" data-m="${k}" ${prMetrics.has(k) ? 'checked' : ''}> ${l}</label>`).join('');
+  document.querySelectorAll('#prMetrics input').forEach(c => c.addEventListener('change', () => { c.checked ? prMetrics.add(c.dataset.m) : prMetrics.delete(c.dataset.m); if (!prMetrics.size) prMetrics.add('q'); renderProducers(); }));
+  const rg = document.getElementById('prRange'), cmp = document.getElementById('prCompare');
+  if (!rg.dataset.w) { rg.dataset.w = 1; rg.addEventListener('change', renderProducers); cmp.addEventListener('change', renderProducers); }
+  const sel = formsAvail.filter(i => prForms.has(i));
+  // series mensuelles par forme
+  const by = {}; sel.forEach(i => by[i] = {});
+  D.rows.forEach(([ym, , pi, t, v]) => { if (!by[pi]) return; const x = by[pi][ym] || (by[pi][ym] = [0, 0]); x[0] += t; x[1] += v; });
+  const tot = {}; sel.forEach(i => Object.entries(by[i]).forEach(([k, x]) => { const y = tot[k] || (tot[k] = [0, 0]); y[0] += x[0]; y[1] += x[1]; }));
+  const keys = tmRange(lastP, +rg.value);
+  const MET = { q: { axis: 'Tonnes per month', unit: 't', f: x => x[0], d: 0 }, p: { axis: `${cur} per kg`, unit: `${cur}/kg`, f: x => x[0] > 0 ? x[1] / x[0] : null, d: 2, nz: true },
+    v: { axis: `Million ${cur} per month`, unit: `M ${cur}`, f: x => x[1] / 1000, d: 1 } };
+  const mets = ['q', 'p', 'v'].filter(m => prMetrics.has(m)), lines = [];
+  const html = mets.map((mk, j) => { const m = MET[mk], ser = [];
+    const pts = (o, ks) => ks.map(k => o[k] ? m.f(o[k]) : (mk === 'p' ? null : 0));
+    const multi = sel.length > 1;
+    if (multi) sel.forEach(i => ser.push({ lab: P[i], col: FORM_COL[i], pts: pts(by[i], keys), w: 1.6, op: .9 }));
+    ser.push({ lab: multi ? 'Total of selected forms' : P[sel[0]] || 'Total', col: multi ? '#e7eef2' : (FORM_COL[sel[0]] || '#e7eef2'), pts: pts(tot, keys), w: 2.6 });
+    if (cmp.checked) ser.push({ lab: 'Same month a year earlier', col: multi ? '#e7eef2' : (FORM_COL[sel[0]] || '#e7eef2'), pts: pts(tot, keys.map(k => k - 100)), dash: '5,4', w: 1.6, op: .55 });
+    if (!j) lines.push(...ser);
+    return vzLines(keys, ser, { axis: m.axis, unit: m.unit, digits: m.d, zero: !m.nz, H: mets.length > 1 ? 210 : 280, xAxis: j === mets.length - 1 }); }).join('');
+  document.getElementById('prChartSub').innerHTML = `<b>${PROD_LAB[prSel]}</b> — ${D.src}, ${tmMl(keys[0])} to ${tmMl(keys[keys.length - 1])}.` +
+    (D.euOnly && prSel !== 'IE' ? ` <span class="warn">Exports to non-EU countries are not included.</span>` : '') +
+    (prSel === 'CL' ? ` <span class="warn">Chilean frozen fillets mix Atlantic salmon and coho; the code does not separate them.</span>` : '') +
+    vzLegend(lines.map(s => [s.lab, s.col, !!s.dash]));
+  document.getElementById('prChart').innerHTML = sel.length ? html : '<div class="sig-sub">Tick at least one form.</div>';
+  // tableau par forme
+  const kp = tmBack(lastP, 1), kN = tmRange(lastP, 12), kNp = kN.map(k => k - 100), g = (o, k) => o[k] || [0, 0];
+  const sumK = (o, ks) => ks.reduce((a, k) => [a[0] + g(o, k)[0], a[1] + g(o, k)[1]], [0, 0]), pr = x => x[0] > 0 ? x[1] / x[0] : NaN;
+  const f2 = v => isFinite(v) ? v.toFixed(2) : '—';
+  document.getElementById('prFormTitle').textContent = `${PROD_LAB[prSel]} — by form (${D.euOnly ? 'into the EU' : 'all destinations'})`;
+  document.getElementById('theadPrF').innerHTML = `<tr><th class="name" rowspan="2">Form</th><th class="grp" colspan="3">${tmMl(lastP)}</th><th class="grp sep-left" colspan="3">Last 12 months</th><th class="grp sep-left" colspan="3">Price, ${cur}/kg</th></tr>` +
+    `<tr><th>Tonnes</th><th>vs M-1</th><th>vs N-1</th><th class="sep-left">Tonnes</th><th>Share</th><th>vs N-1</th><th class="sep-left">${tmMl(lastP)}</th><th>vs N-1</th><th>12 months</th></tr>`;
+  const T12 = sumK(tot, kN)[0];
+  const row = (lab, o, strong) => { const L = g(o, lastP), Lm = g(o, kp), Ly = g(o, lastP - 100), A = sumK(o, kN), B = sumK(o, kNp);
+    return `<tr><td class="name"${strong ? ' style="color:var(--accent)"' : ''}>${lab}</td><td><b>${tmF0(L[0])}</b></td>${tmPct(L[0], Lm[0])}${tmPct(L[0], Ly[0])}` +
+      `<td class="sep-left"><b>${tmF0(A[0])}</b></td><td>${T12 ? (100 * A[0] / T12).toFixed(1) + '%' : '—'}</td>${tmPct(A[0], B[0])}` +
+      `<td class="sep-left">${f2(pr(L))}</td>${tmPct(pr(L), pr(Ly))}<td>${f2(pr(A))}</td></tr>`; };
+  document.getElementById('tbodyPrF').innerHTML = sel.map(i => row(`<i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${FORM_COL[i]};margin-right:6px"></i>${P[i]}`, by[i])).join('') + (sel.length > 1 ? row('Total', tot, true) : '');
+  // destinations
+  const dst = {}; D.rows.forEach(([ym, de, pi, t]) => { if (!by[pi]) return; const n = kN.includes(ym), p = kNp.includes(ym); if (!n && !p) return; const x = dst[de] || (dst[de] = [0, 0]); x[n ? 0 : 1] += t; });
+  const top = Object.entries(dst).filter(([, x]) => x[0] >= 1 || x[1] >= 1).sort((a, b) => b[1][0] - a[1][0]).slice(0, 18);
+  document.getElementById('prDestTitle').textContent = `${PROD_LAB[prSel]} — ${D.euOnly ? 'EU country of arrival' : 'destinations'}, last 12 months`;
+  document.getElementById('prDestSub').innerHTML = `Selected forms, ${tmMl(kN[0])} – ${tmMl(kN[11])}. The white tick marks the same 12 months a year earlier.` +
+    (D.euOnly ? ` <span class="warn">EU country of arrival = where customs clearance takes place</span>, not always where the salmon is eaten (see the EU markets tab for the reconstructed origins of each market).` : '');
+  document.getElementById('prDest').innerHTML = top.length ? vzHBars(top.map(([de, x]) => ({ lab: euName(de), v: x[0], vp: x[1], col: ORIG_COL[prSel] })), { unit: 't' }) : '';
+  document.getElementById('prNote').innerHTML = `<b>Sources.</b> Eurostat Comext DS-045409 (monthly EU trade by CN8 product, in € and tonnes of product weight; latest months revised for a while, incomplete months left out). ` +
+    `Norwegian statistics: SSB (fresh and frozen whole fish, fresh and frozen fillets; NOK). ` +
+    `Totals for the Faroes (Hagstova), Iceland (Hagstofa), the UK (HMRC) and Chile will be added once their statistics are collected.`;
+}
+
+// ===================== Onglet EU markets =====================
+let euCty = 'FR';
 function renderEuFlows() {
   const sub = document.getElementById('euSub');
   if (!EU) {
-    sub.innerHTML = EU_LOADING || !document.getElementById('euUpSub').dataset.tried ? 'Loading Eurostat data…'
+    sub.innerHTML = EU_LOADING || !sub.dataset.tried ? 'Loading Eurostat data…'
       : '<span class="warn">Eurostat data not collected yet</span> — it arrives with the next update run (step "Eurostat").';
-    document.getElementById('euUpSub').dataset.tried = '1';
-    ['theadEuUp','tbodyEuUp','theadEuForms','tbodyEuForms','theadEuDown','tbodyEuDown','tfootEuDown'].forEach(id => document.getElementById(id).innerHTML = '');
+    sub.dataset.tried = '1';
     loadEurostat();
     return;
   }
+  tmBuild();
   const M = EU.meta, P = M.products;
-  const fSel = document.getElementById('euForm'), pSel = document.getElementById('euPeriod');
+  const fSel = document.getElementById('euForm'), pSel = document.getElementById('euPeriod'), more = document.getElementById('euCtyMore');
   if (!fSel.options.length) {
-    fSel.innerHTML = `<option value="all">All forms</option>` + P.map((n, i) => `<option value="${i}">${n}</option>`).join('');
+    fSel.innerHTML = `<option value="all">All forms</option>` + FORMS_OK.map(i => `<option value="${i}">${P[i]}</option>`).join('');
     fSel.addEventListener('change', renderEuFlows); pSel.addEventListener('change', renderEuFlows);
+    more.addEventListener('change', () => { if (more.value) { euCty = more.value; renderEuFlows(); } });
   }
-  const form = fSel.value, per = pSel.value;
-  // periode N et la meme periode un an plus tot
-  const last = M.last_period, ly = Math.floor(last / 100), lm = last % 100;
-  const back = (k, n) => { let y = Math.floor(k / 100), m = k % 100 - n; while (m < 1) { m += 12; y--; } return y * 100 + m; };
-  let keys = [];
-  if (per === 'ytd') for (let m = 1; m <= lm; m++) keys.push(ly * 100 + m);
-  else for (let i = +per - 1; i >= 0; i--) keys.push(back(last, i));
-  const setN = new Set(keys), setP = new Set(keys.map(k => k - 100));
-  const ml = k => `${MONTHS_FR[k % 100 - 1].slice(0, 3)} ${Math.floor(k / 100)}`;
-  const plab = keys.length === 1 ? ml(keys[0]) : `${ml(keys[0])} – ${ml(keys[keys.length - 1])}`;
-  const inForm = i => form === 'all' || +form === i;
-  const f0 = v => isFinite(v) ? Math.round(v).toLocaleString('en-US') : '—';
-  const pc = (a, b) => b > 0 ? (a / b - 1) * 100 : NaN;
-  const dTd = (a, b) => { const p = pc(a, b); return `<td class="${!isFinite(p) ? 'delta-zero' : p > 2 ? 'delta-good' : p < -2 ? 'delta-bad' : 'delta-zero'}">${isFinite(p) ? (p >= 0 ? '+' : '') + p.toFixed(0) + '%' : (a > 0 ? 'new' : '—')}</td>`; };
-  sub.innerHTML = `Eurostat Comext, monthly trade by CN8 product, data to <b>${ml(last)}</b> (published ${M.source_update || M.fetched}). ` +
-    `Period shown: <b>${plab}</b>, compared with the same months a year earlier. Volumes in tonnes of product weight.` +
-    Object.entries(M.incomplete || {}).map(([k, r]) => ` <span class="warn">${ml(+k)} left out: not yet reported in full by ${r.map(euName).join(', ')}.</span>`).join('') +
-    ((M.dropped || []).length ? ` <span class="warn">${M.dropped.length} aberrant line${M.dropped.length > 1 ? 's' : ''} ignored</span> (${M.dropped.slice(0, 3).map(r => `${euName(r[1])} ${ml(r[0])}: ${f0(r[5])} t from ${euName(r[2])}`).join('; ')}).` : '');
+  const form = fSel.value, per = pSel.value, forms = form === 'all' ? FORMS_OK : [+form];
+  const last = TM.last, ly = Math.floor(last / 100), lm = last % 100;
+  const keys = per === 'ytd' ? Array.from({ length: lm }, (_, i) => ly * 100 + i + 1) : tmRange(last, +per);
+  const kP = keys.map(k => k - 100), plab = keys.length === 1 ? tmMl(keys[0]) : `${tmMl(keys[0])} – ${tmMl(keys[keys.length - 1])}`;
+  sub.innerHTML = `Eurostat Comext, monthly trade by CN8 product, data to <b>${tmMl(last)}</b> (published ${M.source_update || M.fetched}). Period: <b>${plab}</b> vs the same months a year earlier. Tonnes of product weight. ` +
+    `<b>Atlantic salmon only</b>: fillets, smoked and prepared salmon from the US, China and Russia (Pacific salmon) are left out.` +
+    Object.entries(M.incomplete || {}).map(([k, r]) => ` <span class="warn">${tmMl(+k)} left out: not yet reported in full by ${r.map(euName).join(', ')}.</span>`).join('') +
+    ((M.dropped || []).length ? ` <span class="warn">${M.dropped.length} aberrant line${M.dropped.length > 1 ? 's' : ''} ignored</span> (${M.dropped.slice(0, 2).map(r => `${euName(r[1])} ${tmMl(r[0])}: ${tmF0(r[5])} t from ${euName(r[2])}`).join('; ')}).` : '');
+  // origines par pays, sur un ensemble de mois
+  const orgSum = (rep, ks) => { const o = {}; ks.forEach(k => forms.forEach(pi => Object.entries(tmOrigins(rep, k, pi)).forEach(([g, x]) => { const y = o[g] || (o[g] = [0, 0]); y[0] += x[0]; y[1] += x[1]; }))); return o; };
+  const atl = o => ORIGS.filter(g => g !== 'PAC').reduce((a, g) => a + (o[g] ? o[g][0] : 0), 0);
 
-  // ---------- 1. amont ----------
-  const EUset0 = new Set(M.reporters_up);
-  document.getElementById('euModeBtns').innerHTML = [['origin', 'By producing country'], ['importer', 'By importing EU country'], ['market', 'Market growth or substitution?']]
-    .map(([k, l]) => `<button type="button" data-m="${k}" class="${euMode === k ? 'active' : ''}">${l}</button>`).join('');
-  document.querySelectorAll('#euModeBtns button').forEach(b => b.addEventListener('click', () => { euMode = b.dataset.m; euOpen = null; renderEuFlows(); }));
-  document.getElementById('euOrigLbl').style.display = euMode === 'origin' ? '' : 'none';
-  document.getElementById('euOrigBtns').style.display = euMode === 'origin' ? '' : 'none';
-  document.getElementById('euOrigForms').style.display = euMode === 'origin' ? '' : 'none';
-  if (euMode === 'origin') {
-    // volumes par origine hors UE (les flux entre pays de l'UE sont des reexpeditions, pas une origine)
-    const byO = {};
-    EU.rows.forEach(([ym, rep, part, pi, flow, t]) => { if (flow === 1 && setN.has(ym) && !EUset0.has(part) && part !== 'ZZ') byO[part] = (byO[part] || 0) + t; });
-    const origins = Object.keys(byO).filter(o => byO[o] > 0).sort((a, b) => byO[b] - byO[a]).slice(0, 10);
-    if (!origins.includes(euOrig)) euOrig = origins[0] || 'NO';
-    document.getElementById('euOrigBtns').innerHTML = origins.map(o => `<button type="button" data-o="${o}" class="${o === euOrig ? 'active' : ''}">${euName(o)}</button>`).join('');
-    document.querySelectorAll('#euOrigBtns button').forEach(b => b.addEventListener('click', () => { euOrig = b.dataset.o; renderEuFlows(); }));
-    const dest = {}, fN = P.map(() => ({ t: 0, tp: 0, v: 0 }));
-    EU.rows.forEach(([ym, rep, part, pi, flow, t, ke]) => {
-      if (flow !== 1 || part !== euOrig) return;
-      const n = setN.has(ym), pv = setP.has(ym);
-      if (!n && !pv) return;
-      if (n) { fN[pi].t += t; fN[pi].v += ke; } else fN[pi].tp += t;
-      if (!inForm(pi)) return;
-      const D = dest[rep] || (dest[rep] = { t: 0, tp: 0, v: 0, f: P.map(() => 0) });
-      if (n) { D.t += t; D.v += ke; D.f[pi] += t; } else D.tp += t;
-    });
-    const totF = fN.reduce((a, x) => a + x.t, 0);
-    document.getElementById('theadEuOF').innerHTML = `<tr><th class="name">Form shipped by ${euName(euOrig)} to the EU</th><th>Tonnes</th><th>Δ vs N-1</th><th>€/kg</th><th>Share</th></tr>`;
-    document.getElementById('tbodyEuOF').innerHTML = P.map((n, i) => (fN[i].t || fN[i].tp) ? `<tr><td class="name">${n}</td><td><b>${f0(fN[i].t)}</b></td>${dTd(fN[i].t, fN[i].tp)}` +
-      `<td>${fN[i].t > 0 ? (fN[i].v / fN[i].t).toFixed(2) : '—'}</td><td>${totF ? (100 * fN[i].t / totF).toFixed(1) + '%' : '—'}</td></tr>` : '').join('') +
-      `<tr><td class="name" style="color:var(--accent)">Total</td><td><b>${f0(totF)}</b></td>${dTd(totF, fN.reduce((a, x) => a + x.tp, 0))}<td>${totF ? (fN.reduce((a, x) => a + x.v, 0) / totF).toFixed(2) : '—'}</td><td>100%</td></tr>`;
-    const ds = Object.entries(dest).filter(([, D]) => D.t > 0 || D.tp > 0).sort((a, b) => b[1].t - a[1].t);
-    const fi = P.map((_, i) => i).filter(i => inForm(i) && ds.some(([, D]) => D.f[i] > 0));
-    const tot = ds.reduce((t, [, D]) => t + D.t, 0);
-    document.getElementById('euUpSub').innerHTML = `<b>${euName(euOrig)}</b> → EU countries, ${plab}: ${f0(tot)} t (${form === 'all' ? 'all forms' : P[+form].toLowerCase()}). ` +
-      `<span class="warn">Destination = the EU country where the goods are cleared through customs</span>, not always where they are eaten: salmon cleared in Sweden or Denmark and trucked on to Poland counts for Sweden or Denmark. ` +
-      `For Norway, the final destination by country is in the Product per market tab (Norwegian statistics). The UK, Switzerland and Norway are not EU members, so Eurostat has no import figures for them.`;
-    document.getElementById('theadEuUp').innerHTML = `<tr><th class="name">EU country receiving</th><th>Tonnes</th><th>Share</th><th>Δ vs N-1</th><th>€/kg</th>` + fi.map(i => `<th class="sep-left">${P[i]}</th>`).join('') + `</tr>`;
-    document.getElementById('tbodyEuUp').innerHTML = ds.map(([r, D]) => `<tr><td class="name">${euName(r)}</td><td><b>${f0(D.t)}</b></td><td>${tot ? (100 * D.t / tot).toFixed(1) + '%' : '—'}</td>${dTd(D.t, D.tp)}` +
-      `<td>${D.t > 0 ? (D.v / D.t).toFixed(2) : '—'}</td>` + fi.map(i => `<td class="sep-left">${D.f[i] ? f0(D.f[i]) : '·'}</td>`).join('') + `</tr>`).join('') ||
-      `<tr><td class="name" colspan="5" style="color:var(--muted)">No shipments in this period.</td></tr>`;
-  }
-  const up = {};      // reporter -> {tot, totP, val, partners:{p:{t,tp,v,f:[...]}}}
-  EU.rows.forEach(([ym, rep, part, pi, flow, t, ke]) => {
-    if (flow !== 1 || !inForm(pi)) return;
-    const n = setN.has(ym), pv = setP.has(ym);
-    if (!n && !pv) return;
-    const R = up[rep] || (up[rep] = { t: 0, tp: 0, v: 0, parts: {} });
-    const Q = R.parts[part] || (R.parts[part] = { t: 0, tp: 0, v: 0, f: P.map(() => 0) });
-    if (n) { R.t += t; R.v += ke; Q.t += t; Q.v += ke; Q.f[pi] += t; } else { R.tp += t; Q.tp += t; }
-  });
-  const reps = Object.keys(up).sort((a, b) => up[b].t - up[a].t);
-  if (euMode === 'market') {
-    // Le pays a-t-il vraiment importe plus, ou le saumon norvegien a-t-il pris la place d'une autre origine ?
-    // Importations totales (Eurostat, toutes provenances) comparees aux exportations norvegiennes vers ce
-    // pays (SSB, destination finale declaree en Norvege), sur les 4 formes couvertes par les deux sources.
-    const SSB = DATA_RAW && DATA_RAW.ssb_exports, hsOf = { 0: '03021411', 1: '03031311', 2: '03044100', 3: '03048100' };
-    const forms = form === 'all' ? [0, 1, 2, 3] : (+form <= 3 ? [+form] : []);
-    if (!SSB || !forms.length) {
-      document.getElementById('euUpSub').innerHTML = '<span class="warn">Only available for fresh / frozen whole fish and fillets</span> (the forms in the Norwegian statistics).';
-      document.getElementById('theadEuUp').innerHTML = ''; document.getElementById('tbodyEuUp').innerHTML = '';
-    } else {
-      const hsList = Object.keys(SSB.meta.products), hsIdx = new Set(forms.map(i => hsList.indexOf(hsOf[i])));
-      const ssbLast = SSB.rows.reduce((m, r) => Math.max(m, r[0]), 0);
-      const kN = keys.filter(k => k <= ssbLast), sN = new Set(kN), sP = new Set(kN.map(k => k - 100));
-      const imp = {}, no = {}, exp = {};
-      EU.rows.forEach(([ym, rep, , pi, flow, t]) => { if (!forms.includes(pi)) return;
-        const n = sN.has(ym), pv = sP.has(ym); if (!n && !pv) return;
-        const o = flow === 1 ? imp : exp, X = o[rep] || (o[rep] = [0, 0]); X[n ? 0 : 1] += t; });
-      SSB.rows.forEach(([ym, h, iso, kg]) => { if (!hsIdx.has(h)) return;
-        const n = sN.has(ym), pv = sP.has(ym); if (!n && !pv) return;
-        const X = no[iso] || (no[iso] = [0, 0]); X[n ? 0 : 1] += kg / 1000; });
-      const sg = v => (v >= 0 ? '+' : '−') + f0(Math.abs(v));
-      const cl = v => v > 0 ? 'delta-good' : v < 0 ? 'delta-bad' : 'delta-zero';
-      const list = Object.keys(imp).filter(r => r !== 'SE' && imp[r][0] > 2000).sort((a, b) => imp[b][0] - imp[a][0]);
-      document.getElementById('euUpSub').innerHTML = `Did each country <b>really import more salmon</b>, or did Norwegian salmon <b>replace another origin</b>? ` +
-        `${kN.length ? `${ml(kN[0])} – ${ml(kN[kN.length - 1])}` : ''} vs a year earlier, ${forms.length === 4 ? 'fresh and frozen whole fish and fillets' : P[forms[0]].toLowerCase()}, tonnes of product weight. ` +
-        `<b>Total imports</b> = Eurostat, every origin, including salmon re-shipped from another EU country. <b>From Norway</b> = Norwegian export statistics (SSB), by final destination declared in Norway. ` +
-        `<b>Other origins</b> = the difference (Scotland, Faroes, Iceland, Chile, and salmon processed elsewhere in the EU). ` +
-        `<span class="warn">Imports are not consumption</span>: for processing countries (Poland, Denmark, Netherlands), part is re-exported — see "Net after re-exports". Sweden is left out: Norwegian salmon is cleared there and sent on.`;
-      document.getElementById('theadEuUp').innerHTML = `<tr><th class="name">Country</th><th>Total imports</th><th>Δ t</th><th>Δ %</th>` +
-        `<th class="sep-left">From Norway</th><th>Δ t</th><th>Other origins Δ t</th><th class="sep-left">Net after re-exports Δ t</th><th class="sep-left" style="text-align:left">Reading</th></tr>`;
-      document.getElementById('tbodyEuUp').innerHTML = list.map(r => {
-        const I = imp[r], N = no[r] || [0, 0], dI = I[0] - I[1], dN = N[0] - N[1], dO = dI - dN, E = exp[r];
-        const dNet = E ? dI - (E[0] - E[1]) : null, p = pc(I[0], I[1]), big = Math.max(800, 0.03 * I[1]);
-        const read = Math.abs(dI) < big ? (dN > big ? `Flat market: Norway gains ${f0(dN)} t at the expense of other origins` : 'Flat market')
-          : dI > 0 ? (dO < -big ? 'Imports more, but Norway also replaces other origins' : dN > 0.6 * dI ? 'Imports more, mostly Norwegian' : 'Imports more, from several origins')
-          : (dN > 0 ? `Imports less overall: Norway +${f0(dN)} t, other origins ${sg(dO)} t` : 'Imports less, Norway included');
-        return `<tr><td class="name">${euName(r)}</td><td><b>${f0(I[0])}</b></td><td class="${cl(dI)}">${sg(dI)}</td>${dTd(I[0], I[1])}` +
-          `<td class="sep-left">${f0(N[0])}</td><td class="${cl(dN)}">${sg(dN)}</td><td class="${cl(dO)}">${sg(dO)}</td>` +
-          `<td class="sep-left ${dNet === null ? '' : cl(dNet)}">${dNet === null ? '<span style="color:var(--muted)">n/a</span>' : sg(dNet)}</td>` +
-          `<td class="sep-left" style="text-align:left;font-size:11px">${read}</td></tr>`; }).join('');
-    }
-  }
-  if (euMode === 'importer') {
-  document.getElementById('euUpSub').innerHTML = `${reps.length} EU countries ranked by salmon imports (${form === 'all' ? 'all forms' : P[+form].toLowerCase()}). ` +
-    `<b>Click a country</b> for all its partners, by form. <span class="warn">Partner = country of origin for imports from outside the EU, but country of consignment for imports from another EU country</span> — ` +
-    `Norwegian salmon cleared through customs in Sweden or Denmark shows up in Poland as coming from Sweden or Denmark.`;
-  document.getElementById('theadEuUp').innerHTML = `<tr><th class="name">Importing country</th><th>Tonnes</th><th>Δ vs N-1</th><th>€/kg</th>` +
-    `<th class="sep-left">Norway</th><th>Other non-EU</th><th>From EU countries</th><th class="sep-left" style="text-align:left">Main partners</th></tr>`;
-  const EUset = new Set(M.reporters_up);
-  let html = '';
-  reps.forEach(r => {
-    const R = up[r], parts = Object.entries(R.parts).sort((a, b) => b[1].t - a[1].t);
-    const no = (R.parts.NO || { t: 0 }).t, eu = parts.filter(([p]) => EUset.has(p)).reduce((t, [, q]) => t + q.t, 0), oth = R.t - no - eu;
-    const sh = v => R.t > 0 ? (100 * v / R.t).toFixed(0) + '%' : '—';
-    html += `<tr class="eu-row${euOpen === r ? ' pm-open' : ''}" data-r="${r}" style="cursor:pointer"><td class="name">${euName(r)}${euOpen === r ? ' ▾' : ''}</td><td><b>${f0(R.t)}</b></td>${dTd(R.t, R.tp)}` +
-      `<td>${R.t > 0 ? (R.v / R.t).toFixed(2) : '—'}</td><td class="sep-left">${sh(no)}</td><td>${sh(oth)}</td><td>${sh(eu)}</td>` +
-      `<td class="sep-left" style="text-align:left;font-size:11px">${parts.slice(0, 3).filter(([, q]) => q.t > 0).map(([p, q]) => `${euName(p)} ${sh(q.t)}`).join(' · ')}</td></tr>`;
-    if (euOpen === r) {
-      const fi = P.map((_, i) => i).filter(i => inForm(i) && parts.some(([, q]) => q.f[i] > 0));
-      html += `<tr class="pm-chart-row hl-detail-row"><td colspan="8"><div class="hl-detail"><table class="sig-table"><thead><tr><th class="name">Partner</th><th>Tonnes</th><th>Share</th><th>Δ vs N-1</th><th>€/kg</th>` +
-        fi.map(i => `<th class="sep-left">${P[i]}</th>`).join('') + `</tr></thead><tbody>` +
-        parts.filter(([, q]) => q.t > 0 || q.tp > 0).map(([p, q]) => `<tr><td class="name">${euName(p)}${EUset.has(p) ? ' <small style="display:inline;color:var(--muted)">(EU, consignment)</small>' : ''}</td>` +
-          `<td>${f0(q.t)}</td><td>${sh(q.t)}</td>${dTd(q.t, q.tp)}<td>${q.t > 0 ? (q.v / q.t).toFixed(2) : '—'}</td>` +
-          fi.map(i => `<td class="sep-left">${q.f[i] ? f0(q.f[i]) : '·'}</td>`).join('') + `</tr>`).join('') +
-        `</tbody></table></div></td></tr>`;
-    }
-  });
-  const tb = document.getElementById('tbodyEuUp');
-  tb.innerHTML = html;
-  tb.querySelectorAll('tr.eu-row').forEach(tr => tr.addEventListener('click', () => { euOpen = euOpen === tr.dataset.r ? null : tr.dataset.r; renderEuFlows(); }));
-  }
+  // ---------- 1. origine du saumon d'un pays ----------
+  const reps = M.reporters_up.filter(r => r !== 'SE');
+  const vol = {}; reps.forEach(r => vol[r] = atl(orgSum(r, keys)));
+  const main = ['FR', 'ES', 'IT', 'DE', 'BE', 'PT', 'NL', 'PL', 'DK'];
+  if (!reps.includes(euCty)) euCty = 'FR';
+  document.getElementById('euCtyBtns').innerHTML = main.map(r => `<button type="button" data-c="${r}" class="${r === euCty ? 'active' : ''}">${euName(r)}</button>`).join('');
+  document.querySelectorAll('#euCtyBtns button').forEach(b => b.addEventListener('click', () => { euCty = b.dataset.c; renderEuFlows(); }));
+  more.innerHTML = `<option value="">Other country…</option>` + reps.filter(r => !main.includes(r)).sort((a, b) => vol[b] - vol[a]).map(r => `<option value="${r}"${r === euCty ? ' selected' : ''}>${euName(r)} (${tmF0(vol[r])} t)</option>`).join('');
+  const N = orgSum(euCty, keys), Pv = orgSum(euCty, kP), tN = atl(N), tP = atl(Pv);
+  const k24 = tmRange(last, 24), mon = k24.map(k => orgSum(euCty, [k]));
+  const shown = ORIGS.filter(g => g !== 'PAC' && mon.some(o => o[g] && o[g][0] > 0.5));
+  const prevTot = k24.map(k => atl(orgSum(euCty, [k - 100])));
+  document.getElementById('euCtySub').innerHTML = `<b>${euName(euCty)}</b>, ${form === 'all' ? 'all forms' : P[+form].toLowerCase()}: Atlantic salmon by <b>country of origin</b>, last 24 months. ` +
+    `Arrivals from outside the EU are declared with their origin. Arrivals from another EU country (Norwegian salmon cleared in Sweden, salmon processed in Poland or the Netherlands…) are declared with the shipping country: ` +
+    `they are <b>re-allocated to an origin in proportion to what that country itself imports</b> — an estimate, not an official figure.` +
+    vzLegend(shown.map(g => [ORIG_LAB[g], ORIG_COL[g], false, true]).concat([['Total, a year earlier', '#e7eef2', true]]));
+  document.getElementById('euCtyChart').innerHTML = vzStack(k24, shown.map(g => ({ lab: ORIG_LAB[g], col: ORIG_COL[g], vals: mon.map(o => o[g] ? o[g][0] : 0) })),
+    { axis: 'Tonnes per month', unit: 't', lines: [{ lab: 'a year earlier', col: '#e7eef2', pts: prevTot }] });
+  // controle avec les statistiques norvegiennes
+  let ssbChk = '';
+  if (SSBX && forms.every(i => i <= 3)) { const hs = Object.keys(SSBX.meta.products), sN = new Set(keys);
+    const ssb = SSBX.rows.reduce((a, [k, h, iso, kg]) => a + (iso === euCty && sN.has(k) && forms.includes(SSB_PI[hs[h]]) ? kg / 1000 : 0), 0);
+    if (keys.every(k => k <= SSBX.rows.reduce((m, r) => Math.max(m, r[0]), 0))) ssbChk = `Norwegian statistics, salmon declared for ${euName(euCty)}: <b>${tmF0(ssb)} t</b>`; }
+  document.getElementById('theadEuCty').innerHTML = `<tr><th class="name">Origin, ${plab}</th><th>Tonnes</th><th>Share</th><th>Δ t vs N-1</th><th>Δ %</th><th>€/kg</th><th class="sep-left" style="text-align:left">Check</th></tr>`;
+  document.getElementById('tbodyEuCty').innerHTML = ORIGS.filter(g => (N[g] && N[g][0] > 0.5) || (Pv[g] && Pv[g][0] > 0.5)).sort((a, b) => (a === 'PAC') - (b === 'PAC') || (N[b] ? N[b][0] : 0) - (N[a] ? N[a][0] : 0)).map(g => {
+    const a = N[g] || [0, 0], b = Pv[g] || [0, 0], pac = g === 'PAC';
+    return `<tr${pac ? ' style="opacity:.55"' : ''}><td class="name"><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${ORIG_COL[g]};margin-right:6px"></i>${ORIG_LAB[g]}</td><td><b>${tmF0(a[0])}</b></td>` +
+      `<td>${pac ? '—' : tN ? (100 * a[0] / tN).toFixed(1) + '%' : '—'}</td><td class="${tmCls(a[0] - b[0], 50)}">${tmSg(a[0] - b[0])}</td>${tmPct(a[0], b[0])}<td>${a[0] > 0 ? (a[1] / a[0]).toFixed(2) : '—'}</td>` +
+      `<td class="sep-left" style="text-align:left;font-size:11px">${g === 'NO' ? ssbChk : ''}</td></tr>`; }).join('') +
+    `<tr><td class="name" style="color:var(--accent)">Total Atlantic salmon</td><td><b>${tmF0(tN)}</b></td><td>100%</td><td class="${tmCls(tN - tP, 50)}">${tmSg(tN - tP)}</td>${tmPct(tN, tP)}<td></td><td class="sep-left"></td></tr>`;
 
-  // ---------- 2. aval ----------
+  // ---------- 2. croissance ou substitution ----------
+  const HUBS = new Set(M.hubs || []);
+  const gr = reps.map(r => { const a = orgSum(r, keys), b = orgSum(r, kP), A = atl(a), B = atl(b);
+    return { r, A, B, segs: ORIGS.filter(g => g !== 'PAC').map(g => ({ lab: ORIG_LAB[g], col: ORIG_COL[g], v: (a[g] ? a[g][0] : 0) - (b[g] ? b[g][0] : 0) })) }; })
+    .filter(x => x.A > Math.max(3000, keys.length * 250)).sort((a, b) => b.A - a.A);
+  document.getElementById('euGrowSub').innerHTML = `Change in Atlantic salmon imports, ${plab} vs a year earlier, split by origin: bars to the right = origins that gained, to the left = origins that lost; the <b>white mark is the net change</b>. ` +
+    `A white mark near zero with large bars on both sides = one origin replaced another. Countries importing more than ${tmF0(Math.max(3000, keys.length * 250))} t over the period; Sweden is left out (Norwegian salmon is cleared there and sent on). ` +
+    `<span class="warn">Imports are not consumption</span>: the hubs (marked) re-export a large part.` + vzLegend(ORIGS.filter(g => g !== 'PAC').map(g => [ORIG_LAB[g], ORIG_COL[g], false, true]));
+  document.getElementById('euGrowChart').innerHTML = gr.length ? vzDiverge(gr.map(x => ({ lab: euName(x.r), tag: HUBS.has(x.r) ? 'hub' : '', segs: x.segs, net: x.A - x.B, pct: tmPc(x.A, x.B) })), { unit: 't' }) : '';
+
+  // ---------- 3. hubs de transformation ----------
   const hubs = M.hubs || [];
   if (!hubs.includes(euHub)) euHub = hubs[0];
   document.getElementById('euHubBtns').innerHTML = hubs.map(h => `<button type="button" data-h="${h}" class="${h === euHub ? 'active' : ''}">${euName(h)}</button>`).join('');
   document.querySelectorAll('#euHubBtns button').forEach(b => b.addEventListener('click', () => { euHub = b.dataset.h; renderEuFlows(); }));
-  const dst = {}, byF = P.map(() => ({ t: 0, tp: 0, v: 0, out: 0 })), imp = P.map(() => ({ t: 0 }));
-  EU.rows.forEach(([ym, rep, part, pi, flow, t, ke]) => {
-    if (rep !== euHub) return;
-    const n = setN.has(ym), pv = setP.has(ym);
-    if (!n && !pv) return;
-    if (flow === 1) { if (n) imp[pi].t += t; return; }
-    if (n) { byF[pi].t += t; byF[pi].v += ke; if (!EU_EUROPE.has(part)) byF[pi].out += t; } else byF[pi].tp += t;
-    if (!inForm(pi)) return;
-    const D = dst[part] || (dst[part] = { t: 0, tp: 0, v: 0, f: P.map(() => 0) });
-    if (n) { D.t += t; D.v += ke; D.f[pi] += t; } else D.tp += t;
-  });
-  const totE = byF.reduce((a, x) => a + x.t, 0), totI = imp.reduce((a, x) => a + x.t, 0);
-  document.getElementById('euDownSub').innerHTML = `<b>${euName(euHub)}</b>, ${plab}: imports ${f0(totI)} t of salmon products, exports ${f0(totE)} t. ` +
-    `For exports the origin of the fish is not tracked once processed; the form is what matters.`;
-  document.getElementById('theadEuForms').innerHTML = `<tr><th class="name">Form</th><th>Imported (t)</th><th class="sep-left">Exported (t)</th><th>Δ vs N-1</th><th>€/kg</th><th>Share of exports</th><th class="sep-left">Of which outside Europe</th></tr>`;
-  document.getElementById('tbodyEuForms').innerHTML = P.map((n, i) => (imp[i].t || byF[i].t || byF[i].tp) ? `<tr><td class="name">${n}</td><td>${f0(imp[i].t)}</td>` +
-    `<td class="sep-left"><b>${f0(byF[i].t)}</b></td>${dTd(byF[i].t, byF[i].tp)}<td>${byF[i].t > 0 ? (byF[i].v / byF[i].t).toFixed(2) : '—'}</td>` +
-    `<td>${totE ? (100 * byF[i].t / totE).toFixed(1) + '%' : '—'}</td><td class="sep-left">${f0(byF[i].out)}${byF[i].t ? ` <small style="display:inline;color:var(--muted)">(${(100 * byF[i].out / byF[i].t).toFixed(0)}%)</small>` : ''}</td></tr>` : '').join('');
-  const fi = P.map((_, i) => i).filter(i => inForm(i) && Object.values(dst).some(D => D.f[i] > 0));
+  const sN = new Set(keys), sP = new Set(kP), dst = {}, byF = {}, impF = {};
+  FORMS_OK.forEach(i => { byF[i] = { t: 0, tp: 0, v: 0, out: 0 }; impF[i] = { t: 0, pac: 0 }; });
+  keys.forEach(k => FORMS_OK.forEach(i => Object.entries(tmOrigins(euHub, k, i)).forEach(([g, x]) => { impF[i].t += x[0]; if (g === 'PAC') impF[i].pac += x[0]; })));
+  const monE = {}; tmRange(last, 24).forEach(k => monE[k] = {});
+  TM.months.forEach(ym => (TM.exp[ym] || []).forEach(([rep, part, pi, t, v]) => {
+    if (rep !== euHub || pi === 4) return;
+    if (monE[ym] && forms.includes(pi)) monE[ym][pi] = (monE[ym][pi] || 0) + t;
+    const n = sN.has(ym), pv = sP.has(ym); if (!n && !pv) return;
+    if (n) { byF[pi].t += t; byF[pi].v += v; if (!EU_EUROPE.has(part)) byF[pi].out += t; } else byF[pi].tp += t;
+    if (!forms.includes(pi)) return;
+    const Dd = dst[part] || (dst[part] = { t: 0, tp: 0, v: 0, f: {} });
+    if (n) { Dd.t += t; Dd.v += v; Dd.f[pi] = (Dd.f[pi] || 0) + t; } else Dd.tp += t;
+  }));
+  const totE = FORMS_OK.reduce((a, i) => a + byF[i].t, 0), totI = FORMS_OK.reduce((a, i) => a + impF[i].t - impF[i].pac, 0);
+  document.getElementById('euDownSub').innerHTML = `<b>${euName(euHub)}</b>, ${plab}: imports ${tmF0(totI)} t of Atlantic salmon, exports ${tmF0(totE)} t of salmon products. ` +
+    `Monthly exports by form, last 24 months.` + vzLegend(forms.map(i => [P[i], FORM_COL[i], false, true]));
+  const k24e = tmRange(last, 24);
+  document.getElementById('euDownChart').innerHTML = vzStack(k24e, forms.map(i => ({ lab: P[i], col: FORM_COL[i], vals: k24e.map(k => monE[k][i] || 0) })), { axis: 'Tonnes exported per month', unit: 't', H: 230 });
+  document.getElementById('theadEuForms').innerHTML = `<tr><th class="name">Form</th><th>Imported (t)</th><th title="Share of the hub's imports in this form that comes directly from the US, China or Russia">of which Pacific</th><th class="sep-left">Exported (t)</th><th>Δ vs N-1</th><th>€/kg</th><th>Share of exports</th><th class="sep-left">Of which outside Europe</th></tr>`;
+  document.getElementById('tbodyEuForms').innerHTML = FORMS_OK.map(i => (impF[i].t || byF[i].t || byF[i].tp) ? `<tr><td class="name"><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${FORM_COL[i]};margin-right:6px"></i>${P[i]}</td><td>${tmF0(impF[i].t)}</td>` +
+    `<td>${impF[i].pac > 0.5 ? `<span class="warn">${tmF0(impF[i].pac)} t (${(100 * impF[i].pac / impF[i].t).toFixed(0)}%)</span>` : '—'}</td>` +
+    `<td class="sep-left"><b>${tmF0(byF[i].t)}</b></td>${tmPct(byF[i].t, byF[i].tp)}<td>${byF[i].t > 0 ? (byF[i].v / byF[i].t).toFixed(2) : '—'}</td>` +
+    `<td>${totE ? (100 * byF[i].t / totE).toFixed(1) + '%' : '—'}</td><td class="sep-left">${tmF0(byF[i].out)}${byF[i].t ? ` <small style="display:inline;color:var(--muted)">(${(100 * byF[i].out / byF[i].t).toFixed(0)}%)</small>` : ''}</td></tr>` : '').join('');
+  const fi = forms.filter(i => Object.values(dst).some(x => x.f[i] > 0));
   document.getElementById('theadEuDown').innerHTML = `<tr><th class="name">Destination</th><th>Tonnes</th><th>Δ vs N-1</th><th>€/kg</th>` + fi.map(i => `<th class="sep-left">${P[i]}</th>`).join('') + `</tr>`;
-  const ds = Object.entries(dst).filter(([, D]) => D.t > 0 || D.tp > 0);
-  const rowOf = ([p, D]) => `<tr><td class="name">${euName(p)}</td><td><b>${f0(D.t)}</b></td>${dTd(D.t, D.tp)}<td>${D.t > 0 ? (D.v / D.t).toFixed(2) : '—'}</td>` +
-    fi.map(i => `<td class="sep-left">${D.f[i] ? f0(D.f[i]) : '·'}</td>`).join('') + `</tr>`;
+  const ds = Object.entries(dst).filter(([, x]) => x.t > 0 || x.tp > 0);
+  const rowOf = ([p, x]) => `<tr><td class="name">${euName(p)}</td><td><b>${tmF0(x.t)}</b></td>${tmPct(x.t, x.tp)}<td>${x.t > 0 ? (x.v / x.t).toFixed(2) : '—'}</td>` + fi.map(i => `<td class="sep-left">${x.f[i] ? tmF0(x.f[i]) : '·'}</td>`).join('') + `</tr>`;
   const outE = ds.filter(([p]) => !EU_EUROPE.has(p) && p !== 'ZZ').sort((a, b) => b[1].t - a[1].t), inE = ds.filter(([p]) => EU_EUROPE.has(p) || p === 'ZZ').sort((a, b) => b[1].t - a[1].t);
-  const sumT = arr => arr.reduce((t, [, D]) => t + D.t, 0), sumP = arr => arr.reduce((t, [, D]) => t + D.tp, 0);
-  const head = (lbl, arr) => `<tr><td class="name" style="color:var(--accent)">${lbl}</td><td><b>${f0(sumT(arr))}</b></td>${dTd(sumT(arr), sumP(arr))}<td></td>${fi.map(i => `<td class="sep-left">${f0(arr.reduce((t, [, D]) => t + D.f[i], 0))}</td>`).join('')}</tr>`;
+  const sumT = arr => arr.reduce((t, [, x]) => t + x.t, 0), sumP = arr => arr.reduce((t, [, x]) => t + x.tp, 0);
+  const head = (lbl, arr) => `<tr><td class="name" style="color:var(--accent)">${lbl}</td><td><b>${tmF0(sumT(arr))}</b></td>${tmPct(sumT(arr), sumP(arr))}<td></td>${fi.map(i => `<td class="sep-left">${tmF0(arr.reduce((t, [, x]) => t + (x.f[i] || 0), 0))}</td>`).join('')}</tr>`;
   document.getElementById('tbodyEuDown').innerHTML = head('Outside Europe', outE) + outE.map(rowOf).join('') + head('Europe', inE) + inE.map(rowOf).join('');
   document.getElementById('tfootEuDown').innerHTML = '';
-  document.getElementById('euNote').innerHTML = `<b>Source.</b> Eurostat Comext, dataset DS-045409 (EU trade by CN8, monthly): CN ${M.cn8.join(', ')}. ` +
-    `Partners below 0.5% of a country's trade over the whole period are grouped as "Others". The latest months are revised by Eurostat for a while. ` +
-    `Fresh and frozen fillet codes include Pacific salmon; smoked and prepared codes cover all salmon species — in practice almost all Atlantic salmon in these flows. ` +
-    `Collected from ${M.start}; refreshed by the update workflow whenever Eurostat publishes.`;
+  document.getElementById('euNote').innerHTML = `<b>Method.</b> Eurostat Comext DS-045409 (EU trade by CN8, monthly): CN 0302 14 (fresh whole), 0303 13 (frozen whole), 0304 41 / 0304 81 (fresh / frozen fillets), 0305 41 (smoked), 1604 11 (prepared). ` +
+    `Whole-fish codes cover Atlantic salmon only; fillet, smoked and prepared codes also cover Pacific salmon, so those arriving from the US, China, Russia and a few other non-farming countries are classed as Pacific and left out — they make up 98% of the non-Atlantic salmon identified. ` +
+    `Code 0304 52 (salmonid meat) is not used because it includes trout. Salmon re-shipped from another EU country is treated as Atlantic and re-allocated to an origin in proportion to that country's own imports. ` +
+    `Hub exports: the species of processed exports is not declared; the "of which Pacific" column shows how much Pacific salmon the hub takes in. Partners below 0.5% of a country's trade are grouped. Latest months are revised by Eurostat for a while.`;
 }
 
 loadRemoteData().then(live => {
