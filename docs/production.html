@@ -172,6 +172,11 @@
   .pr-card.active { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent) inset; }
   .pr-card .nm { font-weight:bold; font-size:13px; display:flex; align-items:center; gap:6px; }
   .pr-card .nm i { width:10px; height:10px; border-radius:2px; display:inline-block; }
+  .pr-card { position:relative; overflow:hidden; }
+  .pr-card .nm svg.flag { width:18px; height:13px; border-radius:2px; box-shadow:0 0 0 1px rgba(255,255,255,.18); flex:none; }
+  .pr-card > * { position:relative; z-index:1; }
+  .pr-card > .pr-wm { position:absolute; z-index:0; inset:0; opacity:.10; pointer-events:none; }
+  .pr-card > .pr-wm svg { width:100%; height:100%; display:block; }
   .pr-card .big { font-size:20px; font-weight:bold; margin-top:4px; }
   .pr-card .ln { font-size:11px; color:var(--muted); margin-top:2px; }
   .pr-card svg { display:block; width:100%; height:34px; margin-top:6px; }
@@ -5913,6 +5918,24 @@ const tmF0 = v => isFinite(v) ? Math.round(v).toLocaleString('en-US') : '—';
 const tmPc = (a, b) => b > 0 ? (a / b - 1) * 100 : NaN;
 const tmSg = v => (v >= 0 ? '+' : '−') + tmF0(Math.abs(v));
 const tmCls = (p, th = 2) => !isFinite(p) ? 'delta-zero' : p > th ? 'delta-good' : p < -th ? 'delta-bad' : 'delta-zero';
+// Drapeaux dessines en SVG (les emojis drapeaux ne s'affichent pas sous Windows)
+const FLAG = (() => {
+  const nordic = (bg, outer, inner) => `<rect width="22" height="16" fill="${bg}"/><rect x="6" width="4" height="16" fill="${outer}"/><rect y="6" width="22" height="4" fill="${outer}"/>` +
+    `<rect x="7" width="2" height="16" fill="${inner}"/><rect y="7" width="22" height="2" fill="${inner}"/>`;
+  const leaf = 'M11 3.2l.9 1.8 1-.5-.4 2.4 1.4-1.4.3.8 1.4-.3-.5 1.6.7.4-2.4 2 .3.9-2.2-.3V12.5h-.6v-1.8l-2.2.3.3-.9-2.4-2 .7-.4-.5-1.6 1.4.3.3-.8 1.4 1.4-.4-2.4 1 .5z';
+  const svg = {
+    NO: nordic('#BA0C2F', '#FFFFFF', '#00205B'),
+    IS: nordic('#02529C', '#FFFFFF', '#DC1E35'),
+    FO: nordic('#FFFFFF', '#0065BD', '#EF303E'),
+    GB: `<rect width="22" height="16" fill="#005EB8"/><path d="M0 0L22 16M22 0L0 16" stroke="#FFFFFF" stroke-width="3"/>`,
+    IE: `<rect width="22" height="16" fill="#FFFFFF"/><rect width="7.33" height="16" fill="#169B62"/><rect x="14.67" width="7.33" height="16" fill="#FF883E"/>`,
+    CL: `<rect width="22" height="16" fill="#FFFFFF"/><rect y="8" width="22" height="8" fill="#D52B1E"/><rect width="8" height="8" fill="#0039A6"/>` +
+        `<path d="M4 1.6l.94 2.9h3.05l-2.47 1.8.94 2.9L4 7.4 1.54 9.2l.94-2.9L0 4.5h3.06z" transform="translate(0,-0.2) scale(0.9) translate(0.45,0.5)" fill="#FFFFFF"/>`,
+    CA: `<rect width="22" height="16" fill="#FFFFFF"/><rect width="5.5" height="16" fill="#D80621"/><rect x="16.5" width="5.5" height="16" fill="#D80621"/><path d="${leaf}" fill="#D80621"/>`,
+  };
+  return (c, w = 18, fill) => svg[c] ? (fill ? `<svg class="flag" viewBox="0 0 22 16" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${svg[c]}</svg>`
+    : `<svg class="flag" viewBox="0 0 22 16" width="${w}" height="${Math.round(w * 16 / 22)}" aria-hidden="true">${svg[c]}</svg>`) : '';
+})();
 const tmKt = t => t >= 20000 ? `${(t / 1000).toLocaleString('en-US', { maximumFractionDigits: t >= 100000 ? 0 : 1 })} kt` : `${Math.round(t).toLocaleString('en-US')} t`;
 const tmArrow = (p, th = 2) => !isFinite(p) ? '' : p > th ? '▲' : p < -th ? '▼' : '►';
 const tmVar = (p, th = 2) => isFinite(p) ? `<span class="${tmCls(p, th)}" style="white-space:nowrap">${tmArrow(p, th)} ${p >= 0 ? '+' : ''}${Math.abs(p) < 10 ? p.toFixed(1) : p.toFixed(0)}%</span>` : '';
@@ -6174,7 +6197,7 @@ function renderProducers() {
   const cards = PRODUCERS.map(pr => {
     const D = SRC[pr], end = Math.min(END, D.last), PER = tmPeriod(perSel.value, 'pr', end), by = monthly(D);
     const a = S(by, PER.keys), b = S(by, PER.prev), p = tmPc(a[0], b[0]), pa = a[0] ? a[1] / a[0] : NaN, pb = b[0] ? b[1] / b[0] : NaN;
-    return `<div class="pr-card${pr === prSel ? ' active' : ''}" data-p="${pr}"><div class="nm"><i style="background:${ORIG_COL[pr]}"></i>${PROD_LAB[pr]}</div>` +
+    return `<div class="pr-card${pr === prSel ? ' active' : ''}" data-p="${pr}"><span class="pr-wm">${FLAG(pr, 0, true)}</span><div class="nm">${FLAG(pr, 18)}${PROD_LAB[pr]}</div>` +
       `<div class="ln">${D.euOnly ? '<span class="warn">into the EU only</span>' : 'all destinations'} · ${end < END && perSel.value !== 'custom' ? `<span class="warn">${PER.lab}</span>` : PER.lab}</div>` +
       `<div class="big">${tmKt(a[0])} <span style="font-size:13px">${tmVar(p)}</span> <span style="font-size:10px;color:var(--muted);font-weight:normal">vs N-1</span></div>` +
       (PER.keys.length === 1 ? `<div class="ln">vs previous month: ${tmVar(tmPc(a[0], S(by, [tmBack(PER.keys[0], 1)])[0]))}</div>` : '') +
