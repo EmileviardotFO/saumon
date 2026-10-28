@@ -8,7 +8,7 @@ par pays de destination et par mois, depuis les statistiques nationales :
   - Islande : Hagstofa Islands, table UTA02801 "Utflutningur eftir
               tollskrarnumerum 2024-2026, kafli 1-40", numeros tarifaires
               islandais a 8 chiffres (saumon d'elevage atlantique separe).
-  - Chili   : ONU Comtrade (API publique, donnees declarees par le Chili, SH6).
+  - Chili et Canada : ONU Comtrade (API publique, donnees declarees par chaque pays, SH6).
   - Royaume-Uni : HMRC, API OData publique uktradeinfo (OTS), CN8 ; le saumon
               d'elevage britannique est ecossais (quelques reexportations de
               saumon norvegien incluses).
@@ -85,6 +85,14 @@ SOURCES['CL'] = {
     # HS6 : 030214 entier frais atlantique, 030313 entier congele atlantique,
     # 030441 / 030481 filets frais / congeles (saumon atlantique et du Pacifique : coho inclus)
     'codes': {'030214': 0, '030313': 1, '030441': 2, '030481': 3, '030541': 5, '160411': 6},
+    'reporter': 152,
+}
+SOURCES['CA'] = {
+    'kind': 'comtrade',
+    'name': 'UN Comtrade, exports reported by Canada (HS6, monthly; FOB in USD)',
+    'currency': 'USD',
+    'codes': {'030214': 0, '030313': 1, '030441': 2, '030481': 3, '030541': 5, '160411': 6},
+    'reporter': 124,
 }
 DKK_PER_EUR = 7.46038       # parite centrale MCE II
 
@@ -419,7 +427,7 @@ def iso3_map():
 
 
 def fetch_comtrade(key, src, to_iso, fx):
-    """Chili : ONU Comtrade, API publique 'preview' (sans cle, 500 lignes par appel), un appel par mois."""
+    """Chili, Canada : ONU Comtrade, API publique 'preview' (sans cle, 500 lignes par appel), un appel par mois."""
     base = 'https://comtradeapi.un.org/public/v1/preview/C/M/HS'
     a3 = iso3_map()
     codes = ','.join(src['codes'])
@@ -433,7 +441,7 @@ def fetch_comtrade(key, src, to_iso, fx):
             y, m = y + 1, 1
     agg, empty_tail, sample_done = {}, 0, False
     for ym in months:
-        url = f'{base}?reporterCode=152&period={ym}&cmdCode={codes}&flowCode=X&includeDesc=true'
+        url = f'{base}?reporterCode={src["reporter"]}&period={ym}&cmdCode={codes}&flowCode=X&includeDesc=true'
         st, raw = http(url)
         if st == 429:
             time.sleep(30)
@@ -444,7 +452,7 @@ def fetch_comtrade(key, src, to_iso, fx):
         j = json.loads(raw)
         rows = j.get('data') or []
         if not sample_done and rows:
-            json.dump(rows[:20], open(os.path.join(DBG, 'comtrade_cl_sample.json'), 'w'), indent=0, ensure_ascii=False)
+            json.dump(rows[:20], open(os.path.join(DBG, f'comtrade_{key.lower()}_sample.json'), 'w'), indent=0, ensure_ascii=False)
             sample_done = True
         if len(rows) >= 500:
             print(f'  {key} : {ym} : 500 lignes, la limite de la preview est peut-etre atteinte')

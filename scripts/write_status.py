@@ -30,7 +30,7 @@ STEPS = [
     ('ESTAB', 'Mattilsynet — establishments'),
     ('CHINA', 'GACC — establishments registered for China'),
     ('EUROSTAT', 'Eurostat — EU salmon flows'),
-    ('NATIONAL', 'National export statistics (Faroes, Iceland, UK, Chile)'),
+    ('NATIONAL', 'National export statistics (Faroes, Iceland, UK, Chile, Canada)'),
     ('SMOKE', 'Dashboard test'),
 ]
 
