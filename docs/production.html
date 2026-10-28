@@ -195,11 +195,11 @@
   table.pm-mkt td.barcell { text-align:left; }
   table.rg-ops td.zc, table.rg-ops th.zc { font-size:10.5px; padding:5px 3px; min-width:0; }
   /* Fish health et Farm register : tout tient dans le cadre, sans barre de defilement */
-  #healthView, #registerView, #outlookView { overflow-x: visible; min-width: 0; }
-  #healthView table, #registerView table, #outlookView table { font-size: 11.5px; table-layout: auto; width: 100%; }
-  #healthView th, #registerView th, #outlookView th { white-space: normal; font-size: 9.5px; padding: 5px 4px; vertical-align: bottom; line-height: 1.25; }
-  #healthView td, #registerView td, #outlookView td { padding: 5px 4px; }
-  #healthView td.name, #registerView td.name, #outlookView td.name { white-space: normal; min-width: 90px; }
+  #healthView, #registerView, #outlookView, #productsView { overflow-x: visible; min-width: 0; }
+  #healthView table, #registerView table, #outlookView table, #productsView table { font-size: 11.5px; table-layout: auto; width: 100%; }
+  #healthView th, #registerView th, #outlookView th, #productsView th { white-space: normal; font-size: 9.5px; padding: 5px 4px; vertical-align: bottom; line-height: 1.25; }
+  #healthView td, #registerView td, #outlookView td, #productsView td { padding: 5px 4px; }
+  #healthView td.name, #registerView td.name, #outlookView td.name, #productsView td.name { white-space: normal; min-width: 90px; }
   #registerView td[style*="text-align:left"] { white-space: normal; }
   #healthView td small, #registerView td small { font-size: 9.5px; }
   table.rg-ops td.zc.z0 { color:#3a4d58; }
@@ -803,7 +803,7 @@
 
   </div>
 
-  <div class="panel" id="productsView" style="flex:1; min-width: 700px; max-width: 1320px; display:none; overflow-x:auto;">
+  <div class="panel" id="productsView" style="flex:1; min-width: 0; max-width: 1320px; display:none;">
     <div class="sig-title">Product per market</div>
     <div class="sig-sub">Norwegian salmon exports by destination and by product, from Statistics Norway
       (table 08799, monthly). <span class="warn">Volumes are product weight</span> — a kilo of fillet counts as
@@ -846,8 +846,8 @@
     <div class="sig-sub" id="pmMktSub"></div>
     <table class="sig-table pm-mkt">
       <thead><tr>
-        <th class="name" style="min-width:220px">Market</th>
-        <th style="text-align:left;min-width:260px" id="pmThBar">Volume</th>
+        <th class="name" style="min-width:150px">Market</th>
+        <th style="text-align:left;min-width:150px" id="pmThBar">Volume</th>
         <th id="pmThA"></th><th id="pmThB"></th><th>Δ%</th>
         <th class="sep-left">Share</th>
         <th class="sep-left">Price NOK/kg</th><th>Δ%</th>
@@ -2253,63 +2253,78 @@ function renderEstablishments() {
 // chacun, ponderee par la part de ses sites de la zone qui ont du poisson
 // (BarentsWatch, 4 dernieres semaines).
 function rgZoneDetail(po, bio, fishM, mlab, mtbAll) {
+  // Biomasse par eleveur : non publiee. Estimation = moyenne de deux parts de
+  // la biomasse de la zone :
+  //  1. MTB detenue (licences) x part de ses sites ayant du poisson ;
+  //  2. capacite de ses sites en activite (lokalitets-MTB : la taille du site)
+  //     x part de semaines avec du poisson sur 4 semaines (BarentsWatch).
+  // Le nombre de cages n'est publie nulle part de facon systematique.
   const level = document.getElementById('rgLevel').value === 'holder' && BWR.mtb_holders ? 'holder' : 'group';
   const rows0 = (level === 'holder' ? BWR.mtb_holders : BWR.mtb_groups) || [];
   const norm = x => (x || '').toLowerCase().trim();
-  const groupOf = r => level === 'holder' ? r.group : r.group;
-  // sites de la zone par exploitant (nom de groupe ou nom brut), et leur activite
   const act = (BW && BW.site_act && BW.site_act.sites) || null;
-  const sitePo = BWR.site_po || {};
+  const sitePo = BWR.site_po || {}, siteCap = BWR.site_cap || null;
   const byOp = {};
   let zA = 0, zF = 0;
-  Object.entries(BWR.site_org || {}).forEach(([no, org]) => {
-    if (+sitePo[no] !== po) return;
-    const o = byOp[norm(org)] || (byOp[norm(org)] = { n: 0, a: 0, f: 0 });
+  const sites = Object.entries(BWR.site_org || {}).filter(([no]) => +sitePo[no] === po);
+  sites.forEach(([no]) => { const st = act && act[no]; if (st) { zA += st[0]; zF += st[1]; } });
+  const zAct = zA + zF ? zA / (zA + zF) : 1;
+  let capTot = 0;
+  sites.forEach(([no, org]) => {
+    const o = byOp[norm(org)] || (byOp[norm(org)] = { n: 0, a: 0, f: 0, cap: 0, capAct: 0, used: false });
     o.n++;
     const st = act && act[no];
-    if (st) { o.a += st[0]; o.f += st[1]; zA += st[0]; zF += st[1]; }
+    if (st) { o.a += st[0]; o.f += st[1]; }
+    const c = siteCap ? (siteCap[no] || 0) : 0, sa = st && (st[0] + st[1]) ? st[0] / (st[0] + st[1]) : (act ? 0 : zAct);
+    o.cap += c; o.capAct += c * sa; capTot += c * sa;
   });
-  const zAct = zA + zF ? zA / (zA + zF) : 1;
   const list = rows0.map(r => {
     const mtb = (r.po || {})[String(po)] || 0;
-    const o = byOp[norm(groupOf(r))] || null;
+    const o = byOp[norm(r.group)] || null;
     const ar = o && (o.a + o.f) ? o.a / (o.a + o.f) : zAct;
     return { r, mtb, o, ar, w: mtb * ar };
   }).filter(x => x.mtb > 0).sort((a, b) => b.mtb - a.mtb);
+  // methode 2 au niveau groupe : partagee entre titulaires d'un meme groupe au prorata de la MTB
+  const grpMtb = {};
+  list.forEach(x => { const g = norm(x.r.group); grpMtb[g] = (grpMtb[g] || 0) + x.mtb; });
+  list.forEach(x => { const g = norm(x.r.group), o = x.o; x.cw = o && grpMtb[g] ? o.capAct * x.mtb / grpMtb[g] : 0; if (o) o.used = true; });
   const tm = list.reduce((t, x) => t + x.mtb, 0);
-  // Les licences hors classement (recherche, vitrine, enseignement, cages
-  // d'attente) ont aussi du poisson dans la biomasse de la zone : elles
-  // prennent leur part avant repartition entre les eleveurs.
   const oth = Math.max(0, mtbAll - tm), wOth = oth * zAct;
   const tw = list.reduce((t, x) => t + x.w, 0) + wOth, tAll = tm + oth;
+  const cwOth = Object.values(byOp).filter(o => !o.used).reduce((t, o) => t + o.capAct, 0);
+  const haveCap = !!siteCap && capTot > 0;
+  const share = (w1, cw) => { const s1 = tw ? w1 / tw : 0; return haveCap ? (s1 + cw / capTot) / 2 : s1; };
   const f0 = v => isFinite(v) ? Math.round(v).toLocaleString('en-US') : '—';
   const haveAct = !!act;
   const body = list.map((x, i) => {
-    const sh = tAll ? x.mtb / tAll : 0, bs = tw ? x.w / tw : sh;
+    const sh = tAll ? x.mtb / tAll : 0, bs = share(x.w, x.cw);
     const nm = level === 'holder' ? x.r.holder : x.r.group;
     const sub = level === 'holder' && x.r.group && norm(x.r.group) !== norm(x.r.holder) ? `<small>group: ${x.r.group}</small>` : '';
-    const sites = x.o ? `${x.o.n}` : '—';
+    const nSites = x.o ? `${x.o.n}` : '—';
     const actTxt = haveAct && x.o && (x.o.a + x.o.f) ? `${Math.round(100 * x.ar)}%` : '<span style="color:var(--muted)">—</span>';
     return `<tr><td class="name"><span style="display:inline-block;min-width:24px;color:var(--muted)">${i + 1}.</span>${nm}${sub}</td>` +
       `<td>${f0(x.mtb)}</td><td>${(100 * sh).toFixed(1)}%</td>` +
-      `<td class="sep-left">${sites}</td><td>${actTxt}</td>` +
+      `<td class="sep-left">${nSites}</td><td>${actTxt}</td><td>${haveCap ? f0(x.cw) : '—'}</td>` +
       `<td class="sep-left"><b>${f0(bio * bs)}</b></td><td>${(100 * bs).toFixed(1)}%</td>` +
       `<td>${isFinite(fishM) ? (fishM * bs).toFixed(1) : '—'}</td></tr>`;
   }).join('');
-  const bo = tw ? wOth / tw : 0;
-  const othRow = oth > 0 ? `<tr style="color:var(--muted)"><td class="name" style="color:var(--muted);font-weight:normal">Other licences (research, display, education, slaughter cages)</td>` +
-    `<td>${f0(oth)}</td><td>${(100 * oth / tAll).toFixed(1)}%</td><td class="sep-left"></td><td></td>` +
+  const bo = share(wOth, cwOth);
+  const othRow = (oth > 0 || cwOth > 0) ? `<tr style="color:var(--muted)"><td class="name" style="color:var(--muted);font-weight:normal">Other licences and sites (research, display, education, slaughter cages, unmatched operators)</td>` +
+    `<td>${f0(oth)}</td><td>${(100 * oth / tAll).toFixed(1)}%</td><td class="sep-left"></td><td></td><td>${haveCap ? f0(cwOth) : ''}</td>` +
     `<td class="sep-left">${f0(bio * bo)}</td><td>${(100 * bo).toFixed(1)}%</td><td>${isFinite(fishM) ? (fishM * bo).toFixed(1) : '—'}</td></tr>` : '';
   return `<div class="hl-detail" style="padding:6px 4px 12px">` +
     `<div style="font-weight:bold;margin:2px 0 4px">Zone ${po}. ${PO_NAMES[po]} — operators <span class="rg-zclose" style="color:var(--muted);font-weight:normal;cursor:pointer">✕ close</span></div>` +
     `<div class="sig-sub" style="margin-bottom:6px">${list.length} ${level === 'holder' ? 'licence holders' : 'groups'} with food-fish MTB in the zone (switch with the "Level" selector of section 2). ` +
-    `<span class="warn">Biomass per farmer is not published</span>: the estimate shares the zone's ${mlab} biomass (${f0(bio)} t, ${isFinite(fishM) ? fishM.toFixed(1) : '—'} M fish) ` +
-    `in proportion to each operator's MTB (so every operator is assumed as full as the zone, ${tAll ? Math.round(100 * bio / tAll) : '—'}% of its MTB)${haveAct ? ', weighted by the share of its sites in the zone holding fish over the last 4 weeks (BarentsWatch: lice reported, not fallow)' : ' (site activity arrives with the next update)'}. ` +
-    `It is an order of magnitude, not a declared figure.</div>` +
+    `<span class="warn">Biomass per farmer is not published</span>: the zone's ${mlab} biomass (${f0(bio)} t, ${isFinite(fishM) ? fishM.toFixed(1) : '—'} M fish) is shared out as the average of two keys — ` +
+    `<b>1</b> the licensed MTB each operator holds in the zone, weighted by the share of its sites holding fish, and ` +
+    `<b>2</b> the licensed capacity of the sites it operates (site MTB, i.e. how large each site is), counted only for the weeks a site held fish over the last 4 weeks (BarentsWatch lice reports)` +
+    `${haveCap && haveAct ? '' : ' — key 2 and site activity arrive with the next update'}. ` +
+    `The number of pens per site is not published, so it cannot be used. It is an order of magnitude, not a declared figure.</div>` +
     `<table class="sig-table"><thead><tr><th class="name">${level === 'holder' ? 'Licence holder' : 'Group'}</th><th>MTB in zone (t)</th><th>Share of MTB</th>` +
     `<th class="sep-left">Sites operated${level === 'holder' ? ' (whole group)' : ''}</th><th title="Share of site-weeks with fish over the last 4 weeks">Sites with fish</th>` +
+    `<th title="Site MTB of its sites x share of weeks with fish">Active site capacity (t)</th>` +
     `<th class="sep-left">Est. biomass (t)</th><th>Est. share</th><th>Est. fish (M)</th></tr></thead><tbody>${body}${othRow}</tbody>` +
-    `<tfoot><tr><td class="name">Total</td><td>${f0(tAll)}</td><td>100%</td><td class="sep-left"></td><td>${haveAct ? Math.round(100 * zAct) + '%' : ''}</td>` +
+    `<tfoot><tr><td class="name">Total</td><td>${f0(tAll)}</td><td>100%</td><td class="sep-left"></td><td>${haveAct ? Math.round(100 * zAct) + '%' : ''}</td><td>${haveCap ? f0(capTot) : ''}</td>` +
     `<td class="sep-left">${f0(bio)}</td><td>100%</td><td>${isFinite(fishM) ? fishM.toFixed(1) : '—'}</td></tr></tfoot></table></div>`;
 }
 
@@ -4388,7 +4403,7 @@ function renderProductsView() {
 
   // ---- aggregate: per product, per product x country
   const agg = keys => {
-    const prod = [0, 1, 2, 3].map(() => ({ q: 0, v: 0 })), mkt = [{}, {}, {}, {}];
+    const prod = [0, 1, 2, 3].map(() => ({ q: 0, v: 0, f: 0 })), mkt = [{}, {}, {}, {}];
     let found = 0; const status = { provisional: 0, revised: 0, final: 0 };
     keys.forEach(k => {
       const rows = byK[k]; if (!rows) return;
@@ -4396,9 +4411,10 @@ function renderProductsView() {
       const st = (SSBX.meta.months[String(k)] || {}).status; if (st in status) status[st]++;
       rows.forEach(([kk, hs, iso, kg, nok]) => {
         if (!inGroup(iso)) return;
-        prod[hs].q += kg; prod[hs].v += nok;
-        const o = mkt[hs][iso] || (mkt[hs][iso] = { q: 0, v: 0 });
-        o.q += kg; o.v += nok;
+        const fk = kg * pmFishPerKg(k, hs);
+        prod[hs].q += kg; prod[hs].v += nok; prod[hs].f += fk;
+        const o = mkt[hs][iso] || (mkt[hs][iso] = { q: 0, v: 0, f: 0 });
+        o.q += kg; o.v += nok; o.f += fk;
       });
     });
     return { prod, mkt, found, asked: keys.length, status };
@@ -4526,12 +4542,32 @@ function renderProductsView() {
 // SSB ne publie les exports par pays qu'au mois : c'est la granularite la plus
 // fine disponible. Une ligne par produit coche ; l'annee de comparaison en
 // pointille ; une ligne "total selection" des que plusieurs produits sont tracés.
+// Nombre de poissons estime : poids de produit / poids d'un poisson sous cette
+// forme. Poids vif moyen a la recolte du mois (Biomasseregisteret, national),
+// x 0,84 pour le poisson vide (HOG), x 0,58 en plus pour un filet. Meme poids
+// pour tous les pays : a lire en tendance, pas en comptage exact.
+const PM_GUT = 0.84, PM_FILLET_YIELD = 0.58;
+let PM_AW = null;
+function pmFishPerKg(k, hs) {
+  if (!PM_AW) {
+    PM_AW = {}; const t = {};
+    RECORDS.forEach(r => { const kk = r.year * 100 + r.month; const o = t[kk] || (t[kk] = [0, 0]); o[0] += r.uttak_kg || 0; o[1] += r.uttak_stk || 0; });
+    Object.keys(t).forEach(kk => { if (t[kk][1] > 0) PM_AW[kk] = t[kk][0] / t[kk][1]; });
+  }
+  let w = PM_AW[k];
+  if (!w) { const ks = Object.keys(PM_AW).map(Number).filter(x => x <= k).sort((a, b) => a - b); w = ks.length ? PM_AW[ks[ks.length - 1]] : 4.7; }
+  const per = w * PM_GUT * (PM_FILLET.has(hs) ? PM_FILLET_YIELD : 1);
+  return 1 / per;
+}
+
+const pmFishTxt = f => !f ? '—' : f >= 1e6 ? (f / 1e6).toFixed(f >= 1e7 ? 1 : 2) + ' M' : Math.round(f / 1000).toLocaleString('en-US') + ' k';
+
 function pmMonthly(byK, iso, keys) {
   // hs -> tableau aligne sur keys : {kg, nok}, ou null si le mois n'est pas publie
   const out = {};
-  [0, 1, 2, 3].forEach(h => { out[h] = keys.map(k => byK[k] ? { kg: 0, nok: 0 } : null); });
+  [0, 1, 2, 3].forEach(h => { out[h] = keys.map(k => byK[k] ? { kg: 0, nok: 0, f: 0 } : null); });
   keys.forEach((k, i) => (byK[k] || []).forEach(([kk, hs, is, kg, nok]) => {
-    if (is === iso) { out[hs][i].kg += kg; out[hs][i].nok += nok; }
+    if (is === iso) { out[hs][i].kg += kg; out[hs][i].nok += nok; out[hs][i].f += kg * pmFishPerKg(k, hs); }
   }));
   return out;
 }
@@ -4545,7 +4581,7 @@ function pmChartHTML(byK, iso, cname, keysA, keysB, yA, yB, plabel) {
   const total = m => keysA.map((_, i) => {
     const parts = drawn.map(h => m[h][i]).filter(o => o !== null);
     if (!parts.length) return null;
-    return { kg: parts.reduce((s, o) => s + o.kg, 0), nok: parts.reduce((s, o) => s + o.nok, 0) };
+    return { kg: parts.reduce((s, o) => s + o.kg, 0), nok: parts.reduce((s, o) => s + o.nok, 0), f: parts.reduce((s, o) => s + (o.f || 0), 0) };
   });
   // Une ou plusieurs mesures cochees : un graphique par mesure, empiles, chacun
   // avec son axe titre (tonnes / NOK par kg / millions de NOK).
@@ -4553,8 +4589,9 @@ function pmChartHTML(byK, iso, cname, keysA, keysB, yA, yB, plabel) {
     q: { name: 'Volume', axis: 'Tonnes per month', unit: 't', val: o => o.kg / 1000 },
     p: { name: 'Price', axis: 'NOK per kg', unit: 'NOK/kg', val: o => (o.kg > 0 ? o.nok / o.kg : null) },
     v: { name: 'Value', axis: 'Million NOK per month', unit: 'M NOK', val: o => o.nok / 1e6 },
+    f: { name: 'Fish (est.)', axis: 'Thousand fish per month (est.)', unit: 'thousand fish', val: o => (o.kg > 0 ? o.f / 1000 : 0) },
   };
-  const metrics = ['q', 'p', 'v'].filter(m => pmChartMetrics.has(m));
+  const metrics = ['q', 'f', 'p', 'v'].filter(m => pmChartMetrics.has(m));
   const multi = metrics.length > 1;
   const panel = (mk, isLast) => {
     const M = METRIC[mk], val = o => (o === null ? null : M.val(o));
@@ -4636,6 +4673,7 @@ function pmChartHTML(byK, iso, cname, keysA, keysB, yA, yB, plabel) {
     + `Monthly is the finest level SSB publishes by country. `
     + `<span style="color:#ffb74d">°</span> provisional month, will be revised. Hover a point for its exact value.`
     + (pmChartMetrics.has('p') ? ' No price is shown for a month without volume.' : '')
+    + (pmChartMetrics.has('f') ? ` Fish = product weight ÷ weight of one fish in that form: average harvest weight of the month (Biomasseregisteret) × ${PM_GUT} gutted${pmSel.has(1) || pmSel.has(2) ? `, × ${PM_FILLET_YIELD} more for fillets` : ''}; the same weight for every country.` : '')
     + (absent.length ? ` No exports of ${absent.map(h => PM_LONG[h].toLowerCase()).join(', ')} to ${cname} in either year.` : '')
     + `</div>`;
 }
