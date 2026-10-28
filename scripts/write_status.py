@@ -29,6 +29,7 @@ STEPS = [
     ('BW_SITES', 'BarentsWatch — site register'),
     ('ESTAB', 'Mattilsynet — establishments'),
     ('CHINA', 'GACC — establishments registered for China'),
+    ('EUROSTAT', 'Eurostat — EU salmon flows'),
     ('SMOKE', 'Dashboard test'),
 ]
 
@@ -44,7 +45,16 @@ def main():
             smoke = None
     server, repo, run = (os.environ.get('GITHUB_SERVER_URL', ''), os.environ.get('GITHUB_REPOSITORY', ''),
                          os.environ.get('GITHUB_RUN_ID', ''))
+    eu = None
+    EUF = os.path.join(ROOT, 'data', 'eurostat.json')
+    if os.path.exists(EUF):
+        try:
+            m = json.load(io.open(EUF, encoding='utf-8'))['meta']
+            eu = {'fetched': m.get('fetched'), 'last_period': m.get('last_period'), 'source_update': m.get('source_update')}
+        except (ValueError, KeyError):
+            eu = None
     data['status'] = {
+        'eurostat': eu,
         'run_utc': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'),
         'run_url': f'{server}/{repo}/actions/runs/{run}' if server and repo and run else None,
         'steps': steps,
