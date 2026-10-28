@@ -101,15 +101,26 @@ jobs:
         continue-on-error: true
         run: python3 scripts/fetch_establishments.py --update
 
+      - name: Installer le navigateur sans ecran (Playwright)
+        continue-on-error: true
+        run: python3 -m playwright install --with-deps chromium
+
+      - name: Etablissements enregistres pour la Chine (GACC CIFER)
+        # Pilote la page de recherche publique des douanes chinoises (reponses
+        # chiffrees, dechiffrees par la page elle-meme) et lit la liste des
+        # etablissements norvegiens. Source fragile : un echec ne bloque rien.
+        id: china
+        continue-on-error: true
+        timeout-minutes: 20
+        run: python3 scripts/fetch_china_gacc.py
+
       - name: Tester le tableau de bord avec les nouvelles donnees
         # Ouvre docs/production.html avec le data.json produit, clique sur
         # chaque onglet et verifie qu'il n'y a ni erreur ni onglet vide.
         id: smoke
         continue-on-error: true
         timeout-minutes: 10
-        run: |
-          python3 -m playwright install --with-deps chromium
-          python3 scripts/smoke_test.py data/smoke.json
+        run: python3 scripts/smoke_test.py data/smoke.json
 
       - name: Enregistrer l'etat des sources dans data.json
         if: always()
@@ -122,6 +133,7 @@ jobs:
           STEP_BW_HEALTH: ${{ steps.bw_health.outcome }}
           STEP_BW_SITES: ${{ steps.bw_sites.outcome }}
           STEP_ESTAB: ${{ steps.estab.outcome }}
+          STEP_CHINA: ${{ steps.china.outcome }}
           STEP_SMOKE: ${{ steps.smoke.outcome }}
         run: |
           python3 scripts/write_status.py
