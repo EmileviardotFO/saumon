@@ -1390,7 +1390,7 @@ function sourceStatus() {
     add('Eurostat — EU salmon flows', mlab(Math.floor(k / 100), k % 100), ym(Math.floor(k / 100), k % 100) < nowYM - 3,
       'monthly, about 6–8 weeks after the month', steps.EUROSTAT); }
   if (d.status && d.status.national) { const n = d.status.national;
-    [['FO', 'Faroe export statistics (Hagstova)'], ['IS', 'Iceland export statistics (Hagstofa)'], ['GB', 'UK export statistics (HMRC)']].forEach(([c, lab]) => { const k = n[c] && n[c].last;
+    [['FO', 'Faroe export statistics (Hagstova)'], ['IS', 'Iceland export statistics (Hagstofa)'], ['GB', 'UK export statistics (HMRC)'], ['CL', 'Chile export statistics (UN Comtrade)']].forEach(([c, lab]) => { const k = n[c] && n[c].last;
       add(lab, k ? mlab(Math.floor(k / 100), k % 100) : '—', !k || ym(Math.floor(k / 100), k % 100) < nowYM - 3, 'monthly, by destination country', steps.NATIONAL); }); }
   if (d.china && d.china.meta) { const g = daysSince(d.china.meta.fetched);
     add('GACC — Norwegian establishments registered for China', d.china.meta.fetched || '—', g === null || g > 10, 'every update run (customs search page, fragile source)', steps.CHINA); }
@@ -5933,9 +5933,10 @@ function tmBuild() {
     x[0] += t; x[1] += ke || 0; TM.natLast[o] = Math.max(TM.natLast[o] || 0, ym); TM.natFirst[o] = Math.min(TM.natFirst[o] || 999999, ym); });
   // dernier mois complet dans TOUTES les sources (Eurostat, statistiques norvegiennes, feroiennes, islandaises)
   TM.ssbLastAll = SSBX ? SSBX.rows.reduce((m, r) => Math.max(m, r[0]), 0) : 0;
-  TM.common = Math.min(TM.last, ...(TM.ssbLastAll ? [TM.ssbLastAll] : []), ...Object.values(TM.natLast));
+  const coreLast = NAT_CORE.filter(o => TM.natLast[o]).map(o => TM.natLast[o]);
+  TM.common = Math.min(TM.last, ...(TM.ssbLastAll ? [TM.ssbLastAll] : []), ...coreLast);
   // onglet Producers : dernier mois publie par toutes les statistiques nationales (sans attendre Eurostat)
-  const natEnds = [...(TM.ssbLastAll ? [TM.ssbLastAll] : []), ...Object.values(TM.natLast)];
+  const natEnds = [...(TM.ssbLastAll ? [TM.ssbLastAll] : []), ...coreLast];
   TM.prodCommon = natEnds.length ? Math.min(...natEnds) : TM.last;
   return TM;
 }
@@ -5998,7 +5999,9 @@ function tmOrigins(rep, ym, pi) {
 // 'all' : statistiques norvegiennes (SSB, NOK) ou exportations de l'Irlande (Eurostat).
 // Retour : { cur, last, rows: [[ym, destination, forme, tonnes, valeur en milliers]] }
 // NOK -> EUR au taux moyen mensuel d'Eurostat (taux enregistres avec les statistiques nationales)
-const NAT_NAME = { FO: ['Faroese', 'Hagstova'], IS: ['Icelandic', 'Hagstofa'], GB: ['UK', 'HMRC'] };
+const NAT_NAME = { FO: ['Faroese', 'Hagstova'], IS: ['Icelandic', 'Hagstofa'], GB: ['UK', 'HMRC'], CL: ['Chilean', 'UN Comtrade'] };
+// sources qui fixent le "dernier mois disponible" (le Chili, publie plus tard via Comtrade, garde son propre mois)
+const NAT_CORE = ['FO', 'IS', 'GB'];
 function tmNok() {
   const r = NAT && NAT.meta && NAT.meta.fx && NAT.meta.fx.NOK; if (!r) return null;
   const ks = Object.keys(r).map(Number).sort((a, b) => a - b);
@@ -6221,7 +6224,7 @@ function renderProducers() {
   document.getElementById('prNote').innerHTML = `<b>Sources.</b> Norway: SSB export statistics (fresh and frozen whole fish, fresh and frozen fillets; NOK converted to € at Eurostat monthly average rates). ` +
     `Faroe Islands: Hagstova table UH01046 (DKK, fixed rate). Iceland: Hagstofa, exports by tariff number (farmed Atlantic salmon codes; ISK at Eurostat monthly rates). ` +
     `United Kingdom: HMRC overseas trade statistics (GBP at Eurostat monthly rates) — UK farmed salmon is Scottish, a few re-exports of Norwegian salmon are included. ` +
-    `Ireland: Irish exports as reported to Eurostat. Chile, and any country whose statistics are not collected: arrivals in the EU (Eurostat Comext). ` +
+    `Ireland: Irish exports as reported to Eurostat. Chile: exports reported by Chile to UN Comtrade (HS6, USD at Eurostat monthly rates; published with a longer delay; fillet codes include coho). Any country whose statistics are missing: arrivals in the EU (Eurostat Comext). ` +
     `Destination = country declared at export, wherever the salmon is cleared.`;
 }
 
