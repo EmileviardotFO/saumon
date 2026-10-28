@@ -5708,14 +5708,17 @@ function renderSummary() {
       const first = (C.meta || {}).first_run || '';
       // date d'enregistrement chinoise si le site la donne, sinon date de premiere apparition (hors premier releve)
       const when = r => r[5] || (r[7] && r[7] > first ? r[7] : null);
-      const recent = C.rows.filter(r => { const w = when(r); return w && w >= d30; });
-      const year = C.rows.filter(r => r[5] && r[5] >= d365).length;
+      const aq = C.rows.filter(r => /aquatic|水产/i.test(r[3] || ''));
+      const recent = aq.filter(r => { const w = when(r); return w && w >= d30; });
+      const year = aq.filter(r => r[5] && r[5] >= d365).length;
+      const yearOther = C.rows.filter(r => !/aquatic|水产/i.test(r[3] || '') && r[5] && r[5] >= d365).length;
       const est = Object.fromEntries(((ESTAB && ESTAB.rows) || []).map(r => [cnKey(r[0]), r]));
       const lineOf = r => { const e = est[cnKey(r[0])]; return `<b>${r[2] || (e && e[1]) || r[0]}</b>${r[0] ? ` (${r[0]}${e ? ', ' + e[5] : ''})` : ''}${r[3] ? ' — ' + r[3] : ''}${when(r) ? ', ' + when(r) : ''}`; };
       box.innerHTML = `<div class="sm-row health"><div class="lbl"><b>China market access</b><small>GACC registrations of Norwegian establishments · read ${(C.meta || {}).fetched || '—'}</small></div>` +
-        `<div class="hl">${C.rows.length} establishments registered` + (C.rows.some(r => r[5]) ? ` · ${year} new registrations over the last 12 months` : '') + `</div>` +
+        `<div class="hl">${aq.length} Norwegian establishments registered for aquatic products (${C.rows.length} all foods)` +
+        (C.rows.some(r => r[5]) ? ` · <b>${year} new aquatic registrations over the last 12 months</b>${yearOther ? ` (+${yearOther} other foods)` : ''}` : '') + `</div>` +
         (recent.length ? recent.map(r => `<div class="ev pos">New China registration: ${lineOf(r)}</div>`).join('')
-                       : `<div class="ev info">No new Norwegian establishment registered for China over the last 30 days.</div>`) + `</div>`;
+                       : `<div class="ev info">No new Norwegian establishment registered for China (aquatic products) over the last 30 days.</div>`) + `</div>`;
     }
   }
   document.getElementById('smSub').innerHTML =
