@@ -29,7 +29,7 @@ jobs:
           python-version: '3.11'
 
       - name: Installer les dependances Python
-        run: pip install pandas openpyxl playwright
+        run: pip install pandas openpyxl playwright pycountry
 
       - name: Telecharger les derniers rapports Akvafakta (hebdo + mensuel)
         id: akva_fetch
@@ -110,6 +110,15 @@ jobs:
         timeout-minutes: 30
         run: python3 scripts/update_eurostat.py
 
+      - name: Exportations des Feroe et de l'Islande (statistiques nationales)
+        # Hagstova Foroya et Hagstofa Islands (API PxWeb) : saumon par pays de
+        # destination et par mois, pour l'onglet Producers et l'origine du
+        # saumon dans chaque pays de l'UE. Nouvelle source : un echec ne bloque rien.
+        id: national
+        continue-on-error: true
+        timeout-minutes: 20
+        run: python3 scripts/update_national_trade.py
+
       - name: Installer le navigateur sans ecran (Playwright)
         continue-on-error: true
         run: python3 -m playwright install --with-deps chromium
@@ -144,6 +153,7 @@ jobs:
           STEP_ESTAB: ${{ steps.estab.outcome }}
           STEP_CHINA: ${{ steps.china.outcome }}
           STEP_EUROSTAT: ${{ steps.eurostat.outcome }}
+          STEP_NATIONAL: ${{ steps.national.outcome }}
           STEP_SMOKE: ${{ steps.smoke.outcome }}
         run: |
           python3 scripts/write_status.py
