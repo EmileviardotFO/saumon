@@ -49,9 +49,21 @@ def pick(row, *patterns):
     return None
 
 
+MONTHS = {m: i + 1 for i, m in enumerate(['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'])}
+# Types de produits (libelles chinois du site) et statuts
+TYPES = {'水产品': 'Aquatic products', '鱼肝油原料': 'Fish liver oil (raw material)', '发酵酒及其配制酒': 'Fermented alcoholic drinks',
+         '包装饮用水': 'Packaged drinking water', '蒸馏酒及其配制酒': 'Distilled spirits', '固体饮料': 'Solid drinks',
+         '蛋白质及其衍生物': 'Proteins and derivatives', '巴氏杀菌乳和其他乳制品': 'Pasteurised milk and dairy', '保健食品': 'Health foods',
+         '碳酸饮料': 'Carbonated drinks', '肉类': 'Meat', '乳制品': 'Dairy products', '燕窝': "Bird's nest", '蜂产品': 'Bee products'}
+STATUS = {'有效': 'valid', '暂停进口': 'suspended', '注销': 'cancelled', 'R': 'valid', 'P': 'suspended'}
+
+
 def norm_date(v):
     if v in (None, ''):
         return None
+    m = re.match(r'([A-Za-z]{3})[a-z]*\.? (\d{1,2}), (\d{4})', str(v))      # "Apr 1, 2018 12:00:00 AM"
+    if m and m.group(1).lower() in MONTHS:
+        return f'{m.group(3)}-{MONTHS[m.group(1).lower()]:02d}-{int(m.group(2)):02d}'
     if isinstance(v, (int, float)) and v > 1e11:          # horodatage en millisecondes
         return dt.datetime.fromtimestamp(v / 1000, dt.timezone.utc).date().isoformat()
     m = re.search(r'(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})', str(v))
@@ -148,9 +160,11 @@ def main():
         org = str(pick(r, r'^orgNo', r'orgno', r'countryReg', r'localReg') or '').strip()
         name = str(pick(r, r'enterpriseName', r'entName', r'companyName', r'name') or '').strip()
         typ = str(pick(r, r'registerTypeName', r'typeName', r'registerType', r'productType') or '').strip()
+        typ = TYPES.get(typ, typ)
         status = str(pick(r, r'statusName', r'^status', r'state') or '').strip()
-        d_reg = norm_date(pick(r, r'regDate', r'registerDate', r'approveDate', r'effect.*Date', r'startDate', r'validDate', r'Date'))
-        d_end = norm_date(pick(r, r'endDate', r'expire', r'validTo', r'invalid'))
+        status = STATUS.get(status, status)
+        d_reg = norm_date(pick(r, r'^startDate', r'regDate', r'registerDate', r'approveDate', r'effect.*Date'))
+        d_end = norm_date(pick(r, r'^endDate', r'availDate', r'expire', r'validTo'))
         key = reg or (org + '|' + name)
         if key in seen:
             continue
