@@ -80,6 +80,22 @@
   tr:hover td { background: #0d1a24; }
   .delta-pos { color: var(--up); }
   .delta-good { color: var(--good); }
+  /* --- Summary page --- */
+  .sm-sec { font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); margin:20px 0 8px; border-bottom:1px solid var(--border); padding-bottom:4px; }
+  .sm-row { display:grid; grid-template-columns: 230px 170px 56px 1fr 1fr; gap:6px 16px; align-items:center; padding:10px 4px; border-bottom:1px solid var(--border); }
+  .sm-row .lbl b { display:block; font-size:13.5px; color:var(--ink); }
+  .sm-row .lbl small { color:var(--muted); font-size:11px; }
+  .sm-row .val { font-size:20px; font-weight:bold; color:var(--ink); text-align:right; font-variant-numeric:tabular-nums; }
+  .sm-row .val small { display:block; font-size:10.5px; font-weight:normal; color:var(--muted); }
+  .sm-row .arr { font-size:30px; line-height:1; text-align:center; font-weight:bold; }
+  .sm-row .cmp { font-size:12.5px; line-height:1.5; }
+  .sm-row .cmp span.k { color:var(--muted); font-size:11px; display:block; }
+  .sm-row .ev { grid-column: 1 / -1; font-size:12.5px; line-height:1.5; padding:6px 10px; border-left:3px solid #ffb74d; background:rgba(255,183,77,.07); border-radius:3px; }
+  .sm-row .ev.pos { border-left-color: var(--good); background:rgba(126,217,143,.07); }
+  .sm-row .ev.info { border-left-color: var(--accent); background:rgba(47,184,166,.06); }
+  .sm-row.health { grid-template-columns: 230px 1fr; }
+  .sm-row.health .hl { font-size:12.5px; line-height:1.7; }
+  @media (max-width: 900px) { .sm-row { grid-template-columns: 1fr 1fr; } .sm-row .arr { text-align:left; } }
   .delta-bad { color: var(--bad); }
   .delta-neg { color: var(--down); }
   .delta-zero { color: var(--muted); }
@@ -232,7 +248,8 @@
 
 <div class="top-controls">
   <div class="view-toggle" id="viewToggle">
-    <button data-v="global" class="active">National view (Norway)</button>
+    <button data-v="summary" class="active">Summary</button>
+    <button data-v="global">National view (Norway)</button>
     <button data-v="multi">Multi-year comparison</button>
     <button data-v="outlook">Supply outlook</button>
     <button data-v="markets">Markets</button>
@@ -364,7 +381,17 @@
     </table>
   </div>
 
-  <div class="panel" id="globalView" style="flex:1; min-width: 420px; max-width: 620px;">
+  <div class="panel" id="summaryView" style="flex:1; min-width:0; max-width:1320px; display:none;">
+    <div class="sig-title">Summary — the latest figures at a glance</div>
+    <div class="sig-sub" id="smSub"></div>
+    <div class="sm-sec">Biology</div>
+    <div id="smBio"></div>
+    <div class="sm-sec">Sales</div>
+    <div id="smSales"></div>
+    <div class="note" id="smNote" style="text-align:left;max-width:none"></div>
+  </div>
+
+  <div class="panel" id="globalView" style="flex:1; min-width: 420px; max-width: 620px; display:none;">
     <div class="period-summary" id="globalSelectionSummary" style="margin-bottom:10px;"></div>
     <table>
       <thead>
@@ -2659,7 +2686,7 @@ function hideMapTooltip() {
 }
 
 // --- National view (Norway) ---
-let currentView = 'global';
+let currentView = 'summary';
 document.querySelectorAll('#viewToggle button').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('#viewToggle button').forEach(b => b.classList.remove('active'));
@@ -2669,6 +2696,7 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     document.getElementById('multiControlsRow').style.display = currentView === 'multi' ? 'flex' : 'none';
     document.getElementById('poView').style.display = currentView === 'po' ? 'block' : 'none';
     document.getElementById('globalView').style.display = currentView === 'global' ? 'block' : 'none';
+    document.getElementById('summaryView').style.display = currentView === 'summary' ? 'block' : 'none';
     document.getElementById('multiView').style.display = currentView === 'multi' ? 'block' : 'none';
     document.getElementById('outlookView').style.display = currentView === 'outlook' ? 'block' : 'none';
     document.getElementById('calibreView').style.display = currentView === 'calibre' ? 'block' : 'none';
@@ -2677,11 +2705,11 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     document.getElementById('healthView').style.display = currentView === 'health' ? 'block' : 'none';
     document.getElementById('registerView').style.display = currentView === 'register' ? 'block' : 'none';
     // The year / period selectors do not apply to the weekly fish-health view.
-    document.querySelector('.top-controls').style.display = currentView === 'health' ? 'none' : '';
+    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary') ? 'none' : '';
     // La carte des zones ne sert qu'aux vues qui raisonnent par PO. Les onglets
     // Markets et Calibre sont nationaux, elle n'y afficherait rien d'utile.
     const mw = document.querySelector('.panel.mapwrap');
-    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre') ? 'none' : '';
+    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary') ? 'none' : '';
     document.getElementById('poFilterField').style.display = (currentView === 'global' || currentView === 'multi' || currentView === 'outlook') ? 'flex' : 'none';
     document.getElementById('yearField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'none' : 'flex';
     document.getElementById('yearRangeField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'flex' : 'none';
@@ -2690,6 +2718,7 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     document.getElementById('mapLegendSelection').style.display = (currentView === 'global' || currentView === 'cohort' || currentView === 'multi') ? 'block' : 'none';
     // (the outlook view paints the map itself, from renderOutlook)
     if (currentView === 'global') { renderGlobal(); }
+    else if (currentView === 'summary') { renderSummary(); }
     else if (currentView === 'markets') { renderMarketsView(); }
     else if (currentView === 'products') { renderProductsView(); }
     else if (currentView === 'multi') { renderMulti(); }
@@ -5165,6 +5194,212 @@ yearSel.addEventListener('change', () => { render(); if (currentView === 'global
 monthSel.addEventListener('change', () => { render(); if (currentView === 'register') renderRegister(); if (currentView === 'global') renderGlobal(); if (currentView === 'multi') renderMulti(); if (currentView === 'markets') renderMarketsView(); if (currentView === 'products') renderProductsView(); });
 mktBind();
 pmBind();
+// ===========================================================================
+//  Synthese (onglet d'ouverture). Tout est calcule sur data.json a chaque
+//  ouverture : derniers chiffres, variation contre le mois (ou la semaine)
+//  precedent et contre la meme periode N-1, fleche, et phrase quand il se
+//  passe quelque chose de notable (record, bascule contre N-1, foyer...).
+// ===========================================================================
+function renderSummary() {
+  const MS = m => MONTHS_FR[m - 1].slice(0, 3);
+  const mlab = (y, m) => `${MS(m)} ${y}`;
+  const fmtT = v => Math.abs(v) >= 100000 ? (v / 1000).toFixed(0) + ' kt' : Math.abs(v) >= 1000 ? (v / 1000).toFixed(1) + ' kt' : Math.round(v) + ' t';
+  const fmtM = v => (v / 1e6).toFixed(1) + ' M';
+  const sgn = v => (v > 0 ? '+' : v < 0 ? '−' : '±');
+  const abs = Math.abs;
+
+  // ---------- series mensuelles nationales (Biomasseregisteret) ----------
+  const M = {};
+  RECORDS.forEach(r => {
+    const k = r.year * 100 + r.month;
+    const o = M[k] || (M[k] = { bio: 0, fish: 0, feed: 0, smolt: 0, harv: 0, hasS500: true });
+    o.bio += (r.biomasse_kg || 0) / 1000;
+    o.fish += r.behfisk_stk || 0;
+    o.feed += (r.feed_kg || 0) / 1000;
+    o.harv += (r.uttak_kg || 0) / 1000;
+    if (r.smolt500_stk === undefined || r.smolt500_stk === null) o.hasS500 = false;
+    o.smolt += (r.smolt500_stk !== undefined && r.smolt500_stk !== null) ? r.smolt500_stk : (r.smolt_stk || 0);
+  });
+  const mKeys = Object.keys(M).map(Number).sort((a, b) => a - b);
+  const prevM = k => (k % 100 === 1 ? k - 100 + 11 : k - 1);
+  const last = mKeys[mKeys.length - 1], ly = Math.floor(last / 100), lm = last % 100;
+
+  // phrases d'evenement pour une serie mensuelle
+  function monthEvents(f, k, cfg) {
+    const ev = [], v = M[k] && M[k][f];
+    if (!isFinite(v)) return ev;
+    const y = Math.floor(k / 100), m = k % 100;
+    // record pour ce mois calendaire
+    const same = mKeys.filter(x => x % 100 === m && x !== k && isFinite(M[x][f]) && M[x][f] > 0);
+    if (same.length >= 3) {
+      const y0 = Math.floor(same[0] / 100);
+      if (same.every(x => v < M[x][f])) ev.push({ t: `Lowest ${MONTHS_FR[m - 1]} ${cfg.noun} since the series starts (${y0})`, c: cfg.upGood ? 'neg' : 'pos' });
+      else if (same.every(x => v > M[x][f])) ev.push({ t: `Highest ${MONTHS_FR[m - 1]} ${cfg.noun} since the series starts (${y0})`, c: cfg.upGood ? 'pos' : 'neg' });
+    }
+    // plus bas / plus haut de l'annee (series de stock seulement)
+    if (cfg.stock && m > 2) {
+      const ytd = mKeys.filter(x => Math.floor(x / 100) === y && x < k).map(x => M[x][f]);
+      if (ytd.length >= 2 && ytd.every(x => v < x)) ev.push({ t: `Lowest level of ${y} so far`, c: 'info' });
+      else if (ytd.length >= 2 && ytd.every(x => v > x)) ev.push({ t: `Highest level of ${y} so far`, c: 'info' });
+    }
+    // bascule contre N-1 et serie de mois du meme signe
+    const yoy = x => (M[x] && M[x - 100] && M[x - 100][f] > 0) ? M[x][f] / M[x - 100][f] - 1 : NaN;
+    const thr = cfg.stable;
+    const sign = x => { const d = yoy(x); return !isFinite(d) ? 0 : (d > thr ? 1 : d < -thr ? -1 : 0); };
+    const s0 = sign(k);
+    if (s0 !== 0) {
+      let n = 0, x = k;
+      while (mKeys.includes(x) && sign(x) === s0) { n++; x = prevM(x); }
+      const word = s0 < 0 ? 'below' : 'above';
+      if (n === 1) {
+        // premiere fois depuis quand ?
+        let back = prevM(k), found = null;
+        while (mKeys.includes(back)) { if (sign(back) === s0) { found = back; break; } back = prevM(back); }
+        ev.push({ t: `Switches ${word} its year-earlier level` + (found ? ` — first time since ${mlab(Math.floor(found / 100), found % 100)}` : ' — first time in the series'),
+                  c: (s0 > 0) === cfg.upGood ? 'pos' : 'neg' });
+      } else if (n >= 3) {
+        ev.push({ t: `${n}th consecutive month ${word} the year-earlier level`, c: (s0 > 0) === cfg.upGood ? 'pos' : 'neg' });
+      }
+    }
+    return ev;
+  }
+
+  // ligne standard : valeur, fleche (vs N-1), deux comparaisons, evenements
+  function row(o) {
+    const { label, sub, val, valTxt, prev, prevLbl, yago, yagoLbl, fmt, upGood, stable, events, valSub } = o;
+    const d1 = val - prev, p1 = prev ? d1 / prev : NaN, d2 = val - yago, p2 = yago ? d2 / yago : NaN;
+    const dir = !isFinite(p2) ? 0 : (p2 > stable ? 1 : p2 < -stable ? -1 : 0);
+    const arrow = dir > 0 ? '↑' : dir < 0 ? '↓' : '→';
+    const cls = p => !isFinite(p) || abs(p) <= stable ? 'delta-zero' : ((p > 0) === upGood ? 'delta-good' : 'delta-bad');
+    const cmp = (lbl, d, p) => `<div class="cmp"><span class="k">vs ${lbl}</span>` + (isFinite(p)
+      ? `<b class="${cls(p)}">${p > stable ? '↑' : p < -stable ? '↓' : '→'} ${sgn(p)}${abs(100 * p).toFixed(1)}%</b> <span style="color:var(--muted)">(${sgn(d)}${fmt(abs(d))})</span>` : '—') + `</div>`;
+    return `<div class="sm-row"><div class="lbl"><b>${label}</b><small>${sub}</small></div>` +
+      `<div class="val">${valTxt}${valSub ? `<small>${valSub}</small>` : ''}</div>` +
+      `<div class="arr ${cls(p2)}" title="Direction against ${yagoLbl}">${arrow}</div>` +
+      cmp(prevLbl, d1, p1) + cmp(yagoLbl, d2, p2) +
+      (events || []).map(e => `<div class="ev ${e.c === 'pos' ? 'pos' : e.c === 'info' ? 'info' : ''}">${e.t}</div>`).join('') + `</div>`;
+  }
+
+  const kP = prevM(last), kY = last - 100;
+  const bioRow = (f, label, sub, fmt, cfg) => row({
+    label, sub: `${sub} · ${mlab(ly, lm)}`, val: M[last][f], valTxt: fmt(M[last][f]),
+    prev: M[kP] ? M[kP][f] : NaN, prevLbl: mlab(Math.floor(kP / 100), kP % 100),
+    yago: M[kY] ? M[kY][f] : NaN, yagoLbl: mlab(ly - 1, lm), fmt, upGood: cfg.upGood, stable: cfg.stable,
+    events: monthEvents(f, last, cfg), valSub: cfg.valSub ? cfg.valSub() : '' });
+
+  // smolts : tres saisonnier, on ajoute le cumul de l'annee
+  const ytd = (f, y, m) => mKeys.filter(x => Math.floor(x / 100) === y && x % 100 <= m).reduce((t, x) => t + M[x][f], 0);
+  const sY = ytd('smolt', ly, lm), sYp = ytd('smolt', ly - 1, lm);
+  const smoltCfg = { noun: 'smolt release', upGood: true, stable: 0.05,
+    valSub: () => `year to date ${fmtM(sY)} (${sgn(sY - sYp)}${abs(100 * (sY / sYp - 1)).toFixed(1)}% vs ${ly - 1})` };
+
+  let bio = '';
+  bio += bioRow('bio', 'Standing biomass', 'salmon in the sea, end of month', fmtT, { noun: 'biomass', upGood: true, stable: 0.01, stock: true });
+  bio += bioRow('fish', 'Fish in the sea', 'headcount, end of month', fmtM, { noun: 'fish count', upGood: true, stable: 0.01, stock: true,
+    valSub: () => `average ${(M[last].bio / M[last].fish * 1000).toFixed(2)} kg` });
+  bio += bioRow('feed', 'Feed consumption', 'feed used during the month', fmtT, { noun: 'feed consumption', upGood: true, stable: 0.02 });
+  bio += bioRow('smolt', 'Smolt release', 'fish released below 500 g, month', fmtM, smoltCfg);
+
+  // ---------- poux, traitements, maladies (BarentsWatch, hebdomadaire) ----------
+  let hlHtml = '';
+  if (BW && BW.rows && BW.rows.length) {
+    const W = {};
+    BW.rows.forEach(r => {
+      const k = r.y * 100 + r.w;
+      const o = W[k] || (W[k] = { ls: 0, nl: 0, na: 0, ov: 0, trt: 0, PD: 0, ILA: 0, po: {} });
+      if (r.lice !== null && r.lice !== undefined) { o.ls += r.lice * r.nl; o.nl += r.nl; }
+      o.na += r.na || 0; o.ov += r.ov || 0;
+      o.trt += Object.values(r.trt || {}).reduce((t, v) => t + v, 0);
+      o.PD += (r.dis || {}).PANKREASSYKDOM || 0; o.ILA += (r.dis || {}).INFEKSIOES_LAKSEANEMI || 0;
+      o.po[r.po] = r;
+    });
+    let wk = Object.keys(W).map(Number).sort((a, b) => a - b);
+    let L = wk[wk.length - 1];
+    // derniere semaine incomplete (declarations tardives) : on prend la precedente
+    if (W[hlShift(L, -1)] && W[L].na < 0.85 * W[hlShift(L, -1)].na) L = hlShift(L, -1);
+    const lice = k => W[k] && W[k].nl ? W[k].ls / W[k].nl : NaN;
+    const sum = (keys, f) => keys.reduce((t, k) => t + (W[k] ? W[k][f] : 0), 0);
+    const avgL = keys => { const a = keys.reduce((t, k) => t + (W[k] ? W[k].ls : 0), 0), n = keys.reduce((t, k) => t + (W[k] ? W[k].nl : 0), 0); return n ? a / n : NaN; };
+    const last4 = [0, 1, 2, 3].map(i => hlShift(L, -i)), prev4 = [4, 5, 6, 7].map(i => hlShift(L, -i)), yago4 = last4.map(k => k - 100);
+    const wl = k => `W${String(k % 100).padStart(2, '0')}`;
+    const pc = (a, b) => b ? a / b - 1 : NaN;
+    const arrowB = (p, thr) => !isFinite(p) ? '<span class="delta-zero">→</span>' : p > thr ? '<b class="delta-bad">↑</b>' : p < -thr ? '<b class="delta-good">↓</b>' : '<span class="delta-zero">→</span>';
+    const pct = p => isFinite(p) ? `${sgn(p)}${abs(100 * p).toFixed(0)}%` : '—';
+    const lN = lice(L), lP = lice(hlShift(L, -1)), lY = lice(L - 100);
+    const l4 = avgL(last4), l4p = avgL(prev4), l4y = avgL(yago4);
+    const t4 = sum(last4, 'trt'), t4p = sum(prev4, 'trt'), t4y = sum(yago4, 'trt');
+    const ev = (BW.events || []);
+    const inW = (e, keys) => keys.includes(e[0] * 100 + e[1]);
+    const new4 = ev.filter(e => inW(e, last4)), new4y = ev.filter(e => inW(e, yago4)), newL = ev.filter(e => inW(e, [L]));
+    const byCode = arr => { const o = {}; arr.forEach(e => o[e[4]] = (o[e[4]] || 0) + 1); return Object.entries(o).map(([c, n]) => `${n} ${c}`).join(', '); };
+    const lines = [];
+    lines.push(`${arrowB(pc(l4, l4p), .1)} <b>Lice</b> ${lN.toFixed(2)} adult females per fish in ${wl(L)} (${wl(hlShift(L, -1))}: ${lP.toFixed(2)}, ${L % 100 ? 'same week ' + (Math.floor(L / 100) - 1) : ''}: ${isFinite(lY) ? lY.toFixed(2) : '—'}) — ` +
+      `last 4 weeks ${pct(pc(l4, l4p))} vs the 4 before, ${pct(pc(l4, l4y))} vs a year earlier · ${W[L].ov} site${W[L].ov > 1 ? 's' : ''} above the legal limit`);
+    lines.push(`${arrowB(pc(t4, t4p), .1)} <b>Lice treatments</b> ${t4} site-weeks over ${wl(last4[3])}–${wl(L)} — ${pct(pc(t4, t4p))} vs the 4 weeks before (${t4p}), ${pct(pc(t4, t4y))} vs a year earlier (${t4y})`);
+    lines.push(`${arrowB(pc(new4.length, new4y.length), .2)} <b>Diseases</b> ${newL.length} new case${newL.length !== 1 ? 's' : ''} in ${wl(L)}, ${new4.length} over 4 weeks${new4.length ? ' (' + byCode(new4) + ')' : ''} vs ${new4y.length} a year earlier · ` +
+      `sites with an active case in ${wl(L)}: ${W[L].PD} PD, ${W[L].ILA} ILA (a year earlier ${W[L - 100] ? W[L - 100].PD : '—'} PD, ${W[L - 100] ? W[L - 100].ILA : '—'} ILA)`);
+    // evenements extraordinaires
+    const evs = [];
+    const op = no => (BWR && BWR.site_org && BWR.site_org[no]) || '';
+    const nm = no => (BWR && BWR.site_name && BWR.site_name[no]) || (BW.names && BW.names[no]) || '#' + no;
+    new4.filter(e => e[4] === 'ILA').forEach(e => evs.push({ c: 'neg', t: `<b>New ILA case</b> in ${wl(e[0] * 100 + e[1])}: ${nm(e[3])} (zone ${e[2]}${op(e[3]) ? ', ' + op(e[3]) : ''})` }));
+    const pd4 = new4.filter(e => e[4] === 'PD');
+    if (pd4.length >= 3) evs.push({ c: 'neg', t: `<b>${pd4.length} new PD cases</b> in 4 weeks, zones ${Array.from(new Set(pd4.map(e => e[2]))).sort((a, b) => b - a).join(', ')}` });
+    // poussee de poux par zone : hausse >= 50 % sur 3 semaines et niveau >= 0,25
+    for (let po = 13; po >= 1; po--) {
+      const z = keys => { let a = 0, n = 0; keys.forEach(k => { const r = W[k] && W[k].po[po]; if (r && r.lice !== null && r.lice !== undefined) { a += r.lice * r.nl; n += r.nl; } }); return n ? a / n : NaN; };
+      const now3 = z([0, 1, 2].map(i => hlShift(L, -i))), bef3 = z([3, 4, 5].map(i => hlShift(L, -i)));
+      if (isFinite(now3) && isFinite(bef3) && bef3 > 0 && now3 / bef3 >= 1.5 && now3 >= 0.25)
+        evs.push({ c: 'neg', t: `<b>Lice surge in zone ${po}</b> (${PO_NAMES[po]}): ${now3.toFixed(2)} over the last 3 weeks, ${pct(now3 / bef3 - 1)} vs the 3 before` });
+    }
+    // niveau national record pour cette semaine
+    const sameW = wk.filter(k => k % 100 === L % 100 && k !== L && isFinite(lice(k)));
+    if (sameW.length >= 3 && isFinite(lN) && sameW.every(k => lice(k) < lN))
+      evs.push({ c: 'neg', t: `Highest national lice level for ${wl(L)} since ${Math.floor(sameW[0] / 100)}` });
+    if (sameW.length >= 3 && isFinite(lN) && sameW.every(k => lice(k) > lN))
+      evs.push({ c: 'pos', t: `Lowest national lice level for ${wl(L)} since ${Math.floor(sameW[0] / 100)}` });
+    if (isFinite(lN) && isFinite(lP) && lP > 0 && lN / lP >= 1.4 && lN >= 0.15)
+      evs.push({ c: 'neg', t: `National lice level jumps ${pct(lN / lP - 1)} in one week` });
+    hlHtml = `<div class="sm-row health"><div class="lbl"><b>Lice, treatments, diseases</b><small>BarentsWatch · week ${L % 100} ${Math.floor(L / 100)}</small></div>` +
+      `<div class="hl">${lines.join('<br>')}</div>` +
+      (evs.length ? evs.map(e => `<div class="ev ${e.c === 'pos' ? 'pos' : ''}">${e.t}</div>`).join('')
+                  : `<div class="ev info">Nothing out of the ordinary: no new ILA case, no lice surge in any zone.</div>`) + `</div>`;
+  }
+  document.getElementById('smBio').innerHTML = bio + hlHtml;
+
+  // ---------- ventes ----------
+  let sales = bioRow('harv', 'Harvested volume', 'round weight, month', fmtT, { noun: 'harvest', upGood: true, stable: 0.02 });
+  if (SSBX && SSBX.rows) {
+    const X = {};
+    SSBX.rows.forEach(([k, hs, iso, kg]) => { const o = X[k] || (X[k] = [0, 0, 0, 0]); o[hs] += kg / 1000; });
+    const xk = Object.keys(X).map(Number).sort((a, b) => a - b), K = xk[xk.length - 1];
+    const ky = Math.floor(K / 100), km = K % 100, KP = prevM(K);
+    const prov = k => ((SSBX.meta.months || {})[String(k)] || {}).status === 'provisional';
+    const xEvents = hs => {
+      const ev = [], v = X[K][hs], same = xk.filter(x => x % 100 === km && x !== K);
+      if (same.length >= 3 && same.every(x => v > X[x][hs])) ev.push({ t: `Highest ${MONTHS_FR[km - 1]} volume since ${Math.floor(same[0] / 100)}`, c: 'pos' });
+      if (same.length >= 3 && same.every(x => v < X[x][hs])) ev.push({ t: `Lowest ${MONTHS_FR[km - 1]} volume since ${Math.floor(same[0] / 100)}`, c: 'neg' });
+      return ev;
+    };
+    const xRow = (hs, label) => row({ label, sub: `SSB exports, product weight · ${mlab(ky, km)}${prov(K) ? ' (provisional)' : ''}`,
+      val: X[K][hs], valTxt: fmtT(X[K][hs]), prev: X[KP] ? X[KP][hs] : NaN, prevLbl: mlab(Math.floor(KP / 100), KP % 100),
+      yago: X[K - 100] ? X[K - 100][hs] : NaN, yagoLbl: mlab(ky - 1, km), fmt: fmtT, upGood: true, stable: 0.02, events: xEvents(hs) });
+    sales += xRow(0, 'Fresh whole (HOG) exported') + xRow(1, 'Fresh fillets exported');
+  }
+  document.getElementById('smSales').innerHTML = sales;
+  document.getElementById('smSub').innerHTML =
+    `Norway, all production areas. Monthly figures are the latest month published (Biomasseregisteret ${mlab(ly, lm)}` +
+    (SSBX ? `, SSB exports ${(() => { const ks = Object.keys(SSBX.meta.months || {}).map(Number).sort((a, b) => a - b); const k = ks[ks.length - 1]; return k ? mlab(Math.floor(k / 100), k % 100) : '—'; })()}` : '') +
+    `); fish health is weekly. The big arrow gives the direction against the same period a year earlier; colours read the change for supply ` +
+    `(green = more fish, more volume; for lice, treatments and diseases, orange = worse).`;
+  document.getElementById('smNote').innerHTML =
+    `<b>How the sentences are produced.</b> A month is flagged when it is the lowest or highest for that calendar month since the series starts, ` +
+    `the lowest or highest of the year so far (stocks), when it switches above or below its year-earlier level (with the last time that happened), ` +
+    `or when it extends a run of 3 months or more on the same side. "Stable" means within ±1% (biomass, fish), ±2% (feed, harvest, exports) or ±5% (smolts). ` +
+    `Smolt release counts fish declared below 500 g; post-smolts released above 500 g are not in the source. Health: a new case is a disease ` +
+    `appearing on a site free of it for the 4 previous weeks; a lice surge is a zone whose 3-week average rises by 50% or more to 0.25 or above.`;
+}
+
 loadRemoteData().then(live => {
   showDataBanner(live);
   if (!live) {          // pas de donnees : on n'affiche rien plutot que du perime
@@ -5183,8 +5418,8 @@ loadRemoteData().then(live => {
   // reutilises ailleurs, mais son panneau est masque.
   render();
   renderGlobal();
-  // Le filtre de zones est visible en vue National : l'afficher au demarrage.
-  document.getElementById('poFilterField').style.display = 'flex';
+  // Vue d'ouverture : la synthese (meme mecanique que le clic sur l'onglet).
+  document.querySelector('#viewToggle button[data-v="summary"]').click();
 });
 </script>
 </body>
