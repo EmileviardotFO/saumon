@@ -81,19 +81,19 @@
   .delta-pos { color: var(--up); }
   .delta-good { color: var(--good); }
   /* --- Summary page --- */
-  .sm-sec { font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); margin:20px 0 8px; border-bottom:1px solid var(--border); padding-bottom:4px; }
-  .sm-row { display:grid; grid-template-columns: 230px 170px 56px 1fr 1fr; gap:6px 16px; align-items:center; padding:10px 4px; border-bottom:1px solid var(--border); }
-  .sm-row .lbl b { display:block; font-size:13.5px; color:var(--ink); }
+  .sm-sec { font-size:20px; font-weight:bold; text-align:center; color:var(--accent); margin:26px 0 8px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+  .sm-row { display:grid; grid-template-columns: 320px 150px 56px 1fr 1fr; gap:4px 16px; align-items:center; padding:10px 4px; border-bottom:1px solid var(--border); }
+  .sm-row .lbl b { display:block; font-size:20px; font-weight:bold; color:var(--ink); line-height:1.2; }
   .sm-row .lbl small { color:var(--muted); font-size:11px; }
   .sm-row .val { font-size:20px; font-weight:bold; color:var(--ink); text-align:right; font-variant-numeric:tabular-nums; }
   .sm-row .val small { display:block; font-size:10.5px; font-weight:normal; color:var(--muted); }
   .sm-row .arr { font-size:30px; line-height:1; text-align:center; font-weight:bold; }
   .sm-row .cmp { font-size:12.5px; line-height:1.5; }
   .sm-row .cmp span.k { color:var(--muted); font-size:11px; display:block; }
-  .sm-row .ev { grid-column: 1 / -1; font-size:12.5px; line-height:1.5; padding:6px 10px; border-left:3px solid #ffb74d; background:rgba(255,183,77,.07); border-radius:3px; }
+  .sm-row .ev { grid-column: 1 / -1; font-size:11px; line-height:1.35; color:var(--muted); padding:2px 8px; margin-top:-2px; border-left:3px solid #ffb74d; background:rgba(255,183,77,.07); border-radius:2px; }
   .sm-row .ev.pos { border-left-color: var(--good); background:rgba(126,217,143,.07); }
   .sm-row .ev.info { border-left-color: var(--accent); background:rgba(47,184,166,.06); }
-  .sm-row.health { grid-template-columns: 230px 1fr; }
+  .sm-row.health { grid-template-columns: 320px 1fr; }
   .sm-row.health .hl { font-size:12.5px; line-height:1.7; }
   @media (max-width: 900px) { .sm-row { grid-template-columns: 1fr 1fr; } .sm-row .arr { text-align:left; } }
   .delta-bad { color: var(--bad); }
@@ -384,7 +384,7 @@
   <div class="panel" id="summaryView" style="flex:1; min-width:0; max-width:1320px; display:none;">
     <div class="sig-title">Summary — the latest figures at a glance</div>
     <div class="sig-sub" id="smSub"></div>
-    <div class="sm-sec">Biology</div>
+    <div class="sm-sec">Farming and Biology</div>
     <div id="smBio"></div>
     <div class="sm-sec">Sales</div>
     <div id="smSales"></div>
@@ -5268,14 +5268,14 @@ function renderSummary() {
   function row(o) {
     const { label, sub, val, valTxt, prev, prevLbl, yago, yagoLbl, fmt, upGood, stable, events, valSub } = o;
     const d1 = val - prev, p1 = prev ? d1 / prev : NaN, d2 = val - yago, p2 = yago ? d2 / yago : NaN;
-    const dir = !isFinite(p2) ? 0 : (p2 > stable ? 1 : p2 < -stable ? -1 : 0);
+    const dir = !isFinite(p1) ? 0 : (p1 > stable ? 1 : p1 < -stable ? -1 : 0);
     const arrow = dir > 0 ? '↑' : dir < 0 ? '↓' : '→';
     const cls = p => !isFinite(p) || abs(p) <= stable ? 'delta-zero' : ((p > 0) === upGood ? 'delta-good' : 'delta-bad');
     const cmp = (lbl, d, p) => `<div class="cmp"><span class="k">vs ${lbl}</span>` + (isFinite(p)
       ? `<b class="${cls(p)}">${p > stable ? '↑' : p < -stable ? '↓' : '→'} ${sgn(p)}${abs(100 * p).toFixed(1)}%</b> <span style="color:var(--muted)">(${sgn(d)}${fmt(abs(d))})</span>` : '—') + `</div>`;
     return `<div class="sm-row"><div class="lbl"><b>${label}</b><small>${sub}</small></div>` +
       `<div class="val">${valTxt}${valSub ? `<small>${valSub}</small>` : ''}</div>` +
-      `<div class="arr ${cls(p2)}" title="Direction against ${yagoLbl}">${arrow}</div>` +
+      `<div class="arr ${cls(p1)}" title="Direction against ${prevLbl}">${arrow}</div>` +
       cmp(prevLbl, d1, p1) + cmp(yagoLbl, d2, p2) +
       (events || []).map(e => `<div class="ev ${e.c === 'pos' ? 'pos' : e.c === 'info' ? 'info' : ''}">${e.t}</div>`).join('') + `</div>`;
   }
@@ -5390,7 +5390,7 @@ function renderSummary() {
   document.getElementById('smSub').innerHTML =
     `Norway, all production areas. Monthly figures are the latest month published (Biomasseregisteret ${mlab(ly, lm)}` +
     (SSBX ? `, SSB exports ${(() => { const ks = Object.keys(SSBX.meta.months || {}).map(Number).sort((a, b) => a - b); const k = ks[ks.length - 1]; return k ? mlab(Math.floor(k / 100), k % 100) : '—'; })()}` : '') +
-    `); fish health is weekly. The big arrow gives the direction against the same period a year earlier; colours read the change for supply ` +
+    `); fish health is weekly. The big arrow gives the direction against the previous month; colours read the change for supply ` +
     `(green = more fish, more volume; for lice, treatments and diseases, orange = worse).`;
   document.getElementById('smNote').innerHTML =
     `<b>How the sentences are produced.</b> A month is flagged when it is the lowest or highest for that calendar month since the series starts, ` +
