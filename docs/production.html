@@ -159,7 +159,14 @@
     border-radius:4px; font-size:11px; cursor:pointer; }
   .pm-dd-quick button:hover { color:var(--ink); border-color:var(--accent); }
   .pm-mt button.active { background:var(--accent); color:#06211d; border-color:var(--accent); font-weight:bold; }
-  .pr-cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); gap:10px; margin:12px 0 6px; }
+  .pr-cards { display:grid; grid-template-columns:repeat(7, minmax(0, 1fr)); gap:8px; margin:12px 0 6px; }
+  @media (max-width: 1100px) { .pr-cards { grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); } }
+  .pr-cards .pr-card:not(.pr-total) { padding:9px 10px; }
+  .pr-cards .pr-card:not(.pr-total) .big { font-size:17px; white-space:nowrap; overflow:hidden; text-overflow:clip; }
+  .pr-cards .pr-card:not(.pr-total) .big > span { font-size:12.5px !important; }
+  .pr-cards .pr-card:not(.pr-total) .big > span:last-child { font-size:9px !important; }
+  .pr-cards .pr-card:not(.pr-total) .big > span > span { font-size:inherit; }
+  .pr-cards .pr-card:not(.pr-total) .ln { font-size:10.5px; }
   .pr-card { background:#0d1a24; border:1px solid var(--border); border-radius:8px; padding:10px 12px; cursor:pointer; min-width:0; }
   .pr-card:hover { border-color:#3a5566; }
   .pr-card.active { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent) inset; }
@@ -168,6 +175,12 @@
   .pr-card .big { font-size:20px; font-weight:bold; margin-top:4px; }
   .pr-card .ln { font-size:11px; color:var(--muted); margin-top:2px; }
   .pr-card svg { display:block; width:100%; height:34px; margin-top:6px; }
+  .pr-card.pr-total { grid-column:1 / -1; cursor:default; border-color:#3a5566; }
+  .pr-total-body { display:grid; grid-template-columns:minmax(260px, 1fr) 2fr; gap:6px 18px; align-items:center; }
+  .pr-total-share { display:flex; height:14px; border-radius:3px; overflow:hidden; gap:1px; }
+  .pr-total-leg { grid-column:2; display:flex; flex-wrap:wrap; gap:4px 14px; font-size:11px; color:var(--muted); }
+  .pr-total-leg i { display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:5px; }
+  @media (max-width: 700px) { .pr-total-body { grid-template-columns:1fr; } .pr-total-leg { grid-column:1; } }
   .viz svg { display:block; width:100%; height:auto; }
   .viz-legend { display:flex; flex-wrap:wrap; gap:6px 16px; font-size:12px; color:var(--muted); margin:6px 0 2px; }
   .viz-legend span { display:inline-flex; align-items:center; gap:6px; }
@@ -630,7 +643,7 @@
     </div>
   </div>
 
-  <div class="panel" id="producersView" style="flex:1; min-width:0; max-width:1320px; display:none;">
+  <div class="panel" id="producersView" style="flex:1; min-width:0; max-width:1600px; display:none;">
     <div class="sig-title">Producing countries — monthly exports, by form, with prices</div>
     <div class="sig-sub" id="prSub"></div>
     <div id="prCards" class="pr-cards"></div>
@@ -1390,7 +1403,7 @@ function sourceStatus() {
     add('Eurostat — EU salmon flows', mlab(Math.floor(k / 100), k % 100), ym(Math.floor(k / 100), k % 100) < nowYM - 3,
       'monthly, about 6–8 weeks after the month', steps.EUROSTAT); }
   if (d.status && d.status.national) { const n = d.status.national;
-    [['FO', 'Faroe export statistics (Hagstova)'], ['IS', 'Iceland export statistics (Hagstofa)'], ['GB', 'UK export statistics (HMRC)'], ['CL', 'Chile export statistics (UN Comtrade)']].forEach(([c, lab]) => { const k = n[c] && n[c].last;
+    [['FO', 'Faroe export statistics (Hagstova)'], ['IS', 'Iceland export statistics (Hagstofa)'], ['GB', 'UK export statistics (HMRC)'], ['CL', 'Chile export statistics (UN Comtrade)'], ['CA', 'Canada export statistics (UN Comtrade)']].forEach(([c, lab]) => { const k = n[c] && n[c].last;
       add(lab, k ? mlab(Math.floor(k / 100), k % 100) : '—', !k || ym(Math.floor(k / 100), k % 100) < nowYM - 3, 'monthly, by destination country', steps.NATIONAL); }); }
   if (d.china && d.china.meta) { const g = daysSince(d.china.meta.fetched);
     add('GACC — Norwegian establishments registered for China', d.china.meta.fetched || '—', g === null || g > 10, 'every update run (customs search page, fragile source)', steps.CHINA); }
@@ -5886,9 +5899,9 @@ async function loadEurostat() {
 const PAC_SRC = new Set(['US', 'CN', 'RU', 'TH', 'VN', 'JP', 'KR', 'NZ', 'TW', 'ID', 'PH', 'MY']);
 const ORIGS = ['NO', 'GB', 'FO', 'IS', 'IE', 'CL', 'OTH', 'PAC'];
 const ORIG_LAB = { NO: 'Norway', GB: 'United Kingdom', FO: 'Faroe Islands', IS: 'Iceland', IE: 'Ireland', CL: 'Chile', OTH: 'Other / unspecified', PAC: 'Pacific & wild salmon (excluded)' };
-const ORIG_COL = { NO: '#4fc3f7', GB: '#ffb74d', FO: '#2fb8a6', IS: '#ba68c8', IE: '#81c784', CL: '#e57373', OTH: '#78909c', PAC: '#8d6e63' };
-const PRODUCERS = ['NO', 'FO', 'IS', 'GB', 'IE', 'CL'];
-const PROD_LAB = { NO: 'Norway', FO: 'Faroe Islands', IS: 'Iceland', GB: 'Scotland (UK)', IE: 'Ireland', CL: 'Chile' };
+const ORIG_COL = { NO: '#4fc3f7', GB: '#ffb74d', FO: '#2fb8a6', IS: '#ba68c8', IE: '#81c784', CL: '#e57373', CA: '#f06292', OTH: '#78909c', PAC: '#8d6e63' };
+const PRODUCERS = ['NO', 'FO', 'IS', 'GB', 'IE', 'CL', 'CA'];
+const PROD_LAB = { NO: 'Norway', FO: 'Faroe Islands', IS: 'Iceland', GB: 'Scotland (UK)', IE: 'Ireland', CL: 'Chile', CA: 'Canada' };
 const FORMS_OK = [0, 1, 2, 3, 5, 6];
 const FORM_COL = ['#4fc3f7', '#90a4ae', '#2fb8a6', '#9575cd', null, '#ffb74d', '#e57373'];
 const SSB_PI = { '03021411': 0, '03031311': 1, '03044100': 2, '03048100': 3 };
@@ -5999,7 +6012,7 @@ function tmOrigins(rep, ym, pi) {
 // 'all' : statistiques norvegiennes (SSB, NOK) ou exportations de l'Irlande (Eurostat).
 // Retour : { cur, last, rows: [[ym, destination, forme, tonnes, valeur en milliers]] }
 // NOK -> EUR au taux moyen mensuel d'Eurostat (taux enregistres avec les statistiques nationales)
-const NAT_NAME = { FO: ['Faroese', 'Hagstova'], IS: ['Icelandic', 'Hagstofa'], GB: ['UK', 'HMRC'], CL: ['Chilean', 'UN Comtrade'] };
+const NAT_NAME = { FO: ['Faroese', 'Hagstova'], IS: ['Icelandic', 'Hagstofa'], GB: ['UK', 'HMRC'], CL: ['Chilean', 'UN Comtrade'], CA: ['Canadian', 'UN Comtrade'] };
 // sources qui fixent le "dernier mois disponible" (le Chili, publie plus tard via Comtrade, garde son propre mois)
 const NAT_CORE = ['FO', 'IS', 'GB'];
 function tmNok() {
@@ -6168,7 +6181,35 @@ function renderProducers() {
       `<div class="ln">price <b style="color:var(--ink)">${isFinite(pa) ? pa.toFixed(2) + ' ' + D.cur + '/kg' : '—'}</b> ${isFinite(pa) && isFinite(pb) ? tmVar(tmPc(pa, pb)) : ''}</div>` +
       vzSpark(tmRange(end, 24).map(k => by[k] ? by[k][0] : 0), ORIG_COL[pr]) + `</div>`;
   });
-  document.getElementById('prCards').innerHTML = cards.join('');
+  // bandeau total : tous les producteurs, meme periode, prix en euros (moyenne ponderee par les volumes)
+  const totalCard = (() => {
+    const inc = [], miss = [], noEur = [], by = {}, prevBy = {};
+    let A = [0, 0, 0], B = [0, 0, 0];        // tonnes, k€, tonnes avec prix en €
+    const PERt = tmPeriod(perSel.value, 'pr', END);
+    PRODUCERS.forEach(pr => {
+      const D = SRC[pr], m = monthly(D);
+      if (D.last < PERt.keys[PERt.keys.length - 1]) { miss.push(`${PROD_LAB[pr]} (to ${tmMl(D.last)})`); return; }
+      inc.push(pr);
+      const eur = D.cur === '€'; if (!eur) noEur.push(PROD_LAB[pr]);
+      const a = S(m, PERt.keys), b = S(m, PERt.prev);
+      A[0] += a[0]; B[0] += b[0]; if (eur) { A[1] += a[1]; A[2] += a[0]; B[1] += b[1]; B[2] += b[0]; }
+      tmRange(END, 24).forEach(k => by[k] = (by[k] || 0) + (m[k] ? m[k][0] : 0));
+      if (PERt.keys.length === 1) { const k = tmBack(PERt.keys[0], 1); prevBy[k] = (prevBy[k] || 0) + (m[k] ? m[k][0] : 0); }
+    });
+    const p = tmPc(A[0], B[0]), pa = A[2] ? A[1] / A[2] : NaN, pb = B[2] ? B[1] / B[2] : NaN;
+    const shares = inc.map(pr => { const t = S(monthly(SRC[pr]), PERt.keys)[0]; return [pr, t]; }).filter(x => x[1] > 0).sort((x, y) => y[1] - x[1]);
+    return `<div class="pr-card pr-total"><div class="nm"><i style="background:#e7eef2"></i>All producers — total</div>` +
+      `<div class="ln">${inc.length} countries · ${PERt.lab} · ${formsTxt}</div>` +
+      `<div class="pr-total-body"><div>` +
+      `<div class="big">${tmKt(A[0])} <span style="font-size:13px">${tmVar(p)}</span> <span style="font-size:10px;color:var(--muted);font-weight:normal">vs N-1</span></div>` +
+      (PERt.keys.length === 1 ? `<div class="ln">vs previous month: ${tmVar(tmPc(A[0], Object.values(prevBy).reduce((x, y) => x + y, 0)))}</div>` : '') +
+      `<div class="ln">average price <b style="color:var(--ink)">${isFinite(pa) ? pa.toFixed(2) + ' €/kg' : '—'}</b> ${isFinite(pa) && isFinite(pb) ? tmVar(tmPc(pa, pb)) : ''}${noEur.length ? ` <span style="font-size:10px">(excl. ${noEur.join(', ')}: not yet in €)</span>` : ''}</div>` +
+      (miss.length ? `<div class="ln"><span class="warn">Not included, not yet published for this period: ${miss.join(', ')}</span></div>` : '') +
+      `</div><div class="pr-total-share">${shares.map(([pr, t]) => `<span title="${PROD_LAB[pr]}: ${tmF0(t)} t" style="flex:${t};background:${ORIG_COL[pr]}"></span>`).join('')}</div>` +
+      `<div class="pr-total-leg">${shares.map(([pr, t]) => `<span><i style="background:${ORIG_COL[pr]}"></i>${PROD_LAB[pr]} ${A[0] ? (100 * t / A[0]).toFixed(1) : 0}%</span>`).join('')}</div></div>` +
+      vzSpark(tmRange(END, 24).map(k => by[k] || 0), '#e7eef2') + `</div>`;
+  })();
+  document.getElementById('prCards').innerHTML = totalCard + cards.join('');
   document.querySelectorAll('#prCards .pr-card').forEach(c => c.addEventListener('click', () => { prSel = c.dataset.p; renderProducers(); }));
   // producteur choisi
   const D = SRC[prSel], cur = D.cur, lastP = D.last, endP = Math.min(END, lastP), PER = tmPeriod(perSel.value, 'pr', endP);
@@ -6224,7 +6265,7 @@ function renderProducers() {
   document.getElementById('prNote').innerHTML = `<b>Sources.</b> Norway: SSB export statistics (fresh and frozen whole fish, fresh and frozen fillets; NOK converted to € at Eurostat monthly average rates). ` +
     `Faroe Islands: Hagstova table UH01046 (DKK, fixed rate). Iceland: Hagstofa, exports by tariff number (farmed Atlantic salmon codes; ISK at Eurostat monthly rates). ` +
     `United Kingdom: HMRC overseas trade statistics (GBP at Eurostat monthly rates) — UK farmed salmon is Scottish, a few re-exports of Norwegian salmon are included. ` +
-    `Ireland: Irish exports as reported to Eurostat. Chile: exports reported by Chile to UN Comtrade (HS6, USD at Eurostat monthly rates; published with a longer delay; fillet codes include coho). Any country whose statistics are missing: arrivals in the EU (Eurostat Comext). ` +
+    `Ireland: Irish exports as reported to Eurostat. Chile and Canada: exports they report to UN Comtrade (HS6, USD at Eurostat monthly rates; published with a longer delay; fillet codes include Pacific salmon such as coho). Any country whose statistics are missing: arrivals in the EU (Eurostat Comext). ` +
     `Destination = country declared at export, wherever the salmon is cleared.`;
 }
 
@@ -6273,7 +6314,7 @@ function renderEuFlows() {
   const CLAB = Object.assign({}, ORIG_LAB, { VIA: 'Via another EU country — origin not declared', OTH: 'Other origins (declared)' });
   const CCOL = Object.assign({}, ORIG_COL, { VIA: '#3d5462' });
   const ssbOK = (pi, k) => pi <= 3 && k <= TM.ssbLast && !!SSBX;
-  const NATO = Object.keys(TM.nati), natOK = (g, k) => !!TM.nati[g] && k >= TM.natFirst[g] && k <= TM.natLast[g];
+  const NATO = Object.keys(TM.nati).filter(o => ORIGS.includes(o)), natOK = (g, k) => !!TM.nati[g] && k >= TM.natFirst[g] && k <= TM.natLast[g];
   // [tonnes, k€ (declares a l'arrivee), k NOK (stat. norvegiennes)] ; o._hub = arrivees brutes par pays d'expedition ; o._over
   const orgSum = (rep, ks) => { const o = { _hub: {}, _over: 0 }, tot = {}, known = {};
     const add = (g, t, v, nok) => { const y = o[g] || (o[g] = [0, 0, 0]); y[0] += t; y[1] += v; y[2] += nok; };
