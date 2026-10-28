@@ -1,0 +1,352 @@
+[
+{
+"MonthId": 202301,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 15253.0,
+"NetMass": 1560.0
+},
+{
+"MonthId": 202301,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 13275487.0,
+"NetMass": 1674442.0
+},
+{
+"MonthId": 202301,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 122955.0,
+"NetMass": 14561.0
+},
+{
+"MonthId": 202301,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 1060007.0,
+"NetMass": 121639.0
+},
+{
+"MonthId": 202301,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 2281730.0,
+"NetMass": 275316.0
+},
+{
+"MonthId": 202302,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 46235.0,
+"NetMass": 4510.0
+},
+{
+"MonthId": 202302,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 13405233.0,
+"NetMass": 1592415.0
+},
+{
+"MonthId": 202302,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 175560.0,
+"NetMass": 19825.0
+},
+{
+"MonthId": 202302,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 552840.0,
+"NetMass": 64953.0
+},
+{
+"MonthId": 202302,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 2162329.0,
+"NetMass": 259406.0
+},
+{
+"MonthId": 202303,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 34264.0,
+"NetMass": 3268.0
+},
+{
+"MonthId": 202303,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 18586355.0,
+"NetMass": 1921243.0
+},
+{
+"MonthId": 202303,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 377493.0,
+"NetMass": 36585.0
+},
+{
+"MonthId": 202303,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 1593524.0,
+"NetMass": 172913.0
+},
+{
+"MonthId": 202303,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 1701261.0,
+"NetMass": 186130.0
+},
+{
+"MonthId": 202304,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 51731.0,
+"NetMass": 5572.0
+},
+{
+"MonthId": 202304,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 21042554.0,
+"NetMass": 2202120.0
+},
+{
+"MonthId": 202304,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 474076.0,
+"NetMass": 64231.0
+},
+{
+"MonthId": 202304,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 2632875.0,
+"NetMass": 285805.0
+},
+{
+"MonthId": 202305,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 36311.0,
+"NetMass": 3490.0
+},
+{
+"MonthId": 202305,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 24560955.0,
+"NetMass": 2808190.0
+},
+{
+"MonthId": 202305,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 930336.0,
+"NetMass": 106667.0
+},
+{
+"MonthId": 202305,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 1982450.0,
+"NetMass": 214568.0
+},
+{
+"MonthId": 202306,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 29380.0,
+"NetMass": 2851.0
+},
+{
+"MonthId": 202306,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 24273417.0,
+"NetMass": 2864424.0
+},
+{
+"MonthId": 202306,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 630423.0,
+"NetMass": 78895.0
+},
+{
+"MonthId": 202306,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 732828.0,
+"NetMass": 89712.0
+},
+{
+"MonthId": 202306,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 3436968.0,
+"NetMass": 400755.0
+},
+{
+"MonthId": 202307,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 36030.0,
+"NetMass": 3562.0
+},
+{
+"MonthId": 202307,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 22347431.0,
+"NetMass": 2843664.0
+},
+{
+"MonthId": 202307,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 1974535.0,
+"NetMass": 239064.0
+},
+{
+"MonthId": 202307,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 1903687.0,
+"NetMass": 233704.0
+},
+{
+"MonthId": 202307,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 2248397.0,
+"NetMass": 270500.0
+},
+{
+"MonthId": 202308,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 48369.0,
+"NetMass": 3608.0
+},
+{
+"MonthId": 202308,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 19554540.0,
+"NetMass": 2691234.0
+},
+{
+"MonthId": 202308,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 1690355.0,
+"NetMass": 238438.0
+},
+{
+"MonthId": 202308,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 157728.0,
+"NetMass": 15348.0
+},
+{
+"MonthId": 202308,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 1125265.0,
+"NetMass": 140561.0
+},
+{
+"MonthId": 202308,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 2529174.0,
+"NetMass": 331023.0
+},
+{
+"MonthId": 202309,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 64508.0,
+"NetMass": 6365.0
+},
+{
+"MonthId": 202309,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 15482625.0,
+"NetMass": 2190009.0
+},
+{
+"MonthId": 202309,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 1060179.0,
+"NetMass": 151607.0
+},
+{
+"MonthId": 202309,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 2136832.0,
+"NetMass": 252897.0
+},
+{
+"MonthId": 202309,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 2688552.0,
+"NetMass": 358397.0
+},
+{
+"MonthId": 202310,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 20081.0,
+"NetMass": 1971.0
+},
+{
+"MonthId": 202310,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 11968425.0,
+"NetMass": 1510500.0
+},
+{
+"MonthId": 202310,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 437837.0,
+"NetMass": 47720.0
+},
+{
+"MonthId": 202310,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 2455270.0,
+"NetMass": 271349.0
+},
+{
+"MonthId": 202310,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 3859798.0,
+"NetMass": 400642.0
+},
+{
+"MonthId": 202311,
+"FlowTypeId": 2,
+"CountryId": 1,
+"Value": 71432.0,
+"NetMass": 7021.0
+}
+]
