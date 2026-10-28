@@ -6037,14 +6037,22 @@ function vzStack(keys, stacks, o) {
 }
 // Barres horizontales : rows = [{lab, v, vp, col}] (vp = annee precedente, pour la variation)
 function vzHBars(rows, o) {
-  const W = 1080, rh = 24, mL = 210, mR = 150, H = rows.length * rh + 10, max = Math.max(...rows.map(r => Math.max(r.v, r.vp || 0)), 1), pw = W - mL - mR;
-  let s = '';
-  rows.forEach((r, i) => { const y = 5 + i * rh, w = r.v / max * pw, wp = (r.vp || 0) / max * pw, p = tmPc(r.v, r.vp);
+  // o.price : colonne de prix a droite (r.pr = prix, r.prp = prix un an plus tot)
+  const W = 1080, rh = 24, mL = 210, mR = o.price ? 330 : 150, top = o.price ? 22 : 0, H = rows.length * rh + 10 + top;
+  const max = Math.max(...rows.map(r => Math.max(r.v, r.vp || 0)), 1), pw = W - mL - mR, xP = W - 120, xD = W - 20;
+  let s = o.price ? `<text x="${xP}" y="14" text-anchor="end" fill="#8fa4b0" font-size="11" font-weight="bold">${o.price}</text>` +
+    `<text x="${xD}" y="14" text-anchor="end" fill="#8fa4b0" font-size="11" font-weight="bold">price vs N-1</text>` +
+    `<line x1="${xP - 120}" x2="${xP - 120}" y1="2" y2="${H - 4}" stroke="#223642"/>` : '';
+  rows.forEach((r, i) => { const y = top + 5 + i * rh, w = r.v / max * pw, wp = (r.vp || 0) / max * pw, p = tmPc(r.v, r.vp);
     s += `<text x="${mL - 10}" y="${y + 15}" text-anchor="end" fill="#e7eef2" font-size="12">${r.lab}</text>` +
       `<rect x="${mL}" y="${y + 4}" width="${Math.max(w, 1).toFixed(1)}" height="${rh - 9}" fill="${r.col}" rx="2"><title>${r.lab}: ${tmF0(r.v)} ${o.unit}${r.vp ? `, a year earlier ${tmF0(r.vp)}` : ''}</title></rect>` +
       (r.vp ? `<line x1="${(mL + wp).toFixed(1)}" x2="${(mL + wp).toFixed(1)}" y1="${y + 1}" y2="${y + rh - 2}" stroke="#e7eef2" stroke-width="2" stroke-opacity=".7"/>` : '') +
       `<text x="${mL + Math.max(w, wp) + 8}" y="${y + 15}" fill="#cfdde4" font-size="12">${tmF0(r.v)}` +
-      (isFinite(p) ? ` <tspan fill="${p > 2 ? '#7be0c9' : p < -2 ? '#ff8a65' : '#8fa4b0'}">${p >= 0 ? '+' : ''}${p.toFixed(0)}%</tspan>` : r.v > 0 ? ' <tspan fill="#8fa4b0">new</tspan>' : '') + `</text>`; });
+      (isFinite(p) ? ` <tspan fill="${p > 2 ? '#7be0c9' : p < -2 ? '#ff8a65' : '#8fa4b0'}">${p >= 0 ? '+' : ''}${p.toFixed(0)}%</tspan>` : r.v > 0 ? ' <tspan fill="#8fa4b0">new</tspan>' : '') + `</text>`;
+    if (o.price) { const q = tmPc(r.pr, r.prp);
+      s += `<text x="${xP}" y="${y + 15}" text-anchor="end" fill="#e7eef2" font-size="12" font-weight="bold">${isFinite(r.pr) ? r.pr.toFixed(2) : '—'}</text>` +
+        `<text x="${xD}" y="${y + 15}" text-anchor="end" fill="${!isFinite(q) ? '#8fa4b0' : q > 2 ? '#7be0c9' : q < -2 ? '#ff8a65' : '#8fa4b0'}" font-size="12">${isFinite(q) ? (q >= 0 ? '+' : '') + q.toFixed(0) + '%' + (isFinite(r.prp) ? ` <tspan fill="#8fa4b0">(${r.prp.toFixed(2)})</tspan>` : '') : '—'}</text>`; }
+  });
   return `<div class="viz"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">${s}</svg></div>`;
 }
 // Variations empilees de part et d'autre de zero : rows = [{lab, segs:[{col, lab, v}], net, pct, tag}]
@@ -6151,12 +6159,14 @@ function renderProducers() {
       `<td class="sep-left">${f2(pr(L))}</td>${tmPct(pr(L), pr(Ly))}<td>${f2(pr(A))}</td></tr>`; };
   document.getElementById('tbodyPrF').innerHTML = sel.map(i => row(`<i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${FORM_COL[i]};margin-right:6px"></i>${P[i]}`, by[i])).join('') + (sel.length > 1 ? row('Total', tot, true) : '');
   // destinations
-  const dst = {}; D.rows.forEach(([ym, de, pi, t]) => { if (!by[pi]) return; const n = kN.includes(ym), p = kNp.includes(ym); if (!n && !p) return; const x = dst[de] || (dst[de] = [0, 0]); x[n ? 0 : 1] += t; });
+  const dst = {}; D.rows.forEach(([ym, de, pi, t, v]) => { if (!by[pi]) return; const n = kN.includes(ym), p = kNp.includes(ym); if (!n && !p) return;
+    const x = dst[de] || (dst[de] = [0, 0, 0, 0]); x[n ? 0 : 1] += t; x[n ? 2 : 3] += v || 0; });
   const top = Object.entries(dst).filter(([, x]) => x[0] >= 1 || x[1] >= 1).sort((a, b) => b[1][0] - a[1][0]).slice(0, 18);
   document.getElementById('prDestTitle').textContent = `${PROD_LAB[prSel]} — ${D.euOnly ? 'EU country of arrival' : 'destinations'}, last 12 months`;
-  document.getElementById('prDestSub').innerHTML = `Selected forms, ${tmMl(kN[0])} – ${tmMl(kN[11])}. The white tick marks the same 12 months a year earlier.` +
+  document.getElementById('prDestSub').innerHTML = `Selected forms, ${tmMl(kN[0])} – ${tmMl(kN[11])}. The white tick marks the volume of the same 12 months a year earlier; on the right, the average price per destination and its change (price a year earlier in brackets). Prices mix forms when several are ticked: select one form for a like-for-like comparison.` +
     (D.euOnly ? ` <span class="warn">EU country of arrival = where customs clearance takes place</span>, not always where the salmon is eaten (see the EU markets tab for the reconstructed origins of each market).` : '');
-  document.getElementById('prDest').innerHTML = top.length ? vzHBars(top.map(([de, x]) => ({ lab: euName(de), v: x[0], vp: x[1], col: ORIG_COL[prSel] })), { unit: 't' }) : '';
+  document.getElementById('prDest').innerHTML = top.length ? vzHBars(top.map(([de, x]) => ({ lab: euName(de), v: x[0], vp: x[1], col: ORIG_COL[prSel],
+    pr: x[0] >= 1 && x[2] > 0 ? x[2] / x[0] : NaN, prp: x[1] >= 1 && x[3] > 0 ? x[3] / x[1] : NaN })), { unit: 't', price: `${cur}/kg, 12 months` }) : '';
   document.getElementById('prNote').innerHTML = `<b>Sources.</b> Eurostat Comext DS-045409 (monthly EU trade by CN8 product, in € and tonnes of product weight; latest months revised for a while, incomplete months left out). ` +
     `Norwegian statistics: SSB (fresh and frozen whole fish, fresh and frozen fillets; NOK). ` +
     `Totals for the Faroes (Hagstova), Iceland (Hagstofa), the UK (HMRC) and Chile will be added once their statistics are collected.`;
