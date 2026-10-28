@@ -465,8 +465,8 @@
     </div>
 
     <hr class="sig-divider">
-    <div class="sig-title">Short-horizon projection (0–3 months)</div>
-    <div class="sig-sub">Mechanical extrapolation of harvest from standing biomass — independent of the ratios above.</div>
+    <div class="sig-title">Harvest projection (1–9 months)</div>
+    <div class="sig-sub" id="outlookProjSub">Projected harvest volume, headcount and average weight, with the error the method actually made on past data at each horizon.</div>
 
     <table>
       <thead>
@@ -482,6 +482,14 @@
       </thead>
       <tbody id="tbodyOutlook"></tbody>
     </table>
+    <div class="sig-title" style="margin-top:22px">By quarter</div>
+    <table class="sig-table"><thead><tr><th class="name">Quarter</th><th>Harvest (t)</th><th>Δ% YoY</th><th>Months projected</th><th>Error band</th></tr></thead>
+      <tbody id="tbodyOutlookQ"></tbody></table>
+    <div class="sig-title" style="margin-top:22px">Test on a period already known</div>
+    <div class="sig-sub" id="outlookBtSub"></div>
+    <table class="sig-table"><thead><tr><th class="name">Month</th><th>Actual (t)</th><th>Projected (t)</th><th>Error</th><th class="sep-left">Previous method</th><th>Error</th></tr></thead>
+      <tbody id="tbodyOutlookBt"></tbody><tfoot id="tfootOutlookBt"></tfoot></table>
+    <div class="sig-sub" id="outlookAcc" style="margin-top:10px"></div>
     <div class="note" id="outlookNote" style="margin-top:16px; text-align:left; max-width:none;"></div>
   </div>
 
@@ -5017,7 +5025,8 @@ function renderOutlook() {
   };
 
   // volume projection made at index i for horizon h, using only data before i
-  const projectVol = (i, h) => {
+  // (previous method: biomass ratio A blended with last year x 12-month drift B)
+  const projectOld = (i, h) => {
     const tgtMonth = ((s[i].month - 1 + h) % 12) + 1;
     const hist = [];
     for (let j = 0; j < i; j++) {
@@ -5035,6 +5044,51 @@ function renderOutlook() {
     if (d === null) return estA;
     const alpha = Math.max(0, Math.min(0.6, (6 - h) / 5));
     return alpha * estA + (1 - alpha) * hist[hist.length - 1].vol * d;
+  };
+
+  // ---- Headcount estimator (added Oct 2026, see backtest below).
+  //  harvested count in month t+h = fish in the sea at t x the historical share
+  //  of the stock harvested h months later in that calendar month (recent years
+  //  weigh more), times an average harvest weight = same month last year x the
+  //  change in average stock weight over the last 12 months. Its own past bias
+  //  is then removed: ratio actual / estimate over the months already known,
+  //  recent months weighing more (walk-forward, nothing from the future).
+  const ew = (vals, dec) => { let ws = 0, v = 0; vals.forEach((x, a) => { const w = Math.pow(dec, vals.length - 1 - a); ws += w; v += w * x; }); return ws ? v / ws : null; };
+  const cwRawMemo = {};
+  const cwRaw = (i, h) => {
+    const key = i * 100 + h;
+    if (key in cwRawMemo) return cwRawMemo[key];
+    let out = null;
+    const tgtMonth = ((s[i].month - 1 + h) % 12) + 1, hist = [];
+    for (let j = 0; j < i; j++) {
+      const j2 = j + h;
+      if (j2 > i) break;
+      if (s[j2].month !== tgtMonth || s[j].stock <= 0 || s[j2].stk <= 0) continue;
+      hist.push(s[j2].stk / s[j].stock);
+    }
+    const ly = i + h - 12;
+    if (hist.length >= 3 && i >= 12 && ly >= 0 && ly <= i && s[ly].stk > 0 && s[i].stock > 0 && s[i - 12].stock > 0) {
+      const w = s[ly].vol / s[ly].stk * ((s[i].bio / s[i].stock) / (s[i - 12].bio / s[i - 12].stock));
+      out = s[i].stock * ew(hist, 0.6) * w;
+    }
+    return (cwRawMemo[key] = out);
+  };
+  const cwCorr = (i, h) => {
+    const p = cwRaw(i, h);
+    if (p === null) return null;
+    const past = [];
+    for (let j = Math.max(0, i - 60); j <= i - h; j++) {
+      const pj = cwRaw(j, h);
+      if (pj && s[j + h].vol > 0) past.push(s[j + h].vol / pj);
+    }
+    return past.length >= 6 ? p * ew(past, 0.7) : p;
+  };
+  // final projection: average of the previous method and the headcount estimator
+  const projectVol = (i, h) => {
+    const a = projectOld(i, h), b = cwCorr(i, h);
+    if (a === null) return b;
+    if (b === null) return a;
+    return (a + b) / 2;
   };
 
   // empirical error band: walk the projection forward over the whole history
@@ -5147,7 +5201,7 @@ function renderOutlook() {
     if (pv !== null && bandOf[k]) {
       projVol = pv / 1000;
       const e = bandOf[k].mae / 100;
-      volTxt = `${num0(projVol)}<span style="color:var(--muted)"> (±${bandOf[k].mae.toFixed(1)}% → ${num0(projVol*(1-e))}–${num0(projVol*(1+e))})</span>`;
+      volTxt = `${num0(projVol)}<small style="display:block;color:var(--muted);font-style:normal">±${bandOf[k].mae.toFixed(1)}% · ${num0(projVol*(1-e))}–${num0(projVol*(1+e))}</small>`;
     }
     const f = wFit[k], srcIdx = lastIdx;
     if (f && swGet(s[srcIdx]) !== null && swNorm[s[srcIdx].month] && hwNorm[mIdx+1]) {
@@ -5160,10 +5214,86 @@ function renderOutlook() {
       byKey[(yLbl-1)*100 + (mIdx+1)], k === 1 ? 'sep-row' : '');
   }
 
+  // ---- error of each method over the history, by horizon (walk-forward)
+  const maeOf = (f, h, from) => {
+    const e = [];
+    for (let i = from; i + h < s.length; i++) {
+      const p = f(i, h), a = s[i + h].vol;
+      if (p !== null && a > 0) e.push(Math.abs(p - a) / a * 100);
+    }
+    return e.length ? e.reduce((x, y) => x + y, 0) / e.length : null;
+  };
+  const i21 = s.findIndex(r => r.year === 2021 && r.month === 1);
+  const accRows = [1, 3, 6, 9].map(h => [h, maeOf(projectOld, h, i21), maeOf(projectVol, h, i21)]);
+  document.getElementById('outlookAcc').innerHTML = `<b>Average error by horizon</b>, forecasts issued every month since January 2021 and compared with what was then reported: ` +
+    accRows.map(([h, o, n]) => `${h} month${h > 1 ? 's' : ''} ahead <b>±${n.toFixed(1)}%</b> <span style="color:var(--muted)">(previous method ±${o.toFixed(1)}%)</span>`).join(' · ') + '.';
+
+  // ---- by quarter: actual months + projected months, with a combined band
+  const qRows = [];
+  const lastQ = q => q;
+  {
+    const items = [];
+    for (let i = Math.max(0, s.length - 3); i < s.length; i++) items.push({ y: s[i].year, m: s[i].month, v: s[i].vol, proj: false, e: 0 });
+    for (let k = 1; k <= OUTLOOK_HORIZON; k++) {
+      const pv = projectVol(lastIdx, k);
+      const mm = (last.month - 1 + k) % 12 + 1, yy = last.year + Math.floor((last.month - 1 + k) / 12);
+      if (pv !== null) items.push({ y: yy, m: mm, v: pv, proj: true, h: k });
+    }
+    // erreur trimestrielle mesuree sur le passe : memes horizons, mois reportes connus
+    const qErr = (hs, nRep) => {
+      const e = [];
+      for (let i = 24; i + Math.max(...hs) < s.length; i++) {
+        let p = 0, a = 0, ok = true;
+        for (let r = nRep; r >= 1; r--) { p += s[i - r + 1].vol; a += s[i - r + 1].vol; }
+        hs.forEach(h => { const v = projectVol(i, h); if (v === null) ok = false; else { p += v; a += s[i + h].vol; } });
+        if (ok && a > 0) e.push(Math.abs(p - a) / a * 100);
+      }
+      return e.length ? e.reduce((x, y) => x + y, 0) / e.length : null;
+    };
+    const byQ = {};
+    items.forEach(it => { const q = `${it.y}-Q${Math.ceil(it.m / 3)}`; (byQ[q] = byQ[q] || []).push(it); });
+    Object.entries(byQ).forEach(([q, arr]) => {
+      if (arr.length < 3) return;
+      const [yy, qq] = [+q.slice(0, 4), +q.slice(-1)];
+      const tot = arr.reduce((t, x) => t + x.v, 0), np = arr.filter(x => x.proj).length;
+      const prev = [1, 2, 3].map(j => byKey[(yy - 1) * 100 + (qq - 1) * 3 + j]).reduce((t, r) => t + (r ? r.vol : NaN), 0);
+      const eQ = np ? qErr(arr.filter(x => x.proj).map(x => x.h), 3 - np) : 0;
+      qRows.push(`<tr${np ? ' style="font-style:italic"' : ''}><td class="name">Q${qq} ${yy}</td><td>${num0(tot / 1000)}</td>${pctCell(tot / 1000, prev / 1000)}` +
+        `<td>${np ? np + ' of 3' : 'reported'}</td><td>${np ? '±' + eQ.toFixed(1) + '%' : '—'}</td></tr>`);
+    });
+  }
+  document.getElementById('tbodyOutlookQ').innerHTML = qRows.join('');
+
+  // ---- test on a period already known: forecasts issued 12 months ago
+  {
+    const o = s.length - 13;
+    if (o >= 24) {
+      const lbl = r => `${MONTHS_FR[r.month - 1]} ${r.year}`;
+      document.getElementById('outlookBtSub').innerHTML =
+        `What the model would have said with data up to <b>${lbl(s[o])}</b> (and nothing after), against what was then reported. ` +
+        `Same code as the projection above; the previous method is shown for comparison.`;
+      let sa = 0, sn = 0, so = 0, rows = '';
+      const err = (p, a) => { const e = (p - a) / a * 100; return `<td class="${Math.abs(e) > 10 ? 'delta-bad' : Math.abs(e) > 5 ? '' : 'delta-good'}">${e >= 0 ? '+' : ''}${e.toFixed(1)}%</td>`; };
+      for (let h = 1; h <= 12 && o + h < s.length; h++) {
+        const a = s[o + h].vol, pn = projectVol(o, h), po = projectOld(o, h);
+        if (pn === null || po === null) continue;
+        sa += a; sn += pn; so += po;
+        rows += `<tr><td class="name">${lbl(s[o + h])} <small style="display:inline;color:var(--muted)">(${h} mo ahead)</small></td><td>${num0(a / 1000)}</td><td>${num0(pn / 1000)}</td>${err(pn, a)}` +
+          `<td class="sep-left" style="color:var(--muted)">${num0(po / 1000)}</td>${err(po, a)}</tr>`;
+      }
+      document.getElementById('tbodyOutlookBt').innerHTML = rows;
+      document.getElementById('tfootOutlookBt').innerHTML = sa ? `<tr><td class="name">12 months</td><td>${num0(sa / 1000)}</td><td>${num0(sn / 1000)}</td>${err(sn, sa)}` +
+        `<td class="sep-left">${num0(so / 1000)}</td>${err(so, sa)}</tr>` : '';
+    }
+  }
+
   const bandTxt = [1,3,6,9].filter(k => bandOf[k]).map(k => `${k} mo ±${bandOf[k].mae.toFixed(1)}%`).join(' · ');
   const wr9 = wFit[9] ? wFit[9].r : null;
   document.getElementById('outlookNote').innerHTML =
-    `<b>Method — volume.</b> Two estimators, blended by horizon. <b>A:</b> standing biomass in the last reported month × an ` +
+    `<b>Method — volume.</b> The projection is the average of two independent methods, tested month by month on the past. ` +
+    `<b>1 · Headcount:</b> fish in the sea × the share of the stock usually harvested that many months later in that calendar month, × an average harvest ` +
+    `weight (same month last year, scaled by the change in average stock weight), with its own past bias removed walk-forward. ` +
+    `<b>2 · Previous method:</b> two estimators blended by horizon. <b>A:</b> standing biomass in the last reported month × an ` +
     `exponentially-weighted historical ratio for the target calendar month (decay 0.6 per year, so 2025 weighs about 28× more than 2019). ` +
     `<b>B:</b> the same calendar month one year ago, rescaled by the trailing 12-month volume drift. ` +
     `A carries the 1–3 month horizons, where standing biomass is nearly sufficient, and fades out by 6 months. ` +
