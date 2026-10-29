@@ -84,6 +84,14 @@ jobs:
         continue-on-error: true
         run: python3 scripts/parse_ssb.py
 
+      - name: Exportations hebdomadaires de saumon (SSB, table 03024)
+        # Volume (tonnes) et prix a l'export par semaine. Nouvelle source :
+        # un echec n'empeche pas le reste de la mise a jour.
+        id: ssb_weekly
+        continue-on-error: true
+        timeout-minutes: 10
+        run: python3 scripts/update_ssb_weekly.py
+
       - name: Sante des poissons par zone (BarentsWatch)
         # Poux, temperature de la mer, maladies et traitements, par zone et par
         # semaine. Le script s'arrete seul avant la limite de 60 min.
@@ -162,6 +170,7 @@ jobs:
           STEP_BIOMASSE_FETCH: ${{ steps.biomasse_fetch.outcome }}
           STEP_BIOMASSE_BUILD: ${{ steps.biomasse_build.outcome }}
           STEP_SSB: ${{ steps.ssb.outcome }}
+          STEP_SSB_WEEKLY: ${{ steps.ssb_weekly.outcome }}
           STEP_BW_HEALTH: ${{ steps.bw_health.outcome }}
           STEP_BW_SITES: ${{ steps.bw_sites.outcome }}
           STEP_ESTAB: ${{ steps.estab.outcome }}
