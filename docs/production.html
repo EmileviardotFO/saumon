@@ -6195,7 +6195,7 @@ function vzLines(keys, series, o) {
 function vzStack(keys, stacks, o) {
   const W = 1080, H = o.H || 280, mL = 84, mR = 18, mT = 12, mB = 34, pw = W - mL - mR, ph = H - mT - mB, n = keys.length;
   const tot = keys.map((_, i) => stacks.reduce((a, st) => a + (st.vals[i] || 0), 0));
-  const lineMax = Math.max(0, ...(o.lines || []).flatMap(l => l.pts.filter(v => v !== null && isFinite(v))));
+  const lineMax = Math.max(0, ...(o.lines || []).flatMap(l => l.pts.filter(v => v !== null && isFinite(v))), ...(o.whisk || []).map(q => q.hi));
   const sc = vzScale(0, Math.max(...tot, lineMax, 1) * 1.05, 4);
   const bw = pw / n, Y = v => mT + ph - (v - sc.lo) / (sc.hi - sc.lo) * ph, X = i => mL + bw * (i + 0.5);
   let s = `<text transform="translate(14,${mT + ph / 2}) rotate(-90)" text-anchor="middle" fill="#cfdde4" font-size="12" font-weight="bold">${o.axis}</text>`;
@@ -6212,6 +6212,11 @@ function vzStack(keys, stacks, o) {
       s += `<rect x="${xr}" width="${wr}" y="${yr}" height="${hr}" fill="${st.col}"${dim ? ' fill-opacity=".62"' : ''}>${tip}</rect>`;
       if (dim) s += `<rect x="${xr}" width="${wr}" y="${yr}" height="${hr}" fill="url(#vzHatch)" pointer-events="none"/>`;
       base += v; }); });
+  (o.whisk || []).forEach(q => { const x = X(q.i).toFixed(1), c = q.col || '#e7eef2';
+    s += `<line x1="${x}" x2="${x}" y1="${Y(q.hi).toFixed(1)}" y2="${Y(q.lo).toFixed(1)}" stroke="${c}" stroke-width="1.2"/>` +
+      `<line x1="${(X(q.i) - bw * 0.18).toFixed(1)}" x2="${(X(q.i) + bw * 0.18).toFixed(1)}" y1="${Y(q.hi).toFixed(1)}" y2="${Y(q.hi).toFixed(1)}" stroke="${c}" stroke-width="1.2"/>` +
+      `<line x1="${(X(q.i) - bw * 0.18).toFixed(1)}" x2="${(X(q.i) + bw * 0.18).toFixed(1)}" y1="${Y(q.lo).toFixed(1)}" y2="${Y(q.lo).toFixed(1)}" stroke="${c}" stroke-width="1.2"/>` +
+      (q.tip ? `<rect x="${(X(q.i) - bw / 2).toFixed(1)}" width="${bw.toFixed(1)}" y="${mT}" height="${ph}" fill="transparent"><title>${q.tip}</title></rect>` : ''); });
   (o.marks || []).forEach(m => { const x = (X(m.i) + bw / 2).toFixed(1);
     s += `<line x1="${x}" x2="${x}" y1="${mT}" y2="${mT + ph}" stroke="#e7eef2" stroke-width="1.2" stroke-dasharray="3,3" stroke-opacity=".8"/>` +
       `<text x="${(+x - 6).toFixed(1)}" y="${mT + 12}" text-anchor="end" fill="#cfdde4" font-size="11">${m.lab}</text>` +
@@ -6396,12 +6401,29 @@ function renderProducers() {
 }
 
 // ===== Reservoir de gros poissons et pics de 6+ (commun a production.html et fenetre.html) =====
-// Reservoir : biomasse estimee au-dessus de ~6 kg vide (7,1 kg vif), chaque zone x generation
+// Reservoir : biomasse estimee au-dessus de 6 kg vide (6,75 kg vif : le registre donne vide = vif x 0,888), chaque zone x generation
 // suivant une loi lognormale (CV 0,30) autour de son poids moyen (Biomasseregisteret).
 // Cible : part 6+ (en nombre) des recoltes hebdomadaires Akvafakta, moyenne par mois.
+const PK_GUT = 0.888;   // poids vide / poids vif des poissons abattus (Biomasseregisteret, stable a 0,886-0,889)
+const pkSh = (k, n) => { let y = Math.floor(k / 100), m = k % 100 - 1 + n; y += Math.floor(m / 12); m = ((m % 12) + 12) % 12; return y * 100 + m + 1; };
+// Projection du reservoir : meme mois un an plus tot x (niveau actuel / niveau un an plus tot), ce rapport
+// revenant progressivement a 1 en 6 mois. Teste en marche arriere sur 2019-2026 : aussi bon que des
+// methodes plus compliquees (projection generation par generation), et stable.
+function pkProject(S, L, h) {
+  const r = S[L] && S[pkSh(L, -12)] ? S[L] / S[pkSh(L, -12)] : 1, out = [];
+  for (let i = 1; i <= h; i++) { const b = S[pkSh(pkSh(L, i), -12)]; out.push(b === undefined ? null : b * Math.pow(r, Math.max(0, 1 - i / 6))); }
+  return out;
+}
+// Fourchette : 80e centile des erreurs absolues constatees a chaque horizon, sur tout l'historique
+function pkBands(S, h) {
+  const ks = Object.keys(S).map(Number).sort((a, b) => a - b), E = Array.from({ length: h }, () => []);
+  ks.forEach(L => { if (L < ks[0] + 100 || S[pkSh(L, -12)] === undefined) return; const P = pkProject(S, L, h);
+    P.forEach((v, i) => { const a = S[pkSh(L, i + 1)]; if (v !== null && a !== undefined) E[i].push(Math.abs(v - a)); }); });
+  return E.map(e => { if (!e.length) return { p80: NaN, mae: NaN, n: 0 }; const q = e.slice().sort((a, b) => a - b); return { p80: q[Math.floor(0.8 * q.length)], mae: q.reduce((a, b) => a + b, 0) / q.length, n: q.length }; });
+}
 function computePeaks(raw) {
   if (!raw || !raw.cohort || !raw.weekly || !raw.records) return null;
-  const CV = 0.30, s2 = Math.log(1 + CV * CV), s = Math.sqrt(s2), T = 6 / 0.84;
+  const CV = 0.30, s2 = Math.log(1 + CV * CV), s = Math.sqrt(s2), T = 6 / PK_GUT;
   const erf = x => { const t = 1 / (1 + 0.3275911 * Math.abs(x)),
     y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x); return x >= 0 ? y : -y; };
   const Phi = z => 0.5 * (1 + erf(z / Math.SQRT2));
@@ -6419,8 +6441,10 @@ function computePeaks(raw) {
     const ton = CL.reduce((a, c) => a + (r['sh_' + c] || 0) * MID[c], 0), ton6 = CL.slice(5).reduce((a, c) => a + (r['sh_' + c] || 0) * MID[c], 0);
     const k = th.getUTCFullYear() * 100 + th.getUTCMonth() + 1, x = acc[k] || (acc[k] = [0, 0, 0]);
     x[0] += r.sh_6plus; x[1] += 100 * ton6 / ton; x[2]++;
+    if (tot >= 90) { const mw = CL.reduce((a, c) => a + (r['sh_' + c] || 0) * (c === '9+' ? 9.7 : MID[c]), 0) / tot; (x[3] = x[3] || []).push(mw); }
   });
-  const S6 = {}, T6 = {}; Object.keys(acc).forEach(k => { S6[k] = acc[k][0] / acc[k][2]; T6[k] = acc[k][1] / acc[k][2]; });
+  const S6 = {}, T6 = {}, NW = {}, AKW = {};
+  Object.keys(acc).forEach(k => { S6[k] = acc[k][0] / acc[k][2]; T6[k] = acc[k][1] / acc[k][2]; NW[k] = acc[k][2]; if (acc[k][3]) AKW[k] = avg(acc[k][3]); });
   const H = {}; raw.records.forEach(r => { const k = r.year * 100 + r.month; H[k] = (H[k] || 0) + (r.uttak_kg || 0) / 1e6; });
   const V6 = {}; Object.keys(T6).forEach(k => { if (H[k] > 0) V6[k] = T6[k] / 100 * H[k]; });
   // reservoir (kt)
@@ -6468,34 +6492,83 @@ function computePeaks(raw) {
   const gapTyp = full.length ? Math.round(avg(full.map(x => x.gap))) : 2;
   const seasonStart = lastB % 100 >= 7 ? Math.floor(lastB / 100) : Math.floor(lastB / 100) - 1;
   const nextPeakB = (seasonStart + (peakMonth >= 7 ? 0 : 1)) * 100 + peakMonth;
-  return { B, S6, V6, lags, seasons, magCorr, peakMonths, th6, wf, sh,
+  // ---- validation du panel Akvafakta : poids moyen des poissons vendus vs poids moyen vide des poissons abattus (registre)
+  const RW = {}, RH = {}; raw.records.forEach(r => { const k = r.year * 100 + r.month, x = RH[k] || (RH[k] = [0, 0]); x[0] += r.uttak_kg || 0; x[1] += r.uttak_stk || 0; });
+  Object.keys(RH).forEach(k => { if (RH[k][1] > 0) RW[k] = RH[k][0] / RH[k][1] * PK_GUT; });
+  const vk = Object.keys(AKW).map(Number).filter(k => RW[k] !== undefined && k >= 201801).sort((a, b) => a - b);
+  const desea = (S, ks) => { const m = {}; ks.forEach(k => { (m[k % 100] = m[k % 100] || []).push(S[k]); }); return ks.map(k => S[k] - avg(m[k % 100])); };
+  const valid = vk.length >= 24 ? { n: vk.length, bias: avg(vk.map(k => AKW[k] - RW[k])), ak: avg(vk.map(k => AKW[k])), rg: avg(vk.map(k => RW[k])),
+    lvl: corr(vk.map(k => AKW[k]), vk.map(k => RW[k])), sea: corr(desea(AKW, vk), desea(RW, vk)),
+    dir: vk.slice(1).filter((k, i) => (AKW[k] - AKW[vk[i]]) * (RW[k] - RW[vk[i]]) > 0).length / (vk.length - 1),
+    first: vk[0], last: vk[vk.length - 1] } : null;
+  // ---- projection du reservoir sur 6 mois, corrigee par les ventes hebdomadaires
+  // Signal : part 6+ du mois qui suit le dernier mois du registre (semaines Akvafakta deja publiees), moins
+  // sa moyenne du meme mois les annees precedentes. Pente apprise en marche avant sur les erreurs passees de
+  // la projection (plus de gros poisson vendu que d'habitude = reservoir plus bas ensuite).
+  const PH = 6, pv = pkProject(B, lastB, PH);
+  const sig = L => { const k1 = sh(L, 1); if (S6[k1] === undefined) return null; const v = kS.filter(k => k % 100 === k1 % 100 && k < k1).map(k => S6[k]); return v.length ? S6[k1] - avg(v) : null; };
+  const origins = kB.filter(L => L >= 201901 && B[sh(L, -12)] !== undefined).sort((a, b) => a - b), hist = [], E0 = [], E1 = [];
+  for (let i = 0; i < PH; i++) { E0.push([]); E1.push([]); }
+  const fit = (past, i) => { const P = past.filter(h => h.e[i] !== null); if (P.length < 12) return null;
+    const mx = avg(P.map(h => h.x)), me = avg(P.map(h => h.e[i])); let sxy = 0, sxx = 0; P.forEach(h => { sxy += (h.x - mx) * (h.e[i] - me); sxx += (h.x - mx) ** 2; });
+    return { mx, me, b: sxx ? sxy / sxx : 0 }; };
+  origins.forEach(L => { const P = pkProject(B, L, PH), x = sig(L); if (x === null) return;
+    const e = P.map((v, i) => v === null || B[sh(L, i + 1)] === undefined ? null : B[sh(L, i + 1)] - v);
+    e.forEach((ei, i) => { if (ei === null) return; const f = fit(hist.filter(h => sh(h.L, i + 1) <= L), i); if (!f) return;
+      E0[i].push(Math.abs(ei)); E1[i].push(Math.abs(ei - (f.me + f.b * (x - f.mx)))); });
+    hist.push({ L, x, e }); });
+  const xNow = sig(lastB), wk1 = NW[sh(lastB, 1)] || 0;
+  const corrNow = pv.map((v, i) => { const f = fit(hist, i); return f && xNow !== null ? f.me + f.b * (xNow - f.mx) : 0; });
+  const q80 = a => { const q = a.slice().sort((x, y) => x - y); return q.length ? q[Math.floor(0.8 * q.length)] : NaN; };
+  const bands = pkBands(B, PH);
+  const nowcast = { k1: sh(lastB, 1), x: xNow, weeks: wk1, share: S6[sh(lastB, 1)], corr: corrNow,
+    gain: E0.map((a, i) => a.length ? 1 - avg(E1[i]) / avg(a) : NaN), n: E0[0].length };
+  const proj = pv.map((v, i) => { if (v === null) return { k: sh(lastB, i + 1), v: null };
+    const adj = xNow !== null ? Math.max(0, v + corrNow[i]) : v, w = xNow !== null && E1[i].length ? q80(E1[i]) : bands[i].p80;
+    return { k: sh(lastB, i + 1), v: adj, base: v, lo: Math.max(0, adj - w), hi: adj + w, mae: bands[i].mae }; });
+  const pPeak = proj.filter(p => p.v !== null).reduce((m, p) => !m || p.v > m.v ? p : m, null);
+  return { B, S6, V6, lags, seasons, magCorr, peakMonths, th6, wf, sh, proj, pPeak, valid, nowcast,
     now: { lastB, lastS, cur, prev, ratio: prev ? cur / prev : NaN, nextPeakB, next6: sh(nextPeakB, gapTyp), gapTyp,
       seasonPeakPrev: seasons.length ? seasons[seasons.length - 1] : null } };
 }
 // Graphique : reservoir decale (mois M -> M+2, axe gauche, kt) et part 6+ reelle (axe droit, %)
 function peaksSvg(PK, L) {
-  const W = 980, Hh = 300, mL = 56, mR = 56, mT = 16, mB = 36, pw = W - mL - mR, ph = Hh - mT - mB;
-  const first = 201801, lastK = Math.max(PK.now.lastS, PK.sh(PK.now.lastB, 2)), keys = [];
+  const W = 980, Hh = 316, mL = 56, mR = 56, mT = 16, mB = 50, pw = W - mL - mR, ph = Hh - mT - mB;
+  const pLast = PK.proj && PK.proj.length ? PK.sh(PK.proj[PK.proj.length - 1].k, 2) : 0;
+  const first = 201801, lastK = Math.max(PK.now.lastS, PK.sh(PK.now.lastB, 2), pLast), keys = [];
   for (let k = first; k <= lastK; k = PK.sh(k, 1)) keys.push(k);
   const n = keys.length, X = i => mL + i * pw / (n - 1);
   const bv = keys.map(k => PK.B[PK.sh(k, -2)]), sv = keys.map(k => PK.S6[k]);
-  const bMax = Math.ceil(Math.max(...bv.filter(v => v !== undefined)) / 5) * 5, sMax = Math.ceil(Math.max(...sv.filter(v => v !== undefined)) / 5) * 5;
+  const pj = {}; (PK.proj || []).forEach(p => { if (p.v !== null) pj[PK.sh(p.k, 2)] = p; });
+  const bMax = Math.ceil(Math.max(...bv.filter(v => v !== undefined), ...Object.values(pj).map(p => p.hi)) / 5) * 5, sMax = Math.ceil(Math.max(...sv.filter(v => v !== undefined)) / 5) * 5;
   const Yb = v => mT + ph - v / bMax * ph, Ys = v => mT + ph - v / sMax * ph;
   let s = '';
   for (let i = 0; i <= 5; i++) { const y = mT + ph - i * ph / 5;
     s += `<line x1="${mL}" x2="${W - mR}" y1="${y}" y2="${y}" stroke="${L.grid}"/>` +
       `<text x="${mL - 8}" y="${y + 4}" text-anchor="end" fill="${L.colB}" font-size="11">${(bMax * i / 5).toFixed(0)}</text>` +
       `<text x="${W - mR + 8}" y="${y + 4}" fill="${L.colS}" font-size="11">${(sMax * i / 5).toFixed(0)}%</text>`; }
-  keys.forEach((k, i) => { if (k % 100 === 1) s += `<text x="${X(i)}" y="${Hh - 12}" text-anchor="middle" fill="${L.mist}" font-size="11">${Math.floor(k / 100)}</text><line x1="${X(i)}" x2="${X(i)}" y1="${mT}" y2="${mT + ph}" stroke="${L.grid}" stroke-dasharray="2,4"/>`; });
+  // graduation : un trait et l'initiale de chaque mois, l'annee sous janvier
+  const INI = L.ini || ['J','F','M','A','M','J','J','A','S','O','N','D'];
+  keys.forEach((k, i) => { const m = k % 100;
+    s += `<line x1="${X(i)}" x2="${X(i)}" y1="${mT + ph}" y2="${mT + ph + (m === 1 ? 9 : 4)}" stroke="${L.mist}" stroke-opacity="${m === 1 ? 0.9 : 0.5}"/>` +
+      `<text x="${X(i)}" y="${mT + ph + 17}" text-anchor="middle" fill="${L.mist}" fill-opacity="${m === 1 ? 1 : 0.7}" font-size="8">${INI[m - 1]}</text>`;
+    if (m === 1) s += `<text x="${X(i)}" y="${Hh - 8}" text-anchor="start" fill="${L.mist}" font-size="11" font-weight="600">${Math.floor(k / 100)}</text><line x1="${X(i)}" x2="${X(i)}" y1="${mT}" y2="${mT + ph}" stroke="${L.grid}" stroke-dasharray="2,4"/>`; });
   // zone "annoncee" : mois ou le reservoir est connu mais pas encore la part 6+
   const iA = keys.findIndex(k => k > PK.now.lastS);
   if (iA > 0) s += `<rect x="${X(iA) - pw / (n - 1) / 2}" y="${mT}" width="${X(n - 1) - X(iA) + pw / (n - 1) / 2}" height="${ph}" fill="${L.colB}" fill-opacity=".08"/>` +
     `<text x="${X(n - 1)}" y="${mT + ph - 6}" text-anchor="end" fill="${L.colB}" font-size="11">${L.announced}</text>`;
   const path = (vals, Y) => { let d = '', pen = false; vals.forEach((v, i) => { if (v === undefined || v === null) { pen = false; return; } d += (pen ? 'L' : 'M') + X(i).toFixed(1) + ',' + Y(v).toFixed(1); pen = true; }); return d; };
   s += `<path d="${path(bv, Yb)}" fill="none" stroke="${L.colB}" stroke-width="2.4"/>`;
+  // projection decalee de 2 mois : fourchette et trait pointille, raccordes au dernier point connu
+  const iP = keys.map((k, i) => pj[k] ? i : -1).filter(i => i >= 0);
+  if (iP.length) { const i0 = keys.indexOf(PK.sh(PK.now.lastB, 2)), b0 = PK.B[PK.now.lastB];
+    const up = iP.map(i => `${X(i).toFixed(1)},${Yb(pj[keys[i]].hi).toFixed(1)}`), dn = iP.slice().reverse().map(i => `${X(i).toFixed(1)},${Yb(pj[keys[i]].lo).toFixed(1)}`);
+    s += `<polygon points="${X(i0).toFixed(1)},${Yb(b0).toFixed(1)} ${up.join(' ')} ${dn.join(' ')}" fill="${L.colB}" fill-opacity=".14"/>`;
+    s += `<path d="M${X(i0).toFixed(1)},${Yb(b0).toFixed(1)} ${iP.map(i => 'L' + X(i).toFixed(1) + ',' + Yb(pj[keys[i]].v).toFixed(1)).join(' ')}" fill="none" stroke="${L.colB}" stroke-width="2" stroke-dasharray="2,3"/>`; }
   s += `<path d="${path(sv, Ys)}" fill="none" stroke="${L.colS}" stroke-width="2" stroke-dasharray="5,3"/>`;
   keys.forEach((k, i) => { const b = bv[i], v = sv[i];
-    s += `<rect x="${X(i) - pw / (n - 1) / 2}" y="${mT}" width="${pw / (n - 1)}" height="${ph}" fill="transparent"><title>${L.month(k)} — ${L.tipS}: ${v !== undefined ? v.toFixed(1) + '%' : '—'} · ${L.tipB(PK.sh(k, -2))}: ${b !== undefined ? b.toFixed(1) + ' kt' : '—'}</title></rect>`; });
+    const q = pj[k];
+    s += `<rect x="${X(i) - pw / (n - 1) / 2}" y="${mT}" width="${pw / (n - 1)}" height="${ph}" fill="transparent"><title>${L.month(k)} — ${L.tipS}: ${v !== undefined ? v.toFixed(1) + '%' : '—'} · ${L.tipB(PK.sh(k, -2))}: ${b !== undefined ? b.toFixed(1) + ' kt' : q ? `${q.v.toFixed(1)} kt (${L.projLab || 'projection'} ${q.lo.toFixed(0)}–${q.hi.toFixed(0)})` : '—'}</title></rect>`; });
   PK.seasons.forEach(x => { const i6 = keys.indexOf(x.p6); if (i6 >= 0) s += `<circle cx="${X(i6)}" cy="${Ys(x.v6)}" r="4" fill="${L.colS}"/>`;
     const ib = keys.indexOf(PK.sh(x.pb, 2)); if (ib >= 0) s += `<circle cx="${X(ib)}" cy="${Yb(x.vb)}" r="4" fill="${L.colB}"/>`; });
   s += `<text transform="translate(14,${mT + ph / 2}) rotate(-90)" text-anchor="middle" fill="${L.colB}" font-size="12">${L.axisB}</text>` +
@@ -6508,7 +6581,7 @@ function peaksSvg(PK, L) {
 // zone : nombre de poissons, poids moyen, survie et rythme de recolte compares au meme age,
 // reservoir estime de gros poissons, et consequences des maladies (BarentsWatch).
 // Les chiffres sont approximatifs : le but est de voir une tendance d'une generation a l'autre.
-const GEN_T = 6 / 0.84;          // environ 6 kg vide = 7,1 kg vif (le registre est en poids vif)
+const GEN_T = 6 / PK_GUT;        // 6 kg vide = 6,75 kg vif (le registre est en poids vif ; vide = vif x 0,888)
 const GEN_CV = 0.30;             // dispersion supposee des poids dans une generation (retenue par backtest, voir la note)
 const genErf = x => { const t = 1 / (1 + 0.3275911 * Math.abs(x)),
   y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x); return x >= 0 ? y : -y; };
@@ -6564,7 +6637,7 @@ function renderGenerations() {
   const totN = Object.keys(A).reduce((s2, g) => s2 + ((at(g, LAST) || {}).n || 0), 0);
   const inSea = Object.keys(A).map(Number).filter(g => { const x = at(g, LAST); return x && x.n > Math.max(2e5, totN * 0.01); }).sort((a, b) => a - b);
   $g('genSub').innerHTML = `Biomasseregisteret (Directorate of Fisheries), ${zlab}, data to <b>${tmMl(LAST)}</b>. A <b>generation</b> is the year the smolts were put to sea (spring and autumn smolts of the same year are mixed). ` +
-    `Weights are <b>live</b> weights (about 6 kg gutted = 7.1 kg live). Figures are approximate: they are meant to show whether a generation is ahead of or behind the previous one at the same point, not exact levels.` +
+    `Weights are <b>live</b> weights (6 kg gutted = 6.75 kg live: the register's own gutted/live ratio is 0.888). Figures are approximate: they are meant to show whether a generation is ahead of or behind the previous one at the same point, not exact levels.` +
     (flows ? '' : ` <span class="warn">Harvest and mortality by generation arrive with the next data update (the cohort file must be rebuilt once).</span>`);
   const pc = v => isFinite(v) ? v.toFixed(1) + '%' : '—';
   const dpt = (a, b, neutral) => isFinite(a) && isFinite(b) ? `<span class="${neutral ? '' : a - b > 0.05 ? 'delta-bad' : a - b < -0.05 ? 'delta-good' : ''}" style="white-space:nowrap">${a - b >= 0 ? '+' : ''}${(a - b).toFixed(1)} pt</span>` : '';
@@ -6605,12 +6678,29 @@ function renderGenerations() {
   // ---- reservoir de gros poissons
   const k36 = tmRange(LAST, 36), bigG = Object.keys(A).map(Number).filter(g => k36.some(k => (at(g, k) || {}).big > 5e5)).sort((a, b) => a - b);
   const totBig = k => Object.keys(A).reduce((s2, g) => s2 + ((at(g, k) || {}).big || 0), 0) / 1e6;
-  $g('genBigSub').innerHTML = `Estimated biomass (kt, live) of fish above 7.1 kg live, about 6 kg gutted, by generation, last 36 months; dashed line = same month a year earlier. ` +
+  // projection 6 mois de la zone choisie (meme methode que la section 3), avec la fourchette constatee en marche arriere
+  const Sz = {}; [...new Set(allYm)].forEach(k => { Sz[k] = totBig(k); });
+  if (!GEN_PK) GEN_PK = computePeaks(DATA_RAW);
+  const natW = !po && GEN_PK && GEN_PK.now.lastB === LAST && GEN_PK.nowcast.x !== null;   // national : correction par les ventes hebdomadaires
+  const PJ = natW ? GEN_PK.proj.map(p => p.v) : pkProject(Sz, LAST, 6), kP = PJ.map((_, i) => pkSh(LAST, i + 1));
+  const BD = natW ? GEN_PK.proj.map(p => ({ p80: p.hi - p.v })) : pkBands(Sz, 6);
+  const kAll = k36.concat(kP), nH = k36.length;
+  const pPk = PJ.reduce((m, v, i) => v !== null && (m === null || v > PJ[m]) ? i : m, null);
+  $g('genBigSub').innerHTML = `Estimated biomass (kt, live) of fish above 6.75 kg live (6 kg gutted), by generation, last 36 months; dashed line = same month a year earlier. ` +
     `Each zone and generation is assumed to have a log-normal weight spread (coefficient of variation ${GEN_CV}) around its average weight. ` +
-    `<b>Why this rather than the old “generations above 5 kg” rule:</b> tested on 2018–2026, this estimate two months ahead follows the share of 6 kg+ fish in Norway's weekly harvest (Akvafakta) with a correlation of 0.76 (0.46 once the seasonal pattern is removed), against 0.41 (0.17) for the rule that counts a whole generation once its average passes 5 kg. ` +
-    `The level stays uncertain; the trend is what counts.` + vzLegend(bigG.map(g => [`Generation ${g}`, col(g), false, true]).concat([['a year earlier', '#e7eef2', true]]));
-  $g('genBig').innerHTML = vzStack(k36, bigG.map(g => ({ lab: `Generation ${g}`, col: col(g), vals: k36.map(k => ((at(g, k) || {}).big || 0) / 1e6) })),
-    { axis: 'kt above ~6 kg gutted', unit: 'kt', H: 240, lines: [{ lab: 'a year earlier', col: '#e7eef2', pts: k36.map(k => totBig(k - 100)) }] });
+    `<b>Why this rather than the old “generations above 5 kg” rule:</b> tested on 2018–2026, this estimate two months ahead follows the share of 6 kg+ fish in Norway's weekly harvest (Akvafakta) with a correlation of 0.76 (0.47 once the seasonal pattern is removed), against 0.41 (0.17) for the rule that counts a whole generation once its average passes 5 kg. ` +
+    `The level stays uncertain; the trend is what counts. ` +
+    `<b>Projection (hatched, next 6 months)</b> = the same month a year earlier × today's ratio to a year earlier, that ratio fading back to 1 over six months; ` +
+    `whiskers = 80% of the errors this method made when replayed on 2019–2026 (±${BD.map(b => isFinite(b.p80) ? b.p80.toFixed(0) : '?').join('/')} kt by month ahead).` +
+    (natW ? ` <b>Adjusted with the weekly sales</b> (Norway only): see section 3.` : (po ? ' Zone view: no weekly adjustment (the weekly sizes exist for Norway only).' : '')) +
+    (pPk !== null ? ` Projected peak: <b>${PJ[pPk].toFixed(0)} kt in ${tmMl(kP[pPk])}</b> (range ${Math.max(0, PJ[pPk] - BD[pPk].p80).toFixed(0)}–${(PJ[pPk] + BD[pPk].p80).toFixed(0)} kt), against ${Math.max(...k36.map(totBig)).toFixed(0)} kt at the highest point of the last 36 months.` : '') +
+    vzLegend(bigG.map(g => [`Generation ${g}`, col(g), false, true]).concat([['projection', '#cfdde4', false, true], ['a year earlier', '#e7eef2', true]]));
+  $g('genBig').innerHTML = vzStack(kAll, bigG.map(g => ({ lab: `Generation ${g}`, col: col(g), vals: kAll.map((k, i) => i < nH ? ((at(g, k) || {}).big || 0) / 1e6 : 0) }))
+      .concat([{ lab: 'projection', col: '#cfdde4', vals: kAll.map((k, i) => i < nH ? 0 : (PJ[i - nH] || 0)), dim: kAll.map((k, i) => i >= nH) }]),
+    { axis: 'kt above ~6 kg gutted', unit: 'kt', H: 240, dimLab: 'projection', lines: [{ lab: 'a year earlier', col: '#e7eef2', pts: kAll.map(k => Sz[k - 100] !== undefined ? Sz[k - 100] : null) }],
+      marks: [{ i: nH - 1, lab: 'data', lab2: 'projection' }],
+      whisk: PJ.map((v, i) => v === null || !isFinite(BD[i].p80) ? null : { i: nH + i, lo: Math.max(0, v - BD[i].p80), hi: v + BD[i].p80, col: '#cfdde4',
+        tip: `${tmMl(kP[i])} — projection ${v.toFixed(1)} kt (80% range ${Math.max(0, v - BD[i].p80).toFixed(1)}–${(v + BD[i].p80).toFixed(1)} kt)` }).filter(Boolean) });
   genPeaks();
   genDisease(po, LAST);
 }
@@ -6622,7 +6712,7 @@ function genPeaks() {
   const PK = GEN_PK;
   if (!PK) { $g('genPkSub').innerHTML = 'Not available.'; return; }
   const N = PK.now, f1 = v => isFinite(v) ? v.toFixed(1) : '—', f2 = v => isFinite(v) ? v.toFixed(2) : '—';
-  const p6m = [...new Set(PK.seasons.filter(x => x.complete).map(x => x.p6 % 100))].sort((a, b) => a - b);
+  const p6m = [...new Set(PK.seasons.filter(x => x.complete).map(x => x.p6 % 100))].sort((a, b) => (a + 5) % 12 - (b + 5) % 12);
   const g = (o) => o ? `${(100 * (1 - o.mod / o.cal)).toFixed(0)}%` : '—';
   $g('genPkSub').innerHTML = `National reservoir (all zones) set against the share of 6 kg+ fish in Norway's weekly harvest (Akvafakta, by number of fish). ` +
     `<b>Solid line</b> = reservoir shifted forward by two months (the value of month M is drawn at M+2); <b>dashed line</b> = actual 6 kg+ share; dots = each season's peak. ` +
@@ -6631,7 +6721,10 @@ function genPeaks() {
     `<div class="pr-card" style="cursor:default"><div class="nm"><i style="background:#ffd54f"></i>Next 6 kg+ peak</div>` +
       `<div class="ln">reservoir at ${tmMl(N.lastB)}</div><div class="big">${f1(N.cur)} kt <span>${tmVar((N.ratio - 1) * 100)}</span></div>` +
       `<div class="ln">vs ${f1(N.prev)} kt a year earlier</div>` +
-      `<div class="ln">reservoir usually peaks in <b style="color:var(--ink)">${MONTHS_FR[N.nextPeakB % 100 - 1]} ${Math.floor(N.nextPeakB / 100)}</b>, 6 kg+ peak about ${N.gapTyp} months later (<b style="color:var(--ink)">${p6m.map(m => MONTHS_FR[m - 1].slice(0, 3)).join('–')}</b> in past seasons)</div>` +
+      (PK.pPeak ? `<div class="ln">projected reservoir peak <b style="color:var(--ink)">${f1(PK.pPeak.v)} kt in ${tmMl(PK.pPeak.k)}</b> (${PK.pPeak.lo.toFixed(0)}–${PK.pPeak.hi.toFixed(0)} kt) → 6 kg+ peak around <b style="color:var(--ink)">${tmMl(PK.sh(PK.pPeak.k, N.gapTyp))}</b></div>` : '') +
+      (PK.nowcast.x !== null ? `<div class="ln">weekly adjustment: 6 kg+ share in ${tmMl(PK.nowcast.k1)} so far <b style="color:var(--ink)">${f1(PK.nowcast.share)}%</b> (${PK.nowcast.weeks} week${PK.nowcast.weeks > 1 ? 's' : ''}), ` +
+        `${PK.nowcast.x >= 0 ? '+' : ''}${f1(PK.nowcast.x)} pt vs usual → projection ${PK.pPeak && PK.pPeak.base !== undefined ? (PK.pPeak.v - PK.pPeak.base >= 0 ? '+' : '') + f1(PK.pPeak.v - PK.pPeak.base) + ' kt at the peak' : ''}</div>` : '') +
+      `<div class="ln">in past seasons the reservoir peaked in <b style="color:var(--ink)">${[...new Set(PK.seasons.filter(x => x.complete).map(x => x.pb % 100))].sort((a, b) => (a + 5) % 12 - (b + 5) % 12).map(m => MONTHS_FR[m - 1].slice(0, 3)).join('–')}</b> and the 6 kg+ share about ${N.gapTyp} months later (<b style="color:var(--ink)">${p6m.map(m => MONTHS_FR[m - 1].slice(0, 3)).join('–')}</b>)</div>` +
       `<div class="ln">last season: reservoir ${f1(N.seasonPeakPrev.vb)} kt in ${tmMl(N.seasonPeakPrev.pb)}, 6 kg+ ${f1(N.seasonPeakPrev.v6)}% in ${tmMl(N.seasonPeakPrev.p6)}</div></div>` +
     `<div class="pr-card" style="cursor:default"><div class="nm"><i style="background:#7ec8e3"></i>Timing</div>` +
       `<div class="ln">correlation with the 6 kg+ share, by lead</div>` +
@@ -6643,10 +6736,16 @@ function genPeaks() {
       `<div class="ln">forecast of the monthly 6 kg+ share: seasonal calendar alone vs calendar + reservoir (fitted on past data only, 2020 onwards)</div>` +
       `<div class="big">${PK.wf.peak2 ? '−' + g(PK.wf.peak2) : '—'} <span style="font-size:11px;color:var(--muted);font-weight:normal">error on Feb–Apr peaks</span></div>` +
       `<div class="ln">all months: −${g(PK.wf.h2)} error at 2 months, −${g(PK.wf.h3)} at 3 months (${PK.wf.h2 ? f2(PK.wf.h2.cal) + ' → ' + f2(PK.wf.h2.mod) + ' pt' : ''})</div>` +
-      `<div class="ln">the register is published ~3 weeks after month end: a 2-month lead is about 1 month of real warning</div></div>`;
+      `<div class="ln">the register is published ~3 weeks after month end: a 2-month lead is about 1 month of real warning</div>` +
+      `<div class="ln">weekly adjustment of the projection: error ${PK.nowcast.gain.map(g => isFinite(g) ? (Math.round(100 * g) === 0 ? '0' : (g > 0 ? '−' : '+') + Math.abs(Math.round(100 * g))) + '%' : '—').join(' / ')} at 1–6 months (${PK.nowcast.n} past cases): small, only from 3 months on</div></div>` +
+    (PK.valid ? `<div class="pr-card" style="cursor:default"><div class="nm"><i style="background:#ba68c8"></i>Are the weekly sizes real?</div>` +
+      `<div class="ln">Akvafakta's size split comes from a panel of exporters. Check: average weight of the fish it reports vs average gutted weight of all fish harvested (register), ${tmMl(PK.valid.first)}–${tmMl(PK.valid.last)}</div>` +
+      `<div class="big">${f2(PK.valid.lvl)} <span style="font-size:11px;color:var(--muted);font-weight:normal">correlation</span></div>` +
+      `<div class="ln">${f2(PK.valid.sea)} once the seasonal pattern is removed · same direction month to month ${Math.round(100 * PK.valid.dir)}% of the time</div>` +
+      `<div class="ln">but <b style="color:var(--ink)">${f2(PK.valid.bias)} kg heavier</b> on average (${f2(PK.valid.ak)} vs ${f2(PK.valid.rg)} kg): the panel sells fresh whole fish for export, the register also counts fish for processing. Reliable for trends and timing, too high in level.</div></div>` : '');
   $g('genPkChart').innerHTML = peaksSvg(PK, { grid: '#223642', mist: '#8fa4b0', colB: '#ffd54f', colS: '#4fc3f7', announced: 'announced, not yet measured',
-    axisB: 'reservoir 2 months earlier (kt)', axisS: '6 kg+ share of harvest (%)', month: tmMl, tipS: '6 kg+ share', tipB: k => 'reservoir ' + tmMl(k) }) +
-    vzLegend([['reservoir, shifted +2 months (kt)', '#ffd54f', false], ['6 kg+ share of harvest (%)', '#4fc3f7', true]]);
+    axisB: 'reservoir 2 months earlier (kt)', axisS: '6 kg+ share of harvest (%)', month: tmMl, tipS: '6 kg+ share', tipB: k => 'reservoir ' + tmMl(k), projLab: '80% range' }) +
+    vzLegend([['reservoir, shifted +2 months (kt)', '#ffd54f', false], ['projected reservoir, shifted +2 months, with 80% range', '#ffd54f', true], ['6 kg+ share of harvest (%)', '#4fc3f7', true]]);
   const misses = PK.peakMonths.filter(p => p.r < 70);
   $g('genPkHead').innerHTML = `<tr><th class="name">Season (Jul–Jun)</th><th>Reservoir peak</th><th>kt</th><th class="sep-left">6 kg+ peak</th><th>% of fish</th><th>Lead</th><th class="sep-left">Avg reservoir (kt)</th><th>6 kg+ harvested (kt)</th></tr>`;
   $g('genPkBody').innerHTML = PK.seasons.map(x => `<tr><td class="name">${x.y}–${String(x.y + 1).slice(2)}${x.complete ? '' : ' <span style="color:var(--muted);font-size:10px">(partial)</span>'}</td>` +
