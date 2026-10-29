@@ -9,8 +9,9 @@ par pays de destination et par mois, depuis les statistiques nationales :
               tollskrarnumerum 2024-2026, kafli 1-40", numeros tarifaires
               islandais a 8 chiffres (saumon d'elevage atlantique separe).
   - Chili et Canada : ONU Comtrade (API publique, donnees declarees par chaque pays, SH6).
-  - En plus : importations des Etats-Unis par origine (US Census Bureau), ecrites dans
-    data/us_imports.json, pour le focus Etats-Unis et le controle des prix declares.
+  - En plus : importations des Etats-Unis par origine (US Census Bureau, data/us_imports.json)
+    et de la Chine et de Hong Kong (UN Comtrade, data/cn_imports.json), pour les onglets
+    "USA focus" et "China focus" et le controle des declarations des exportateurs.
   - Royaume-Uni : HMRC, API OData publique uktradeinfo (OTS), CN8 ; le saumon
               d'elevage britannique est ecossais (quelques reexportations de
               saumon norvegien incluses).
@@ -514,6 +515,10 @@ def fetch_us_imports(to_iso, fx):
             url = f'{base}?get={flds}&COMM_LVL={lvl}&I_COMMODITY={code}&time={tm}'
             st, raw = http(url + (f'&key={key}' if key else ''))
             attempts.append({'hs6': hs6, 'url': url, 'status': st, 'head': raw[:400].decode('utf-8', 'replace')})
+            if b'Missing Key' in raw[:2000] or b'Invalid Key' in raw[:2000]:
+                json.dump(attempts, open(os.path.join(DBG, 'us_census_attempts.json'), 'w'), indent=1, ensure_ascii=False)
+                raise RuntimeError('le US Census exige une cle d\'API : creer une cle gratuite sur https://api.census.gov/data/key_signup.html '
+                                   'et l\'enregistrer dans les secrets GitHub sous le nom CENSUS_API_KEY' + (' (la cle actuelle est refusee)' if key else ''))
             if st == 200 and raw.strip():
                 try:
                     j = json.loads(raw)
@@ -573,6 +578,72 @@ def fetch_us_imports(to_iso, fx):
     print(f'  US : {len(out)} lignes, {meta["first"]} -> {meta["last"]}')
 
 
+CN_OUT = os.path.join(ROOT, 'data', 'cn_imports.json')
+CN_HS6 = {'030214': 0, '030313': 1, '030441': 2, '030481': 3, '030541': 5, '160411': 6}
+CN_REPORTERS = {'CN': 156, 'HK': 344}
+
+
+def fetch_cn_imports(to_iso, fx):
+    """Importations de la Chine et de Hong Kong par pays d'origine (ONU Comtrade, donnees declarees
+    par chaque pays, SH6, mensuel). Valeur CIF a l'arrivee, en dollars."""
+    base = 'https://comtradeapi.un.org/public/v1/preview/C/M/HS'
+    a3 = iso3_map()
+    codes = ','.join(CN_HS6)
+    today = dt.date.today()
+    months, y, m = [], 2023, 1
+    while y * 100 + m <= today.year * 100 + today.month:
+        months.append(y * 100 + m)
+        m += 1
+        if m > 12:
+            y, m = y + 1, 1
+    agg, sample = {}, False
+    for rep, rcode in CN_REPORTERS.items():
+        for ym in months:
+            url = f'{base}?reporterCode={rcode}&period={ym}&cmdCode={codes}&flowCode=M&includeDesc=true'
+            st, raw = http(url)
+            if st == 429:
+                time.sleep(30)
+                st, raw = http(url)
+            if st != 200:
+                print(f'  {rep} : {ym} -> {st} {raw[:150]!r}')
+                continue
+            rows = json.loads(raw).get('data') or []
+            if rows and not sample:
+                json.dump(rows[:20], open(os.path.join(DBG, 'comtrade_cn_imports_sample.json'), 'w'), indent=0, ensure_ascii=False)
+                sample = True
+            if len(rows) >= 500:
+                print(f'  {rep} : {ym} : 500 lignes, limite de la preview peut-etre atteinte')
+            n = 0
+            for r in rows:
+                if r.get('partnerCode') in (0, None) or str(r.get('flowCode')) != 'M':
+                    continue
+                iso = a3(r.get('partnerISO')) or to_iso('', r.get('partnerDesc'))
+                pi = CN_HS6.get(str(r.get('cmdCode')))
+                if not iso or pi is None:
+                    continue
+                x = agg.setdefault((ym, iso, pi, rep), [0.0, 0.0])
+                x[0] += float(r.get('netWgt') or 0)
+                x[1] += float(r.get('cifvalue') or r.get('primaryValue') or 0)
+                n += 1
+            if n:
+                print(f'  {rep} : {ym} : {n} lignes')
+            time.sleep(2)
+    out = []
+    for (ym, iso, pi, rep), (kg, val) in sorted(agg.items()):
+        if kg <= 0 and val <= 0:
+            continue
+        e = to_eur(val, ym, 'USD', fx)
+        out.append([ym, iso, pi, round(kg / 1000, 3), round(val / 1000, 2), round(e / 1000, 2) if e is not None else None, rep])
+    if not out:
+        raise RuntimeError('aucune ligne')
+    meta = {'fetched': dt.date.today().isoformat(), 'source': 'UN Comtrade, imports reported by China and Hong Kong (HS6, monthly, CIF in USD)',
+            'last': max(r[0] for r in out), 'first': min(r[0] for r in out),
+            'last_by_reporter': {rp: max((r[0] for r in out if r[6] == rp), default=None) for rp in CN_REPORTERS},
+            'cols': ['ym', 'origin', 'form', 'tonnes', 'k_usd_cif', 'k_eur', 'reporter']}
+    io.open(CN_OUT, 'w', encoding='utf-8').write(json.dumps({'meta': meta, 'rows': out}, ensure_ascii=False, separators=(',', ':')))
+    print(f'  CN/HK : {len(out)} lignes, {meta["first"]} -> {meta["last"]} {meta["last_by_reporter"]}')
+
+
 def main():
     to_iso = iso_map()
     fx = {c: eur_rates(c) for c in ('ISK', 'GBP', 'NOK', 'USD')}
@@ -609,6 +680,13 @@ def main():
            'rows': rows}
     io.open(OUT, 'w', encoding='utf-8').write(json.dumps(out, ensure_ascii=False, separators=(',', ':')))
     print(f'{len(rows)} lignes ecrites, echecs : {failed or "aucun"}')
+    print('Importations de la Chine et de Hong Kong (UN Comtrade) :')
+    try:
+        os.makedirs(DBG, exist_ok=True)
+        fetch_cn_imports(to_iso, fx)
+    except Exception as e:
+        print(f'  ECHEC CN : {e}')
+        failed.append('CN_IMP')
     print('Importations des Etats-Unis (US Census) :')
     try:
         os.makedirs(DBG, exist_ok=True)

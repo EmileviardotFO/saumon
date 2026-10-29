@@ -28,7 +28,7 @@ PAGE = os.path.join(ROOT, 'docs', 'production.html')
 DATA = os.path.join(ROOT, 'data', 'data.json')
 OUT = sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT, 'data', 'smoke.json')
 
-TABS = ['Summary', 'Producers', 'USA focus', 'EU markets', 'National view (Norway)', 'Multi-year comparison', 'Supply outlook', 'Markets',
+TABS = ['Summary', 'Producers', 'USA focus', 'China focus', 'EU markets', 'National view (Norway)', 'Multi-year comparison', 'Supply outlook', 'Markets',
         'Product per market', 'Calibre & premium', 'By zone (PO)', 'Fish health', 'Farm register']
 
 
@@ -53,6 +53,9 @@ def main():
         EUF = os.path.join(ROOT, 'data', 'eurostat.json')
         page.route('**/eurostat.json', lambda route: route.fulfill(path=EUF, content_type='application/json')
                    if os.path.exists(EUF) else route.fulfill(status=404, body='missing'))
+        CNF = os.path.join(ROOT, 'data', 'cn_imports.json')
+        page.route('**/cn_imports.json', lambda route: route.fulfill(path=CNF, content_type='application/json')
+                   if os.path.exists(CNF) else route.fulfill(status=404, body='missing'))
         USF = os.path.join(ROOT, 'data', 'us_imports.json')
         page.route('**/us_imports.json', lambda route: route.fulfill(path=USF, content_type='application/json')
                    if os.path.exists(USF) else route.fulfill(status=404, body='missing'))
@@ -80,7 +83,7 @@ def main():
             before = len(errors)
             found = page.evaluate("""t => { const b = [...document.querySelectorAll('button')].find(x => x.textContent.trim() === t);
                                      if (!b) return false; b.click(); return true; }""", t)
-            page.wait_for_timeout(2500 if t in ('EU flows', 'EU markets', 'Producers', 'USA focus') else 900)
+            page.wait_for_timeout(2500 if t in ('EU flows', 'EU markets', 'Producers', 'USA focus', 'China focus') else 900)
             if not found:
                 check(f'tab "{t}"', False, 'button not found')
                 continue
@@ -91,7 +94,7 @@ def main():
             new = errors[before:]
             ok = info is not None and (info['rows'] > 0 or info['marks'] > 0) and not new
             if (t in ('EU markets', 'Producers', 'USA focus') and not os.path.exists(os.path.join(ROOT, 'data', 'eurostat.json'))) or \
-                    (t == 'USA focus' and not os.path.exists(USF)):
+                    (t == 'USA focus' and not os.path.exists(USF)) or (t == 'China focus' and not os.path.exists(CNF)):
                 ok = info is not None and not new          # donnees Eurostat pas encore collectees
             check(f'tab "{t}"', ok, (f"{info['rows']} table rows, {info['marks']} chart marks" if info else 'no panel')
                   + (f"; error: {new[0]}" if new else ''))
