@@ -29,6 +29,21 @@ Par zone et par semaine (champs courts pour limiter la taille du JSON) :
   dis          {nom de maladie: nombre de sites concernes}
   trt          {type de traitement: nombre de sites traites}
 
+Consequences des maladies (onglet Generations du tableau de bord) :
+  data/bw_site_status.json garde, pour chaque site, son statut semaine par
+  semaine depuis 2018 : 'a' = poissons (poux declares), 'f' = jachere,
+  '-' = pas de declaration, '?' = semaine pas encore relue. L'historique est
+  rattrape par tranches (STATUS_MAX semaines par execution, plus recentes
+  d'abord). A partir de ces statuts et des maladies site par site, chaque
+  episode de maladie (ILA, PD...) recoit sa consequence : site vide combien de
+  semaines apres la detection, ou encore en production. Cle 'episodes' de
+  bw_weekly :
+    [site, zone, maladie, debut (annee*100+semaine), fin, poissons au debut
+     (1/0/null), semaine du vidage (annee*100+semaine ou null), semaines entre
+     detection et vidage (ou null), etat]
+  etat : 'E' vide, 'S' encore en production a la derniere semaine connue,
+  'N' pas de poisson au debut de l'episode, 'U' statuts pas encore rattrapes.
+
 Identifiants : variables d'environnement BW_CLIENT_ID et BW_CLIENT_SECRET
 (secrets GitHub). Jamais ecrits ni affiches.
 
@@ -72,6 +87,12 @@ TRT_FROM_YEAR = 2024          # historique detaille a partir de cette annee
 TRT_BUDGET = 3000             # fiches lues au plus par execution (semaines recentes + rattrapage)
 TRT_FROM = (TRT_FROM_YEAR, 1)
 NEW_CASE_GAP = 4      # une maladie est un "nouveau cas" si absente du site les 4 semaines d'avant
+STAT_FILE = os.path.join(ROOT, 'data', 'bw_site_status.json')
+STATUS_UNTIL = 40 * 60    # rattrapage de l'historique des statuts arrete apres 40 min
+STATUS_MAX = 150          # semaines d'historique rattrapees au plus par execution
+EPISODE_GAP = 8           # maladie absente moins de 8 semaines : meme episode
+EMPTY_RUN = 3             # site vide : jachere, ou plus de declaration 3 semaines de suite
+EMPTY_HORIZON = 104       # vidage cherche jusqu'a 2 ans apres la detection
 TOKEN_URL = 'https://id.barentswatch.no/connect/token'
 API = 'https://www.barentswatch.no/bwapi'
 UA = 'saumon-dashboard (github.com/emileviardotfo/saumon)'
@@ -375,6 +396,111 @@ def update_treatments(api, loc_po, all_weeks, dis):
     return agg, complete_years, {'keys': keys, 'rows': site_rows, 'years': sorted(complete_years)}
 
 
+def fetch_status(api, y, w, loc_po):
+    """Statut de chaque site pour une semaine deja agregee (rattrapage de l'historique)."""
+    sites = api.call('POST', f'/v2/geodata/fishhealth/locality/{y}/{w}', body={})
+    if not isinstance(sites, list):
+        return False
+    st = STATUS.setdefault((y, w), {})
+    for s in sites:
+        loc = s.get('locality') or {}
+        no = loc.get('no')
+        if no is None or loc.get('isOnLand') or not s.get('hasSalmonoidLicense') \
+                or s.get('isSlaughterHoldingCage'):
+            continue
+        po = loc_po.get(str(no))
+        if not po or not (1 <= po <= 13):
+            continue
+        rep = s.get('liceReport') or {}
+        if rep.get('isFallow'):
+            st[str(no)] = 'f'
+        elif rep.get('hasReported'):
+            st[str(no)] = 'a'
+    return True
+
+
+def load_status(all_weeks):
+    """Historique des statuts : {'first', 'have' [semaines relues], 'sites' {site: chaine}}."""
+    stat = json.load(io.open(STAT_FILE)) if os.path.exists(STAT_FILE) else {}
+    n = len(all_weeks)
+    first = '%d-%02d' % all_weeks[0]
+    if stat.get('first') != first:
+        stat = {}
+    stat['first'] = first
+    stat.setdefault('have', [])
+    stat['sites'] = {k: v.ljust(n, '?')[:n] for k, v in (stat.get('sites') or {}).items()}
+    return stat
+
+
+def merge_status(stat, all_weeks):
+    """Ajoute les semaines relues pendant cette execution (STATUS) a l'historique."""
+    idx = {wk: i for i, wk in enumerate(all_weeks)}
+    n = len(all_weeks)
+    have = set(stat['have'])
+    sites = {k: list(v) for k, v in stat['sites'].items()}
+    for wk, st in STATUS.items():
+        i = idx.get(wk)
+        if i is None:
+            continue
+        have.add('%d-%02d' % wk)
+        for no in st:
+            if no not in sites:
+                # site nouveau : '-' pour les semaines deja relues ou il n'apparaissait pas
+                sites[no] = ['-' if ('%d-%02d' % all_weeks[j]) in have else '?' for j in range(n)]
+        for no, arr in sites.items():
+            arr[i] = st.get(no, '-')
+    stat['have'] = sorted(have)
+    stat['sites'] = {k: ''.join(v) for k, v in sites.items()}
+    return stat
+
+
+def build_episodes(dis, all_weeks, stat, loc_po):
+    """Episodes de maladie par site et leur consequence (vidage du site ou non)."""
+    keys = ['%d-%02d' % wk for wk in all_weeks]
+    yw = [y * 100 + w for (y, w) in all_weeks]
+    have = set(stat['have'])
+    opened, eps = {}, []
+    for i, k in enumerate(keys):
+        cur = dis['weeks'].get(k)
+        if cur is None:
+            continue
+        for no, codes in cur.items():
+            for c in codes:
+                o = opened.get((no, c))
+                if o and i - o[1] <= EPISODE_GAP:
+                    o[1] = i
+                else:
+                    if o:
+                        eps.append((no, c, o[0], o[1]))
+                    opened[(no, c)] = [i, i]
+    eps += [(no, c, o[0], o[1]) for (no, c), o in opened.items()]
+    out = []
+    last_known = max((i for i, k in enumerate(keys) if k in have), default=-1)
+    for no, c, a, b in sorted(eps, key=lambda e: (e[2], e[0])):
+        s = stat['sites'].get(no)
+        row = [int(no), int(loc_po.get(no) or 0), c, yw[a], yw[b]]
+        if not s or any(keys[j] not in have for j in range(max(0, a - 4), a + 1)):
+            out.append(row + [None, None, None, 'U'])
+            continue
+        fish0 = 1 if 'a' in s[max(0, a - 4):a + 1] else 0
+        if not fish0:
+            out.append(row + [0, None, None, 'N'])
+            continue
+        state, empty = 'S', None
+        for j in range(a, min(a + EMPTY_HORIZON, len(keys))):
+            if keys[j] not in have:
+                state = 'U'
+                break
+            if s[j] == 'f' or (s[j] == '-' and s[j:j + EMPTY_RUN] == '-' * EMPTY_RUN):
+                state, empty = 'E', j
+                break
+        if state == 'S' and last_known < min(a + EMPTY_HORIZON, len(keys)) - 1 and last_known < len(keys) - 1:
+            state = 'U'
+        out.append(row + [1, yw[empty] if empty is not None else None,
+                          (empty - a) if empty is not None else None, state])
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--max-weeks', type=int, default=160,
@@ -435,6 +561,25 @@ def main():
                   f'{time.time() - t0:.0f} s')
             # sauvegarde intermediaire du cache, pour ne pas tout perdre en cas d'arret
             io.open(LOC_CACHE, 'w').write(json.dumps(loc_po, separators=(',', ':'), sort_keys=True))
+
+    # Historique des statuts de site (poissons / jachere) : semaines relues
+    # ci-dessus, puis rattrapage des semaines anciennes, plus recentes d'abord.
+    stat = load_status(all_weeks)
+    have_st = set(stat['have']) | {'%d-%02d' % wk for wk in STATUS}
+    back = [wk for wk in all_weeks[::-1] if '%d-%02d' % wk not in have_st][:STATUS_MAX]
+    nb = 0
+    for (y, w) in back:
+        if time.time() - T_START > STATUS_UNTIL:
+            break
+        try:
+            if fetch_status(api, y, w, loc_po):
+                nb += 1
+        except RuntimeError as e:
+            print(f'  statuts {y}-S{w:02d} : {e}')
+    stat = merge_status(stat, all_weeks)
+    io.open(STAT_FILE, 'w').write(json.dumps(stat, separators=(',', ':'), sort_keys=True))
+    print(f'Statuts de site : {nb} semaines d\'historique rattrapees, '
+          f'{len(stat["have"])}/{len(all_weeks)} semaines connues.')
 
     # Caches enregistres tout de suite : si une etape suivante echoue, les
     # 30 a 40 minutes de releve ne sont pas perdues.
@@ -524,6 +669,11 @@ def main():
     if act:
         store['site_act'] = {'weeks': [list(wk) for wk in rw], 'sites': act}
     store['meta']['events'] = len(events)
+    # Episodes de maladie et leur consequence (vidage du site)
+    store['episodes'] = build_episodes(dis, all_weeks, stat, loc_po)
+    store['meta']['status_weeks'] = [len(stat['have']), len(all_weeks)]
+    store['meta']['episode_rule'] = (f'episode = same disease at a site, gaps under {EPISODE_GAP} weeks; site emptied = fallow, '
+                                     f'or no lice report {EMPTY_RUN} weeks in a row, within {EMPTY_HORIZON} weeks of detection')
     store['meta']['new_case_rule'] = f'disease present at a site and absent from it in the {NEW_CASE_GAP} previous weeks'
     data[KEY] = store
     io.open(DATA, 'w', encoding='utf-8').write(json.dumps(data, ensure_ascii=False, separators=(',', ':')))

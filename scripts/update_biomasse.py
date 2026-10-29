@@ -28,6 +28,11 @@ lignes 'cohort' deja presentes dans data.json (correspondance exacte) :
                         UTTAK_STK (poissons abattus ce mois) -- null si
                         aucun abattage
 
+Champs ajoutes en octobre 2026 pour l'onglet Generations (flux du mois, par
+PO et generation) : harv_stk = UTTAK_STK, harv_kg = UTTAK_KG, dead_stk =
+DODFISK_STK, loss_stk = somme des autres pertes (rejets, evasions, autres,
+erreurs de comptage).
+
 Cas particulier : age_months de cohorte. Le Biomasseregisteret ne donne que
 l'ANNEE de mise a l'eau (UTSETTSAAR), pas la date exacte -- l'age precis
 d'une cohorte tout juste relachee (ex. -0,34 mois observe dans l'historique)
@@ -119,9 +124,15 @@ def build_cohort(df, existing_cohort):
                 age = 0.0
             last_age[pk] = (ym, age)
 
+        num = lambda col: float(r[col]) if col in r.index and pd.notna(r[col]) else 0.0
         out.append({'po': po, 'cohort': coh, 'year': y, 'month': m,
                     'age_months': age, 'weight_kg': weight_kg,
-                    'growth_kg': growth_kg, 'stock': stock})
+                    'growth_kg': growth_kg, 'stock': stock,
+                    # flux du mois pour cette generation (onglet Generations) :
+                    # recolte (nombre, kg), poissons morts, autres pertes
+                    'harv_stk': num('UTTAK_STK'), 'harv_kg': num('UTTAK_KG'),
+                    'dead_stk': num('DØDFISK_STK'),
+                    'loss_stk': sum(num(c) for c in OTHER_LOSS_COLS)})
     return out
 
 

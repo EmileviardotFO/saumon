@@ -29,7 +29,7 @@ DATA = os.path.join(ROOT, 'data', 'data.json')
 OUT = sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT, 'data', 'smoke.json')
 
 TABS = ['Summary', 'Producers', 'USA focus', 'China focus', 'EU markets', 'National view (Norway)', 'Multi-year comparison', 'Supply outlook', 'Markets',
-        'Product per market', 'Calibre & premium', 'By zone (PO)', 'Fish health', 'Farm register']
+        'Product per market', 'Calibre & premium', 'Generations', 'By zone (PO)', 'Fish health', 'Farm register']
 
 
 def main():

@@ -606,16 +606,19 @@ def fetch_cn_imports(to_iso, fx):
         m += 1
         if m > 12:
             y, m = y + 1, 1
-    agg, sample = {}, False
+    agg, sample, failed = {}, False, set()
     for rep, rcode in CN_REPORTERS.items():
         for ym in months:
             url = f'{base}?reporterCode={rcode}&period={ym}&cmdCode={codes}&flowCode=M&includeDesc=true'
             st, raw = http(url)
-            if st == 429:
-                time.sleep(30)
+            for wait in (30, 60):                 # Comtrade limite le debit : on attend et on reessaie
+                if st != 429:
+                    break
+                time.sleep(wait)
                 st, raw = http(url)
             if st != 200:
                 print(f'  {rep} : {ym} -> {st} {raw[:150]!r}')
+                failed.add((ym, rep))
                 continue
             rows = json.loads(raw).get('data') or []
             if rows and not sample:
@@ -644,6 +647,17 @@ def fetch_cn_imports(to_iso, fx):
             continue
         e = to_eur(val, ym, 'USD', fx)
         out.append([ym, iso, pi, round(kg / 1000, 3), round(val / 1000, 2), round(e / 1000, 2) if e is not None else None, rep])
+    # mois en echec cette fois (limite de debit, panne) : on garde ceux du fichier precedent,
+    # pour ne pas perdre Hong Kong ou la Chine sur un passage malchanceux
+    if failed and os.path.exists(CN_OUT):
+        try:
+            prev = json.load(io.open(CN_OUT, encoding='utf-8')).get('rows', [])
+            kept = [r for r in prev if (r[0], r[6]) in failed]
+            if kept:
+                print(f'  CN/HK : {len(kept)} lignes reprises du fichier precedent ({len(failed)} mois en echec)')
+                out = sorted(out + kept, key=lambda r: (r[0], r[6], r[1], r[2]))
+        except (ValueError, OSError, IndexError) as e:
+            print(f'  CN/HK : fichier precedent illisible ({e})')
     if not out:
         raise RuntimeError('aucune ligne')
     meta = {'fetched': dt.date.today().isoformat(), 'source': 'UN Comtrade, imports reported by China and Hong Kong (HS6, monthly, CIF in USD)',
@@ -665,11 +679,14 @@ def main():
             r, m = {'hmrc': fetch_hmrc, 'comtrade': fetch_comtrade}.get(src.get('kind'), fetch_source)(key, src, to_iso, fx)
             if not r:
                 raise RuntimeError('aucune ligne')
-            # les mois que la nouvelle table ne couvre plus (table islandaise glissante) restent
-            keep = [x for x in old['rows'] if x[1] == key and x[0] < m['first']]
+            # les mois absents du nouveau releve restent : plus anciens (table islandaise glissante)
+            # ou en echec cette fois (limite de debit de Comtrade)
+            got = {x[0] for x in r}
+            keep = [x for x in old['rows'] if x[1] == key and x[0] not in got]
             if keep:
-                print(f'  {key} : {len(keep)} lignes plus anciennes conservees du fichier precedent')
-                m['first'] = min(x[0] for x in keep)
+                print(f'  {key} : {len(keep)} lignes conservees du fichier precedent ({len({x[0] for x in keep})} mois absents du releve)')
+                m['first'] = min(m['first'], min(x[0] for x in keep))
+                m['last'] = max(m['last'], max(x[0] for x in keep))
             rows += keep + r
             meta[key] = m
             print(f'  {key} : {len(r)} lignes, {m["first"]} -> {m["last"]}')
