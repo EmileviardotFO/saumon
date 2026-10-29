@@ -1,5 +1,5 @@
 {
- "run_utc": "2026-10-28T19:27:19+00:00",
+ "run_utc": "2026-10-29T00:57:14+00:00",
  "tests": [
   {
    "name": "dataflow_all",
@@ -8,7 +8,7 @@
    "content_type": "application/vnd.sdmx.structure+xml;version=2.1",
    "bytes": 8721,
    "saved_as": "dataflow_all.xml",
-   "head": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<m:Structure xmlns:m=\"http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message\" xmlns:s=\"http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure\" xmlns:c=\"http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common\"><m:Header><m:ID>DF1793187411</m:ID><m:Test"
+   "head": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<m:Structure xmlns:m=\"http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message\" xmlns:s=\"http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure\" xmlns:c=\"http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common\"><m:Header><m:ID>DF1793235435</m:ID><m:Test"
   },
   {
    "name": "structure_045409",

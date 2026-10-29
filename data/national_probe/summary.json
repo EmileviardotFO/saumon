@@ -1,0 +1,262 @@
+{
+ "run_utc": "2026-10-29T00:57:49+00:00",
+ "tests": [
+  {
+   "name": "fo_root_a",
+   "url": "https://statbank.hagstova.fo/api/v1/en/H2/",
+   "status": 200,
+   "content_type": "application/json; charset=utf-8",
+   "bytes": 1067,
+   "saved_as": "fo_root_a.json",
+   "head": "[{\"id\":\"UO\",\"type\":\"l\",\"text\":\"Environment and energy\"},{\"id\":\"IB\",\"type\":\"l\",\"text\":\"Population and elections\\n\"},{\"id\":\"AM\",\"type\":\"l\",\"text\":\"Labour and wages\\n\"},{\"id\":\"IP\",\"type\":\"l\",\"text\":\"Prices and income\\n\"},{\"id\":\"UB\",\"type\":\"l\",\"text\":\"Education\"},{\"id\":\"MM\",\"type\":\"l\",\"text\":\"Culture an"
+  },
+  {
+   "name": "fo_root_b",
+   "url": "https://statbank.hagstova.fo/pxweb/api/v1/en/H2/",
+   "status": 500,
+   "content_type": "text/html; charset=utf-8",
+   "bytes": 1910,
+   "saved_as": "fo_root_b.txt",
+   "head": "\r\n\r\n<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\r\n\r\n<html xmlns=\"http://www.w3.org/1999/xhtml\" >\r\n<head><title>\r\n\r\n</title><link href=\"../../../../../Resources/Styles/PxWeb.css\" rel=\"stylesheet\" type=\"text/css\" media=\"scree"
+  },
+  {
+   "name": "fo_root_c",
+   "url": "https://statbank.hagstova.fo/api/v1/en/",
+   "status": 200,
+   "content_type": "application/json; charset=utf-8",
+   "bytes": 27,
+   "saved_as": "fo_root_c.json",
+   "head": "[{\"dbid\":\"H2\",\"text\":\"H2\"}]"
+  },
+  {
+   "name": "fo_search",
+   "url": "https://statbank.hagstova.fo/api/v1/en/H2/?query=salmon",
+   "status": 200,
+   "content_type": "application/json; charset=utf-8",
+   "bytes": 8042,
+   "saved_as": "fo_search.json",
+   "head": "[{\"id\":\"hav_tikin.px\",\"path\":\"/VV/VV02\",\"title\":\"VV02020 Harvest of salmon and trout, gutted weight (1996-2025)\",\"score\":1.07664633,\"published\":\"2026-05-05T11:14:00\"},{\"id\":\"hav_smolt.px\",\"path\":\"/VV/VV02\",\"title\":\"VV02010 Smolt transfer to sea by species (1995-2025)\",\"score\":0.3393085,\"published\":\""
+  },
+  {
+   "name": "is_root",
+   "url": "https://px.hagstofa.is/pxen/api/v1/en/",
+   "status": 200,
+   "content_type": "application/json; charset=utf-8",
+   "bytes": 195,
+   "saved_as": "is_root.json",
+   "head": "[{\"dbid\":\"Atvinnuvegir\",\"text\":\"Atvinnuvegir\"},{\"dbid\":\"Efnahagur\",\"text\":\"Efnahagur\"},{\"dbid\":\"Ibuar\",\"text\":\"Ibuar\"},{\"dbid\":\"Samfelag\",\"text\":\"Samfelag\"},{\"dbid\":\"Umhverfi\",\"text\":\"Umhverfi\"}]"
+  },
+  {
+   "name": "is_search_a",
+   "url": "https://px.hagstofa.is/pxen/api/v1/en/Efnahagur?query=salmon",
+   "status": 200,
+   "content_type": "application/json; charset=utf-8",
+   "bytes": 2283,
+   "saved_as": "is_search_a.json",
+   "head": "[{\"id\":\"VIS05200.px\",\"path\":\"/visitolur/4_verdvorutegunda/verdvorutegunda\",\"title\":\"Retail prices of some commodities and services from 1996\",\"score\":0.0310469326,\"published\":\"2017-11-09T11:42:00\"},{\"id\":\"UTA12821.px\",\"path\":\"/utanrikisverslun/1_voruvidskipti/06_tollskrarnumereldra\",\"title\":\"Exports"
+  },
+  {
+   "name": "is_search_b",
+   "url": "https://px.hagstofa.is/pxen/api/v1/en/Efnahagur?query=export",
+   "status": 200,
+   "content_type": "application/json; charset=utf-8",
+   "bytes": 7641,
+   "saved_as": "is_search_b.json",
+   "head": "[{\"id\":\"UTA06006.px\",\"path\":\"/utanrikisverslun/1_voruvidskipti/01_voruskipti\",\"title\":\"Import and Export by currencies 2010-2021\",\"score\":0.675385654,\"published\":\"2022-05-19T09:00:00\"},{\"id\":\"UTA06106.px\",\"path\":\"/utanrikisverslun/1_voruvidskipti/01_voruskipti\",\"title\":\"Export of fresh fish by mode "
+  },
+  {
+   "name": "is_trade",
+   "url": "https://px.hagstofa.is/pxen/api/v1/en/Efnahagur/utanrikisverslun/",
+   "status": 200,
+   "content_type": "application/json; charset=utf-8",
+   "bytes": 193,
+   "saved_as": "is_trade.json",
+   "head": "[{\"id\":\"1_voruvidskipti\",\"type\":\"l\",\"text\":\"Trade in goods\"},{\"id\":\"2_thjonusta\",\"type\":\"l\",\"text\":\"Trade in services\"},{\"id\":\"3_voruthjonusta\",\"type\":\"l\",\"text\":\"Trade in goods and services\"}]"
+  },
+  {
+   "name": "uk_commodity",
+   "url": "https://api.uktradeinfo.com/Commodity?$filter=Cn8Code eq '03021400'",
+   "status": null,
+   "content_type": "",
+   "bytes": 120,
+   "saved_as": "uk_commodity.txt",
+   "head": "InvalidURL('URL can\\'t contain control characters. \"/Commodity?$filter=Cn8Code eq \\'03021400\\'\" (found at least \\' \\')')"
+  },
+  {
+   "name": "uk_ots_a",
+   "url": "https://api.uktradeinfo.com/OTS?$filter=CommodityId%20eq%203021400%20and%20MonthId%20ge%20202501&$top=200",
+   "status": 200,
+   "content_type": "application/json; odata.metadata=minimal",
+   "bytes": 35209,
+   "saved_as": "uk_ots_a.json",
+   "head": "{\"@odata.context\":\"https://api.uktradeinfo.com/$metadata#OTS\",\"value\":[{\"MonthId\":202501,\"FlowTypeId\":1,\"SuppressionIndex\":0,\"CommodityId\":3021400,\"CommoditySitcId\":3412,\"CountryId\":1,\"PortId\":7,\"Value\":5065.0,\"NetMass\":517.0,\"SuppUnit\":0.0},{\"MonthId\":202501,\"FlowTypeId\":1,\"SuppressionIndex\":0,\"Com"
+  },
+  {
+   "name": "uk_ots_b",
+   "url": "https://api.uktradeinfo.com/OTS?$filter=CommodityId%20eq%203021400%20and%20MonthId%20ge%20202501%20and%20%28FlowTypeId%20eq%202%20or%20FlowTypeId%20eq%204%29&$top=200",
+   "status": 200,
+   "content_type": "application/json; odata.metadata=minimal",
+   "bytes": 35275,
+   "saved_as": "uk_ots_b.json",
+   "head": "{\"@odata.context\":\"https://api.uktradeinfo.com/$metadata#OTS\",\"value\":[{\"MonthId\":202501,\"FlowTypeId\":2,\"SuppressionIndex\":0,\"CommodityId\":3021400,\"CommoditySitcId\":3412,\"CountryId\":1,\"PortId\":0,\"Value\":5.0,\"NetMass\":5.0,\"SuppUnit\":0.0},{\"MonthId\":202501,\"FlowTypeId\":2,\"SuppressionIndex\":0,\"Commodit"
+  },
+  {
+   "name": "uk_flowtypes",
+   "url": "https://api.uktradeinfo.com/FlowType",
+   "status": 200,
+   "content_type": "application/json; odata.metadata=minimal",
+   "bytes": 598,
+   "saved_as": "uk_flowtypes.json",
+   "head": "{\"@odata.context\":\"https://api.uktradeinfo.com/$metadata#FlowType/UktiApi.FlowType\",\"value\":[{\"@odata.type\":\"#UktiApi.FlowType\",\"FlowTypeId\":1,\"FlowTypeDescription\":\"EU Imports                                        \"},{\"@odata.type\":\"#UktiApi.FlowType\",\"FlowTypeId\":2,\"FlowTypeDescription\":\"EU Expor"
+  },
+  {
+   "name": "ct_cl_month",
+   "url": "https://comtradeapi.un.org/public/v1/preview/C/M/HS?reporterCode=152&period=202506&cmdCode=030214,030441,030481,030313&flowCode=X&partnerCode=0",
+   "status": 200,
+   "content_type": "application/json; charset=utf-8",
+   "bytes": 3729,
+   "saved_as": "ct_cl_month.json",
+   "head": "{\"elapsedTime\":\"1.06 secs\",\"count\":4,\"data\":[{\"typeCode\":\"C\",\"freqCode\":\"M\",\"refPeriodId\":20250601,\"refYear\":2025,\"refMonth\":6,\"period\":\"202506\",\"reporterCode\":152,\"reporterISO\":null,\"reporterDesc\":null,\"flowCode\":\"X\",\"flowDesc\":null,\"partnerCode\":0,\"partnerISO\":null,\"partnerDesc\":null,\"partner2Code"
+  },
+  {
+   "name": "ct_cl_bypartner",
+   "url": "https://comtradeapi.un.org/public/v1/preview/C/M/HS?reporterCode=152&period=202506&cmdCode=030214&flowCode=X",
+   "status": 429,
+   "content_type": "application/json",
+   "bytes": 83,
+   "saved_as": "ct_cl_bypartner.json",
+   "head": "{ \"statusCode\": 429, \"message\": \"Rate limit is exceeded. Try again in 1 seconds.\" }"
+  },
+  {
+   "name": "ct_fo_month",
+   "url": "https://comtradeapi.un.org/public/v1/preview/C/M/HS?reporterCode=234&period=202506&cmdCode=030214,030441,030481,030313&flowCode=X&partnerCode=0",
+   "status": 429,
+   "content_type": "application/json",
+   "bytes": 83,
+   "saved_as": "ct_fo_month.json",
+   "head": "{ \"statusCode\": 429, \"message\": \"Rate limit is exceeded. Try again in 1 seconds.\" }"
+  },
+  {
+   "name": "ct_is_month",
+   "url": "https://comtradeapi.un.org/public/v1/preview/C/M/HS?reporterCode=352&period=202506&cmdCode=030214,030441,030481,030313&flowCode=X&partnerCode=0",
+   "status": 200,
+   "content_type": "application/json; charset=utf-8",
+   "bytes": 2781,
+   "saved_as": "ct_is_month.json",
+   "head": "{\"elapsedTime\":\"2.21 secs\",\"count\":3,\"data\":[{\"typeCode\":\"C\",\"freqCode\":\"M\",\"refPeriodId\":20250601,\"refYear\":2025,\"refMonth\":6,\"period\":\"202506\",\"reporterCode\":352,\"reporterISO\":null,\"reporterDesc\":null,\"flowCode\":\"X\",\"flowDesc\":null,\"partnerCode\":0,\"partnerISO\":null,\"partnerDesc\":null,\"partner2Code"
+  },
+  {
+   "name": "ct_gb_month",
+   "url": "https://comtradeapi.un.org/public/v1/preview/C/M/HS?reporterCode=826&period=202506&cmdCode=030214,030441,030481,030313&flowCode=X&partnerCode=0",
+   "status": 200,
+   "content_type": "application/json; charset=utf-8",
+   "bytes": 3692,
+   "saved_as": "ct_gb_month.json",
+   "head": "{\"elapsedTime\":\"0.66 secs\",\"count\":4,\"data\":[{\"typeCode\":\"C\",\"freqCode\":\"M\",\"refPeriodId\":20250601,\"refYear\":2025,\"refMonth\":6,\"period\":\"202506\",\"reporterCode\":826,\"reporterISO\":null,\"reporterDesc\":null,\"flowCode\":\"X\",\"flowDesc\":null,\"partnerCode\":0,\"partnerISO\":null,\"partnerDesc\":null,\"partner2Code"
+  },
+  {
+   "name": "ct_availability",
+   "url": "https://comtradeapi.un.org/public/v1/getDA/C/M/HS?reporterCode=152,234,352,826",
+   "status": 200,
+   "content_type": "application/json; charset=utf-8",
+   "bytes": 381275,
+   "saved_as": "ct_availability.json",
+   "head": "{\"elapsedTime\":\"1.17 secs\",\"count\":706,\"data\":[{\"datasetCode\":30152200301072100,\"typeCode\":\"C\",\"freqCode\":\"M\",\"period\":200301,\"reporterCode\":152,\"reporterISO\":\"CHL\",\"reporterDesc\":\"Chile\",\"classificationCode\":\"H2\",\"classificationSearchCode\":\"HS\",\"isOriginalClassification\":true,\"isExtendedFlowCode\":f"
+  }
+ ],
+ "px_tables": {
+  "faroe": [
+   {
+    "path": "VV/VV01/fisknv_md.px",
+    "text": "AVR01010 Wet Fish Catches in tonnes and value by species, fishing gear, fishing zones, processing and ship size (2015M01-2026M09)",
+    "updated": "2026-10-28T08:51:50"
+   },
+   {
+    "path": "VV/VV01/fisknv_ar.px",
+    "text": "AVR01020 Wet Fish Catches in tonnes and value by species, fishing gear, fishing zones, processing and ship size (2015-2025)",
+    "updated": "2026-10-28T08:51:48"
+   },
+   {
+    "path": "VV/VV01/fv_heild.px",
+    "text": "VV01060 Total catch in live weight by fishing zones and species (1990-2025)",
+    "updated": "2026-06-23T08:53:23"
+   },
+   {
+    "path": "VV/VV01/fv_heild_1.px",
+    "text": "VV01061 Total catch in live weight by fishing zones and species (2019-2025)",
+    "updated": "2026-06-23T08:53:23"
+   },
+   {
+    "path": "UH/UH01/uh_bec.px",
+    "text": "UH01015 Imports and exports by BEC groups and country (1988-2025)",
+    "updated": "2026-10-16T08:51:59"
+   },
+   {
+    "path": "UH/UH01/uh_bec_t.px",
+    "text": "UH01016 Imports and exports by BEC groups and country (1988M01-2026M08)",
+    "updated": "2026-10-16T08:52:02"
+   },
+   {
+    "path": "UH/UH01/uh_sitc.px",
+    "text": "UH01025 Imports and exports by SITC groups and country (1988-2025)",
+    "updated": "2026-10-16T08:52:09"
+   },
+   {
+    "path": "UH/UH01/uh_sitc_t.px",
+    "text": "UH01026 Imports and exports by SITC groups and country (1988M01-2026M08)",
+    "updated": "2026-10-16T08:52:10"
+   },
+   {
+    "path": "UH/UH01/uh_cn.px",
+    "text": "UH01045 Imports and exports by HS product and country (1988-2025)",
+    "updated": "2026-10-16T08:52:02"
+   },
+   {
+    "path": "UH/UH01/uh_cn_t.px",
+    "text": "UH01046 Imports and exports by HS product and country (2023M01-2026M08)",
+    "updated": "2026-10-16T08:52:03"
+   },
+   {
+    "path": "UH/UH01/uh_isscfc.px",
+    "text": "UH01055 Imports and exports by ISSCFC fishproducts and country (1988-2025)",
+    "updated": "2026-10-16T08:52:03"
+   },
+   {
+    "path": "UH/UH01/uh_isscfc_t.px",
+    "text": "UH01056 Imports and exports by ISSCFC fishproducts and country (1988M01-2026M08)",
+    "updated": "2026-10-16T08:52:05"
+   },
+   {
+    "path": "UH/UH01/uh_mcs.px",
+    "text": "UH01075 Imports and exports by MCS fish species, presentation, preservation and country (1988-2025)",
+    "updated": "2026-10-16T08:52:05"
+   },
+   {
+    "path": "UH/UH01/uh_mcs_t.px",
+    "text": "UH01076 Imports and exports by MCS fish species, presentation, preservation and country (1988M01-2026M08)",
+    "updated": "2026-10-16T08:52:09"
+   },
+   {
+    "path": "UH/UH02/uh_t-javni.px",
+    "text": "UH02015 Balance of external trade in services, specified (1998-2025)",
+    "updated": "2026-10-05T08:51:20"
+   },
+   {
+    "path": "KB/KB05/kb_hansam.px",
+    "text": "KB05010 Indicator for retail trade, twice a year (2006M06-2026M06)",
+    "updated": "2026-07-03T08:51:14"
+   },
+   {
+    "path": "KB/KB05/kb_hangoy.px",
+    "text": "KB05020 Volume of stock in retail trade compared to normal, twice a year (2006M06-2026M06)",
+    "updated": "2026-07-03T08:51:14"
+   },
+   {
+    "path": "KB/KB05/kb_hanutg.px",
+    "text": "KB05030 Detailed expectations for retail trade, twice a year (2006M06-2026M06)",
+    "updated": "2026-07-03T08:51:14"
+   }
+  ],
+  "iceland": []
+ }
+}

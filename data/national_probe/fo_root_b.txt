@@ -1,0 +1,40 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head><title>
+
+</title><link href="../../../../../Resources/Styles/PxWeb.css" rel="stylesheet" type="text/css" media="screen" /></head>
+<body>
+    <form method="post" action="../../../../../ErrorGeneral.aspx?errcode=500" id="form1">
+<div class="aspNetHidden">
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="/wEPDwUKMTAwMjI3NTMzMQ9kFgICAw9kFgYCAw8PFgIeBFRleHQFNEFuIGVycm9yIGhhcyBvY2N1cnJlZC4gVGhlIGVycm9yIGhhcyBiZWVuIHJlZ2lzdGVyZWRkZAIFDw8WBB8ABUxZb3VyIHNhdmVkIHF1ZXJ5IGNhbiBub3QgYmUgZm91bmQuIFRoZSB0YWJsZSBjYW4gaGF2ZSBiZWVuIG1vdmVkIG9yIHJlbW92ZWQuHgdWaXNpYmxlaGRkAgcPDxYCHwAFFFJldHVybiB0byBzdGFydCBwYWdlZGRkEOVFmPVk9HYLemOINT9rkrE2f0sgLgKzo8pWW4PrAd8=" />
+</div>
+
+<div class="aspNetHidden">
+
+	<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="DA82623C" />
+</div>
+        <div id="wrap"> 
+            <div id="header" class="header">
+                <div class="headerleft">
+                        <img src="../../../../../Resources/Images/hagstova_foroya.svg" id="imgSiteLogo" alt="PX-Web" class="imgSiteLogo" />
+                        <span class="siteLogoText">PX-Web</span>
+                </div>
+                <div class="headerright">
+                </div>
+                <div style="clear: both;"> </div>
+            </div>
+            <div id="content"> 
+                <div id="place-holder">
+                    <span id="lblErrorMessage">An error has occurred. The error has been registered</span>
+                    
+                    <br /><br />
+                    <a id="lnkStart" href="../../../../../Default.aspx">Return to start page</a>
+                </div>
+            </div>
+        </div>
+    </form>
+</body>
+</html>
