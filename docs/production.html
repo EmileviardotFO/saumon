@@ -6595,19 +6595,53 @@ function computePeaks(raw, sel) {
   // part 5-6 kg hebdomadaire : suivie, mais pas utilisee pour corriger (elle degrade la projection en marche avant)
   const k1n = sh(lastB, 1), s56n = acc56[k1n] ? avg(acc56[k1n]) : null, s56u = Object.keys(acc56).map(Number).filter(k => k % 100 === k1n % 100 && k < k1n).map(k => avg(acc56[k]));
   const s56 = { k: k1n, v: s56n, usual: s56u.length ? avg(s56u) : null, weeks: acc56[k1n] ? acc56[k1n].length : 0, last: lastS56, cls: feedCl };
-  // part des ventes attendue dans 2 mois : calendrier + ecart du reservoir a sa normale (toute l'histoire)
-  const fc2 = (() => { const kt = sh(lastB, 2), cal = m => { const v = kS.filter(x => x % 100 === m).map(x => S6[x]); return v.length ? avg(v) : null; };
-    const bcal = m => { const v = kB.filter(x => x % 100 === m && x >= 201801).map(x => B[x]); return v.length ? avg(v) : null; };
-    const X = [], Y = []; kS.forEach(x => { const s0 = sh(x, -2); if (B[s0] === undefined) return; const b0 = bcal(s0 % 100), c0 = cal(x % 100); if (b0 === null || c0 === null) return; X.push(B[s0] - b0); Y.push(S6[x] - c0); });
-    const c = cal(kt % 100), b0 = bcal(lastB % 100); if (X.length < 12 || c === null || b0 === null) return null;
-    const mx = avg(X), my = avg(Y); let sxy = 0, sxx = 0; X.forEach((x, i) => { sxy += (x - mx) * (Y[i] - my); sxx += (x - mx) ** 2; });
-    return { k: kt, v: Math.max(0, c + my + (sxx ? sxy / sxx : 0) * (B[lastB] - b0 - mx)), usual: c, prev: S6[kt - 100] }; })();
+  // part des ventes attendue dans 2 mois : calendrier + ecart du reservoir a sa normale + ecart du poids moyen
+  // des poissons vendus (Akvafakta) le mois du registre a sa normale (inertie du marche). Ce dernier terme n'est
+  // garde que s'il reduit l'erreur en marche avant d'au moins 3 % sans degrader les mois de pic de plus de 5 %.
+  const ols = (X, y) => { const n = X[0].length, A = [...Array(n)].map(() => Array(n).fill(0)), v = Array(n).fill(0);
+    X.forEach((r, i) => { for (let a = 0; a < n; a++) { v[a] += r[a] * y[i]; for (let b = 0; b < n; b++) A[a][b] += r[a] * r[b]; } });
+    for (let i = 0; i < n; i++) { let p = i; for (let r = i + 1; r < n; r++) if (Math.abs(A[r][i]) > Math.abs(A[p][i])) p = r;
+      [A[i], A[p]] = [A[p], A[i]]; [v[i], v[p]] = [v[p], v[i]]; if (Math.abs(A[i][i]) < 1e-12) return null;
+      for (let r = 0; r < n; r++) { if (r === i) continue; const f = A[r][i] / A[i][i]; for (let c = i; c < n; c++) A[r][c] -= f * A[i][c]; v[r] -= f * v[i]; } }
+    return v.map((x, i) => x / A[i][i]); };
+  const mixA = (k, upto) => { if (AKW[k] === undefined) return null; const v = Object.keys(AKW).map(Number).filter(x => x % 100 === k % 100 && x < k).map(x => AKW[x]); return v.length ? AKW[k] - avg(v) : null; };
+  const model2 = (upto, withMix) => { const past = kS.filter(x => x <= upto), cal = m => { const v = past.filter(x => x % 100 === m).map(x => S6[x]); return v.length ? avg(v) : null; };
+    const bcal = m => { const v = kB.filter(x => x % 100 === m && x <= upto && x >= 201801).map(x => B[x]); return v.length ? avg(v) : null; };
+    const X = [], Y = []; past.forEach(x => { const s0 = sh(x, -2); if (B[s0] === undefined) return; const b0 = bcal(s0 % 100), c0 = cal(x % 100), m0 = withMix ? mixA(s0, upto) : 0;
+      if (b0 === null || c0 === null || m0 === null) return; X.push(withMix ? [1, B[s0] - b0, m0] : [1, B[s0] - b0]); Y.push(S6[x] - c0); });
+    if (X.length < 18) return null; const b = ols(X, Y); if (!b) return null;
+    return { b, cal, bcal, predict: (src, kt) => { const c = cal(kt % 100), b0 = bcal(src % 100), m0 = withMix ? mixA(src, upto) : 0; if (c === null || b0 === null || m0 === null || B[src] === undefined) return null;
+      return c + b[0] + b[1] * (B[src] - b0) + (withMix ? b[2] * m0 : 0); } }; };
+  const mixTest = (() => { const e0 = [], e1 = [], p0 = [], p1 = [];
+    kS.filter(k => k >= 202001).forEach(k => { const src = sh(k, -2); const m0 = model2(src, false), m1 = model2(src, true); if (!m0 || !m1) return;
+      const a = m0.predict(src, k), b = m1.predict(src, k); if (a === null || b === null) return; e0.push(Math.abs(S6[k] - a)); e1.push(Math.abs(S6[k] - b));
+      if ([2, 3, 4].includes(k % 100)) { p0.push(Math.abs(S6[k] - a)); p1.push(Math.abs(S6[k] - b)); } });
+    return e0.length ? { n: e0.length, base: avg(e0), mod: avg(e1), gain: 1 - avg(e1) / avg(e0), peakGain: p0.length ? 1 - avg(p1) / avg(p0) : NaN } : null; })();
+  const useMix = !!(mixTest && mixTest.gain > 0.03 && !(mixTest.peakGain < -0.05));
+  const fc2 = (() => { const kt = sh(lastB, 2), M2 = model2(lastS, useMix); if (!M2) return null; const v = M2.predict(lastB, kt); if (v === null) return null;
+    const M0 = model2(lastS, false), v0 = M0 ? M0.predict(lastB, kt) : null;
+    return { k: kt, v: Math.max(0, v), base: v0, usual: M2.cal(kt % 100), prev: S6[kt - 100], mix: useMix, mixNow: mixA(lastB, lastS) }; })();
+  // poids moyen des poissons recoltes (registre, vide) au dernier mois, vs sa normale : signal affiche, pas utilise
+  // (gain de 10-12 % a 3-4 mois sur la projection du reservoir, mais instable d'une periode a l'autre)
+  const hw = (() => { const k = lastB, v = RW[k], same = Object.keys(RW).map(Number).filter(x => x % 100 === k % 100 && x < k).map(x => RW[x]);
+    return v !== undefined && same.length ? { k, v, usual: avg(same), prev: RW[k - 100] } : null; })();
+  // exports hebdomadaires SSB (volumes) x part des calibres choisis (Akvafakta, en tonnage) = tonnes exportees
+  const ssbw = (() => { const S = raw.ssb_weekly; if (!S || !S.rows || !S.rows.length) return null;
+    const fresh = Math.max(0, (S.meta.products || []).findIndex(p => /fresh|fersk/i.test(p))), vol = {};
+    S.rows.forEach(r => { if (r[1] === fresh && r[2] !== null) vol[r[0]] = r[2]; });
+    const shW = {}; raw.weekly.forEach(r => { if (!r.dist_week) return; let y = r.report_year; if (r.dist_week >= 50 && r.report_week <= 2) y -= 1;
+      const tot = CL.reduce((a, c) => a + (r['sh_' + c] || 0) * MID[c], 0); if (!tot) return; shW[y * 100 + r.dist_week] = sel.reduce((a, c) => a + (r['sh_' + c] || 0) * MID[c], 0) / tot; });
+    const wk = Object.keys(vol).map(Number).filter(k => shW[k] !== undefined).sort((a, b) => a - b); if (!wk.length) return null;
+    const last = wk[wk.length - 1], last4 = wk.slice(-4), prev4 = last4.map(k => k - 100).filter(k => vol[k] !== undefined && shW[k] !== undefined);
+    const t = ks => ks.reduce((a, k) => a + vol[k] * shW[k], 0), v = ks => ks.reduce((a, k) => a + vol[k], 0);
+    return { last, weeks: last4.length, tons: t(last4), tonsPrev: prev4.length === last4.length ? t(prev4) : null, vol: v(last4), volPrev: prev4.length === last4.length ? v(prev4) : null,
+      lastTons: vol[last] * shW[last], lastVol: vol[last], unit: S.meta.weight_label || '' }; })();
   const nowcast = { k1: sh(lastB, 1), x: xNow, weeks: wk1, share: S6[sh(lastB, 1)], corr: corrNow,
     gain: E0.map((a, i) => a.length ? 1 - avg(E1[i]) / avg(a) : NaN), n: E0[0].length };
   const proj = pv.map((v, i) => { if (v === null) return { k: sh(lastB, i + 1), v: null };
     const w = bands[i].p80; return { k: sh(lastB, i + 1), v, lo: Math.max(0, v - w), hi: v + w, mae: bands[i].mae }; });
   const pPeak = proj.filter(p => p.v !== null).reduce((m, p) => !m || p.v > m.v ? p : m, null);
-  return { sel, feedCl, feedGain, B, F, S6, V6, lags, seasons, magCorr, peakMonths, th6, wf, sh, proj, pPeak, valid, nowcast, s56, fc2,
+  return { mixTest, hw, ssbw, sel, feedCl, feedGain, B, F, S6, V6, lags, seasons, magCorr, peakMonths, th6, wf, sh, proj, pPeak, valid, nowcast, s56, fc2,
     now: { lastB, lastS, cur, prev, ratio: prev ? cur / prev : NaN, nextPeakB, next6: sh(nextPeakB, gapTyp), gapTyp,
       seasonPeakPrev: seasons.length ? seasons[seasons.length - 1] : null } };
 }
@@ -6846,7 +6880,7 @@ function genClasses(po, LAST) {
       `<div class="l">vs a year earlier <b class="${ym > 0 ? 'delta-good' : ym < 0 ? 'delta-bad' : ''}">${genSg(ym)}</b>${yrs.length > 1 ? ` (${genSg(Math.min(...yrs))} to ${genSg(Math.max(...yrs))})` : ''}` +
       `${turn ? ` · turned ${turn.up ? 'positive' : 'negative'} in ${tmMl(turn.k)}` : ''}</div>` +
       genMiniSvg(k36, vals, prev, yoy, col) +
-      (po ? '' : useful ? `<div class="l">share of sales expected in ${tmMl(P.fc2.k)}: <b style="color:var(--ink)">${P.fc2.v.toFixed(1)}%</b> (usually ${P.fc2.usual.toFixed(1)}%) · beats the calendar by ${Math.round(100 * g2)}%</div>`
+      (po ? '' : useful ? `<div class="l">share of sales expected in ${tmMl(P.fc2.k)}: <b style="color:var(--ink)">${P.fc2.v.toFixed(1)}%</b> (usually ${P.fc2.usual.toFixed(1)}%) · beats the calendar by ${Math.round(100 * g2)}%${P.fc2.mix ? ` · incl. sales weight (${P.mixTest.gain >= 0 ? '−' : '+'}${Math.abs(Math.round(100 * P.mixTest.gain))}% error)` : ''}</div>`
         : `<div class="l" style="opacity:.8">the stock does not announce sales for this size (harvest choices decide)</div>`) + `</div>`;
   }).join('');
 }
@@ -6867,6 +6901,12 @@ function genPeaks() {
       `<div class="ln">reservoir at ${tmMl(N.lastB)}</div><div class="big">${f1(N.cur)} kt <span>${tmVar((N.ratio - 1) * 100)}</span></div>` +
       `<div class="ln">vs ${f1(N.prev)} kt a year earlier</div>` +
       (PK.pPeak ? `<div class="ln">projected reservoir peak <b style="color:var(--ink)">${f1(PK.pPeak.v)} kt in ${tmMl(PK.pPeak.k)}</b> (${PK.pPeak.lo.toFixed(0)}–${PK.pPeak.hi.toFixed(0)} kt) → 6 kg+ peak around <b style="color:var(--ink)">${tmMl(PK.sh(PK.pPeak.k, N.gapTyp))}</b></div>` : '') +
+      (PK.fc2 ? `<div class="ln">6 kg+ share of sales expected in ${tmMl(PK.fc2.k)}: <b style="color:var(--ink)">${f1(PK.fc2.v)}%</b> (usually ${f1(PK.fc2.usual)}%` +
+        `${PK.fc2.mix && PK.fc2.base !== null ? `; ${f1(PK.fc2.base)}% without the sales-weight term` : ''})</div>` : '') +
+      (PK.hw ? `<div class="ln">harvested fish in ${tmMl(PK.hw.k)}: <b style="color:var(--ink)">${f2(PK.hw.v)} kg gutted</b> on average vs ${f2(PK.hw.usual)} usually ` +
+        `(${PK.hw.v - PK.hw.usual >= 0 ? '+' : ''}${f2(PK.hw.v - PK.hw.usual)} kg) — heavier than usual = big fish taken early, the reservoir tends to come lower 3–4 months later (signal only)</div>` : '') +
+      (PK.ssbw ? `<div class="ln">SSB weekly exports, fresh, last 4 weeks to week ${PK.ssbw.last % 100}: ${tmF0(PK.ssbw.vol)} t ${PK.ssbw.volPrev ? tmVar(tmPc(PK.ssbw.vol, PK.ssbw.volPrev)) : ''}, ` +
+        `of which about <b style="color:var(--ink)">${tmF0(PK.ssbw.tons)} t of 6 kg+</b> ${PK.ssbw.tonsPrev ? tmVar(tmPc(PK.ssbw.tons, PK.ssbw.tonsPrev)) : ''} (volume × Akvafakta 6 kg+ tonnage share)</div>` : '') +
       (PK.nowcast.x !== null ? `<div class="ln">weekly sales in ${tmMl(PK.nowcast.k1)} so far (${PK.nowcast.weeks} week${PK.nowcast.weeks > 1 ? 's' : ''}): 6 kg+ <b style="color:var(--ink)">${f1(PK.nowcast.share)}%</b> (${PK.nowcast.x >= 0 ? '+' : ''}${f1(PK.nowcast.x)} pt vs usual)` +
         (PK.s56 && PK.s56.v !== null && PK.s56.usual !== null ? `, 5–6 kg <b style="color:var(--ink)">${f1(PK.s56.v)}%</b> (${PK.s56.v - PK.s56.usual >= 0 ? '+' : ''}${f1(PK.s56.v - PK.s56.usual)} pt)` : '') + ` — tracked, not used in the projection</div>` : '') +
       `<div class="ln">in past seasons the reservoir peaked in <b style="color:var(--ink)">${[...new Set(PK.seasons.filter(x => x.complete).map(x => x.pb % 100))].sort((a, b) => (a + 5) % 12 - (b + 5) % 12).map(m => MONTHS_FR[m - 1].slice(0, 3)).join('–')}</b> and the 6 kg+ share about ${N.gapTyp} months later (<b style="color:var(--ink)">${p6m.map(m => MONTHS_FR[m - 1].slice(0, 3)).join('–')}</b>)</div>` +
@@ -6882,6 +6922,7 @@ function genPeaks() {
       `<div class="big">${PK.wf.peak2 ? '−' + g(PK.wf.peak2) : '—'} <span style="font-size:11px;color:var(--muted);font-weight:normal">error on Feb–Apr peaks</span></div>` +
       `<div class="ln">all months: −${g(PK.wf.h2)} error at 2 months, −${g(PK.wf.h3)} at 3 months (${PK.wf.h2 ? f2(PK.wf.h2.cal) + ' → ' + f2(PK.wf.h2.mod) + ' pt' : ''})</div>` +
       `<div class="ln">the register is published ~3 weeks after month end: a 2-month lead is about 1 month of real warning</div>` +
+      (PK.mixTest ? `<div class="ln">share forecast at 2 months: adding the average weight of fish sold in the register month (Akvafakta) changes the error by ${PK.mixTest.gain >= 0 ? '−' : '+'}${Math.abs(Math.round(100 * PK.mixTest.gain))}% (${f2(PK.mixTest.base)} → ${f2(PK.mixTest.mod)} pt), ${PK.mixTest.peakGain >= 0 ? '−' : '+'}${Math.abs(Math.round(100 * PK.mixTest.peakGain))}% on Feb–Apr: ${PK.fc2 && PK.fc2.mix ? 'used' : 'not used'}</div>` : '') +
       `<div class="ln">projection from the register uses the 5–6 kg stock from 2 months ahead. A correction from the weekly 6 kg+ share was tested and dropped: error ${PK.nowcast.gain.map(g => isFinite(g) ? (Math.round(100 * g) === 0 ? '0' : (g > 0 ? '−' : '+') + Math.abs(Math.round(100 * g))) + '%' : '—').join(' / ')} at 1–6 months (${PK.nowcast.n} past cases); the weekly 5–6 kg share made it worse</div></div>` +
     (PK.valid ? `<div class="pr-card" style="cursor:default"><div class="nm"><i style="background:#ba68c8"></i>Are the weekly sizes real?</div>` +
       `<div class="ln">Akvafakta's size split comes from a panel of exporters. Check: average weight of the fish it reports vs average gutted weight of all fish harvested (register), ${tmMl(PK.valid.first)}–${tmMl(PK.valid.last)}</div>` +
