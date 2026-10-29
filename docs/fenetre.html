@@ -160,6 +160,19 @@ select.ctrl{font-family:'IBM Plex Mono',monospace;font-size:12px;background:var(
   <div class="legend" id="legRec"></div>
 </section>
 
+<section id="peaks">
+  <h2>Le réservoir annonce le pic</h2>
+  <div class="lede">Biomasse estimée de poissons au-dessus de ~6&nbsp;kg vidé encore en mer (Biomasseregisteret,
+  toutes zones), comparée à la part de 6+ dans les ventes hebdomadaires. Le réservoir culmine en janvier–février,
+  la vente de gros calibre un à deux mois plus tard. Cela renseigne sur la <b>taille</b> et la <b>date</b> du prochain
+  pic, pas sur les vagues d'automne.</div>
+  <div class="grid2" id="pkCards"></div>
+  <div style="margin-top:26px" id="pkChart"></div>
+  <div class="legend" id="legPk"></div>
+  <div id="pkTable" style="margin-top:22px"></div>
+  <div class="note" id="pkNote"></div>
+</section>
+
 <section>
   <h2>Ce que la fenêtre vaut en couronnes</h2>
   <div class="lede">Prime des gros calibres par rapport au 3–4&nbsp;kg, mesurée sur l'index hebdomadaire
@@ -576,7 +589,115 @@ const EMBEDDED_D = {"y6":{"201712":11,"201801":14.09,"201802":16.57,"201803":24.
 })(typeof window !== 'undefined' ? window : this);
 
 const DATA_URL = 'https://emileviardotfo.github.io/saumon/data/data.json';
-let D = EMBEDDED_D;
+let D = EMBEDDED_D, PK = null;
+// ===== Reservoir de gros poissons et pics de 6+ (commun a production.html et fenetre.html) =====
+// Reservoir : biomasse estimee au-dessus de ~6 kg vide (7,1 kg vif), chaque zone x generation
+// suivant une loi lognormale (CV 0,30) autour de son poids moyen (Biomasseregisteret).
+// Cible : part 6+ (en nombre) des recoltes hebdomadaires Akvafakta, moyenne par mois.
+function computePeaks(raw) {
+  if (!raw || !raw.cohort || !raw.weekly || !raw.records) return null;
+  const CV = 0.30, s2 = Math.log(1 + CV * CV), s = Math.sqrt(s2), T = 6 / 0.84;
+  const erf = x => { const t = 1 / (1 + 0.3275911 * Math.abs(x)),
+    y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x); return x >= 0 ? y : -y; };
+  const Phi = z => 0.5 * (1 + erf(z / Math.SQRT2));
+  const sh = (k, n) => { let y = Math.floor(k / 100), m = k % 100 - 1 + n; y += Math.floor(m / 12); m = ((m % 12) + 12) % 12; return y * 100 + m + 1; };
+  const avg = a => a.reduce((x, y) => x + y, 0) / a.length;
+  const CL = ['1-2','2-3','3-4','4-5','5-6','6-7','7-8','8-9','9+'], MID = {'1-2':1.5,'2-3':2.5,'3-4':3.5,'4-5':4.5,'5-6':5.5,'6-7':6.5,'7-8':7.5,'8-9':8.5,'9+':9.5};
+  // part 6+ mensuelle (nombre et tonnage)
+  const acc = {};
+  raw.weekly.forEach(r => {
+    if (r.sh_6plus === undefined || r.sh_6plus === null || !r.dist_week) return;
+    let y = r.report_year; const w = r.dist_week;
+    if (w >= 50 && r.report_week <= 2) y -= 1;
+    const j4 = new Date(Date.UTC(y, 0, 4)), mon = new Date(j4.getTime() - ((j4.getUTCDay() + 6) % 7) * 864e5 + (Math.min(w, 53) - 1) * 7 * 864e5), th = new Date(mon.getTime() + 3 * 864e5);
+    const tot = CL.reduce((a, c) => a + (r['sh_' + c] || 0), 0); if (!tot) return;
+    const ton = CL.reduce((a, c) => a + (r['sh_' + c] || 0) * MID[c], 0), ton6 = CL.slice(5).reduce((a, c) => a + (r['sh_' + c] || 0) * MID[c], 0);
+    const k = th.getUTCFullYear() * 100 + th.getUTCMonth() + 1, x = acc[k] || (acc[k] = [0, 0, 0]);
+    x[0] += r.sh_6plus; x[1] += 100 * ton6 / ton; x[2]++;
+  });
+  const S6 = {}, T6 = {}; Object.keys(acc).forEach(k => { S6[k] = acc[k][0] / acc[k][2]; T6[k] = acc[k][1] / acc[k][2]; });
+  const H = {}; raw.records.forEach(r => { const k = r.year * 100 + r.month; H[k] = (H[k] || 0) + (r.uttak_kg || 0) / 1e6; });
+  const V6 = {}; Object.keys(T6).forEach(k => { if (H[k] > 0) V6[k] = T6[k] / 100 * H[k]; });
+  // reservoir (kt)
+  const B = {};
+  raw.cohort.forEach(c => { const w = c.weight_kg, n = c.stock; if (!w || !n) return;
+    const z = (Math.log(T) - (Math.log(w) - s2 / 2)) / s, k = c.year * 100 + c.month; B[k] = (B[k] || 0) + n * w * (1 - Phi(z - s)) / 1e6; });
+  const corr = (a, b) => { const ma = avg(a), mb = avg(b); let sab = 0, saa = 0, sbb = 0; a.forEach((x, i) => { sab += (x - ma) * (b[i] - mb); saa += (x - ma) ** 2; sbb += (b[i] - mb) ** 2; }); return sab / Math.sqrt(saa * sbb); };
+  const lagCorr = (Y, lag) => { const ks = Object.keys(Y).map(Number).filter(k => B[sh(k, -lag)] !== undefined); return ks.length > 12 ? corr(ks.map(k => B[sh(k, -lag)]), ks.map(k => Y[k])) : NaN; };
+  const lags = [0, 1, 2, 3, 4].map(l => ({ lag: l, share: lagCorr(S6, l), tonnes: lagCorr(V6, l) }));
+  // saisons juillet -> juin
+  const kS = Object.keys(S6).map(Number), kB = Object.keys(B).map(Number), seasons = [];
+  const y0 = Math.floor(Math.min(...kS) / 100), y1 = Math.floor(Math.max(...kS) / 100);
+  for (let y = y0; y <= y1; y++) {
+    const inS = k => k >= y * 100 + 7 && k <= (y + 1) * 100 + 6;
+    const b = kB.filter(inS), s6 = kS.filter(inS), v = Object.keys(V6).map(Number).filter(inS);
+    if (b.length < 10 || s6.length < 10) continue;
+    const pb = b.reduce((m, k) => B[k] > B[m] ? k : m), p6 = s6.reduce((m, k) => S6[k] > S6[m] ? k : m);
+    seasons.push({ y, pb, vb: B[pb], p6, v6: S6[p6], gap: (Math.floor(p6 / 100) - Math.floor(pb / 100)) * 12 + p6 % 100 - pb % 100,
+      bMean: avg(b.map(k => B[k])), s6Mean: avg(s6.map(k => S6[k])), tons: v.reduce((a, k) => a + V6[k], 0), complete: s6.length >= 12 && b.length >= 12 });
+  }
+  const full = seasons.filter(x => x.complete);
+  const magCorr = full.length >= 4 ? { peak: corr(full.map(x => x.vb), full.map(x => x.v6)), season: corr(full.map(x => x.bMean), full.map(x => x.tons)) } : null;
+  // mois de pic 6+ (20 % les plus hauts) et rang du reservoir 2 mois avant
+  const sv = Object.values(S6).sort((a, b) => a - b), th6 = sv[Math.floor(0.8 * sv.length)];
+  const bv = kB.filter(k => k >= 201801).map(k => B[k]).sort((a, b) => a - b), rank = v => 100 * bv.filter(x => x <= v).length / bv.length;
+  const peakMonths = kS.filter(k => S6[k] >= th6 && B[sh(k, -2)] !== undefined).sort((a, b) => a - b).map(k => ({ k, v: S6[k], r: rank(B[sh(k, -2)]) }));
+  // test en marche avant : calendrier seul vs calendrier + anomalie du reservoir (h mois avant)
+  const walk = (h, months) => { const eC = [], eM = [];
+    kS.filter(k => k >= 202001 && (!months || months.includes(k % 100))).sort((a, b) => a - b).forEach(k => {
+      const src = sh(k, -h); if (B[src] === undefined) return;
+      const pastK = kS.filter(x => x <= src), cal = m => { const v = pastK.filter(x => x % 100 === m).map(x => S6[x]); return v.length ? avg(v) : null; };
+      const bcal = m => { const v = kB.filter(x => x % 100 === m && x <= src && x >= 201801).map(x => B[x]); return v.length ? avg(v) : null; };
+      const c = cal(k % 100); if (c === null) return;
+      const X = [], Y = [];
+      pastK.forEach(x => { const s0 = sh(x, -h); if (B[s0] === undefined) return; const b0 = bcal(s0 % 100), c0 = cal(x % 100); if (b0 === null || c0 === null) return; X.push(B[s0] - b0); Y.push(S6[x] - c0); });
+      if (X.length < 12) return;
+      const mx = avg(X), my = avg(Y); let sxy = 0, sxx = 0; X.forEach((x, i) => { sxy += (x - mx) * (Y[i] - my); sxx += (x - mx) ** 2; });
+      const beta = sxx ? sxy / sxx : 0, b0 = bcal(src % 100);
+      eC.push(Math.abs(S6[k] - c)); eM.push(Math.abs(S6[k] - (c + my + beta * ((B[src] - b0) - mx)))); });
+    return eC.length ? { n: eC.length, cal: avg(eC), mod: avg(eM) } : null; };
+  const wf = { h2: walk(2), h3: walk(3), peak2: walk(2, [2, 3, 4]), peak3: walk(3, [2, 3, 4]) };
+  // etat actuel : dernier mois du reservoir vs un an plus tot, et saison en cours
+  const lastB = Math.max(...kB), lastS = Math.max(...kS), cur = B[lastB], prev = B[lastB - 100];
+  const peakMonth = (() => { const c = {}; full.forEach(x => { c[x.pb % 100] = (c[x.pb % 100] || 0) + 1; }); return +Object.keys(c).sort((a, b) => c[b] - c[a])[0]; })();
+  const gapTyp = full.length ? Math.round(avg(full.map(x => x.gap))) : 2;
+  const seasonStart = lastB % 100 >= 7 ? Math.floor(lastB / 100) : Math.floor(lastB / 100) - 1;
+  const nextPeakB = (seasonStart + (peakMonth >= 7 ? 0 : 1)) * 100 + peakMonth;
+  return { B, S6, V6, lags, seasons, magCorr, peakMonths, th6, wf, sh,
+    now: { lastB, lastS, cur, prev, ratio: prev ? cur / prev : NaN, nextPeakB, next6: sh(nextPeakB, gapTyp), gapTyp,
+      seasonPeakPrev: seasons.length ? seasons[seasons.length - 1] : null } };
+}
+// Graphique : reservoir decale (mois M -> M+2, axe gauche, kt) et part 6+ reelle (axe droit, %)
+function peaksSvg(PK, L) {
+  const W = 980, Hh = 300, mL = 56, mR = 56, mT = 16, mB = 36, pw = W - mL - mR, ph = Hh - mT - mB;
+  const first = 201801, lastK = Math.max(PK.now.lastS, PK.sh(PK.now.lastB, 2)), keys = [];
+  for (let k = first; k <= lastK; k = PK.sh(k, 1)) keys.push(k);
+  const n = keys.length, X = i => mL + i * pw / (n - 1);
+  const bv = keys.map(k => PK.B[PK.sh(k, -2)]), sv = keys.map(k => PK.S6[k]);
+  const bMax = Math.ceil(Math.max(...bv.filter(v => v !== undefined)) / 5) * 5, sMax = Math.ceil(Math.max(...sv.filter(v => v !== undefined)) / 5) * 5;
+  const Yb = v => mT + ph - v / bMax * ph, Ys = v => mT + ph - v / sMax * ph;
+  let s = '';
+  for (let i = 0; i <= 5; i++) { const y = mT + ph - i * ph / 5;
+    s += `<line x1="${mL}" x2="${W - mR}" y1="${y}" y2="${y}" stroke="${L.grid}"/>` +
+      `<text x="${mL - 8}" y="${y + 4}" text-anchor="end" fill="${L.colB}" font-size="11">${(bMax * i / 5).toFixed(0)}</text>` +
+      `<text x="${W - mR + 8}" y="${y + 4}" fill="${L.colS}" font-size="11">${(sMax * i / 5).toFixed(0)}%</text>`; }
+  keys.forEach((k, i) => { if (k % 100 === 1) s += `<text x="${X(i)}" y="${Hh - 12}" text-anchor="middle" fill="${L.mist}" font-size="11">${Math.floor(k / 100)}</text><line x1="${X(i)}" x2="${X(i)}" y1="${mT}" y2="${mT + ph}" stroke="${L.grid}" stroke-dasharray="2,4"/>`; });
+  // zone "annoncee" : mois ou le reservoir est connu mais pas encore la part 6+
+  const iA = keys.findIndex(k => k > PK.now.lastS);
+  if (iA > 0) s += `<rect x="${X(iA) - pw / (n - 1) / 2}" y="${mT}" width="${X(n - 1) - X(iA) + pw / (n - 1) / 2}" height="${ph}" fill="${L.colB}" fill-opacity=".08"/>` +
+    `<text x="${X(n - 1)}" y="${mT + ph - 6}" text-anchor="end" fill="${L.colB}" font-size="11">${L.announced}</text>`;
+  const path = (vals, Y) => { let d = '', pen = false; vals.forEach((v, i) => { if (v === undefined || v === null) { pen = false; return; } d += (pen ? 'L' : 'M') + X(i).toFixed(1) + ',' + Y(v).toFixed(1); pen = true; }); return d; };
+  s += `<path d="${path(bv, Yb)}" fill="none" stroke="${L.colB}" stroke-width="2.4"/>`;
+  s += `<path d="${path(sv, Ys)}" fill="none" stroke="${L.colS}" stroke-width="2" stroke-dasharray="5,3"/>`;
+  keys.forEach((k, i) => { const b = bv[i], v = sv[i];
+    s += `<rect x="${X(i) - pw / (n - 1) / 2}" y="${mT}" width="${pw / (n - 1)}" height="${ph}" fill="transparent"><title>${L.month(k)} — ${L.tipS}: ${v !== undefined ? v.toFixed(1) + '%' : '—'} · ${L.tipB(PK.sh(k, -2))}: ${b !== undefined ? b.toFixed(1) + ' kt' : '—'}</title></rect>`; });
+  PK.seasons.forEach(x => { const i6 = keys.indexOf(x.p6); if (i6 >= 0) s += `<circle cx="${X(i6)}" cy="${Ys(x.v6)}" r="4" fill="${L.colS}"/>`;
+    const ib = keys.indexOf(PK.sh(x.pb, 2)); if (ib >= 0) s += `<circle cx="${X(ib)}" cy="${Yb(x.vb)}" r="4" fill="${L.colB}"/>`; });
+  s += `<text transform="translate(14,${mT + ph / 2}) rotate(-90)" text-anchor="middle" fill="${L.colB}" font-size="12">${L.axisB}</text>` +
+    `<text transform="translate(${W - 10},${mT + ph / 2}) rotate(90)" text-anchor="middle" fill="${L.colS}" font-size="12">${L.axisS}</text>`;
+  return `<svg viewBox="0 0 ${W} ${Hh}" style="display:block;width:100%;height:auto">${s}</svg>`;
+}
+
 
 async function boot() {
   let live = false;
@@ -592,6 +713,7 @@ async function boot() {
     // Tout le reste (calendrier, primes, signal hebdo) reste valide.
     if (!c.y6 || !Object.keys(c.y6).length) throw new Error('donnees illisibles');
     D = c; live = true;
+    try { PK = computePeaks(raw); } catch (e) { console.warn('Reservoir indisponible :', e.message); PK = null; }
   } catch (e) {
     console.warn('Donnees distantes indisponibles, repli local :', e.message);
   }
@@ -1471,6 +1593,50 @@ renderCalSection();
  document.getElementById('slopeNow').innerHTML=h+hy+'</table>';
 })();
 
+/* ---------- reservoir et pics 6+ ---------- */
+(function(){
+ const box=id=>document.getElementById(id);
+ if(!PK){box('pkCards').innerHTML='<div class="card"><div class="band">Section disponible uniquement avec les données en ligne (Biomasseregisteret et index hebdomadaire complets).</div></div>';return;}
+ const N=PK.now, f1=v=>isFinite(v)?v.toFixed(1).replace('.',','):'—', f2=v=>isFinite(v)?v.toFixed(2).replace('.',','):'—';
+ const MNL=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+ const mo=k=>MNL[k%100-1]+' '+Math.floor(k/100);
+ const p6m=[...new Set(PK.seasons.filter(x=>x.complete).map(x=>x.p6%100))].sort((a,b)=>a-b);
+ const gain=o=>o?Math.round(100*(1-o.mod/o.cal)):NaN;
+ const okSeas=PK.seasons.filter(x=>x.gap>=1&&x.gap<=2).length;
+ box('pkCards').innerHTML=
+  `<div class="card flag"><div class="eyebrow">Prochain pic 6+ · réservoir à ${ym(N.lastB)}</div>
+    <div class="big mono">${f1(N.cur)}<small>kt</small></div>
+    <div class="band">Un an plus tôt&nbsp;: ${f1(N.prev)}&nbsp;kt &mdash; <b style="color:${N.ratio>=1?'var(--open)':'var(--now)'}">${N.ratio>=1?'+':''}${Math.round((N.ratio-1)*100)}&nbsp;%</b></div>
+    <div class="band" style="margin-top:12px">Le réservoir culmine en général en <b style="color:var(--bone)">${mo(N.nextPeakB)}</b>&nbsp;;
+    le pic de 6+ suit d'environ ${N.gapTyp}&nbsp;mois (<b style="color:var(--bone)">${p6m.map(m=>MNL[m-1]).join('–')}</b> les saisons passées).</div>
+    <div class="band" style="margin-top:12px">Saison dernière&nbsp;: réservoir ${f1(N.seasonPeakPrev.vb)}&nbsp;kt en ${mo(N.seasonPeakPrev.pb)} (record),
+    puis ${f1(N.seasonPeakPrev.v6)}&nbsp;% de 6+ en ${mo(N.seasonPeakPrev.p6)}.</div></div>
+  <div class="card"><div class="eyebrow">Ce que vaut le signal</div>
+    <div class="big mono">${okSeas}<small>/ ${PK.seasons.length} saisons</small></div>
+    <div class="band">Pic du réservoir 1 à 2 mois avant le pic de 6+.</div>
+    <div class="band" style="margin-top:12px">Corrélation avec la part 6+ selon l'avance&nbsp;: ${PK.lags.map(l=>`${l.lag}&nbsp;m ${f2(l.share)}`).join(' · ')}.
+    Ampleur&nbsp;: ${PK.magCorr?f2(PK.magCorr.season):'—'} entre réservoir moyen de la saison et tonnage de 6+ vendu.</div>
+    <div class="band" style="margin-top:12px">En marche avant, contre le calendrier seul&nbsp;: <b style="color:var(--bone)">−${gain(PK.wf.peak2)}&nbsp;%</b> d'erreur sur les mois de pic (février–avril),
+    −${gain(PK.wf.h2)}&nbsp;% sur l'ensemble des mois à 2&nbsp;mois, −${gain(PK.wf.h3)}&nbsp;% à 3&nbsp;mois.</div></div>`;
+ box('pkChart').innerHTML=peaksSvg(PK,{grid:'#274955',mist:'#8CA6B0',colB:'#F2A65A',colS:'#5FD3C4',announced:'annoncé, pas encore mesuré',
+   axisB:'réservoir 2 mois avant (kt)',axisS:'part 6+ des ventes (%)',month:k=>ym(k),tipS:'part 6+',tipB:k=>'réservoir '+ym(k)});
+ box('legPk').innerHTML='<span><i style="background:#F2A65A"></i>réservoir décalé de 2 mois (kt)</span><span><i style="background:#5FD3C4;border-top:2px dashed #5FD3C4;height:0"></i>part 6+ des ventes (%)</span><span>points&nbsp;: pic de chaque saison</span>';
+ let h='<table><tr><th>Saison (juil.–juin)</th><th>Pic du réservoir</th><th>kt</th><th>Pic 6+</th><th>% 6+</th><th>Avance</th><th>Réservoir moyen (kt)</th><th>6+ vendus (kt)</th></tr>';
+ PK.seasons.forEach(x=>{h+=`<tr${x===PK.seasons[PK.seasons.length-1]?' class="hi"':''}><td>${x.y}–${String(x.y+1).slice(2)}${x.complete?'':' <span class="hint">(partielle)</span>'}</td>
+   <td class="num">${ym(x.pb)}</td><td class="num">${f1(x.vb)}</td><td class="num">${ym(x.p6)}</td><td class="num">${f1(x.v6)}</td>
+   <td class="num">${x.gap>=0?'+':''}${x.gap}&nbsp;m</td><td class="num">${f1(x.bMean)}</td><td class="num">${Math.round(x.tons)}</td></tr>`;});
+ box('pkTable').innerHTML=h+'</table>';
+ const miss=PK.peakMonths.filter(p=>p.r<70);
+ box('pkNote').innerHTML=`<b>Angle mort&nbsp;: les vagues d'automne.</b> Sur les ${PK.peakMonths.length} mois les plus chargés en 6+ depuis 2018
+  (≥&nbsp;${f1(PK.th6)}&nbsp;%), ${PK.peakMonths.length-miss.length} suivaient un réservoir haut. Les autres
+  (${miss.map(p=>ym(p.k)).join(', ')||'aucun'}) n'étaient pas annoncés&nbsp;: ce sont très probablement des décisions d'abattage
+  &mdash; faire de la place sous la biomasse maximale avant la fin d'année, abattre avant l'hiver, réagir aux prix &mdash; plutôt que le stock de gros poisson.
+  <br><br><b>Méthode.</b> Chaque zone et génération est supposée suivre une loi lognormale (coefficient de variation 0,30) autour de son poids
+  moyen&nbsp;; on additionne la biomasse au-dessus de 7,1&nbsp;kg vif. Cette dispersion a été choisie sur ces mêmes données&nbsp;: les corrélations
+  sont un peu flatteuses ; le test en marche avant, qui n'utilise que le passé pour le reste, l'est beaucoup moins. Le registre paraît environ trois semaines après la fin du mois&nbsp;: deux mois
+  d'avance sur le papier font environ un mois d'alerte réelle. La prévision à un mois plus haut n'utilise pas encore ce réservoir.`;
+})();
+
 /* ---------- validation ---------- */
 document.getElementById('ok').innerHTML=[
  'Saisonnalité de la fenêtre — stable sur 9 ans, aucune exception',
@@ -1479,14 +1645,14 @@ document.getElementById('ok').innerHTML=[
  'Tenue avant et après le virage industriel de 2024',
  'Relation offre → prime, visible sur 9 ans et chiffrée par classe',
  'Pente du haut de courbe — signal hebdomadaire, tourne avant la mesure mensuelle'
-].map(x=>`<li class="ok">${x}</li>`).join('');
+].concat(PK&&PK.wf.peak2?[`Réservoir de gros poisson — annonce le pic 6+ 1 à 2 mois avant (${PK.seasons.filter(x=>x.gap>=1&&x.gap<=2).length} saisons sur ${PK.seasons.length}), −${Math.round(100*(1-PK.wf.peak2.mod/PK.wf.peak2.cal))} % d'erreur sur février–avril face au calendrier`]:[]).map(x=>`<li class="ok">${x}</li>`).join('');
 document.getElementById('no').innerHTML=[
  'Prévision à 3 mois et plus — battue par le calendrier seul',
  'Demande Chine et USA comme prédicteur de la prime (p &gt; 0,08)',
  'Mélange de cohortes comme explication de la dispersion (r = +0,27)',
  'Attribution du 6+ par cohorte — écart de facteur 4 au réel',
  'Température comme prédicteur — dégrade la prévision'
-].map(x=>`<li class="no">${x}</li>`).join('');
+].concat(PK?['Réservoir de gros poisson pour les vagues d\'automne — ne les annonce pas']:[]).map(x=>`<li class="no">${x}</li>`).join('');
 
 document.getElementById('foot').innerHTML=
  `Sources : index hebdomadaire NASDAQ puis Sitagri via Akvafakta, Sjømat Norge (${D.meta.weeks} semaines,
