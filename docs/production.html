@@ -292,6 +292,7 @@
     <button data-v="health">Fish health</button>
     <button data-v="register">Farm register</button>
     <button data-v="producers">Producers</button>
+    <button data-v="usa">USA focus</button>
     <button data-v="euflows">EU markets</button>
   </div>
   <div class="field" id="poFilterField" style="display:none;">
@@ -646,6 +647,28 @@
     <div class="legend-row" id="hlLegend"></div>
     <div class="note" id="hlNote" style="margin-top:16px; text-align:left; max-width:none;"></div>
     </div>
+  </div>
+
+  <div class="panel" id="usaView" style="flex:1; min-width:0; max-width:1600px; display:none;">
+    <div class="sig-title">United States — salmon imports by origin, prices, duties, and check against the exporters' own figures</div>
+    <div class="sig-sub" id="usSub"></div>
+    <div class="chart-controls">
+      <span class="cc-label">Period</span>
+      <select class="ctrl" id="usPeriod"><option value="last" selected>Last month available</option><option value="3">Last 3 months</option><option value="12">Last 12 months</option><option value="ytd">Year to date</option><option value="custom">Custom period…</option></select>
+      <span id="usCustom" style="display:none;align-items:center;gap:6px"><select class="ctrl" id="usFrom"></select><span class="cc-label">to</span><select class="ctrl" id="usTo"></select></span>
+    </div>
+    <div class="chart-controls"><span class="cc-label">Forms</span><span id="usForms" style="display:inline-flex;gap:12px;flex-wrap:wrap"></span></div>
+    <div id="usCards" class="pr-cards"></div>
+    <div class="sig-title" style="margin-top:16px">1 · Monthly imports by origin</div>
+    <div class="sig-sub" id="usVolSub"></div>
+    <div id="usVol"></div>
+    <div class="sig-title" style="margin-top:16px">2 · Import price by origin (customs value, € per kg)</div>
+    <div class="sig-sub" id="usPriceSub"></div>
+    <div id="usPrice"></div>
+    <div class="sig-title" style="margin-top:22px">3 · Check: what the US records vs what each exporter declares for the US</div>
+    <div class="sig-sub" id="usChkSub"></div>
+    <table class="sig-table"><thead id="theadUsChk"></thead><tbody id="tbodyUsChk"></tbody></table>
+    <div class="note" id="usNote" style="text-align:left;max-width:none;margin-top:16px"></div>
   </div>
 
   <div class="panel" id="producersView" style="flex:1; min-width:0; max-width:1600px; display:none;">
@@ -2865,12 +2888,13 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     document.getElementById('registerView').style.display = currentView === 'register' ? 'block' : 'none';
     document.getElementById('euView').style.display = currentView === 'euflows' ? 'block' : 'none';
     document.getElementById('producersView').style.display = currentView === 'producers' ? 'block' : 'none';
+    document.getElementById('usaView').style.display = currentView === 'usa' ? 'block' : 'none';
     // The year / period selectors do not apply to the weekly fish-health view.
-    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers') ? 'none' : '';
+    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa') ? 'none' : '';
     // La carte des zones ne sert qu'aux vues qui raisonnent par PO. Les onglets
     // Markets et Calibre sont nationaux, elle n'y afficherait rien d'utile.
     const mw = document.querySelector('.panel.mapwrap');
-    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers') ? 'none' : '';
+    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa') ? 'none' : '';
     document.getElementById('poFilterField').style.display = (currentView === 'global' || currentView === 'multi' || currentView === 'outlook') ? 'flex' : 'none';
     document.getElementById('yearField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'none' : 'flex';
     document.getElementById('yearRangeField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'flex' : 'none';
@@ -2889,6 +2913,7 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     else if (currentView === 'register') { renderRegister(); }
     else if (currentView === 'euflows') { renderEuFlows(); }
     else if (currentView === 'producers') { renderProducers(); }
+    else if (currentView === 'usa') { renderUSA(); }
     else { render(); }
   });
 });
@@ -5838,7 +5863,7 @@ function renderSummary() {
 //  EU flows (Eurostat Comext) : fichier data/eurostat.json, charge a la
 //  premiere ouverture de l'onglet.
 // ===========================================================================
-let NAT = null, EU = null, EU_LOADING = false, euHub = 'PL', euOpen = null, euMode = 'origin', euOrig = 'NO';
+let USI = null, NAT = null, EU = null, EU_LOADING = false, euHub = 'PL', euOpen = null, euMode = 'origin', euOrig = 'NO';
 const EU_EUROPE = new Set(['AT','BE','BG','CY','CZ','DE','DK','EE','ES','FI','FR','GR','HR','HU','IE','IT','LT','LU','LV','MT','NL','PL','PT','RO','SE','SI','SK',
   'GB','NO','CH','IS','FO','LI','UA','RS','BA','ME','MK','AL','MD','BY','XK','AD','MC','SM','GI','XI','XL']);
 const euName = (() => { let dn = null; try { dn = new Intl.DisplayNames(['en'], { type: 'region' }); } catch (e) {}
@@ -5887,11 +5912,13 @@ async function loadEurostat() {
     const r = await fetch(DATA_URL.replace('data.json', 'eurostat.json'), { cache: 'no-store' });
     const [r2] = await Promise.all([fetch(DATA_URL.replace('data.json', 'national_trade.json'), { cache: 'no-store' }).catch(() => null)]);
     if (r2 && r2.ok) { try { NAT = await r2.json(); } catch (e) { NAT = null; } }
+    try { const r3 = await fetch(DATA_URL.replace('data.json', 'us_imports.json'), { cache: 'no-store' }); if (r3.ok) USI = await r3.json(); } catch (e) { USI = null; }
     if (r.ok) { EU = await r.json(); cleanEurostat(EU); }
   } catch (e) { console.warn('eurostat.json indisponible', e.message); }
   EU_LOADING = false;
   if (currentView === 'euflows') renderEuFlows();
   if (currentView === 'producers') renderProducers();
+  if (currentView === 'usa') renderUSA();
 }
 // ===================== Salmon trade model (Eurostat + SSB) =====================
 // Codes douaniers : l'entier frais (0302 14) et l'entier congele (0303 13) ne couvrent
@@ -6290,6 +6317,99 @@ function renderProducers() {
     `United Kingdom: HMRC overseas trade statistics (GBP at Eurostat monthly rates) — UK farmed salmon is Scottish, a few re-exports of Norwegian salmon are included. ` +
     `Ireland: Irish exports as reported to Eurostat. Chile and Canada: exports they report to UN Comtrade (HS6, USD at Eurostat monthly rates; published with a longer delay; fillet codes include Pacific salmon such as coho). Any country whose statistics are missing: arrivals in the EU (Eurostat Comext). ` +
     `Destination = country declared at export, wherever the salmon is cleared.`;
+}
+
+// ===================== Onglet USA focus =====================
+// Importations des Etats-Unis (US Census) par origine : valeur en douane (hors fret et assurance,
+// comparable au FOB des exportateurs), droits calcules, frais d'acheminement. Controle avec ce que
+// chaque pays exportateur declare pour les Etats-Unis.
+let usForms = new Set([0, 2]);
+const US_ORIG = ['NO', 'CL', 'CA', 'FO', 'IS', 'GB'];
+const US_LAB = Object.assign({}, PROD_LAB, { OTH: 'Other origins' });
+function renderUSA() {
+  const sub = document.getElementById('usSub');
+  if (!EU) { sub.innerHTML = 'Loading…'; loadEurostat(); return; }
+  tmBuild();
+  if (!USI || !USI.rows || !USI.rows.length) {
+    sub.innerHTML = '<span class="warn">US import statistics not collected yet</span> — they arrive with the next update run (step "National export statistics").';
+    ['usCards', 'usVol', 'usPrice', 'theadUsChk', 'tbodyUsChk'].forEach(id => document.getElementById(id).innerHTML = '');
+    return;
+  }
+  const P = EU.meta.products, END = USI.meta.last;
+  const perSel = document.getElementById('usPeriod'); tmPeriodLabels(perSel, 'us', renderUSA, END);
+  if (!perSel.dataset.w) { perSel.dataset.w = 1; perSel.addEventListener('change', renderUSA); }
+  const PER = tmPeriod(perSel.value, 'us', END), one = PER.keys.length === 1;
+  const formsAll = FORMS_OK.filter(i => USI.rows.some(r => r[2] === i));
+  document.getElementById('usForms').innerHTML = formsAll.map(i => `<label class="cc-check"><input type="checkbox" data-f="${i}" ${usForms.has(i) ? 'checked' : ''}> <i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${FORM_COL[i]}"></i> ${P[i]}</label>`).join('') +
+    `<button type="button" class="ctrl" id="usFormsDef" style="padding:2px 8px">Fresh whole + fresh fillets</button>`;
+  document.querySelectorAll('#usForms input').forEach(c => c.addEventListener('change', () => { const f = +c.dataset.f; c.checked ? usForms.add(f) : usForms.delete(f); renderUSA(); }));
+  document.getElementById('usFormsDef').onclick = () => { usForms = new Set([0, 2]); renderUSA(); };
+  const formsTxt = [...usForms].filter(i => formsAll.includes(i)).sort().map(i => P[i].toLowerCase()).join(' + ') || 'no form selected';
+  // index : origine -> mois -> [t, k$, k€, k$ droits, k$ frais]
+  const ix = {};
+  USI.rows.forEach(([ym, o, pi, t, usd, eur, duty, cha]) => { if (!usForms.has(pi)) return;
+    const g = US_ORIG.includes(o) ? o : 'OTH', A = ix[g] || (ix[g] = {}), x = A[ym] || (A[ym] = [0, 0, 0, 0, 0]);
+    x[0] += t; x[1] += usd; x[2] += eur || 0; x[3] += duty; x[4] += cha; });
+  const S = (g, ks) => ks.reduce((a, k) => { const x = (ix[g] || {})[k]; if (x) x.forEach((v, i) => a[i] += v); return a; }, [0, 0, 0, 0, 0]);
+  const orig = [...US_ORIG, 'OTH'].filter(g => ix[g]);
+  const sumAll = ks => orig.reduce((a, g) => { S(g, ks).forEach((v, i) => a[i] += v); return a; }, [0, 0, 0, 0, 0]);
+  sub.innerHTML = `US imports of Atlantic salmon by country of origin (US Census Bureau), data to <b>${tmMl(END)}</b>. ` +
+    `<b>Customs value</b> = transaction value without international freight and insurance, comparable to the exporters' FOB prices. ` +
+    `<b>Landed cost</b> = customs value + freight and insurance to the US + duties calculated by US customs. Fillet, smoked and prepared codes: Atlantic salmon lines only (Pacific salmon has its own US codes).`;
+  // cartes : total + origines
+  const card = (g, total) => { const a = total ? sumAll(PER.keys) : S(g, PER.keys), b = total ? sumAll(PER.prev) : S(g, PER.prev);
+    const m1 = one ? (total ? sumAll([tmBack(PER.keys[0], 1)]) : S(g, [tmBack(PER.keys[0], 1)])) : null;
+    const pe = a[0] ? a[2] / a[0] : NaN, pu = a[0] ? a[1] / a[0] : NaN, pb = b[0] ? b[2] / b[0] : NaN;
+    const duty = a[1] ? 100 * a[3] / a[1] : NaN, landed = a[0] ? (a[1] + a[3] + a[4]) / a[0] : NaN;
+    return `<div class="pr-card${total ? ' pr-total' : ''}">${total ? '' : `<span class="pr-wm">${FLAG(g, 0, true)}</span>`}<div class="nm">${total ? '<i style="background:#e7eef2"></i>' : FLAG(g, 18)}${total ? 'All origins — US imports' : US_LAB[g]}</div>` +
+      `<div class="ln">${PER.lab}${total ? ' · ' + formsTxt : ''}</div>` +
+      `<div class="big">${tmKt(a[0])} <span>${tmVar(tmPc(a[0], b[0]))}</span> <span style="font-size:10px;color:var(--muted);font-weight:normal">vs N-1</span></div>` +
+      (one ? `<div class="ln">vs previous month: ${tmVar(tmPc(a[0], m1[0]))}</div>` : '') +
+      `<div class="ln">customs value <b style="color:var(--ink)">${isFinite(pe) ? pe.toFixed(2) + ' €/kg' : '—'}</b> ${isFinite(pe) && isFinite(pb) ? tmVar(tmPc(pe, pb)) : ''}</div>` +
+      `<div class="ln">${isFinite(pu) ? pu.toFixed(2) + ' $/kg' : ''}${isFinite(duty) ? ` · duty <b style="color:var(--ink)">${duty.toFixed(1)}%</b>` : ''}${isFinite(landed) ? ` · landed ${landed.toFixed(2)} $/kg` : ''}</div>` +
+      (total ? `<div class="pr-total-share" style="margin-top:6px">${orig.map(o => { const t = S(o, PER.keys)[0]; return t > 0 ? `<span title="${US_LAB[o]}: ${tmF0(t)} t" style="flex:${t};background:${ORIG_COL[o] || '#78909c'}"></span>` : ''; }).join('')}</div>` +
+        `<div class="pr-total-leg" style="grid-column:1">${orig.map(o => { const t = S(o, PER.keys)[0]; return t > 0 ? `<span><i style="background:${ORIG_COL[o] || '#78909c'}"></i>${US_LAB[o]} ${a[0] ? (100 * t / a[0]).toFixed(1) : 0}%</span>` : ''; }).join('')}</div>` : '') +
+      vzSpark(tmRange(END, 24).map(k => total ? orig.reduce((s2, o) => s2 + ((ix[o] || {})[k] ? ix[o][k][0] : 0), 0) : ((ix[g] || {})[k] ? ix[g][k][0] : 0)), total ? '#e7eef2' : (ORIG_COL[g] || '#78909c')) + `</div>`; };
+  document.getElementById('usCards').innerHTML = card(null, true) + orig.map(g => card(g, false)).join('');
+  // graphiques
+  const k24 = tmRange(END, 24);
+  document.getElementById('usVolSub').innerHTML = `Tonnes of product weight per month, ${formsTxt}, last 24 months; dashed line = total a year earlier.` +
+    vzLegend(orig.map(g => [US_LAB[g], ORIG_COL[g] || '#78909c', false, true]));
+  document.getElementById('usVol').innerHTML = vzStack(k24, orig.map(g => ({ lab: US_LAB[g], col: ORIG_COL[g] || '#78909c', vals: k24.map(k => (ix[g] || {})[k] ? ix[g][k][0] : 0) })),
+    { axis: 'Tonnes per month', unit: 't', lines: [{ lab: 'a year earlier', col: '#e7eef2', pts: k24.map(k => sumAll([k - 100])[0]) }] });
+  const big = orig.filter(g => g !== 'OTH' && k24.some(k => ((ix[g] || {})[k] || [0])[0] > 20));
+  document.getElementById('usPriceSub').innerHTML = `Customs value per kg converted to € at the monthly rate, ${formsTxt}. Months under 20 t are left out. A different form mix between origins moves the average: tick one form for a like-for-like comparison.` +
+    vzLegend(big.map(g => [US_LAB[g], ORIG_COL[g], false]));
+  document.getElementById('usPrice').innerHTML = vzLines(k24, big.map(g => ({ lab: US_LAB[g], col: ORIG_COL[g], w: 2.2,
+    pts: k24.map(k => { const x = (ix[g] || {})[k]; return x && x[0] >= 20 ? x[2] / x[0] : null; }) })), { axis: '€ per kg', unit: '€/kg', digits: 2, zero: false, H: 260 });
+  // controle : declarations des exportateurs pour les Etats-Unis, forme par forme
+  const ks = new Set(PER.keys), rows = [];
+  const usF = {}; USI.rows.forEach(([ym, o, pi, t, usd, eur]) => { if (!ks.has(ym) || !usForms.has(pi)) return; const x = (usF[o] || (usF[o] = {}))[pi] || (usF[o][pi] = [0, 0]); x[0] += t; x[1] += eur || 0; });
+  US_ORIG.forEach(o => {
+    const D = tmBest(o); if (D.euOnly) return;
+    const covered = PER.keys.every(k => k <= D.last), ex = {};
+    D.rows.forEach(([ym, de, pi, t, v]) => { if (de !== 'US' || !ks.has(ym) || !usForms.has(pi)) return; const x = ex[pi] || (ex[pi] = [0, 0]); x[0] += t; x[1] += v || 0; });
+    [...usForms].sort().forEach(pi => { const u = (usF[o] || {})[pi] || [0, 0], e = ex[pi] || [0, 0]; if (u[0] < 1 && e[0] < 1) return;
+      rows.push({ o, pi, u, e, covered, cur: D.cur }); });
+  });
+  document.getElementById('usChkSub').innerHTML = `${PER.lab}. <b>US records</b> = US imports from that origin (customs value). <b>Exporter declares</b> = the producing country's own export statistics for the US (FOB). ` +
+    `Both should be close: shipping takes a few days, so a small timing gap is normal. <span class="warn">⚠ atypical declared price</span> = the exporter declares a price more than 15% below what the US records for the same salmon; ` +
+    `<span class="warn">⚠ volume gap</span> = volumes differ by more than 25%.`;
+  document.getElementById('theadUsChk').innerHTML = `<tr><th class="name" rowspan="2">Origin</th><th rowspan="2" style="text-align:left">Form</th><th class="grp sep-left" colspan="2">US records</th><th class="grp sep-left" colspan="2">Exporter declares</th><th class="grp sep-left" colspan="2">Gap (exporter vs US)</th><th rowspan="2" class="sep-left" style="text-align:left">Check</th></tr>` +
+    `<tr><th class="sep-left">Tonnes</th><th>€/kg</th><th class="sep-left">Tonnes</th><th>${'€'}/kg</th><th class="sep-left">Volume</th><th>Price</th></tr>`;
+  document.getElementById('tbodyUsChk').innerHTML = rows.map(({ o, pi, u, e, covered, cur }) => {
+    const pu = u[0] ? u[1] / u[0] : NaN, pe = e[0] && cur === '€' ? e[1] / e[0] : NaN, gv = tmPc(e[0], u[0]), gp = tmPc(pe, pu);
+    const flags = [];
+    if (!covered) flags.push(`<span style="color:var(--muted)">exporter data not yet published for the whole period</span>`);
+    else { if (isFinite(gp) && gp < -15 && e[0] >= 20) flags.push('<span class="warn">⚠ atypical declared price</span>'); if (isFinite(gv) && Math.abs(gv) > 25 && Math.max(e[0], u[0]) >= 50) flags.push('<span class="warn">⚠ volume gap</span>'); }
+    if (!flags.length) flags.push('<span class="delta-good">✓ consistent</span>');
+    return `<tr><td class="name">${FLAG(o, 16)} ${US_LAB[o]}</td><td style="text-align:left">${P[pi]}</td><td class="sep-left">${tmF0(u[0])}</td><td>${isFinite(pu) ? pu.toFixed(2) : '—'}</td>` +
+      `<td class="sep-left">${tmF0(e[0])}</td><td>${isFinite(pe) ? pe.toFixed(2) : (cur !== '€' ? cur : '—')}</td>` +
+      `<td class="sep-left">${covered && isFinite(gv) ? tmVar(gv, 10) : '—'}</td><td>${covered && isFinite(gp) ? tmVar(gp, 5) : '—'}</td><td class="sep-left" style="text-align:left;font-size:11px">${flags.join(' ')}</td></tr>`; }).join('') ||
+    `<tr><td class="name" colspan="9" style="color:var(--muted)">Nothing to compare for this selection.</td></tr>`;
+  document.getElementById('usNote').innerHTML = `<b>Sources.</b> US Census Bureau, international trade API (imports by HTS 10-digit code and country of origin): general imports, customs value, calculated duty, import charges (freight and insurance). ` +
+    `Values in US$, converted to € at Eurostat monthly average rates. Exporters: Norway (SSB), Faroe Islands (Hagstova), Iceland (Hagstofa), United Kingdom (HMRC), Chile and Canada (UN Comtrade). ` +
+    `The US counts by country of origin; exporters count by declared destination, so salmon shipped through Canada or Mexico, or re-exported, can widen the gap.`;
 }
 
 // ===================== Onglet EU markets =====================
