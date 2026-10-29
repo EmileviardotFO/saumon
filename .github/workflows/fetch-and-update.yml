@@ -62,9 +62,20 @@ jobs:
 
       - name: Reconstruire records et cohort si nouveau fichier biomasse
         id: biomasse_build
-        if: env.dest != ''
         continue-on-error: true
-        run: python3 scripts/update_biomasse.py "${{ env.dest }}"
+        # Nouveau fichier -> reconstruction. Sinon, reconstruction depuis le dernier
+        # fichier deja archive si data.json a encore l'ancien format de cohort (sans
+        # les flux par generation ajoutes pour l'onglet Generations).
+        run: |
+          if [ -n "${dest:-}" ]; then
+            python3 scripts/update_biomasse.py "$dest"
+          elif python3 -c "import json,sys; c=json.load(open('data/data.json')).get('cohort',[]); sys.exit(0 if c and 'dead_stk' not in c[0] else 1)"; then
+            LAST=$(ls -1 xlsx/biomasse/biostat-total-omr-*.xlsx | sort | tail -1)
+            echo "Ancien format de cohort : reconstruction depuis $LAST"
+            python3 scripts/update_biomasse.py "$LAST"
+          else
+            echo "Biomasse : rien a reconstruire."
+          fi
 
       - name: Exports par pays et par produit (SSB, avec revisions)
         # Au premier passage, le script remonte seul jusqu'a 2018 ; ensuite il
