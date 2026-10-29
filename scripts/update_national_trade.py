@@ -97,6 +97,16 @@ SOURCES['CA'] = {
     'codes': {'030214': 0, '030313': 1, '030441': 2, '030481': 3, '030541': 5, '160411': 6},
     'reporter': 124,
 }
+SOURCES['AU'] = {
+    'kind': 'comtrade',
+    'name': 'UN Comtrade, exports reported by Australia (HS6, monthly; FOB in USD) — farmed salmon is Tasmanian',
+    'currency': 'USD',
+    'codes': {'030214': 0, '030313': 1, '030441': 2, '030481': 3, '030541': 5, '160411': 6},
+    'reporter': 36,
+    # source ajoutee en octobre 2026 : un echec (Australie absente ou en retard sur Comtrade) ne bloque pas
+    # la mise a jour ; il est signale dans meta.failed_optional
+    'optional': True,
+}
 DKK_PER_EUR = 7.46038       # parite centrale MCE II
 
 
@@ -430,7 +440,7 @@ def iso3_map():
 
 
 def fetch_comtrade(key, src, to_iso, fx):
-    """Chili, Canada : ONU Comtrade, API publique 'preview' (sans cle, 500 lignes par appel), un appel par mois."""
+    """Chili, Canada, Australie : ONU Comtrade, API publique 'preview' (sans cle, 500 lignes par appel), un appel par mois."""
     base = 'https://comtradeapi.un.org/public/v1/preview/C/M/HS'
     a3 = iso3_map()
     codes = ','.join(src['codes'])
@@ -648,7 +658,7 @@ def main():
     to_iso = iso_map()
     fx = {c: eur_rates(c) for c in ('ISK', 'GBP', 'NOK', 'USD')}
     old = json.load(io.open(OUT, encoding='utf-8')) if os.path.exists(OUT) else {'meta': {}, 'rows': []}
-    rows, meta, failed = [], {}, []
+    rows, meta, failed, failed_opt = [], {}, [], []
     for key, src in SOURCES.items():
         print(f'{key} :')
         try:
@@ -664,8 +674,8 @@ def main():
             meta[key] = m
             print(f'  {key} : {len(r)} lignes, {m["first"]} -> {m["last"]}')
         except Exception as e:
-            print(f'  ECHEC {key} : {e}')
-            failed.append(key)
+            print(f'  ECHEC {key} : {e}' + (' (source optionnelle : la mise a jour continue)' if src.get('optional') else ''))
+            (failed_opt if src.get('optional') else failed).append(key)
             rows += [x for x in old['rows'] if x[1] == key]
             if key in old.get('meta', {}):
                 meta[key] = old['meta'][key]
@@ -673,7 +683,7 @@ def main():
     fxm = {c: {str(k): v for k, v in r.items()} for c, r in fx.items() if r}
     if not fxm and old.get('meta', {}).get('fx'):
         fxm = old['meta']['fx']
-    out = {'meta': {'fetched': dt.date.today().isoformat(), 'sources': meta, 'failed': failed, 'fx': fxm,
+    out = {'meta': {'fetched': dt.date.today().isoformat(), 'sources': meta, 'failed': failed, 'failed_optional': failed_opt, 'fx': fxm,
                     'cols': ['ym', 'origin', 'destination', 'form', 'tonnes', 'k_local', 'k_eur'],
                     'forms': {'0': 'Fresh whole', '1': 'Frozen whole', '2': 'Fresh fillets', '3': 'Frozen fillets',
                               '5': 'Smoked', '6': 'Prepared / preserved'}},
