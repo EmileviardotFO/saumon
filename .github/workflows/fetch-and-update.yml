@@ -110,13 +110,16 @@ jobs:
         timeout-minutes: 30
         run: python3 scripts/update_eurostat.py
 
-      - name: Statistiques nationales (Feroe, Islande, Royaume-Uni, Chili, Canada, importations des Etats-Unis)
+      - name: Statistiques nationales (Feroe, Islande, Royaume-Uni, Chili, Canada, importations Etats-Unis et Chine)
         # Hagstova Foroya, Hagstofa Islands (API PxWeb) et HMRC (API uktradeinfo) : saumon par pays de
         # destination et par mois, pour l'onglet Producers et l'origine du
         # saumon dans chaque pays de l'UE. Nouvelle source : un echec ne bloque rien.
         id: national
         continue-on-error: true
-        timeout-minutes: 20
+        timeout-minutes: 35
+        env:
+          # cle gratuite de l'API du US Census Bureau (secret GitHub CENSUS_API_KEY)
+          CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
         run: python3 scripts/update_national_trade.py
 
       - name: Installer le navigateur sans ecran (Playwright)
