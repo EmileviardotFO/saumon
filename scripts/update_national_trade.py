@@ -9,6 +9,8 @@ par pays de destination et par mois, depuis les statistiques nationales :
               tollskrarnumerum 2024-2026, kafli 1-40", numeros tarifaires
               islandais a 8 chiffres (saumon d'elevage atlantique separe).
   - Chili et Canada : ONU Comtrade (API publique, donnees declarees par chaque pays, SH6).
+  - En plus : importations des Etats-Unis par origine (US Census Bureau), ecrites dans
+    data/us_imports.json, pour le focus Etats-Unis et le controle des prix declares.
   - Royaume-Uni : HMRC, API OData publique uktradeinfo (OTS), CN8 ; le saumon
               d'elevage britannique est ecossais (quelques reexportations de
               saumon norvegien incluses).
@@ -488,6 +490,82 @@ def fetch_comtrade(key, src, to_iso, fx):
                  'last': max((r[0] for r in out), default=None), 'first': min((r[0] for r in out), default=None)}
 
 
+US_OUT = os.path.join(ROOT, 'data', 'us_imports.json')
+US_HS6 = {'030214': 0, '030313': 1, '030441': 2, '030481': 3, '030541': 5, '160411': 6}
+
+
+def fetch_us_imports(to_iso, fx):
+    """Importations des Etats-Unis (US Census Bureau, API publique) par pays d'origine et par code
+    HTS a 10 chiffres. Pour les filets, le fume et le prepare, on ne garde que les lignes dont le
+    libelle parle de saumon atlantique (le Pacifique est a part). Valeur en douane (hors fret et
+    assurance, comparable au FOB), droits calcules et frais d'acheminement, en dollars."""
+    base = 'https://api.census.gov/data/timeseries/intltrade/imports/hs'
+    fields = 'CTY_CODE,CTY_NAME,I_COMMODITY,I_COMMODITY_SDESC,GEN_VAL_MO,GEN_QY1_MO,UNIT_QY1,CAL_DUT_MO,GEN_CHA_MO'
+    key = os.environ.get('CENSUS_API_KEY', '')
+    agg, kept, dropped = {}, set(), set()
+    for hs6, pi in US_HS6.items():
+        rows = None
+        for lvl, code in (('HS10', hs6 + '*'), ('HS6', hs6)):
+            url = f'{base}?get={fields}&COMM_LVL={lvl}&I_COMMODITY={code}&time=from+2023-01' + (f'&key={key}' if key else '')
+            st, raw = http(url)
+            if st == 200 and raw.strip():
+                try:
+                    j = json.loads(raw)
+                    rows = [dict(zip(j[0], r)) for r in j[1:]]
+                    print(f'  US : {hs6} ({lvl}) -> {len(rows)} lignes')
+                    break
+                except ValueError:
+                    pass
+            print(f'  US : {hs6} ({lvl}) -> {st} {raw[:160]!r}')
+        if not rows:
+            raise RuntimeError(f'aucune donnee pour {hs6}')
+        if hs6 == '030441':
+            json.dump(rows[:40], open(os.path.join(DBG, 'us_census_sample.json'), 'w'), indent=0, ensure_ascii=False)
+        for r in rows:
+            desc = (r.get('I_COMMODITY_SDESC') or '').upper()
+            if pi >= 2 and len(r.get('I_COMMODITY', '')) == 10:
+                # filets, fume, prepare : uniquement le saumon atlantique (libelles HTS)
+                if 'ATLANTIC' not in desc or re.search(r'PACIFIC|SOCKEYE|COHO|CHINOOK|CHUM|PINK|SILVER', desc):
+                    dropped.add(r['I_COMMODITY'] + ' ' + desc)
+                    continue
+                kept.add(r['I_COMMODITY'] + ' ' + desc)
+            cc = r.get('CTY_CODE', '')
+            if not re.fullmatch(r'\d{4}', cc) or cc.startswith('0') or cc[0] == '-':
+                continue                                   # totaux et regroupements
+            iso = to_iso('', (r.get('CTY_NAME') or '').title())
+            if not iso:
+                continue
+            t = r.get('time', '')
+            mm = re.match(r'(\d{4})-(\d{2})', t)
+            if not mm:
+                continue
+            ym = int(mm.group(1)) * 100 + int(mm.group(2))
+            num = lambda k: float(r.get(k) or 0)
+            kg = num('GEN_QY1_MO') if (r.get('UNIT_QY1') or 'KG').upper().startswith('KG') else 0.0
+            x = agg.setdefault((ym, iso, pi), [0.0, 0.0, 0.0, 0.0])
+            x[0] += kg
+            x[1] += num('GEN_VAL_MO')
+            x[2] += num('CAL_DUT_MO')
+            x[3] += num('GEN_CHA_MO')
+        time.sleep(1)
+    print(f'  US : codes HTS gardes : {sorted(kept)}')
+    print(f'  US : codes HTS ecartes (Pacifique) : {sorted(dropped)}')
+    out = []
+    for (ym, iso, pi), (kg, val, duty, cha) in sorted(agg.items()):
+        if kg <= 0 and val <= 0:
+            continue
+        e = to_eur(val, ym, 'USD', fx)
+        out.append([ym, iso, pi, round(kg / 1000, 3), round(val / 1000, 2), round(e / 1000, 2) if e is not None else None,
+                    round(duty / 1000, 2), round(cha / 1000, 2)])
+    if not out:
+        raise RuntimeError('aucune ligne')
+    meta = {'fetched': dt.date.today().isoformat(), 'source': 'US Census Bureau, international trade API (imports by HTS10 and country)',
+            'last': max(r[0] for r in out), 'first': min(r[0] for r in out), 'kept_codes': sorted(kept), 'dropped_codes': sorted(dropped),
+            'cols': ['ym', 'origin', 'form', 'tonnes', 'k_usd_customs_value', 'k_eur', 'k_usd_duty', 'k_usd_charges']}
+    io.open(US_OUT, 'w', encoding='utf-8').write(json.dumps({'meta': meta, 'rows': out}, ensure_ascii=False, separators=(',', ':')))
+    print(f'  US : {len(out)} lignes, {meta["first"]} -> {meta["last"]}')
+
+
 def main():
     to_iso = iso_map()
     fx = {c: eur_rates(c) for c in ('ISK', 'GBP', 'NOK', 'USD')}
@@ -524,6 +602,13 @@ def main():
            'rows': rows}
     io.open(OUT, 'w', encoding='utf-8').write(json.dumps(out, ensure_ascii=False, separators=(',', ':')))
     print(f'{len(rows)} lignes ecrites, echecs : {failed or "aucun"}')
+    print('Importations des Etats-Unis (US Census) :')
+    try:
+        os.makedirs(DBG, exist_ok=True)
+        fetch_us_imports(to_iso, fx)
+    except Exception as e:
+        print(f'  ECHEC US : {e}')
+        failed.append('US_IMP')
     if failed:
         sys.exit(1)
 
