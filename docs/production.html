@@ -660,6 +660,7 @@
     </div>
     <div class="chart-controls"><span class="cc-label">Forms</span><span id="usForms" style="display:inline-flex;gap:12px;flex-wrap:wrap"></span></div>
     <div id="usCards" class="pr-cards"></div>
+    <div id="usDetail"></div>
     <div class="sig-title" style="margin-top:16px">1 · Monthly imports by origin</div>
     <div class="sig-sub" id="usVolSub"></div>
     <div id="usVol"></div>
@@ -683,10 +684,11 @@
     </div>
     <div class="chart-controls"><span class="cc-label">Forms</span><span id="cnForms" style="display:inline-flex;gap:12px;flex-wrap:wrap"></span></div>
     <div id="cnCards" class="pr-cards"></div>
+    <div id="cnDetail"></div>
     <div class="sig-title" style="margin-top:16px">1 · Monthly imports by origin</div>
     <div class="sig-sub" id="cnVolSub"></div>
     <div id="cnVol"></div>
-    <div class="sig-title" style="margin-top:16px">2 · Import price by origin (CIF value, € per kg)</div>
+    <div class="sig-title" style="margin-top:16px">2 · Price by origin (€ per kg): FOB declared by the exporter, CIF recorded by China</div>
     <div class="sig-sub" id="cnPriceSub"></div>
     <div id="cnPrice"></div>
     <div class="sig-title" style="margin-top:22px">3 · Check: what China records vs what each exporter declares for China</div>
@@ -6093,7 +6095,7 @@ function tmOrigins(rep, ym, pi) {
 // 'all' : statistiques norvegiennes (SSB, NOK) ou exportations de l'Irlande (Eurostat).
 // Retour : { cur, last, rows: [[ym, destination, forme, tonnes, valeur en milliers]] }
 // NOK -> EUR au taux moyen mensuel d'Eurostat (taux enregistres avec les statistiques nationales)
-const NAT_NAME = { FO: ['Faroese', 'Hagstova'], IS: ['Icelandic', 'Hagstofa'], GB: ['UK', 'HMRC'], CL: ['Chilean', 'UN Comtrade'], CA: ['Canadian', 'UN Comtrade'] };
+const NAT_NAME = { FO: ['Faroese', 'Hagstova'], IS: ['Icelandic', 'Hagstofa'], GB: ['UK', 'HMRC'], CL: ['Chilean', 'UN Comtrade'], CA: ['Canadian', 'UN Comtrade'], AU: ['Australian', 'UN Comtrade'] };
 // sources qui fixent le "dernier mois disponible" (le Chili, publie plus tard via Comtrade, garde son propre mois)
 const NAT_CORE = ['FO', 'IS', 'GB'];
 function tmNok() {
@@ -6167,10 +6169,20 @@ function vzStack(keys, stacks, o) {
   for (let g = sc.lo; g <= sc.hi + sc.step / 2; g += sc.step)
     s += `<line x1="${mL}" x2="${W - mR}" y1="${Y(g)}" y2="${Y(g)}" stroke="#223642"/><text x="${mL - 8}" y="${Y(g) + 4}" text-anchor="end" fill="#8fa4b0" font-size="11">${vzFmt(g)}</text>`;
   s += vzXLabels(keys, X, H - 12);
+  // st.dim[i] = vrai : segment estime (autre source) -> couleur attenuee + hachures ; o.marks = [{i, lab}] : trait vertical
+  const anyDim = stacks.some(st => st.dim && st.dim.some(Boolean));
+  if (anyDim) s += `<defs><pattern id="vzHatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#0b1a22" stroke-width="2" stroke-opacity=".55"/></pattern></defs>`;
   keys.forEach((k, i) => { let base = 0;
     stacks.forEach(st => { const v = st.vals[i] || 0; if (v <= 0) return;
-      s += `<rect x="${(X(i) - bw * 0.38).toFixed(1)}" width="${(bw * 0.76).toFixed(1)}" y="${Y(base + v).toFixed(1)}" height="${(Y(base) - Y(base + v)).toFixed(1)}" fill="${st.col}"><title>${tmMl(k)} — ${st.lab}: ${tmF0(v)} ${o.unit} (${(100 * v / tot[i]).toFixed(0)}%)</title></rect>`;
+      const dim = st.dim && st.dim[i], xr = (X(i) - bw * 0.38).toFixed(1), wr = (bw * 0.76).toFixed(1), yr = Y(base + v).toFixed(1), hr = (Y(base) - Y(base + v)).toFixed(1);
+      const tip = `<title>${tmMl(k)} — ${st.lab}: ${tmF0(v)} ${o.unit} (${(100 * v / tot[i]).toFixed(0)}%)${dim && o.dimLab ? ' — ' + o.dimLab : ''}</title>`;
+      s += `<rect x="${xr}" width="${wr}" y="${yr}" height="${hr}" fill="${st.col}"${dim ? ' fill-opacity=".62"' : ''}>${tip}</rect>`;
+      if (dim) s += `<rect x="${xr}" width="${wr}" y="${yr}" height="${hr}" fill="url(#vzHatch)" pointer-events="none"/>`;
       base += v; }); });
+  (o.marks || []).forEach(m => { const x = (X(m.i) + bw / 2).toFixed(1);
+    s += `<line x1="${x}" x2="${x}" y1="${mT}" y2="${mT + ph}" stroke="#e7eef2" stroke-width="1.2" stroke-dasharray="3,3" stroke-opacity=".8"/>` +
+      `<text x="${(+x - 6).toFixed(1)}" y="${mT + 12}" text-anchor="end" fill="#cfdde4" font-size="11">${m.lab}</text>` +
+      (m.lab2 ? `<text x="${(+x + 6).toFixed(1)}" y="${mT + 12}" fill="#cfdde4" font-size="11">${m.lab2}</text>` : ''); });
   (o.lines || []).forEach(l => { let d = '', pen = false;
     l.pts.forEach((v, i) => { if (v === null || !isFinite(v)) { pen = false; return; } d += (pen ? 'L' : 'M') + X(i).toFixed(1) + ',' + Y(v).toFixed(1); pen = true; });
     if (d) s += `<path d="${d}" fill="none" stroke="${l.col}" stroke-width="1.8" stroke-dasharray="${l.dash || '5,4'}"/>`; });
@@ -6383,9 +6395,28 @@ function renderFocus(k) {
     if (!hk.dataset.w) { hk.dataset.w = 1; hk.checked = C.hk; hk.addEventListener('change', () => { C.hk = hk.checked; C.render(); }); }
   }
   const useRow = r => k !== 'cn' || C.hk || r[6] === 'CN';
-  // lignes normalisees : [ym, origine, forme, t, k$, k€, k$ droits, k$ frais]
-  const rowsN = DATA.rows.filter(useRow).map(r => k === 'cn' ? [r[0], r[1], r[2], r[3], r[4], r[5], 0, 0] : r);
-  const lastBy = (DATA.meta.last_by_reporter || {}), END = k === 'cn' && C.hk && lastBy.HK && lastBy.CN ? Math.min(lastBy.CN, lastBy.HK) : (k === 'cn' ? (lastBy.CN || DATA.meta.last) : DATA.meta.last);
+  const lastBy = (DATA.meta.last_by_reporter || {}), dests = k === 'cn' && !C.hk ? ['CN'] : C.dest;
+  // lignes normalisees : [ym, origine, forme, t, k$, k€, k$ droits, k$ frais, source]
+  // source : 'C' = douanes du pays importateur, 'X' = ce que le pays exportateur declare pour ce marche
+  const rowsN = DATA.rows.filter(useRow).map(r => k === 'cn' ? [r[0], r[1], r[2], r[3], r[4], r[5], 0, 0, 'C'] : r.concat(['C']));
+  let END = DATA.meta.last, CUS_END = END;
+  const XO = {};      // exportateurs couverts : {origine: {last, cur, rows [ym, dest, forme, t, v]}}
+  // Chine : les douanes chinoises ne publient plus le detail par origine depuis fin 2024 (Hong Kong continue).
+  // Serie combinee : douanes tant qu'elles existent, puis, pour chaque destination, ce que chaque
+  // exportateur declare pour elle (FOB). Les origines sans statistiques d'exportation (Australie...) ne
+  // sont plus couvertes apres la fin des douanes : elles ne sont pas estimees.
+  C.orig.forEach(o => { if (!PRODUCERS.includes(o) && !TM.nati[o]) return; const D = tmBest(o); if (D.euOnly) return;
+    XO[o] = { last: D.last, cur: D.cur, rows: D.rows.filter(r => dests.includes(r[1]) && FORMS_OK.includes(r[2])) }; });
+  if (k === 'cn') {
+    const cEnd = d => lastBy[d] || (d === 'CN' ? DATA.meta.last : 0);
+    CUS_END = Math.min(...dests.map(cEnd));
+    // fin de la serie : dernier mois publie par tous les grands exportateurs vers la Chine
+    const majors = ['NO', 'CL', 'FO', 'GB', 'IS'].filter(o => XO[o]);
+    END = Math.max(CUS_END, majors.length ? Math.min(...majors.map(o => XO[o].last)) : 0);
+    Object.entries(XO).forEach(([o, X]) => X.rows.forEach(([ym, de, pi, t, v]) => {
+      if (ym > cEnd(de) && ym <= END) rowsN.push([ym, o, pi, t, 0, X.cur === '€' ? (v || 0) : 0, 0, 0, 'X']); }));
+  }
+  const COV = new Set(k === 'cn' ? Object.keys(XO) : []), hyb = kk => k === 'cn' && kk > CUS_END, covAt = (g, r) => COV.has(g) && r <= XO[g].last;
   const perSel = $('Period'); tmPeriodLabels(perSel, pre, C.render, END);
   if (!perSel.dataset.w) { perSel.dataset.w = 1; perSel.addEventListener('change', C.render); }
   const PER = tmPeriod(perSel.value, pre, END), one = PER.keys.length === 1;
@@ -6395,56 +6426,151 @@ function renderFocus(k) {
   $('Forms').querySelectorAll('input').forEach(c => c.addEventListener('change', () => { const f = +c.dataset.f; c.checked ? C.forms.add(f) : C.forms.delete(f); C.render(); }));
   $('Forms').querySelector('[data-def]').onclick = () => { C.forms.clear(); [0, 2].forEach(f => C.forms.add(f)); C.render(); };
   const formsTxt = [...C.forms].filter(i => formsAll.includes(i)).sort().map(i => P[i].toLowerCase()).join(' + ') || 'no form selected';
-  const ix = {};
-  rowsN.forEach(([ym, o, pi, t, usd, eur, duty, cha]) => { if (!C.forms.has(pi)) return;
-    const g = C.orig.includes(o) ? o : 'OTH', A = ix[g] || (ix[g] = {}), x = A[ym] || (A[ym] = [0, 0, 0, 0, 0]);
-    x[0] += t; x[1] += usd; x[2] += eur || 0; x[3] += duty || 0; x[4] += cha || 0; });
-  const S = (g, ks) => ks.reduce((a, kk) => { const x = (ix[g] || {})[kk]; if (x) x.forEach((v, i) => a[i] += v); return a; }, [0, 0, 0, 0, 0]);
+  // ix[g][ym] = [t, k$, k€, droits, frais, t douanes, k€ douanes] ; dimI[g][ym] = mois tire des declarations des exportateurs
+  const ix = {}, dimI = {}, ixF = {}, Z = () => [0, 0, 0, 0, 0, 0, 0];
+  rowsN.forEach(([ym, o, pi, t, usd, eur, duty, cha, src]) => { if (!C.forms.has(pi)) return;
+    const g = C.orig.includes(o) ? o : 'OTH', A = ix[g] || (ix[g] = {}), x = A[ym] || (A[ym] = Z());
+    const F = ((ixF[g] || (ixF[g] = {}))[ym] || (ixF[g][ym] = {})), f = F[pi] || (F[pi] = [0, 0, 0]); f[0] += t; f[1] += eur || 0; if (src === 'X') f[2] = 1;
+    x[0] += t; x[1] += usd; x[2] += eur || 0; x[3] += duty || 0; x[4] += cha || 0;
+    if (src === 'X') (dimI[g] || (dimI[g] = {}))[ym] = 1; else { x[5] += t; x[6] += eur || 0; } });
+  // prix FOB declares par les exportateurs pour ce marche, sur toute la periode (pas seulement apres les douanes)
+  const XI = {}, XIF = {};
+  Object.entries(XO).forEach(([o, X]) => { if (X.cur !== '€') return; X.rows.forEach(([ym, de, pi, t, v]) => { if (!C.forms.has(pi)) return;
+    const A = XI[o] || (XI[o] = {}), x = A[ym] || (A[ym] = [0, 0]); x[0] += t; x[1] += v || 0;
+    const B = ((XIF[o] || (XIF[o] = {}))[ym] || (XIF[o][ym] = {})), y = B[pi] || (B[pi] = [0, 0]); y[0] += t; y[1] += v || 0; }); });
+  const XS = (gs, ks) => ks.reduce((a, kk) => { gs.forEach(g => { const x = (XI[g] || {})[kk]; if (x) { a[0] += x[0]; a[1] += x[1]; } }); return a; }, [0, 0]);
+  const S = (g, ks) => ks.reduce((a, kk) => { const x = (ix[g] || {})[kk]; if (x) x.forEach((v, i) => a[i] += v); return a; }, Z());
   const orig = [...C.orig, 'OTH'].filter(g => ix[g]);
-  const sumAll = ks => orig.reduce((a, g) => { S(g, ks).forEach((v, i) => a[i] += v); return a; }, [0, 0, 0, 0, 0]);
+  // total ; ref = mois de reference (pour N-1 : les mois de la periode courante). Quand le mois de reference
+  // est tire des exportateurs, on ne compte que les origines couvertes des deux cotes (comparaison a perimetre constant).
+  const sumAll = (ks, ref) => ks.reduce((a, kk, i) => { const r = ref ? ref[i] : kk;
+    orig.forEach(g => { if (hyb(r) && !covAt(g, r)) return; const x = (ix[g] || {})[kk]; if (x) x.forEach((v, j) => a[j] += v); }); return a; }, Z());
   sub.innerHTML = k === 'us'
     ? `US imports of Atlantic salmon by country of origin (US Census Bureau), data to <b>${tmMl(END)}</b>. <b>Customs value</b> = transaction value without international freight and insurance, comparable to the exporters' FOB prices. ` +
       `<b>Landed cost</b> = customs value + freight and insurance to the US + duties calculated by US customs. Fillet, smoked and prepared codes: Atlantic salmon lines only (Pacific salmon has its own US codes).`
-    : `Imports of Atlantic salmon by country of origin as reported by ${C.hk ? 'China and Hong Kong' : 'mainland China'} to UN Comtrade, data to <b>${tmMl(END)}</b>. ` +
-      `<b>CIF value</b> = value on arrival in China, <b>air freight and insurance included</b>: it is higher than the exporters' FOB prices, and the gap is roughly the freight. Chinese duties are not included. ` +
-      `China reports January and February together. Fillet codes cover Atlantic and Pacific salmon (6-digit codes only).`;
+    : `Atlantic salmon arriving in ${C.hk ? 'mainland China and Hong Kong' : 'mainland China'} by country of origin, to <b>${tmMl(END)}</b>. ` +
+      `<b>Two sources, joined month by month:</b> imports reported by ${C.hk ? 'China and Hong Kong' : 'China'} to UN Comtrade (CIF) as long as they are published ` +
+      `(mainland China to <b>${tmMl(lastBy.CN || DATA.meta.last)}</b>${C.hk && lastBy.HK ? `, Hong Kong to <b>${tmMl(lastBy.HK)}</b>` : ''}), then what each producing country declares for ` +
+      `${C.hk ? 'China and Hong Kong' : 'China'} in its own export statistics (${[...COV].map(o => US_LAB[o]).join(', ')}). ` +
+      `<b>Hatched bars</b> = months taken from the exporters. Origins without export statistics (${C.orig.filter(o => !COV.has(o)).map(o => US_LAB[o]).concat(['small origins']).join(', ')}) are <b>not counted</b> after the end of the customs data, ` +
+      `so year-on-year changes on those months compare covered origins only. In 2023–2024 the two sources agreed within about ±10% for each origin (table 3). ` +
+      `Fillet codes cover Atlantic and Pacific salmon (6-digit codes); coho and trout shipped as whole fish are not included.`;
   const valLab = k === 'us' ? 'customs value' : 'CIF value';
-  const card = (g, total) => { const a = total ? sumAll(PER.keys) : S(g, PER.keys), b = total ? sumAll(PER.prev) : S(g, PER.prev);
-    const m1 = one ? (total ? sumAll([tmBack(PER.keys[0], 1)]) : S(g, [tmBack(PER.keys[0], 1)])) : null;
+  // part des origines non couvertes, sur les 12 derniers mois de donnees douanieres
+  const gapK = k === 'cn' ? tmRange(CUS_END, 12) : [], gapAll = sumAll(gapK)[5], gapUnc = orig.filter(g => !COV.has(g)).reduce((s2, g) => s2 + S(g, gapK)[5], 0);
+  const anyHyb = PER.keys.some(hyb);
+  const card = (g, total) => {
+    // origine publiee avec retard (ex. Australie via Comtrade) : N-1 sur les memes mois seulement
+    const lag = !total && k === 'cn' && XO[g] && PER.keys.some(kk => hyb(kk) && kk > XO[g].last) ? XO[g].last : 0;
+    const a = total ? sumAll(PER.keys) : S(g, PER.keys), b = total ? sumAll(PER.prev, PER.keys) : S(g, lag ? PER.prev.filter((kk, i) => PER.keys[i] <= lag) : PER.prev);
+    const pm = tmBack(PER.keys[0], 1), m1 = one ? (total ? sumAll([pm], PER.keys) : S(g, [pm])) : null;
+    const lost = k === 'cn' && !total && !COV.has(g) && anyHyb;     // origine sans statistiques d'exportation, sur des mois hors douanes
     const pe = a[0] ? a[2] / a[0] : NaN, pu = a[0] ? a[1] / a[0] : NaN, pb = b[0] ? b[2] / b[0] : NaN;
     const duty = a[1] && k === 'us' ? 100 * a[3] / a[1] : NaN, landed = a[0] && k === 'us' ? (a[1] + a[3] + a[4]) / a[0] : NaN;
-    return `<div class="pr-card${total ? ' pr-total' : ''}">${total ? '' : `<span class="pr-wm">${FLAG(g, 0, true)}</span>`}<div class="nm">${total ? '<i style="background:#e7eef2"></i>' : FLAG(g, 18)}${total ? `All origins — ${C.title}` : US_LAB[g]}</div>` +
+    let priceLn;
+    if (k === 'cn') {
+      const gs = total ? [...COV] : [g], f = XS(gs, PER.keys), fb = XS(gs, PER.prev), fo = f[0] ? f[1] / f[0] : NaN, fob = fb[0] ? fb[1] / fb[0] : NaN;
+      const cif = a[5] && PER.keys.every(kk => !hyb(kk)) ? a[6] / a[5] : NaN;
+      priceLn = `<div class="ln">FOB declared <b style="color:var(--ink)">${isFinite(fo) ? fo.toFixed(2) + ' €/kg' : '—'}</b> ${isFinite(fo) && isFinite(fob) ? tmVar(tmPc(fo, fob)) : ''}</div>` +
+        `<div class="ln">${isFinite(cif) ? `CIF recorded ${cif.toFixed(2)} €/kg` + (isFinite(fo) ? ` · freight ≈ ${(cif - fo).toFixed(2)}` : '') : (total ? 'FOB: covered origins only' : '')}</div>`;
+    } else priceLn = `<div class="ln">${valLab} <b style="color:var(--ink)">${isFinite(pe) ? pe.toFixed(2) + ' €/kg' : '—'}</b> ${isFinite(pe) && isFinite(pb) ? tmVar(tmPc(pe, pb)) : ''}</div>` +
+      `<div class="ln">${isFinite(pu) ? pu.toFixed(2) + ' $/kg' : ''}${isFinite(duty) ? ` · duty <b style="color:var(--ink)">${duty.toFixed(1)}%</b>` : ''}${isFinite(landed) ? ` · landed ${landed.toFixed(2)} $/kg` : ''}</div>`;
+    const src = k !== 'cn' ? '' : total ? (anyHyb ? `<div class="ln" style="color:var(--muted)">${PER.keys.every(hyb) ? 'exporters\' declarations' : 'customs + exporters\' declarations'} · not covered after ${tmMl(CUS_END)}: ` +
+        `${orig.filter(o => !COV.has(o) && o !== 'OTH').map(o => US_LAB[o]).concat(ix.OTH ? ['small origins'] : []).join(', ') || '—'}${gapAll ? ` (${(100 * gapUnc / gapAll).toFixed(0)}% of the market in the last 12 months of customs data)` : ''}</div>` : '<div class="ln" style="color:var(--muted)">source: customs</div>')
+      : `<div class="ln" style="color:var(--muted)">${lost ? (a[0] ? `Hong Kong customs only after ${tmMl(CUS_END)} (no export statistics for mainland China yet)` : `no data after ${tmMl(CUS_END)} (no export statistics yet)`) : PER.keys.some(kk => (dimI[g] || {})[kk]) ? (PER.keys.every(kk => (dimI[g] || {})[kk] || !(ix[g] || {})[kk]) ? 'source: exporter\'s declarations' : 'source: customs + exporter') : 'source: customs'}${lag ? ` · <span class="warn">exporter data only to ${tmMl(lag)}</span> (N-1 on the same months)` : ''}</div>`;
+    return `<div class="pr-card${total ? ' pr-total' : ''}${!total && C.sel === g ? ' active' : ''}"${total || g === 'OTH' ? '' : ` data-o="${g}" title="Click for the monthly detail (volumes and prices)"`}>${total ? '' : `<span class="pr-wm">${FLAG(g, 0, true)}</span>`}<div class="nm">${total ? '<i style="background:#e7eef2"></i>' : FLAG(g, 18)}${total ? `All origins — ${C.title}` : US_LAB[g]}</div>` +
       `<div class="ln">${PER.lab}${total ? ' · ' + formsTxt : ''}</div>` +
-      `<div class="big">${tmKt(a[0])} <span>${tmVar(tmPc(a[0], b[0]))}</span> <span style="font-size:10px;color:var(--muted);font-weight:normal">vs N-1</span></div>` +
-      (one ? `<div class="ln">vs previous month: ${tmVar(tmPc(a[0], m1[0]))}</div>` : '') +
-      `<div class="ln">${valLab} <b style="color:var(--ink)">${isFinite(pe) ? pe.toFixed(2) + ' €/kg' : '—'}</b> ${isFinite(pe) && isFinite(pb) ? tmVar(tmPc(pe, pb)) : ''}</div>` +
-      `<div class="ln">${isFinite(pu) ? pu.toFixed(2) + ' $/kg' : ''}${isFinite(duty) ? ` · duty <b style="color:var(--ink)">${duty.toFixed(1)}%</b>` : ''}${isFinite(landed) ? ` · landed ${landed.toFixed(2)} $/kg` : ''}</div>` +
+      `<div class="big">${lost && !a[0] ? '—' : tmKt(a[0])} <span>${lost ? '' : tmVar(tmPc(a[0], b[0]))}</span> <span style="font-size:10px;color:var(--muted);font-weight:normal">${lost ? '' : 'vs N-1'}</span></div>` +
+      (one && !lost ? `<div class="ln">vs previous month: ${tmVar(tmPc(a[0], m1[0]))}</div>` : '') +
+      priceLn + src +
       (total ? `<div class="pr-total-share" style="margin-top:6px">${orig.map(o => { const t = S(o, PER.keys)[0]; return t > 0 ? `<span title="${US_LAB[o]}: ${tmF0(t)} t" style="flex:${t};background:${ORIG_COL[o] || '#78909c'}"></span>` : ''; }).join('')}</div>` +
         `<div class="pr-total-leg" style="grid-column:1">${orig.map(o => { const t = S(o, PER.keys)[0]; return t > 0 ? `<span><i style="background:${ORIG_COL[o] || '#78909c'}"></i>${US_LAB[o]} ${a[0] ? (100 * t / a[0]).toFixed(1) : 0}%</span>` : ''; }).join('')}</div>` : '') +
       vzSpark(tmRange(END, 24).map(kk => total ? orig.reduce((s2, o) => s2 + ((ix[o] || {})[kk] ? ix[o][kk][0] : 0), 0) : ((ix[g] || {})[kk] ? ix[g][kk][0] : 0)), total ? '#e7eef2' : (ORIG_COL[g] || '#78909c')) + `</div>`; };
   $('Cards').innerHTML = card(null, true) + orig.map(g => card(g, false)).join('');
+  $('Cards').querySelectorAll('[data-o]').forEach(el => el.addEventListener('click', () => { C.sel = C.sel === el.dataset.o ? null : el.dataset.o; C.render();
+    if (C.sel) setTimeout(() => $('Detail').scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50); }));
+  // ----- detail mensuel de l'origine cliquee : volumes par forme, prix declare par l'exportateur et prix enregistre par le marche
+  const g = C.sel && ix[C.sel] ? C.sel : null;
+  if (!g) $('Detail').innerHTML = '';
+  else {
+    const kD = tmRange(END, 24), fs = [...C.forms].filter(i => formsAll.includes(i)).sort();
+    const mLab = k === 'us' ? 'US customs value' : 'CIF recorded';
+    const fob = kk => { const x = (XI[g] || {})[kk]; return x && x[0] >= 5 ? x[1] / x[0] : NaN; };
+    const mkt = kk => { const x = (ix[g] || {})[kk]; if (!x) return NaN; return k === 'us' ? (x[0] >= 5 ? x[2] / x[0] : NaN) : (x[5] >= 5 ? x[6] / x[5] : NaN); };
+    const bench = g !== 'NO' && XI.NO ? kk => { const x = XI.NO[kk]; return x && x[0] >= 20 ? x[1] / x[0] : NaN; } : null;
+    const formFob = (kk, pi) => { const y = (((XIF[g] || {})[kk]) || {})[pi]; return y && y[0] >= 5 ? y[1] / y[0] : NaN; };
+    let h = `<div class="panel" style="margin-top:12px;border-color:${ORIG_COL[g] || '#3a5566'}"><div class="sig-title" style="display:flex;align-items:center;gap:8px">${FLAG(g, 18)} ${US_LAB[g]} — monthly detail for ${C.market}` +
+      `<button type="button" class="ctrl" data-close="1" style="margin-left:auto;padding:2px 10px">Close ✕</button></div>` +
+      `<div class="sig-sub">${formsTxt}, last 24 months. Volumes by form${k === 'cn' ? ' (hatched = declared by the exporter)' : ''}; prices in € per kg: <b>FOB declared</b> by ${US_LAB[g]} for ${k === 'us' ? 'the US' : (C.hk ? 'China and Hong Kong' : 'China')}` +
+      `${XI[g] ? '' : ' (not available: no export statistics for this origin)'}, <b>${mLab}</b>${bench ? ', and Norway\'s FOB for the same market as a benchmark' : ''}. Months under 5 t have no price.</div>`;
+    h += `<div class="sig-sub" style="margin-top:8px"><b>Volumes</b>` + vzLegend(fs.map(i => [P[i], FORM_COL[i], false, true])) + `</div>`;
+    h += vzStack(kD, fs.map(i => ({ lab: P[i], col: FORM_COL[i], vals: kD.map(kk => ((((ixF[g] || {})[kk]) || {})[i] || [0])[0]), dim: kD.map(kk => !!((((ixF[g] || {})[kk]) || {})[i] || [0, 0, 0])[2]) })),
+      { axis: 'Tonnes per month', unit: 't', H: 220, dimLab: 'declared by the exporter', marks: k === 'cn' && kD.indexOf(CUS_END) >= 0 && kD.indexOf(CUS_END) < kD.length - 1 ? [{ i: kD.indexOf(CUS_END), lab: 'customs', lab2: 'exporters' }] : [] });
+    const pS = [];
+    if (XI[g]) pS.push({ lab: 'FOB declared', col: ORIG_COL[g] || '#e7eef2', w: 2.6, pts: kD.map(kk => { const v = fob(kk); return isFinite(v) ? v : null; }) });
+    if (fs.length > 1 && XIF[g]) fs.forEach(i => { if (kD.some(kk => isFinite(formFob(kk, i)))) pS.push({ lab: 'FOB ' + P[i], col: FORM_COL[i], w: 1.2, op: 0.75, pts: kD.map(kk => { const v = formFob(kk, i); return isFinite(v) ? v : null; }) }); });
+    pS.push({ lab: mLab, col: ORIG_COL[g] || '#e7eef2', w: 1.8, dash: '5,4', pts: kD.map(kk => { const v = mkt(kk); return isFinite(v) ? v : null; }) });
+    if (bench) pS.push({ lab: 'Norway FOB', col: '#8fa4b0', w: 1.4, dash: '2,3', pts: kD.map(kk => { const v = bench(kk); return isFinite(v) ? v : null; }) });
+    h += `<div class="sig-sub" style="margin-top:8px"><b>Prices</b>` + vzLegend([['FOB declared (' + formsTxt + ')', ORIG_COL[g] || '#e7eef2', false]].concat(fs.length > 1 && XIF[g] ? fs.map(i => ['FOB ' + P[i].toLowerCase(), FORM_COL[i], false]) : [])
+      .concat([[mLab, ORIG_COL[g] || '#e7eef2', true]]).concat(bench ? [['Norway FOB (benchmark)', '#8fa4b0', true]] : [])) + `</div>`;
+    h += vzLines(kD, pS, { axis: '€ per kg', unit: '€/kg', digits: 2, zero: false, H: 220 });
+    // tableau mensuel, du plus recent au plus ancien
+    h += `<table class="sig-table" style="margin-top:10px"><thead><tr><th class="name">Month</th>${fs.map(i => `<th>${P[i]}<br><span style="font-weight:normal">t</span></th>`).join('')}` +
+      `<th class="sep-left">Total t</th><th>vs N-1</th><th class="sep-left">FOB declared<br><span style="font-weight:normal">€/kg</span></th><th>${mLab}<br><span style="font-weight:normal">€/kg</span></th>` +
+      `${k === 'cn' ? '<th>Freight<br><span style="font-weight:normal">CIF − FOB</span></th>' : ''}${bench ? '<th class="sep-left">vs Norway FOB<br><span style="font-weight:normal">€/kg</span></th>' : ''}<th class="sep-left" style="text-align:left">Volume source</th></tr></thead><tbody>` +
+      kD.slice().reverse().map(kk => { const x = (ix[g] || {})[kk] || Z(), xp = (ix[g] || {})[kk - 100] || Z(), F = (ixF[g] || {})[kk] || {};
+        const fo = fob(kk), mp = mkt(kk), bn = bench ? bench(kk) : NaN, src = !x[0] ? '—' : (dimI[g] || {})[kk] ? 'exporter\'s declaration' : k === 'us' ? 'US customs' : 'customs';
+        return `<tr><td class="name">${tmMl(kk)}</td>${fs.map(i => `<td>${F[i] ? tmF0(F[i][0]) : ''}</td>`).join('')}<td class="sep-left"><b>${x[0] ? tmF0(x[0]) : '—'}</b></td>` +
+          `<td>${x[0] && xp[0] ? tmVar(tmPc(x[0], xp[0])) : ''}</td><td class="sep-left">${isFinite(fo) ? fo.toFixed(2) : '—'}</td><td>${isFinite(mp) ? mp.toFixed(2) : '—'}</td>` +
+          `${k === 'cn' ? `<td>${isFinite(fo) && isFinite(mp) ? (mp - fo).toFixed(2) : '—'}</td>` : ''}` +
+          `${bench ? `<td class="sep-left">${isFinite(fo) && isFinite(bn) ? `<span style="color:${fo - bn > 0.05 ? '#7be0c9' : fo - bn < -0.05 ? '#ff8a65' : 'var(--muted)'}">${fo - bn >= 0 ? '+' : ''}${(fo - bn).toFixed(2)}</span>` : '—'}</td>` : ''}` +
+          `<td class="sep-left" style="text-align:left;font-size:11px;color:var(--muted)">${src}</td></tr>`; }).join('') + `</tbody></table></div>`;
+    $('Detail').innerHTML = h;
+    $('Detail').querySelector('[data-close]').onclick = () => { C.sel = null; C.render(); };
+  }
   const k24 = tmRange(END, 24);
   $('VolSub').innerHTML = `Tonnes of product weight per month, ${formsTxt}, last 24 months; dashed line = total a year earlier.` +
     vzLegend(orig.map(g => [US_LAB[g], ORIG_COL[g] || '#78909c', false, true]));
-  $('Vol').innerHTML = vzStack(k24, orig.map(g => ({ lab: US_LAB[g], col: ORIG_COL[g] || '#78909c', vals: k24.map(kk => (ix[g] || {})[kk] ? ix[g][kk][0] : 0) })),
-    { axis: 'Tonnes per month', unit: 't', lines: [{ lab: 'a year earlier', col: '#e7eef2', pts: k24.map(kk => sumAll([kk - 100])[0]) }] });
+  const iCut = k24.indexOf(CUS_END), cutMark = k === 'cn' && iCut >= 0 && iCut < k24.length - 1 ? [{ i: iCut, lab: 'customs', lab2: 'exporters\' declarations' }] : [];
+  if (k === 'cn') $('VolSub').innerHTML += ` <b>Hatched</b> = taken from the exporters' declarations (customs data not published yet); the dashed line compares covered origins only on those months.`;
+  $('Vol').innerHTML = vzStack(k24, orig.map(g => ({ lab: US_LAB[g], col: ORIG_COL[g] || '#78909c', vals: k24.map(kk => (ix[g] || {})[kk] ? ix[g][kk][0] : 0),
+      dim: k24.map(kk => !!(dimI[g] || {})[kk]) })),
+    { axis: 'Tonnes per month', unit: 't', marks: cutMark, dimLab: 'declared by the exporter',
+      lines: [{ lab: 'a year earlier', col: '#e7eef2', pts: k24.map(kk => sumAll([kk - 100], [kk])[0]) }] });
+  if (k === 'cn') {
+    // prix : FOB declare par chaque exportateur pour la Chine (trait plein, toute la periode) et CIF enregistre par la Chine (pointille, tant qu'il existe)
+    const bigF = Object.keys(XI).filter(g => k24.some(kk => ((XI[g] || {})[kk] || [0])[0] >= 20));
+    const bigC = orig.filter(g => g !== 'OTH' && k24.some(kk => ((ix[g] || {})[kk] || Z())[5] >= 20));
+    $('PriceSub').innerHTML = `€ per kg, ${formsTxt}. <b>Solid</b> = FOB price declared by each exporter for ${C.hk ? 'China and Hong Kong' : 'China'} (available for the whole period). ` +
+      `<b>Dashed</b> = CIF value recorded by ${C.hk ? 'China and Hong Kong' : 'China'} (air freight and insurance included), as long as customs data are published: the gap between the two is roughly the freight. ` +
+      `Months under 20 t are left out; tick one form for a like-for-like comparison.` +
+      vzLegend([...new Set([...bigF, ...bigC])].map(g => [US_LAB[g], ORIG_COL[g], false]).concat([['CIF (customs)', '#8fa4b0', true]]));
+    $('Price').innerHTML = vzLines(k24, bigF.map(g => ({ lab: US_LAB[g] + ' FOB', col: ORIG_COL[g], w: 2.2,
+        pts: k24.map(kk => { const x = (XI[g] || {})[kk]; return x && x[0] >= 20 ? x[1] / x[0] : null; }) }))
+      .concat(bigC.map(g => ({ lab: US_LAB[g] + ' CIF', col: ORIG_COL[g], w: 1.6, dash: '4,3', op: 0.8,
+        pts: k24.map(kk => { const x = (ix[g] || {})[kk]; return x && x[5] >= 20 ? x[6] / x[5] : null; }) }))),
+      { axis: '€ per kg', unit: '€/kg', digits: 2, zero: false, H: 260 });
+  } else {
   const big = orig.filter(g => g !== 'OTH' && k24.some(kk => ((ix[g] || {})[kk] || [0])[0] > 20));
   $('PriceSub').innerHTML = `${k === 'us' ? 'Customs value' : 'CIF value'} per kg converted to € at the monthly rate, ${formsTxt}. Months under 20 t are left out. A different form mix between origins moves the average: tick one form for a like-for-like comparison.` +
     vzLegend(big.map(g => [US_LAB[g], ORIG_COL[g], false]));
   $('Price').innerHTML = vzLines(k24, big.map(g => ({ lab: US_LAB[g], col: ORIG_COL[g], w: 2.2,
     pts: k24.map(kk => { const x = (ix[g] || {})[kk]; return x && x[0] >= 20 ? x[2] / x[0] : null; }) })), { axis: '€ per kg', unit: '€/kg', digits: 2, zero: false, H: 260 });
+  }
   // controle croise
-  const ks = new Set(PER.keys), rows = [], mk = {};
-  rowsN.forEach(([ym, o, pi, t, usd, eur]) => { if (!ks.has(ym) || !C.forms.has(pi)) return; const x = (mk[o] || (mk[o] = {}))[pi] || (mk[o][pi] = [0, 0]); x[0] += t; x[1] += eur || 0; });
-  const dests = k === 'cn' && !C.hk ? ['CN'] : C.dest;
+  // Chine : le controle porte sur les 12 derniers mois ou les douanes sont publiees (sinon il n'y a rien a comparer)
+  const CHK = k === 'cn' && PER.keys.some(hyb) ? { keys: tmRange(CUS_END, 12), lab: '' } : { keys: PER.keys, lab: PER.lab };
+  if (!CHK.lab) CHK.lab = `${tmMl(CHK.keys[0])} – ${tmMl(CHK.keys[CHK.keys.length - 1])} (last 12 months with customs data)`;
+  const ks = new Set(CHK.keys), rows = [], mk = {};
+  rowsN.forEach(([ym, o, pi, t, usd, eur, d1, d2, src]) => { if (src === 'X' || !ks.has(ym) || !C.forms.has(pi)) return; const x = (mk[o] || (mk[o] = {}))[pi] || (mk[o][pi] = [0, 0]); x[0] += t; x[1] += eur || 0; });
   C.orig.forEach(o => {
-    if (!PRODUCERS.includes(o)) return;
-    const D = tmBest(o); if (D.euOnly) return;
-    const covered = PER.keys.every(kk => kk <= D.last), ex = {};
+    if (!XO[o]) return;
+    const D = tmBest(o);
+    const covered = CHK.keys.every(kk => kk <= D.last), ex = {};
     D.rows.forEach(([ym, de, pi, t, v]) => { if (!dests.includes(de) || !ks.has(ym) || !C.forms.has(pi)) return; const x = ex[pi] || (ex[pi] = [0, 0]); x[0] += t; x[1] += v || 0; });
     [...C.forms].sort().forEach(pi => { const u = (mk[o] || {})[pi] || [0, 0], e = ex[pi] || [0, 0]; if (u[0] < 1 && e[0] < 1) return; rows.push({ o, pi, u, e, covered, cur: D.cur }); });
   });
-  $('ChkSub').innerHTML = `${PER.lab}. <b>${C.market} records</b> = imports from that origin (${k === 'us' ? 'customs value, without freight' : 'CIF value, freight included'}). <b>Exporter declares</b> = the producing country's own export statistics for ${k === 'us' ? 'the US' : (C.hk ? 'China and Hong Kong' : 'China')} (FOB). ` +
+  $('ChkSub').innerHTML = `${CHK.lab}. <b>${C.market} records</b> = imports from that origin (${k === 'us' ? 'customs value, without freight' : 'CIF value, freight included'}). <b>Exporter declares</b> = the producing country's own export statistics for ${k === 'us' ? 'the US' : (C.hk ? 'China and Hong Kong' : 'China')} (FOB). ` +
     (k === 'us'
       ? `Both should be close. <span class="warn">⚠ atypical declared price</span> = the exporter declares a price more than 15% below what the US records for the same salmon; `
       : `The CIF price should exceed the FOB price by the cost of air freight: the <b>freight</b> column shows that gap. <span class="warn">⚠ atypical declared price</span> = the FOB price is more than 40% below the CIF price; `) +
@@ -6470,6 +6596,8 @@ function renderFocus(k) {
       `The US counts by country of origin; exporters count by declared destination, so salmon shipped through Canada or Mexico, or re-exported, can widen the gap.`
     : `<b>Sources.</b> UN Comtrade, imports reported by China (and Hong Kong when ticked), HS 6-digit codes, CIF value in US$ converted to € at Eurostat monthly average rates. ` +
       `Exporters: Norway (SSB), Faroe Islands (Hagstova), Iceland (Hagstofa), United Kingdom (HMRC), Chile and Canada (UN Comtrade). ` +
+      `Mainland China stopped publishing imports by origin after ${tmMl(lastBy.CN || DATA.meta.last)}: from the following month the volumes are those the exporters declare for China (FOB, destination declared at export), ` +
+      `with no correction factor. ${COV.has('AU') ? `Australia: exports it reports to UN Comtrade (to ${tmMl(XO.AU.last)}). ` : `Australia (about a tenth of China's imports in 2024) has no export statistics in this dashboard yet, so it is missing from those months. `}` +
       `Salmon declared for Hong Kong and then sent on to mainland China appears in Hong Kong's imports, not China's: tick Hong Kong to see the whole market.`;
 }
 
