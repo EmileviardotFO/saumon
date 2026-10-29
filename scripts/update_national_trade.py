@@ -502,21 +502,28 @@ def fetch_us_imports(to_iso, fx):
     base = 'https://api.census.gov/data/timeseries/intltrade/imports/hs'
     fields = 'CTY_CODE,CTY_NAME,I_COMMODITY,I_COMMODITY_SDESC,GEN_VAL_MO,GEN_QY1_MO,UNIT_QY1,CAL_DUT_MO,GEN_CHA_MO'
     key = os.environ.get('CENSUS_API_KEY', '')
-    agg, kept, dropped = {}, set(), set()
+    agg, kept, dropped, attempts = {}, set(), set(), []
     for hs6, pi in US_HS6.items():
         rows = None
-        for lvl, code in (('HS10', hs6 + '*'), ('HS6', hs6)):
-            url = f'{base}?get={fields}&COMM_LVL={lvl}&I_COMMODITY={code}&time=from+2023-01' + (f'&key={key}' if key else '')
-            st, raw = http(url)
+        # plusieurs formes de requete, de la plus detaillee a la plus simple ; chaque essai est
+        # enregistre dans data/national_probe/us_census_attempts.json pour le depannage
+        minimal = 'CTY_CODE,CTY_NAME,I_COMMODITY,GEN_VAL_MO,GEN_QY1_MO,UNIT_QY1'
+        tries = [('HS10', hs6 + '*', fields, 'from+2023-01'), ('HS10', hs6 + '*', minimal, 'from+2023-01'),
+                 ('HS6', hs6, fields, 'from+2023-01'), ('HS6', hs6, minimal, 'from+2023-01')]
+        for lvl, code, flds, tm in tries:
+            url = f'{base}?get={flds}&COMM_LVL={lvl}&I_COMMODITY={code}&time={tm}'
+            st, raw = http(url + (f'&key={key}' if key else ''))
+            attempts.append({'hs6': hs6, 'url': url, 'status': st, 'head': raw[:400].decode('utf-8', 'replace')})
             if st == 200 and raw.strip():
                 try:
                     j = json.loads(raw)
                     rows = [dict(zip(j[0], r)) for r in j[1:]]
-                    print(f'  US : {hs6} ({lvl}) -> {len(rows)} lignes')
+                    print(f'  US : {hs6} ({lvl}, {"complet" if flds == fields else "minimal"}) -> {len(rows)} lignes')
                     break
                 except ValueError:
                     pass
-            print(f'  US : {hs6} ({lvl}) -> {st} {raw[:160]!r}')
+            print(f'  US : {hs6} ({lvl}) -> {st} {raw[:200]!r}')
+        json.dump(attempts, open(os.path.join(DBG, 'us_census_attempts.json'), 'w'), indent=1, ensure_ascii=False)
         if not rows:
             raise RuntimeError(f'aucune donnee pour {hs6}')
         if hs6 == '030441':
