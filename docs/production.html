@@ -5937,12 +5937,18 @@ function renderSummary() {
         `<td>${fish ? (100 * (N[L] || 0) / fish < 1 ? (100 * (N[L] || 0) / fish).toFixed(2) : (100 * (N[L] || 0) / fish).toFixed(1)) + '%' : '—'}</td>` +
         `<td><b class="${ym > 0 ? 'delta-good' : ym < 0 ? 'delta-bad' : ''}">${genSg(ym)}</b>${yr.length > 1 ? ` <span style="color:var(--muted)">(${genSg(Math.min(...yr))} to ${genSg(Math.max(...yr))})</span>` : ''}</td>` +
         `<td>${useful ? `${P.fc2.v.toFixed(1)}% <span style="color:var(--muted)">(usually ${P.fc2.usual.toFixed(1)}%)</span>` : '<span style="color:var(--muted)">—</span>'}</td></tr>`; }).join('');
+    // poissons de moins de 1 kg vide (smolts et jeunes poissons recemment mis en mer) : le reste du total, pour que les parts fassent 100 %
+    const under = o => k => (o.all[k] || 0) - PK_CLS.reduce((a, cl) => a + (((o.n[cl] || {})[k]) || 0), 0);
+    const u0 = under(Mi)(L), u1 = under(Mi)(L - 100), uR = C.map(o => under(o)(L)), uY = C.map(o => { const a = under(o)(L), b = under(o)(L - 100); return b ? 100 * (a / b - 1) : NaN; }).filter(isFinite), uym = u1 ? 100 * (u0 / u1 - 1) : NaN;
+    const rowsU = `<tr><td><b>&lt;1 kg</b> <span style="color:var(--muted)">(smolts, young fish)</span></td><td>${genFmtN(u0)} <span style="color:var(--muted)">(${genFmtN(Math.min(...uR))}–${genFmtN(Math.max(...uR))})</span></td>` +
+      `<td>${fish ? (100 * u0 / fish).toFixed(1) + '%' : '—'}</td><td><b class="${uym > 0 ? 'delta-good' : uym < 0 ? 'delta-bad' : ''}">${genSg(uym)}</b>${uY.length > 1 ? ` <span style="color:var(--muted)">(${genSg(Math.min(...uY))} to ${genSg(Math.max(...uY))})</span>` : ''}</td>` +
+      `<td><span style="color:var(--muted)">—</span></td></tr>`;
     const sgp = (a, b) => isFinite(a) && isFinite(b) && b ? genSg(100 * (a / b - 1)) : '—';
     box.innerHTML = `<div class="sm-row health"><div class="lbl"><b>Size classes at sea</b><small>estimate from the Biomasseregisteret · ${mlab(Math.floor(L / 100), L % 100)} vs a year earlier</small></div>` +
       `<div class="hl"><b>Measured</b> (register): ${(fish / 1e6).toFixed(1)} M fish at sea (${sgp(fish, fishP)}), average weight ${isFinite(wLive) ? wLive.toFixed(2) : '—'} kg live = ${isFinite(wLive) ? (wLive * PK_GUT).toFixed(2) : '—'} kg gutted (${sgp(wLive, wLiveP)}). ` +
       `<b>Estimated</b> below: split into gutted size classes, assuming a log-normal spread of weights; the range shows the result with a spread of 0.25 and 0.35. ` +
       `The direction of the change is robust, the levels are not (above all for the big classes). Details by class in the Generations tab.</div>` +
-      `<table class="sm-sizes" style="grid-column:1/-1"><thead><tr><th>Class (gutted)</th><th>Fish at sea (range)</th><th>Share of fish</th><th>vs a year earlier (range)</th><th>Share of sales expected in ${tmMl(PKs['6-7'] && PKs['6-7'].fc2 ? PKs['6-7'].fc2.k : L)}</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+      `<table class="sm-sizes" style="grid-column:1/-1"><thead><tr><th>Class (gutted)</th><th>Fish at sea (range)</th><th>Share of fish</th><th>vs a year earlier (range)</th><th>Share of sales expected in ${tmMl(PKs['6-7'] && PKs['6-7'].fc2 ? PKs['6-7'].fc2.k : L)}</th></tr></thead><tbody>${rowsU}${rows}</tbody></table></div>`;
   })();
   document.getElementById('smSub').innerHTML =
     `Norway, all production areas. Monthly figures are the latest month published (Biomasseregisteret ${mlab(ly, lm)}` +
