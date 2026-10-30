@@ -306,6 +306,7 @@
     <button data-v="producers">Producers</button>
     <button data-v="usa">USA focus</button>
     <button data-v="china">China focus</button>
+    <button data-v="coprod">Co-products</button>
     <button data-v="euflows">EU markets</button>
   </div>
   <div class="field" id="poFilterField" style="display:none;">
@@ -708,6 +709,28 @@
     <div class="sig-sub" id="cnChkSub"></div>
     <table class="sig-table"><thead id="cnChkHead"></thead><tbody id="cnChkBody"></tbody></table>
     <div class="note" id="cnNote" style="text-align:left;max-width:none;margin-top:16px"></div>
+  </div>
+
+  <div class="panel" id="coprodView" style="flex:1; min-width:0; max-width:1400px; display:none;">
+    <div class="sig-title">Co-products — frozen salmon heads, frames and other by-products exported by Norway</div>
+    <div class="sig-sub" id="cpSub"></div>
+    <div class="chart-controls">
+      <span class="cc-label">Period</span>
+      <select class="ctrl" id="cpPeriod"></select>
+    </div>
+    <div id="cpCards" class="pr-cards" style="grid-template-columns:repeat(5,minmax(0,1fr))"></div>
+    <div class="sig-title" style="margin-top:16px">1 · Monthly volume and export price</div>
+    <div class="sig-sub" id="cpChartSub"></div>
+    <div id="cpChart"></div>
+    <div class="sig-title" style="margin-top:18px">2 · Same month, year by year (tonnes)</div>
+    <div id="cpSeason"></div>
+    <div class="sig-title" style="margin-top:18px">3 · Destinations</div>
+    <div class="sig-sub" id="cpTabSub"></div>
+    <table class="sig-table"><thead id="cpHead"></thead><tbody id="cpBody"></tbody></table>
+    <div class="sig-title" style="margin-top:18px">4 · Export price by destination (rolling 3 months)</div>
+    <div class="sig-sub" id="cpPriceSub"></div>
+    <div id="cpPrice"></div>
+    <div class="note" id="cpNote" style="text-align:left;max-width:none;margin-top:16px"></div>
   </div>
 
   <div class="panel" id="generationsView" style="flex:1; min-width:0; max-width:1400px; display:none;">
@@ -2966,13 +2989,14 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     document.getElementById('producersView').style.display = currentView === 'producers' ? 'block' : 'none';
     document.getElementById('usaView').style.display = currentView === 'usa' ? 'block' : 'none';
     document.getElementById('chinaView').style.display = currentView === 'china' ? 'block' : 'none';
+    document.getElementById('coprodView').style.display = currentView === 'coprod' ? 'block' : 'none';
     document.getElementById('generationsView').style.display = currentView === 'generations' ? 'block' : 'none';
     // The year / period selectors do not apply to the weekly fish-health view.
-    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'generations') ? 'none' : '';
+    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'coprod' || currentView === 'generations') ? 'none' : '';
     // La carte des zones ne sert qu'aux vues qui raisonnent par PO. Les onglets
     // Markets et Calibre sont nationaux, elle n'y afficherait rien d'utile.
     const mw = document.querySelector('.panel.mapwrap');
-    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'generations') ? 'none' : '';
+    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'coprod' || currentView === 'generations') ? 'none' : '';
     document.getElementById('poFilterField').style.display = (currentView === 'global' || currentView === 'multi' || currentView === 'outlook') ? 'flex' : 'none';
     document.getElementById('yearField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'none' : 'flex';
     document.getElementById('yearRangeField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'flex' : 'none';
@@ -2993,6 +3017,7 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     else if (currentView === 'producers') { renderProducers(); }
     else if (currentView === 'usa') { renderUSA(); }
     else if (currentView === 'china') { renderChina(); }
+    else if (currentView === 'coprod') { renderCoprod(); }
     else if (currentView === 'generations') { renderGenerations(); }
     else { render(); }
   });
@@ -6028,6 +6053,7 @@ async function loadEurostat() {
   if (currentView === 'producers') renderProducers();
   if (currentView === 'usa') renderUSA();
   if (currentView === 'china') renderChina();
+  if (currentView === 'coprod') renderCoprod();
 }
 // ===================== Salmon trade model (Eurostat + SSB) =====================
 // Codes douaniers : l'entier frais (0302 14) et l'entier congele (0303 13) ne couvrent
@@ -7092,6 +7118,121 @@ const FOCUS = {
 let usForms = FOCUS.us.forms;
 const US_LAB = Object.assign({}, PROD_LAB, { OTH: 'Other origins', AU: 'Australia' });
 function renderUSA() { renderFocus('us'); }
+// ===================== Co-produits (tetes, aretes et autres biproduits congeles) =====================
+// Source : SSB 08799, code 03039901 (03031312 avant 2017) = "biproduits comestibles de saumon d'elevage, congeles".
+// La nomenclature norvegienne ne separe pas les tetes des aretes. Poids produit, valeur FOB.
+const CP_MAIN = ['03039901', '03031312'];
+const CP_COL = ['#4fc3f7', '#ffd54f', '#ff8a65', '#81c784', '#ba68c8', '#e0e0e0'];
+let cpPeriodSel = 'l12';
+function cpData() {
+  const S = DATA_RAW && DATA_RAW.ssb_coproducts; if (!S || !S.rows || !S.rows.length) return null;
+  const codes = Object.keys(S.meta.products), main = codes.map((c, i) => CP_MAIN.includes(c) ? i : -1).filter(i => i >= 0);
+  const M = {}, C = {};   // M[k] = [kg, nok] ; C[k][iso] = [kg, nok]
+  S.rows.forEach(([k, h, iso, kg, nok]) => { if (!main.includes(h)) return; const m = M[k] || (M[k] = [0, 0]); m[0] += kg; m[1] += nok;
+    const c = (C[k] || (C[k] = {}))[iso] || (C[k][iso] = [0, 0]); c[0] += kg; c[1] += nok; });
+  const ks = Object.keys(M).map(Number).sort((a, b) => a - b);
+  const other = codes.filter(c => !CP_MAIN.includes(c)).map(c => `${c} (${S.meta.products[c]})`);
+  return { S, M, C, ks, last: ks[ks.length - 1], first: ks[0], other, names: S.meta.countries || {} };
+}
+function cpMonths(D, sel) {
+  const L = D.last, out = [];
+  if (sel === 'l12') { for (let i = 11; i >= 0; i--) out.push(tmShift(L, -i)); }
+  else if (sel === 'ytd') { for (let m = 1; m <= L % 100; m++) out.push(Math.floor(L / 100) * 100 + m); }
+  else { const y = +sel; for (let m = 1; m <= 12; m++) out.push(y * 100 + m); }
+  return out;
+}
+function tmShift(k, n) { let y = Math.floor(k / 100), m = k % 100 - 1 + n; y += Math.floor(m / 12); m = ((m % 12) + 12) % 12; return y * 100 + m + 1; }
+function renderCoprod() {
+  const $c = id => document.getElementById(id), D = cpData();
+  $c('cpPeriod').closest('.chart-controls').style.display = D ? '' : 'none';
+  if (!D) { $c('cpSub').innerHTML = 'No co-product data yet: the series (SSB table 08799) is collected by the next run of the update.'; ['cpCards', 'cpChart', 'cpSeason', 'cpHead', 'cpBody', 'cpPrice', 'cpNote', 'cpChartSub', 'cpTabSub', 'cpPriceSub'].forEach(id => { $c(id).innerHTML = ''; }); return; }
+  if (!NAT && !EU_LOADING) loadEurostat();
+  const conv = tmNok(), EUR = !!conv, cur = EUR ? '€' : 'NOK';
+  const val = (nok, k) => EUR ? conv(nok, k) : nok;   // valeur dans la devise affichee
+  // periodes
+  const sel = $c('cpPeriod'), years = [...new Set(D.ks.map(k => Math.floor(k / 100)))].filter(y => D.ks.filter(k => Math.floor(k / 100) === y).length === 12).sort((a, b) => b - a);
+  const opts = [['l12', 'Last 12 months'], ['ytd', `Year to date (${Math.floor(D.last / 100)})`], ...years.map(y => [String(y), String(y)])];
+  if (sel.options.length !== opts.length) { sel.innerHTML = opts.map(([v, l]) => `<option value="${v}">${l}</option>`).join(''); sel.onchange = () => { cpPeriodSel = sel.value; renderCoprod(); }; }
+  sel.value = cpPeriodSel;
+  const P = cpMonths(D, cpPeriodSel), Pp = P.map(k => k - 100);
+  const sum = (ks, iso) => ks.reduce((a, k) => { const x = iso ? (D.C[k] || {})[iso] : D.M[k]; if (x) { a[0] += x[0]; a[1] += val(x[1], k); a[2] += x[1]; } return a; }, [0, 0, 0]);
+  const T = sum(P), Tp = sum(Pp), pr = x => x[0] ? x[1] / x[0] : NaN, prN = x => x[0] ? x[2] / x[0] : NaN;
+  const L = D.last, LM = D.M[L], LMp = D.M[L - 100];
+  const plab = cpPeriodSel === 'l12' ? `${tmMl(P[0])} – ${tmMl(P[P.length - 1])}` : cpPeriodSel === 'ytd' ? `Jan–${tmMl(L)}` : cpPeriodSel;
+  $c('cpSub').innerHTML = `Norwegian exports of <b>frozen edible by-products of farmed salmon</b> — heads, frames (backbones), tails and other edible parts. ` +
+    `Norwegian statistics put them all under one commodity code, so heads and frames <b>cannot be separated</b>. Product weight, FOB value. ` +
+    `Monthly, ${tmMl(D.first)} – ${tmMl(L)} (SSB publishes about 2–3 weeks after the month).` +
+    (D.other.length ? ` Other by-product codes also collected: ${D.other.join('; ')}.` : '');
+  // destinations de la periode
+  const isos = {}; P.forEach(k => Object.entries(D.C[k] || {}).forEach(([iso, x]) => { isos[iso] = (isos[iso] || 0) + x[0]; }));
+  const rank = Object.keys(isos).sort((a, b) => isos[b] - isos[a]), nm = iso => (D.names[iso] || iso).replace(/^\w\w /, '');
+  const top = rank[0], tS = sum(P, top), tSp = sum(Pp, top);
+  // cartes
+  const card = (col, title, big, lines) => `<div class="pr-card" style="cursor:default"><div class="nm"><i style="background:${col}"></i>${title}</div><div class="big">${big}</div>${lines.map(l => `<div class="ln">${l}</div>`).join('')}</div>`;
+  const pf = v => isFinite(v) ? v.toFixed(2) : '—';
+  $c('cpCards').innerHTML =
+    card('#4fc3f7', `Volume · ${plab}`, `${tmF0(T[0] / 1000)} <span style="font-size:12px;color:var(--muted);font-weight:normal">t</span>`, [`${tmVar(tmPc(T[0], Tp[0]))} vs a year earlier (${tmF0(Tp[0] / 1000)} t)`]) +
+    card('#ffd54f', 'Value', `${cur === '€' ? '€' : ''}${(T[1] / 1e6).toFixed(1)} M${cur === 'NOK' ? ' NOK' : ''}`, [`${tmVar(tmPc(T[1], Tp[1]))} vs a year earlier`]) +
+    card('#ff8a65', 'Average export price', `${pf(pr(T))} <span style="font-size:12px;color:var(--muted);font-weight:normal">${cur}/kg</span>`, [`${tmVar(tmPc(pr(T), pr(Tp)))} vs ${pf(pr(Tp))} a year earlier`, EUR ? `${pf(prN(T))} NOK/kg` : '']) +
+    card('#81c784', `Last month · ${tmMl(L)}`, `${tmF0(LM[0] / 1000)} <span style="font-size:12px;color:var(--muted);font-weight:normal">t</span>`, [`${tmVar(tmPc(LM[0], LMp ? LMp[0] : NaN))} vs ${tmMl(L - 100)}`, `${pf(val(LM[1], L) / LM[0])} ${cur}/kg ${LMp ? tmVar(tmPc(val(LM[1], L) / LM[0], val(LMp[1], L - 100) / LMp[0])) : ''}`]) +
+    card('#ba68c8', 'Main destination', top ? nm(top) : '—', top ? [`${(100 * tS[0] / T[0]).toFixed(0)}% of the volume (${Tp[0] ? (100 * tSp[0] / Tp[0]).toFixed(0) + '% a year earlier' : '—'})`, `${pf(pr(tS))} ${cur}/kg`] : []);
+  // graphique 1 : volume mensuel (barres) et prix (ligne)
+  const ks = D.ks, W = 1100, H = 300, mL = 56, mR = 56, mT = 14, mB = 44, pw = W - mL - mR, ph = H - mT - mB, n = ks.length, bw = pw / n;
+  const vt = ks.map(k => D.M[k][0] / 1000), pv = ks.map(k => val(D.M[k][1], k) / D.M[k][0]);
+  const vMax = Math.ceil(Math.max(...vt) / 2000) * 2000 || 1, pMax = Math.ceil(Math.max(...pv.filter(isFinite)) * 1.1) || 1;
+  const X = i => mL + i * bw, Yv = v => mT + ph - v / vMax * ph, Yp = v => mT + ph - v / pMax * ph, inP = new Set(P);
+  let s = '';
+  for (let i = 0; i <= 4; i++) { const y = mT + ph - i * ph / 4; s += `<line x1="${mL}" x2="${W - mR}" y1="${y}" y2="${y}" stroke="#223642"/><text x="${mL - 6}" y="${y + 4}" text-anchor="end" fill="#4fc3f7" font-size="11">${tmF0(vMax * i / 4)}</text><text x="${W - mR + 6}" y="${y + 4}" fill="#ff8a65" font-size="11">${(pMax * i / 4).toFixed(pMax < 20 ? 1 : 0)}</text>`; }
+  ks.forEach((k, i) => { const m = k % 100;
+    s += `<rect x="${X(i) + 1}" y="${Yv(vt[i])}" width="${Math.max(1, bw - 2)}" height="${mT + ph - Yv(vt[i])}" fill="#4fc3f7" fill-opacity="${inP.has(k) ? 0.85 : 0.35}"><title>${tmMl(k)} — ${tmF0(vt[i])} t · ${pv[i].toFixed(2)} ${cur}/kg</title></rect>`;
+    if (m === 1) s += `<line x1="${X(i)}" x2="${X(i)}" y1="${mT}" y2="${mT + ph + 8}" stroke="#223642" stroke-dasharray="2,4"/><text x="${X(i) + 2}" y="${H - 8}" fill="#8fa4b0" font-size="11" font-weight="600">${Math.floor(k / 100)}</text>`;
+    if (m % 3 === 1) s += `<text x="${X(i) + bw / 2}" y="${mT + ph + 15}" text-anchor="middle" fill="#8fa4b0" font-size="8">${'JFMAMJJASOND'[m - 1]}</text>`; });
+  let d = ''; pv.forEach((v, i) => { if (isFinite(v)) d += (d ? 'L' : 'M') + (X(i) + bw / 2).toFixed(1) + ',' + Yp(v).toFixed(1); });
+  s += `<path d="${d}" fill="none" stroke="#ff8a65" stroke-width="2"/>`;
+  s += `<text transform="translate(14,${mT + ph / 2}) rotate(-90)" text-anchor="middle" fill="#4fc3f7" font-size="11">tonnes per month</text><text transform="translate(${W - 8},${mT + ph / 2}) rotate(90)" text-anchor="middle" fill="#ff8a65" font-size="11">${cur}/kg</text>`;
+  $c('cpChartSub').innerHTML = `Bars: tonnes exported each month (the selected period is highlighted). Line: average export price, ${cur}/kg${EUR ? ' (NOK converted at Eurostat monthly rates)' : ''}. Hover for detail.`;
+  $c('cpChart').innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="display:block;width:100%;height:auto">${s}</svg>` + vzLegend([['volume (t)', '#4fc3f7', false, true], [`price (${cur}/kg)`, '#ff8a65', false]]);
+  // graphique 2 : saisonnalite, une ligne par annee (4 dernieres annees)
+  const yrs = [...new Set(ks.map(k => Math.floor(k / 100)))].slice(-4), W2 = 1100, H2 = 220, m2 = 50, ph2 = H2 - 20 - 30, pw2 = W2 - m2 - 130;
+  const sv = yrs.map(y => Array.from({ length: 12 }, (_, i) => D.M[y * 100 + i + 1] ? D.M[y * 100 + i + 1][0] / 1000 : undefined));
+  const sMax = Math.ceil(Math.max(...sv.flat().filter(v => v !== undefined)) / 2000) * 2000 || 1, X2 = i => m2 + i * pw2 / 11, Y2 = v => 20 + ph2 - v / sMax * ph2;
+  let s2 = '';
+  for (let i = 0; i <= 4; i++) { const y = 20 + ph2 - i * ph2 / 4; s2 += `<line x1="${m2}" x2="${m2 + pw2}" y1="${y}" y2="${y}" stroke="#223642"/><text x="${m2 - 6}" y="${y + 4}" text-anchor="end" fill="#8fa4b0" font-size="11">${tmF0(sMax * i / 4)}</text>`; }
+  for (let i = 0; i < 12; i++) s2 += `<text x="${X2(i)}" y="${H2 - 8}" text-anchor="middle" fill="#8fa4b0" font-size="11">${MONTHS_FR[i].slice(0, 3)}</text>`;
+  yrs.forEach((y, j) => { const col = CP_COL[(yrs.length - 1 - j) % CP_COL.length]; let dd = ''; sv[j].forEach((v, i) => { if (v !== undefined) dd += (dd ? 'L' : 'M') + X2(i).toFixed(1) + ',' + Y2(v).toFixed(1); });
+    s2 += `<path d="${dd}" fill="none" stroke="${col}" stroke-width="${j === yrs.length - 1 ? 2.6 : 1.5}" ${j === yrs.length - 1 ? '' : 'stroke-opacity=".75"'}/>`;
+    sv[j].forEach((v, i) => { if (v !== undefined) s2 += `<circle cx="${X2(i)}" cy="${Y2(v)}" r="${j === yrs.length - 1 ? 3 : 2}" fill="${col}"><title>${MONTHS_FR[i].slice(0, 3)} ${y} — ${tmF0(v)} t</title></circle>`; });
+    s2 += `<text x="${m2 + pw2 + 12}" y="${24 + j * 18}" fill="${col}" font-size="12" font-weight="${j === yrs.length - 1 ? 700 : 400}">${y}</text>`; });
+  $c('cpSeason').innerHTML = `<svg viewBox="0 0 ${W2} ${H2}" style="display:block;width:100%;height:auto">${s2}</svg>`;
+  // tableau des destinations
+  $c('cpTabSub').innerHTML = `${plab}, compared with the same months a year earlier. Prices in ${cur}/kg${EUR ? ' (NOK in brackets)' : ''}.`;
+  $c('cpHead').innerHTML = `<tr><th class="name">Destination</th><th>Tonnes</th><th>Share</th><th>vs a year earlier</th><th class="sep-left">Price</th><th>vs a year earlier</th><th>vs all destinations</th></tr>`;
+  const shown = rank.slice(0, 15), rest = rank.slice(15), row = (lab, a, b, bold) => `<tr${bold ? ' style="font-weight:bold"' : ''}><td class="name">${lab}</td><td>${tmF0(a[0] / 1000)}</td><td>${T[0] ? (100 * a[0] / T[0]).toFixed(1) + '%' : '—'}</td>${tmPct(a[0], b[0])}` +
+    `<td class="sep-left">${pf(pr(a))}${EUR ? ` <span style="color:var(--muted)">(${pf(prN(a))})</span>` : ''}</td>${tmPct(pr(a), pr(b))}<td>${isFinite(pr(a)) ? `<span class="${tmCls(tmPc(pr(a), pr(T)))}">${tmPc(pr(a), pr(T)) >= 0 ? '+' : ''}${tmPc(pr(a), pr(T)).toFixed(0)}%</span>` : '—'}</td></tr>`;
+  const restA = rest.reduce((a, iso) => { const x = sum(P, iso); return [a[0] + x[0], a[1] + x[1], a[2] + x[2]]; }, [0, 0, 0]), restB = rest.reduce((a, iso) => { const x = sum(Pp, iso); return [a[0] + x[0], a[1] + x[1], a[2] + x[2]]; }, [0, 0, 0]);
+  $c('cpBody').innerHTML = shown.map(iso => row(nm(iso), sum(P, iso), sum(Pp, iso))).join('') + (rest.length ? row(`Other (${rest.length} countries)`, restA, restB) : '') + row('Total', T, Tp, true);
+  // graphique 4 : prix par destination, moyenne mobile 3 mois
+  const t5 = rank.slice(0, 5), k0 = ks.filter(k => k >= tmShift(L, -47)), W3 = 1100, H3 = 260, m3 = 50, ph3 = H3 - 20 - 36, pw3 = W3 - m3 - 170;
+  const roll = (iso, k) => { const w = [k, tmShift(k, -1), tmShift(k, -2)], a = w.reduce((x, kk) => { const v = iso ? (D.C[kk] || {})[iso] : D.M[kk]; if (v) { x[0] += v[0]; x[1] += val(v[1], kk); } return x; }, [0, 0]); return a[0] > 1000 ? a[1] / a[0] : undefined; };
+  const series = [[null, 'All destinations', '#e0e0e0'], ...t5.map((iso, i) => [iso, nm(iso), CP_COL[i]])].map(([iso, lab, col]) => ({ lab, col, v: k0.map(k => roll(iso, k)) }));
+  const all = series.flatMap(x => x.v).filter(v => v !== undefined), lo = Math.floor(Math.min(...all)), hi = Math.ceil(Math.max(...all));
+  const X3 = i => m3 + i * pw3 / Math.max(1, k0.length - 1), Y3 = v => 20 + ph3 - (v - lo) / Math.max(1, hi - lo) * ph3;
+  let s3 = '';
+  for (let i = 0; i <= 4; i++) { const v = lo + (hi - lo) * i / 4, y = Y3(v); s3 += `<line x1="${m3}" x2="${m3 + pw3}" y1="${y}" y2="${y}" stroke="#223642"/><text x="${m3 - 6}" y="${y + 4}" text-anchor="end" fill="#8fa4b0" font-size="11">${v.toFixed(hi - lo < 8 ? 1 : 0)}</text>`; }
+  k0.forEach((k, i) => { if (k % 100 === 1) s3 += `<line x1="${X3(i)}" x2="${X3(i)}" y1="20" y2="${20 + ph3}" stroke="#223642" stroke-dasharray="2,4"/><text x="${X3(i) + 2}" y="${H3 - 8}" fill="#8fa4b0" font-size="11" font-weight="600">${Math.floor(k / 100)}</text>`;
+    if (k % 100 % 3 === 1) s3 += `<text x="${X3(i)}" y="${20 + ph3 + 14}" text-anchor="middle" fill="#8fa4b0" font-size="8">${'JFMAMJJASOND'[k % 100 - 1]}</text>`; });
+  series.forEach((x, j) => { let dd = '', pen = false; x.v.forEach((v, i) => { if (v === undefined) { pen = false; return; } dd += (pen ? 'L' : 'M') + X3(i).toFixed(1) + ',' + Y3(v).toFixed(1); pen = true; });
+    s3 += `<path d="${dd}" fill="none" stroke="${x.col}" stroke-width="${j === 0 ? 2.6 : 1.7}" ${j === 0 ? 'stroke-dasharray="5,3"' : ''}/>`;
+    const lv = x.v.filter(v => v !== undefined).pop(); s3 += `<text x="${m3 + pw3 + 10}" y="${26 + j * 18}" fill="${x.col}" font-size="12">${x.lab}${lv !== undefined ? ' · ' + lv.toFixed(2) : ''}</text>`; });
+  k0.forEach((k, i) => { s3 += `<rect x="${X3(i) - pw3 / k0.length / 2}" y="20" width="${pw3 / k0.length}" height="${ph3}" fill="transparent"><title>${tmMl(k)} (3 months to)\n${series.map(x => `${x.lab}: ${x.v[i] !== undefined ? x.v[i].toFixed(2) + ' ' + cur + '/kg' : '—'}`).join('\n')}</title></rect>`; });
+  $c('cpPriceSub').innerHTML = `The 5 largest destinations of the period, last 4 years. ${cur}/kg, average of the 3 months to each point (monthly prices of small flows are noisy). Hover for detail.`;
+  $c('cpPrice').innerHTML = `<svg viewBox="0 0 ${W3} ${H3}" style="display:block;width:100%;height:auto">${s3}</svg>`;
+  $c('cpNote').innerHTML = `<b>Source.</b> SSB, Statistikkbanken table 08799 (exports by commodity number and country), code 03039901 "edible by-products of farmed Atlantic salmon, frozen" (03031312 until 2016). ` +
+    `Revised by SSB for about two years; the whole series is downloaded again at each update. ` +
+    `<b>What it does not cover:</b> heads and frames are not separated; fresh by-products, salmon oil, meal and silage (inedible by-products) and co-products processed abroad (Polish or Danish filleting plants, for example) are not in this code. ` +
+    `Prices are FOB Norway, product weight.`;
+}
+
 function renderChina() { renderFocus('cn'); }
 function renderFocus(k) {
   const C = FOCUS[k], pre = k, $ = id => document.getElementById(pre + id);
