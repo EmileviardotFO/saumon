@@ -28,7 +28,7 @@ PAGE = os.path.join(ROOT, 'docs', 'production.html')
 DATA = os.path.join(ROOT, 'data', 'data.json')
 OUT = sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT, 'data', 'smoke.json')
 
-TABS = ['Summary', 'Producers', 'USA focus', 'China focus', 'EU markets', 'National view (Norway)', 'Multi-year comparison', 'Supply outlook', 'Markets',
+TABS = ['Summary', 'Producers', 'USA focus', 'China focus', 'Co-products', 'EU markets', 'National view (Norway)', 'Multi-year comparison', 'Supply outlook', 'Markets',
         'Product per market', 'Calibre & premium', 'Generations', 'By zone (PO)', 'Fish health', 'Farm register']
 
 
@@ -94,7 +94,8 @@ def main():
             new = errors[before:]
             ok = info is not None and (info['rows'] > 0 or info['marks'] > 0) and not new
             if (t in ('EU markets', 'Producers', 'USA focus') and not os.path.exists(os.path.join(ROOT, 'data', 'eurostat.json'))) or \
-                    (t == 'USA focus' and not os.path.exists(USF)) or (t == 'China focus' and not os.path.exists(CNF)):
+                    (t == 'USA focus' and not os.path.exists(USF)) or (t == 'China focus' and not os.path.exists(CNF)) or \
+                    (t == 'Co-products' and not (data.get('ssb_coproducts') or {}).get('rows')):
                 ok = info is not None and not new          # donnees Eurostat pas encore collectees
             check(f'tab "{t}"', ok, (f"{info['rows']} table rows, {info['marks']} chart marks" if info else 'no panel')
                   + (f"; error: {new[0]}" if new else ''))

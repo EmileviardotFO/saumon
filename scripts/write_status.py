@@ -26,6 +26,7 @@ STEPS = [
     ('BIOMASSE_BUILD', 'Biomasseregisteret — rebuild'),
     ('SSB', 'SSB exports'),
     ('SSB_WEEKLY', 'SSB weekly exports (volumes)'),
+    ('SSB_COPROD', 'SSB co-products (frozen heads, frames)'),
     ('BW_HEALTH', 'BarentsWatch — fish health'),
     ('BW_SITES', 'BarentsWatch — site register'),
     ('ESTAB', 'Mattilsynet — establishments'),
