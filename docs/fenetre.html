@@ -91,6 +91,18 @@ select.ctrl{font-family:'IBM Plex Mono',monospace;font-size:12px;background:var(
      max-width:260px;line-height:1.55}
 #tooltip b{color:var(--open)}
 #tooltip .tt-mist{color:var(--mist)}
+
+/* ---------- Responsive : telephone ---------- */
+@media(max-width:700px){
+  table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap;font-size:12px}
+  .grid2{grid-template-columns:1fr !important}
+  .grid2>*,.verdict>*,.card{min-width:0;max-width:100%}
+}
+
+@media (max-width: 700px) {
+  .wide-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+  .wide-wrap > svg { min-width: 680px; }
+}
 </style></head><body><div class="wrap">
 <div id="tooltip"></div>
 
@@ -1921,4 +1933,18 @@ document.getElementById('foot').innerHTML=
 
 }
 boot();
-</script></body></html>
+</script><script>
+// Telephone : les grands graphiques gardent une taille lisible et defilent horizontalement dans un cadre
+(function () {
+  const wrap = () => document.querySelectorAll('svg[viewBox]').forEach(s => {
+    if (s.parentElement && s.parentElement.classList.contains('wide-wrap')) return;
+    const vb = (s.getAttribute('viewBox') || '').trim().split(/[\s,]+/).map(Number);
+    if (!(vb[2] >= 800) || s.closest('.gen-mini')) return;
+    const d = document.createElement('div'); d.className = 'wide-wrap'; s.parentNode.insertBefore(d, s); d.appendChild(s);
+    requestAnimationFrame(() => { d.scrollLeft = d.scrollWidth; });   // la periode la plus recente d'abord
+  });
+  let t = null; new MutationObserver(() => { clearTimeout(t); t = setTimeout(wrap, 60); }).observe(document.documentElement, { childList: true, subtree: true });
+  document.addEventListener('DOMContentLoaded', wrap);
+})();
+</script>
+</body></html>
