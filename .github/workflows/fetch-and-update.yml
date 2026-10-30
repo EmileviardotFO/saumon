@@ -92,6 +92,14 @@ jobs:
         timeout-minutes: 10
         run: python3 scripts/update_ssb_weekly.py
 
+      - name: Co-produits du saumon (SSB, table 08799 - tetes, aretes, biproduits congeles)
+        # Toute la serie depuis 2015 est retelechargee a chaque passage (revisions SSB).
+        # Nouvelle source : un echec n'empeche pas le reste de la mise a jour.
+        id: ssb_coprod
+        continue-on-error: true
+        timeout-minutes: 10
+        run: python3 scripts/update_ssb_coproducts.py
+
       - name: Sante des poissons par zone (BarentsWatch)
         # Poux, temperature de la mer, maladies et traitements, par zone et par
         # semaine. Le script s'arrete seul avant la limite de 60 min.
@@ -171,6 +179,7 @@ jobs:
           STEP_BIOMASSE_BUILD: ${{ steps.biomasse_build.outcome }}
           STEP_SSB: ${{ steps.ssb.outcome }}
           STEP_SSB_WEEKLY: ${{ steps.ssb_weekly.outcome }}
+          STEP_SSB_COPROD: ${{ steps.ssb_coprod.outcome }}
           STEP_BW_HEALTH: ${{ steps.bw_health.outcome }}
           STEP_BW_SITES: ${{ steps.bw_sites.outcome }}
           STEP_ESTAB: ${{ steps.estab.outcome }}
