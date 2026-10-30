@@ -174,6 +174,9 @@ select.ctrl{font-family:'IBM Plex Mono',monospace;font-size:12px;background:var(
   <div class="grid2" id="pkCards"></div>
   <div style="margin-top:26px" id="pkChart"></div>
   <div class="legend" id="legPk"></div>
+  <div class="lede" style="margin-top:30px" id="pkNatLede"></div>
+  <div id="pkNat" style="margin-top:12px"></div>
+  <div class="legend" id="legNat"></div>
   <div id="pkTable" style="margin-top:22px"></div>
   <div class="note" id="pkNote"></div>
 </section>
@@ -599,7 +602,8 @@ let D = EMBEDDED_D, PK = null, RAWD = null;
 // Reservoir : biomasse estimee au-dessus de 6 kg vide (6,75 kg vif : le registre donne vide = vif x 0,888), chaque zone x generation
 // suivant une loi lognormale (CV 0,30) autour de son poids moyen (Biomasseregisteret).
 // Cible : part 6+ (en nombre) des recoltes hebdomadaires Akvafakta, moyenne par mois.
-const PK_GUT = 0.888;   // poids vide / poids vif des poissons abattus (Biomasseregisteret, stable a 0,886-0,889)
+const PK_GUT = 0.888;
+const PK_HCV = 0.27;     // dispersion des poids des poissons abattus (ajustee sur Akvafakta, 2018-2026)   // poids vide / poids vif des poissons abattus (Biomasseregisteret, stable a 0,886-0,889)
 const pkSh = (k, n) => { let y = Math.floor(k / 100), m = k % 100 - 1 + n; y += Math.floor(m / 12); m = ((m % 12) + 12) % 12; return y * 100 + m + 1; };
 // Projection du reservoir : meme mois un an plus tot x (niveau actuel / niveau un an plus tot), ce rapport
 // revenant progressivement a 1 en 6 mois. A partir de 2 mois, le rapport est celui du stock de 5-6 kg vide
@@ -672,6 +676,14 @@ function computePeaks(raw, sel) {
   const S6 = {}, T6 = {}, NW = {}, AKW = {};
   Object.keys(acc).forEach(k => { S6[k] = acc[k][0] / acc[k][2]; T6[k] = acc[k][1] / acc[k][2]; NW[k] = acc[k][2]; if (acc[k][3]) AKW[k] = avg(acc[k][3]); });
   const H = {}; raw.records.forEach(r => { const k = r.year * 100 + r.month; H[k] = (H[k] || 0) + (r.uttak_kg || 0) / 1e6; });
+  // part des calibres choisis dans TOUS les poissons abattus en Norvege (registre) : chaque zone x generation abattue suit une
+  // lognormale autour de son poids moyen d'abattage, dispersion 0,27 (celle qui reproduit le mieux la repartition Akvafakta,
+  // ajustee mois par mois sur 2018-2026 : 0,24-0,30). Couvre aussi SalMar, Leroy et les ventes hors panel SISALMONI.
+  const NAT = {}; { const s2h = Math.log(1 + PK_HCV * PK_HCV), sh_ = Math.sqrt(s2h), acc = {};
+    raw.cohort.forEach(c => { if (!c.harv_stk || !c.harv_kg) return; const k = c.year * 100 + c.month, mu = Math.log(c.harv_kg / c.harv_stk) - s2h / 2;
+      const P = g => g === Infinity ? 1 : g <= 1 ? 0 : Phi((Math.log(g / PK_GUT) - mu) / sh_), x = acc[k] || (acc[k] = [0, 0]);
+      sel.forEach(cl => { const [lo, hi] = PK_BND[cl]; x[0] += c.harv_stk * (P(hi) - P(lo)); }); x[1] += c.harv_stk; });
+    Object.keys(acc).forEach(k => { if (acc[k][1] > 0) NAT[k] = 100 * acc[k][0] / acc[k][1]; }); }
   const V6 = {}; Object.keys(T6).forEach(k => { if (H[k] > 0) V6[k] = T6[k] / 100 * H[k]; });
   // reservoir (kt) des calibres choisis, et stock du calibre juste en dessous qui l'alimentera (F, kt)
   const B = {}, F = {}, tl = (w, g) => g === Infinity ? 0 : 1 - Phi((Math.log(g / PK_GUT) - (Math.log(w) - s2 / 2)) / s - s);
@@ -713,6 +725,19 @@ function computePeaks(raw, sel) {
       eC.push(Math.abs(S6[k] - c)); eM.push(Math.abs(S6[k] - (c + my + beta * ((B[src] - b0) - mx)))); });
     return eC.length ? { n: eC.length, cal: avg(eC), mod: avg(eM) } : null; };
   const wf = { h2: walk(2), h3: walk(3), peak2: walk(2, [2, 3, 4]), peak3: walk(3, [2, 3, 4]) };
+  // meme test, avec pour cible la part nationale (registre) : le reservoir prevoit-il mieux ce que la Norvege abat que ce que le panel vend ?
+  const walkY = (Y, h) => { const kY = Object.keys(Y).map(Number).filter(k => S6[k] !== undefined), eC = [], eM = [];
+    kY.filter(k => k >= 202001).sort((a, b) => a - b).forEach(k => { const src = sh(k, -h); if (B[src] === undefined) return;
+      const pastK = kY.filter(x => x <= src), cal = m => { const v = pastK.filter(x => x % 100 === m).map(x => Y[x]); return v.length ? avg(v) : null; };
+      const bcal = m => { const v = kB.filter(x => x % 100 === m && x <= src && x >= 201801).map(x => B[x]); return v.length ? avg(v) : null; };
+      const c = cal(k % 100); if (c === null) return; const X = [], Z = [];
+      pastK.forEach(x => { const s0 = sh(x, -h); if (B[s0] === undefined) return; const b0 = bcal(s0 % 100), c0 = cal(x % 100); if (b0 === null || c0 === null) return; X.push(B[s0] - b0); Z.push(Y[x] - c0); });
+      if (X.length < 12) return; const mx = avg(X), my = avg(Z); let sxy = 0, sxx = 0; X.forEach((x, i) => { sxy += (x - mx) * (Z[i] - my); sxx += (x - mx) ** 2; });
+      eC.push(Math.abs(Y[k] - c)); eM.push(Math.abs(Y[k] - (c + my + (sxx ? sxy / sxx : 0) * ((B[src] - bcal(src % 100)) - mx)))); });
+    return eC.length ? { n: eC.length, cal: avg(eC), mod: avg(eM), mean: avg(kY.map(k => Y[k])) } : null; };
+  const natKs = Object.keys(NAT).map(Number).filter(k => S6[k] !== undefined).sort((a, b) => a - b);
+  const natTest = { nat: walkY(NAT, 2), pan: walkY(S6, 2), gap: natKs.length ? avg(natKs.map(k => S6[k] - NAT[k])) : NaN,
+    last: natKs.length ? natKs[natKs.length - 1] : null };
   // etat actuel : dernier mois du reservoir vs un an plus tot, et saison en cours
   const lastB = Math.max(...kB), lastS = Math.max(...kS), cur = B[lastB], prev = B[lastB - 100];
   const peakMonth = (() => { const c = {}; full.forEach(x => { c[x.pb % 100] = (c[x.pb % 100] || 0) + 1; }); return +Object.keys(c).sort((a, b) => c[b] - c[a])[0]; })();
@@ -798,7 +823,7 @@ function computePeaks(raw, sel) {
   const proj = pv.map((v, i) => { if (v === null) return { k: sh(lastB, i + 1), v: null };
     const w = bands[i].p80; return { k: sh(lastB, i + 1), v, lo: Math.max(0, v - w), hi: v + w, mae: bands[i].mae }; });
   const pPeak = proj.filter(p => p.v !== null).reduce((m, p) => !m || p.v > m.v ? p : m, null);
-  return { mixTest, hw, ssbw, sel, feedCl, feedGain, B, F, S6, V6, lags, seasons, magCorr, peakMonths, th6, wf, sh, proj, pPeak, valid, nowcast, s56, fc2,
+  return { NAT, natTest, mixTest, hw, ssbw, sel, feedCl, feedGain, B, F, S6, V6, lags, seasons, magCorr, peakMonths, th6, wf, sh, proj, pPeak, valid, nowcast, s56, fc2,
     now: { lastB, lastS, cur, prev, ratio: prev ? cur / prev : NaN, nextPeakB, next6: sh(nextPeakB, gapTyp), gapTyp,
       seasonPeakPrev: seasons.length ? seasons[seasons.length - 1] : null } };
 }
@@ -844,6 +869,28 @@ function peaksSvg(PK, L) {
     const ib = keys.indexOf(PK.sh(x.pb, 2)); if (ib >= 0) s += `<circle cx="${X(ib)}" cy="${Yb(x.vb)}" r="4" fill="${L.colB}"/>`; });
   s += `<text transform="translate(14,${mT + ph / 2}) rotate(-90)" text-anchor="middle" fill="${L.colB}" font-size="12">${L.axisB}</text>` +
     `<text transform="translate(${W - 10},${mT + ph / 2}) rotate(90)" text-anchor="middle" fill="${L.colS}" font-size="12">${L.axisS}</text>`;
+  return `<svg viewBox="0 0 ${W} ${Hh}" style="display:block;width:100%;height:auto">${s}</svg>`;
+}
+// Graphique : part des calibres choisis, panel SISALMONI (ventes Akvafakta) contre toute la Norvege (estimation par le registre)
+function pkNatSvg(PK, L) {
+  const W = 980, Hh = 250, mL = 46, mR = 20, mT = 14, mB = 44, pw = W - mL - mR, ph = Hh - mT - mB;
+  const keys = []; for (let k = L.from || 202101; k <= PK.now.lastS; k = PK.sh(k, 1)) keys.push(k);
+  const n = keys.length, X = i => mL + i * pw / (n - 1), pv = keys.map(k => PK.S6[k]), nv = keys.map(k => PK.NAT[k]);
+  const yMax = Math.ceil(Math.max(...pv.filter(v => v !== undefined), ...nv.filter(v => v !== undefined)) / 5) * 5 || 5, Y = v => mT + ph - v / yMax * ph;
+  let s = '';
+  const step = yMax <= 10 ? 2 : yMax <= 30 ? 5 : yMax <= 60 ? 10 : 20;
+  for (let v = 0; v <= yMax + 1e-9; v += step) { const y = Y(v); s += `<line x1="${mL}" x2="${W - mR}" y1="${y}" y2="${y}" stroke="${L.grid}"/><text x="${mL - 8}" y="${y + 4}" text-anchor="end" fill="${L.mist}" font-size="11">${v}%</text>`; }
+  const INI = L.ini || ['J','F','M','A','M','J','J','A','S','O','N','D'];
+  keys.forEach((k, i) => { const m = k % 100;
+    s += `<line x1="${X(i)}" x2="${X(i)}" y1="${mT + ph}" y2="${mT + ph + (m === 1 ? 9 : 4)}" stroke="${L.mist}" stroke-opacity="${m === 1 ? 0.9 : 0.5}"/><text x="${X(i)}" y="${mT + ph + 17}" text-anchor="middle" fill="${L.mist}" fill-opacity="${m === 1 ? 1 : 0.7}" font-size="8">${INI[m - 1]}</text>`;
+    if (m === 1) s += `<text x="${X(i)}" y="${Hh - 6}" fill="${L.mist}" font-size="11" font-weight="600">${Math.floor(k / 100)}</text><line x1="${X(i)}" x2="${X(i)}" y1="${mT}" y2="${mT + ph}" stroke="${L.grid}" stroke-dasharray="2,4"/>`; });
+  // ecart : surface entre les deux courbes, couleur selon le sens
+  for (let i = 0; i < n - 1; i++) { const a = pv[i], b = pv[i + 1], c = nv[i], d = nv[i + 1]; if ([a, b, c, d].some(v => v === undefined)) continue;
+    s += `<polygon points="${X(i)},${Y(a)} ${X(i + 1)},${Y(b)} ${X(i + 1)},${Y(d)} ${X(i)},${Y(c)}" fill="${(a + b) >= (c + d) ? L.colP : L.colN}" fill-opacity=".12"/>`; }
+  const path = vals => { let d = '', pen = false; vals.forEach((v, i) => { if (v === undefined) { pen = false; return; } d += (pen ? 'L' : 'M') + X(i).toFixed(1) + ',' + Y(v).toFixed(1); pen = true; }); return d; };
+  s += `<path d="${path(nv)}" fill="none" stroke="${L.colN}" stroke-width="2.4"/><path d="${path(pv)}" fill="none" stroke="${L.colP}" stroke-width="2" stroke-dasharray="5,3"/>`;
+  keys.forEach((k, i) => { const a = pv[i], c = nv[i];
+    s += `<rect x="${X(i) - pw / (n - 1) / 2}" y="${mT}" width="${pw / (n - 1)}" height="${ph}" fill="transparent"><title>${L.month(k)} — ${L.tipP}: ${a !== undefined ? a.toFixed(1) + '%' : '—'} · ${L.tipN}: ${c !== undefined ? c.toFixed(1) + '%' : '—'}${a !== undefined && c !== undefined ? ` · ${L.tipG}: ${a - c >= 0 ? '+' : ''}${(a - c).toFixed(1)} pt` : ''}</title></rect>`; });
   return `<svg viewBox="0 0 ${W} ${Hh}" style="display:block;width:100%;height:auto">${s}</svg>`;
 }
 
@@ -1812,6 +1859,19 @@ function renderPeaks(){
  box('pkChart').innerHTML=peaksSvg(P,{grid:'#274955',mist:'#8CA6B0',colB:'#F2A65A',colS:'#5FD3C4',announced:'annoncé, pas encore mesuré',
    axisB:'réservoir 2 mois avant (kt)',axisS:`part ${L} des ventes (%)`,month:k=>ym(k),tipS:'part '+L,tipB:k=>'réservoir '+ym(k),projLab:'fourchette 80 %'});
  box('legPk').innerHTML=`<span><i style="background:#F2A65A"></i>réservoir ${L} décalé de 2 mois (kt)</span><span><i style="background:transparent;border-top:2px dotted #F2A65A;height:0"></i>projection du réservoir, décalée de 2 mois (bande&nbsp;: 80 % des erreurs passées)</span><span><i style="background:#5FD3C4;border-top:2px dashed #5FD3C4;height:0"></i>part ${L} des ventes (%)</span><span>points&nbsp;: pic de chaque saison</span>`;
+ { const T=P.natTest, pc=(t)=>t?Math.round(100*(1-t.mod/t.cal)):0, last=T.last;
+   box('pkNatLede').innerHTML=`<b style="color:var(--bone)">Ce que vend le panel, ce qu'abat la Norvège.</b> La répartition par calibre d'Akvafakta vient de l'indice SISALMONI&nbsp;:
+   17 exportateurs (dont Mowi, mais ni SalMar ni Lerøy), environ un tiers des ventes au comptant de saumon supérieur vers l'Europe. Le trait plein estime la part ${L}
+   dans <b>tous</b> les poissons abattus en Norvège, d'après le registre (poids d'abattage de chaque zone et génération, dispersion 0,27, celle qui reproduit le mieux Akvafakta).
+   En moyenne, le panel vend ${T.gap>=0?f1(T.gap)+'&nbsp;pt de plus':f1(-T.gap)+'&nbsp;pt de moins'} que la Norvège en ${L}&nbsp;: il ne vend que du supérieur pour l'Europe.
+   <b style="color:var(--bone)">Quand le pointillé passe sous le trait plein, des poissons de ce calibre se vendent hors panel.</b>
+   ${last?`Dernier mois du registre, ${ym(last)}&nbsp;: panel ${f1(P.S6[last])}&nbsp;%, Norvège ${f1(P.NAT[last])}&nbsp;% (écart ${P.S6[last]-P.NAT[last]>=0?'+':''}${f1(P.S6[last]-P.NAT[last])}&nbsp;pt, d'habitude ${T.gap>=0?'+':''}${f1(T.gap)}).`:''}
+   ${T.nat&&T.pan?`<br><br><b>Rétrospective.</b> Rejoué mois par mois depuis 2020 avec le seul passé, le réservoir prévoit la part nationale à 2&nbsp;mois avec ${f2(T.nat.mod)}&nbsp;pt d'erreur
+   (${pc(T.nat)>=0?'−':'+'}${Math.abs(pc(T.nat))}&nbsp;% par rapport au calendrier seul), contre ${f2(T.pan.mod)}&nbsp;pt pour la part du panel (${pc(T.pan)>=0?'−':'+'}${Math.abs(pc(T.pan))}&nbsp;%).
+   Le stock en mer est bien lu&nbsp;; ce qui est difficile à prévoir, c'est ce que le panel vend. Ajouter la part nationale, ou l'écart panel–Norvège, à la prévision du panel
+   n'apporte rien de plus que le poids moyen des ventes déjà utilisé (testé&nbsp;: environ 1&nbsp;% d'erreur en moins, mois de pic moins bons)&nbsp;: non retenu.`:''}`;
+   box('pkNat').innerHTML=pkNatSvg(P,{grid:'#274955',mist:'#8CA6B0',colP:'#5FD3C4',colN:'#F2A65A',month:k=>ym(k),tipP:'panel SISALMONI',tipN:'Norvège (registre)',tipG:'écart'});
+   box('legNat').innerHTML=`<span><i style="background:#5FD3C4;border-top:2px dashed #5FD3C4;height:0"></i>part ${L} des ventes du panel (Akvafakta / SISALMONI)</span><span><i style="background:#F2A65A"></i>part ${L} de tous les poissons abattus en Norvège (estimation registre)</span>`; }
  let h=`<table><tr><th>Saison (juil.–juin)</th><th>Pic du réservoir</th><th>kt</th><th>Pic des ventes</th><th>% ${L}</th><th>Avance</th><th>Réservoir moyen (kt)</th><th>${L} vendus (kt)</th></tr>`;
  P.seasons.forEach(x=>{h+=`<tr${x===P.seasons[P.seasons.length-1]?' class="hi"':''}><td>${x.y}–${String(x.y+1).slice(2)}${x.complete?'':' <span class="hint">(partielle)</span>'}</td>
    <td class="num">${ym(x.pb)}</td><td class="num">${f1(x.vb)}</td><td class="num">${ym(x.p6)}</td><td class="num">${f1(x.v6)}</td>
