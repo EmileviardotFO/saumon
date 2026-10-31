@@ -1,8 +1,50 @@
 {
  "meta": {
   "generated": "2026-10-31",
-  "status": {},
-  "note": "manual = events entered by hand with their losses (edit freely: date YYYY-MM, basin NO/CL/IS/GB/FO/CA/IE/AU, region, cause algae/jellyfish/gill/oxygen/temperature/disease/treatment/storm, agent, fish_m, tonnes, url). news and scotland_fhi are rewritten by scripts/update_events.py."
+  "status": {
+   "ilaks.no": "ok 12 articles, 0 kept",
+   "www.kyst.no": "error: HTTPError: HTTP Error 404: Not Found",
+   "www.salmonbusiness.com": "error: HTTPError: HTTP Error 404: Not Found",
+   "www.fishfarmingexpert.com": "error: HTTPError: HTTP Error 404: Not Found",
+   "www.fishfarmermagazine.com": "ok 30 articles, 0 kept",
+   "www.salmonexpert.cl": "error: HTTPError: HTTP Error 404: Not Found",
+   "thefishsite.com": "error: HTTPError: HTTP Error 404: Not Found",
+   "news.google.com (NO no #1)": "ok 11 articles, 8 kept",
+   "news.google.com (NO no #2)": "ok 10 articles, 0 kept",
+   "news.google.com (CL es #3)": "ok 30 articles, 12 kept",
+   "news.google.com (CL es #4)": "ok 10 articles, 6 kept",
+   "news.google.com (IS is #5)": "ok 0 articles, 0 kept",
+   "news.google.com (IS en #6)": "ok 11 articles, 4 kept",
+   "news.google.com (GB en #7)": "ok 54 articles, 11 kept",
+   "news.google.com (FO en #8)": "ok 9 articles, 2 kept",
+   "news.google.com (FO fo #9)": "ok 0 articles, 0 kept",
+   "news.google.com (CA en #10)": "ok 34 articles, 4 kept",
+   "news.google.com (multi en #11)": "ok 36 articles, 2 kept",
+   "gov.scot FHI": "error: no xlsx link"
+  },
+  "note": "news = articles kept by keyword (a mortality word + a farming word), classified by cause and basin; manual = events entered by hand with their losses; scotland_fhi = mortalities reported to the Scottish Fish Health Inspectorate",
+  "causes": [
+   "algae",
+   "jellyfish",
+   "gill",
+   "oxygen",
+   "temperature",
+   "disease",
+   "treatment",
+   "storm"
+  ],
+  "basins": [
+   "NO",
+   "CL",
+   "IS",
+   "GB",
+   "FO",
+   "CA",
+   "IE",
+   "AU",
+   "NZ",
+   "US"
+  ]
  },
  "manual": [
   {
@@ -71,6 +113,585 @@
    "src": "Sernapesca (reported)"
   }
  ],
- "news": [],
+ "news": [
+  {
+   "date": "2026-10-30",
+   "title": "Startup regional analiza técnicamente evento de mortalidad de salmón en Magallanes",
+   "url": "https://news.google.com/rss/articles/CBMi-wFBVV95cUxPRHo5ek80UzN2cXc5bWFaVEZHQ1QtVF9xS1BhS2FfUTNSSWhqX2tGa1RiMm5OeWVWUHhISEc5X3hsNWdCQmV1Zmh5bHo1ck5ZaVg4SmF1aGhpRVduNmwxYWNId010dGFMOG94djZLbVR6cmdra0x2ZVhIM0xEMzJoT29fbUYyZE5mekFNTDItckVTTXRGaUtfS0lTZTlGV3VMc0N2N01vV0JpNE0yTGMzVURpTWZoV19xbWZ4dWVPNXJmaGJlMGltd0w4czQ1b0g2RzJXUi1lQkNBeDhHRVdFOWN2TnU2dlY0VzUtWVp5ZGRJZUZHUFVRYU12OA?oc=5",
+   "source": "Salmonexpert",
+   "lang": "es",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "e76e36b352dd"
+  },
+  {
+   "date": "2026-10-28",
+   "title": "News - Jellyfish killed thousands of Icelandic salmon last month",
+   "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxOM1RVeFlFSGJDV19LTTRQdjF3QWQ4WTJhMnNmVW1xLW5wd3JGOGZXalNkalNmRk51SXFfa0NhX2tpcVJIZW5WZVB0S0hTUkwzNmIxU09nSDJXLWRpUUJHaHQ5Z1VKSUhZQi1XLVRsQVJ4emY2MlJxTV9CQUxsUEF1bnRjRVlVM2tWaXhKVGEzTi1YZENCY2d4dnlRX3BsQQ?oc=5",
+   "source": "Fish Farmer",
+   "lang": "en",
+   "causes": [
+    "jellyfish"
+   ],
+   "basins": [
+    "IS"
+   ],
+   "id": "996a503c7407"
+  },
+  {
+   "date": "2026-10-24",
+   "title": "Massedød av villaks: – Nå handler det om å redde stumpene",
+   "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxQeFpZbFRqXzZoLVdkSGhld0Y5aWpwVDNFLUFqYW05OE1WOGNaU0YtZkUxZ21nUjA1OS0zeGNMTzJYUy1zbThLTmVuSExabS1STnA0d2VVLWo5NUhkeG0wTlk2ME52ZEFwT3pRZi1nOVZDeWtTUEFvYk1FTjc0ZDgxV1k2cHdsWVA4OUluQzVEUXFxX1RkM0t0aTlJWUNmYkdHdW9nRzF2Ry04V1ktaGRIU3kxQQ?oc=5",
+   "source": "Dagens Næringsliv",
+   "lang": "no",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "NO"
+   ],
+   "id": "0fc6e487b4ad"
+  },
+  {
+   "date": "2026-10-22",
+   "title": "Massedød for villaksen i Orkla og Gaula: – Helt ubegripelig (+)",
+   "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxOQXNvWDlnZ3hyZjRRRWN1cTJsd0JValpLTF9JUUkzRWpvRk5GS25vV1FHVjRqcTNmRldwa1o4Q1BmRlR2VVYxWFZEOTQ5SGhfYzNlcHR3dEtIVGk4bDA1RmQ4di1VT0d5TmlIeHRyZmlvRU9WOERWRWNLNUV1MjRNYmtSaDNzdUUwY25leWJScW5RT2NUXzMwbHVpNlFBb1J5djhGZ1lLSVRHb1dUcGZyWlln?oc=5",
+   "source": "Dagens Næringsliv",
+   "lang": "no",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "NO"
+   ],
+   "id": "81983a5ec2c6"
+  },
+  {
+   "date": "2026-10-19",
+   "title": "Multi X mide los efectos de su mortalidad por FAN en Magallanes",
+   "url": "https://news.google.com/rss/articles/CBMixgFBVV95cUxPVllVaEVKeWdldUVEX2ZKdWNzRFdSOGc3X0puLV8zVGRaQndVZkFmamdyRU1hdERXRnJvT0RoRE5FN185OHVPNHA4TUJVNnFQbi11T0VuTnFDZGFPM3lhNVkwRHgwUzg0eWJYajIxQzFZTWV6UGRkeWlBOHdjWFZoTTNEUEZieXpjOWhld2MwQTF4U3IyV05lNGRKNHlDSm5NMUF0WlgzbExCY2l2aHlqaFNoZXhGQWNyZUhUY0RLUE9MSGtTNUE?oc=5",
+   "source": "Salmonexpert",
+   "lang": "es",
+   "causes": [
+    "algae"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "b53536b32521"
+  },
+  {
+   "date": "2026-10-19",
+   "title": "Scottish salmon mortality processor plans to double capacity to handle mass die-offs",
+   "url": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxNMF9FSVU0X3U1ZHFHZzhSc2cyYUxTdy16b0djUVd4VnpxUnNpaFJTb21qUmR4MUotQjVfNHZlNjl4UThqZW10M09MZm55NXc1ZGJvS3pON3ZVb3ZxZmRINlpaZWVhVldtdEhFTmpsWDdDQlh2YVJPR0R4WUUzblNTTS1uLXlLMEFXX1JfSTRGcnhybzZfNjRZMktzeWZNcXRQTXFJdkJBLXdkTXY4bEN6SGtkc3V0TXdiR3FGTVZtdlBRX1V6MTZrQg?oc=5",
+   "source": "Undercurrent News",
+   "lang": "en",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "GB"
+   ],
+   "id": "f9191fa6ded9"
+  },
+  {
+   "date": "2026-10-19",
+   "title": "Jellyfish killed thousands of Icelandic salmon last month",
+   "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxPdHIyVTJUUDJDVFR3aldyenFwOGs5T1JfYVVGU2FjQjFkazVPVHlUTXk1NEMyMTYzcnpNOS1fN2FTOXAxSmRPa1haX3gyM3FicVoydjhkb2kzTU5ZckZQNjVOa1IyWWFfWmdLYkZGeUwzSDJsajRWb1JaWXVhR0g2N29QSzZ3SWlnVWFIS2RCN3p4MDdzcThGYkNHcml3RmZFSXBZOWdMNk1Ya2N5QmFqRWJ2ZURVMGM?oc=5",
+   "source": "Fish Farmer",
+   "lang": "en",
+   "causes": [
+    "jellyfish"
+   ],
+   "basins": [
+    "IS"
+   ],
+   "id": "e3e47d7632d6"
+  },
+  {
+   "date": "2026-10-18",
+   "title": "Mueren casi 918 toneladas de salmones en Magallanes y el episodio enciende alarmas en Tierra del Fuego",
+   "url": "https://news.google.com/rss/articles/CBMi3AFBVV95cUxOTHlyWldOdlBRZHBPeWJwZTRvM1libjBzNGYyOTJSeDFTbzVEMVVhOXlaVFgzTnVMcWVSS2NxcWNoZXJHV3BmTnBkYTVyZmE2OTlIdHNDYUpHazR3ODMxRlNpYjU5bjl2cy1ZamNIUElnTklGSTBtdm40Rzh0MENXcUpWME9yRnJvamFsel9CbmF5dXJrQ3JDNTdERlAwTGU2ZXVKdFpWTDJEWU93T2FQcjBQa19rY1JmbkhNMU15clU3eW9GbUVjRWxDNmpYM0pKb25fbmdyNkY5U21z0gHiAUFVX3lxTE5DMFRDcm5meGN5RXdsczRLN2tmM2p3ZkYxM2FQNndWU2pDNDk4SVpvMDZQZzFfX3FEV3gtLWYtblh6bndWVmRZZWg2S3ZIV0JMSVlmYXl2c1ZzdzQtMUFHRF9kMG9qbEgxSTljZmNzWUNUckVYc3pORjFLYTRMTFJYX3h2OVNWd3phbEFUZjFpUGJFUHlLMXpwNXVUODJfXzZtSWVMTmtQWjBmYlZBQ1N2UVdWeURJdGtNVnhmQ0ZEcFVVSURRZXBiT29aZkJ4Nk1pYnRldDFRV1NBdk5EanpacEE?oc=5",
+   "source": "Noticias Ambientales",
+   "lang": "es",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "07e89d9056dc"
+  },
+  {
+   "date": "2026-10-16",
+   "title": "(+) Nær 918 tonn laks døde etter algeoppblomstring",
+   "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxOYkZRYzlqRi1rcEJETGZMcDRiclVkTGlVSkJvN1NROVZFOUdwUXdaQlQ0ZDZMNzg3Y3dURFM2WDFOV0lUSEZRWlNJcUVKVDU1YnR3XzlLUnQ0LWJheHliMWwwdmozYlJpNWVkamhVdXJIb05JUTlOa3Y0ZnR6M051Ry1yR3RNYUlmZlN0blpiT1RHX0M3VVRrUzMzQ3V0UU00QWxZUzdxek0?oc=5",
+   "source": "Kyst.no",
+   "lang": "no",
+   "causes": [
+    "algae"
+   ],
+   "basins": [
+    "NO"
+   ],
+   "id": "8fddb9142dcb"
+  },
+  {
+   "date": "2026-10-16",
+   "title": "Bloom de algas en Magallanes provoca la pérdida de más de 900 toneladas de salmón en medio de alertas por El Niño",
+   "url": "https://news.google.com/rss/articles/CBMi1gFBVV95cUxQcmVVaGtMSWxrckdBejZQU3NKc25XN2xTTnIycWpHUGpUalZYZzFsUWhXNVY2WVJOclhHOURmRWg1QUdaOUxaeXBYSU1OTlYydDZTYWNqUzRTd2VPLVltNWlrd1ktaHFEUFUyY1REaHBfQkt5d0hLb2FwZ1F1YjJJOWhURFJjQUNOSEE5S0o1Y3FWaEVaYnhoemdOR3Z0VEtOZXdScTJBWWpVUkY2LVY3VG04bndad2lvaS1KSGppaFVVc3pJZmY1XzJpVk1nN1lCTVdPeFdB?oc=5",
+   "source": "Radio Sago",
+   "lang": "es",
+   "causes": [
+    "algae",
+    "temperature"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "26142cbd2b63"
+  },
+  {
+   "date": "2026-10-16",
+   "title": "Una floración de algas dejó más de 900 toneladas de salmones muertos en Chile",
+   "url": "https://news.google.com/rss/articles/CBMixAFBVV95cUxPTkx0X29Bd1R2QXBwelBuMnhRd2pDUnlCbG9WZ0NxSkVvbDJrTmFnLWx2MjBsMVVidTQ4eXhlazFDM0RNSzNYVG0tZ3Naak1veGdXVXkxRkdtXzNOVXhZYll2ZnVjVF82Ulcyc0RFRVc0Ym9uOC1nelBnajUyQ0pMeldMRHh0NElVZnJPckxXM2pTQndIWUtRcVhPaS15S2hzWnZSMWs5cUtlQ25fblZqZ2tWZVVUbTMzUTZpTEwwU19WZGVy?oc=5",
+   "source": "Tiempo de San Juan",
+   "lang": "es",
+   "causes": [
+    "algae"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "e3ce585f37e2"
+  },
+  {
+   "date": "2026-10-16",
+   "title": "Detectan muerte de casi mil toneladas de salmones en mares protegidos de la Reserva Nacional Kawésqar",
+   "url": "https://news.google.com/rss/articles/CBMi1gFBVV95cUxQbXY1dzQxakZnTGN6N2J6VWxHS21SaFNmanBzbElQaS1IcHpLcFVqQzZoSTRndW5Ubmp0eWNhbGxhSDZJWDBzZHpmZ3dDd05rZFppOUhFOFNiT0VLZlpzTk9EUXNFN0ZvakdJMl9qWTBoZzNhaWZtaDUwVGJwYlRFcHRzTm8xcXJKZmtjVVJaNFh4S3hUdk03Mk5YbldZLWQ5UVlFQ3JMZlg2RlJpYVotWWliSmVyRzJ6empWeEZqNkxrX1FQR0NSNDZBcTFhYzFsR3hhdEln?oc=5",
+   "source": "El Desconcierto",
+   "lang": "es",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "bb6154075984"
+  },
+  {
+   "date": "2026-10-16",
+   "title": "Alerta en la Patagonia: casi 918 toneladas de salmones muertos y una advertencia para Tierra del Fuego",
+   "url": "https://news.google.com/rss/articles/CBMi1AFBVV95cUxNZ0x4aXJhcmZuYU5ZcGJaVG52bXN3TUVoY19sVVRDYXI5RHRwQ2dpZnIxd3JTb2J6cTlJMjNuWGh4Sm1BYVdlQ0FiNFBONEZ3dlRWeWRLYlNTOTZQbE9XVGtLZkRZVVhWMkt6NGg5ZzVsVndtYTRLVHg5djl6Nkp4QTc0U2Vsd0kxVGZGVHFBLVcweW1mbDdVdnE4ZkYyN1Buckw4UW9FdUlVTTZXMWFPeHg3bGhGTTV5cXNYRHoxbmZjVGtkLTI1dlpSVVBWcmtSenRzSA?oc=5",
+   "source": "Critica Sur",
+   "lang": "es",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "b12bd07991b0"
+  },
+  {
+   "date": "2026-10-16",
+   "title": "Scottish salmon mortality processor seeks to double capacity",
+   "url": "https://news.google.com/rss/articles/CBMilwFBVV95cUxOclBzX0FEX05NMjE1SUhWVTQ0dVJjMWRjRE5QaUY1Q0RNWFJHRE1faVFKRU1JU0xJdzhlekdESWJVRUlvZGtkTWpyV2NKRW85eDhrdEZFTXhiMGhqS3A1ZWJMUTZLbXN6Skg1ckwwVm9janBMMzJfV3Q1SlZTLXFpbnRUSG5WbmxDaExhZm9uMERNU01NbWI4?oc=5",
+   "source": "Salmon Business",
+   "lang": "en",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "GB"
+   ],
+   "id": "be1e3df1b7a7"
+  },
+  {
+   "date": "2026-10-16",
+   "title": "Multi X has lost nearly 918 tonnes of fish due to algal bloom",
+   "url": "https://news.google.com/rss/articles/CBMi1AFBVV95cUxNOEhjaGVlZW1LcGRUczFjNmJqTTEtTHcwdmt4S3FKWnBsWHd0a2hRY21mcVVGczZQUUc2eXdJWV9LUkQ1QzhRZWctNnNaSFk0Y29XYjk2UVM4aV92LVR1MTZKbVdvQ0gzV0xyTm9xVXUzOVBDazhuMnZLRnNwNUVMTmYzcFhEdk9CVUpPbVpOR1M4WnBaOW1LZkZHZGxFMWxLSkJXaDJJc2NLUnIyM2lhRzhfblFuZFdlYXIzbUpTUVBIVmEzWUt2SVdnaWh0Wm1lWlVUcA?oc=5",
+   "source": "Fishfarming expert",
+   "lang": "en",
+   "causes": [
+    "algae"
+   ],
+   "basins": [
+    "GB"
+   ],
+   "id": "ca595d747dc4"
+  },
+  {
+   "date": "2026-10-15",
+   "title": "Cerca de 918 toneladas en mortalidad de salmón: informan término de contingencia FAN",
+   "url": "https://news.google.com/rss/articles/CBMi7gFBVV95cUxNOXJOWGRLVEJPZzhQeWhFblIwNUxsSjBlV21fdE9CWW1vcllQeTNOSUtZcFlzTUdSaEtJN2IwcDNwQlMwUGUtX2RReFpXdk05UklIMnhrYkUya2VkeWh5elN6dktnbjF4bzkxZUVuVzJoWWhmenpwMUpqVmg1WS1IY2xPbFVfQWtpU3RORDN6QjdrM05aSE81X2ZXNkpjVHJJcGVvU0prcFZ1MTdZTkdmMFFtcTZVUXY3SDNGNXZ1RGlCLXlPOXdqSm9qQ1V6SlcwcXU5VkdiNVpYLWlSXzdBWWlOSUd1cjJnSDhST0ln?oc=5",
+   "source": "Salmonexpert",
+   "lang": "es",
+   "causes": [
+    "algae"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "925dc7b2fa8a"
+  },
+  {
+   "date": "2026-10-15",
+   "title": "Multi X pierde 918 toneladas de salmones por bloom de algas e industria eleva la alerta por fenómeno de El Niño",
+   "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxQS1BHeklwQ2Q1d0VQZk93a2dKZUJIX01OclNBSm5PX3E1a1FUVURzR3FTTFg2YjFFOEFpSlJWd1k3UDhRRnMwZFROUnhlZjdyd1pVQ1NnNnB0NDVoaExjNVlRcG81YWlJaXhqS2xXRnQ4aFB4YXhtOUR4TFJIQ0tLOXZPaXZlWnBnMlg4d0o2TVNKbDl2Vm93TGRGdEpjdEU1aXJyem9oaTlUU2xm?oc=5",
+   "source": "Diario Financiero",
+   "lang": "es",
+   "causes": [
+    "algae",
+    "temperature"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "1a9e757a94e4"
+  },
+  {
+   "date": "2026-10-12",
+   "title": "Giftig algeoppblomstring har doblet tap på en uke",
+   "url": "https://news.google.com/rss/articles/CBMidkFVX3lxTE4tOHRaM001bjQ1SjhidlFMNk40NHRSeUJxcFBNamUtelJ1T1Z4SWdPVUQ0VGgwMkV3Z2wzTWUta2xnSHFXR1YycXB6T1Vjdnd1NkxyRHBfZ1N3T1JQWTZjeWY5TTc3clBmbnpsUjh4cld3NjNPbEE?oc=5",
+   "source": "iLaks",
+   "lang": "no",
+   "causes": [
+    "algae"
+   ],
+   "basins": [
+    "NO"
+   ],
+   "id": "977022dc9365"
+  },
+  {
+   "date": "2026-10-12",
+   "title": "300 toneladas de salmones muertos en la Reserva Nacional Kawésqar: organizaciones de la Patagonia exigen transparencia y sanciones a empresa salmonera",
+   "url": "https://news.google.com/rss/articles/CBMioAJBVV95cUxNWU9VVjk1clF1Wkp1VlJ6M2JwLVVOY0NvQXBsdWY3VTdSRmpYZGdjcm83V3k3dHJRd1VkbmhnYUdaQk9ZSTNOeEhXU0tkX2hwdmZwTnlkZWJvdHhWUXAzWF9MZE5XMXVORWh4cEdKanVYVWt4TkNNTHZycUNkeml4RUFMWWRwUHU1WXJYTjhqQVJyY095Rm9YZzN0NUs0NUF3RWk1TUdacUxLVFJ0UXlvVkNzTmh2T0tzX045eVU0LXNndnduTl9UaThzQ3JRalgtQjFDS09CX2dFVlgxSXpSbGIwcFlqYjBKTXYzcUtqc1RvSGV3Vk1PSkwxVDQwRHV5N1dFUnJFWE5Qai03NndOZmJLWk9Jd2EwY1VyeG02ZE0?oc=5",
+   "source": "elciudadano.com",
+   "lang": "es",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "3f6a67a69f9e"
+  },
+  {
+   "date": "2026-10-12",
+   "title": "Multi X harvests early as algal bloom death toll rises in Magallanes",
+   "url": "https://news.google.com/rss/articles/CBMi4wFBVV95cUxONTdKdjgwbzgyN05QLWJMckdrNzJhSmY3WlktTEx3Q2ZqUnNJT0FwNDUtVjBCZ3RvSkVxOTJwTnBkeXVRdWFGMnRTYmpLTU4wcDZwN3c3VnJBOFVXYWdWU1dhdHpsRE1JendvQ0E5bkg3TkdOVUpyQUhISWRFSXVRaWswS2NkYXl4WmIzY0o5WVVfVUhaSy1vUGdabTZqaGZtOW9NR1RoSHNzTnRuYTZIOUZKZklwLW1QdnoyR09sUHpha2RGY1JmYVc3SnpEZXR1Y2ZEenBjdmR4VWJyZmhzTDVuOA?oc=5",
+   "source": "Fishfarming expert",
+   "lang": "en",
+   "causes": [
+    "algae"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "f83f4dcce60c"
+  },
+  {
+   "date": "2026-10-10",
+   "title": "Masiva mortalidad de salmones en Magallanes obliga a activar operativo de emergencia",
+   "url": "https://news.google.com/rss/articles/CBMieEFVX3lxTFBEb1dCNnZLdDZZOVBHVFV3LVR2V0VIbEd0cTlQUzMySFpqOHNsVXl5eTFLZUFfVnAyYXNNM3BRendlTTRzR0tPdWNIdWxkUFdjSUlNY0RTYlJYX2ZKQTV5enFPakxENXBVOGd3WUVWOGI1cVhWeFk5NQ?oc=5",
+   "source": "Paislobo Prensa",
+   "lang": "es",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "6ddfbbebd038"
+  },
+  {
+   "date": "2026-10-09",
+   "title": "Sernapesca fiscaliza mortalidad de salmones asociada a FAN",
+   "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxQYnpieUF5VkkyOFNDMUxhZTc1LTJZQkZGdHR3b1gxaVN3dkJkSVpNSzMzbUZrVVNuaVlpNmR1QmItLW90WTk1d2ZOTGJoU2p1V3dFb2lxUmhXNUxnRGEwcTZVR3U2ams4cFZxWHhGT1dLZ0YybWRMWktEUl9Qd2RBcnlKdmhXSlhTNUFWZTNBNDhtU1dEaE1FbEpib2hjc2NtalJQVEVTVHo?oc=5",
+   "source": "Aqua.cl",
+   "lang": "es",
+   "causes": [
+    "algae"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "bfdca0cece9f"
+  },
+  {
+   "date": "2026-10-09",
+   "title": "FAN en Magallanes: mortalidad de salmones aumenta a 642,5 toneladas en centros de Multi X",
+   "url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxQNFRqRFp6aC1jY0l1amNrcTRIOExMVHBXLXRmdEhsWF9NRS1fT3Vnb01UVXdLb0dkcmNnWWdxN0RvRzVSbHJpWUVLQnNsWnc3dGNyc3gydjVuNUNpeWZrZUhNOXA5Zzh4cGNwNU1NOUU0RkZvNldEM1dUa1YxNXlWVHY0a014Y0NiTHU1bklnRU55ZHBVTUNpVXphYU0zRnhzbUw3eXU4cnhwcHRkUzFGd3hKdWN2WkJCX0VnbHVR?oc=5",
+   "source": "Mundoacuicola",
+   "lang": "es",
+   "causes": [
+    "algae"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "0a973e60cc3b"
+  },
+  {
+   "date": "2026-10-09",
+   "title": "Sernapesca activa planes de contingencia por floración algal nociva en Magallanes",
+   "url": "https://news.google.com/rss/articles/CBMi3gFBVV95cUxQcmN6OV8wSV83bFJYcTRER2xHZTZOQmxQdlJNWkNld1JOMlFIdlYzVVpyN1B0NWF5UHk0Nm1CSk1kTkpzNHRvcDloODcwZV9sUUlqZ3c2Z2hCUnJWdmNSZHZmUkRCVWNvWjJ3b2ZOdGFzNWg2T0s4R0x4cFh5VTJUVVJoU3hVbkZ0VVRwNkIzaG9zTXJqVHZwalN5MXo4bmlvdTEwMXFyU0J6UlVzUUNpLTd0dXEwUWRSbjV1Nlg4YVpydUlFcGs3NnRHcW1KcnZZMEhZNlJ5ZzJqTUtiQVE?oc=5",
+   "source": "Salmonexpert",
+   "lang": "es",
+   "causes": [
+    "algae"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "7a31c0573b53"
+  },
+  {
+   "date": "2026-10-09",
+   "title": "Sernapesca activa planes de contingencia por floración algal nociva en Magallanes",
+   "url": "https://news.google.com/rss/articles/CBMi3gFBVV95cUxPazJFRS1UZTFvNDZwVFd3YTMzY2o1dmFhZ1l2ekxmbVBnSHF6SWxsLWF6R084VEYwd0dRZEFIYzlHa2JlTy15X1hYalZIQktDbllsWmZjaEhpb2JYNUR3SWRKT3E4T05Yanc4X19CTHRYLTczZXR2RDRtSUlmVFVGcHU4TGpaT3dhVExJWkZCRVhmbmlOb0ZBRzkxdGFjVEJfazdkQXhtNTJLc3VPN3pCTThSNzh4clpoZGVPdjlzZkFWX2VhcWFGcjlaUVVEbmhMMXBCUkIxeFh1WXRlc2c?oc=5",
+   "source": "Fishfarming expert",
+   "lang": "en",
+   "causes": [
+    "algae"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "63be60171bd5"
+  },
+  {
+   "date": "2026-10-08",
+   "title": "En av ti laks døde etter brennmanethendelse",
+   "url": "https://news.google.com/rss/articles/CBMibkFVX3lxTFBNamw5SVBpV3p1bDRZdzlhOGo5S2pBaUdjS1drX1RuV0pWbXJoUURzUFFiSmhjV1dfZlpzT1F6NmNCdXlIMFYzaWV3ZENkeHdYeTFLRjB4VVlVbnpRN3VqaVZ1RmJBazdDcmFZdGxn?oc=5",
+   "source": "iLaks",
+   "lang": "no",
+   "causes": [
+    "jellyfish"
+   ],
+   "basins": [
+    "NO"
+   ],
+   "id": "3bb2848a397b"
+  },
+  {
+   "date": "2026-10-08",
+   "title": "Fiskere møter andre krav for dødfisk enn oppdrettere. Mattilsynet forklarer hvorfor.",
+   "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxQTUpFVUp1aG9CYWQwVG5pallzRFgzbEdJMGtMSm0zTmJOR1NhaUlYS1JxeElUbmJ2eDJNRmZjSmpSRG9lektjbE5jclFWMThRRDdISG9rdXVoSTYyb3VoTFFCb2J6RmltR2o4NjNWaFVob0plTHhHWExBcDZSMmRGX21XQ1JlcGozMnl0WXdHRGRXSnNNbzBMWjhKYlgtMURiNGhUSHJmckFYYWhOdWc?oc=5",
+   "source": "iLaks",
+   "lang": "no",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "NO"
+   ],
+   "id": "3e2af1856ed5"
+  },
+  {
+   "date": "2026-10-08",
+   "title": "FAN provoca mortalidad de 300 toneladas de salmones en centros de Multi X en Magallanes",
+   "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxQeDEzak0yTDUxYXUyWG0wRnRTN0l2ZVRDbjlMV19HUlVra3c4Vm1FUEtraUhSaVpXOHFfX2xzVlVMcS14SFV5QXF6OFhFd3JaRUlHVEltMGQxMC1PQjBMRUN5SWRiM1F0THVQcG1GaHZQdHZrLVA3bzlsTzdhSmFfSWNUaUJxYXNnMWlUUkFaRF9ocEIyVW9qbzlUSG92SDJM?oc=5",
+   "source": "Mundoacuicola",
+   "lang": "es",
+   "causes": [
+    "algae"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "1b2967ab832e"
+  },
+  {
+   "date": "2026-10-08",
+   "title": "Sernapesca activa plan de contingencia por floración algal nociva y mortalidad masiva de salmones en Magallanes",
+   "url": "https://news.google.com/rss/articles/CBMi4gFBVV95cUxPaWtQaG1WQ0trNmdUdGxsUVpORTFDWEFHUnpJZDNUVWdaejV4NkNheXZYUVRMN0tqSG1wWEw1NXp2eXd5YmJQd1lTT25oOEc0OVdpSUQ3TnNlQk1EREZPanBReFFsUmpId250SVhlaXJNcFNvckZKZVUxT2gyMnRVZzlTejZVN0RGMXZzcnhVQ0psUldidXEyRExubHF4bG9VRVViZVdDZ0JkWG82TElaY3Y2MG55dVVNdWg4RzlzMGwyVzVTVTl2S3NIX1ZHa3VzTDdEZlRTSHVfSnU4T3cteVZR?oc=5",
+   "source": "El Pingüino",
+   "lang": "es",
+   "causes": [
+    "algae"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "af9985682af9"
+  },
+  {
+   "date": "2026-10-08",
+   "title": "Kaldvik raises mortality estimate after jellyfish event",
+   "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxOOXQ0OUUyU1JPYi04Z0NfZUZQclhleV9MQ2VERmRhN3dHQTlwN0g0Nm9uaTlySjgtazU2dnFlVEZ5RlhGb1BiWnVZT0hKR0tzMElzaDZDQS1semdodjdIYlUtRFdLajVVS05admRHQzNqa1ZNSWthdWlOeVh5WFVLRmJ0aklQVkM4dE42cVktV18zaHd0UktmczFuTU9nMUlGWGc?oc=5",
+   "source": "IntraFish",
+   "lang": "en",
+   "causes": [
+    "jellyfish"
+   ],
+   "basins": [
+    "IS"
+   ],
+   "id": "04f179932dcb"
+  },
+  {
+   "date": "2026-10-07",
+   "title": "Økt dødelighet etter manetangrep på islandsk laks",
+   "url": "https://news.google.com/rss/articles/CBMijwFBVV95cUxQNGxFYzlDc0FlVjdzODJGUmtBTG1jeWc1OTBVYnNBQnA4Xy1KYy1HZl94MFh1X1lpWTl1eUJfTXV6YXpLTDFIbTBObVp2MEh6RnB2N2tlSlBMN2hCbUJMbjRDU3dDeTVyX29RcFlfNHRxYWJvMUNhdndEUTY5OEFEM1VCYXJ6TTZlSEVfSDdaWQ?oc=5",
+   "source": "E24",
+   "lang": "no",
+   "causes": [
+    "jellyfish"
+   ],
+   "basins": [
+    "IS"
+   ],
+   "id": "5bff95ce1ef4"
+  },
+  {
+   "date": "2026-10-07",
+   "title": "Økt dødelighet etter manetangrep på islandsk laks",
+   "url": "https://news.google.com/rss/articles/CBMiTEFVX3lxTE5keW1fOE9POVFkckNEYWFMV1FKUm50V3Bzd1ctNWdzNklRMFFpRjZ4cGxBVjhZa2JBdjZESXNRT0J2UnFyTlNIRnhZclc?oc=5",
+   "source": "E24",
+   "lang": "no",
+   "causes": [
+    "jellyfish"
+   ],
+   "basins": [
+    "IS"
+   ],
+   "id": "39e40acb8d07"
+  },
+  {
+   "date": "2026-10-06",
+   "title": "Bakkafrost: Scottish mortality costs reach €5.6 million in third quarter",
+   "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxNbnhSNWhoYjBEYXpjejBmYmNhS3R6dzM1SVp3UmVialNZalVLR0FLRl80Y0lnb2VXVVVYVHJ4N05nRGJoLWt1aWRpWWEydUZaUGdUUjRPdk5rUFFsVXlGOUFmNHhTWDdJamhCT1czYi10QWRDSW9JeXMxRlA2emJONGR6NER1Uy1sSmJfaUNzZk44RDROYWh1TGJ6V3dMdUZVOTJpZDR3?oc=5",
+   "source": "Salmon Business",
+   "lang": "en",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "GB",
+    "FO"
+   ],
+   "id": "fd1d8b041da8"
+  },
+  {
+   "date": "2026-10-06",
+   "title": "Bakkafrost Q3 salmon harvest drops 10% as Scottish weights plunge, mortality costs rise",
+   "url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxONHJCOWI4ckhRQ1pRSGR4RER5UERGR2NuVDh4Y3BRSG4zSjdHUnd4WXl1UXlfWnZsNExyZnZjcmctaUtfNTM5NUtfcXdHY0N6a2dsRjFHRDFsd21yei1POTF0UlVqc0NjeEItOExrQXBlVHJtSURaNmwwbHNRVFZ4a1Q1NzVvaGhtWGJ1R01KWEhmVzl0T2NGejJLQ1VvUGZyV1NxZkpKV01VM3NibkcxRW9CcGFreTJBV2VhTG1jb0Z1RVY2djJKZU13?oc=5",
+   "source": "Undercurrent News",
+   "lang": "en",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "GB",
+    "FO"
+   ],
+   "id": "3da717190048"
+  },
+  {
+   "date": "2026-10-05",
+   "title": "1,000 tonnes of fish died due to algae incident",
+   "url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxOMUFHMjFWeHhZOFp3S1JxLTh1dXZaM2xPaUluOEFRSW94UTdJVGRTbTg3bkdOTVNaVmFzeHZiUzdqOEhCOExxWmdKZ3ROdW9BdFhfaFcwY1ZkUUo5WDlfaTVUU1YySnhtaWZURjJIVUxjVG9rYm9aYzRHNDlTNVpXTkZtMUxBMi1TMjlDR1FTRks0aFpCWS1jWHNlY3RVdTJTVjJSNEtPUU4wSkxFeW5qX2lFWk55RGpTNnJ3ZFRn?oc=5",
+   "source": "Fishfarming expert",
+   "lang": "en",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "GB"
+   ],
+   "id": "5064e2eb415c"
+  },
+  {
+   "date": "2026-09-23",
+   "title": "Chilean salmon farmer will test feed additive aimed at halving SRS mortality",
+   "url": "https://news.google.com/rss/articles/CBMi9wFBVV95cUxNeDB1YkpoZWVLend5emJBQVYxZGRGVjY5LXlMaUk4LVpsakJlLTk4NGNaVVM5SWNEUDlmWGdPbFRFVU5tZ2RaTUlpQU1YSUREMzNfT2dQQ0dXYTBBVmprdUU5T19CTkZPLUduX2FNR1lLUm1xUThEc1lrQ0lrbnJOaFJ5TjZDeENzeGdGT2RGWjAtSG9ieXh2TmZvUjZ6Y1o0Mk40MUZWdm9Sd09jenBzRjBaZENDLWFfQjZjc1EycFh1TVBiRlE2Q3k4bXoxUldPNXlwYm5hMFkweURjVWx2WXlrejF3WXc2UWc4aXdidUo2UElEelVr?oc=5",
+   "source": "Fishfarming expert",
+   "lang": "en",
+   "causes": [
+    "disease"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "761d819d07a9"
+  },
+  {
+   "date": "2026-09-17",
+   "title": "New Zealand King Salmon: raises profit outlook again as mortality beats forecasts",
+   "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQNXdkTFpqTDdIVlFENVVBREc5U0NxQkdoWmhoY0V0NW51RnBqZW41QlhlamVaQklDSWVMRHZObFhVU21FU2VraGtrZlRudEotc1NJUnZwSzAxSHZWS0RiQXBieUVEazZ0M1hOTmJpbHJKYy1CTF9rai1Renc1NzRXTUJ6YTNWYXFhb3NOREp2eHNZVUFlekFfTmxVY0M0NlFRLXFIdVBEOHBLNFhrNmVGeFBn?oc=5",
+   "source": "Salmon Business",
+   "lang": "en",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "NZ"
+   ],
+   "id": "bd5257855fb8"
+  },
+  {
+   "date": "2026-09-15",
+   "title": "Kaldvík: losses accelerate sharply after jellyfish outbreak",
+   "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxNVmZXdVdUOVpmN19iWS1hRm1nbmIzMVJtai1CeXhvMWJrNjRWc0JFcm9WN2RPb2s1YWRkY3kyWExKOTZWaVZCWWtYYkxZUkFNeGQtQlN3NlZ0ZERPT1VmYUJLRm5Jbk5ndnQzQXpreU5sUUxsYlRsSldubHg2dHBPQVhscVhrYl9lbjdLczdDVUFDRUNm?oc=5",
+   "source": "Salmon Business",
+   "lang": "en",
+   "causes": [
+    "jellyfish"
+   ],
+   "basins": [
+    "IS"
+   ],
+   "id": "9209f93f5b45"
+  },
+  {
+   "date": "2026-09-15",
+   "title": "One in two salmon died at Scottish fish farm before site was fallowed",
+   "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxPeFh5Y1JmTWp0OEtweE45Sm1QeHdoRE5pRUJxMnhQQzQ5M2NxNEpxTG1NTERjeDU2dmVFLUxzSWFleWRzNi1TT0lwSFRsMk9EdVdpbm11dG53Z0dxMEtGTFdmLWtFUkdhcjRIZXMwdkJ3M0EtcHRFZUdhanB3YWlGZUVfQWlZTW5wNFJqVFhEd29ZdFFOZDdaVmlfSQ?oc=5",
+   "source": "The Herald",
+   "lang": "en",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "GB"
+   ],
+   "id": "c50f6373d0c8"
+  },
+  {
+   "date": "2026-09-15",
+   "title": "Scottish island fish farm confirms nearly 50 per cent mortality rate",
+   "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxNT2VxVHVMVmdFdGtPdkpzSkZ5TVpPeElLbnBmbXFkQUhkazc0WHptdDBLbTNQbndoRG9xQ1RsYXZUejA0M3BuVFBKc1VZY2lqeXcxRXRvOWg3X3NaUEp5ZWpkVmdTb0hybUlEajd3eDFNVG1sblltX3ozamlzMHpXaGJ4NGVaZ1R4UmN2NWlSc3dLUWlodTJ5dUFfM1c2SDR0cnFIRjdfdw?oc=5",
+   "source": "The National Scot",
+   "lang": "en",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "GB"
+   ],
+   "id": "8cd084355c09"
+  },
+  {
+   "date": "2026-09-08",
+   "title": "Jellyfish lead to increased mortality at Icelandic salmon farm",
+   "url": "https://news.google.com/rss/articles/CBMi0wFBVV95cUxPbHRUb2NrZ0EyRElZUEtpb1FEeElBNEVXTExCYzVONWkxMU9PQlNHYmNGdVZVdTJzMnlUdUdkUzc1THdPY0tSR3pnNFk5bm1faDNuT2pjTWFDRXlWNy1yOVY1aVpvSzFXZVkzTFdGME9lcmNyVHpkTkZSNWhpOTctMUtBQ0JRYnpKS0F0dDFkdFpJRW95YVM5REZ4RFhreGNZV1lMUkd3WVBKblRodTNlTzlDOHpENXJxcUMtay1XMzRnaG1UcUFXOVpGcWVCVGIxRjBn?oc=5",
+   "source": "Fishfarming expert",
+   "lang": "en",
+   "causes": [
+    "jellyfish"
+   ],
+   "basins": [
+    "IS"
+   ],
+   "id": "04895ac3212a"
+  }
+ ],
  "scotland_fhi": null
 }
