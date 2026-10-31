@@ -6,6 +6,7 @@
    - par zone et par generation : poids moyen attendu dans 1, 2 et 3 mois (modele de croissance + temperature),
      la fourchette a 80 % des scenarios a 3 mois, et pour les generations de 4 kg+ le poids attendu des poissons ABATTUS (wh)
    - par zone : biomasse attendue dans 1, 2 et 3 mois (et la MTB de la zone)
+   - Norvege : offre des 12 mois suivants (kt vides, chaque generation sortant au rythme des 4 dernieres annees)
    - Norvege : part de 6 kg+, 5-6 kg et 4-5 kg attendue 2 mois plus tard dans les ventes du panel Akvafakta
      ET dans tous les poissons abattus en Norvege (registre),
      et projection du reservoir correspondant sur 6 mois
@@ -33,7 +34,7 @@ function block(start, end) {
 // noyau des pics (computePeaks) et modele de croissance de l'onglet Generations map
 const PEAKS = new Function(block('// ===== Reservoir de gros poissons et pics de 6+', '\nfunction peaksSvg') + '\nreturn { computePeaks, PK_6P, pkSh };')();
 const GM = new Function('data', block('const GUT = 0.888, MON_GM', '// ---------------------------------------------------------------- indicateurs par zone') +
-  '\nG = prepare(data);\nreturn { G, project, simulate, harvFore, fitAt, sh, GUT };');
+  '\nG = prepare(data);\nreturn { G, project, simulate, harvFore, harvForeMix, supplyProj, fitAt, sh, GUT };');
 
 const sh = PEAKS.pkSh;
 const raw = JSON.parse(fs.readFileSync(DATA, 'utf8'));
@@ -58,8 +59,8 @@ function entry(k, kind) {
   const COH = M.G.COH, REC = M.G.REC;
   for (let po = 1; po <= 13; po++) {
     const z = {}, gens = Object.entries(COH[po] || {}).filter(([, s]) => s[k] && s[k].stock > 1e5 && s[k].weight_kg);
-    gens.forEach(([g, s]) => { const p = M.project(po, s[k].weight_kg, k, 3); if (!p) return; const q = M.simulate(po, s[k].weight_kg, k, 3);
-      const hv = s[k].weight_kg >= 4 ? M.harvFore(po, g, k, 3) : null;
+    gens.forEach(([g, s]) => { const p = M.project(po, s[k].weight_kg, k, 3); if (!p) return; const q = M.simulate(po, s[k].weight_kg, k, 3, (s[k].harv_stk || 0) > 0.01 * s[k].stock);
+      const HM = M.harvForeMix(po, +g, k), hv = HM ? HM.v : null;
       z[g] = { w0: +s[k].weight_kg.toFixed(3), n0: Math.round(s[k].stock), w: p.map(v => +v.toFixed(3)), q3: q && q[2] ? [+q[2].p10.toFixed(3), +q[2].p90.toFixed(3)] : null,
         wh: hv ? hv.map(v => +v.toFixed(3)) : null }; });
     e.zones[po] = z;
@@ -71,6 +72,8 @@ function entry(k, kind) {
       e.biomass[po] = { b0: +(now.biomasse_kg / 1e6).toFixed(2), b, mtb: ((raw.bw_register || {}).mtb_po_all || (raw.bw_register || {}).mtb_po || {})[String(po)] / 1000 || null };
     }
   }
+  // offre norvegienne des 12 mois suivants (kt vides) : [mois, prevu, bas, haut]
+  const SPj = M.supplyProj(k); if (SPj) e.supply = SPj.p.map(x => [x.k, +x.v.toFixed(1), +x.lo.toFixed(1), +x.hi.toFixed(1)]);
   const D = kind === 'live' ? raw : asOf(k);
   [['6+', PEAKS.PK_6P], ['5-6', ['5-6']], ['4-5', ['4-5']]].forEach(([lab, sel]) => {
     try { const P = PEAKS.computePeaks(D, sel); if (!P) return;
