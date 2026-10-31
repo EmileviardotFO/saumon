@@ -157,6 +157,12 @@ jobs:
         timeout-minutes: 5
         run: python3 scripts/build_scotland.py
 
+      - name: Ecosse - enquete annuelle de production (tableaux complementaires deposes dans xlsx/scotland/)
+        id: scotland_survey
+        continue-on-error: true
+        timeout-minutes: 5
+        run: python3 scripts/build_scotland_survey.py
+
       - name: Veille des evenements de mortalite (presse multi-bassins, Ecosse FHI)
         # Algues, meduses, oxygene, tempetes : absents de BarentsWatch. Flux RSS + Google News par bassin et par langue,
         # et declarations de mortalite du Fish Health Inspectorate ecossais. Les evenements saisis a la main sont conserves.
