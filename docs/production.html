@@ -993,6 +993,10 @@
     <div class="sig-title" style="margin-top:18px">Harvest implied by the feed</div>
     <div class="sig-sub" id="scHarvSub"></div>
     <div id="scHarv"></div>
+    <div class="sig-title" style="margin-top:18px">Official annual survey — production, smolts, survival</div>
+    <div class="sig-sub" id="scSvSub"></div>
+    <div id="scSvCards" class="pr-cards"></div>
+    <div id="scSv"></div>
     <div class="sig-title" style="margin-top:18px">By area and by company</div>
     <div class="sig-sub" id="scTabSub"></div>
     <div style="overflow-x:auto"><table class="sig-table" id="scReg"></table></div>
@@ -2689,6 +2693,93 @@ function renderScotlandMap() {
       siteRows.map(({ S, a, a1 }) => `<tr><td class="name">${S.n}</td><td style="text-align:left;color:var(--muted)">${S.r}${S.w ? ' · ' + S.w : ''}</td><td>${a.bioEnd > 0 ? f0(a.bioEnd) + ' t' : '<span style="color:var(--muted)">fallow</span>'}</td><td>${dv(a.bioEnd, a1.bioEnd) || '—'}</td>` +
         `<td>${f1(a.dead)} t</td><td>${dv(a.dead, a1.dead, true) || '—'}</td><td>${a.deadPct !== null && a.bioAvg > 0 ? f1(a.deadPct) + ' %' : '—'}</td><td>${f0(a.feed)} t</td><td>${a.treated}</td><td>${a.bioEnd > 0 ? f0(100 * a.bioEnd / S.mtb) + ' %' : '—'}</td></tr>`).join('') + '</tbody></table></div>' : '');
 }
+
+
+// series longues des tableaux complementaires (scripts/build_scotland_survey.py -> scotland_survey.json -> history)
+function scHistory() {
+  const H = SCS.history; if (!H) return '';
+  const f0 = v => v === null || v === undefined || !isFinite(v) ? '—' : Math.round(v).toLocaleString('en-US'), f1 = v => v === null || v === undefined || !isFinite(v) ? '—' : (+v).toFixed(1);
+  const pc = (a, b) => a && b ? (v => `<span class="${v >= 0 ? 'delta-good' : 'delta-bad'}">${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(0)}%</span>`)(100 * (a / b - 1)) : '—';
+  const E = SCS.production_estimate || {}, yE = Object.keys(E).map(Number).sort()[0];
+  // 1) production depuis 1990 + estimation
+  const ys = Object.keys(H.production).map(Number).filter(y => y >= 1990).sort((a, b) => a - b); if (yE) ys.push(yE);
+  const pv = ys.map(y => (H.production[y] || null) / 1000), ev = ys.map(y => y === yE ? E[y] / 1000 : null);
+  let out = `<div class="sig-sub" style="margin-top:16px"><b>Harvest since 1990</b>, thousand tonnes live; the last bar is the companies' estimate for ${yE}.</div>` +
+    scSvg(ys, [{ v: pv, bar: true, col: '#81c784', lab: 'harvest, kt' }, { v: ev, bar: true, col: '#2e4d3a', lab: `estimate ${yE}` }], { lab: y => String(y), xl: y => y % 5 === 0 ? String(y) : '', fmt: v => v.toFixed(0), H: 200 });
+  // 2) par zone : 3 dernieres annees + estimation
+  const A = H.by_area || {}, areas = Object.keys(A).filter(a => a !== 'All Scotland'), y3 = [yE - 3, yE - 2, yE - 1];
+  const sw25 = A['South West'] && A['South West'][String(yE - 1)], swBad = sw25 && sw25.t && Math.abs((sw25.y0 || 0) + (sw25.gr || 0) + (sw25.ps || 0) + (sw25.y2 || 0) - sw25.t) > 0.05 * sw25.t;
+  out += `<div class="sig-sub" style="margin-top:14px"><b>Harvest by production area</b> (tonnes live) and the companies' estimate for ${yE}. Year-2 share and weight show who keeps fish longer.</div>` +
+    `<div style="overflow-x:auto"><table class="sig-table"><thead><tr><th class="name">Area</th>${y3.map(y => `<th>${y}</th>`).join('')}<th>${yE} est.</th><th>${yE} vs ${yE - 1}</th><th>Year-2 share ${yE - 1}</th><th>Year-2 weight</th><th>Grilse weight</th></tr></thead><tbody>` +
+    [...areas, 'All Scotland'].map(a => { const d = A[a] || {}, g = y => (d[String(y)] || {}).t, l = d[String(yE - 1)] || {}, bad = a === 'South West' && swBad;
+      return `<tr${a === 'All Scotland' ? ' style="font-weight:bold"' : ''}><td class="name">${a}</td>${y3.map(y => `<td>${f0(g(y))}</td>`).join('')}<td>${f0(g(yE))}</td><td>${pc(g(yE), g(yE - 1))}</td>` +
+        `<td>${bad ? '<span title="stage split inconsistent in the source table" style="color:#ffb74d">?</span>' : l.t ? f1(100 * (l.y2 || 0) / l.t) + ' %' : '—'}</td><td>${bad ? '?' : f1(l.y2_w) + ' kg'}</td><td>${f1(l.gr_w)} kg</td></tr>`; }).join('') + '</tbody></table></div>' +
+    (swBad ? `<div class="sig-sub" style="color:#ffb74d">South West ${yE - 1}: the stage split in the source table does not add up to the area total (pre-salmon and year-2 figures repeat the Western Isles row) — left out.</div>` : '');
+  // 3) poids moyens par stade et survie, depuis 2005
+  const AS = A['All Scotland'] || {}, wy = Object.keys(AS).map(Number).filter(y => y >= 2005 && y < yE).sort((a, b) => a - b);
+  out += `<div class="sig-sub" style="margin-top:14px"><b>Mean harvest weight by stage</b>, kg live, all Scotland.</div>` +
+    scSvg(wy, [{ v: wy.map(y => AS[y].gr_w), col: '#4fc3f7', dots: true, lab: 'grilse (year 1, Jan–Aug)' }, { v: wy.map(y => AS[y].ps_w), col: '#ffb74d', dots: true, lab: 'pre-salmon (year 1, Sep–Dec)' },
+      { v: wy.map(y => AS[y].y2_w), col: '#ce93d8', w: 2.4, dots: true, lab: 'year 2 salmon' }], { lab: y => String(y), xl: y => String(y).slice(2), fmt: v => v.toFixed(1), min: 3, max: 7, H: 190 });
+  const YC = H.year_class || {}, cy = Object.keys(YC).map(Number).filter(y => y >= 1995).sort((a, b) => a - b);
+  const tot = y => { const c = YC[y]; return c && c.y2_pct !== null && c.y2_pct !== undefined ? (c.y0_pct || 0) + (c.y1_pct || 0) + c.y2_pct : null; };
+  out += `<div class="sig-sub" style="margin-top:14px"><b>Survival to harvest of each smolt year class</b> (% of the smolts put to sea that were harvested), with the part harvested after one year.</div>` +
+    scSvg(cy, [{ v: cy.map(tot), col: '#81c784', w: 2.4, dots: true, lab: 'total survival to harvest' }, { v: cy.map(y => YC[y].y1_pct), col: '#4fc3f7', dash: '4,3', lab: 'harvested in year 1' }],
+      { lab: y => `class ${y}`, xl: y => String(y).slice(2), fmt: v => v.toFixed(0) + '%', min: 20, max: 90, H: 190 });
+  // 4) fiabilite des estimations de smolts
+  const SM = H.smolts || {}, ky = Object.keys(SM).map(Number).sort((a, b) => a - b), errs = ky.filter(y => SM[y - 1] && SM[y - 1].est_next && SM[y].produced && y >= 2016).map(y => [y, 100 * (SM[y - 1].est_next / SM[y].produced - 1)]);
+  const last = ky[ky.length - 1], est2 = SCS.smolt_production_estimate || {};
+  if (errs.length) { const m = errs.reduce((t, e) => t + e[1], 0) / errs.length, r5 = errs.slice(-5), m5 = r5.reduce((t, e) => t + e[1], 0) / r5.length;
+    out += `<div class="sig-sub" style="margin-top:14px"><b>How good are the companies' smolt estimates?</b> Each year they forecast next year's smolt production. Since ${errs[0][0]}, the forecast was on average ${m >= 0 ? m.toFixed(0) + ' % too high' : (-m).toFixed(0) + ' % too low'}; ` +
+      `over the last five years ${m5 >= 0 ? m5.toFixed(0) + ' % too high' : (-m5).toFixed(0) + ' % too low'} (${r5.map(([y, e]) => `${y}: ${e >= 0 ? '+' : '−'}${Math.abs(e).toFixed(0)} %`).join(', ')}). ` +
+      (est2['2027'] ? `Applied to the ${f1(est2['2027'] / 1e3)} M announced for 2027, that gives roughly <b>${f1(est2['2027'] / 1e3 / (1 + m5 / 100))} M</b>.` : '') + `</div>`; }
+  return out;
+}
+// ---- enquete annuelle officielle (data/scotland_survey.json, saisie depuis le rapport du Marine Directorate)
+let SCS = null, SCS_LOADING = false;
+function renderScotlandSurvey() {
+  if (!SCS) { if (!SCS_LOADING) { SCS_LOADING = true; fetch(DATA_URL.replace('data.json', 'scotland_survey.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
+      .then(j => { SCS = j || {}; SCS_LOADING = false; if (currentView === 'scotland') renderScotlandSurvey(); }); } return; }
+  if (!SCS.production) { document.getElementById('scSvSub').innerHTML = 'Survey data not available.'; return; }
+  const f0 = v => v === null || v === undefined || !isFinite(v) ? '—' : Math.round(v).toLocaleString('en-US'), f1 = v => v === null || v === undefined || !isFinite(v) ? '—' : v.toFixed(1);
+  const vt = (a, b) => a && b ? (v => ` <span class="${v >= 0 ? 'delta-good' : 'delta-bad'}" style="font-size:12px">${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(1)}%</span>`)(100 * (a / b - 1)) : '';
+  const P = SCS.production, E = SCS.production_estimate || {}, ST = SCS.smolts_to_sea, SE = SCS.smolts_to_sea_estimate || {}, SP = SCS.smolt_production_estimate || {}, M = SCS.meta || {};
+  const card = (lab, big, sub, col) => `<div class="pr-card" style="cursor:default"><div class="nm"><i style="background:${col}"></i>${lab}</div><div class="big">${big}</div><div class="ln">${sub}</div></div>`;
+  const nT = ST.total.length, s25 = ST.total[nT - 1], s24 = ST.total[nT - 2];
+  document.getElementById('scSvSub').innerHTML = `Every Scottish salmon company answers the Marine Directorate's survey once a year (live weight at harvest). Unlike SEPA, it gives the harvest itself, by year class, smolt numbers and survival, plus the companies' own estimates for the next years. ` +
+    `<a href="${M.url}" target="_blank" rel="noopener" style="color:#4fc3f7">${M.source}</a>. Entered by hand; the next survey comes about September 2027.`;
+  document.getElementById('scSvCards').innerHTML =
+    card('Harvest 2025', `${f1(P['2025'] / 1000)} kt${vt(P['2025'], P['2024'])}`, `vs ${f1(P['2024'] / 1000)} kt in 2024 · ${f1(P['2023'] / 1000)} kt in 2023`, '#81c784') +
+    card('Harvest 2026 · companies\' estimate', `${f1(E['2026'] / 1000)} kt${vt(E['2026'], P['2025'])}`, 'from the fish already at sea', '#81c784') +
+    card('Smolts put to sea 2025', `${f1(s25 / 1000)} M${vt(s25, s24)}`, `vs ${f1(s24 / 1000)} M in 2024 · ${f1((SE['2026'] || 0) / 1000)} M planned for 2026`, '#4fc3f7') +
+    card('Smolts to be produced 2027', `${f1(SP['2027'] / 1000)} M${vt(SP['2027'], SP['2026'])}`, `vs ${f1(SP['2026'] / 1000)} M in 2026 — harvest from 2028`, '#4fc3f7');
+  // smolts mis en mer et survie par classe d'age
+  const yrs = ST.years, sv = SCS.survival, col = (v, a, b) => v === null || v === undefined ? 'var(--muted)' : v >= a ? '#7ed98f' : v < b ? '#ff8a65' : 'var(--ink)';
+  const mx = Math.max(...ST.total, SP['2027'] || 0);
+  const bars = yrs.map((y, i) => `<div style="display:flex;align-items:center;gap:8px;font-size:12px;margin:2px 0"><span style="width:40px;color:var(--muted)">${y}</span>` +
+    `<div style="flex:1;max-width:420px;height:12px;background:#0d1a24;border-radius:2px;position:relative"><div style="position:absolute;left:0;top:0;bottom:0;width:${100 * ST.s_half[i] / mx}%;background:#4fc3f7;border-radius:2px 0 0 2px"></div><div style="position:absolute;left:${100 * ST.s_half[i] / mx}%;top:0;bottom:0;width:${100 * ST.s1[i] / mx}%;background:#90caf9;opacity:.6"></div></div>` +
+    `<span style="width:70px;text-align:right">${f1(ST.total[i] / 1000)} M</span><span style="width:210px;color:${col(sv.total[i], 75, 65)}">${sv.total[i] !== null ? `survival ${f1(sv.total[i])} %` : sv.year1[i] !== null ? `<span style="color:var(--muted)">${f1(sv.year1[i])} % harvested so far</span>` : ''}</span></div>`).join('') +
+    [['2026', SE['2026'], 'planned'], ['2027', SP['2027'], 'smolts to be produced']].map(([y, v, l]) => v ? `<div style="display:flex;align-items:center;gap:8px;font-size:12px;margin:2px 0"><span style="width:40px;color:var(--muted)">${y}</span><div style="flex:1;max-width:420px;height:12px;background:#0d1a24;border-radius:2px;position:relative"><div style="position:absolute;left:0;top:0;bottom:0;width:${100 * v / mx}%;border:1px dashed #4fc3f7;border-radius:2px"></div></div><span style="width:70px;text-align:right">${f1(v / 1000)} M</span><span style="width:210px;color:var(--muted)">${l}</span></div>` : '').join('');
+  // classes d'age
+  const BC = SCS.by_class || {}, cl = [['year0', 'Same-year fish (year 0)'], ['grilse', 'Grilse — year 1, Jan–Aug'], ['pre_salmon', 'Pre-salmon — year 1, Sep–Dec'], ['year2', 'Year 2 salmon']];
+  const cls = `<table class="sig-table"><thead><tr><th class="name">Harvested as</th><th>2024</th><th>Mean weight</th><th>2025</th><th>Mean weight</th><th>Change</th></tr></thead><tbody>` +
+    cl.map(([k, l]) => { const a = (BC['2024'] || {})[k] || [], b = (BC['2025'] || {})[k] || []; return `<tr><td class="name">${l}</td><td>${f0(a[0])} t</td><td>${a[1] ?? '—'} kg</td><td>${f0(b[0])} t</td><td>${b[1] ?? '—'} kg</td><td>${vt(b[0], a[0]) || '—'}</td></tr>`; }).join('') + '</tbody></table>';
+  // par zone de production
+  const AY = SCS.area_yearclass || {}, ay = AY._years || [];
+  const area = `<table class="sig-table"><thead><tr><th class="name">Area</th>${ay.map(y => `<th>Smolts ${y}</th>`).join('')}${ay.slice(0, 3).map(y => `<th>Survival ${y}</th>`).join('')}</tr></thead><tbody>` +
+    Object.keys(AY).filter(k => k !== '_years').map(k => `<tr><td class="name">${k}</td>${AY[k].smolts.map(v => `<td>${f1(v / 1000)} M</td>`).join('')}${AY[k].total.slice(0, 3).map(v => `<td style="color:${col(v, 75, 60)}">${f1(v)} %</td>`).join('')}</tr>`).join('') + '</tbody></table>';
+  const MR = SCS.marine_regions_2025 || [], mrT = MR.reduce((t, r) => t + r[1], 0);
+  const reg = `<table class="sig-table"><thead><tr><th class="name">Marine region, 2025</th><th>Harvest</th><th>Share</th><th>Value</th></tr></thead><tbody>` +
+    MR.map(r => `<tr><td class="name">${r[0]}</td><td>${f0(r[1])} t</td><td>${f1(100 * r[1] / mrT)} %</td><td>£${f1(r[2])} M</td></tr>`).join('') + '</tbody></table>';
+  const SS = SCS.share_by_stage_pct || {};
+  document.getElementById('scSv').innerHTML =
+    `<div class="sig-sub" style="margin-top:6px"><b>Smolts put to sea and survival to harvest</b> by year of input. <span style="color:#4fc3f7">■</span> S½ (spring-hatched, out in autumn) · <span style="color:#90caf9">■</span> S1 (out the following spring). ` +
+      `Survival = share of the smolts finally harvested; it fell to 61.8 % for the 2022 class and recovered to 68.8 % for 2023 (around 75 % before 2021).</div>${bars}` +
+    `<div class="sig-sub" style="margin-top:14px"><b>Harvest by age.</b> Year 2 fish now make ${SS.year2 ? SS.year2[SS.year2.length - 1] : '—'} % of the tonnage (30 % in 2021–22): longer cycles and bigger fish — year 2 salmon averaged 6.7 kg in 2025 against 5.9 kg in 2024.</div>` +
+    `<div style="overflow-x:auto">${cls}</div>` +
+    `<div class="sig-sub" style="margin-top:14px"><b>By production area</b>: smolts put to sea and survival of each year class (green ≥ 75 %, orange &lt; 60 %).</div><div style="overflow-x:auto">${area}</div>` +
+    scHistory() +
+    `<div class="sig-sub" style="margin-top:14px"><b>Harvest and value by marine region.</b> The survey values every region at the same average price (£${(MR.reduce((t, r) => t + r[2], 0) * 1e6 / mrT / 1000).toFixed(2)} per kg live in 2025), so the value only restates the tonnage.</div><div style="overflow-x:auto">${reg}</div>`;
+}
 function renderScotland() {
   if (!SCO) { if (!SCO_LOADING) { SCO_LOADING = true; fetch(DATA_URL.replace('data.json', 'scotland.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
       .then(j => { SCO = j || { national: {} }; SCO_LOADING = false; if (currentView === 'scotland') renderScotland(); }); }
@@ -2713,6 +2804,7 @@ function renderScotland() {
     card('Deaths · last 12 months', `${f0(m12 / 1000)} kt ${vtag(pc(m12, m12P), true)}`, `vs ${f0(m12P / 1000)} kt the 12 months before`, '#ff8a65') +
     card('Harvest implied · last 12 months', `${f0(h12 / 1000)} kt ${vtag(pc(h12, h12P))}`, `live weight, from feed, biomass and deaths (see below)`, '#81c784');
   renderScotlandMap();
+  renderScotlandSurvey();
   // biomasse : annee en cours et 2 precedentes, janvier-decembre
   const yL = Math.floor(L / 100), yrs = [yL - 3, yL - 2, yL - 1, yL], cols = ['#546e7a', '#8fa4b0', '#ffb74d', '#4fc3f7'], mk = [...Array(12)].map((_, i) => i + 1);
   document.getElementById('scBioSub').innerHTML = `Fish on site at the end of each month, all Scottish sea farms, thousand tonnes live weight. The seasonal low comes in spring, after the winter harvest; the high in late autumn.`;
@@ -2730,7 +2822,7 @@ function renderScotland() {
   // recolte implicite
   const hv = k36.map(k => harv(N, k)), hP = k36.map(k => harv(N, k - 100));
   document.getElementById('scHarvSub').innerHTML = `SEPA has no harvest figure. It is deduced: growth = feed ÷ ${SC_FCR} (feed conversion), then harvest = growth − change in biomass − deaths. ` +
-    `Checked against the official production survey: the yearly totals land within about 5 % (2022: 168 kt implied vs 170; 2023: 162 vs 151; 2024: 201 vs 192). Month by month it is noisier — read the trend, not one month. Thousand tonnes, live weight.`;
+    `Checked against the official production survey: the yearly totals land within about 5 % (2023: 162 kt implied vs 151; 2024: 201 vs 192; 2025: 194 vs 198). Month by month it is noisier — read the trend, not one month. Thousand tonnes, live weight.`;
   document.getElementById('scHarv').innerHTML = scSvg(k36, [{ v: hv.map(v => v === null ? null : v / 1000), bar: true, col: '#81c784', lab: 'harvest implied, kt' },
     { v: hP.map(v => v === null ? null : v / 1000), col: '#8fa4b0', w: 1.5, dash: '1,3', lab: 'same month a year earlier' }], { lab: ml, xl: k => k % 100 === 1 || k === k36[0] ? ml(k) : MONTHS_FR[k % 100 - 1].slice(0, 1), fmt: v => v.toFixed(0), min: Math.min(0, ...hv.filter(v => v !== null).map(v => v / 1000)) });
   // tableaux par region et par operateur
