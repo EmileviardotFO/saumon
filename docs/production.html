@@ -753,6 +753,24 @@
       <div id="hlNewMore" style="margin-top:8px;"></div>
     </div>
 
+    <div id="mevWrap">
+      <div class="sig-title" style="margin-top:26px;">Mortality events — algae, jellyfish, oxygen, storms… all basins</div>
+      <div class="sig-sub" id="mevSub"></div>
+      <div class="sig-title" style="margin-top:14px;font-size:14px;">Norway — unusual monthly deaths in the register</div>
+      <div class="sig-sub" id="mevRegSub"></div>
+      <div class="gm-tw" style="overflow-x:auto"><table class="sig-table" id="mevRegTable"></table></div>
+      <div id="mevRegMore" style="margin-top:6px;"></div>
+      <div class="sig-title" style="margin-top:20px;font-size:14px;">Recorded events with losses</div>
+      <div class="sig-sub">Entered by hand from official statements and the press (file data/events.json, key "manual"): the losses that matter for supply.</div>
+      <div style="overflow-x:auto"><table class="sig-table" id="mevManTable"></table></div>
+      <div class="sig-title" style="margin-top:20px;font-size:14px;">Press watch</div>
+      <div class="sig-sub" id="mevNewsSub"></div>
+      <div class="chart-controls" id="mevNewsCtl"></div>
+      <div style="overflow-x:auto"><table class="sig-table" id="mevNewsTable"></table></div>
+      <div id="mevNewsMore" style="margin-top:6px;"></div>
+      <div id="mevScoWrap"></div>
+    </div>
+
     <div id="hlChartWrap">
     <div class="sig-title" style="margin-top:26px;">Weekly trend — this year against the two previous</div>
     <div class="chart-controls">
@@ -2389,6 +2407,7 @@ function renderHealth() {
   lastMapValues.html = mapHtml;
 
   drawHealthChart(idx, yN);
+  renderMortEvents();
   const m = BW.meta || {};
   document.getElementById('hlNote').innerHTML =
     `<b>Source.</b> ${m.source || 'BarentsWatch'} — sites at sea with a salmonid licence, excluding slaughter holding cages. ` +
@@ -2418,6 +2437,101 @@ function hlTrtLabel(t) {
   if (p[0] === 'mechanicalremoval') return 'mechanical removal';
   if (p[0] === 'cleanerfish') return 'cleaner fish' + (p[1] && p[1] !== '?' ? ' (' + p[1] + ')' : '');
   return t;
+}
+
+// ===================== Evenements de mortalite (algues, meduses, oxygene...) =====================
+// 1) Norvege : mois x zone ou les morts declares au registre sortent nettement de la normale de la zone pour ce mois
+//    (part des poissons presents morts >= 2 x la mediane des autres annees, et >= mediane + 1,5 pt, et >= 200 000 poissons),
+//    croises avec BarentsWatch (nouveaux sites ILA/PD, traitements anti-poux) pour separer maladie / traitements / inexplique.
+// 2) evenements saisis a la main avec les pertes ; 3) veille presse par mots-cles (scripts/update_events.py).
+let MEV = null, MEV_LOADING = false, MEV_B = 'all', MEV_C = 'all', MEV_ALL = false, MEV_NALL = false;
+const MEV_BASIN = { NO: 'Norway', CL: 'Chile', IS: 'Iceland', GB: 'Scotland / UK', FO: 'Faroe Islands', CA: 'Canada', IE: 'Ireland', AU: 'Australia', NZ: 'New Zealand', US: 'USA', other: 'Other' };
+const MEV_CAUSE = { algae: ['Algae', '#81c784'], jellyfish: ['Jellyfish', '#ce93d8'], gill: ['Gills', '#4fc3f7'], oxygen: ['Oxygen', '#90caf9'], temperature: ['Temperature', '#ffb74d'],
+  disease: ['Disease / lice', '#ff8a65'], treatment: ['Treatment', '#ffd54f'], storm: ['Storm / escape', '#b0bec5'], unspecified: ['Unspecified', '#8fa4b0'] };
+function mevChip(c) { const x = MEV_CAUSE[c] || [c, '#8fa4b0']; return `<span style="display:inline-block;border:1px solid ${x[1]};color:${x[1]};border-radius:9px;padding:0 6px;font-size:10.5px;margin:1px 3px 1px 0;white-space:nowrap">${x[0]}</span>`; }
+function mevMonth(k) { return `${MONTHS_FR[k % 100 - 1].slice(0, 3)} ${Math.floor(k / 100)}`; }
+function mevRegister() {
+  const D = DATA_RAW; if (!D || !D.records || !D.cohort) return [];
+  const stock = {}; D.cohort.forEach(c => { const k = c.po + '_' + (c.year * 100 + c.month); stock[k] = (stock[k] || 0) + (c.stock || 0); });
+  const R = {}; D.records.forEach(r => { const k = r.year * 100 + r.month, s = stock[r.po + '_' + k] || 0, dead = r.dodfisk_stk || 0, n0 = s + (r.uttak_stk || 0) + dead + (r.other_loss_stk || 0);
+    if (n0 > 0) R[r.po + '_' + k] = { po: r.po, k, dead, sh: 100 * dead / n0, w: s ? r.biomasse_kg / s : null }; });
+  const yrs = [...new Set(Object.values(R).map(x => Math.floor(x.k / 100)))];
+  // BarentsWatch par zone et par mois : sites ILA/PD en fin de mois, semaines-sites traitees
+  const thu = (y, w) => { const j4 = new Date(Date.UTC(y, 0, 4)), mon = new Date(j4 - ((j4.getUTCDay() + 6) % 7) * 864e5 + (w - 1) * 7 * 864e5); return new Date(mon.getTime() + 3 * 864e5); };
+  const TR = {}, DIS = {}; ((D.bw_weekly || {}).rows || []).forEach(x => { const t = thu(x.y, x.w), k = t.getUTCFullYear() * 100 + t.getUTCMonth() + 1, key = x.po + '_' + k;
+    TR[key] = (TR[key] || 0) + Object.values(x.trt || {}).reduce((a, b) => a + b, 0); DIS[key] = x.dis || {}; });
+  const prevM = k => k % 100 === 1 ? k - 89 : k - 1, med = a => { const b = a.slice().sort((x, y) => x - y), n = b.length; return n % 2 ? b[(n - 1) / 2] : (b[n / 2 - 1] + b[n / 2]) / 2; };
+  const out = [];
+  Object.values(R).forEach(x => { const m = x.k % 100, past = yrs.filter(y => y !== Math.floor(x.k / 100)).map(y => R[x.po + '_' + (y * 100 + m)]).filter(Boolean).map(o => o.sh);
+    if (past.length < 3) return; const md = med(past); if (!(x.sh >= Math.max(2 * md, md + 1.5) && x.dead >= 2e5)) return;
+    const key = x.po + '_' + x.k, d1 = DIS[key] || {}, d0 = DIS[x.po + '_' + prevM(x.k)] || {};
+    const dI = (d1.INFEKSIOES_LAKSEANEMI || 0) - (d0.INFEKSIOES_LAKSEANEMI || 0), dP = (d1.PANKREASSYKDOM || 0) - (d0.PANKREASSYKDOM || 0);
+    const trp = yrs.filter(y => y !== Math.floor(x.k / 100)).map(y => TR[x.po + '_' + (y * 100 + m)]).filter(v => v !== undefined), trU = trp.length ? trp.reduce((a, b) => a + b, 0) / trp.length : null, tr = TR[key];
+    const bw = tr !== undefined || DIS[key] !== undefined;
+    const sig = []; if (dI > 0) sig.push(`+${dI} ILA site${dI > 1 ? 's' : ''}`); if (dP > 1) sig.push(`+${dP} PD sites`);
+    if (tr !== undefined && trU && tr >= 1.5 * trU && tr >= 10) sig.push(`lice treatments ×${(tr / trU).toFixed(1)} the usual`);
+    out.push({ ...x, md, excess: x.dead * (1 - md / x.sh), t: x.w ? x.dead * x.w / 1e6 : null, sig, bw }); });
+  return out.sort((a, b) => b.k - a.k || b.dead - a.dead);
+}
+function mevMatch(f) {   // evenement saisi ou article qui correspond (meme bassin, mois +-1, zone si citee)
+  const E = (MEV && MEV.manual) || [], near = d => { const k = +d.slice(0, 4) * 100 + +d.slice(5, 7); return Math.abs((Math.floor(k / 100) * 12 + k % 100) - (Math.floor(f.k / 100) * 12 + f.k % 100)) <= 1; };
+  const m = E.find(e => e.basin === 'NO' && near(e.date) && (!e.region || new RegExp('PO ?' + f.po + '\\b').test(e.region)));
+  if (m) return { cause: m.cause, txt: `${m.agent || ''}`, url: m.url, src: m.src };
+  const n = ((MEV && MEV.news) || []).find(a => (a.basins || []).includes('NO') && near(a.date) && a.causes.some(c => c !== 'unspecified'));
+  return n ? { cause: n.causes[0], txt: n.title, url: n.url, src: n.source, press: true } : null;
+}
+function renderMortEvents() {
+  const wrap = document.getElementById('mevWrap'); if (!wrap) return;
+  if (!MEV && !MEV_LOADING) { MEV_LOADING = true; fetch(DATA_URL.replace('data.json', 'events.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
+    .then(j => { MEV = j || { manual: [], news: [] }; MEV_LOADING = false; renderMortEvents(); }); }
+  const F = mevRegister(), last = F.length ? Math.max(...(DATA_RAW.records || []).map(r => r.year * 100 + r.month)) : null;
+  document.getElementById('mevSub').innerHTML = `BarentsWatch only lists notifiable diseases: algal blooms, jellyfish, low oxygen or storms leave no trace there, though they can kill hundreds of thousands of fish in days ` +
+    `(Chile lost about 40,000 t in 2016). Three ways to catch them: unusual deaths in the Norwegian register (about 3 weeks after the month), events entered with their losses, and a press watch in every basin (within days).`;
+  document.getElementById('mevRegSub').innerHTML = `Zone-months where the share of the fish present that died is at least <b>twice the zone's usual level for that month</b> (median of the other years) and 1.5 points above it, with at least 200,000 dead fish. ` +
+    `<b>Cause</b>: an event recorded or found in the press for the same month; otherwise BarentsWatch is checked — new ILA/PD sites or a surge in lice treatments point to disease or handling; nothing there = <span style="color:#ffd54f">unexplained</span> (algae, jellyfish, oxygen, cold, handling…). ` +
+    `Tonnes = dead fish × the zone's average live weight that month: an upper bound, since the small fish tend to die first.`;
+  const rows = (MEV_ALL ? F : F.slice(0, 12)).map(f => { const m = MEV ? mevMatch(f) : null, isNew = f.k === last;
+    const cause = m ? `${mevChip(m.cause)} ${m.url ? `<a href="${m.url}" target="_blank" rel="noopener" style="color:var(--ink)">${m.txt || m.src}</a>` : (m.txt || m.src)}${m.press ? ' <span style="color:var(--muted)">(press)</span>' : ''}`
+      : f.sig.length ? `${mevChip('disease')} ${f.sig.join(', ')}` : f.bw ? `<span style="color:#ffd54f">unexplained</span> <span style="color:var(--muted)">— no disease or treatment surge reported</span>` : `<span style="color:var(--muted)">before BarentsWatch data</span>`;
+    return `<tr${isNew ? ' style="background:rgba(255,213,79,.08)"' : ''}><td class="name">${mevMonth(f.k)}${isNew ? ' <b style="color:#ffd54f">new</b>' : ''}</td><td style="text-align:left">${f.po}. ${PO_NAMES[f.po]}</td>` +
+      `<td>${(f.dead / 1e6).toFixed(2)} M</td><td><b>${f.sh.toFixed(1)} %</b></td><td>${f.md.toFixed(1)} %</td><td>${(f.excess / 1e6).toFixed(2)} M</td><td>${f.t !== null ? f.t.toFixed(1) + ' kt' : '—'}</td>` +
+      `<td style="text-align:left;white-space:normal;min-width:260px">${cause}</td></tr>`; }).join('');
+  document.getElementById('mevRegTable').innerHTML = `<thead><tr><th class="name">Month</th><th style="text-align:left">Zone</th><th>Dead fish</th><th>Share of fish present</th><th>Usual for the month</th><th>Excess deaths</th><th>Up to (live)</th><th style="text-align:left">Cause</th></tr></thead><tbody>${rows || '<tr><td colspan="8">No unusual month.</td></tr>'}</tbody>`;
+  document.getElementById('mevRegMore').innerHTML = F.length > 12 ? `<button class="ctrl" id="mevRegBtn">${MEV_ALL ? 'Show the last 12' : `Show all ${F.length} (since ${mevMonth(F[F.length - 1].k)})`}</button>` : '';
+  const rb = document.getElementById('mevRegBtn'); if (rb) rb.onclick = () => { MEV_ALL = !MEV_ALL; renderMortEvents(); };
+  if (!MEV) { ['mevManTable', 'mevNewsTable'].forEach(id => document.getElementById(id).innerHTML = '<tbody><tr><td>Loading…</td></tr></tbody>'); return; }
+  // evenements saisis
+  const man = (MEV.manual || []).slice().sort((a, b) => b.date.localeCompare(a.date));
+  document.getElementById('mevManTable').innerHTML = `<thead><tr><th class="name">Month</th><th style="text-align:left">Basin, region</th><th style="text-align:left">Cause</th><th>Fish lost</th><th>Tonnes</th><th style="text-align:left">Detail</th></tr></thead><tbody>` +
+    (man.map(e => `<tr><td class="name">${mevMonth(+e.date.slice(0, 4) * 100 + +e.date.slice(5, 7))}</td><td style="text-align:left">${MEV_BASIN[e.basin] || e.basin}${e.region ? ', ' + e.region : ''}</td>` +
+      `<td style="text-align:left">${mevChip(e.cause)} ${e.agent || ''}</td><td>${e.fish_m ? e.fish_m.toLocaleString('en-US') + ' M' : '—'}</td><td>${e.tonnes ? Math.round(e.tonnes).toLocaleString('en-US') + ' t' : '—'}</td>` +
+      `<td style="text-align:left;white-space:normal;min-width:260px">${e.company ? `<b>${e.company}</b> · ` : ''}${e.note || ''} ${e.url ? `<a href="${e.url}" target="_blank" rel="noopener" style="color:#4fc3f7">${e.src || 'source'}</a>` : `<span style="color:var(--muted)">${e.src || ''}</span>`}</td></tr>`).join('') || '<tr><td colspan="6">None yet.</td></tr>') + '</tbody>';
+  // veille presse
+  const N = MEV.news || [], st = (MEV.meta || {}).status || {}, okN = Object.values(st).filter(v => /^ok/.test(v)).length, nS = Object.keys(st).length;
+  const cntB = {}, cntC = {}; N.forEach(a => { (a.basins || []).forEach(b => cntB[b] = (cntB[b] || 0) + 1); (a.causes || []).forEach(c => cntC[c] = (cntC[c] || 0) + 1); });
+  document.getElementById('mevNewsSub').innerHTML = `Articles kept when they contain a word for deaths and a word for fish farming, in Norwegian, Spanish, Icelandic, Faroese, Danish or English; then sorted by cause and basin from the words they use (automatic: check the article). ` +
+    `Sources: iLaks, Kyst.no, SalmonBusiness, Fish Farming Expert, Fish Farmer, Salmonexpert.cl, The Fish Site, and Google News searches by basin. ` +
+    (nS ? `Last run ${(MEV.meta || {}).generated || ''}: ${okN} of ${nS} sources answered.` : 'The first run of the update fills this list.');
+  const chips = (cur, list, attr) => list.map(([v, l, n]) => `<span class="gm-chip${v === cur ? ' on' : ''}" data-${attr}="${v}" style="cursor:pointer;display:inline-block;padding:2px 8px;border:1px solid var(--border);border-radius:10px;margin:2px;font-size:11.5px;${v === cur ? 'background:#1f3a4a;color:var(--ink)' : ''}">${l}${n !== undefined ? ` <span style="color:var(--muted)">${n}</span>` : ''}</span>`).join('');
+  document.getElementById('mevNewsCtl').innerHTML = `<span class="cc-label">Basin</span>` + chips(MEV_B, [['all', 'All', N.length], ...Object.keys(MEV_BASIN).filter(b => cntB[b]).map(b => [b, MEV_BASIN[b], cntB[b]])], 'b') +
+    `<span class="cc-label" style="margin-left:10px">Cause</span>` + chips(MEV_C, [['all', 'All'], ...Object.keys(MEV_CAUSE).filter(c => cntC[c]).map(c => [c, MEV_CAUSE[c][0], cntC[c]])], 'c');
+  document.querySelectorAll('#mevNewsCtl [data-b]').forEach(x => x.onclick = () => { MEV_B = x.dataset.b; renderMortEvents(); });
+  document.querySelectorAll('#mevNewsCtl [data-c]').forEach(x => x.onclick = () => { MEV_C = x.dataset.c; renderMortEvents(); });
+  const L = N.filter(a => (MEV_B === 'all' || (a.basins || []).includes(MEV_B)) && (MEV_C === 'all' || (a.causes || []).includes(MEV_C)));
+  document.getElementById('mevNewsTable').innerHTML = `<thead><tr><th class="name">Date</th><th style="text-align:left">Basin</th><th style="text-align:left">Cause (from the words used)</th><th style="text-align:left">Article</th></tr></thead><tbody>` +
+    ((MEV_NALL ? L : L.slice(0, 25)).map(a => `<tr><td class="name" style="white-space:nowrap">${a.date}</td><td style="text-align:left">${(a.basins || []).map(b => MEV_BASIN[b] || b).join(', ')}</td>` +
+      `<td style="text-align:left">${(a.causes || []).map(mevChip).join('')}</td><td style="text-align:left;white-space:normal;min-width:280px"><a href="${a.url}" target="_blank" rel="noopener" style="color:var(--ink)">${a.title}</a> <span style="color:var(--muted)">· ${a.source || ''}</span></td></tr>`).join('') ||
+      `<tr><td colspan="4" style="color:var(--muted);text-align:left">${N.length ? 'No article for this filter.' : 'No article yet: the press watch runs with the automatic update.'}</td></tr>`) + '</tbody>';
+  document.getElementById('mevNewsMore').innerHTML = L.length > 25 ? `<button class="ctrl" id="mevNBtn">${MEV_NALL ? 'Show the last 25' : `Show all ${L.length}`}</button>` : '';
+  const nb = document.getElementById('mevNBtn'); if (nb) nb.onclick = () => { MEV_NALL = !MEV_NALL; renderMortEvents(); };
+  // Ecosse : declarations au Fish Health Inspectorate
+  const S = MEV.scotland_fhi;
+  document.getElementById('mevScoWrap').innerHTML = S && S.monthly ? (() => { const ks = Object.keys(S.monthly).slice(-12), mx = Math.max(1, ...ks.map(k => S.monthly[k].reports));
+    return `<div class="sig-title" style="margin-top:20px;font-size:14px;">Scotland — mortalities reported to the Fish Health Inspectorate</div>` +
+      `<div class="sig-sub">Monthly reports of mortality above the reporting threshold, one month in arrears, by the cause given (sorted from the words used). <a href="${S.source}" target="_blank" rel="noopener" style="color:#4fc3f7">Source file</a>.</div>` +
+      `<table class="sig-table"><thead><tr><th class="name">Month</th><th>Reports</th><th style="text-align:left">By cause</th></tr></thead><tbody>` +
+      ks.reverse().map(k => { const m = S.monthly[k]; return `<tr><td class="name">${k}</td><td><div style="display:inline-block;width:${Math.round(60 * m.reports / mx)}px;height:8px;background:#4fc3f7;border-radius:2px;margin-right:6px"></div>${m.reports}</td>` +
+        `<td style="text-align:left">${Object.entries(m.causes).sort((a, b) => b[1] - a[1]).map(([c, n]) => `${mevChip(c)}${n}`).join(' ')}</td></tr>`; }).join('') + '</tbody></table>'; })() : '';
 }
 function renderHealthSites(keysN, keysP, yN, per) {
   const wrap = document.getElementById('hlSiteWrap');
@@ -8293,6 +8407,8 @@ function renderBrief() {
   if (ta !== null) li.push(`<b>Sea temperature</b>: ${sg(ta)}° vs a normal ${MON_GM[k % 100 - 1]}` + (zt.length ? `; zones 1° or more from normal: ${zt.join(', ')}` : '') + '.');
   const zm = []; for (let po = 1; po <= 13; po++) { const a = (G.REC[po] || {})[k], b = (G.REC[po] || {})[ky]; if (a && b && a.mortality_pct >= 1.2 && a.mortality_pct >= 1.4 * b.mortality_pct) zm.push(`${po} (${f1(a.mortality_pct)} % vs ${f1(b.mortality_pct)} %)`); }
   if (r && r.mortality_pct !== null) li.push(`<b>Mortality</b>: ${f2(r.mortality_pct)} % of the stock in the month` + (ry && ry.mortality_pct !== null ? ` (${f2(ry.mortality_pct)} % a year earlier)` : '') + (zm.length ? `; zones well above last year: ${zm.join(', ')}` : '') + '.');
+  try { const MF = mevRegister().filter(f => f.k === k);
+    if (MF.length) li.push(`<b style="color:#ffd54f">Unusual deaths</b> in ${MF.map(f => `zone ${f.po} (${f.sh.toFixed(1)} % of the fish present vs ${f.md.toFixed(1)} % usually, ${(f.dead / 1e6).toFixed(2)} M fish${f.sig.length ? ', ' + f.sig.join(', ') : ', no disease or treatment surge reported'})`).join('; ')} — see Mortality events in the Fish health tab.`); } catch (e) { /* registre absent */ }
   const dz = (kk, d) => (G.DIS[NOR + '_' + kk] || {})[d] || 0, dl = [];
   [['INFEKSIOES_LAKSEANEMI', 'ILA'], ['PANKREASSYKDOM', 'PD']].forEach(([d, lab]) => { const a = dz(k, d), b = dz(kp, d); if (a || b) dl.push(`${lab} ${a} sites (${a - b >= 0 ? '+' : '−'}${Math.abs(a - b)} in the month)`); });
   if (dl.length) li.push(`<b>Disease</b> at the end of the month: ${dl.join(', ')}.`);
