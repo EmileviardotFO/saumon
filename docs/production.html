@@ -345,6 +345,15 @@
   }
 
 /* selecteur de periode commun a tous les onglets */
+.sc-mapgrid { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 12px; align-items: start; }
+@media (max-width: 800px) { .sc-mapgrid { grid-template-columns: 1fr; } #scMap { height: 420px !important; } }
+.sc-op { display: flex; align-items: center; gap: 8px; padding: 7px 9px; border: 1px solid var(--border); border-radius: 7px; margin-bottom: 5px; cursor: pointer; font-size: 12.5px; background: #0d1a24; }
+.sc-op:hover { border-color: #4fc3f7; }
+.sc-op.on { border-color: #ffd54f; background: #1a2b36; }
+.sc-op i { width: 11px; height: 11px; border-radius: 50%; flex: none; }
+.sc-op b { flex: 1; color: var(--ink); font-weight: 600; }
+.sc-op span { color: var(--muted); font-size: 11.5px; white-space: nowrap; }
+.leaflet-popup-content { font-size: 12px; line-height: 1.45; }
 .pseg { display: inline-flex; border: 1px solid var(--border); border-radius: 7px; overflow: hidden; vertical-align: middle; flex-wrap: wrap; }
 .pseg button { background: transparent; color: var(--muted); border: 0; border-right: 1px solid var(--border); padding: 6px 13px; font: inherit; font-size: 12.5px; cursor: pointer; white-space: nowrap; }
 .pseg button:last-child { border-right: 0; }
@@ -415,6 +424,9 @@
       <button data-v="euflows">EU markets</button>
       <button data-v="usa">USA focus</button>
       <button data-v="china">China focus</button>
+    </div></div>
+    <div class="vt-row"><span class="vt-lab">Other basins<small>biomass &amp; biology</small></span><div class="vt-btns">
+      <button data-v="scotland">Scotland</button>
     </div></div>
   </div>
   <div class="field" id="poFilterField" style="display:none;">
@@ -957,6 +969,37 @@
     <div class="sig-sub" id="genHwSub" style="margin-top:14px"></div>
     <table class="sig-table"><thead id="genHwHead"></thead><tbody id="genHwBody"></tbody></table>
     <div class="note" id="genNote" style="text-align:left;max-width:none;margin-top:16px"></div>
+  </div>
+
+  <div class="panel" id="scotlandView" style="flex:1; min-width:0; max-width:1400px; display:none;">
+    <div class="sig-title">Scotland — fish at sea, deaths and feed, farm by farm (SEPA monthly reports)</div>
+    <div class="sig-sub" id="scSub"></div>
+    <div id="scCards" class="pr-cards"></div>
+    <div class="sig-title" style="margin-top:18px">Farms and companies</div>
+    <div class="sig-sub" id="scMapSub"></div>
+    <div class="chart-controls"><span class="cc-label">Period</span><select class="ctrl" id="scPer"><option value="last">last</option><option value="ytd">ytd</option><option value="custom">custom</option></select>
+      <span id="scCustom" style="display:none;align-items:center;gap:6px"><select class="ctrl" id="scFrom"></select><span class="cc-label">to</span><select class="ctrl" id="scTo"></select></span></div>
+    <div class="sc-mapgrid">
+      <div id="scOpList"></div>
+      <div id="scMap" style="height:560px;border:1px solid var(--border);border-radius:8px;background:#0d1a24"></div>
+    </div>
+    <div id="scSel" style="margin-top:14px"></div>
+    <div class="sig-title" style="margin-top:18px">Biomass at sea</div>
+    <div class="sig-sub" id="scBioSub"></div>
+    <div id="scBio"></div>
+    <div class="sig-title" style="margin-top:18px">Monthly deaths, share of the biomass</div>
+    <div class="sig-sub" id="scMortSub"></div>
+    <div id="scMort"></div>
+    <div class="sig-title" style="margin-top:18px">Harvest implied by the feed</div>
+    <div class="sig-sub" id="scHarvSub"></div>
+    <div id="scHarv"></div>
+    <div class="sig-title" style="margin-top:18px">By area and by company</div>
+    <div class="sig-sub" id="scTabSub"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="scReg"></table></div>
+    <div style="overflow-x:auto;margin-top:14px"><table class="sig-table" id="scOps"></table></div>
+    <div class="sig-title" style="margin-top:18px">Unusual monthly deaths by area</div>
+    <div class="sig-sub" id="scFlagSub"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="scFlags"></table></div>
   </div>
 
   <div class="panel" id="producersView" style="flex:1; min-width:0; max-width:1600px; display:none;">
@@ -2533,6 +2576,179 @@ function renderMortEvents() {
       ks.reverse().map(k => { const m = S.monthly[k]; return `<tr><td class="name">${k}</td><td><div style="display:inline-block;width:${Math.round(60 * m.reports / mx)}px;height:8px;background:#4fc3f7;border-radius:2px;margin-right:6px"></div>${m.reports}</td>` +
         `<td style="text-align:left">${Object.entries(m.causes).sort((a, b) => b[1] - a[1]).map(([c, n]) => `${mevChip(c)}${n}`).join(' ')}</td></tr>`; }).join('') + '</tbody></table>'; })() : '';
 }
+
+// ===================== Ecosse : rapports mensuels SEPA (data/scotland.json, scripts/build_scotland.py) =====================
+let SCO = null, SCO_LOADING = false;
+const SC_FCR = 1.2;   // aliment / croissance (vif) : avec 1,2 la recolte deduite retombe a +-5 % de l'enquete officielle 2022-2024
+function scSvg(keys, series, o) {   // petit graphique : barres et lignes sur une echelle, etiquettes de mois
+  const W = 900, H = o.H || 220, l = 48, r = 14, t = 12, b = 30, pw = W - l - r, ph = H - t - b, n = keys.length, bw = pw / n;
+  const all = series.flatMap(x => x.v).filter(v => v !== null && isFinite(v)), mx = (o.max || Math.max(...all)) * 1.08, mn = o.min || 0;
+  const X = i => l + bw * (i + .5), Y = v => t + ph - (v - mn) / (mx - mn) * ph;
+  let s = '';
+  for (let i = 0; i <= 4; i++) { const v = mn + (mx - mn) * i / 4, y = Y(v); s += `<line x1="${l}" x2="${W - r}" y1="${y}" y2="${y}" stroke="#223642"/><text x="${l - 5}" y="${y + 4}" font-size="10" text-anchor="end" fill="#8fa4b0">${o.fmt ? o.fmt(v) : Math.round(v)}</text>`; }
+  series.forEach(x => { if (x.bar) x.v.forEach((v, i) => { if (v === null || !isFinite(v)) return; const c = typeof x.col === 'function' ? x.col(i, v) : x.col;
+      s += `<rect x="${l + bw * i + bw * .15}" y="${Y(v)}" width="${bw * .7}" height="${Math.max(0, Y(mn) - Y(v))}" fill="${c}" fill-opacity=".85"><title>${o.lab(keys[i])}: ${o.fmt ? o.fmt(v) : v}</title></rect>`; });
+    else { let d = '', pen = false; x.v.forEach((v, i) => { if (v === null || !isFinite(v)) { pen = false; return; } d += (pen ? 'L' : 'M') + X(i) + ',' + Y(v); pen = true; });
+      s += `<path d="${d}" fill="none" stroke="${x.col}" stroke-width="${x.w || 2}"${x.dash ? ` stroke-dasharray="${x.dash}"` : ''}/>`;
+      if (x.dots) x.v.forEach((v, i) => { if (v !== null && isFinite(v)) s += `<circle cx="${X(i)}" cy="${Y(v)}" r="2.4" fill="${x.col}"><title>${o.lab(keys[i])}: ${o.fmt ? o.fmt(v) : v}</title></circle>`; }); } });
+  const step = Math.ceil(n / 24);
+  keys.forEach((k, i) => { if (i % step) return; s += `<text x="${X(i)}" y="${t + ph + 13}" text-anchor="middle" font-size="9.5" fill="#8fa4b0">${o.xl ? o.xl(k) : k}</text>`; });
+  return `<div style="max-width:1100px"><svg viewBox="0 0 ${W} ${H}" style="display:block;width:100%;height:auto">${s}</svg></div>` +
+    `<div class="sig-sub" style="margin-top:4px">${series.filter(x => x.lab).map(x => `<span style="white-space:nowrap;margin-right:14px"><span style="display:inline-block;width:16px;height:${x.bar ? 9 : 2}px;background:${typeof x.col === 'function' ? x.col0 : x.col};vertical-align:middle;margin-right:5px${x.dash ? ';opacity:.7' : ''}"></span>${x.lab}</span>`).join('')}</div>`;
+}
+
+// ---- carte des fermes et fiche par entreprise (data/scotland.json -> site_data)
+let SC_MAP = null, SC_LAYER = null, SC_OP = null, SC_LL = false;
+const SC_COL = ['#4fc3f7', '#ffb74d', '#81c784', '#ce93d8', '#ff8a65', '#ffd54f', '#90caf9', '#e57373', '#a1887f', '#4db6ac', '#f06292', '#aed581'];
+function scLeaflet(cb) {
+  if (window.L) return cb(); if (SC_LL) return; SC_LL = true;
+  const css = document.createElement('link'); css.rel = 'stylesheet'; css.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css'; document.head.appendChild(css);
+  const js = document.createElement('script'); js.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js'; js.onload = () => { SC_LL = false; cb(); };
+  js.onerror = () => { SC_LL = false; document.getElementById('scMap').innerHTML = '<div style="padding:16px;color:var(--muted)">The map library could not load (offline?).</div>'; }; document.head.appendChild(js);
+}
+function scPeriod(D) {
+  const ms = D.months, L = ms[ms.length - 1], sel = document.getElementById('scPer'), fS = document.getElementById('scFrom'), tS = document.getElementById('scTo');
+  const ml = k => `${MONTHS_FR[k % 100 - 1].slice(0, 3)} ${Math.floor(k / 100)}`;
+  if (!fS.options.length) { const opts = ms.slice().reverse().filter(k => ms.includes(k - 100)).map(k => `<option value="${k}">${ml(k)}</option>`).join(''); fS.innerHTML = opts; tS.innerHTML = opts;
+    fS.value = String(ms.includes(Math.floor(L / 100) * 100 + 1) ? Math.floor(L / 100) * 100 + 1 : L); tS.value = String(L);
+    [sel, fS, tS].forEach(x => x.addEventListener('change', () => renderScotland())); }
+  periodSeg(sel, [['last', `Last month available · ${ml(L)}`], ['ytd', `Year to date · Jan–${ml(L).split(' ')[0]} ${Math.floor(L / 100)}`], ['custom', 'Selected period']]);
+  document.getElementById('scCustom').style.display = sel.value === 'custom' ? 'inline-flex' : 'none';
+  let a = L, b = L; if (sel.value === 'ytd') a = Math.floor(L / 100) * 100 + 1; if (sel.value === 'custom') { a = +fS.value; b = +tS.value; if (a > b) [a, b] = [b, a]; }
+  const P = ms.filter(k => k >= a && k <= b);
+  return { P, P1: P.map(k => k - 100).filter(k => ms.includes(k)), lab: P.length === 1 ? ml(a) : `${ml(a)}–${ml(b)}`, lab1: P.length === 1 ? ml(a - 100) : `${ml(a - 100)}–${ml(b - 100)}` };
+}
+// agregat d'un ensemble de sites sur des mois : seuls les mois-sites detenus par l'operateur op (null = tous)
+function scAgg(D, sites, P, op) {
+  const ix = {}; D.months.forEach((k, i) => ix[k] = i); const last = P[P.length - 1], prev = (() => { const i = ix[P[0]]; return i > 0 ? D.months[i - 1] : null; })();
+  const r = { bioEnd: 0, bioStart: 0, bioSum: 0, dead: 0, feed: 0, sitesEnd: 0, sitesUsed: 0, treated: 0, mtbEnd: 0, n: P.length, byReg: {} };
+  sites.forEach(([id, S]) => { const own = i => op === null ? S.b[i] !== null : S.o[i] === op; let used = false;
+    P.forEach(k => { const i = ix[k]; if (i === undefined || !own(i)) return; const b = S.b[i] || 0; r.bioSum += b; r.dead += S.m[i] || 0; r.feed += S.f[i] || 0; r.treated += S.t[i] ? 1 : 0; if (b > 0) used = true;
+      const g = r.byReg[S.r] || (r.byReg[S.r] = { bio: 0, dead: 0, feed: 0, sites: 0 }); g.dead += S.m[i] || 0; g.feed += S.f[i] || 0; });
+    const il = ix[last]; if (il !== undefined && own(il) && S.b[il] > 0) { r.bioEnd += S.b[il]; r.sitesEnd++; r.mtbEnd += S.mtb; const g = r.byReg[S.r]; if (g) { g.bio += S.b[il]; g.sites++; } }
+    const ip = prev !== null ? ix[prev] : undefined; if (ip !== undefined && own(ip)) r.bioStart += S.b[ip] || 0;
+    if (used) r.sitesUsed++; });
+  r.bioAvg = r.bioSum / Math.max(1, P.length); r.harv = r.feed / SC_FCR - (r.bioEnd - r.bioStart) - r.dead; r.deadPct = r.bioAvg ? 100 * r.dead / r.bioAvg / P.length : null;
+  return r;
+}
+function renderScotlandMap() {
+  const D = SCO && SCO.site_data; const sub = document.getElementById('scMapSub'); if (!D) { sub.innerHTML = 'No site data in scotland.json yet.'; return; }
+  const per = scPeriod(D), ops = D.operators, ix = {}; D.months.forEach((k, i) => ix[k] = i);
+  const sites = Object.entries(D.sites), last = per.P[per.P.length - 1], il = ix[last];
+  const owner = S => { for (let i = il; i >= 0; i--) if (S.o[i] !== null && S.o[i] !== undefined) return S.o[i]; return null; };
+  const f0 = v => v === null || !isFinite(v) ? '—' : Math.round(v).toLocaleString('en-US'), f1 = v => v === null || !isFinite(v) ? '—' : v.toFixed(1);
+  const dv = (a, b, badUp) => { if (!b || a === null) return ''; const v = 100 * (a / b - 1); return ` <span class="${(v >= 0) !== !!badUp ? 'delta-good' : 'delta-bad'}">${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(0)}%</span>`; };
+  const tot = scAgg(D, sites, per.P, null);
+  const opStats = ops.map((o, j) => ({ o, j, A: scAgg(D, sites, per.P, j), A1: scAgg(D, sites, per.P1, j) })).filter(x => x.A.bioEnd > 0 || x.A.dead > 0 || x.A1.bioEnd > 0).sort((a, b) => b.A.bioEnd - a.A.bioEnd);
+  const col = j => SC_COL[ops.indexOf(ops[j]) % SC_COL.length];
+  sub.innerHTML = `Every sea site reporting to SEPA since 2018, at its registered position. Circle size = fish on site at the end of the period (${per.lab}); hollow = empty (fallow). ` +
+    `<b>Click a company</b> to keep only its farms and see its figures for the period against the same months a year earlier (${per.lab1}). Click a farm for its own figures.`;
+  document.getElementById('scOpList').innerHTML = `<div class="sc-op${SC_OP === null ? ' on' : ''}" data-j="all"><i style="background:#e7eef2"></i><b>All companies</b><span>${f0(tot.bioEnd / 1000)} kt</span></div>` +
+    opStats.map(x => `<div class="sc-op${SC_OP === x.j ? ' on' : ''}" data-j="${x.j}"><i style="background:${col(x.j)}"></i><b>${x.o.replace(/ (Ltd|Limited)$/, '')}</b><span>${f1(x.A.bioEnd / 1000)} kt · ${x.A.sitesEnd} sites</span></div>`).join('');
+  document.querySelectorAll('#scOpList .sc-op').forEach(el => el.onclick = () => { SC_OP = el.dataset.j === 'all' ? null : +el.dataset.j; renderScotland(); });
+  // carte
+  scLeaflet(() => {
+    if (!SC_MAP) { SC_MAP = L.map('scMap', { scrollWheelZoom: false }).setView([57.6, -5.5], 6);
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; OpenStreetMap contributors &copy; CARTO', subdomains: 'abcd', maxZoom: 12 }).addTo(SC_MAP); }
+    if (SC_LAYER) SC_LAYER.remove(); SC_LAYER = L.layerGroup().addTo(SC_MAP);
+    const pts = [];
+    sites.forEach(([id, S]) => { const ow = owner(S); if (SC_OP !== null && ow !== SC_OP) return; const b = il !== undefined ? (S.b[il] || 0) : 0;
+      const A = scAgg(D, [[id, S]], per.P, ow), A1 = scAgg(D, [[id, S]], per.P1, null), c = ow === null ? '#8fa4b0' : col(ow);
+      const m = L.circleMarker([S.lat, S.lon], { radius: b > 0 ? 3 + Math.sqrt(b) / 6 : 3, color: c, weight: 1.4, fillColor: c, fillOpacity: b > 0 ? .55 : 0 }).addTo(SC_LAYER);
+      m.bindPopup(`<b>${S.n}</b><br>${ow !== null ? ops[ow].replace(/ (Ltd|Limited)$/, '') : ''} · ${S.r}${S.w ? ' · ' + S.w : ''}<br>Max biomass allowed: ${f0(S.mtb)} t<br>` +
+        `<b>${per.lab}</b>: fish on site ${f0(b)} t${dv(b, A1.bioEnd)} · deaths ${f1(A.dead)} t${dv(A.dead, A1.dead, true)} · feed ${f0(A.feed)} t${dv(A.feed, A1.feed)}` +
+        `${A.treated ? ` · treated ${A.treated} month${A.treated > 1 ? 's' : ''}` : ''}<br><span style="color:#888">a year earlier: ${f0(A1.bioEnd)} t on site, ${f1(A1.dead)} t dead</span>`);
+      pts.push([S.lat, S.lon]); });
+    if (pts.length) SC_MAP.fitBounds(pts, { padding: [24, 24], maxZoom: 9 });
+    setTimeout(() => SC_MAP.invalidateSize(), 50);
+  });
+  // fiche
+  const j = SC_OP, A = j === null ? tot : scAgg(D, sites, per.P, j), A1 = scAgg(D, sites, per.P1, j), name = j === null ? 'All Scottish companies' : ops[j].replace(/ (Ltd|Limited)$/, '');
+  const share = j === null ? null : 100 * A.bioEnd / tot.bioEnd, share1 = j === null ? null : 100 * A1.bioEnd / scAgg(D, sites, per.P1, null).bioEnd;
+  // parts et taux (%) : ecart en points, pas en %
+  const dpt = (a, b, badUp) => a === null || b === null || !isFinite(a - b) ? '' : ` <span class="${(a - b >= 0) !== !!badUp ? 'delta-good' : 'delta-bad'}">${a - b >= 0 ? '+' : '−'}${Math.abs(a - b).toFixed(1)} pt</span>`;
+  const kp = (lab, v, v1, unit, badUp, d = 0) => `<div class="gm-kpi" style="background:#0d1a24;border:1px solid var(--border);border-radius:8px;padding:8px 10px"><div style="font-size:17px;font-weight:bold;color:var(--ink)">${d ? f1(v) : f0(v)}${unit}${unit === ' %' ? dpt(v, v1, badUp) : dv(v, v1, badUp)}</div>` +
+    `<div style="font-size:11px;color:var(--muted)">${lab}</div><div style="font-size:11px;color:var(--muted);border-top:1px dashed var(--border);margin-top:4px;padding-top:3px">${per.lab1}: ${d ? f1(v1) : f0(v1)}${unit}</div></div>`;
+  const regs = Object.entries(A.byReg).filter(([, g]) => g.bio > 0 || g.dead > 0).sort((a, b) => b[1].bio - a[1].bio);
+  const siteRows = sites.filter(([, S]) => j === null ? false : S.o.some(o => o === j)).map(([id, S]) => { const a = scAgg(D, [[id, S]], per.P, j), a1 = scAgg(D, [[id, S]], per.P1, null); return { S, a, a1 }; })
+    .filter(x => x.a.bioSum > 0 || x.a.dead > 0 || x.a1.bioEnd > 0).sort((x, y) => y.a.bioEnd - x.a.bioEnd);
+  document.getElementById('scSel').innerHTML = `<div class="sig-title">${name} — ${per.lab} <span style="color:var(--muted);font-weight:normal">vs ${per.lab1}</span></div>` +
+    `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin:6px 0 10px">` +
+      kp('fish on site at the end, t live', A.bioEnd, A1.bioEnd, ' t') + kp('average fish on site, t', A.bioAvg, A1.bioAvg, ' t') +
+      kp(`dead fish over the period, t`, A.dead, A1.dead, ' t', true) + kp('deaths per month, % of biomass', A.deadPct, A1.deadPct, ' %', true, 1) +
+      kp('feed used, t', A.feed, A1.feed, ' t') + kp('harvest implied, t live', A.harv, A1.harv, ' t') +
+      kp('sites with fish at the end', A.sitesEnd, A1.sitesEnd, '') + kp('fish on site / max allowed (active sites)', A.mtbEnd ? 100 * A.bioEnd / A.mtbEnd : null, A1.mtbEnd ? 100 * A1.bioEnd / A1.mtbEnd : null, ' %', false, 1) +
+      kp('site-months with a medicine treatment', A.treated, A1.treated, '', true) + (share !== null ? kp('share of Scottish fish on site', share, share1, ' %', false, 1) : '') + `</div>` +
+    `<div class="sig-sub">Harvest implied = feed ÷ ${SC_FCR} − change in fish on site − deaths: rough at company level (fish moved between sites, feed bought before stocking), better over several months. ` +
+      `Medicine treatments = months where a site reported an in-feed or bath lice medicine (SEPA does not record mechanical or thermal delousing).</div>` +
+    `<div style="overflow-x:auto"><table class="sig-table"><thead><tr><th class="name">Area</th><th>Fish on site, end</th><th>Sites</th><th>Deaths</th><th>Feed</th></tr></thead><tbody>` +
+      regs.map(([r, g]) => `<tr><td class="name">${r}</td><td>${f0(g.bio)} t</td><td>${g.sites}</td><td>${f1(g.dead)} t</td><td>${f0(g.feed)} t</td></tr>`).join('') + `</tbody></table></div>` +
+    (siteRows.length ? `<div style="overflow-x:auto;margin-top:10px"><table class="sig-table"><thead><tr><th class="name">Farm</th><th style="text-align:left">Area · water</th><th>Fish on site, end</th><th>vs N-1</th><th>Deaths</th><th>vs N-1</th><th>Deaths/month, % biomass</th><th>Feed</th><th>Treated months</th><th>Use of max allowed</th></tr></thead><tbody>` +
+      siteRows.map(({ S, a, a1 }) => `<tr><td class="name">${S.n}</td><td style="text-align:left;color:var(--muted)">${S.r}${S.w ? ' · ' + S.w : ''}</td><td>${a.bioEnd > 0 ? f0(a.bioEnd) + ' t' : '<span style="color:var(--muted)">fallow</span>'}</td><td>${dv(a.bioEnd, a1.bioEnd) || '—'}</td>` +
+        `<td>${f1(a.dead)} t</td><td>${dv(a.dead, a1.dead, true) || '—'}</td><td>${a.deadPct !== null && a.bioAvg > 0 ? f1(a.deadPct) + ' %' : '—'}</td><td>${f0(a.feed)} t</td><td>${a.treated}</td><td>${a.bioEnd > 0 ? f0(100 * a.bioEnd / S.mtb) + ' %' : '—'}</td></tr>`).join('') + '</tbody></table></div>' : '');
+}
+function renderScotland() {
+  if (!SCO) { if (!SCO_LOADING) { SCO_LOADING = true; fetch(DATA_URL.replace('data.json', 'scotland.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
+      .then(j => { SCO = j || { national: {} }; SCO_LOADING = false; if (currentView === 'scotland') renderScotland(); }); }
+    document.getElementById('scSub').innerHTML = 'Loading…'; return; }
+  const N = SCO.national || {}, ks = Object.keys(N).map(Number).sort((a, b) => a - b), M = SCO.meta || {};
+  if (!ks.length) { document.getElementById('scSub').innerHTML = 'No Scottish data yet: drop the SEPA CSV export in xlsx/scotland/ and the update builds data/scotland.json.'; return; }
+  const L = ks[ks.length - 1], sh = (k, n) => { let y = Math.floor(k / 100), m = k % 100 - 1 + n; y += Math.floor(m / 12); m = ((m % 12) + 12) % 12; return y * 100 + m + 1; };
+  const ml = k => `${MONTHS_FR[k % 100 - 1].slice(0, 3)} ${Math.floor(k / 100)}`, f0 = v => v === null || !isFinite(v) ? '—' : Math.round(v).toLocaleString('en-US'), f1 = v => v === null || !isFinite(v) ? '—' : v.toFixed(1);
+  const pc = (a, b) => a !== null && b ? 100 * (a / b - 1) : null, vtag = (v, badUp) => v === null || !isFinite(v) ? '' : `<span class="${(v >= 0) !== !!badUp ? 'delta-good' : 'delta-bad'}" style="font-size:12px">${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(1)}%</span>`;
+  const g = (S, k, i) => S[k] ? S[k][i] : null, mortPct = (S, k) => { const a = S[k], p = S[sh(k, -1)]; if (!a || !a[0]) return null; const base = p && p[0] ? (a[0] + p[0]) / 2 : a[0]; return base > 0 ? 100 * a[1] / base : null; };
+  const harv = (S, k) => { const a = S[k], p = S[sh(k, -1)]; return a && p ? a[2] / SC_FCR - (a[0] - p[0]) - a[1] : null; };
+  const sum12 = (fn, k) => { let t = 0; for (let i = 0; i < 12; i++) { const v = fn(sh(k, -i)); if (v === null) return null; t += v; } return t; };
+  const lagM = (() => { const now = new Date(); return (now.getFullYear() * 12 + now.getMonth() + 1) - (Math.floor(L / 100) * 12 + L % 100); })();
+  document.getElementById('scSub').innerHTML = `Every sea farm in Scotland reports to SEPA, each month, the fish on site (live weight, tonnes, at month end), the dead fish taken out (kg) and the feed used. ` +
+    `${M.sites || ''} sites, ${ml(ks[0])}–${ml(L)}. Farmers report quarterly, so the data run about <b>${lagM} months behind</b>: this is the structure of Scottish supply, not this week's market. ` +
+    `<a href="${M.url}" target="_blank" rel="noopener" style="color:#4fc3f7">Source (CSV export)</a> · to refresh: export the CSV and drop it in <code>xlsx/scotland/</code>.`;
+  const b = g(N, L, 0), bP = g(N, L - 100, 0), m = g(N, L, 1), mP = g(N, L - 100, 1), h12 = sum12(k => harv(N, k), L), h12P = sum12(k => harv(N, k), L - 100), m12 = sum12(k => g(N, k, 1), L), m12P = sum12(k => g(N, k, 1), L - 100);
+  const card = (lab, big, sub, col) => `<div class="pr-card" style="cursor:default"><div class="nm"><i style="background:${col}"></i>${lab}</div><div class="big">${big}</div><div class="ln">${sub}</div></div>`;
+  document.getElementById('scCards').innerHTML =
+    card(`Biomass at sea · ${ml(L)}`, `${f0(b / 1000)} kt ${vtag(pc(b, bP))}`, `vs ${f0(bP / 1000)} kt a year earlier · live weight · ${g(N, L, 3)} active sites`, '#4fc3f7') +
+    card(`Deaths · ${ml(L)}`, `${f0(m)} t ${vtag(pc(m, mP), true)}`, `${f1(mortPct(N, L))} % of the biomass (${f1(mortPct(N, L - 100))} % a year earlier)`, '#ff8a65') +
+    card('Deaths · last 12 months', `${f0(m12 / 1000)} kt ${vtag(pc(m12, m12P), true)}`, `vs ${f0(m12P / 1000)} kt the 12 months before`, '#ff8a65') +
+    card('Harvest implied · last 12 months', `${f0(h12 / 1000)} kt ${vtag(pc(h12, h12P))}`, `live weight, from feed, biomass and deaths (see below)`, '#81c784');
+  renderScotlandMap();
+  // biomasse : annee en cours et 2 precedentes, janvier-decembre
+  const yL = Math.floor(L / 100), yrs = [yL - 3, yL - 2, yL - 1, yL], cols = ['#546e7a', '#8fa4b0', '#ffb74d', '#4fc3f7'], mk = [...Array(12)].map((_, i) => i + 1);
+  document.getElementById('scBioSub').innerHTML = `Fish on site at the end of each month, all Scottish sea farms, thousand tonnes live weight. The seasonal low comes in spring, after the winter harvest; the high in late autumn.`;
+  document.getElementById('scBio').innerHTML = scSvg(mk, yrs.map((y, i) => ({ v: mk.map(mm => { const v = g(N, y * 100 + mm, 0); return v === null ? null : v / 1000; }), col: cols[i], w: i === 3 ? 2.6 : 1.6, dots: i === 3, lab: String(y) })),
+    { lab: mm => MONTHS_FR[mm - 1], xl: mm => MONTHS_FR[mm - 1].slice(0, 3), fmt: v => v.toFixed(0), min: Math.floor(Math.min(...yrs.flatMap(y => mk.map(mm => g(N, y * 100 + mm, 0)).filter(v => v !== null))) / 10000) * 10 });
+  // mortalite mensuelle : 36 derniers mois, barre orange si inhabituelle, ligne = normale du mois
+  const k36 = [...Array(36)].map((_, i) => sh(L, i - 35)), yrsAll = [...new Set(ks.map(k => Math.floor(k / 100)))].filter(y => y >= 2015);
+  const med = a => { const s2 = a.slice().sort((x, y) => x - y), n = s2.length; return n ? (n % 2 ? s2[(n - 1) / 2] : (s2[n / 2 - 1] + s2[n / 2]) / 2) : null; };
+  const usual = (S, k) => med(yrsAll.filter(y => y !== Math.floor(k / 100)).map(y => mortPct(S, y * 100 + k % 100)).filter(v => v !== null));
+  const mv = k36.map(k => mortPct(N, k)), uv = k36.map(k => usual(N, k));
+  document.getElementById('scMortSub').innerHTML = `Dead fish taken out in the month, as a share of the average biomass on site. Line = the usual level for that month (median since 2015). ` +
+    `Orange = at least 1.5 times the usual. Deaths peak in late summer and autumn (gill disease, jellyfish, algae, lice treatments with warm water).`;
+  document.getElementById('scMort').innerHTML = scSvg(k36, [{ v: mv, bar: true, col: (i, v) => uv[i] && v >= 1.5 * uv[i] ? '#ff8a65' : '#4fc3f7', col0: '#4fc3f7', lab: 'deaths, % of biomass' },
+    { v: uv, col: '#ffd54f', w: 1.6, dash: '4,3', lab: 'usual for the month' }], { lab: ml, xl: k => k % 100 === 1 || k === k36[0] ? ml(k) : MONTHS_FR[k % 100 - 1].slice(0, 1), fmt: v => v.toFixed(1) + '%' });
+  // recolte implicite
+  const hv = k36.map(k => harv(N, k)), hP = k36.map(k => harv(N, k - 100));
+  document.getElementById('scHarvSub').innerHTML = `SEPA has no harvest figure. It is deduced: growth = feed ÷ ${SC_FCR} (feed conversion), then harvest = growth − change in biomass − deaths. ` +
+    `Checked against the official production survey: the yearly totals land within about 5 % (2022: 168 kt implied vs 170; 2023: 162 vs 151; 2024: 201 vs 192). Month by month it is noisier — read the trend, not one month. Thousand tonnes, live weight.`;
+  document.getElementById('scHarv').innerHTML = scSvg(k36, [{ v: hv.map(v => v === null ? null : v / 1000), bar: true, col: '#81c784', lab: 'harvest implied, kt' },
+    { v: hP.map(v => v === null ? null : v / 1000), col: '#8fa4b0', w: 1.5, dash: '1,3', lab: 'same month a year earlier' }], { lab: ml, xl: k => k % 100 === 1 || k === k36[0] ? ml(k) : MONTHS_FR[k % 100 - 1].slice(0, 1), fmt: v => v.toFixed(0), min: Math.min(0, ...hv.filter(v => v !== null).map(v => v / 1000)) });
+  // tableaux par region et par operateur
+  const row = (name, S) => { const bb = g(S, L, 0), bp = g(S, L - 100, 0), mm12 = sum12(k => g(S, k, 1), L), mm12p = sum12(k => g(S, k, 1), L - 100), bAvg = sum12(k => g(S, k, 0), L) / 12, hh = sum12(k => harv(S, k), L);
+    return `<tr><td class="name">${name}</td><td>${bb !== null ? f1(bb / 1000) + ' kt' : '—'}</td><td>${vtag(pc(bb, bp)) || '—'}</td><td>${b ? f1(100 * bb / b) : '—'} %</td><td>${g(S, L, 3)}</td>` +
+      `<td>${f1(mm12 / 1000)} kt</td><td>${vtag(pc(mm12, mm12p), true) || '—'}</td><td>${bAvg ? f1(100 * mm12 / bAvg / 12) : '—'} %</td><td>${hh !== null ? f1(hh / 1000) + ' kt' : '—'}</td></tr>`; };
+  const hdr = first => `<thead><tr><th class="name">${first}</th><th>Biomass ${ml(L)}</th><th>vs N-1</th><th>Share</th><th>Active sites</th><th>Deaths, 12 months</th><th>vs N-1</th><th>Per month, % of biomass</th><th>Harvest implied, 12 months</th></tr></thead>`;
+  document.getElementById('scTabSub').innerHTML = `Areas = local councils. Harvest implied per area or company is rougher than the national figure (fish moved between sites, feed timing).`;
+  const R = SCO.regions || {}, O = SCO.operators || {}, byBio = S => Object.keys(S).filter(x => g(S[x], L, 0) > 0 || sum12(k => g(S[x], k, 1), L) > 0).sort((x, y) => (g(S[y], L, 0) || 0) - (g(S[x], L, 0) || 0));
+  document.getElementById('scReg').innerHTML = hdr('Area') + '<tbody>' + byBio(R).map(x => row(x, R[x])).join('') + `</tbody><tfoot>${row('Scotland', N)}</tfoot>`;
+  document.getElementById('scOps').innerHTML = hdr('Company') + '<tbody>' + byBio(O).map(x => row(x.replace(/ (Ltd|Limited)$/, ''), O[x])).join('') + '</tbody>';
+  // mois inhabituels par region
+  const fl = []; Object.keys(R).forEach(x => ks.filter(k => k >= 201801).forEach(k => { const v = mortPct(R[x], k), u = usual(R[x], k), d = g(R[x], k, 1);
+    if (v !== null && u && v >= Math.max(2 * u, u + 1.5) && d >= 200) fl.push({ x, k, v, u, d }); }));
+  fl.sort((a, b2) => b2.k - a.k || b2.d - a.d);
+  document.getElementById('scFlagSub').innerHTML = `Same rule as for the Norwegian zones: the share of the biomass that died is at least twice the area's usual level for that month and 1.5 points above it, with at least 200 t of dead fish. ` +
+    `The cause is not reported here: see Mortality events in the Fish health tab (press watch and the Fish Health Inspectorate reports).`;
+  document.getElementById('scFlags').innerHTML = `<thead><tr><th class="name">Month</th><th style="text-align:left">Area</th><th>Dead fish</th><th>% of biomass</th><th>Usual</th></tr></thead><tbody>` +
+    (fl.slice(0, 20).map(r => `<tr><td class="name">${ml(r.k)}</td><td style="text-align:left">${r.x}</td><td>${f0(r.d)} t</td><td><b>${f1(r.v)} %</b></td><td>${f1(r.u)} %</td></tr>`).join('') || '<tr><td colspan="5">None since 2018.</td></tr>') + '</tbody>';
+}
 function renderHealthSites(keysN, keysP, yN, per) {
   const wrap = document.getElementById('hlSiteWrap');
   if (!hlSitePo) { wrap.style.display = 'none'; return; }
@@ -3291,15 +3507,16 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     document.getElementById('producersView').style.display = currentView === 'producers' ? 'block' : 'none';
     document.getElementById('usaView').style.display = currentView === 'usa' ? 'block' : 'none';
     document.getElementById('chinaView').style.display = currentView === 'china' ? 'block' : 'none';
+    document.getElementById('scotlandView').style.display = currentView === 'scotland' ? 'block' : 'none';
     document.getElementById('coprodView').style.display = currentView === 'coprod' ? 'block' : 'none';
     document.getElementById('generationsView').style.display = currentView === 'generations' ? 'block' : 'none';
     document.getElementById('genmapView').style.display = currentView === 'genmap' ? 'block' : 'none';
     // The year / period selectors do not apply to the weekly fish-health view.
-    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
+    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
     // La carte des zones ne sert qu'aux vues qui raisonnent par PO. Les onglets
     // Markets et Calibre sont nationaux, elle n'y afficherait rien d'utile.
     const mw = document.querySelector('.panel.mapwrap');
-    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
+    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
     document.getElementById('poFilterField').style.display = (currentView === 'global' || currentView === 'multi' || currentView === 'outlook') ? 'flex' : 'none';
     document.getElementById('yearField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'none' : 'flex';
     document.getElementById('yearRangeField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'flex' : 'none';
@@ -3320,6 +3537,7 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     else if (currentView === 'producers') { renderProducers(); }
     else if (currentView === 'usa') { renderUSA(); }
     else if (currentView === 'china') { renderChina(); }
+    else if (currentView === 'scotland') { renderScotland(); }
     else if (currentView === 'coprod') { renderCoprod(); }
     else if (currentView === 'generations') { renderGenerations(); }
     else if (currentView === 'genmap') { renderGenMap(); }
