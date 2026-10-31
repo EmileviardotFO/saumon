@@ -815,6 +815,16 @@ function computePeaks(raw, sel) {
   const fc2 = (() => { const kt = sh(lastB, 2), M2 = model2(lastS, useMix); if (!M2) return null; const v = M2.predict(lastB, kt); if (v === null) return null;
     const M0 = model2(lastS, false), v0 = M0 ? M0.predict(lastB, kt) : null;
     return { k: kt, v: Math.max(0, v), base: v0, usual: M2.cal(kt % 100), prev: S6[kt - 100], mix: useMix, mixNow: mixA(lastB, lastS) }; })();
+  // part NATIONALE (registre, tous les poissons abattus) attendue 2 mois apres le dernier mois du registre : calendrier +
+  // anomalie du reservoir. Mieux prevue que celle du panel (erreur ~1,5 pt contre ~3,8 en marche avant, 2020-2026), et elle
+  // compte aussi les gros poissons vendus hors panel (Asie, Etats-Unis, contrats, SalMar, Leroy...)
+  const fcN = (() => { const kN = Object.keys(NAT).map(Number).filter(k => k <= lastB).sort((a, b) => a - b); if (kN.length < 24) return null;
+    const calN = m => { const v = kN.filter(x => x % 100 === m).map(x => NAT[x]); return v.length ? avg(v) : null; };
+    const bcal = m => { const v = kB.filter(x => x % 100 === m && x <= lastB && x >= 201801).map(x => B[x]); return v.length ? avg(v) : null; };
+    const X = [], Y = []; kN.forEach(x => { const s0 = sh(x, -2); if (B[s0] === undefined || s0 < 201801) return; const b0 = bcal(s0 % 100), c0 = calN(x % 100); if (b0 === null || c0 === null) return; X.push([1, B[s0] - b0]); Y.push(NAT[x] - c0); });
+    if (X.length < 18) return null; const b = ols(X, Y); if (!b) return null;
+    const kt = sh(lastB, 2), c = calN(kt % 100), b0 = bcal(lastB % 100); if (c === null || b0 === null) return null;
+    return { k: kt, v: Math.max(0, c + b[0] + b[1] * (B[lastB] - b0)), usual: c, last: kN[kN.length - 1], lastV: NAT[kN[kN.length - 1]] }; })();
   // poids moyen des poissons recoltes (registre, vide) au dernier mois, vs sa normale : signal affiche, pas utilise
   // (gain de 10-12 % a 3-4 mois sur la projection du reservoir, mais instable d'une periode a l'autre)
   const hw = (() => { const k = lastB, v = RW[k], same = Object.keys(RW).map(Number).filter(x => x % 100 === k % 100 && x < k).map(x => RW[x]);
@@ -835,7 +845,7 @@ function computePeaks(raw, sel) {
   const proj = pv.map((v, i) => { if (v === null) return { k: sh(lastB, i + 1), v: null };
     const w = bands[i].p80; return { k: sh(lastB, i + 1), v, lo: Math.max(0, v - w), hi: v + w, mae: bands[i].mae }; });
   const pPeak = proj.filter(p => p.v !== null).reduce((m, p) => !m || p.v > m.v ? p : m, null);
-  return { NAT, natTest, mixTest, hw, ssbw, sel, feedCl, feedGain, B, F, S6, V6, lags, seasons, magCorr, peakMonths, th6, wf, sh, proj, pPeak, valid, nowcast, s56, fc2,
+  return { NAT, natTest, fcN, mixTest, hw, ssbw, sel, feedCl, feedGain, B, F, S6, V6, lags, seasons, magCorr, peakMonths, th6, wf, sh, proj, pPeak, valid, nowcast, s56, fc2,
     now: { lastB, lastS, cur, prev, ratio: prev ? cur / prev : NaN, nextPeakB, next6: sh(nextPeakB, gapTyp), gapTyp,
       seasonPeakPrev: seasons.length ? seasons[seasons.length - 1] : null } };
 }

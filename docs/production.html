@@ -40,6 +40,8 @@
     border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; white-space: nowrap;
   }
   .view-toggle button:hover { color: var(--ink); border-color: var(--accent); }
+  .vt-link { padding: 8px 14px; border: 1px dashed var(--accent); border-radius: 6px; color: var(--accent); font-size: 13px; font-weight: bold; text-decoration: none; white-space: nowrap; }
+  .vt-link:hover { background: rgba(47,184,166,.12); }
   .view-toggle button.active { background: var(--accent); color: #06211d; border-color: var(--accent); }
   #poFilterSelect {
     min-width: 220px; height: 92px;
@@ -259,6 +261,41 @@
   .pm-vbar .b { position:absolute; top:-3px; height:18px; width:2px; background:#e7eef2; opacity:.7; }
   @media (max-width: 900px) { .pm-cards { grid-template-columns: repeat(2, minmax(0,1fr)); } }
 
+
+  /* ---------- Onglet Generations map (carte des zones) ---------- */
+  #genmapView { background: transparent; border: none; padding: 0; }
+  #genmapView .gm-h1 { font-size: 18px; font-weight: bold; margin: 0 0 4px; }
+  #genmapView .gm-sub { color: var(--muted); font-size: 12.5px; margin-bottom: 12px; line-height: 1.45; }
+  #genmapView .gm-ctl { display: flex; gap: 12px 22px; align-items: center; background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; flex-wrap: wrap; }
+  #genmapView .gm-lab { font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-right: 6px; }
+  #genmapView .gm-chip { display: inline-block; padding: 5px 11px; border: 1px solid var(--border); border-radius: 14px; font-size: 12px; color: var(--muted); margin: 2px 4px 2px 0; background: #0d1a24; cursor: pointer; user-select: none; }
+  #genmapView .gm-chip:hover { color: var(--ink); border-color: var(--accent); }
+  #genmapView .gm-chip.on { background: var(--accent); color: #06211d; border-color: var(--accent); font-weight: bold; }
+  #genmapView .gm-grid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 8fr); gap: 14px; }
+  #genmapView .gm-panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; min-width: 0; }
+  #genmapView .gm-t { font-size: 13.5px; font-weight: bold; margin-bottom: 4px; }
+  #genmapView .gm-s { font-size: 11.5px; color: var(--muted); margin-bottom: 8px; line-height: 1.45; }
+  #genmapView .gm-s b { color: var(--ink); }
+  #genmapView .gm-kpis { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin: 6px 0 12px; }
+  #genmapView .gm-kpi { background: #0d1a24; border: 1px solid var(--border); border-radius: 8px; padding: 7px 9px; min-width: 0; }
+  #genmapView .gm-kpi b { display: block; font-size: 17px; white-space: nowrap; }
+  #genmapView .gm-kpi span { font-size: 10.5px; color: var(--muted); }
+  #genmapView .gm-sec { font-size: 12px; font-weight: bold; margin: 14px 0 2px; }
+  #genmapView input[type=range] { width: 260px; accent-color: #2fb8a6; }
+  #genmapView button.gm-ctrl { background: #0d1a24; color: var(--ink); border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; cursor: pointer; font-size: 12px; }
+  #genmapView button.gm-ctrl:hover { border-color: var(--accent); }
+  #genmapView .gm-zone { cursor: pointer; }
+  #genmapView polygon.gm-zone:hover { opacity: .85; }
+  #genmapView table.gm-mini { border-collapse: collapse; width: 100%; font-size: 12px; margin-top: 6px; }
+  #genmapView table.gm-mini th, #genmapView table.gm-mini td { padding: 5px 7px; border-bottom: 1px solid var(--border); text-align: right; white-space: nowrap; }
+  #genmapView table.gm-mini th { color: var(--muted); font-weight: normal; font-size: 10.5px; text-transform: uppercase; }
+  #genmapView table.gm-mini td:first-child, #genmapView table.gm-mini th:first-child { text-align: left; white-space: normal; }
+  #genmapView .gm-good { color: #7ed98f; } #genmapView .gm-bad { color: #ff8a65; } #genmapView .gm-warn { color: #ffb74d; } #genmapView .gm-mut { color: var(--muted); }
+  #genmapView .gm-note { font-size: 11px; color: var(--muted); line-height: 1.5; margin-top: 4px; }
+  @media (min-width: 1101px) { #genmapView .gm-grid > .gm-panel:first-child { position: sticky; top: 10px; align-self: start; } }
+  @media (max-width: 1100px) { #genmapView .gm-grid { grid-template-columns: 1fr; } #genmapView .gm-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (max-width: 700px) { #genmapView .gm-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } #genmapView input[type=range] { width: 150px; } }
+
   /* ---------- Responsive : tablette et telephone ---------- */
   #viewToggle { }
   .top-controls:has(#viewToggle) { width: 100%; max-width: 1400px; }
@@ -351,6 +388,7 @@
       <button data-v="po">By zone (PO)</button>
       <button data-v="health">Fish health</button>
       <button data-v="register">Farm register</button>
+      <button data-v="genmap">Generations map</button>
     </div></div>
     <div class="vt-row"><span class="vt-lab">Markets &amp; producers<small>trade, prices, other origins</small></span><div class="vt-btns">
       <button data-v="markets">Markets</button>
@@ -729,6 +767,10 @@
     <div class="chart-controls"><span class="cc-label">Forms</span><span id="usForms" style="display:inline-flex;gap:12px;flex-wrap:wrap"></span></div>
     <div id="usCards" class="pr-cards"></div>
     <div id="usDetail"></div>
+    <div class="sig-title" style="margin-top:16px">US imports by product, all origins</div>
+    <div class="sig-sub" id="usFormSub"></div>
+    <div id="usFormChart"></div>
+    <table class="sig-table"><thead id="usFormHead"></thead><tbody id="usFormBody"></tbody></table>
     <div class="sig-title" style="margin-top:16px">1 · Monthly imports by origin</div>
     <div class="sig-sub" id="usVolSub"></div>
     <div id="usVol"></div>
@@ -785,6 +827,56 @@
     <div class="sig-sub" id="cpPriceSub"></div>
     <div id="cpPrice"></div>
     <div class="note" id="cpNote" style="text-align:left;max-width:none;margin-top:16px"></div>
+  </div>
+
+
+  <div class="panel" id="genmapView" style="flex:1; min-width:0; max-width:1480px; display:none;">
+<div class="gm-h1">Generations at sea — growth, time at sea, water temperature, feed and biology, zone by zone</div>
+<div class="gm-sub" id="gm_topSub">Loading data…</div>
+    <div class="gm-panel" style="margin-bottom:14px"><div class="gm-t">Norway's strategy: shorter cycles, or bigger fish?</div><div class="gm-s" id="gm_stratSub"></div><div id="gm_strat"></div><table class="gm-mini" id="gm_stratTab"></table></div>
+<div class="gm-ctl">
+  <span><span class="gm-lab">Generation</span><span id="gm_genChips"></span></span>
+  <span><span class="gm-lab">Colour the map by</span><span id="gm_metChips"></span></span>
+</div>
+<div class="gm-ctl">
+  <span><span class="gm-lab">Month</span><button class="gm-ctrl" id="gm_mPrev">◀</button> <b id="gm_mLab" style="display:inline-block;min-width:80px;text-align:center">—</b> <button class="gm-ctrl" id="gm_mNext">▶</button></span>
+  <input type="range" id="gm_mSlider" min="0" max="0" value="0">
+  <button class="gm-ctrl" id="gm_mPlay">▶ play</button>
+  <span class="gm-mut" style="font-size:11px">the whole page follows the month: map, zone detail, projections and timeline</span>
+</div>
+<div class="gm-grid">
+  <div class="gm-panel"><div class="gm-t" id="gm_mapTitle">The map</div><div class="gm-s" id="gm_mapSub"></div>
+    <div id="gm_map"></div><div id="gm_mapLeg" class="gm-s" style="margin-top:6px"></div>
+  </div>
+  <div class="gm-panel"><div class="gm-t" id="gm_zTitle">Zone</div>
+    <div class="gm-kpis" id="gm_zKpi"></div>
+    <div class="gm-sec">Growth and water temperature — with the next 3 months projected</div>
+    <div class="gm-s" id="gm_zGrowSub"></div><div id="gm_zGrow"></div>
+    <div class="gm-sec">Fish coming out of the water — expected harvest weight, next 3 months</div>
+    <div class="gm-s" id="gm_zHarvSub"></div><table class="gm-mini" id="gm_zHarv"></table>
+    <div class="gm-sec">Biomass in the zone vs licensed capacity (MTB) — next 3 months</div>
+    <div class="gm-s" id="gm_zMtbSub"></div><div id="gm_zMtb"></div>
+    <div class="gm-sec">Biology, month by month</div>
+    <div class="gm-s">Mortality in the zone (% of the stock in the month), lice per fish (BarentsWatch, average of the weeks), fish of this generation harvested, disease at the end of the month (sites).</div>
+    <div id="gm_zBio"></div>
+    <div class="gm-sec">Feed and feed conversion</div>
+    <div class="gm-s">Bars: feed used in the zone each month (thousand tonnes, all generations). Line: feed conversion ratio, 3-month average = feed ÷ biomass gained (harvest included). Monthly values are noisy (fish moved between zones), hence the average.</div>
+    <div id="gm_zFeed"></div>
+    <div class="gm-sec">Is the model reliable here? Forecasts made 3 months earlier vs what happened</div>
+    <div class="gm-s" id="gm_zChkSub"></div><div id="gm_zChk"></div>
+  </div>
+</div>
+<div class="gm-panel" style="margin-top:14px"><div class="gm-t">Time at sea — every generation, every zone</div>
+  <div class="gm-s">One ribbon per generation: length = months at sea, thickness = fish still in the sea, colour = average weight (light = smolt, dark = harvest size); <span style="color:#ff8a65">orange marks</span> = months with harvest (height = number harvested). Read across a row to see when a zone empties one generation and fills the next; read down a column to compare zones. Click a zone name to open it above.</div>
+  <div id="gm_gan"></div>
+</div>
+<div class="gm-panel" style="margin-top:14px"><div class="gm-t">Forecast archive — what was forecast each month, and what happened</div>
+  <div class="gm-s" id="gm_arcSub">Loading the archive…</div><div id="gm_arcChart"></div><table class="gm-mini" id="gm_arcTab"></table>
+  <div class="gm-sec" id="gm_arcZoneT"></div><div class="gm-s" id="gm_arcZoneSub"></div><table class="gm-mini" id="gm_arcZone"></table></div>
+<div class="gm-panel" style="margin-top:14px"><div class="gm-t">How the projections are made, and how good they are</div><div class="gm-note" id="gm_method" style="margin-top:4px"></div>
+  <table class="gm-mini" id="gm_scoreTab"></table>
+</div>
+
   </div>
 
   <div class="panel" id="generationsView" style="flex:1; min-width:0; max-width:1400px; display:none;">
@@ -3027,6 +3119,8 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     document.querySelectorAll('#viewToggle button').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentView = btn.dataset.v;
+    // le bandeau qualite (mortalite / aliment du registre) ne concerne que les vues qui en affichent ; elles le reaffichent elles-memes
+    document.getElementById('dataQualityBanner').style.display = 'none';
     document.getElementById('metricRow').style.display = currentView === 'po' ? 'flex' : 'none';
     document.getElementById('multiControlsRow').style.display = currentView === 'multi' ? 'flex' : 'none';
     document.getElementById('poView').style.display = currentView === 'po' ? 'block' : 'none';
@@ -3045,12 +3139,13 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     document.getElementById('chinaView').style.display = currentView === 'china' ? 'block' : 'none';
     document.getElementById('coprodView').style.display = currentView === 'coprod' ? 'block' : 'none';
     document.getElementById('generationsView').style.display = currentView === 'generations' ? 'block' : 'none';
+    document.getElementById('genmapView').style.display = currentView === 'genmap' ? 'block' : 'none';
     // The year / period selectors do not apply to the weekly fish-health view.
-    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'coprod' || currentView === 'generations') ? 'none' : '';
+    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
     // La carte des zones ne sert qu'aux vues qui raisonnent par PO. Les onglets
     // Markets et Calibre sont nationaux, elle n'y afficherait rien d'utile.
     const mw = document.querySelector('.panel.mapwrap');
-    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'coprod' || currentView === 'generations') ? 'none' : '';
+    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
     document.getElementById('poFilterField').style.display = (currentView === 'global' || currentView === 'multi' || currentView === 'outlook') ? 'flex' : 'none';
     document.getElementById('yearField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'none' : 'flex';
     document.getElementById('yearRangeField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'flex' : 'none';
@@ -3073,6 +3168,7 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     else if (currentView === 'china') { renderChina(); }
     else if (currentView === 'coprod') { renderCoprod(); }
     else if (currentView === 'generations') { renderGenerations(); }
+    else if (currentView === 'genmap') { renderGenMap(); }
     else { render(); }
   });
 });
@@ -6012,7 +6108,10 @@ function renderSummary() {
     const rows = PK_CLS.map(cl => { const N = Mi.n[cl] || {}, rng = C.map(o => ((o.n[cl] || {})[L]) || 0);
       const yr = C.map(o => { const a = (o.n[cl] || {})[L], b = (o.n[cl] || {})[L - 100]; return a && b ? 100 * (a / b - 1) : NaN; }).filter(isFinite), ym = N[L - 100] ? 100 * (N[L] / N[L - 100] - 1) : NaN;
       const P = PKs[cl], g2 = P && P.wf && P.wf.h2 ? 1 - P.wf.h2.mod / P.wf.h2.cal : NaN, useful = P && P.fc2 && P.lags[2].share >= 0.5 && g2 > 0.02;
-      return `<tr><td><b>${cl} kg</b></td><td>${genFmtN(N[L] || 0)} <span style="color:var(--muted)">(${genFmtN(Math.min(...rng))}–${genFmtN(Math.max(...rng))})</span></td>` +
+      // 1-4 kg : la repartition depend trop de la methode (une loi par generation ou lots mensuels de mise a l'eau :
+      // meme sens d'evolution sur un an seulement 56-63 % des mois 2021-2026) -> affiche comme indicatif
+      const ind = ['1-2', '2-3', '3-4'].includes(cl);
+      return `<tr${ind ? ' style="opacity:.62"' : ''}><td><b>${cl} kg</b>${ind ? ' <span style="color:#ffb74d;font-size:10px" title="Depends on the estimation method: two methods agree on the direction of the year-on-year change only about 6 months in 10">indicative</span>' : ''}</td><td>${genFmtN(N[L] || 0)} <span style="color:var(--muted)">(${genFmtN(Math.min(...rng))}–${genFmtN(Math.max(...rng))})</span></td>` +
         `<td>${fish ? (100 * (N[L] || 0) / fish < 1 ? (100 * (N[L] || 0) / fish).toFixed(2) : (100 * (N[L] || 0) / fish).toFixed(1)) + '%' : '—'}</td>` +
         `<td><b class="${ym > 0 ? 'delta-good' : ym < 0 ? 'delta-bad' : ''}">${genSg(ym)}</b>${yr.length > 1 ? ` <span style="color:var(--muted)">(${genSg(Math.min(...yr))} to ${genSg(Math.max(...yr))})</span>` : ''}</td>` +
         `<td>${useful ? `${P.fc2.v.toFixed(1)}% <span style="color:var(--muted)">(usually ${P.fc2.usual.toFixed(1)}%)</span>` : '<span style="color:var(--muted)">—</span>'}</td></tr>`; }).join('');
@@ -6026,7 +6125,9 @@ function renderSummary() {
     box.innerHTML = `<div class="sm-row health"><div class="lbl"><b>Size classes at sea</b><small>estimate from the Biomasseregisteret · ${mlab(Math.floor(L / 100), L % 100)} vs a year earlier</small></div>` +
       `<div class="hl"><b>Measured</b> (register): ${(fish / 1e6).toFixed(1)} M fish at sea (${sgp(fish, fishP)}), average weight ${isFinite(wLive) ? wLive.toFixed(2) : '—'} kg live = ${isFinite(wLive) ? (wLive * PK_GUT).toFixed(2) : '—'} kg gutted (${sgp(wLive, wLiveP)}). ` +
       `<b>Estimated</b> below: split into gutted size classes, assuming a log-normal spread of weights; the range shows the result with a spread of 0.25 and 0.35. ` +
-      `The direction of the change is robust, the levels are not (above all for the big classes). Details by class in the Generations tab.</div>` +
+      `The direction of the change is robust, the levels are not (above all for the big classes). <span style="color:#ffb74d">1–4 kg = indicative</span>: young generations mix spring and autumn smolt, ` +
+      `and splitting them into monthly release batches gives a different picture (same direction of the year-on-year change only about 6 months in 10, 2021–2026). ` +
+      `The total at sea and the counts per generation are measured; 4 kg and above are checked against later harvests. Details by class in the Generations tab.</div>` +
       `<table class="sm-sizes" style="grid-column:1/-1"><thead><tr><th>Class (gutted)</th><th>Fish at sea (range)</th><th>Share of fish</th><th>vs a year earlier (range)</th><th>Share of sales expected in ${tmMl(PKs['6-7'] && PKs['6-7'].fc2 ? PKs['6-7'].fc2.k : L)}</th></tr></thead><tbody>${rowsU}${rows}</tbody></table></div>`;
   })();
   document.getElementById('smSub').innerHTML =
@@ -6120,8 +6221,10 @@ async function loadEurostat() {
 const PAC_SRC = new Set(['US', 'CN', 'RU', 'TH', 'VN', 'JP', 'KR', 'NZ', 'TW', 'ID', 'PH', 'MY']);
 const ORIGS = ['NO', 'GB', 'FO', 'IS', 'IE', 'CL', 'OTH', 'PAC'];
 const ORIG_LAB = { NO: 'Norway', GB: 'United Kingdom', FO: 'Faroe Islands', IS: 'Iceland', IE: 'Ireland', CL: 'Chile', OTH: 'Other / unspecified', PAC: 'Pacific & wild salmon (excluded)' };
-const ORIG_COL = { NO: '#4fc3f7', GB: '#ffb74d', FO: '#2fb8a6', IS: '#ba68c8', IE: '#81c784', CL: '#e57373', CA: '#f06292', AU: '#fff176', OTH: '#78909c', PAC: '#8d6e63' };
+const ORIG_COL = { NO: '#4fc3f7', GB: '#ffb74d', FO: '#2fb8a6', IS: '#ba68c8', IE: '#81c784', CL: '#e57373', CA: '#f06292', AU: '#fff176', NL: '#ff7043', PL: '#9ccc65', DK: '#90caf9', OTH: '#78909c', PAC: '#8d6e63' };
 const PRODUCERS = ['NO', 'FO', 'IS', 'GB', 'IE', 'CL', 'CA'];
+// pays de l'UE qui transforment du saumon importe (filets, fume) et le reexportent
+const EU_HUBS = { NL: 'Dutch', PL: 'Polish', DK: 'Danish' };
 const PROD_LAB = { NO: 'Norway', FO: 'Faroe Islands', IS: 'Iceland', GB: 'Scotland (UK)', IE: 'Ireland', CL: 'Chile', CA: 'Canada' };
 const FORMS_OK = [0, 1, 2, 3, 5, 6];
 const FORM_COL = ['#4fc3f7', '#90a4ae', '#2fb8a6', '#9575cd', null, '#ffb74d', '#e57373'];
@@ -6145,6 +6248,9 @@ const FLAG = (() => {
     FO: nordic('#FFFFFF', '#0065BD', '#EF303E'),
     GB: `<rect width="22" height="16" fill="#005EB8"/><path d="M0 0L22 16M22 0L0 16" stroke="#FFFFFF" stroke-width="3"/>`,
     IE: `<rect width="22" height="16" fill="#FFFFFF"/><rect width="7.33" height="16" fill="#169B62"/><rect x="14.67" width="7.33" height="16" fill="#FF883E"/>`,
+    NL: `<rect width="22" height="16" fill="#FFFFFF"/><rect width="22" height="5.33" fill="#AE1C28"/><rect y="10.67" width="22" height="5.33" fill="#21468B"/>`,
+    PL: `<rect width="22" height="16" fill="#FFFFFF"/><rect y="8" width="22" height="8" fill="#DC143C"/>`,
+    DK: nordic('#C8102E', '#FFFFFF', '#FFFFFF'),
     CL: `<rect width="22" height="16" fill="#FFFFFF"/><rect y="8" width="22" height="8" fill="#D52B1E"/><rect width="8" height="8" fill="#0039A6"/>` +
         `<path d="M4 1.6l.94 2.9h3.05l-2.47 1.8.94 2.9L4 7.4 1.54 9.2l.94-2.9L0 4.5h3.06z" transform="translate(0,-0.2) scale(0.9) translate(0.45,0.5)" fill="#FFFFFF"/>`,
     AU: `<rect width="22" height="16" fill="#012169"/><path d="M0 0L11 8M11 0L0 8" stroke="#FFFFFF" stroke-width="1.6"/><path d="M5.5 0v8M0 4h11" stroke="#FFFFFF" stroke-width="2.6"/>` +
@@ -6275,6 +6381,10 @@ function tmProducer(prod, scope) {
     const src = (((NAT || {}).meta || {}).sources || {})[prod] || {};
     return { cur: '€', last: TM.natLast[prod], rows, src: `${(NAT_NAME[prod] || [prod])[0]} export statistics, all destinations (${(NAT_NAME[prod] || ['', 'national'])[1]}; converted to €)` };
   }
+  if (scope === 'all' && EU_HUBS[prod] && TM.months.some(ym => (TM.exp[ym] || []).some(r => r[0] === prod))) {
+    TM.months.forEach(ym => (TM.exp[ym] || []).forEach(([rep, part, pi, t, v]) => { if (rep === prod) rows.push([ym, part, pi, t, v]); }));
+    return { cur: '€', last: TM.last, rows, src: `${EU_HUBS[prod]} exports, all destinations (Eurostat)`, hub: true };
+  }
   if (scope === 'all' && prod === 'IE' && TM.months.some(ym => (TM.exp[ym] || []).some(r => r[0] === 'IE'))) {
     TM.months.forEach(ym => (TM.exp[ym] || []).forEach(([rep, part, pi, t, v]) => { if (rep === 'IE') rows.push([ym, part, pi, t, v]); }));
     return { cur: '€', last: TM.last, rows, src: 'Irish exports, all destinations (Eurostat)' };
@@ -6400,7 +6510,7 @@ let prSel = 'NO', prForms = new Set([0, 2]), prMetrics = new Set(['q', 'p']);
 function tmBest(pr) {
   if (pr === 'NO' && SSBX) return tmProducer('NO', 'all');
   if (TM.nati[pr]) return tmProducer(pr, 'all');
-  if (pr === 'IE') { const d = tmProducer('IE', 'all'); if (!d.euOnly) return d; }
+  if (pr === 'IE' || EU_HUBS[pr]) { const d = tmProducer(pr, 'all'); if (!d.euOnly) return d; }
   return tmProducer(pr, 'eu');
 }
 function renderProducers() {
@@ -6731,6 +6841,16 @@ function computePeaks(raw, sel) {
   const fc2 = (() => { const kt = sh(lastB, 2), M2 = model2(lastS, useMix); if (!M2) return null; const v = M2.predict(lastB, kt); if (v === null) return null;
     const M0 = model2(lastS, false), v0 = M0 ? M0.predict(lastB, kt) : null;
     return { k: kt, v: Math.max(0, v), base: v0, usual: M2.cal(kt % 100), prev: S6[kt - 100], mix: useMix, mixNow: mixA(lastB, lastS) }; })();
+  // part NATIONALE (registre, tous les poissons abattus) attendue 2 mois apres le dernier mois du registre : calendrier +
+  // anomalie du reservoir. Mieux prevue que celle du panel (erreur ~1,5 pt contre ~3,8 en marche avant, 2020-2026), et elle
+  // compte aussi les gros poissons vendus hors panel (Asie, Etats-Unis, contrats, SalMar, Leroy...)
+  const fcN = (() => { const kN = Object.keys(NAT).map(Number).filter(k => k <= lastB).sort((a, b) => a - b); if (kN.length < 24) return null;
+    const calN = m => { const v = kN.filter(x => x % 100 === m).map(x => NAT[x]); return v.length ? avg(v) : null; };
+    const bcal = m => { const v = kB.filter(x => x % 100 === m && x <= lastB && x >= 201801).map(x => B[x]); return v.length ? avg(v) : null; };
+    const X = [], Y = []; kN.forEach(x => { const s0 = sh(x, -2); if (B[s0] === undefined || s0 < 201801) return; const b0 = bcal(s0 % 100), c0 = calN(x % 100); if (b0 === null || c0 === null) return; X.push([1, B[s0] - b0]); Y.push(NAT[x] - c0); });
+    if (X.length < 18) return null; const b = ols(X, Y); if (!b) return null;
+    const kt = sh(lastB, 2), c = calN(kt % 100), b0 = bcal(lastB % 100); if (c === null || b0 === null) return null;
+    return { k: kt, v: Math.max(0, c + b[0] + b[1] * (B[lastB] - b0)), usual: c, last: kN[kN.length - 1], lastV: NAT[kN[kN.length - 1]] }; })();
   // poids moyen des poissons recoltes (registre, vide) au dernier mois, vs sa normale : signal affiche, pas utilise
   // (gain de 10-12 % a 3-4 mois sur la projection du reservoir, mais instable d'une periode a l'autre)
   const hw = (() => { const k = lastB, v = RW[k], same = Object.keys(RW).map(Number).filter(x => x % 100 === k % 100 && x < k).map(x => RW[x]);
@@ -6751,7 +6871,7 @@ function computePeaks(raw, sel) {
   const proj = pv.map((v, i) => { if (v === null) return { k: sh(lastB, i + 1), v: null };
     const w = bands[i].p80; return { k: sh(lastB, i + 1), v, lo: Math.max(0, v - w), hi: v + w, mae: bands[i].mae }; });
   const pPeak = proj.filter(p => p.v !== null).reduce((m, p) => !m || p.v > m.v ? p : m, null);
-  return { NAT, natTest, mixTest, hw, ssbw, sel, feedCl, feedGain, B, F, S6, V6, lags, seasons, magCorr, peakMonths, th6, wf, sh, proj, pPeak, valid, nowcast, s56, fc2,
+  return { NAT, natTest, fcN, mixTest, hw, ssbw, sel, feedCl, feedGain, B, F, S6, V6, lags, seasons, magCorr, peakMonths, th6, wf, sh, proj, pPeak, valid, nowcast, s56, fc2,
     now: { lastB, lastS, cur, prev, ratio: prev ? cur / prev : NaN, nextPeakB, next6: sh(nextPeakB, gapTyp), gapTyp,
       seasonPeakPrev: seasons.length ? seasons[seasons.length - 1] : null } };
 }
@@ -7035,6 +7155,11 @@ function genPeaks() {
       (PK.pPeak ? `<div class="ln">projected reservoir peak <b style="color:var(--ink)">${f1(PK.pPeak.v)} kt in ${tmMl(PK.pPeak.k)}</b> (${PK.pPeak.lo.toFixed(0)}–${PK.pPeak.hi.toFixed(0)} kt) → 6 kg+ peak around <b style="color:var(--ink)">${tmMl(PK.sh(PK.pPeak.k, N.gapTyp))}</b></div>` : '') +
       (PK.fc2 ? `<div class="ln">6 kg+ share of sales expected in ${tmMl(PK.fc2.k)}: <b style="color:var(--ink)">${f1(PK.fc2.v)}%</b> (usually ${f1(PK.fc2.usual)}%` +
         `${PK.fc2.mix && PK.fc2.base !== null ? `; ${f1(PK.fc2.base)}% without the sales-weight term` : ''})</div>` : '') +
+      (() => { if (!PK.fc2) return ''; const S = premSeries(DATA_RAW), ks = Object.keys(S).map(Number).sort((a, b) => a - b), last = ks[ks.length - 1], F = premFit(S, PK.S6, last); if (!F) return '';
+        const v = F.a + F.b * PK.fc2.v, same = ks.filter(k => k % 100 === PK.fc2.k % 100).map(k => S[k]), u = same.length ? same.reduce((a, b) => a + b, 0) / same.length : null;
+        return `<div class="ln">price premium of 6–9 kg over 4–5 kg expected in ${tmMl(PK.fc2.k)}: <b style="color:var(--ink)">${premPct(v) >= 0 ? '+' : ''}${f1(premPct(v))}%</b> ` +
+          `(${tmMl(last)}: ${premPct(S[last]) >= 0 ? '+' : ''}${f1(premPct(S[last]))}%${u !== null ? `; usually ${premPct(u) >= 0 ? '+' : ''}${f1(premPct(u))}% in ${MONTHS_FR[PK.fc2.k % 100 - 1].slice(0, 3)}` : ''}) — ` +
+          `from the expected 6 kg+ share: each point of 6 kg+ less in the panel's sales has meant about ${f1(-100 * F.b)} pt more premium. Checked against reality in the forecast archive (Generations map)</div>`; })() +
       (PK.hw ? `<div class="ln">harvested fish in ${tmMl(PK.hw.k)}: <b style="color:var(--ink)">${f2(PK.hw.v)} kg gutted</b> on average vs ${f2(PK.hw.usual)} usually ` +
         `(${PK.hw.v - PK.hw.usual >= 0 ? '+' : ''}${f2(PK.hw.v - PK.hw.usual)} kg) — heavier than usual = big fish taken early, the reservoir tends to come lower 3–4 months later (signal only)</div>` : '') +
       (PK.ssbw ? `<div class="ln">SSB weekly exports, fresh, last 4 weeks to week ${PK.ssbw.last % 100}: ${tmF0(PK.ssbw.vol)} t ${PK.ssbw.volPrev ? tmVar(tmPc(PK.ssbw.vol, PK.ssbw.volPrev)) : ''}, ` +
@@ -7164,14 +7289,40 @@ function genDisease(po, LAST) {
 //  - Etats-Unis (US Census) : valeur en douane hors fret (comparable au FOB), droits, frais d'acheminement ;
 //  - Chine et Hong Kong (UN Comtrade) : valeur CIF a l'arrivee (fret compris), pas de droits.
 const FOCUS = {
-  us: { data: () => USI, orig: ['NO', 'CL', 'CA', 'FO', 'IS', 'GB'], dest: ['US'], market: 'US', cif: false, forms: new Set([0, 2]),
+  us: { data: () => USI, orig: ['NO', 'CL', 'CA', 'FO', 'IS', 'GB', 'NL', 'PL', 'DK'], dest: ['US'], market: 'US', cif: false, forms: new Set([0, 2]),
         title: 'US imports', render: () => renderUSA() },
   cn: { data: () => CNI, orig: ['NO', 'CL', 'FO', 'GB', 'IS', 'AU', 'CA'], dest: ['CN', 'HK'], market: 'China', cif: true, forms: new Set([0, 2]), hk: true,
         title: 'China imports', render: () => renderChina() },
 };
 let usForms = FOCUS.us.forms;
-const US_LAB = Object.assign({}, PROD_LAB, { OTH: 'Other origins', AU: 'Australia' });
-function renderUSA() { renderFocus('us'); }
+const US_LAB = Object.assign({}, PROD_LAB, { OTH: 'Other origins', AU: 'Australia', NL: 'Netherlands', PL: 'Poland', DK: 'Denmark' });
+function renderUSA() { renderFocus('us'); renderUsForms(); }
+// Importations americaines par forme de produit, toutes origines (douanes US) : evolution mensuelle
+function renderUsForms() {
+  const $u = id => document.getElementById(id);
+  if (!USI || !USI.rows || !USI.rows.length || !EU) { ['usFormSub', 'usFormChart', 'usFormHead', 'usFormBody'].forEach(id => $u(id).innerHTML = ''); return; }
+  const P = EU.meta.products, M = {}, last = USI.meta.last, first = USI.meta.first;
+  USI.rows.forEach(([ym, o, pi, t, usd, eur]) => { const x = (M[pi] || (M[pi] = {}))[ym] || (M[pi][ym] = [0, 0]); x[0] += t; x[1] += eur || 0; });
+  const forms = FORMS_OK.filter(pi => M[pi] && Object.values(M[pi]).reduce((a, x) => a + x[0], 0) > 500);
+  const keys = []; for (let k = first; k <= last; k = tmShift(k, 1)) keys.push(k);
+  // moyenne mobile 3 mois : les volumes mensuels sont bruites (jours ouvres, arrivages)
+  const mm = (pi, i) => { const w = keys.slice(Math.max(0, i - 2), i + 1).map(k => (M[pi][k] || [0])[0]); return w.length === 3 ? w.reduce((a, b) => a + b, 0) / 3 : null; };
+  const series = [];
+  forms.forEach(pi => { series.push({ lab: P[pi] + ' (monthly)', col: FORM_COL[pi], pts: keys.map(k => (M[pi][k] || [0])[0]), w: 1, op: .35 });
+    series.push({ lab: P[pi] + ' (3-month average)', col: FORM_COL[pi], pts: keys.map((k, i) => mm(pi, i)), w: 2.6 }); });
+  $u('usFormSub').innerHTML = `Tonnes of product imported each month by the US, all origins together (US customs). Thin line: monthly figure; thick line: 3-month average. ` +
+    `<b>Fresh whole</b> = head-on gutted fish (HOG), processed in the US; <b>fillets</b> arrive ready to sell. ${tmMl(first)} – ${tmMl(last)}.`;
+  $u('usFormChart').innerHTML = vzLines(keys, series, { axis: 'tonnes per month', unit: 't', H: 300 }) +
+    vzLegend(forms.map(pi => [P[pi], FORM_COL[pi], false, true]));
+  // 12 derniers mois contre les 12 precedents, et la meme chose un an plus tot
+  const r12 = (pi, end) => { let t = 0, e = 0; for (let i = 0; i < 12; i++) { const x = M[pi][tmShift(end, -i)]; if (x) { t += x[0]; e += x[1]; } } return [t, e]; };
+  const tot = end => forms.reduce((a, pi) => a + r12(pi, end)[0], 0), T0 = tot(last), T1 = tot(tmShift(last, -12));
+  $u('usFormHead').innerHTML = `<tr><th class="name">Product</th><th>Tonnes, 12 months to ${tmMl(last)}</th><th>Share</th><th>vs previous 12 months</th><th class="sep-left">€/kg</th><th>vs previous 12 months</th></tr>`;
+  $u('usFormBody').innerHTML = forms.map(pi => { const a = r12(pi, last), b = r12(pi, tmShift(last, -12)), pa = a[0] ? a[1] / a[0] : NaN, pb = b[0] ? b[1] / b[0] : NaN;
+    return `<tr><td class="name"><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${FORM_COL[pi]};margin-right:6px"></i>${P[pi]}</td><td>${tmF0(a[0])}</td><td>${T0 ? (100 * a[0] / T0).toFixed(1) + '%' : '—'}</td>${tmPct(a[0], b[0])}` +
+      `<td class="sep-left">${isFinite(pa) ? pa.toFixed(2) : '—'}</td>${tmPct(pa, pb)}</tr>`; }).join('') +
+    `<tr style="font-weight:bold"><td class="name">Total</td><td>${tmF0(T0)}</td><td>100%</td>${tmPct(T0, T1)}<td class="sep-left"></td><td></td></tr>`;
+}
 // ===================== Co-produits (tetes, aretes et autres biproduits congeles) =====================
 // Source : SSB 08799, code 03039901 (03031312 avant 2017) = "biproduits comestibles de saumon d'elevage, congeles".
 // La nomenclature norvegienne ne separe pas les tetes des aretes. Poids produit, valeur FOB.
@@ -7215,8 +7366,7 @@ function renderCoprod() {
   const plab = cpPeriodSel === 'l12' ? `${tmMl(P[0])} – ${tmMl(P[P.length - 1])}` : cpPeriodSel === 'ytd' ? `Jan–${tmMl(L)}` : cpPeriodSel;
   $c('cpSub').innerHTML = `Norwegian exports of <b>frozen edible by-products of farmed salmon</b> — heads, frames (backbones), tails and other edible parts. ` +
     `Norwegian statistics put them all under one commodity code, so heads and frames <b>cannot be separated</b>. Product weight, FOB value. ` +
-    `Monthly, ${tmMl(D.first)} – ${tmMl(L)} (SSB publishes about 2–3 weeks after the month).` +
-    (D.other.length ? ` Other by-product codes also collected: ${D.other.join('; ')}.` : '');
+    `Monthly, ${tmMl(D.first)} – ${tmMl(L)} (SSB publishes about 2–3 weeks after the month).`;
   // destinations de la periode
   const isos = {}; P.forEach(k => Object.entries(D.C[k] || {}).forEach(([iso, x]) => { isos[iso] = (isos[iso] || 0) + x[0]; }));
   const rank = Object.keys(isos).sort((a, b) => isos[b] - isos[a]), nm = iso => (D.names[iso] || iso).replace(/^\w\w /, '');
@@ -7287,6 +7437,556 @@ function renderCoprod() {
     `Prices are FOB Norway, product weight.`;
 }
 
+// ===================== Prime des gros poissons (6-9 kg vs 4-5 kg) =====================
+// Prix Akvafakta par calibre, chaque mois : ecart (log) entre le prix moyen des 6-9 kg (pondere par les volumes vendus) et celui des 4-5 kg.
+// Moins il y a de 6+ dans les ventes du panel, plus leur prime est forte : on applique cette relation a la part de 6+ prevue 2 mois plus tot.
+// Verifie dans l'archive des previsions (onglet Generations map) : 2021-2026, ~6 pts d'erreur contre ~7 pour le calendrier seul.
+function premSeries(raw) {
+  const M = {};
+  (raw.weekly || []).forEach(w => { const pw = w.price_week; if (!pw || !['4-5', '6-7', '7-8', '8-9'].every(c => w['p_' + c] > 0)) return;
+    const y = w.report_year - (pw >= 50 && w.report_week <= 2 ? 1 : 0), j4 = Date.UTC(y, 0, 4), d0 = new Date(j4).getUTCDay();
+    const th = new Date(j4 - ((d0 + 6) % 7) * 864e5 + (pw - 1) * 7 * 864e5 + 3 * 864e5), k = th.getUTCFullYear() * 100 + th.getUTCMonth() + 1;
+    const ws = ['6-7', '7-8', '8-9'].map(c => Math.max(w['sh_' + c] || 0.1, 0.1)), big = ['6-7', '7-8', '8-9'].reduce((t, c, i) => t + w['p_' + c] * ws[i], 0) / ws.reduce((a, b) => a + b, 0);
+    (M[k] || (M[k] = [])).push(Math.log(big / w['p_4-5'])); });
+  const S = {}; Object.entries(M).forEach(([k, v]) => { if (v.length >= 3) S[+k] = v.reduce((a, b) => a + b, 0) / v.length; });
+  return S;
+}
+function premFit(S, S6, upto) {   // prime = a + b x part de 6+ du panel (mois connus jusqu'a upto)
+  const ks = Object.keys(S).map(Number).filter(k => k <= upto && S6[k] !== undefined && S6[k] !== null); if (ks.length < 30) return null;
+  const n = ks.length, mx = ks.reduce((t, k) => t + S6[k], 0) / n, my = ks.reduce((t, k) => t + S[k], 0) / n;
+  const b = ks.reduce((t, k) => t + (S6[k] - mx) * (S[k] - my), 0) / ks.reduce((t, k) => t + (S6[k] - mx) ** 2, 0);
+  return { a: my - b * mx, b, n };
+}
+const premPct = l => 100 * (Math.exp(l) - 1);
+
+// ===================== Onglet Generations map =====================
+(function () {
+
+const GUT = 0.888, MON_GM = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const ml = k => `${MON_GM[k % 100 - 1]} ${Math.floor(k / 100)}`;
+const sh = (k, n) => { let y = Math.floor(k / 100), m = k % 100 - 1 + n; y += Math.floor(m / 12); m = ((m % 12) + 12) % 12; return y * 100 + m + 1; };
+const avg = a => a.reduce((x, y) => x + y, 0) / a.length;
+const f1 = v => isFinite(v) ? v.toFixed(1) : '—', f2 = v => isFinite(v) ? v.toFixed(2) : '—';
+const sg = (v, d = 1) => !isFinite(v) ? '—' : (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(d);
+const mix = (t, a, b) => `rgb(${a.map((x, i) => Math.round(x + (b[i] - x) * Math.max(0, Math.min(1, t))))})`;
+const $ = id => document.getElementById(id);
+let G = null;            // donnees preparees
+const S = { gen: null, met: 'gain', k: null, po: 4, play: null };
+
+// ---------------------------------------------------------------- preparation
+function prepare(d) {
+  const REC = {}, COH = {}, T = {}, L = {}, DIS = {};
+  d.records.forEach(r => { (REC[r.po] || (REC[r.po] = {}))[r.year * 100 + r.month] = r; });
+  d.cohort.forEach(c => { const a = COH[c.po] || (COH[c.po] = {}); (a[c.cohort] || (a[c.cohort] = {}))[c.year * 100 + c.month] = c; });
+  const tw = {}, lw = {};
+  const thu = (y, w) => { const j4 = new Date(Date.UTC(y, 0, 4)), mon = new Date(j4.getTime() - ((j4.getUTCDay() + 6) % 7) * 864e5 + (Math.min(w, 52) - 1) * 7 * 864e5); return new Date(mon.getTime() + 3 * 864e5); };
+  ((d.bw_weekly || {}).rows || []).forEach(r => { const th = thu(r.y, r.w), k = th.getUTCFullYear() * 100 + th.getUTCMonth() + 1, key = r.po + '_' + k;
+    if (r.t !== null && r.t !== undefined) (tw[key] || (tw[key] = [])).push(r.t);
+    if (r.lice !== null && r.lice !== undefined) (lw[key] || (lw[key] = [])).push(r.lice);
+    DIS[key] = r.dis || {}; });   // derniere semaine du mois
+  Object.entries(tw).forEach(([key, v]) => { const [po, k] = key.split('_').map(Number); (T[po] || (T[po] = {}))[k] = avg(v); });
+  Object.entries(lw).forEach(([key, v]) => { const [po, k] = key.split('_').map(Number); (L[po] || (L[po] = {}))[k] = avg(v); });
+  const months = [...new Set(d.records.map(r => r.year * 100 + r.month))].filter(k => k >= 201901).sort((a, b) => a - b);
+  const MTB = (d.bw_register && (d.bw_register.mtb_po_all || d.bw_register.mtb_po)) || {};
+  // lignes "propres" pour apprendre la croissance : pas d'abattage notable ni d'arrivee de smolts dans le mois
+  const rows = [], hrows = [];
+  Object.entries(COH).forEach(([po, gens]) => Object.entries(gens).forEach(([g, ser]) => Object.entries(ser).forEach(([k, c]) => {
+    k = +k; const p = ser[sh(k, -1)], t = (T[po] || {})[k];
+    if (!p || !c.weight_kg || !p.weight_kg || t === undefined || c.stock < 5e5 || p.stock < 5e5) return;
+    if ((c.harv_stk || 0) > 0.03 * c.stock || c.stock > 1.03 * p.stock) return;
+    rows.push({ po: +po, k, m: k % 100, w0: p.weight_kg, w1: c.weight_kg, t }); })));
+  // mois d'abattage (servent seulement a prevoir le poids des poissons ABATTUS) : sans eux le modele ne voit quasiment aucun poisson
+  // de plus de 4 kg (2 mois propres, aucun au-dessus de 5 kg) et donne 2-3 %/mois aux gros poissons au lieu de 9-10 %.
+  // Pour le poids des poissons qui RESTENT en mer, on garde le modele sans ces mois : quand on abat les plus grosses cages, le poids moyen
+  // des restants progresse peu, et ce modele-la colle mieux (erreur a 3 mois 8 % contre 15 % avec les mois d'abattage). On reconstitue la croissance de TOUTE la generation :
+  // poids moyen en fin de mois = (poissons restants + abattus + morts) / nombre de poissons en debut de mois,
+  // les poissons sortis en cours de mois ayant grossi d'un demi-mois de moins. Le poids moyen des restants seul est fausse : on abat les plus gros.
+  Object.entries(COH).forEach(([po, gens]) => Object.values(gens).forEach(ser => Object.entries(ser).forEach(([k, c]) => {
+    k = +k; const p = ser[sh(k, -1)], t = (T[po] || {})[k];
+    if (!p || !c.weight_kg || !p.weight_kg || p.weight_kg < 1 || t === undefined || p.stock < 5e5 || !(c.harv_stk > 0)) return;
+    if (!((c.harv_stk || 0) > 0.03 * c.stock || c.stock < 5e5) || c.stock > 1.03 * p.stock) return;
+    const Wh = c.harv_kg / c.harv_stk, Nd = (c.dead_stk || 0) + (c.loss_stk || 0), N0 = c.stock + c.harv_stk + Nd;
+    if (N0 < 5e5 || N0 > 1.1 * p.stock || N0 < 0.9 * p.stock) return;
+    let lg = 0.05; for (let it = 0; it < 20; it++) { const gh = Math.exp(lg / 2); lg = Math.log((c.stock * c.weight_kg + c.harv_stk * Wh * gh + Nd * p.weight_kg * gh) / N0 / p.weight_kg); }
+    if (lg < Math.log(0.9) || lg > Math.log(1.6)) return;
+    hrows.push({ po: +po, k, m: k % 100, w0: p.weight_kg, w1: p.weight_kg * Math.exp(lg), t, harv: true }); })));
+  return { d, REC, COH, T, L, DIS, months, MTB, rows, hrows, fits: {} };
+}
+// modele : ln(W1/W0) = a + b.lnW + c.T + e.T.lnW + mois ; appris en marche avant (uniquement le passe)
+// sans terme croise poids x temperature : appris surtout sur des poissons de moins de 3-4 kg, il inversait l'effet de la temperature pour les gros
+const feat = (w, t, m) => { const lw = Math.log(w), x = [1, lw, t]; for (let mm = 2; mm <= 12; mm++) x.push(m === mm ? 1 : 0); return x; };
+function ols(X, y) {
+  const n = X[0].length, A = [...Array(n)].map(() => Array(n).fill(0)), v = Array(n).fill(0);
+  X.forEach((r, i) => { for (let a = 0; a < n; a++) { v[a] += r[a] * y[i]; for (let b = 0; b < n; b++) A[a][b] += r[a] * r[b]; } });
+  for (let i = 0; i < n; i++) A[i][i] += 1e-6;
+  for (let i = 0; i < n; i++) { let p = i; for (let r = i + 1; r < n; r++) if (Math.abs(A[r][i]) > Math.abs(A[p][i])) p = r;
+    [A[i], A[p]] = [A[p], A[i]]; [v[i], v[p]] = [v[p], v[i]];
+    for (let r = 0; r < n; r++) { if (r === i) continue; const f = A[r][i] / A[i][i]; for (let c = i; c < n; c++) A[r][c] -= f * A[i][c]; v[r] -= f * v[i]; } }
+  return v.map((x, i) => x / A[i][i]);
+}
+function fitAt(k, bio = false) {      // modele connu au mois k (lignes terminees au plus tard en k) ; bio = croissance de toute la generation
+  const key = bio ? 'b' + k : k; if (G.fits[key]) return G.fits[key];
+  const tr = (bio ? G.rows.concat(G.hrows) : G.rows).filter(r => r.k <= k); if (tr.length < 150) return null;
+  return (G.fits[key] = ols(tr.map(r => feat(r.w0, r.t, r.m)), tr.map(r => Math.log(r.w1 / r.w0))));
+}
+const dot = (a, b) => a.reduce((s, x, i) => s + x * b[i], 0);
+// temperature prevue : normale du mois (annees passees) + 60 % de l'ecart observe au mois d'origine
+function tNorm(po, m, upto) { const v = Object.entries(G.T[po] || {}).filter(([k]) => +k % 100 === m && +k <= upto && +k < upto - 0).map(([, t]) => t); return v.length ? avg(v) : null; }
+function tAnom(po, k) { const t = (G.T[po] || {})[k], n = tNorm(po, k % 100, k - 1); return t !== undefined && n !== null ? t - n : null; }
+function tFore(po, k, origin, shift = 0) { const n = tNorm(po, k % 100, origin), a = tAnom(po, origin); return n === null ? null : n + 0.6 * (a || 0) + shift; }
+function project(po, w, origin, h, shift = 0, bio = false) {
+  const B = fitAt(origin, bio); if (!B) return null; let lw = Math.log(w); const out = [];
+  for (let i = 1; i <= h; i++) { const kk = sh(origin, i), t = tFore(po, kk, origin, shift); if (t === null) return null; lw += dot(feat(Math.exp(lw), t, kk % 100), B); out.push(Math.exp(lw)); }
+  return out;
+}
+// ---- scenarios : chaque projection est multipliee par les ecarts que le modele a reellement faits dans le passe, au meme horizon
+// (toutes zones et generations, uniquement des previsions deja verifiables au mois d'origine). Un premier essai qui tirait
+// temperature et croissance mois par mois au hasard donnait des fourchettes trop etroites : seuls 28 % des poids reels y tombaient
+// au lieu de 80 %, parce qu'une generation qui pousse plus vite que prevu le fait plusieurs mois de suite.
+function scenErrors(origin) {
+  G.se = G.se || {}; if (G.se[origin]) return G.se[origin];
+  const E = [[], [], []];
+  for (let po = 1; po <= 13; po++) Object.values(G.COH[po] || {}).forEach(ser => Object.keys(ser).map(Number).forEach(o => {
+    const c0 = ser[o]; if (!c0 || !c0.weight_kg || c0.stock < 5e5 || o < 201901 || sh(o, 1) > origin) return;
+    const p = project(po, c0.weight_kg, o, 3); if (!p) return;
+    for (let h = 1; h <= 3; h++) { const t = sh(o, h), c = ser[t]; if (t > origin || !c || !c.weight_kg || c.stock < 5e5 || (c.harv_stk || 0) > 0.03 * c.stock) continue; E[h - 1].push(Math.log(c.weight_kg / p[h - 1])); } }));
+  E.forEach(a => a.sort((x, y) => x - y));
+  return (G.se[origin] = E);
+}
+function simulate(po, w, origin, h) {
+  const p = project(po, w, origin, h), E = scenErrors(origin); if (!p) return null;
+  const q = (a, f) => a[Math.min(a.length - 1, Math.floor(f * a.length))];
+  return p.map((v, i) => { const a = E[i]; if (a.length < 30) return null; const r = f => v * Math.exp(q(a, f)); return { p10: r(.1), p25: r(.25), p50: r(.5), p75: r(.75), p90: r(.9), n: a.length }; });
+}
+// ---- poids des poissons ABATTUS dans 1 a 3 mois = croissance de la generation x ecart habituel entre poissons abattus et moyenne
+// (on sort d'abord les cages les plus grosses : l'ecart depend du poids et de la part deja abattue) x correction des 12 derniers mois.
+// Teste 2021-2026, generations de 5 kg+ vif : erreur 7 / 12 / 15 % a 1 / 2 / 3 mois (modele seul sans abattages 10 / 16 / 21 %,
+// poids abattu du mois recopie 8 / 14 / 15 %). Pour les generations de moins de 4 kg, ce qu'on abat depend d'autre chose
+// (maladie, place, calendrier) : recopier le poids abattu du mois fait mieux, et c'est ce qui est affiche.
+const hBand = w => w < 3 ? 0 : w < 4 ? 1 : w < 5 ? 2 : 3;
+const hFe = s => [1, Math.log(s.w), s.cf, s.h, s.cf * s.h];
+function harvSamples() {
+  if (G.hs) return G.hs; const S2 = [];
+  Object.entries(G.COH).forEach(([po, gens]) => Object.values(gens).forEach(ser => {
+    const ks = Object.keys(ser).map(Number).sort((a, b) => a - b); let cum = 0; const cf = {};
+    ks.forEach(k => { const c = ser[k]; cum += c.harv_stk || 0; cf[k] = cum / (c.stock + cum || 1); });
+    ks.forEach(o => { const c0 = ser[o]; if (!c0 || !c0.weight_kg || c0.stock < 5e5 || o < 201901) return; let p = null;
+      for (let h = 1; h <= 3; h++) { const t = sh(o, h), c = ser[t]; if (!c || !(c.harv_stk > 0.01 * (c.stock + c.harv_stk))) continue;
+        if (p === null) p = project(+po, c0.weight_kg, o, 3, 0, true) || false; if (!p) break;
+        S2.push({ o, h, t, w: c0.weight_kg, cf: cf[o], y: Math.log(c.harv_kg / c.harv_stk), r: Math.log(c.harv_kg / c.harv_stk) - Math.log(p[h - 1]) }); } }); }));
+  return (G.hs = S2);
+}
+function harvFit(origin) {
+  G.hf = G.hf || {}; if (G.hf[origin] !== undefined) return G.hf[origin];
+  const tr = harvSamples().filter(x => x.t <= origin); if (tr.length < 200) return (G.hf[origin] = null);
+  return (G.hf[origin] = ols(tr.map(hFe), tr.map(x => x.r)));
+}
+function harvBias(origin, band, h) {   // erreur moyenne des previsions verifiables des 12 derniers mois (meme tranche de poids, meme horizon)
+  G.hb = G.hb || {}; const key = origin + '_' + band + '_' + h; if (G.hb[key] !== undefined) return G.hb[key];
+  const e = harvSamples().filter(x => x.h === h && hBand(x.w) === band && x.t <= origin && x.t > sh(origin, -12)).map(x => { const B = harvFit(x.o); return B ? dot(hFe(x), B) - x.r : null; }).filter(v => v !== null);
+  return (G.hb[key] = e.length >= 10 ? avg(e) : 0);
+}
+function cumFrac(ser, origin) { let cum = 0; Object.keys(ser).map(Number).filter(k => k <= origin).forEach(k => { cum += ser[k].harv_stk || 0; }); const c = ser[origin]; return c ? cum / (c.stock + cum || 1) : 0; }
+function harvFore(po, gen, origin, h = 3) {   // poids vif moyen attendu des poissons abattus en origin+1..h
+  const ser = ((G.COH[po] || {})[gen]) || {}, c = ser[origin]; if (!c || !c.weight_kg) return null;
+  const p = project(po, c.weight_kg, origin, h, 0, true), B = harvFit(origin); if (!p || !B) return null;
+  const cf = cumFrac(ser, origin), band = hBand(c.weight_kg);
+  return p.map((v, i) => v * Math.exp(dot(hFe({ w: c.weight_kg, cf, h: i + 1 }), B) - harvBias(origin, band, i + 1)));
+}
+// ---------------------------------------------------------------- indicateurs par zone
+function gensAt(k) { const s = new Set(); Object.values(G.COH).forEach(gs => Object.entries(gs).forEach(([g, ser]) => { if (ser[k] && ser[k].stock > 1e6) s.add(+g); })); return [...s].sort((a, b) => a - b); }
+function zoneStat(po, k, gen) {
+  const c = ((G.COH[po] || {})[gen] || {})[k], p = ((G.COH[po] || {})[gen] || {})[sh(k, -1)], r = (G.REC[po] || {})[k], rp = (G.REC[po] || {})[sh(k, -12)];
+  const fcr = kk => { const a = (G.REC[po] || {})[kk], b = (G.REC[po] || {})[sh(kk, -1)]; if (!a || !b) return null; const gn = a.biomasse_kg - b.biomasse_kg + a.uttak_kg; return gn > 0 ? a.feed_kg / gn : null; };
+  const f3 = [0, -1, -2].map(i => fcr(sh(k, i))).filter(v => v !== null && v < 3);
+  const ytd = y => { let s = 0; for (let m = 1; m <= k % 100; m++) { const x = (G.REC[po] || {})[y * 100 + m]; if (x) s += x.feed_kg; } return s / 1e6; };
+  const dis = (G.DIS[po + '_' + k]) || {};
+  const proj = c && c.weight_kg ? project(po, c.weight_kg, k, 3) : null;
+  return { w: c && c.weight_kg ? c.weight_kg * GUT : null, n: c ? c.stock / 1e6 : 0, gain: c && p && c.weight_kg && p.weight_kg ? (c.weight_kg - p.weight_kg) * GUT : null,
+    t: (G.T[po] || {})[k], ta: tAnom(po, k), mort: r ? r.mortality_pct : null, age: r ? r.age_months : null, lice: (G.L[po] || {})[k],
+    feed: r ? r.feed_kg / 1e6 : null, feedP: rp ? rp.feed_kg / 1e6 : null, fytd: ytd(Math.floor(k / 100)), fytdP: ytd(Math.floor(k / 100) - 1), fcr: f3.length === 3 ? avg(f3) : null,
+    bio: r ? r.biomasse_kg / 1e6 : null, mtb: (G.MTB[String(po)] || 0) / 1000, ila: dis.INFEKSIOES_LAKSEANEMI || 0, pd: dis.PANKREASSYKDOM || 0,
+    w3: proj ? proj[2] * GUT : null, w3sim: c && c.weight_kg ? simulate(po, c.weight_kg, k, 3) : null };
+}
+const METS = {
+  gain: { lab: 'Weight gain in the month', v: z => z.gain, lo: 0.05, hi: 0.65, c: [[30, 58, 70], [47, 214, 180]], fmt: v => '+' + f2(v) + ' kg', unit: 'kg gutted per fish' },
+  w3: { lab: 'Weight expected in 3 months', v: z => z.w3, lo: 0.5, hi: 6, c: [[30, 58, 70], [79, 195, 247]], fmt: v => f2(v) + ' kg', unit: 'kg gutted, projected' },
+  temp: { lab: 'Water temperature', v: z => z.t, lo: 4, hi: 16, c: [[38, 70, 160], [255, 138, 101]], fmt: v => f1(v) + '°', unit: '°C' },
+  tanom: { lab: 'Temperature vs normal', v: z => z.ta, lo: -1.5, hi: 1.5, c: [[79, 195, 247], [255, 138, 101]], fmt: v => sg(v) + '°', unit: '°C vs the same month in past years', div: true },
+  age: { lab: 'Time at sea at harvest', v: z => z.age, lo: 10, hi: 20, c: [[30, 58, 70], [255, 213, 79]], fmt: v => f1(v) + ' m', unit: 'months, fish harvested this month' },
+  feed: { lab: 'Feed used', v: z => z.feed, lo: 0, hi: 40, c: [[30, 58, 70], [206, 147, 216]], fmt: v => f1(v) + ' kt', unit: 'thousand tonnes in the month' },
+  fcr: { lab: 'Feed conversion (FCR)', v: z => z.fcr, lo: 0.9, hi: 1.8, c: [[47, 214, 180], [255, 138, 101]], fmt: v => f2(v), unit: 'kg feed per kg gained, 3-month average' },
+  mtbp: { lab: 'Biomass vs MTB', v: z => z.mtb ? 100 * z.bio / z.mtb : null, lo: 60, hi: 110, c: [[30, 58, 70], [255, 138, 101]], fmt: v => f1(v) + ' %', unit: '% of the licensed capacity of the zone' },
+  mort: { lab: 'Mortality', v: z => z.mort, lo: 0.3, hi: 2.5, c: [[30, 58, 70], [229, 115, 115]], fmt: v => f1(v) + ' %', unit: '% of the stock in the month' },
+  lice: { lab: 'Lice', v: z => z.lice, lo: 0, hi: 0.5, c: [[30, 58, 70], [186, 104, 200]], fmt: v => f2(v), unit: 'adult female lice per fish' },
+};
+// ---------------------------------------------------------------- rendu
+function renderAll() {
+  const k = S.k, gens = gensAt(k);
+  if (!gens.includes(S.gen)) S.gen = gens.length >= 2 ? gens[gens.length - 2] : gens[gens.length - 1];
+  $('gm_genChips').innerHTML = gens.map(g => `<span class="gm-chip${g === S.gen ? ' on' : ''}" data-g="${g}">${g}</span>`).join('');
+  $('gm_genChips').querySelectorAll('.gm-chip').forEach(c => c.onclick = () => { S.gen = +c.dataset.g; renderAll(); });
+  $('gm_metChips').innerHTML = Object.entries(METS).map(([key, m]) => `<span class="gm-chip${key === S.met ? ' on' : ''}" data-m="${key}">${m.lab}</span>`).join('');
+  $('gm_metChips').querySelectorAll('.gm-chip').forEach(c => c.onclick = () => { S.met = c.dataset.m; renderAll(); });
+  $('gm_mLab').textContent = ml(k); $('gm_mSlider').value = G.months.indexOf(k);
+  const Z = {}; for (let po = 1; po <= 13; po++) Z[po] = zoneStat(po, k, S.gen);
+  renderMap(Z); renderZone(Z[S.po]); renderGantt(); renderArchive();
+}
+function renderMap(Z) {
+  const M = METS[S.met], k = S.k;
+  $('gm_mapTitle').textContent = `The map — generation ${S.gen}, ${ml(k)}`;
+  $('gm_mapSub').innerHTML = `Zone colour = <b>${M.lab.toLowerCase()}</b> (${M.unit}). Each label: average weight of generation ${S.gen} · gain in the month · water temperature (▲▼ vs the usual ${MON_GM[k % 100 - 1]}) · weight expected in 3 months · feed used (vs a year earlier) · disease badges (ILA, PD: sites at the end of the month). Click a zone.`;
+  const col = v => v === null || !isFinite(v) ? '#2a3d47' : mix((v - M.lo) / (M.hi - M.lo), M.c[0], M.c[1]);
+  let m = '';
+  for (const po in ZONE_POLYGONS) { const v = M.v(Z[po]);
+    m += `<polygon class="gm-zone" data-po="${po}" points="${ZONE_POLYGONS[po].map(p => p.join(',')).join(' ')}" fill="${col(v)}" stroke="${+po === S.po ? '#ffd54f' : '#08131a'}" stroke-width="${+po === S.po ? 2.4 : 0.8}"><title>${po}. ${PO_NAMES[po]} — ${M.lab}: ${v === null ? '—' : M.fmt(v)}</title></polygon>`;
+    const c = ZONE_CENTROIDS[po]; m += `<text x="${c[0]}" y="${c[1] + 3}" text-anchor="middle" font-size="9" font-weight="bold" fill="#06211d" pointer-events="none">${po}</text>`; }
+  const pos = { 1: [-246, 456], 2: [-246, 415], 3: [-246, 374], 4: [-246, 333], 5: [-246, 292], 6: [-246, 251], 7: [-246, 210], 8: [-246, 169], 9: [236, 170], 10: [236, 211], 11: [236, 252], 12: [236, 293], 13: [236, 334] };
+  for (const po in pos) { const z = Z[po], [x, y] = pos[po], c = ZONE_CENTROIDS[po], w = 192, east = x > 0, ax = east ? x : x + w, sel = +po === S.po;
+    m += `<path d="M${c[0]},${c[1]} L${ax},${y + 18}" stroke="#8fa4b0" stroke-opacity=".35" fill="none" pointer-events="none"/>`;
+    m += `<g class="gm-zone" data-po="${po}"><rect x="${x}" y="${y}" width="${w}" height="37" rx="6" fill="#0d1a24" stroke="${sel ? '#ffd54f' : '#2a4352'}"/>`;
+    const nm = PO_NAMES[po].length > 19 ? PO_NAMES[po].slice(0, 18) + '…' : PO_NAMES[po];
+    m += `<text x="${x + 6}" y="${y + 10.5}" font-size="9" fill="#8fa4b0">${po} · ${nm}</text>`;
+    const ta = z.ta, tc = ta > 0.3 ? '#ff8a65' : ta < -0.3 ? '#7be0c9' : '#8fa4b0';
+    m += z.w === null ? `<text x="${x + 6}" y="${y + 22}" font-size="10" fill="#8fa4b0">no fish of generation ${S.gen}</text>` :
+      `<text x="${x + 6}" y="${y + 22}" font-size="10" fill="#e7eef2"><tspan font-weight="bold">${f2(z.w)} kg</tspan> <tspan fill="#2fd6b4">${z.gain !== null ? sg(z.gain, 2) : ''}</tspan> · ${f1(z.t)}°${ta !== null ? `<tspan fill="${tc}">${ta > 0 ? '▲' : '▼'}${Math.abs(ta).toFixed(1)}</tspan>` : ''} <tspan fill="#4fc3f7">→ ${f2(z.w3)}${z.w3sim && z.w3sim[2] ? `±${((z.w3sim[2].p90 - z.w3sim[2].p10) / 2 * GUT).toFixed(1)}` : ''}</tspan></text>`;
+    const fp = z.feedP ? 100 * (z.feed / z.feedP - 1) : NaN;
+    m += `<text x="${x + 6}" y="${y + 33}" font-size="9" fill="#ce93d8">feed ${f1(z.feed)} kt <tspan fill="${fp >= 0 ? '#7ed98f' : '#ff8a65'}">${isFinite(fp) ? sg(fp, 0) + '%' : ''}</tspan> <tspan fill="#8fa4b0">· ${MON_GM[0]}–${MON_GM[k % 100 - 1]} ${f1(z.fytd)} kt</tspan></text>`;
+    let bx = x + w - 6;
+    if (z.pd) { m += `<rect x="${bx - 32}" y="${y + 3}" width="32" height="10" rx="5" fill="#ffb74d"/><text x="${bx - 16}" y="${y + 11}" text-anchor="middle" font-size="8" font-weight="bold" fill="#2a1a06">PD ${z.pd}</text>`; bx -= 35; }
+    if (z.ila) m += `<rect x="${bx - 32}" y="${y + 3}" width="32" height="10" rx="5" fill="#e57373"/><text x="${bx - 16}" y="${y + 11}" text-anchor="middle" font-size="8" font-weight="bold" fill="#2a0606">ILA ${z.ila}</text>`;
+    m += `</g>`; }
+  // Norvege
+  let n = 0, wsum = 0, g = 0, gn = 0, feed = 0, feedP = 0;
+  for (let po = 1; po <= 13; po++) { const z = Z[po]; if (z.w !== null) { n += z.n; wsum += z.n * z.w; } if (z.gain !== null) { g += z.n * z.gain; gn += z.n; } feed += z.feed || 0; feedP += z.feedP || 0; }
+  m += `<g transform="translate(236,382)"><rect width="192" height="96" rx="8" fill="#0d1a24" stroke="#2a4352"/><text x="8" y="16" font-size="10" fill="#8fa4b0">NORWAY · generation ${S.gen}</text>` +
+    `<text x="8" y="36" font-size="15" font-weight="bold" fill="#e7eef2">${f1(n)} M fish · ${n ? f2(wsum / n) : '—'} kg</text><text x="8" y="54" font-size="10.5" fill="#2fd6b4">${gn ? sg(g / gn, 2) + ' kg in ' + MON_GM[k % 100 - 1] : ''}</text>` +
+    `<text x="8" y="70" font-size="10.5" fill="#ce93d8">feed ${f1(feed)} kt (${feedP ? sg(100 * (feed / feedP - 1), 1) + '% vs a year earlier' : ''})</text><text x="8" y="86" font-size="10" fill="#8fa4b0">all generations, all zones</text></g>`;
+  m += `<text x="236" y="160" font-size="10" fill="#8fa4b0" font-weight="bold">NORTH</text><text x="-246" y="160" font-size="10" fill="#8fa4b0" font-weight="bold">SOUTH & MID</text>`;
+  $('gm_map').innerHTML = `<svg viewBox="-250 8 684 492" style="display:block;width:100%;height:auto">${m}</svg>`;
+  $('gm_map').querySelectorAll('.gm-zone').forEach(e => e.addEventListener('click', () => { S.po = +e.dataset.po; renderAll(); }));
+  const g0 = mix(0, M.c[0], M.c[1]), g1 = mix(1, M.c[0], M.c[1]);
+  $('gm_mapLeg').innerHTML = `${M.lab}: <span style="display:inline-block;width:150px;height:10px;border-radius:5px;vertical-align:middle;background:linear-gradient(90deg,${g0},${g1})"></span> ${M.fmt(M.lo)} → ${M.fmt(M.hi)} · <span style="color:#7be0c9">▼ colder</span> / <span style="color:#ff8a65">▲ warmer</span> than usual · <span style="color:#4fc3f7">→ weight expected in 3 months</span>`;
+}
+// petit graphique : barres + ligne(s), axes gauche/droite
+function chart(keys, o) {
+  const W = 760, H = o.H || 230, l = 44, r = 44, t = 14, b = 34, pw = W - l - r, ph = H - t - b, n = keys.length, bw = pw / n;
+  const X = i => l + bw * (i + .5), YL = v => t + ph - (v - (o.lmin || 0)) / (o.lmax - (o.lmin || 0)) * ph, YR = v => t + ph - (v - (o.rmin || 0)) / (o.rmax - (o.rmin || 0)) * ph;
+  let s = '';
+  for (let i = 0; i <= 4; i++) { const y = t + ph - i * ph / 4, vl = (o.lmin || 0) + (o.lmax - (o.lmin || 0)) * i / 4, vr = (o.rmin || 0) + (o.rmax - (o.rmin || 0)) * i / 4;
+    s += `<line x1="${l}" x2="${W - r}" y1="${y}" y2="${y}" stroke="#223642"/><text x="${l - 5}" y="${y + 4}" font-size="10" text-anchor="end" fill="${o.lcol}">${vl.toFixed(o.ld === undefined ? 2 : o.ld)}</text>` +
+      (o.rmax !== undefined ? `<text x="${W - r + 5}" y="${y + 4}" font-size="10" fill="${o.rcol}">${vr.toFixed(o.rd === undefined ? 0 : o.rd)}${o.runit || ''}</text>` : ''); }
+  if (o.projFrom !== undefined) s += `<rect x="${l + bw * o.projFrom}" y="${t}" width="${bw * (n - o.projFrom)}" height="${ph}" fill="#4fc3f7" fill-opacity=".06"/><text x="${W - r - 4}" y="${t + 11}" text-anchor="end" font-size="10" fill="#4fc3f7">projection</text>`;
+  (o.area || []).forEach(a => { let d = ''; a.v.forEach((v, i) => { if (v === null || !isFinite(v)) return; d += (d ? 'L' : 'M') + X(i) + ',' + (a.right ? YR(v) : YL(v)); }); if (d) s += `<path d="${d} L${X(n - 1)},${t + ph} L${X(0)},${t + ph} Z" fill="${a.col}" fill-opacity=".12"/>`; });
+  (o.bars || []).forEach(bb => bb.v.forEach((v, i) => { if (v === null || !isFinite(v)) return; const y0 = YL(Math.max(o.lmin || 0, 0)), y1 = YL(v);
+    s += `<rect x="${l + bw * i + bw * .14}" y="${Math.min(y0, y1)}" width="${bw * .72}" height="${Math.abs(y0 - y1)}" rx="2" fill="${bb.col}" fill-opacity="${bb.op ? bb.op(i) : .85}"><title>${ml(keys[i])} — ${bb.lab}: ${v.toFixed(2)}</title></rect>`; }));
+  (o.band || []).forEach(bd => { const up = [], dn = []; bd.hi.forEach((v, i) => { if (v !== null && bd.lo[i] !== null) { up.push(`${X(i)},${bd.right ? YR(v) : YL(v)}`); dn.unshift(`${X(i)},${bd.right ? YR(bd.lo[i]) : YL(bd.lo[i])}`); } }); if (up.length) s += `<polygon points="${up.join(' ')} ${dn.join(' ')}" fill="${bd.col}" fill-opacity=".18"/>`; });
+  (o.lines || []).forEach(ln => { let d = '', pen = false; ln.v.forEach((v, i) => { if (v === null || !isFinite(v)) { pen = false; return; } d += (pen ? 'L' : 'M') + X(i) + ',' + (ln.right ? YR(v) : YL(v)); pen = true; });
+    s += `<path d="${d}" fill="none" stroke="${ln.col}" stroke-width="${ln.w || 2.2}"${ln.dash ? ` stroke-dasharray="${ln.dash}"` : ''}/>`;
+    if (ln.dots) ln.v.forEach((v, i) => { if (v !== null && isFinite(v)) s += `<circle cx="${X(i)}" cy="${ln.right ? YR(v) : YL(v)}" r="2.6" fill="${ln.col}"><title>${ml(keys[i])} — ${ln.lab}: ${v.toFixed(2)}</title></circle>`; }); });
+  keys.forEach((k, i) => { s += `<text x="${X(i)}" y="${t + ph + 12}" text-anchor="middle" font-size="9" fill="#8fa4b0">${'JFMAMJJASOND'[k % 100 - 1]}</text>`; if (k % 100 === 1 || i === 0) s += `<text x="${l + bw * i + 2}" y="${H - 6}" font-size="10.5" font-weight="bold" fill="#8fa4b0">${Math.floor(k / 100)}</text>`; });
+  (o.notes || []).forEach(nt => { s += `<text x="${nt.x}" y="${nt.y}" font-size="10.5" fill="${nt.col}">${nt.txt}</text>`; });
+  return `<svg viewBox="0 0 ${W} ${H}" style="display:block;width:100%;height:auto">${s}</svg>`;
+}
+function renderZone(z) {
+  const po = S.po, k = S.k, gen = S.gen, ser = ((G.COH[po] || {})[gen]) || {};
+  $('gm_zTitle').innerHTML = `Zone ${po} · ${PO_NAMES[po]} — generation ${gen}, ${ml(k)}`;
+  const rk = Object.keys(G.REC[po] || {}).map(Number).filter(x => x <= k);
+  $('gm_zKpi').innerHTML = [[z.w === null ? '—' : f1(z.n) + ' M', `fish of generation ${gen}`], [z.w === null ? '—' : f2(z.w) + ' kg', 'average weight (gutted)'],
+    [z.gain === null ? '—' : sg(z.gain, 2) + ' kg', `gained in ${MON_GM[k % 100 - 1]}`], [f1(z.t) + ' °C', z.ta === null ? 'water temperature' : `${sg(z.ta)}° vs normal ${MON_GM[k % 100 - 1]}`],
+    [f1(z.mort) + ' %', 'mortality in the month (zone)'], [z.mtb ? f1(100 * z.bio / z.mtb) + ' %' : '—', `biomass vs MTB (${Math.round(z.bio)} / ${Math.round(z.mtb)} kt)`]]
+    .map(([a, b]) => `<div class="gm-kpi"><b>${a}</b><span>${b}</span></div>`).join('');
+  // croissance : 18 mois d'historique + 3 mois projetes
+  const hist = []; for (let i = -17; i <= 0; i++) hist.push(sh(k, i));
+  const keys = hist.concat([1, 2, 3].map(i => sh(k, i)));
+  const c = ser[k], pr = c && c.weight_kg ? { base: project(po, c.weight_kg, k, 3), cold: project(po, c.weight_kg, k, 3, -1), mild: project(po, c.weight_kg, k, 3, 1) } : null;
+  const wv = keys.map((kk, i) => i < 18 ? (ser[kk] && ser[kk].weight_kg && ser[kk].stock > 1e5 ? ser[kk].weight_kg * GUT : null) : (pr && pr.base ? pr.base[i - 18] * GUT : null));
+  const gv = keys.map((kk, i) => { if (i < 18) { const a = ser[kk], b = ser[sh(kk, -1)]; return a && b && a.weight_kg && b.weight_kg && a.stock > 1e5 && b.stock > 1e5 ? (a.weight_kg - b.weight_kg) * GUT : null; }
+    if (!pr || !pr.base) return null; const prev = i === 18 ? c.weight_kg : pr.base[i - 19]; return (pr.base[i - 18] - prev) * GUT; });
+  const tv = keys.map((kk, i) => i < 18 ? (G.T[po] || {})[kk] ?? null : tFore(po, kk, k));
+  const tn = keys.map(kk => tNorm(po, kk % 100, k));
+  const gmax = Math.max(0.3, ...gv.filter(v => v !== null)) * 1.1, wmax = Math.max(1, ...wv.filter(v => v !== null)) * 1.1;
+  const SIMt = c && c.weight_kg ? simulate(po, c.weight_kg, k, 3) : null;
+  if (pr && pr.base) {
+    const d = (a, b) => (a[2] - b[2]) * GUT;
+    $('gm_zGrowSub').innerHTML = `<b>Bars</b>: kg gained each month (gutted, generation ${gen}); <b style="color:#ffd54f">yellow line</b>: sea temperature (dotted: the normal for the month); <b style="color:#90caf9">shaded</b>: average weight. ` +
+      `<b style="color:#4fc3f7">Projection</b>: expected weight in ${ml(sh(k, 3))} = <b>${f2(pr.base[2] * GUT)} kg</b> with the expected temperature (normal + 60% of today's gap). ` +
+      `A winter <b>1 °C colder</b> than expected: ${f2(pr.cold[2] * GUT)} kg (${sg(d(pr.cold, pr.base), 2)} kg); <b>1 °C milder</b>: ${f2(pr.mild[2] * GUT)} kg (${sg(d(pr.mild, pr.base), 2)} kg). ` +
+      (SIMt && SIMt[2] ? `<b>Scenarios</b>: the projection replayed with each of the model's past misses at the same horizon (${SIMt[2].n} cases, all zones): the fan shows where the weight lands in 5 cases out of 10 (dark) and 8 out of 10 (light) — <b>${f2(SIMt[2].p10 * GUT)}–${f2(SIMt[2].p90 * GUT)} kg</b> in ${ml(sh(k, 3))}.` : '');
+  } else $('gm_zGrowSub').innerHTML = `No fish of generation ${gen} in this zone in ${ml(k)}.`;
+  const SIM = c && c.weight_kg ? simulate(po, c.weight_kg, k, 3) : null, qv = (q, i) => i < 18 || !SIM ? null : SIM[i - 18][q] * GUT;
+  const p10 = keys.map((kk, i) => qv('p10', i)), p90 = keys.map((kk, i) => qv('p90', i)), p25 = keys.map((kk, i) => qv('p25', i)), p75 = keys.map((kk, i) => qv('p75', i));
+  if (SIM) { p10[17] = p90[17] = p25[17] = p75[17] = wv[17]; }
+  const wR = v => v === null ? null : v / wmax * gmax;   // poids ramene sur l'echelle de gauche
+  $('gm_zGrow').innerHTML = chart(keys, { lmax: gmax, lcol: '#2fd6b4', rmax: 18, rcol: '#ffd54f', runit: '°', projFrom: 18,
+    area: [{ v: wv.map(wR), col: '#90caf9' }], band: [{ hi: p90.map(wR), lo: p10.map(wR), col: '#4fc3f7' }, { hi: p75.map(wR), lo: p25.map(wR), col: '#4fc3f7' }],
+    bars: [{ v: gv, col: '#2fd6b4', lab: 'kg gained', op: i => i < 18 ? .85 : .35 }],
+    lines: [{ v: tn, col: '#ffd54f', right: true, w: 1.2, dash: '2,3', lab: 'normal' }, { v: tv, col: '#ffd54f', right: true, dots: true, lab: '°C' }, { v: wv.map(wR), col: '#90caf9', w: 1.4, lab: 'weight (scaled)' }],
+    notes: wv[17] !== null ? [{ x: 50, y: 28, col: '#90caf9', txt: `average weight: ${f2(wv[17])} kg now → ${f2(wv[20])} kg in ${ml(sh(k, 3))}` + (SIM && SIM[2] ? ` · 8 chances in 10 between ${f2(SIM[2].p10 * GUT)} and ${f2(SIM[2].p90 * GUT)} kg` : '') }] : [] });
+  renderHarv(po, k);
+  renderMtb(po, k);
+  // biologie
+  const bk = hist.slice(-15), cw = 640 / bk.length;
+  let b = '';
+  const rowsB = [['Mortality %', kk => ((G.REC[po] || {})[kk] || {}).mortality_pct, v => mix(v / 3, [16, 32, 44], [229, 115, 115]), v => v.toFixed(1)],
+    ['Lice / fish', kk => (G.L[po] || {})[kk], v => mix(v / 0.45, [16, 32, 44], [186, 104, 200]), v => v.toFixed(2)],
+    [`Harvested, gen. ${gen} (M)`, kk => ser[kk] ? ser[kk].harv_stk / 1e6 : null, v => mix(v / 3, [16, 32, 44], [255, 138, 101]), v => v >= 0.05 ? v.toFixed(1) : ''],
+    ['Disease (sites)', kk => { const x = G.DIS[po + '_' + kk] || {}; return (x.INFEKSIOES_LAKSEANEMI || 0) + (x.PANKREASSYKDOM || 0); }, v => mix(v / 15, [16, 32, 44], [255, 183, 77]),
+      (v, kk) => { const x = G.DIS[po + '_' + kk] || {}; return [(x.INFEKSIOES_LAKSEANEMI ? 'I' + x.INFEKSIOES_LAKSEANEMI : ''), (x.PANKREASSYKDOM ? 'P' + x.PANKREASSYKDOM : '')].filter(Boolean).join(' '); }]];
+  rowsB.forEach(([lab, f, cf, fmt], j) => { const y = j * 27; b += `<text x="0" y="${y + 15}" font-size="10" fill="#8fa4b0">${lab}</text>`;
+    bk.forEach((kk, i) => { const v = f(kk); b += `<rect x="${120 + cw * i + 1}" y="${y}" width="${cw - 2}" height="23" rx="3" fill="${v === null || v === undefined ? '#10202c' : cf(v)}"><title>${ml(kk)} — ${lab}: ${v === null || v === undefined ? '—' : v.toFixed(2)}</title></rect>` +
+      `<text x="${120 + cw * (i + .5)}" y="${y + 15}" text-anchor="middle" font-size="8.5" fill="#e7eef2" pointer-events="none">${v === null || v === undefined ? '' : fmt(v, kk)}</text>`; }); });
+  bk.forEach((kk, i) => { b += `<text x="${120 + cw * (i + .5)}" y="${4 * 27 + 10}" text-anchor="middle" font-size="9" fill="#8fa4b0">${'JFMAMJJASOND'[kk % 100 - 1]}</text>`; });
+  $('gm_zBio').innerHTML = `<svg viewBox="0 0 760 ${4 * 27 + 16}" style="display:block;width:100%;height:auto">${b}</svg>`;
+  // aliment
+  const fk = hist;
+  const fv = fk.map(kk => { const r = (G.REC[po] || {})[kk]; return r ? r.feed_kg / 1e6 : null; });
+  const fcr = kk => { const a = (G.REC[po] || {})[kk], q = (G.REC[po] || {})[sh(kk, -1)]; if (!a || !q) return null; const gn = a.biomasse_kg - q.biomasse_kg + a.uttak_kg; return gn > 0 && a.feed_kg / gn < 3 ? a.feed_kg / gn : null; };
+  const f3 = fk.map(kk => { const v = [0, -1, -2].map(i => fcr(sh(kk, i))); return v.every(x => x !== null) ? avg(v) : null; });
+  const fmax = Math.max(5, ...fv.filter(v => v !== null)) * 1.15;
+  $('gm_zFeed').innerHTML = chart(fk, { lmax: fmax, ld: 0, lcol: '#ce93d8', rmax: 2, rd: 1, rcol: '#e7eef2', bars: [{ v: fv, col: '#ce93d8', lab: 'feed kt' }], lines: [{ v: f3, col: '#e7eef2', right: true, dots: true, lab: 'FCR 3 months' }], H: 190 });
+  renderCheck(po, gen);
+}
+// poissons qui sortent de l'eau : poids abattu attendu par generation
+function renderHarv(po, k) {
+  const Phi = z => { const t = 1 / (1 + 0.3275911 * Math.abs(z / Math.SQRT2)), y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-z * z / 2); return 0.5 * (1 + (z >= 0 ? y : -y)); };
+  const s2 = Math.log(1 + 0.27 * 0.27), above = (w, lo) => 1 - Phi((Math.log(lo / GUT) - (Math.log(w) - s2 / 2)) / Math.sqrt(s2));
+  const gens = Object.entries(G.COH[po] || {}).filter(([, ser]) => ser[k] && ser[k].stock > 2e5 && ser[k].weight_kg && (ser[k].weight_kg >= 3 || (ser[k].harv_stk || 0) > 0.01 * ser[k].stock))
+    .sort((a, b) => b[1][k].weight_kg - a[1][k].weight_kg);
+  if (!gens.length) { $('gm_zHarvSub').innerHTML = 'No generation close to harvest in this zone.'; $('gm_zHarv').innerHTML = ''; return; }
+  const kk = [1, 2, 3].map(i => sh(k, i));
+  $('gm_zHarvSub').innerHTML = `Average weight of the fish that will be <b>harvested</b> (not of those left in the sea: farms take the biggest cages first), gutted, and the share of 6 kg+ among them. ` +
+    `For generations of 4 kg and more: growth of the whole generation × the usual gap between harvested fish and the average at that point of the harvest × the model's error over the last 12 months. ` +
+    `Below 4 kg, what is harvested depends on other things (disease, space, plans): the weight harvested this month is carried forward. ` +
+    `Tested 2021–2026, generations of 5 kg+: off by 7 / 12 / 15 % at 1 / 2 / 3 months.`;
+  $('gm_zHarv').innerHTML = `<tr><th>Generation</th><th>Fish left (M)</th><th>Already harvested</th><th>Average now</th><th>Harvested in ${MON_GM[k % 100 - 1]}</th>${kk.map(x => `<th>Harvest ${ml(x)}</th>`).join('')}</tr>` +
+    gens.map(([g, ser]) => { const c = ser[k], cf = cumFrac(ser, k), wh = c.harv_stk > 0.01 * c.stock ? c.harv_kg / c.harv_stk : null;
+      const f = c.weight_kg >= 4 ? harvFore(po, g, k, 3) : (wh ? [wh, wh, wh] : null);
+      const cell = v => v ? `${f2(v * GUT)} kg <span class="gm-mut">· ${Math.round(100 * above(v * GUT, 6))} % 6+</span>` : '<span class="gm-mut">—</span>';
+      return `<tr><td>${g}</td><td>${f1(c.stock / 1e6)}</td><td>${Math.round(100 * cf)} %</td><td>${f2(c.weight_kg * GUT)} kg</td><td>${cell(wh)}</td>${(f || [null, null, null]).map((v, i) => `<td>${cell(v)}${c.weight_kg < 4 && v ? ' <span class="gm-mut">(=)</span>' : ''}</td>`).join('')}</tr>`; }).join('') +
+    `<tr><td colspan="8" class="gm-mut" style="white-space:normal;font-size:11px">6+ share: from the average weight, spread 0.27 as in the Summary. (=) carried forward. The harvest may stop before then: these are weights, not volumes.</td></tr>`;
+}
+// biomasse projetee vs MTB : poids projetes par generation x effectif qui evolue comme les memes mois l'an dernier
+function renderMtb(po, k) {
+  const mtb = (G.MTB[String(po)] || 0) / 1000, R = G.REC[po] || {}, now = R[k];
+  if (!now || !mtb) { $('gm_zMtbSub').innerHTML = 'No licensed capacity (MTB) for this zone.'; $('gm_zMtb').innerHTML = ''; return; }
+  const gens = Object.entries(G.COH[po] || {}).filter(([, s]) => s[k] && s[k].stock > 1e5 && s[k].weight_kg);
+  // biomasse de la zone x evolution de la biomasse norvegienne sur les memes mois l'an dernier (teste 2021-2026 : 9,7 % d'erreur
+  // a 3 mois, mieux que la projection generation par generation, 19 %, parce que l'abattage pese plus que la croissance) ;
+  // les scenarios +-1 degre modulent ce chiffre par l'effet de la temperature sur le poids des poissons en mer
+  const natB = kk => Object.values(G.REC).reduce((t, Rp) => t + (Rp[kk] ? Rp[kk].biomasse_kg : 0), 0);
+  const wf = (h, shift) => { let a = 0; gens.forEach(([, s]) => { const p = project(po, s[k].weight_kg, k, h, shift); if (p) a += s[k].stock * p[h - 1]; }); return a; };
+  const scen = shift => [1, 2, 3].map(h => { const n0 = natB(sh(k, -12)), n1 = natB(sh(k, h - 12)); if (!n0 || !n1) return null;
+    const base = now.biomasse_kg / 1e6 * n1 / n0, w0 = wf(h, 0); return shift && w0 ? base * wf(h, shift) / w0 : base; });
+  const base = scen(0), cold = scen(-1), mild = scen(1);
+  // scenarios : erreurs passees de cette methode (toutes zones, seulement des previsions deja verifiables au mois k) appliquees a la projection
+  G.mtbErr = G.mtbErr || {};
+  const errs = G.mtbErr[k] || (G.mtbErr[k] = [1, 2, 3].map(h => { const r = [];
+    G.months.filter(o => sh(o, h) <= k && o >= 201901).forEach(o => { const n0 = natB(sh(o, -12)), n1 = natB(sh(o, h - 12)); if (!n0 || !n1) return;
+      for (let p = 1; p <= 13; p++) { const a = (G.REC[p] || {})[o], b = (G.REC[p] || {})[sh(o, h)]; if (a && b && a.biomasse_kg > 5e6) r.push(b.biomasse_kg / (a.biomasse_kg * n1 / n0)); } });
+    return r.sort((x, y) => x - y); }));
+  const qe = (h, p) => { const r = errs[h - 1]; return r.length ? r[Math.min(r.length - 1, Math.floor(p * r.length))] : 1; };
+  const pAbove = base[2] !== null && errs[2].length ? 100 * errs[2].filter(x => base[2] * x > mtb).length / errs[2].length : NaN;
+  const hist = [-5, -4, -3, -2, -1, 0].map(i => sh(k, i)), keys = hist.concat([1, 2, 3].map(i => sh(k, i)));
+  const bv = keys.map((kk, i) => i < 6 ? (R[kk] ? 100 * R[kk].biomasse_kg / 1e6 / mtb : null) : (base[i - 6] !== null ? 100 * base[i - 6] / mtb : null));
+  const lastY = keys.map(kk => R[sh(kk, -12)] ? 100 * R[sh(kk, -12)].biomasse_kg / 1e6 / mtb : null);
+  const mx = Math.max(110, ...bv.filter(v => v !== null), ...lastY.filter(v => v !== null), base[2] !== null ? 100 * base[2] * qe(3, .9) / mtb : 0) * 1.05;
+  $('gm_zMtbSub').innerHTML = `Biomass in the sea as a share of the zone's licensed capacity (MTB ${Math.round(mtb)} kt, all licences attached to the zone). Projection to <b>${ml(sh(k, 3))}: ${f1(100 * base[2] / mtb)} %</b> ` +
+    `(${Math.round(base[2])} kt; 8 chances in 10 between ${f1(100 * base[2] * qe(3, .1) / mtb)} and ${f1(100 * base[2] * qe(3, .9) / mtb)} %; ` +
+    `<b>probability of being above 100 % of MTB: ${isFinite(pAbove) ? Math.round(pAbove) + ' %' : '—'}</b>; colder winter ${f1(100 * cold[2] / mtb)} %, milder ${f1(100 * mild[2] / mtb)} %). Scenarios: this method's past errors, all zones, applied to today's projection. Method: the zone's biomass today × how Norway's biomass changed over the same months last year ` +
+    `(tested 2021–2026: about 10 % off at 3 months; projecting generation by generation did worse, because harvest moves biomass more than growth does); the colder/milder band applies the temperature effect on the fish's weight. ` +
+    `<span class="gm-warn">MTB applies per company and licence, often across several zones: above 100 % in a zone is possible and is not a breach.</span> Dotted: a year earlier.`;
+  $('gm_zMtb').innerHTML = chart(keys, { lmax: mx, ld: 0, lcol: '#ff8a65', H: 180, projFrom: 6,
+    bars: [{ v: bv, col: '#ff8a65', lab: '% of MTB', op: i => i < 6 ? .8 : .4 }],
+    band: [{ hi: keys.map((kk, i) => i < 6 || base[i - 6] === null ? null : 100 * base[i - 6] * qe(i - 5, .9) / mtb), lo: keys.map((kk, i) => i < 6 || base[i - 6] === null ? null : 100 * base[i - 6] * qe(i - 5, .1) / mtb), col: '#4fc3f7' },
+      { hi: keys.map((kk, i) => i < 6 || base[i - 6] === null ? null : 100 * base[i - 6] * qe(i - 5, .75) / mtb), lo: keys.map((kk, i) => i < 6 || base[i - 6] === null ? null : 100 * base[i - 6] * qe(i - 5, .25) / mtb), col: '#4fc3f7' }],
+    lines: [{ v: keys.map(() => 100), col: '#e7eef2', w: 1, dash: '4,4', lab: '100 %' }, { v: lastY, col: '#8fa4b0', w: 1.4, dash: '2,3', dots: true, lab: 'a year earlier %' }] });
+}
+// fiabilite : prevision faite 3 mois plus tot (modele connu a l'epoque) contre le poids reel ; calendrier en comparaison
+function backtest(po, gen) {
+  const ser = ((G.COH[po] || {})[gen]) || {}, out = [];
+  Object.keys(ser).map(Number).sort((a, b) => a - b).forEach(kk => { const o = sh(kk, -3), c0 = ser[o], c = ser[kk];
+    if (!c0 || !c || !c0.weight_kg || !c.weight_kg || c0.stock < 5e5 || c.stock < 5e5 || kk > S.k) return;
+    const p = project(po, c0.weight_kg, o, 3); if (!p) return;
+    // calendrier : meme croissance que les memes mois des annees passees, meme zone, poids voisin
+    let lw = Math.log(c0.weight_kg), ok = true;
+    for (let i = 1; i <= 3; i++) { const m = sh(o, i) % 100, same = G.rows.filter(r => r.po === po && r.m === m && r.k <= o && Math.abs(Math.log(r.w0) - lw) < 0.35).map(r => Math.log(r.w1 / r.w0)); if (!same.length) { ok = false; break; } lw += avg(same); }
+    out.push({ k: kk, real: c.weight_kg, model: p[2], cal: ok ? Math.exp(lw) : null, harv: (c.harv_stk || 0) > 0.05 * c.stock }); });
+  return out;
+}
+function renderCheck(po, gen) {
+  const bt = backtest(po, gen);
+  if (!bt.length) { $('gm_zChkSub').innerHTML = 'Not enough history for this generation in this zone yet.'; $('gm_zChk').innerHTML = ''; return; }
+  const keys = bt.map(x => x.k), e = bt.filter(x => !x.harv && x.cal), em = e.length ? avg(e.map(x => Math.abs(x.model / x.real - 1))) : NaN, ec = e.length ? avg(e.map(x => Math.abs(x.cal / x.real - 1))) : NaN;
+  $('gm_zChkSub').innerHTML = `Each point: the average weight the model announced <b>3 months before</b> (using only what was known then), against the weight the register later published. ` +
+    (e.length ? `Here, months without heavy harvest: model <b>${f1(100 * em)} %</b> off on average, calendar method ${f1(100 * ec)} % (${e.length} months). ` : '') +
+    `Once a generation is being harvested, the average weight left in the sea drops because the biggest fish leave first: the model does not try to predict that (shaded months).`;
+  const mx = Math.max(...bt.map(x => Math.max(x.real, x.model, x.cal || 0))) * GUT * 1.1;
+  $('gm_zChk').innerHTML = chart(keys, { lmax: mx, ld: 1, lcol: '#e7eef2', H: 190,
+    bars: [{ v: bt.map(x => x.harv ? mx : null), col: '#ff8a65', lab: 'harvest under way', op: () => .08 }],
+    lines: [{ v: bt.map(x => x.real * GUT), col: '#e7eef2', dots: true, lab: 'actual weight' }, { v: bt.map(x => x.model * GUT), col: '#4fc3f7', dots: true, dash: '5,3', lab: 'model, 3 months before' }, { v: bt.map(x => x.cal ? x.cal * GUT : null), col: '#8fa4b0', w: 1.4, dash: '2,3', lab: 'calendar, 3 months before' }],
+    notes: [{ x: 50, y: 28, col: '#e7eef2', txt: '— actual' }, { x: 120, y: 28, col: '#4fc3f7', txt: '- - model (3 months before)' }, { x: 300, y: 28, col: '#8fa4b0', txt: '··· calendar' }] });
+}
+function renderGantt() {
+  const k = S.k, ks = []; for (let x = sh(k, -44); x <= k; x = sh(x, 1)) ks.push(x);
+  const GL = 175, W = 1440, GW = W - GL - 16, cw = GW / ks.length, RH = 50, top = 22;
+  const gens = [...new Set(Object.values(G.COH).flatMap(o => Object.keys(o).map(Number)))].filter(g => Object.values(G.COH).some(o => o[g] && ks.some(x => o[g][x] && o[g][x].stock > 1e5))).sort();
+  const gcol = w => mix(w / 5, [180, 236, 240], [12, 90, 110]);
+  let s = '';
+  ks.forEach((x, i) => { if (x % 100 === 1) s += `<line x1="${GL + cw * i}" x2="${GL + cw * i}" y1="${top - 6}" y2="${top + 13 * RH}" stroke="#2a4352"/><text x="${GL + cw * i + 3}" y="${top - 8}" font-size="13" font-weight="bold" fill="#8fa4b0">${Math.floor(x / 100)}</text>`;
+    if (x % 100 === 7) s += `<line x1="${GL + cw * i}" x2="${GL + cw * i}" y1="${top}" y2="${top + 13 * RH}" stroke="#1a2f3b" stroke-dasharray="2,4"/><text x="${GL + cw * i + 3}" y="${top - 8}" font-size="10" fill="#5f7785">Jul</text>`; });
+  for (let po = 1; po <= 13; po++) { const y0 = top + (13 - po) * RH, R = G.REC[po] || {};
+    let fy = 0; for (let m = 1; m <= k % 100; m++) { const r = R[Math.floor(k / 100) * 100 + m]; if (r) fy += r.feed_kg / 1e6; }
+    s += `<g class="gm-zone" data-po="${po}"><rect x="0" y="${y0}" width="${GL - 6}" height="${RH}" fill="transparent"/><text x="0" y="${y0 + RH / 2 - 2}" font-size="13" font-weight="bold" fill="${po === S.po ? '#ffd54f' : '#cfdde4'}">${po}. ${PO_NAMES[po].slice(0, 18)}</text>` +
+      `<text x="0" y="${y0 + RH / 2 + 13}" font-size="10.5" fill="#8fa4b0">${R[k] ? Math.round(R[k].biomasse_kg / 1e6) + ' kt at sea · feed ' + Math.round(fy) + ' kt YTD' : ''}</text></g><line x1="${GL}" x2="${GL + GW}" y1="${y0 + RH}" y2="${y0 + RH}" stroke="#18303c"/>`;
+    gens.forEach((g, j) => { const ser = (G.COH[po] || {})[g] || {}, lane = y0 + (j % 2 ? RH * 0.72 : RH * 0.30), pts = ks.map((x, i) => [i, ser[x]]).filter(([, c]) => c && c.stock > 1e5);
+      pts.forEach(([i, c]) => { const th = Math.max(2, Math.sqrt(c.stock / 1e6 / 45) * RH * 0.40);
+        s += `<rect x="${GL + cw * i}" y="${lane - th / 2}" width="${cw + 0.6}" height="${th}" fill="${gcol((c.weight_kg || 0.1) * GUT)}"><title>Zone ${po}, generation ${g}, ${ml(ks[i])}: ${(c.stock / 1e6).toFixed(1)} M fish, ${((c.weight_kg || 0) * GUT).toFixed(2)} kg${c.harv_stk ? ', ' + (c.harv_stk / 1e6).toFixed(2) + ' M harvested' : ''}</title></rect>`;
+        if (c.harv_stk / c.stock > 0.04) { const hh = Math.min(9, 2 + c.harv_stk / 1e6 * 1.8); s += `<rect x="${GL + cw * i + 1}" y="${lane - th / 2 - hh - 1}" width="${cw - 2}" height="${hh}" fill="#ff8a65" pointer-events="none"/>`; } });
+      if (pts.length > 4) { const x = GL + cw * pts[0][0] + 4; s += `<rect x="${x - 2}" y="${lane - 6}" width="33" height="13" rx="3" fill="#0b1620" fill-opacity=".75" pointer-events="none"/><text x="${x}" y="${lane + 4}" font-size="11" fill="#e7eef2" font-weight="bold" pointer-events="none">${g}</text>`; } }); }
+  const ly = top + 13 * RH + 12;
+  s += `<g transform="translate(${GL},${ly})"><text y="10" font-size="11" fill="#8fa4b0">average weight</text>` + [0.2, 1, 2, 3, 4, 5].map((w, i) => `<rect x="${100 + i * 50}" y="0" width="48" height="12" fill="${gcol(w)}"/><text x="${124 + i * 50}" y="25" text-anchor="middle" font-size="10" fill="#8fa4b0">${w} kg</text>`).join('') +
+    `<rect x="420" y="3" width="30" height="6" fill="#ff8a65"/><text x="456" y="11" font-size="11" fill="#8fa4b0">harvest that month (height = fish harvested)</text></g>`;
+  $('gm_gan').innerHTML = `<svg viewBox="0 0 ${W} ${ly + 34}" style="display:block;width:100%;height:auto">${s}</svg>`;
+  $('gm_gan').querySelectorAll('.gm-zone').forEach(e => e.addEventListener('click', () => { S.po = +e.dataset.po; renderAll(); document.getElementById('genmapView').scrollIntoView({ behavior: 'smooth' }); }));
+}
+function renderMethod() {
+  // fiabilite globale : erreur a 3 mois, toutes zones et generations depuis 2021, mois sans gros abattage
+  const em = [], ec = [];
+  for (let po = 1; po <= 13; po++) Object.keys(G.COH[po] || {}).forEach(g => backtest(po, +g).forEach(x => { if (!x.harv && x.cal && x.k >= 202101) { em.push(Math.abs(x.model / x.real - 1)); ec.push(Math.abs(x.cal / x.real - 1)); } }));
+  const md = a => { const q = a.slice().sort((x, y) => x - y); return q[Math.floor(q.length / 2)]; };
+  $('gm_method').innerHTML = `<b>Growth model.</b> Monthly growth of each generation in each zone is learnt from the Biomasseregisteret (2018 onwards) as a function of the fish's weight, the water temperature of the zone (BarentsWatch, weekly reports by the farms) and the month. ` +
+    `For the weight of the fish <b>left in the sea</b>, only months without notable harvest or smolt arrivals are used: harvest takes the biggest cages first, so the average of the fish left grows slowly while a generation is being harvested, and this model follows that best. ` +
+    `For the weight of the fish <b>harvested</b>, the growth of the whole generation is rebuilt in harvest months too (fish left + harvested + dead, divided by the fish at the start of the month): without these months the model had almost never seen fish above 4 kg and gave them 2–3 % growth a month instead of the 9–10 % they really put on. Both are refitted each month on the past only. ` +
+    `<b>Projection.</b> Temperature over the next 3 months = the normal for the month in that zone + 60 % of the current gap to normal (sea temperature anomalies persist for weeks). ` +
+    `<b>Scenarios.</b> Each weight projection is replayed with every miss the model really made in the past at the same horizon (all zones and generations, only forecasts that could already be checked at the time). ` +
+    `The fan shows the middle 50 % and 80 % of these cases. A first version drew temperature and growth at random month by month: its ranges were far too narrow (28 % of actual weights inside the 80 % range), because a generation that grows faster than expected keeps doing so for several months. For biomass vs MTB, the method's own past errors (all zones, 2019 onwards, only forecasts that could already be checked at the time) are applied to today's projection. ` +
+    `The archive below checks whether 8 out of 10 outcomes really fall inside the 80 % range. The ±1 °C figures show what a colder or milder period than expected would change. <b>Biomass vs MTB</b> combines these weights with the number of fish changing as in the same months a year earlier. ` +
+    `<b>Harvest weights</b> (table "Fish coming out of the water") add to the growth the usual gap between the fish harvested and the generation's average, which depends on the weight and on how much of the generation is already out, corrected by the error of the last 12 months. ` +
+    `<b>Limits.</b> For a generation being harvested, the weight of the fish left in the sea depends on which cages go first: treat it with care. Tested and not kept: using these projections to forecast the share of 6 kg+ fish in the harvest (worse than the current reservoir method), and adding the temperature gap to that forecast.`;
+  $('gm_scoreTab').innerHTML = `<tr><th>Weight 3 months ahead — all zones and generations, 2021 onwards, months without heavy harvest</th><th>Mean error</th><th>Median error</th><th>Cases</th></tr>` +
+    `<tr><td>Growth model with temperature (this page)</td><td class="gm-good">${f1(100 * avg(em))} %</td><td>${f1(100 * md(em))} %</td><td>${em.length}</td></tr>` +
+    `<tr><td>Calendar: same growth as the same months in past years, same zone, similar weight</td><td>${f1(100 * avg(ec))} %</td><td>${f1(100 * md(ec))} %</td><td>${ec.length}</td></tr>`;
+}
+
+
+// ---------------------------------------------------------------- archive des previsions (data/forecast_archive.json)
+let ARC = null, ARC_LOADING = false, ARC_CLS = '6+';
+function loadArchive() {
+  if (ARC || ARC_LOADING) return; ARC_LOADING = true;
+  fetch(DATA_URL.replace('data.json', 'forecast_archive.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
+    .then(a => { ARC = a || { entries: [] }; ARC_LOADING = false; if (currentView === 'genmap') renderArchive(); });
+}
+function renderArchive() {
+  if (!ARC) { loadArchive(); return; }
+  const E = ARC.entries || [];
+  if (!E.length) { $('gm_arcSub').innerHTML = 'No archive yet: it is written by the update (step "Archive the forecasts") from the next run on.'; ['gm_arcChart', 'gm_arcTab', 'gm_arcZoneT', 'gm_arcZoneSub', 'gm_arcZone'].forEach(id => $(id).innerHTML = ''); return; }
+  const SEL = { '6+': PK_6P, '5-6': ['5-6'], '4-5': ['4-5'] }, P = computePeaks(G.d, SEL[ARC_CLS]), act = P.S6, nat = P.NAT;
+  const rows = E.filter(e => e.peaks && e.peaks[ARC_CLS] && e.peaks[ARC_CLS].fc2).map(e => { const f = e.peaks[ARC_CLS].fc2, n = e.peaks[ARC_CLS].fcN, a = act[f.k];
+    return { k: e.k, kind: e.kind, t: f.k, v: f.v, u: f.usual, a: a === undefined ? null : a, nv: n ? n.v : null, nu: n ? n.usual : null, na: n && nat[n.k] !== undefined ? nat[n.k] : null }; });
+  const done = rows.filter(r => r.a !== null), em = done.length ? avg(done.map(r => Math.abs(r.v - r.a))) : NaN, ec = done.length ? avg(done.map(r => Math.abs(r.u - r.a))) : NaN;
+  const dn = rows.filter(r => r.na !== null && r.nv !== null), enm = dn.length ? avg(dn.map(r => Math.abs(r.nv - r.na))) : NaN, enc = dn.length ? avg(dn.map(r => Math.abs(r.nu - r.na))) : NaN;
+  const live = rows.filter(r => r.kind === 'live').length;
+  // prime des 6-9 kg sur les 4-5 kg : prevue a partir de la part de 6+ prevue (relation apprise sur les mois connus a l'origine) vs reelle
+  let premTxt = '';
+  if (ARC_CLS === '6+') { const PS = premSeries(G.d), pe = [], pc = [];
+    rows.forEach(r => { if (PS[r.t] === undefined) return; const F = premFit(PS, act, r.k); if (!F) return; const same = Object.keys(PS).map(Number).filter(k => k % 100 === r.t % 100 && k < r.k).map(k => PS[k]); if (!same.length) return;
+      pe.push(Math.abs(premPct(F.a + F.b * r.v) - premPct(PS[r.t]))); pc.push(Math.abs(premPct(avg(same)) - premPct(PS[r.t]))); });
+    if (pe.length) premTxt = `<br><b>Price premium of 6–9 kg over 4–5 kg</b> (Akvafakta prices), forecast 2 months ahead from the forecast 6 kg+ share: <b>${f1(avg(pe))} pt</b> off on average, calendar alone ${f1(avg(pc))} pt (${pe.length} months).`; }
+  $('gm_arcSub').innerHTML = `Every month, when the Biomasseregisteret comes out, the update saves what this dashboard forecasts at that moment, so it can be checked later against what really happened. ` +
+    `<b>${E.length} months</b> archived (${live} saved live, the others <i>reconstructed</i>: rebuilt with only the data available before each month, but with today's revised figures). ` +
+    `Size class: ${['6+', '5-6', '4-5'].map(c => `<span class="gm-chip${c === ARC_CLS ? ' on' : ''}" data-c="${c}">${c === '6+' ? '6 kg+' : c + ' kg'}</span>`).join('')}<br>` +
+    (done.length ? `Share of ${ARC_CLS === '6+' ? '6 kg+' : ARC_CLS + ' kg'} fish, forecast 2 months ahead — <b>in the sales of the Akvafakta panel</b> (SISALMONI: a third of spot sales of superior salmon to Europe, without SalMar or Lerøy): <b>${f1(em)} pt</b> off on average, calendar alone ${f1(ec)} pt (${done.length} months); ` +
+      `<b>in all fish harvested in Norway</b> (register): <b>${f1(enm)} pt</b> off, calendar alone ${f1(enc)} pt (${dn.length} months). ` +
+      `The panel misses big fish sold by air to Asia and the US, on contracts or by companies outside it: when the dotted white line (Norway) sits above the solid one (panel), big fish are going elsewhere. Norway's figure comes about 3 weeks after the month, with the register.` + premTxt : '');
+  $('gm_arcSub').querySelectorAll('.gm-chip').forEach(c => c.onclick = () => { ARC_CLS = c.dataset.c; renderArchive(); });
+  // graphique : part reelle (ligne) et previsions faites 2 mois avant (points)
+  const ks = Object.keys(act).map(Number).filter(k => k >= sh(rows[0].t, -2)).sort((a, b) => a - b).concat(rows.filter(r => r.a === null).map(r => r.t)).filter((k, i, a) => a.indexOf(k) === i).sort((a, b) => a - b);
+  const byT = {}; rows.forEach(r => { byT[r.t] = r; });
+  const mx = Math.max(...ks.map(k => Math.max(act[k] || 0, (byT[k] || {}).v || 0))) * 1.15;
+  $('gm_arcChart').innerHTML = '<div style="max-width:1100px">' + chart(ks, { lmax: mx, ld: 0, lcol: '#e7eef2', H: 220,
+    lines: [{ v: ks.map(k => act[k] ?? null), col: '#e7eef2', dots: true, lab: 'panel, actual %' }, { v: ks.map(k => byT[k] ? byT[k].v : null), col: '#4fc3f7', dots: true, dash: '5,3', lab: 'panel, forecast 2 months before %' },
+      { v: ks.map(k => nat[k] ?? null), col: '#e7eef2', w: 1.4, dash: '1,3', lab: 'all Norway (register), actual %' }, { v: ks.map(k => byT[k] && byT[k].nv !== null ? byT[k].nv : null), col: '#ffb74d', dots: true, dash: '5,3', lab: 'all Norway, forecast 2 months before %' }],
+    notes: [{ x: 50, y: 28, col: '#e7eef2', txt: '— panel, actual' }, { x: 165, y: 28, col: '#4fc3f7', txt: '- - panel, forecast 2 months before' }, { x: 400, y: 28, col: '#e7eef2', txt: '··· all Norway, actual' }, { x: 545, y: 28, col: '#ffb74d', txt: '- - all Norway, forecast' }] }) + '</div>';
+  const nk = '<span class="gm-mut">not yet known</span>', bt = (v, u, a) => a === null || v === null ? '' : Math.abs(v - a) <= Math.abs(u - a) ? ' <span class="gm-good">✓</span>' : ' <span class="gm-bad">✗</span>';
+  $('gm_arcTab').innerHTML = `<tr><th rowspan="2">Register month (forecast made)</th><th rowspan="2">For</th><th colspan="3" style="text-align:center">Akvafakta panel (sales)</th><th colspan="3" style="text-align:center">All Norway (register)</th></tr>` +
+    `<tr><th>Forecast</th><th>Actual</th><th>Error</th><th>Forecast</th><th>Actual</th><th>Error</th></tr>` +
+    rows.slice(-12).reverse().map(r => `<tr><td>${ml(r.k)} <span class="gm-mut" style="font-size:10px">${r.kind === 'live' ? 'live' : 'reconstructed'}</span></td><td>${ml(r.t)}</td>` +
+      `<td>${f1(r.v)} %</td><td>${r.a === null ? nk : f1(r.a) + ' %'}</td><td>${r.a === null ? '' : sg(r.v - r.a) + ' pt' + bt(r.v, r.u, r.a)}</td>` +
+      `<td>${r.nv === null ? '—' : f1(r.nv) + ' %'}</td><td>${r.na === null ? nk : f1(r.na) + ' %'}</td><td>${r.na === null || r.nv === null ? '' : sg(r.nv - r.na) + ' pt' + bt(r.nv, r.nu, r.na)}</td></tr>`).join('') +
+    `<tr><td colspan="8" class="gm-mut" style="font-size:11px">✓ = closer to the actual figure than the seasonal calendar alone.</td></tr>`;
+  // zone choisie : biomasse prevue 3 mois avant vs reelle
+  const po = S.po, R = G.REC[po] || {};
+  const zr = E.filter(e => e.biomass && e.biomass[po] && e.biomass[po].b && e.biomass[po].b[2] !== null).map(e => { const t = sh(e.k, 3), a = R[t] ? R[t].biomasse_kg / 1e6 : null;
+    const mtb = e.biomass[po].mtb; return { k: e.k, t, f: e.biomass[po].b[2], a, mtb, kind: e.kind }; });
+  const zd = zr.filter(r => r.a !== null), ze = zd.length ? avg(zd.map(r => Math.abs(r.f / r.a - 1))) : NaN;
+  // calibration des scenarios : part des poids reels (3 mois plus tard, sans gros abattage) dans la fourchette a 80 %
+  let cin = 0, cn = 0; E.forEach(e => Object.entries(e.zones || {}).forEach(([p, gs]) => Object.entries(gs).forEach(([g, z]) => { if (!z.q3) return;
+    const c = ((G.COH[p] || {})[g] || {})[sh(e.k, 3)]; if (!c || !c.weight_kg || c.stock < 5e5 || (c.harv_stk || 0) > 0.03 * c.stock) return; cn++; if (c.weight_kg >= z.q3[0] && c.weight_kg <= z.q3[1]) cin++; })));
+  $('gm_arcZoneT').textContent = `Zone ${po} · ${PO_NAMES[po]} — biomass forecast 3 months ahead vs what the register showed`;
+  $('gm_arcZoneSub').innerHTML = (zd.length ? `Average error <b>${f1(100 * ze)} %</b> over ${zd.length} months. Click another zone on the map to see it. ` : 'Nothing to compare yet. ') +
+    (cn ? `<br><b>Are the simulated ranges honest?</b> Weights 3 months ahead, all zones and generations, months without heavy harvest: <b>${Math.round(100 * cin / cn)} %</b> of the actual weights fell inside the 80 % range (${cn} cases) — it should be close to 80 %; well below means the fans are too narrow.` : '');
+  $('gm_arcZone').innerHTML = `<tr><th>Forecast made</th><th>For</th><th>Forecast (kt)</th><th>Actual (kt)</th><th>Error</th><th>Forecast, % of MTB</th></tr>` +
+    zr.slice(-8).reverse().map(r => `<tr><td>${ml(r.k)} <span class="gm-mut" style="font-size:10px">${r.kind}</span></td><td>${ml(r.t)}</td><td>${f1(r.f)}</td><td>${r.a === null ? '<span class="gm-mut">not yet known</span>' : f1(r.a)}</td><td>${r.a === null ? '' : sg(100 * (r.f / r.a - 1)) + ' %'}</td><td>${r.mtb ? f1(100 * r.f / r.mtb) + ' %' : '—'}</td></tr>`).join('');
+}
+
+// strategie norvegienne : chaque annee, de janvier au dernier mois publie (comparaison a periode egale)
+function renderStrategy() {
+  const last = G.months[G.months.length - 1], lm = last % 100, Phi = z => { const t = 1 / (1 + 0.3275911 * Math.abs(z / Math.SQRT2)), y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-z * z / 2); return 0.5 * (1 + (z >= 0 ? y : -y)); };
+  const above = (w, lo) => { const s2 = Math.log(1 + 0.27 * 0.27), s = Math.sqrt(s2); return 1 - Phi((Math.log(lo / GUT) - (Math.log(w) - s2 / 2)) / s); };
+  const Y = {};
+  G.d.records.forEach(r => { if (r.year < 2018 || r.month > lm) return; const a = Y[r.year] || (Y[r.year] = { kg: 0, n: 0, age: 0, feed: 0, sm: 0, sm5: 0, bio: 0, nb: 0, n5: 0, n6: 0, dead: 0, stk: 0 });
+    a.kg += r.uttak_kg; a.n += r.uttak_stk; a.age += (r.age_months || 0) * r.uttak_stk; a.feed += r.feed_kg; a.sm += r.smolt_stk || 0; a.sm5 += r.smolt500_stk || 0; a.bio += r.biomasse_kg; a.nb++; a.dead += r.dodfisk_stk || 0; a.stk += r.behfisk_stk || 0; });
+  G.d.cohort.forEach(c => { if (c.year < 2018 || c.month > lm || !c.harv_stk || !c.harv_kg || !Y[c.year]) return; const w = c.harv_kg / c.harv_stk; Y[c.year].n5 += c.harv_stk * above(w, 5); Y[c.year].n6 += c.harv_stk * above(w, 6); });
+  const mtb = Object.entries(G.MTB).filter(([k]) => k !== '0').reduce((s, [, v]) => s + v, 0) / 1000;
+  const ys = Object.keys(Y).map(Number).sort();
+  // gros poissons abattus plus lourds que prevu : ecart moyen entre le poids abattu et la prevision faite 1-3 mois avant
+  // (croissance + ordre d'abattage habituel, appris sur le passe uniquement), generations de 4 kg+ vif, mois janvier..lm
+  const HB = {}; harvSamples().forEach(x => { if (x.w < 4 || x.t % 100 > lm) return; const B = harvFit(x.o); if (!B) return; const y = Math.floor(x.t / 100); (HB[y] || (HB[y] = [])).push(x.r - dot(hFe(x), B)); });
+  const R = ys.map(y => { const a = Y[y], nm = a.nb / 13; return { hb: HB[y] && HB[y].length >= 20 ? 100 * (Math.exp(avg(HB[y])) - 1) : null, y, kt: a.kg * GUT / 1e6, w: a.kg / a.n * GUT, age: a.age / a.n, s5: 100 * a.n5 / a.n, s6: 100 * a.n6 / a.n, fcr: a.feed / (a.kg * GUT), big: a.sm5 ? 100 * (1 - a.sm / a.sm5) : null, mtbp: 100 * a.bio / nm / 1e6 / mtb, mort: 100 * a.dead / (a.stk / nm) }; });
+  $('gm_stratSub').innerHTML = `Each year from January to ${MON_GM[lm - 1]}, so that ${Math.floor(last / 100)} is compared with the same months. <b>Shorter cycles</b> = fewer months at sea before harvest; <b>bigger fish</b> = heavier average harvest weight and more 6 kg+. ` +
+    `If both move the right way at once, the gain comes from better growth (bigger smolt, better biology) and is kept as size rather than as a shorter cycle. ` +
+    `Size shares are estimated from the average harvest weight of each zone and generation (spread 0.27); smolt above 250 g = share of the fish released below 500 g that weighed 250–500 g (fish released above 500 g are not in the register's smolt columns).`;
+  // nuage : mois en mer (x) / poids moyen abattu (y), une etiquette par annee
+  const W = 760, H = 250, l = 50, r = 20, t = 14, b = 36, pw = W - l - r, ph = H - t - b;
+  const xa = R.map(x => x.age), ya = R.map(x => x.w), x0 = Math.floor(Math.min(...xa) * 2) / 2 - 0.3, x1 = Math.ceil(Math.max(...xa) * 2) / 2 + 0.3, y0 = Math.floor(Math.min(...ya) * 10) / 10 - 0.05, y1 = Math.ceil(Math.max(...ya) * 10) / 10 + 0.05;
+  const X = v => l + (v - x0) / (x1 - x0) * pw, Yy = v => t + ph - (v - y0) / (y1 - y0) * ph;
+  let s = '';
+  for (let i = 0; i <= 4; i++) { const v = y0 + (y1 - y0) * i / 4, vx = x0 + (x1 - x0) * i / 4; s += `<line x1="${l}" x2="${W - r}" y1="${Yy(v)}" y2="${Yy(v)}" stroke="#223642"/><text x="${l - 6}" y="${Yy(v) + 4}" text-anchor="end" font-size="10" fill="#8fa4b0">${v.toFixed(2)}</text><text x="${X(vx)}" y="${t + ph + 14}" text-anchor="middle" font-size="10" fill="#8fa4b0">${vx.toFixed(1)}</text>`; }
+  s += `<text x="${l + pw / 2}" y="${H - 4}" text-anchor="middle" font-size="11" fill="#cfdde4">months at sea of the fish harvested →  (shorter cycle to the left)</text><text transform="translate(12,${t + ph / 2}) rotate(-90)" text-anchor="middle" font-size="11" fill="#cfdde4">average harvest weight, kg gutted</text>`;
+  s += `<path d="${R.map((x, i) => (i ? 'L' : 'M') + X(x.age) + ',' + Yy(x.w)).join(' ')}" fill="none" stroke="#4fc3f7" stroke-opacity=".5" stroke-width="1.5"/>`;
+  R.forEach((x, i) => { const last2 = i === R.length - 1, rr = 4 + x.s6 / 2.2; s += `<circle cx="${X(x.age)}" cy="${Yy(x.w)}" r="${rr}" fill="${last2 ? '#ffd54f' : '#4fc3f7'}" fill-opacity="${last2 ? .9 : .55}" stroke="#0b1620"><title>${x.y} (Jan–${MON_GM[lm - 1]}): ${x.age.toFixed(1)} months at sea, ${x.w.toFixed(2)} kg, ${x.s6.toFixed(1)}% of fish 6 kg+</title></circle><text x="${X(x.age) + rr + 3}" y="${Yy(x.w) + 4}" font-size="11" font-weight="${last2 ? 'bold' : 'normal'}" fill="${last2 ? '#ffd54f' : '#cfdde4'}">${x.y}</text>`; });
+  s += `<text x="${W - r}" y="${t + 10}" text-anchor="end" font-size="10.5" fill="#8fa4b0">circle size = share of 6 kg+ fish harvested</text><text x="${l + 6}" y="${t + 10}" font-size="10.5" fill="#7ed98f">↖ bigger fish, shorter cycle</text>`;
+  $('gm_strat').innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:900px;height:auto">${s}</svg>`;
+  const c = (v, d, u = '') => v === null || !isFinite(v) ? '—' : v.toFixed(d) + u;
+  $('gm_stratTab').innerHTML = `<tr><th>Jan–${MON_GM[lm - 1]}</th><th>Harvest (kt gutted)</th><th>Avg weight (kg)</th><th>Months at sea</th><th>5 kg+ (fish)</th><th>6 kg+ (fish)</th><th>Feed per kg harvested</th><th>Smolt above 250 g</th><th>Biomass, % of MTB</th><th>Big fish harvested vs expected</th></tr>` +
+    R.map((x, i) => `<tr${i === R.length - 1 ? ' style="font-weight:bold;color:#ffd54f"' : ''}><td>${x.y}</td><td>${c(x.kt, 0)}</td><td>${c(x.w, 2)}</td><td>${c(x.age, 1)}</td><td>${c(x.s5, 1, '%')}</td><td>${c(x.s6, 1, '%')}</td><td>${c(x.fcr, 2)}</td><td>${c(x.big, 0, '%')}</td><td>${c(x.mtbp, 0, '%')}</td><td>${x.hb === null ? '—' : (x.hb >= 0 ? '+' : '−') + Math.abs(x.hb).toFixed(1) + ' %'}</td></tr>`).join('') +
+    `<tr><td colspan="10" class="gm-mut" style="white-space:normal;font-size:11px">Biomass vs MTB uses today's licensed capacity for every year (capacity grew over the period, so earlier years are understated). ` +
+    `<b>Big fish harvested vs expected</b>: generations of 4 kg+ live, how much heavier (+) the fish harvested were than forecast 1–3 months before from their growth and the usual order of harvest (learnt on the past only). ` +
+    `A gap that widens year after year means the big fish are kept longer, or harvested bigger, than the farms used to.</td></tr>`;
+}
+
+// ---------------------------------------------------------------- demarrage (appele par l'onglet)
+function gmStart() {
+  if (!DATA_RAW || !DATA_RAW.cohort || !DATA_RAW.records) { $('gm_topSub').innerHTML = '<span class="gm-warn">Data not loaded yet.</span>'; return false; }
+  G = prepare(DATA_RAW);
+  S.k = G.months[G.months.length - 1];
+  $('gm_topSub').innerHTML = `Biomasseregisteret (Fiskeridirektoratet, by production zone and generation, monthly) and BarentsWatch (sea temperature, lice, disease, weekly). Latest register month: <b>${ml(S.k)}</b>. ` +
+    `Weights are <b>gutted</b> (live × ${GUT}). Generation = year the smolt were released.`;
+  const sl = $('gm_mSlider'); sl.max = G.months.length - 1;
+  sl.oninput = () => { S.k = G.months[+sl.value]; renderAll(); };
+  $('gm_mPrev').onclick = () => { const i = G.months.indexOf(S.k); if (i > 0) { S.k = G.months[i - 1]; renderAll(); } };
+  $('gm_mNext').onclick = () => { const i = G.months.indexOf(S.k); if (i < G.months.length - 1) { S.k = G.months[i + 1]; renderAll(); } };
+  $('gm_mPlay').onclick = () => { if (S.play) { clearInterval(S.play); S.play = null; $('gm_mPlay').textContent = '▶ play'; return; }
+    if (S.k === G.months[G.months.length - 1]) S.k = G.months[0];
+    $('gm_mPlay').textContent = '■ stop'; S.play = setInterval(() => { const i = G.months.indexOf(S.k); if (i >= G.months.length - 1 || currentView !== 'genmap') { clearInterval(S.play); S.play = null; $('gm_mPlay').textContent = '▶ play'; return; } S.k = G.months[i + 1]; renderAll(); }, 700); };
+  renderMethod(); renderStrategy();
+  return true;
+}
+window.renderGenMap = function () { if (!G && !gmStart()) return; renderAll(); };
+
+})();
+
 function renderChina() { renderFocus('cn'); }
 function renderFocus(k) {
   const C = FOCUS[k], pre = k, $ = id => document.getElementById(pre + id);
@@ -7316,7 +8016,7 @@ function renderFocus(k) {
   // Serie combinee : douanes tant qu'elles existent, puis, pour chaque destination, ce que chaque
   // exportateur declare pour elle (FOB). Les origines sans statistiques d'exportation (Australie...) ne
   // sont plus couvertes apres la fin des douanes : elles ne sont pas estimees.
-  C.orig.forEach(o => { if (!PRODUCERS.includes(o) && !TM.nati[o]) return; const D = tmBest(o); if (D.euOnly) return;
+  C.orig.forEach(o => { if (!PRODUCERS.includes(o) && !TM.nati[o] && !EU_HUBS[o]) return; const D = tmBest(o); if (D.euOnly) return;
     XO[o] = { last: D.last, cur: D.cur, rows: D.rows.filter(r => dests.includes(r[1]) && FORMS_OK.includes(r[2])) }; });
   if (k === 'cn') {
     const cEnd = d => lastBy[d] || (d === 'CN' ? DATA.meta.last : 0);
@@ -7506,7 +8206,9 @@ function renderFocus(k) {
     `<tr><td class="name" colspan="10" style="color:var(--muted)">Nothing to compare for this selection.</td></tr>`;
   $('Note').innerHTML = k === 'us'
     ? `<b>Sources.</b> US Census Bureau, international trade API (imports by HTS 10-digit code and country of origin): general imports, customs value, calculated duty, import charges (freight and insurance). ` +
-      `Values in US$, converted to € at Eurostat monthly average rates. Exporters: Norway (SSB), Faroe Islands (Hagstova), Iceland (Hagstofa), United Kingdom (HMRC), Chile and Canada (UN Comtrade). ` +
+      `Values in US$, converted to € at Eurostat monthly average rates. Exporters: Norway (SSB), Faroe Islands (Hagstova), Iceland (Hagstofa), United Kingdom (HMRC), Chile and Canada (UN Comtrade); ` +
+      `the Netherlands, Poland and Denmark, which process imported (mostly Norwegian) salmon into fillets and smoked salmon: their exports to the US as declared to Eurostat. ` +
+      `US figures count them by <b>country of origin</b> = where the fish was last transformed (filleted, smoked), so a Norwegian salmon filleted in Poland is Polish for US customs. ` +
       `The US counts by country of origin; exporters count by declared destination, so salmon shipped through Canada or Mexico, or re-exported, can widen the gap.`
     : `<b>Sources.</b> UN Comtrade, imports reported by China (and Hong Kong when ticked), HS 6-digit codes, CIF value in US$ converted to € at Eurostat monthly average rates. ` +
       `Exporters: Norway (SSB), Faroe Islands (Hagstova), Iceland (Hagstofa), United Kingdom (HMRC), Chile and Canada (UN Comtrade). ` +
