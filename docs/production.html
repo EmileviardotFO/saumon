@@ -2649,7 +2649,9 @@ function renderScotlandMap() {
   // carte
   scLeaflet(() => {
     if (!SC_MAP) { SC_MAP = L.map('scMap', { scrollWheelZoom: false }).setView([57.6, -5.5], 6);
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; OpenStreetMap contributors &copy; CARTO', subdomains: 'abcd', maxZoom: 12 }).addTo(SC_MAP); }
+      // fond sombre Esri (sans cle) ; CARTO exige desormais une cle API. Si Esri ne repond pas, repli sur OpenStreetMap.
+      const esri = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', { attribution: 'Tiles &copy; Esri — Esri, HERE, Garmin, &copy; OpenStreetMap contributors', maxZoom: 13 }).addTo(SC_MAP);
+      let fails = 0; esri.on('tileerror', () => { if (++fails === 4) { SC_MAP.removeLayer(esri); L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors', maxZoom: 13 }).addTo(SC_MAP); } }); }
     if (SC_LAYER) SC_LAYER.remove(); SC_LAYER = L.layerGroup().addTo(SC_MAP);
     const pts = [];
     sites.forEach(([id, S]) => { const ow = owner(S); if (SC_OP !== null && ow !== SC_OP) return; const b = il !== undefined ? (S.b[il] || 0) : 0;
