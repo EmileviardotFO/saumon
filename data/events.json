@@ -1,0 +1,76 @@
+{
+ "meta": {
+  "generated": "2026-10-31",
+  "status": {},
+  "note": "manual = events entered by hand with their losses (edit freely: date YYYY-MM, basin NO/CL/IS/GB/FO/CA/IE/AU, region, cause algae/jellyfish/gill/oxygen/temperature/disease/treatment/storm, agent, fish_m, tonnes, url). news and scotland_fhi are rewritten by scripts/update_events.py."
+ },
+ "manual": [
+  {
+   "date": "2026-10",
+   "basin": "CL",
+   "region": "Magallanes (ACS 43A, 43B)",
+   "cause": "algae",
+   "agent": "harmful algal bloom (FAN)",
+   "fish_m": null,
+   "tonnes": 918,
+   "company": "Multiexport",
+   "note": "917.79 t of dead fish per Sernapesca; early harvest authorised; contingency closed",
+   "url": "https://www.emol.com/noticias/Economia/2026/10/16/1214309/salmones-perdidas-magallanes-sernapesca-algas.html",
+   "src": "Emol / Sernapesca"
+  },
+  {
+   "date": "2026-03",
+   "basin": "NO",
+   "region": "PO1",
+   "cause": "algae",
+   "agent": "Pseudochattonella",
+   "fish_m": 1.7,
+   "tonnes": null,
+   "company": "",
+   "note": "almost 1.7 M dead fish in production area 1 in March; Q1 mortality above 13 % in PO1-2 vs 3.4 % nationally",
+   "url": "https://ilaks.no/algetap-pa-sorlandet-dro-opp-dodelighetstall-i-forste-kvartal/",
+   "src": "iLaks"
+  },
+  {
+   "date": "2021-04",
+   "basin": "CL",
+   "region": "Los Lagos (Comau fjord) and Aysén",
+   "cause": "algae",
+   "agent": "harmful algal bloom (FAN)",
+   "fish_m": null,
+   "tonnes": 7112,
+   "company": "Camanchaca, Mowi, AquaChile, Yadran, Multiexport, Granja Marina Tornagaleones",
+   "note": "late March-April 2021: 7,112 t of dead fish as of 21 April (Los Lagos 4,460 t, 18 % of the active biomass in the affected area; Aysén 2,652 t). Camanchaca alone lost about 1.3 M fish (2,250 t, 11 % of its fish, 1.2 kg on average) at Leptepu, Porcelana and Loncochalgua",
+   "url": "https://www.salmonbusiness.com/to-date-7000-tonnes-of-salmon-have-been-lost-in-algae-bloom-mass-mortalilty",
+   "src": "SalmonBusiness / Sernapesca"
+  },
+  {
+   "date": "2019-05",
+   "basin": "NO",
+   "region": "PO9, PO10",
+   "cause": "algae",
+   "agent": "Chrysochromulina leadbeateri",
+   "fish_m": 8.9,
+   "tonnes": null,
+   "company": "",
+   "note": "algal bloom in Nordland and Troms; 4.4 M (PO9) + 4.6 M (PO10) dead fish reported in the register for May 2019",
+   "url": "",
+   "src": "Biomasseregisteret"
+  },
+  {
+   "date": "2016-03",
+   "basin": "CL",
+   "region": "Los Lagos",
+   "cause": "algae",
+   "agent": "Pseudochattonella verruculosa",
+   "fish_m": null,
+   "tonnes": 39000,
+   "company": "",
+   "note": "February-March 2016 bloom, the largest on record in Chilean salmon farming (order of magnitude widely reported: about 25 M fish, close to 40,000 t)",
+   "url": "",
+   "src": "Sernapesca (reported)"
+  }
+ ],
+ "news": [],
+ "scotland_fhi": null
+}
