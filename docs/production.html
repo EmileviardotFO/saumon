@@ -352,7 +352,7 @@
 .sc-op.on { border-color: #ffd54f; background: #1a2b36; }
 .sc-op i { width: 11px; height: 11px; border-radius: 50%; flex: none; }
 .sc-op b { flex: 1; color: var(--ink); font-weight: 600; }
-.sc-op span { color: var(--muted); font-size: 11.5px; white-space: nowrap; }
+.sc-op span { color: var(--muted); font-size: 11.5px; white-space: nowrap; text-align: right; line-height: 1.35; }
 .leaflet-popup-content { font-size: 12px; line-height: 1.45; }
 .pseg { display: inline-flex; border: 1px solid var(--border); border-radius: 7px; overflow: hidden; vertical-align: middle; flex-wrap: wrap; }
 .pseg button { background: transparent; color: var(--muted); border: 0; border-right: 1px solid var(--border); padding: 6px 13px; font: inherit; font-size: 12.5px; cursor: pointer; white-space: nowrap; }
@@ -975,6 +975,9 @@
     <div class="sig-title">Scotland — fish at sea, deaths and feed, farm by farm (SEPA monthly reports)</div>
     <div class="sig-sub" id="scSub"></div>
     <div id="scCards" class="pr-cards"></div>
+    <div class="sig-title" style="margin-top:18px">Mortality and feed conversion, year by year</div>
+    <div class="sig-sub" id="scAnnSub"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="scAnn"></table></div>
     <div class="sig-title" style="margin-top:18px">Farms and companies</div>
     <div class="sig-sub" id="scMapSub"></div>
     <div class="chart-controls"><span class="cc-label">Period</span><select class="ctrl" id="scPer"><option value="last">last</option><option value="ytd">ytd</option><option value="custom">custom</option></select>
@@ -2601,6 +2604,44 @@ function scSvg(keys, series, o) {   // petit graphique : barres et lignes sur un
     `<div class="sig-sub" style="margin-top:4px">${series.filter(x => x.lab).map(x => `<span style="white-space:nowrap;margin-right:14px"><span style="display:inline-block;width:16px;height:${x.bar ? 9 : 2}px;background:${typeof x.col === 'function' ? x.col0 : x.col};vertical-align:middle;margin-right:5px${x.dash ? ';opacity:.7' : ''}"></span>${x.lab}</span>`).join('')}</div>`;
 }
 
+
+// ---- mortalite annuelle et FCR economique, Ecosse et par entreprise (SEPA + recoltes publiees)
+const SC_GWT_LIVE = 1.125;
+function scFhiFor(name) {   // declarations au Fish Health Inspectorate pour un site (nom normalise)
+  const R = (typeof MEV !== 'undefined' && MEV && MEV.scotland_fhi && MEV.scotland_fhi.reports) || [];
+  const nz = x => String(x || '').toLowerCase().replace(/\(.*?\)/g, '').replace(/[^a-z0-9]+/g, ' ').trim(), n = nz(name);
+  return n ? R.filter(r => { const m = nz(r.site); return m && (m === n || (m.length > 5 && (n.includes(m) || m.includes(n)))); }) : [];
+}
+function scCauseTxt(list, max = 4) {
+  if (!list.length) return '';
+  const by = {}; list.forEach(r => (r.causes || ['unspecified']).forEach(c => { by[c] = (by[c] || 0) + 1; }));
+  const chips = Object.entries(by).sort((a, b) => b[1] - a[1]).map(([c, n]) => `${(MEV_CAUSE[c] || [c])[0]} ×${n}`).join(', ');
+  return `${chips}<br>` + list.slice(0, max).map(r => `<span style="color:#888">${r.date.slice(0, 7)}</span> ${String(r.cause || '').slice(0, 90)}`).join('<br>');
+}
+function renderScAnnual() {
+  const tb = document.getElementById('scAnn'); if (!tb || !SCO) return;
+  const N = SCO.national || {}, O = SCO.operators || {}, ks = Object.keys(N).map(Number), L = Math.max(...ks), yL = Math.floor(L / 100), full = L % 100 === 12 ? yL : yL - 1;
+  const yrs = [full - 3, full - 2, full - 1, full];
+  const yr = (S, y) => { let d = 0, f = 0, bs = 0, n = 0; for (let m = 1; m <= 12; m++) { const v = S[y * 100 + m]; if (!v) continue; d += v[1]; f += v[2]; bs += v[0]; n++; }
+    const e0 = S[(y - 1) * 100 + 12], e1 = S[y * 100 + 12]; return n === 12 ? { dead: d, feed: f, avg: bs / 12, dB: e1 && e0 ? e1[0] - e0[0] : null } : null; };
+  const CH = (SCS && SCS.company_harvest) || {}, SP = (SCS && SCS.production) || {};
+  const efcr = (a, hLive) => a && hLive && a.dB !== null ? a.feed / (hLive + a.dB) : null;
+  const f1 = v => v === null || !isFinite(v) ? '—' : v.toFixed(1), f2 = v => v === null || !isFinite(v) ? '—' : v.toFixed(2), f0 = v => v === null || !isFinite(v) ? '—' : Math.round(v).toLocaleString('en-US');
+  const mc = v => v === null ? '' : v >= 30 ? 'color:#ff8a65;font-weight:bold' : v >= 20 ? 'color:#ffb74d' : '';
+  const fc = v => v === null ? '' : v >= 1.5 ? 'color:#ff8a65;font-weight:bold' : v >= 1.35 ? 'color:#ffb74d' : 'color:#7ed98f';
+  const row = (name, S, harv) => { const A = yrs.map(y => yr(S, y)); if (!A.some(a => a && a.avg >= 300)) return '';
+    return `<tr><td class="name">${name}</td>${A.map(a => `<td style="${mc(a ? 100 * a.dead / a.avg : null)}">${a ? f1(100 * a.dead / a.avg) + ' %' : '—'}</td>`).join('')}` +
+      `<td>${A[3] ? f0(A[3].dead) + ' t' : '—'}</td><td>${A[3] ? f0(A[3].feed) + ' t' : '—'}</td>` + [2, 3].map(i => { const v = efcr(A[i], harv(yrs[i])); return `<td style="${fc(v)}">${f2(v)}</td>`; }).join('') + '</tr>'; };
+  const ops = Object.keys(O).sort((a, b) => ((O[b][L] || [0])[0]) - ((O[a][L] || [0])[0]));
+  tb.innerHTML = `<thead><tr><th class="name"></th>${yrs.map(y => `<th>Deaths ${y}<br><small>% of avg biomass</small></th>`).join('')}<th>Dead fish ${full}</th><th>Feed ${full}</th><th>eFCR ${full - 1}</th><th>eFCR ${full}</th></tr></thead><tbody>` +
+    row('<b>All Scotland</b>', N, y => SP[y] || null) + ops.map(o => row(o.replace(/ (Ltd|Limited)$/, ''), O[o], y => CH[o] && CH[o][y] ? CH[o][y] * SC_GWT_LIVE : null)).join('') + '</tbody>';
+  document.getElementById('scAnnSub').innerHTML = `<b>Deaths</b>: dead fish taken out over the calendar year, as a share of the average biomass on site (tonnes, so a 30 % rate means the weight of dead fish equalled 30 % of the stock carried). ` +
+    `<b>eFCR</b> (economic feed conversion) = feed used ÷ (fish harvested + change in fish on site), all live weight: every kilo of fish that dies after eating is feed paid for nothing, so high deaths push it up. ` +
+    `Harvest: the official survey for Scotland; company reports for Mowi, Scottish Sea Farms and Bakkafrost (gutted weight × ${SC_GWT_LIVE}); the others publish none, hence no eFCR. Orange above 1.35, red above 1.5. ` +
+    `For reference, a farm without unusual losses runs at about 1.15–1.25. ` +
+    `Companies are followed as they reported each month to SEPA (the file's "operator" column shows today's owner on the whole history): Wester Ross Fisheries, owned by Mowi since July 2022, kept reporting under its own name until 2024; Grieg Seafood Shetland became part of Scottish Sea Farms at the end of 2021; Dawnfresh farmed trout. ` +
+    `Mowi's published harvest includes Wester Ross from 2023, so its 2024 eFCR is slightly flattered.`;
+}
 // ---- carte des fermes et fiche par entreprise (data/scotland.json -> site_data)
 let SC_MAP = null, SC_LAYER = null, SC_OP = null, SC_LL = false;
 const SC_COL = ['#4fc3f7', '#ffb74d', '#81c784', '#ce93d8', '#ff8a65', '#ffd54f', '#90caf9', '#e57373', '#a1887f', '#4db6ac', '#f06292', '#aed581'];
@@ -2635,6 +2676,22 @@ function scAgg(D, sites, P, op) {
   r.bioAvg = r.bioSum / Math.max(1, P.length); r.harv = r.feed / SC_FCR - (r.bioEnd - r.bioStart) - r.dead; r.deadPct = r.bioAvg ? 100 * r.dead / r.bioAvg / P.length : null;
   return r;
 }
+
+// taux de mortalite mensuel (% de la biomasse moyenne) par entreprise, 36 derniers mois, avec l'Ecosse entiere et les evenements connus
+function scMortByCompany(D, sites, js_, sel, col) {
+  const ms = D.months.slice(-36), ix = {}; D.months.forEach((k, i) => ix[k] = i);
+  const rate = (k, op) => { const i = ix[k]; let b = 0, bp = 0, d = 0; sites.forEach(([, S]) => { const own = ii => op === null ? S.b[ii] !== null : S.o[ii] === op;
+      if (own(i)) { b += S.b[i] || 0; d += S.m[i] || 0; } if (i > 0 && own(i - 1)) bp += S.b[i - 1] || 0; }); const base = (b + bp) / 2; return base > 200 ? 100 * d / base : null; };
+  const ml = k => `${MONTHS_FR[k % 100 - 1].slice(0, 3)} ${Math.floor(k / 100)}`;
+  const series = js_.slice(0, 7).map(j => ({ v: ms.map(k => rate(k, j)), col: col(j), w: sel === j ? 2.8 : sel === null ? 1.6 : 1, lab: D.operators[j].replace(/ (Ltd|Limited)$/, ''), dots: sel === j }));
+  series.forEach(x => { if (sel !== null && x.w === 1) x.col = x.col + '55'; });
+  series.push({ v: ms.map(k => rate(k, null)), col: '#e7eef2', w: 2.2, dash: '5,3', lab: 'all Scotland' });
+  const ev = ((typeof MEV !== 'undefined' && MEV && MEV.manual) || []).filter(e => e.basin === 'GB' && ms.includes(+e.date.slice(0, 4) * 100 + +e.date.slice(5, 7)));
+  return `<div class="sig-sub" style="margin-top:6px"><b>Deaths each month, % of the fish on site</b>, by company (36 months)${sel !== null ? ' — the selected company in bold' : ''}. ` +
+    `Above 2 %/month is heavy; the Scottish average is about 1–2 %, with peaks in autumn.` +
+    (ev.length ? ` Known events: ${ev.map(e => `<b>${ml(+e.date.slice(0, 4) * 100 + +e.date.slice(5, 7))}</b> ${e.company} — ${e.agent} at ${e.region.split(' — ')[1] || e.region}`).join('; ')}.` : '') + `</div>` +
+    scSvg(ms, series, { lab: ml, xl: k => k % 100 === 1 || k === ms[0] ? ml(k) : MONTHS_FR[k % 100 - 1].slice(0, 1), fmt: v => v.toFixed(0) + '%', H: 220 });
+}
 function renderScotlandMap() {
   const D = SCO && SCO.site_data; const sub = document.getElementById('scMapSub'); if (!D) { sub.innerHTML = 'No site data in scotland.json yet.'; return; }
   const per = scPeriod(D), ops = D.operators, ix = {}; D.months.forEach((k, i) => ix[k] = i);
@@ -2647,8 +2704,9 @@ function renderScotlandMap() {
   const col = j => SC_COL[ops.indexOf(ops[j]) % SC_COL.length];
   sub.innerHTML = `Every sea site reporting to SEPA since 2018, at its registered position. Circle size = fish on site at the end of the period (${per.lab}); hollow = empty (fallow). ` +
     `<b>Click a company</b> to keep only its farms and see its figures for the period against the same months a year earlier (${per.lab1}). Click a farm for its own figures.`;
-  document.getElementById('scOpList').innerHTML = `<div class="sc-op${SC_OP === null ? ' on' : ''}" data-j="all"><i style="background:#e7eef2"></i><b>All companies</b><span>${f0(tot.bioEnd / 1000)} kt</span></div>` +
-    opStats.map(x => `<div class="sc-op${SC_OP === x.j ? ' on' : ''}" data-j="${x.j}"><i style="background:${col(x.j)}"></i><b>${x.o.replace(/ (Ltd|Limited)$/, '')}</b><span>${f1(x.A.bioEnd / 1000)} kt · ${x.A.sitesEnd} sites</span></div>`).join('');
+  document.getElementById('scOpList').innerHTML = `<div class="sc-op${SC_OP === null ? ' on' : ''}" data-j="all"><i style="background:#e7eef2"></i><b>All companies</b><span>${f0(tot.bioEnd / 1000)} kt<br>deaths ${f1(tot.deadPct)} %/month</span></div>` +
+    opStats.map(x => { const dp = x.A.deadPct, dc = dp === null ? 'var(--muted)' : dp >= 2 * tot.deadPct ? '#ff8a65' : dp >= 1.3 * tot.deadPct ? '#ffb74d' : 'var(--muted)';
+      return `<div class="sc-op${SC_OP === x.j ? ' on' : ''}" data-j="${x.j}"><i style="background:${col(x.j)}"></i><b>${x.o.replace(/ (Ltd|Limited)$/, '')}</b><span>${f1(x.A.bioEnd / 1000)} kt · ${x.A.sitesEnd} sites<br><span style="color:${dc}">deaths ${f1(dp)} %/month</span></span></div>`; }).join('');
   document.querySelectorAll('#scOpList .sc-op').forEach(el => el.onclick = () => { SC_OP = el.dataset.j === 'all' ? null : +el.dataset.j; renderScotland(); });
   // carte
   scLeaflet(() => {
@@ -2663,7 +2721,10 @@ function renderScotlandMap() {
       const m = L.circleMarker([S.lat, S.lon], { radius: b > 0 ? 3 + Math.sqrt(b) / 6 : 3, color: c, weight: 1.4, fillColor: c, fillOpacity: b > 0 ? .55 : 0 }).addTo(SC_LAYER);
       m.bindPopup(`<b>${S.n}</b><br>${ow !== null ? ops[ow].replace(/ (Ltd|Limited)$/, '') : ''} · ${S.r}${S.w ? ' · ' + S.w : ''}<br>Max biomass allowed: ${f0(S.mtb)} t<br>` +
         `<b>${per.lab}</b>: fish on site ${f0(b)} t${dv(b, A1.bioEnd)} · deaths ${f1(A.dead)} t${dv(A.dead, A1.dead, true)} · feed ${f0(A.feed)} t${dv(A.feed, A1.feed)}` +
-        `${A.treated ? ` · treated ${A.treated} month${A.treated > 1 ? 's' : ''}` : ''}<br><span style="color:#888">a year earlier: ${f0(A1.bioEnd)} t on site, ${f1(A1.dead)} t dead</span>`);
+        `${A.treated ? ` · treated ${A.treated} month${A.treated > 1 ? 's' : ''}` : ''}<br><span style="color:#888">a year earlier: ${f0(A1.bioEnd)} t on site, ${f1(A1.dead)} t dead</span>` +
+        (() => { const F = scFhiFor(S.n), E = ((MEV && MEV.manual) || []).filter(e => e.basin === 'GB' && e.region && e.region.toLowerCase().includes(S.n.toLowerCase().split(' (')[0]));
+          return (E.length ? `<br><b>Event:</b> ${E.map(e => `${e.date} ${e.agent} — ${e.company}`).join('; ')}` : '') +
+            (F.length ? `<br><b>Causes reported to the Fish Health Inspectorate</b> (${F.length}):<br>${scCauseTxt(F)}` : (MEV && MEV.scotland_fhi ? '<br><span style="color:#888">no mortality report to the Fish Health Inspectorate in the last 3 years</span>' : '')); })());
       pts.push([S.lat, S.lon]); });
     if (pts.length) SC_MAP.fitBounds(pts, { padding: [24, 24], maxZoom: 9 });
     setTimeout(() => SC_MAP.invalidateSize(), 50);
@@ -2685,6 +2746,14 @@ function renderScotlandMap() {
       kp('feed used, t', A.feed, A1.feed, ' t') + kp('harvest implied, t live', A.harv, A1.harv, ' t') +
       kp('sites with fish at the end', A.sitesEnd, A1.sitesEnd, '') + kp('fish on site / max allowed (active sites)', A.mtbEnd ? 100 * A.bioEnd / A.mtbEnd : null, A1.mtbEnd ? 100 * A1.bioEnd / A1.mtbEnd : null, ' %', false, 1) +
       kp('site-months with a medicine treatment', A.treated, A1.treated, '', true) + (share !== null ? kp('share of Scottish fish on site', share, share1, ' %', false, 1) : '') + `</div>` +
+    scMortByCompany(D, sites, opStats.map(x => x.j), j, col) +
+    (() => { const sel = j === null ? sites : sites.filter(([, S]) => S.o.some(o => o === j)), F = sel.flatMap(([, S]) => scFhiFor(S.n).map(r => ({ ...r, site: S.n })));
+      if (!(MEV && MEV.scotland_fhi)) return `<div class="sig-sub"><b>Causes of death</b>: the Fish Health Inspectorate reports (site by site, with the cause given) load with the next automatic update.</div>`;
+      if (!F.length) return `<div class="sig-sub"><b>Causes of death</b>: no report to the Fish Health Inspectorate on these farms in the last 3 years.</div>`;
+      const by = {}; F.forEach(r => (r.causes || ['unspecified']).forEach(c => { by[c] = (by[c] || 0) + 1; }));
+      return `<div class="sig-sub"><b>Causes of death reported to the Fish Health Inspectorate</b> on ${j === null ? 'Scottish' : 'these'} farms, last 3 years (${F.length} reports): ` +
+        Object.entries(by).sort((a, b) => b[1] - a[1]).map(([c, n]) => `${mevChip(c)}${n}`).join(' ') + `<br>` +
+        F.sort((a, b) => b.date.localeCompare(a.date)).slice(0, 8).map(r => `<span style="color:#8fa4b0">${r.date.slice(0, 7)}</span> <b>${r.site}</b> — ${String(r.cause || '').slice(0, 120)}`).join('<br>') + `</div>`; })() +
     `<div class="sig-sub">Harvest implied = feed ÷ ${SC_FCR} − change in fish on site − deaths: rough at company level (fish moved between sites, feed bought before stocking), better over several months. ` +
       `Medicine treatments = months where a site reported an in-feed or bath lice medicine (SEPA does not record mechanical or thermal delousing).</div>` +
     `<div style="overflow-x:auto"><table class="sig-table"><thead><tr><th class="name">Area</th><th>Fish on site, end</th><th>Sites</th><th>Deaths</th><th>Feed</th></tr></thead><tbody>` +
@@ -2715,6 +2784,15 @@ function scHistory() {
       return `<tr${a === 'All Scotland' ? ' style="font-weight:bold"' : ''}><td class="name">${a}</td>${y3.map(y => `<td>${f0(g(y))}</td>`).join('')}<td>${f0(g(yE))}</td><td>${pc(g(yE), g(yE - 1))}</td>` +
         `<td>${bad ? '<span title="stage split inconsistent in the source table" style="color:#ffb74d">?</span>' : l.t ? f1(100 * (l.y2 || 0) / l.t) + ' %' : '—'}</td><td>${bad ? '?' : f1(l.y2_w) + ' kg'}</td><td>${f1(l.gr_w)} kg</td></tr>`; }).join('') + '</tbody></table></div>' +
     (swBad ? `<div class="sig-sub" style="color:#ffb74d">South West ${yE - 1}: the stage split in the source table does not add up to the area total (pre-salmon and year-2 figures repeat the Western Isles row) — left out.</div>` : '');
+  // 2b) FCR economique par zone : aliment SEPA / (recolte officielle + variation de biomasse SEPA)
+  if (SCO && SCO.regions) { const RG = SCO.regions, MAPA = { 'North West': ['Highland'], 'South West': ['Argyll and Bute', 'Other'], 'Shetland': ['Shetland'], 'Orkney': ['Orkney'], 'Western Isles': ['Western Isles'] };
+    const fy = Object.keys((A['All Scotland'] || {})).map(Number).filter(y => y >= 2018 && y < yE && [12].every(m => (SCO.national || {})[y * 100 + m]));
+    const ef = (rs, y, h) => { let fd = 0, b0 = 0, b1 = 0; rs.forEach(r => { for (let m = 1; m <= 12; m++) { const v = (RG[r] || {})[y * 100 + m]; if (v) fd += v[2]; } const v0 = (RG[r] || {})[(y - 1) * 100 + 12], v1 = (RG[r] || {})[y * 100 + 12]; b0 += v0 ? v0[0] : 0; b1 += v1 ? v1[0] : 0; }); return h ? fd / (h + b1 - b0) : null; };
+    const cc = v => v === null ? '' : v >= 1.5 ? 'color:#ff8a65;font-weight:bold' : v >= 1.35 ? 'color:#ffb74d' : 'color:#7ed98f';
+    out += `<div class="sig-sub" style="margin-top:14px"><b>Economic feed conversion (eFCR) by production area</b> = SEPA feed ÷ (official harvest + change in fish on site), live weight. Areas matched to SEPA councils (North West = Highland, South West = Argyll and Bute). Bad mortality years show up straight away.</div>` +
+      `<div style="overflow-x:auto"><table class="sig-table"><thead><tr><th class="name">Area</th>${fy.map(y => `<th>${y}</th>`).join('')}</tr></thead><tbody>` +
+      Object.entries(MAPA).map(([a, rs]) => `<tr><td class="name">${a}</td>${fy.map(y => { const v = ef(rs, y, ((A[a] || {})[y] || {}).t); return `<td style="${cc(v)}">${v ? v.toFixed(2) : '—'}</td>`; }).join('')}</tr>`).join('') +
+      `<tr style="font-weight:bold"><td class="name">All Scotland</td>${fy.map(y => { const v = ef(Object.keys(RG), y, H.production[y]); return `<td style="${cc(v)}">${v ? v.toFixed(2) : '—'}</td>`; }).join('')}</tr></tbody></table></div>`; }
   // 3) poids moyens par stade et survie, depuis 2005
   const AS = A['All Scotland'] || {}, wy = Object.keys(AS).map(Number).filter(y => y >= 2005 && y < yE).sort((a, b) => a - b);
   out += `<div class="sig-sub" style="margin-top:14px"><b>Mean harvest weight by stage</b>, kg live, all Scotland.</div>` +
@@ -2738,7 +2816,7 @@ function scHistory() {
 let SCS = null, SCS_LOADING = false;
 function renderScotlandSurvey() {
   if (!SCS) { if (!SCS_LOADING) { SCS_LOADING = true; fetch(DATA_URL.replace('data.json', 'scotland_survey.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
-      .then(j => { SCS = j || {}; SCS_LOADING = false; if (currentView === 'scotland') renderScotlandSurvey(); }); } return; }
+      .then(j => { SCS = j || {}; SCS_LOADING = false; if (currentView === 'scotland') { renderScotlandSurvey(); renderScAnnual(); } }); } return; }
   if (!SCS.production) { document.getElementById('scSvSub').innerHTML = 'Survey data not available.'; return; }
   const f0 = v => v === null || v === undefined || !isFinite(v) ? '—' : Math.round(v).toLocaleString('en-US'), f1 = v => v === null || v === undefined || !isFinite(v) ? '—' : v.toFixed(1);
   const vt = (a, b) => a && b ? (v => ` <span class="${v >= 0 ? 'delta-good' : 'delta-bad'}" style="font-size:12px">${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(1)}%</span>`)(100 * (a / b - 1)) : '';
@@ -2781,6 +2859,8 @@ function renderScotlandSurvey() {
     `<div class="sig-sub" style="margin-top:14px"><b>Harvest and value by marine region.</b> The survey values every region at the same average price (£${(MR.reduce((t, r) => t + r[2], 0) * 1e6 / mrT / 1000).toFixed(2)} per kg live in 2025), so the value only restates the tonnage.</div><div style="overflow-x:auto">${reg}</div>`;
 }
 function renderScotland() {
+  if (!MEV && !MEV_LOADING) { MEV_LOADING = true; fetch(DATA_URL.replace('data.json', 'events.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
+    .then(j => { MEV = j || { manual: [], news: [] }; MEV_LOADING = false; if (currentView === 'scotland') renderScotland(); }); }
   if (!SCO) { if (!SCO_LOADING) { SCO_LOADING = true; fetch(DATA_URL.replace('data.json', 'scotland.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
       .then(j => { SCO = j || { national: {} }; SCO_LOADING = false; if (currentView === 'scotland') renderScotland(); }); }
     document.getElementById('scSub').innerHTML = 'Loading…'; return; }
@@ -2805,6 +2885,7 @@ function renderScotland() {
     card('Harvest implied · last 12 months', `${f0(h12 / 1000)} kt ${vtag(pc(h12, h12P))}`, `live weight, from feed, biomass and deaths (see below)`, '#81c784');
   renderScotlandMap();
   renderScotlandSurvey();
+  renderScAnnual();
   // biomasse : annee en cours et 2 precedentes, janvier-decembre
   const yL = Math.floor(L / 100), yrs = [yL - 3, yL - 2, yL - 1, yL], cols = ['#546e7a', '#8fa4b0', '#ffb74d', '#4fc3f7'], mk = [...Array(12)].map((_, i) => i + 1);
   document.getElementById('scBioSub').innerHTML = `Fish on site at the end of each month, all Scottish sea farms, thousand tonnes live weight. The seasonal low comes in spring, after the winter harvest; the high in late autumn.`;
