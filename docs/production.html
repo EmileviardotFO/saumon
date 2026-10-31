@@ -7696,6 +7696,15 @@ function harvForeMix(po, gen, origin) {
   if (f) return { v: f, how: 'model' };
   return wh ? { v: [wh, wh, wh], how: 'copy' } : null;
 }
+function wholeGrowth(ser, k0, h) {
+  const c0 = ser[k0]; if (!c0 || !c0.weight_kg) return null; let lw = Math.log(c0.weight_kg);
+  for (let i = 1; i <= h; i++) { const k = sh(k0, i), c = ser[k], p = ser[sh(k, -1)]; if (!c || !p || !c.weight_kg || !p.weight_kg) return null;
+    if (!(c.harv_stk > 0)) { lw += Math.log(c.weight_kg / p.weight_kg); continue; }
+    const Wh = c.harv_kg / c.harv_stk, Nd = (c.dead_stk || 0) + (c.loss_stk || 0), N0 = c.stock + c.harv_stk + Nd;
+    let lg = 0.05; for (let it = 0; it < 20; it++) { const gh = Math.exp(lg / 2); lg = Math.log((c.stock * c.weight_kg + c.harv_stk * Wh * gh + Nd * p.weight_kg * gh) / N0 / p.weight_kg); }
+    lw += lg; }
+  return Math.exp(lw);
+}
 function cumFrac(ser, origin) { let cum = 0; Object.keys(ser).map(Number).filter(k => k <= origin).forEach(k => { cum += ser[k].harv_stk || 0; }); const c = ser[origin]; return c ? cum / (c.stock + cum || 1) : 0; }
 function harvFore(po, gen, origin, h = 3) {   // poids vif moyen attendu des poissons abattus en origin+1..h
   const ser = ((G.COH[po] || {})[gen]) || {}, c = ser[origin]; if (!c || !c.weight_kg) return null;
@@ -7844,36 +7853,74 @@ function renderZone(z) {
     [f1(z.mort) + ' %', po === NOR ? 'mortality in the month (Norway)' : 'mortality in the month (zone)', `<em>vs ${ml(sh(k, -12))}: ${f1(z1.mort)} % (${vd(z.mort, z1.mort, 1, ' pt', false)})</em>`],
     [pN !== null ? f1(pN) + ' %' : '—', `biomass vs MTB (${Math.round(z.bio)} / ${Math.round(z.mtb)} kt, live)`, `<em>vs ${ml(sh(k, -12))}: ${pM !== null ? f1(pM) + ' %' : '—'} (${vd(pN, pM, 1, ' pt')})</em>`]]
     .map(([a, b, c]) => `<div class="gm-kpi"><b>${a}</b><span>${b}</span>${c || ''}</div>`).join('');
-  // croissance : 18 mois d'historique + 3 mois projetes
+  // croissance : 18 mois d'historique + 3 mois projetes. Deux notions, toujours affichees cote a cote :
+  //  - la croissance des poissons (generation entiere, poissons abattus compris) : ce que les poissons prennent reellement ;
+  //  - le poids moyen des poissons RESTANT en mer (registre) : progresse moins pendant les abattages, les plus grosses cages partent d'abord.
+  // Avant, l'historique montrait la 2e notion et la projection la 1re : d'ou un saut artificiel au premier mois projete.
   const hist = []; for (let i = -17; i <= 0; i++) hist.push(sh(k, i));
-  const keys = hist.concat([1, 2, 3].map(i => sh(k, i)));
-  const c = ser[k], pr = c && c.weight_kg ? { base: project(po, c.weight_kg, k, 3), cold: project(po, c.weight_kg, k, 3, -1), mild: project(po, c.weight_kg, k, 3, 1) } : null;
-  const wv = keys.map((kk, i) => i < 18 ? (ser[kk] && ser[kk].weight_kg && ser[kk].stock > 1e5 ? ser[kk].weight_kg * GUT : null) : (pr && pr.base ? pr.base[i - 18] * GUT : null));
-  const gv = keys.map((kk, i) => { if (i < 18) { const a = ser[kk], b = ser[sh(kk, -1)]; return a && b && a.weight_kg && b.weight_kg && a.stock > 1e5 && b.stock > 1e5 ? (a.weight_kg - b.weight_kg) * GUT : null; }
-    if (!pr || !pr.base) return null; const prev = i === 18 ? c.weight_kg : pr.base[i - 19]; return (pr.base[i - 18] - prev) * GUT; });
-  const tv = keys.map((kk, i) => i < 18 ? (G.T[po] || {})[kk] ?? null : tFore(po, kk, k));
+  const keys = hist.concat([1, 2, 3].map(i => sh(k, i))), H0 = 17;
+  const c = ser[k], harvNow = inHarv(c), ok = x => x && x.weight_kg && x.stock > 1e5;
+  const prj = sft => c && c.weight_kg ? project(po, c.weight_kg, k, 3, sft, harvNow) : null;   // generation en abattage : modele generation entiere
+  const pr = c && c.weight_kg ? { base: prj(0), cold: prj(-1), mild: prj(1) } : null;
+  const SIM = c && c.weight_kg ? simulate(po, c.weight_kg, k, 3, harvNow) : null;
+  // poids moyen des poissons restants (registre), puis projection mediane et eventail
+  // projection mois par mois des poissons restants : interpolation geometrique vers l'horizon 3 mois (les pools d'erreurs a 1 et 2 mois
+  // sont differents et donnaient un trace en dents de scie qui n'a rien de physique)
+  const sim3q = q => SIM && SIM[2] && c ? (i => c.weight_kg * Math.pow(SIM[2][q] / c.weight_kg, (i - H0) / 3) * GUT) : null;
+  const wl = keys.map((kk, i) => i <= H0 ? (ok(ser[kk]) ? ser[kk].weight_kg * GUT : null) : (sim3q('p50') ? sim3q('p50')(i) : null));
+  // croissance des poissons du mois : kg pris par un poisson du poids moyen du mois precedent (mois d'abattage reconstitues)
+  const gv = keys.map((kk, i) => { if (i === 0) return null;
+    if (i <= H0) { const b = ser[sh(kk, -1)]; if (!ok(b) || !ok(ser[kk])) return null; const g = wholeGrowth(ser, sh(kk, -1), 1); return g ? (g - b.weight_kg) * GUT : null; }
+    if (!pr || !pr.base) return null; const pf = [c.weight_kg, ...pr.base]; return (pf[i - H0] - pf[i - H0 - 1]) * GUT; });
+  // poids d'un poisson du poids moyen actuel s'il reste en mer (projection de croissance)
+  const ww = keys.map((kk, i) => i === H0 && c ? c.weight_kg * GUT : i > H0 && pr && pr.base ? pr.base[i - H0 - 1] * GUT : null);
+  const dlt = a => a.map((v, i) => i > 0 && v !== null && a[i - 1] !== null ? v - a[i - 1] : null);
+  const lv = dlt(wl);
+  const lvH = lv.map((v, i) => i <= H0 ? v : null), lvP = lv.map((v, i) => i >= H0 ? v : null);
+  const tv = keys.map((kk, i) => i <= H0 ? (G.T[po] || {})[kk] ?? null : tFore(po, kk, k));
   const tn = keys.map(kk => tNorm(po, kk % 100, k));
-  const gmax = Math.max(0.3, ...gv.filter(v => v !== null)) * 1.1, wmax = Math.max(1, ...wv.filter(v => v !== null)) * 1.1;
-  const SIMt = c && c.weight_kg ? simulate(po, c.weight_kg, k, 3, inHarv(c)) : null;
-  if (pr && pr.base) {
-    const d = (a, b) => (a[2] - b[2]) * GUT;
-    $('gm_zGrowSub').innerHTML = `<b>Bars</b>: kg gained each month (gutted, generation ${gen}); <b style="color:#ffd54f">yellow line</b>: sea temperature (dotted: the normal for the month); <b style="color:#90caf9">shaded</b>: average weight. ` +
-      `<b style="color:#4fc3f7">Projection</b>: expected weight in ${ml(sh(k, 3))} = <b>${f2(pr.base[2] * GUT)} kg</b> with the expected temperature (normal + 60% of today's gap). ` +
-      `A winter <b>1 °C colder</b> than expected: ${f2(pr.cold[2] * GUT)} kg (${sg(d(pr.cold, pr.base), 2)} kg); <b>1 °C milder</b>: ${f2(pr.mild[2] * GUT)} kg (${sg(d(pr.mild, pr.base), 2)} kg). ` +
-      (SIMt && SIMt[2] ? (inHarv(c)
-        ? `<b>This generation is being harvested</b>: the projection is how the fish grow, but the register will show the average of the fish <i>left</i> in the sea, which rises much less because the biggest cages go first. ` +
-          `In past comparable cases (generations already being harvested, ${SIMt[2].n} cases${po === NOR ? ', all Norway' : ', all zones'}), that average ended up around <b>${f2(SIMt[2].p50 * GUT)} kg</b>, half of the cases between ${f2(SIMt[2].p25 * GUT)} and ${f2(SIMt[2].p75 * GUT)} kg (the fan). It depends on which cages farmers harvest, not on growth.`
-        : `<b>Scenarios</b>: the projection replayed with the model's past misses at the same horizon (${SIMt[2].n} cases${po === NOR ? ', all Norway' : ', all zones'}): half of them land between <b>${f2(SIMt[2].p25 * GUT)} and ${f2(SIMt[2].p75 * GUT)} kg</b> (dark fan), 8 in 10 between ${f2(SIMt[2].p10 * GUT)} and ${f2(SIMt[2].p90 * GUT)} kg (light fan).`) : '');
-  } else $('gm_zGrowSub').innerHTML = `No fish of generation ${gen} in this zone in ${ml(k)}.`;
-  const SIM = c && c.weight_kg ? simulate(po, c.weight_kg, k, 3, inHarv(c)) : null, qv = (q, i) => i < 18 || !SIM ? null : SIM[i - 18][q] * GUT;
+  const gmax = Math.max(0.3, ...gv.filter(v => v !== null), ...lv.filter(v => v !== null)) * 1.12;
+  // generation precedente, memes mois un an plus tot
+  const ser1 = ((G.COH[po] || {})[gen - 1]) || {}, c1 = ser1[sh(k, -12)], r1 = ser1[sh(k, -9)];
+  const act1 = ok(r1) ? r1.weight_kg : null, grow1 = c1 && c1.weight_kg ? wholeGrowth(ser1, sh(k, -12), 3) : null;
+  const w1 = keys.map(kk => { const x = ser1[sh(kk, -12)]; return ok(x) ? x.weight_kg * GUT : null; });
+  const qv = (q, i) => i < H0 || !sim3q(q) ? null : sim3q(q)(i);
   const p10 = keys.map((kk, i) => qv('p10', i)), p90 = keys.map((kk, i) => qv('p90', i)), p25 = keys.map((kk, i) => qv('p25', i)), p75 = keys.map((kk, i) => qv('p75', i));
-  if (SIM) { p10[17] = p90[17] = p25[17] = p75[17] = wv[17]; }
-  const wR = v => v === null ? null : v / wmax * gmax;   // poids ramene sur l'echelle de gauche
-  $('gm_zGrow').innerHTML = chart(keys, { lmax: gmax, lcol: '#2fd6b4', rmax: 18, rcol: '#ffd54f', runit: '°', projFrom: 18,
-    area: [{ v: wv.map(wR), col: '#90caf9' }], band: [{ hi: p90.map(wR), lo: p10.map(wR), col: '#4fc3f7' }, { hi: p75.map(wR), lo: p25.map(wR), col: '#4fc3f7' }],
-    bars: [{ v: gv, col: '#2fd6b4', lab: 'kg gained', op: i => i < 18 ? .85 : .35 }],
-    lines: [{ v: tn, col: '#ffd54f', right: true, w: 1.2, dash: '2,3', lab: 'normal' }, { v: tv, col: '#ffd54f', right: true, dots: true, lab: '°C' }, { v: wv.map(wR), col: '#90caf9', w: 1.4, lab: 'weight (scaled)' }],
-    notes: wv[17] !== null ? [{ x: 50, y: 28, col: '#90caf9', txt: `average weight: ${f2(wv[17])} kg now → ${f2(wv[20])} kg of growth by ${ml(sh(k, 3))}` + (SIM && SIM[2] ? (inHarv(c) ? ` · fish left in the sea: about ${f2(SIM[2].p50 * GUT)} kg` : ` · half of past cases ${f2(SIM[2].p25 * GUT)}–${f2(SIM[2].p75 * GUT)} kg`) : '') }] : [] });
+  const wmax = Math.max(1, ...[...ww, ...wl, ...w1, ...p90].filter(v => v !== null && isFinite(v))) * 1.08;
+  const pc = (a, b) => a && b ? `<b style="color:${a >= b ? '#7ed98f' : '#ff8a65'}">${sg(100 * (a / b - 1), 0)} %</b>` : '—';
+  const sw = (col, kind, lab) => `<span style="white-space:nowrap;margin-right:12px"><svg width="22" height="10" style="vertical-align:middle;margin-right:4px">` +
+    (kind === 'bar' ? `<rect x="5" y="0" width="12" height="10" rx="2" fill="${col}" fill-opacity=".85"/>` : kind === 'barp' ? `<rect x="5" y="0" width="12" height="10" rx="2" fill="${col}" fill-opacity=".35"/>`
+      : kind === 'fan' ? `<rect x="0" y="1" width="22" height="8" fill="${col}" fill-opacity=".3"/>`
+      : `<line x1="0" x2="22" y1="5" y2="5" stroke="${col}" stroke-width="2"${kind === 'dash' ? ' stroke-dasharray="4,3"' : kind === 'dot' ? ' stroke-dasharray="1,3"' : ''}/>` + (kind === 'dots' ? `<circle cx="11" cy="5" r="2.6" fill="${col}"/>` : '')) +
+    `</svg>${lab}</span>`;
+  if (pr && pr.base) {
+    const gNow = (pr.base[2] / c.weight_kg - 1), g1 = grow1 && c1 ? grow1 / c1.weight_kg - 1 : null, sim3 = SIM && SIM[2];
+    const tile = (big, lab, cmpTxt) => `<div class="gm-kpi"><b>${big}</b><span>${lab}</span>${cmpTxt ? `<em>${cmpTxt}</em>` : ''}</div>`;
+    const W0 = c.weight_kg * GUT, Wd = pr.base[2] * GUT;
+    $('gm_zGrowSub').innerHTML = `<div class="gm-kpis" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr));margin-bottom:8px">` +
+      tile(`<strong style="color:#2fd6b4">${f2(W0)} → ${f2(Wd)} kg</strong> <small style="font-size:12px;color:var(--muted)">+${f0(100 * gNow)} %</small>`, `<b style="display:inline;font-size:inherit;color:#2fd6b4">fish growth</b> by ${ml(sh(k, 3))}: a fish of today's average weight, if left at sea`,
+        g1 !== null ? `gen. ${gen - 1}, same months: ${f2(c1.weight_kg * GUT)} → ${f2(grow1 * GUT)} kg, +${f0(100 * g1)} % (end weight ${pc(pr.base[2], grow1)})` : '') +
+      (sim3 ? tile(`<strong style="color:#e7eef2">${f2(W0)} → ${f2(sim3.p50 * GUT)} kg</strong>`, `<b style="display:inline;font-size:inherit">average of the fish left at sea</b> in ${ml(sh(k, 3))} (what the register will show) · half of past cases ${f2(sim3.p25 * GUT)}–${f2(sim3.p75 * GUT)} kg`,
+        act1 ? `gen. ${gen - 1} reached ${f2(act1 * GUT)} kg (${pc(sim3.p50, act1)})` : '') : '') +
+      tile(`<strong style="color:#4fc3f7">${f2(pr.cold[2] * GUT)}</strong> · ${f2(Wd)} · <strong style="color:#ffb74d">${f2(pr.mild[2] * GUT)}</strong> kg`, `fish growth in ${ml(sh(k, 3))} if the winter is <b style="display:inline;font-size:inherit;color:#4fc3f7">1 °C colder</b> · as expected · <b style="display:inline;font-size:inherit;color:#ffb74d">1 °C milder</b>`, '') + `</div>` +
+      (harvNow ? `<b>Why the two differ</b>: while a generation is harvested, the biggest cages go first, so the average of the fish <i>left</i> rises much less than the fish grow (gap = <span style="color:#ff8a65">orange</span> vs <span style="color:#2fd6b4">green</span>). ` +
+        `The fish-left fan comes from ${sim3 ? sim3.n : '—'} past comparable cases${po === NOR ? ' (all Norway)' : ''}: it depends on which cages farmers harvest, not on growth.`
+       : `Not harvested yet: both measures are the same. The fan replays the model's past misses at the same horizon${SIM && SIM[2] ? ` (${SIM[2].n} cases)` : ''}.`);
+    $('gm_zGrow').innerHTML =
+      `<div class="gm-s" style="margin:4px 0 2px"><b>Each month</b>, kg per fish (gutted)</div>` +
+      chart(keys, { lmax: gmax, lcol: '#2fd6b4', rmax: 18, rcol: '#ffd54f', runit: '°', projFrom: H0 + 1, H: 200,
+        bars: [{ v: gv, col: '#2fd6b4', lab: 'fish growth, kg', op: i => i <= H0 ? .85 : .35 }],
+        lines: [{ v: tn, col: '#ffd54f', right: true, w: 1.2, dash: '2,3', lab: 'normal °C' }, { v: tv, col: '#ffd54f', right: true, w: 1.6, lab: '°C' },
+          { v: lvH, col: '#ff8a65', w: 1.8, dots: true, lab: 'change in average of fish left, kg' }, { v: lvP, col: '#ff8a65', w: 1.8, dash: '4,3', dots: true, lab: 'change in average of fish left (projected), kg' }] }) +
+      `<div class="gm-s" style="margin:2px 0 8px">${sw('#2fd6b4', 'bar', 'fish growth: kg gained per fish, harvested fish included')}${sw('#2fd6b4', 'barp', 'projected')}${sw('#ff8a65', 'dots', 'change in the average of the fish left (register)')}${sw('#ffd54f', 'line', 'sea temperature, right axis')}${sw('#ffd54f', 'dot', 'normal temperature')}</div>` +
+      `<div class="gm-s" style="margin:4px 0 2px"><b>Average weight</b>, kg per fish (gutted)</div>` +
+      chart(keys, { lmax: wmax, ld: 1, lcol: '#e7eef2', projFrom: H0 + 1, H: 200,
+        band: [{ hi: p90, lo: p10, col: '#e7eef2' }, { hi: p75, lo: p25, col: '#e7eef2' }],
+        lines: [{ v: w1, col: '#8fa4b0', w: 1.3, dash: '1,3', lab: `generation ${gen - 1}, fish left, a year earlier` },
+          { v: ww, col: '#2fd6b4', w: 2, dash: '5,3', dots: true, lab: "a fish of today's average, if left at sea, kg" },
+          { v: wl.map((v, i) => i <= H0 ? v : null), col: '#e7eef2', w: 2, dots: true, lab: 'fish left at sea, kg' }, { v: wl.map((v, i) => i >= H0 ? v : null), col: '#e7eef2', w: 2, dash: '5,3', dots: true, lab: 'fish left at sea (projected median), kg' }] }) +
+      `<div class="gm-s" style="margin:2px 0 0">${sw('#2fd6b4', 'dash', "fish growth: a fish of today's average, if left at sea")}${sw('#e7eef2', 'dots', 'fish left at sea (register)')}${sw('#e7eef2', 'fan', 'range: half / 8 in 10 of past cases')}${sw('#8fa4b0', 'dot', `generation ${gen - 1}, fish left, a year earlier`)}${sw('#e7eef2', 'dash', 'fish left, projected median')}</div>`;
+  } else { $('gm_zGrowSub').innerHTML = `No fish of generation ${gen} in this zone in ${ml(k)}.`; $('gm_zGrow').innerHTML = ''; }
   renderHarv(po, k);
   renderGap(po, k);
   renderMtb(po, k);
