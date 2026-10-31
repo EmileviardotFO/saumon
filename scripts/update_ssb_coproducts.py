@@ -7,9 +7,8 @@ La nomenclature norvegienne ne separe PAS les tetes des aretes : tout passe sous
 code, 'spiselige biprodukter av oppdrettet atlanterhavslaks, fryst' :
     03039901  depuis 2017
     03031312  2012-2016 (meme libelle, ancien code)
-Le script lit aussi, dans les metadonnees de la table, tous les codes dont le libelle parle
-de biproduits / abats de saumon, et les telecharge s'il en trouve d'autres (frais par
-exemple). La liste trouvee est enregistree dans data/national_probe/ssb_08799_coproducts.json.
+Seuls ces codes sont telecharges. Les autres codes dont le libelle evoque des abats ou du saumon
+sont seulement listes dans data/national_probe/ssb_08799_coproducts.json, pour verification.
 
 Ecrit data.json['ssb_coproducts'] :
     meta.products  = {code: libelle}      (ordre = index utilise dans les lignes)
@@ -99,8 +98,12 @@ def main():
     os.makedirs(DBG, exist_ok=True)
     meta = http_json(f'{BASE}/metadata?lang=en&outputFormat=json-stat2')
     vk = cats(meta, 'Varekoder')
-    found = {c: label(meta, 'Varekoder', c) for c in vk if c.split('_')[0] in KNOWN or is_coproduct(label(meta, 'Varekoder', c))}
-    json.dump(found, io.open(os.path.join(DBG, 'ssb_08799_coproducts.json'), 'w', encoding='utf-8'), indent=1, ensure_ascii=False)
+    # seuls les codes connus sont telecharges : les libelles anglais de SSB sont generiques (« subgroup of 030399 ... »)
+    # et une recherche par mots-cles ramenait des codes sans rapport (chair de poisson hors salmonides, poisson fume...).
+    # Les autres candidats sont seulement listes dans le fichier de depannage, pour verification manuelle.
+    found = {c: label(meta, 'Varekoder', c) for c in vk if c.split('_')[0] in KNOWN}
+    cand = {c: label(meta, 'Varekoder', c) for c in vk if c not in found and is_coproduct(label(meta, 'Varekoder', c))}
+    json.dump({'downloaded': found, 'candidates_not_downloaded': cand}, io.open(os.path.join(DBG, 'ssb_08799_coproducts.json'), 'w', encoding='utf-8'), indent=1, ensure_ascii=False)
     print(f'  codes retenus : {found}')
     if not found:
         raise RuntimeError('aucun code de co-produit dans la table')

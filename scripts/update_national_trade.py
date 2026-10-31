@@ -503,6 +503,10 @@ def fetch_comtrade(key, src, to_iso, fx):
 
 US_OUT = os.path.join(ROOT, 'data', 'us_imports.json')
 US_HS6 = {'030214': 0, '030313': 1, '030441': 2, '030481': 3, '030541': 5, '160411': 6}
+# Le fume n'a qu'un code HTS, commun a tous les saumons ('PACIFIC, ATLANTIC AND DANUBE SALMON, SMOKED') : il est garde.
+# Venant d'Europe (Pologne, Pays-Bas, Danemark...), de Norvege ou du Chili, c'est du saumon atlantique ; le Pacifique
+# fume vient surtout du Canada et reste marginal dans les importations.
+US_MIXED_OK = {'0305410000'}
 
 
 def fetch_us_imports(to_iso, fx):
@@ -519,7 +523,8 @@ def fetch_us_imports(to_iso, fx):
         # plusieurs formes de requete, de la plus detaillee a la plus simple ; chaque essai est
         # enregistre dans data/national_probe/us_census_attempts.json pour le depannage
         minimal = 'CTY_CODE,CTY_NAME,I_COMMODITY,GEN_VAL_MO,GEN_QY1_MO,UNIT_QY1'
-        tries = [('HS10', hs6 + '*', fields, 'from+2023-01'), ('HS10', hs6 + '*', minimal, 'from+2023-01'),
+        # historique depuis 2018 (aligne sur le reste du tableau de bord) ; repli sur 2023 si la requete longue echoue
+        tries = [('HS10', hs6 + '*', fields, 'from+2018-01'), ('HS10', hs6 + '*', fields, 'from+2023-01'), ('HS10', hs6 + '*', minimal, 'from+2023-01'),
                  ('HS6', hs6, fields, 'from+2023-01'), ('HS6', hs6, minimal, 'from+2023-01')]
         for lvl, code, flds, tm in tries:
             url = f'{base}?get={flds}&COMM_LVL={lvl}&I_COMMODITY={code}&time={tm}'
@@ -545,12 +550,14 @@ def fetch_us_imports(to_iso, fx):
             json.dump(rows[:40], open(os.path.join(DBG, 'us_census_sample.json'), 'w'), indent=0, ensure_ascii=False)
         for r in rows:
             desc = (r.get('I_COMMODITY_SDESC') or '').upper()
-            if pi >= 2 and len(r.get('I_COMMODITY', '')) == 10:
+            if pi >= 2 and len(r.get('I_COMMODITY', '')) == 10 and r['I_COMMODITY'] not in US_MIXED_OK:
                 # filets, fume, prepare : uniquement le saumon atlantique (libelles HTS)
                 if 'ATLANTIC' not in desc or re.search(r'PACIFIC|SOCKEYE|COHO|CHINOOK|CHUM|PINK|SILVER', desc):
                     dropped.add(r['I_COMMODITY'] + ' ' + desc)
                     continue
                 kept.add(r['I_COMMODITY'] + ' ' + desc)
+            elif r.get('I_COMMODITY') in US_MIXED_OK:
+                kept.add(r['I_COMMODITY'] + ' ' + desc + ' (all salmon species, kept)')
             cc = r.get('CTY_CODE', '')
             if not re.fullmatch(r'\d{4}', cc) or cc.startswith('0') or cc[0] == '-':
                 continue                                   # totaux et regroupements
