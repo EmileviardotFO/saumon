@@ -227,6 +227,9 @@
   tr.pm-chart-row td { background:#0d1a24; padding:14px 18px 16px; border-bottom:2px solid var(--accent); }
   .cc-check { font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px; cursor:pointer; }
   .cc-check input { accent-color: var(--accent); cursor:pointer; }
+  /* boutons de raccourci (formes par defaut, tout) : meme forme que le selecteur de periode */
+  .chart-controls button.ctrl { background: transparent; color: var(--muted); border: 1px solid var(--border); border-radius: 7px; padding: 5px 12px !important; font: inherit; font-size: 12.5px; cursor: pointer; }
+  .chart-controls button.ctrl:hover { color: var(--ink); border-color: var(--accent); }
   #ratioColourToggle button { padding:6px 12px; font-size:11.5px; }
   /* Product per market: product cards + market bars */
   .pm-cards { display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap:12px; }
@@ -337,6 +340,12 @@
     .view-toggle button { flex: 1 1 auto; }
   }
 
+/* selecteur de periode commun a tous les onglets */
+.pseg { display: inline-flex; border: 1px solid var(--border); border-radius: 7px; overflow: hidden; vertical-align: middle; flex-wrap: wrap; }
+.pseg button { background: transparent; color: var(--muted); border: 0; border-right: 1px solid var(--border); padding: 6px 13px; font: inherit; font-size: 12.5px; cursor: pointer; white-space: nowrap; }
+.pseg button:last-child { border-right: 0; }
+.pseg button:hover { color: var(--ink); }
+.pseg button.on { background: var(--accent); color: #06211d; font-weight: bold; }
 @media (max-width: 700px) {
   .wide-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
   .wide-wrap > svg { min-width: 680px; }
@@ -364,9 +373,9 @@
   <div class="field">
     <label for="periodTypeSel">Period type</label>
     <select id="periodTypeSel">
-      <option value="cumul">Cumulative (January → month)</option>
       <option value="single">Single month</option>
-      <option value="range">Custom period</option>
+      <option value="cumul" selected>Year to date (January → month)</option>
+      <option value="range">Selected period</option>
     </select>
   </div>
   <div class="field" id="startMonthField" style="display:none;">
@@ -661,9 +670,9 @@
       <select class="ctrl" id="hlYear"></select>
       <span class="cc-label">Period type</span>
       <select class="ctrl" id="hlPType">
-        <option value="cumul" selected>Cumulative (week 1 → week)</option>
         <option value="single">Single week</option>
-        <option value="range">Custom period</option>
+        <option value="cumul" selected>Year to date (week 1 → week)</option>
+        <option value="range">Selected period</option>
       </select>
       <span class="cc-label" id="hlFromLbl" style="display:none;">From week</span>
       <select class="ctrl" id="hlFrom" style="display:none;"></select>
@@ -780,7 +789,11 @@
     <div class="sig-title" style="margin-top:16px">2 · Import price by origin (customs value, € per kg)</div>
     <div class="sig-sub" id="usPriceSub"></div>
     <div id="usPrice"></div>
-    <div class="sig-title" style="margin-top:22px">3 · Check: what the US records vs what each exporter declares for the US</div>
+    <div class="sig-title" style="margin-top:22px">3 · Duties: what the US charges on each origin, month by month</div>
+    <div class="sig-sub" id="usDutySub"></div>
+    <div id="usDuty" class="wide-wrap" style="overflow-x:auto"></div>
+    <div class="note" id="usDutyNote" style="text-align:left;max-width:none;margin-top:8px"></div>
+    <div class="sig-title" style="margin-top:22px">4 · Check: what the US records vs what each exporter declares for the US</div>
     <div class="sig-sub" id="usChkSub"></div>
     <table class="sig-table"><thead id="usChkHead"></thead><tbody id="usChkBody"></tbody></table>
     <div class="note" id="usNote" style="text-align:left;max-width:none;margin-top:16px"></div>
@@ -815,7 +828,8 @@
     <div class="sig-sub" id="cpSub"></div>
     <div class="chart-controls">
       <span class="cc-label">Period</span>
-      <select class="ctrl" id="cpPeriod"></select>
+      <select class="ctrl" id="cpPeriod"><option value="last" selected>Last month available</option><option value="ytd">Year to date</option><option value="custom">Selected period</option></select>
+      <span id="cpCustom" style="display:none;align-items:center;gap:6px"><select class="ctrl" id="cpFrom"></select><span class="cc-label">to</span><select class="ctrl" id="cpTo"></select></span>
     </div>
     <div id="cpCards" class="pr-cards" style="grid-template-columns:repeat(5,minmax(0,1fr))"></div>
     <div class="sig-title" style="margin-top:16px">1 · Monthly volume and export price</div>
@@ -931,19 +945,20 @@
       <span class="cc-label">Period</span>
       <select class="ctrl" id="prPeriod"><option value="last" selected>Last month available</option><option value="3">Last 3 months</option><option value="12">Last 12 months</option><option value="ytd">Year to date</option><option value="custom">Custom period…</option></select>
       <span id="prCustom" style="display:none;align-items:center;gap:6px"><select class="ctrl" id="prFrom"></select><span class="cc-label">to</span><select class="ctrl" id="prTo"></select></span>
-      <span class="cc-label">Chart range</span>
-      <select class="ctrl" id="prRange"><option value="12">Last 12 months</option><option value="24" selected>Last 24 months</option><option value="36">Last 36 months</option><option value="60">Last 5 years</option></select>
     </div>
     <div class="chart-controls"><span class="cc-label">Forms</span><span id="prForms" style="display:inline-flex;gap:12px;flex-wrap:wrap"></span></div>
-    <div class="chart-controls"><span class="cc-label">Show</span><span id="prMetrics" style="display:inline-flex;gap:12px"></span>
+    <div class="sig-title" style="margin-top:14px" id="prDestTitle"></div>
+    <div class="sig-sub" id="prDestSub"></div>
+    <div id="prDest"></div>
+    <div class="sig-title" style="margin-top:22px" id="prFormTitle"></div>
+    <table class="sig-table"><thead id="theadPrF"></thead><tbody id="tbodyPrF"></tbody></table>
+    <div class="sig-title" style="margin-top:22px">Month by month</div>
+    <div class="chart-controls"><span class="cc-label">Chart range</span>
+      <select class="ctrl" id="prRange"><option value="12">Last 12 months</option><option value="24" selected>Last 24 months</option><option value="36">Last 36 months</option><option value="60">Last 5 years</option></select>
+      <span class="cc-label">Show</span><span id="prMetrics" style="display:inline-flex;gap:12px"></span>
       <label class="cc-check"><input type="checkbox" id="prCompare" checked> same month a year earlier (dashed)</label></div>
     <div class="sig-sub" id="prChartSub"></div>
     <div id="prChart"></div>
-    <div class="sig-title" style="margin-top:18px" id="prFormTitle"></div>
-    <table class="sig-table"><thead id="theadPrF"></thead><tbody id="tbodyPrF"></tbody></table>
-    <div class="sig-title" style="margin-top:22px" id="prDestTitle"></div>
-    <div class="sig-sub" id="prDestSub"></div>
-    <div id="prDest"></div>
     <div class="note" id="prNote" style="text-align:left;max-width:none;margin-top:16px"></div>
   </div>
 
@@ -1179,11 +1194,9 @@
 
     <div class="chart-controls">
       <span class="cc-label">Period</span>
+      <select class="ctrl" id="pmModeSel"><option value="last">Last month available</option><option value="ytd" selected>Year to date</option><option value="custom">Selected period</option><option value="roll">12 months rolling</option></select>
       <span class="mono" id="pmPeriodLbl" style="color:var(--bone);font-size:13px"></span>
-      <span style="color:var(--muted);font-size:12px" id="pmPeriodHint">— set with the year and month selectors at the top of the page</span>
-      <label class="cc-check" style="margin-left:14px"><input type="checkbox" class="pm-mode" data-mode="roll" id="pmRolling"> 12 months rolling</label>
-      <label class="cc-check"><input type="checkbox" class="pm-mode" data-mode="last" id="pmLast"> Last month</label>
-      <label class="cc-check"><input type="checkbox" class="pm-mode" data-mode="custom" id="pmCustom"> Custom period</label>
+      <span style="color:var(--muted);font-size:12px;display:none" id="pmPeriodHint"></span>
       <span id="pmCustomBox" style="display:none;align-items:center;gap:6px;flex-wrap:wrap">
         <span class="cc-label">From</span><select class="ctrl" id="pmFromM"></select><select class="ctrl" id="pmFromY"></select>
         <span class="cc-label">to</span><select class="ctrl" id="pmToM"></select><select class="ctrl" id="pmToY"></select>
@@ -1654,37 +1667,46 @@ function sourceStatus() {
   const wdiff = (y, w) => (cy - y) * 52 + (cw - w);
   const daysSince = iso => iso ? Math.floor((now - new Date(iso)) / 864e5) : null;
   const out = [];
-  const add = (name, last, late, note, step) => out.push({ name, last, late, note, step });
+  const add = (name, last, late, note, step, next) => out.push({ name, last, late, note, step, next });
+  // prochaine publication theorique : jour j du mois (dernier mois de donnees + n)
+  const nextM = (yy, mm, n, j) => { const t = new Date(Date.UTC(yy, mm - 1 + n, j)); return t; };
+  const nextWd = (wd) => { const t = new Date(now); t.setDate(t.getDate() + ((wd - t.getDay() + 7) % 7 || 7)); return t; };
   const steps = {}; ((d.status && d.status.steps) || []).forEach(x => steps[x.id] = x.outcome);
   // Biomasseregisteret : publie vers le 20 pour le mois precedent
   const lr = RECORDS.reduce((a, r) => Math.max(a, ym(r.year, r.month)), 0);
   if (lr) { const exp = nowYM - (day >= 25 ? 1 : 2);
     add('Biomasseregisteret (biomass, harvest, smolts)', mlab(Math.floor(lr / 12), lr % 12 + 1), lr < exp,
-        'monthly, around the 20th for the previous month', steps.BIOMASSE_FETCH === 'failure' || steps.BIOMASSE_BUILD === 'failure' ? 'failure' : steps.BIOMASSE_FETCH); }
+        'monthly, around the 20th for the previous month', steps.BIOMASSE_FETCH === 'failure' || steps.BIOMASSE_BUILD === 'failure' ? 'failure' : steps.BIOMASSE_FETCH, nextM(Math.floor(lr / 12), lr % 12 + 1, 2, 20)); }
   // Akvafakta hebdomadaire : publie le mercredi pour la semaine precedente
   if (LAST_WEEK) add('Akvafakta weekly (export prices, calibres)', `W${LAST_WEEK.week} ${LAST_WEEK.year}`,
-    wdiff(LAST_WEEK.year, LAST_WEEK.week) > 2, 'weekly, on Wednesday for the previous week', steps.AKVA_PARSE === 'failure' || steps.AKVA_FETCH === 'failure' ? 'failure' : steps.AKVA_PARSE);
+    wdiff(LAST_WEEK.year, LAST_WEEK.week) > 2, 'weekly, on Wednesday for the previous week', steps.AKVA_PARSE === 'failure' || steps.AKVA_FETCH === 'failure' ? 'failure' : steps.AKVA_PARSE, nextWd(3));
   const mk = (d.monthly_akvafakta || []).filter(r => r.price_nok_kg).reduce((a, r) => Math.max(a, ym(r.year, r.month)), 0);
   if (mk) add('Akvafakta monthly (markets, price)', mlab(Math.floor(mk / 12), mk % 12 + 1), mk < nowYM - 2,
-    'monthly, early in the following month', steps.AKVA_PARSE);
+    'monthly, early in the following month', steps.AKVA_PARSE, nextM(Math.floor(mk / 12), mk % 12 + 1, 2, 7));
   // SSB
   if (SSBX) { const ks = Object.keys(SSBX.meta.months || {}).map(Number).sort((a, b) => a - b), k = ks[ks.length - 1];
     const prov = ks.filter(x => (SSBX.meta.months[String(x)] || {}).status === 'provisional').length;
     add('SSB exports by country and product', k ? mlab(Math.floor(k / 100), k % 100) : '—', k ? ym(Math.floor(k / 100), k % 100) < nowYM - 2 : true,
-      `monthly; ${prov} recent month${prov > 1 ? 's' : ''} still provisional`, steps.SSB); }
+      `monthly, around the 15th for the previous month; ${prov} recent month${prov > 1 ? 's' : ''} still provisional`, steps.SSB, k ? nextM(Math.floor(k / 100), k % 100, 2, 15) : null); }
+  if (d.ssb_weekly && d.ssb_weekly.meta) { const l = d.ssb_weekly.meta.last;
+    add('SSB weekly exports (volume, price)', l ? `W${l % 100} ${Math.floor(l / 100)}` : '—', l ? wdiff(Math.floor(l / 100), l % 100) > 2 : true, 'weekly, on Wednesday for the previous week', steps.SSB_WEEKLY, nextWd(3)); }
   // BarentsWatch
   if (BW && BW.meta) { const l = BW.meta.last || [];
     const hist = [BW.meta.complete_from_start === false ? `history back to ${BW.meta.first ? BW.meta.first[0] : '?'} so far (2018 target)` : 'history complete',
       (BW.meta.treatment_detail_years || []).length ? `treatment detail ${BW.meta.treatment_detail_years.join(', ')}` : 'treatment detail being collected'];
-    add('BarentsWatch fish health', l.length ? `W${l[1]} ${l[0]}` : '—', l.length ? wdiff(l[0], l[1]) > 2 : true, 'weekly; ' + hist.join('; '), steps.BW_HEALTH); }
+    add('BarentsWatch fish health', l.length ? `W${l[1]} ${l[0]}` : '—', l.length ? wdiff(l[0], l[1]) > 2 : true, 'weekly; ' + hist.join('; '), steps.BW_HEALTH, nextWd(2)); }
   if (BWR && BWR.meta) { const g = daysSince(BWR.meta.generated);
-    add('BarentsWatch site register (MTB, operators)', BWR.meta.generated || '—', g === null || g > 35, 'rebuilt every 4 weeks', steps.BW_SITES); }
+    add('BarentsWatch site register (MTB, operators)', BWR.meta.generated || '—', g === null || g > 35, 'rebuilt every 4 weeks', steps.BW_SITES, BWR.meta.generated ? new Date(new Date(BWR.meta.generated).getTime() + 28 * 864e5) : null); }
   if (d.status && d.status.eurostat && d.status.eurostat.last_period) { const e = d.status.eurostat, k = e.last_period;
     add('Eurostat — EU salmon flows', mlab(Math.floor(k / 100), k % 100), ym(Math.floor(k / 100), k % 100) < nowYM - 3,
-      'monthly, about 6–8 weeks after the month', steps.EUROSTAT); }
+      'monthly, about 6–8 weeks after the month', steps.EUROSTAT, nextM(Math.floor(k / 100), k % 100, 3, 16)); }
   if (d.status && d.status.national) { const n = d.status.national;
+    // delai habituel entre la fin du mois et la publication : [mois apres, jour]
+    const LAGP = { FO: [2, 10], IS: [1, 28], GB: [2, 12], CL: [3, 1], CA: [3, 1] };
     [['FO', 'Faroe export statistics (Hagstova)'], ['IS', 'Iceland export statistics (Hagstofa)'], ['GB', 'UK export statistics (HMRC)'], ['CL', 'Chile export statistics (UN Comtrade)'], ['CA', 'Canada export statistics (UN Comtrade)']].forEach(([c, lab]) => { const k = n[c] && n[c].last;
-      add(lab, k ? mlab(Math.floor(k / 100), k % 100) : '—', !k || ym(Math.floor(k / 100), k % 100) < nowYM - 3, 'monthly, by destination country', steps.NATIONAL); }); }
+      add(lab, k ? mlab(Math.floor(k / 100), k % 100) : '—', !k || ym(Math.floor(k / 100), k % 100) < nowYM - 3, 'monthly, by destination country' + (c === 'CL' || c === 'CA' ? ' (Comtrade: irregular, 2–3 months)' : ''), steps.NATIONAL, k ? nextM(Math.floor(k / 100), k % 100, LAGP[c][0] + 1, LAGP[c][1]) : null); }); }
+  if (typeof USI !== 'undefined' && USI && USI.meta && USI.meta.last) { const k = USI.meta.last;
+    add('US Census — US imports', mlab(Math.floor(k / 100), k % 100), ym(Math.floor(k / 100), k % 100) < nowYM - 3, 'monthly, about 5 weeks after the month', steps.NATIONAL, nextM(Math.floor(k / 100), k % 100, 2, 6)); }
   if (d.china && d.china.meta) { const g = daysSince(d.china.meta.fetched);
     add('GACC — Norwegian establishments registered for China', d.china.meta.fetched || '—', g === null || g > 10, 'every update run (customs search page, fragile source)', steps.CHINA); }
   if (ESTAB && ESTAB.meta) { const g = daysSince(ESTAB.meta.fetched);
@@ -1718,18 +1740,20 @@ function showDataBanner(live) {
   pnl.style.cssText = 'display:none;background:#0d1a24;border-bottom:1px solid var(--border);padding:12px 18px 14px;font-size:12px;';
   const outc = o => o === 'failure' ? '<span class="delta-bad">failed</span>' : o === 'success' ? '<span class="delta-good">ok</span>'
                   : o === 'skipped' ? '<span style="color:var(--muted)">nothing new</span>' : '<span style="color:var(--muted)">—</span>';
-  pnl.innerHTML = `<table class="sig-table" style="max-width:1100px;margin:0 auto"><thead><tr><th class="name">Source</th><th style="text-align:left">Latest data</th>` +
-    `<th style="text-align:left">Status</th><th style="text-align:left">Last run</th><th style="text-align:left">Publication / coverage</th></tr></thead><tbody>` +
+  window.srcPanelFill = () => { const src = sourceStatus(); pnl.innerHTML = `<table class="sig-table" style="max-width:1100px;margin:0 auto"><thead><tr><th class="name">Source</th><th style="text-align:left">Latest data</th>` +
+    `<th style="text-align:left">Status</th><th style="text-align:left">Last run</th><th style="text-align:left">Next expected</th><th style="text-align:left">Publication / coverage</th></tr></thead><tbody>` +
     src.map(x => `<tr><td class="name">${x.name}</td><td style="text-align:left">${x.last}</td>` +
       `<td style="text-align:left">${x.late ? '<span class="delta-bad">late</span>' : '<span class="delta-good">up to date</span>'}</td>` +
-      `<td style="text-align:left">${outc(x.step)}</td><td style="text-align:left;white-space:normal;color:var(--muted)">${x.note}</td></tr>`).join('') +
+      `<td style="text-align:left">${outc(x.step)}</td><td style="text-align:left;white-space:nowrap">${x.next ? (x.next < new Date() ? '<span class="delta-bad">due ' : '≈ ') + x.next.toISOString().slice(0, 10) + (x.next < new Date() ? '</span>' : '') : '<span style="color:var(--muted)">each run</span>'}</td>` +
+      `<td style="text-align:left;white-space:normal;color:var(--muted)">${x.note}</td></tr>`).join('') +
     `</tbody></table>` +
     `<div style="max-width:1100px;margin:8px auto 0;color:var(--muted)">` +
     (st ? `Last update run ${st.run_utc ? st.run_utc.replace('T', ' ').slice(0, 16) + ' UTC' : ''}` +
           (st.smoke ? ` · dashboard test: ${st.smoke.ok ? '<span class="delta-good">all tabs ok</span>' : '<span class="delta-bad">' + st.smoke.checks.filter(c => !c.ok).map(c => c.name).join('; ') + '</span>'}` : '') +
           (st.run_url ? ` · <a href="${st.run_url}" target="_blank" rel="noopener" style="color:var(--accent)">open the run in GitHub</a>` : '')
         : 'The run status appears after the next update run.') +
-    ` · "Late" means behind the usual publication calendar of the source, which can also be a delay at the source itself.</div>`;
+    ` · "Late" means behind the usual publication calendar of the source, which can also be a delay at the source itself. "Next expected" is the usual calendar of the source, not a promise.</div>`; };
+  window.srcPanelFill();
   document.body.insertBefore(pnl, document.body.firstChild);
   document.body.insertBefore(b, document.body.firstChild);
   document.getElementById('srcToggle').addEventListener('click', () => {
@@ -1778,7 +1802,10 @@ const MONTH_SEL_LABELS = {
   single: 'Month',
   range: 'To month',
 };
+function topPeriodSeg() { periodSeg(periodTypeSel, [['single', 'Single month'], ['cumul', 'Year to date'], ['range', 'Selected period']]); }
+topPeriodSeg();
 periodTypeSel.addEventListener('change', () => {
+  topPeriodSeg();
   startMonthField.style.display = periodTypeSel.value === 'range' ? 'flex' : 'none';
   monthSelLabel.textContent = MONTH_SEL_LABELS[periodTypeSel.value];
   render();
@@ -2260,6 +2287,7 @@ function renderHealth() {
       Array.from({length: 13}, (_, i) => 13 - i).map(po => `<option value="${po}">${po}. ${PO_NAMES[po]}</option>`).join('');
   }
   const ptype = pSel.value;
+  periodSeg(pSel, [['single', 'Single week'], ['cumul', 'Year to date'], ['range', 'Selected period']]);
   document.getElementById('hlFromLbl').style.display = ptype === 'range' ? '' : 'none';
   fSel.style.display = ptype === 'range' ? '' : 'none';
   document.getElementById('hlToLbl').textContent = ptype === 'single' ? 'Week' : 'Through week';
@@ -4697,7 +4725,7 @@ let pmSel = new Set([0, 1, 2, 3]);    // produits coches ; les quatre par defaut
 let pmGroupF = 'all', pmRolling = false;
 // Periode de l'onglet : 'top' (selecteurs du haut), 'roll' (12 mois glissants),
 // 'last' (dernier mois publie par SSB), 'custom' (de mois/annee a mois/annee).
-let pmMode = 'top', pmFrom = null, pmTo = null;
+let pmMode = 'ytd', pmFrom = null, pmTo = null;
 let pmOpenIso = null, pmJustOpened = false;       // pays dont le graphique est deplie
 let pmChartMetrics = new Set(['q']), pmChartCompare = true;  // mesure du graphique, superposition de l'annee B
 const PM_COL = ['#5FD3C4', '#F2A65A', '#b79cff', '#7FA8FF'];
@@ -4778,6 +4806,8 @@ function pmResolvePeriod(byK) {
   let A, label;
   if (pmMode === 'last') {
     A = [lastK]; label = 'Last month published';
+  } else if (pmMode === 'ytd') {
+    A = pmSpan(Math.floor(lastK / 100), 1, Math.floor(lastK / 100), lastK % 100); label = 'Year to date';
   } else if (pmMode === 'custom' && pmFrom && pmTo) {
     const [f, t] = pmFrom <= pmTo ? [pmFrom, pmTo] : [pmTo, pmFrom];
     A = pmSpan(Math.floor(f / 100), f % 100, Math.floor(t / 100), t % 100); label = 'Custom period';
@@ -5150,13 +5180,14 @@ function pmBind() {
   }
   // Les cases de periode s'excluent : en cocher une decoche les autres ; tout
   // decocher revient aux selecteurs du haut de page.
-  document.querySelectorAll('.pm-mode').forEach(cb => cb.addEventListener('change', e => {
-    document.querySelectorAll('.pm-mode').forEach(o => { if (o !== e.target) o.checked = false; });
-    pmMode = e.target.checked ? e.target.dataset.mode : 'top';
+  const pmSegItems = [['last', 'Last month available'], ['ytd', 'Year to date'], ['custom', 'Selected period'], ['roll', '12 months rolling']];
+  const pmModeSel = document.getElementById('pmModeSel'); periodSeg(pmModeSel, pmSegItems);
+  pmModeSel.addEventListener('change', () => {
+    pmMode = pmModeSel.value; periodSeg(pmModeSel, pmSegItems);
     pmRolling = pmMode === 'roll';
     document.getElementById('pmCustomBox').style.display = pmMode === 'custom' ? 'inline-flex' : 'none';
     if (currentView === 'products') renderProductsView();
-  }));
+  });
   ['pmFromM', 'pmFromY', 'pmToM', 'pmToY'].forEach(id => document.getElementById(id).addEventListener('change', () => {
     const g = i => +document.getElementById(i).value;
     pmFrom = g('pmFromY') * 100 + g('pmFromM'); pmTo = g('pmToY') * 100 + g('pmToM');
@@ -6207,6 +6238,7 @@ async function loadEurostat() {
     const [r2] = await Promise.all([fetch(DATA_URL.replace('data.json', 'national_trade.json'), { cache: 'no-store' }).catch(() => null)]);
     if (r2 && r2.ok) { try { NAT = await r2.json(); } catch (e) { NAT = null; } }
     try { const r3 = await fetch(DATA_URL.replace('data.json', 'us_imports.json'), { cache: 'no-store' }); if (r3.ok) USI = await r3.json(); } catch (e) { USI = null; }
+    if (window.srcPanelFill) window.srcPanelFill();
     try { const r4 = await fetch(DATA_URL.replace('data.json', 'cn_imports.json'), { cache: 'no-store' }); if (r4.ok) CNI = await r4.json(); } catch (e) { CNI = null; }
     if (r.ok) { EU = await r.json(); cleanEurostat(EU); }
   } catch (e) { console.warn('eurostat.json indisponible', e.message); }
@@ -6228,7 +6260,7 @@ async function loadEurostat() {
 const PAC_SRC = new Set(['US', 'CN', 'RU', 'TH', 'VN', 'JP', 'KR', 'NZ', 'TW', 'ID', 'PH', 'MY']);
 const ORIGS = ['NO', 'GB', 'FO', 'IS', 'IE', 'CL', 'OTH', 'PAC'];
 const ORIG_LAB = { NO: 'Norway', GB: 'United Kingdom', FO: 'Faroe Islands', IS: 'Iceland', IE: 'Ireland', CL: 'Chile', OTH: 'Other / unspecified', PAC: 'Pacific & wild salmon (excluded)' };
-const ORIG_COL = { NO: '#4fc3f7', GB: '#ffb74d', FO: '#2fb8a6', IS: '#ba68c8', IE: '#81c784', CL: '#e57373', CA: '#f06292', AU: '#fff176', NL: '#ff7043', PL: '#9ccc65', DK: '#90caf9', OTH: '#78909c', PAC: '#8d6e63' };
+const ORIG_COL = { NO: '#4fc3f7', GB: '#ffb74d', FO: '#2fb8a6', IS: '#ba68c8', IE: '#81c784', CL: '#e57373', CA: '#c0ca33', AU: '#fff176', NL: '#ff7043', PL: '#9ccc65', DK: '#90caf9', OTH: '#78909c', PAC: '#8d6e63' };
 const PRODUCERS = ['NO', 'FO', 'IS', 'GB', 'IE', 'CL', 'CA'];
 // pays de l'UE qui transforment du saumon importe (filets, fume) et le reexportent
 const EU_HUBS = { NL: 'Dutch', PL: 'Polish', DK: 'Danish' };
@@ -6318,10 +6350,19 @@ function tmPeriod(per, pre, end) {
   } else keys = per === 'last' ? [L] : per === 'ytd' ? Array.from({ length: L % 100 }, (_, i) => Math.floor(L / 100) * 100 + i + 1) : tmRange(L, +per);
   return { keys, prev: keys.map(k => k - 100), lab: keys.length === 1 ? tmMl(keys[0]) : `${tmMl(keys[0])} – ${tmMl(keys[keys.length - 1])}` };
 }
+// Selecteur de periode commun : trois boutons (dernier mois disponible / depuis janvier / periode choisie) qui pilotent un <select> cache
+function periodSeg(sel, items) {
+  let seg = sel.previousElementSibling && sel.previousElementSibling.classList.contains('pseg') ? sel.previousElementSibling : null;
+  if (!seg) { seg = document.createElement('span'); seg.className = 'pseg'; sel.parentNode.insertBefore(seg, sel); sel.style.display = 'none';
+    seg.addEventListener('click', ev => { const b = ev.target.closest('button'); if (!b || sel.value === b.dataset.v) return; sel.value = b.dataset.v; sel.dispatchEvent(new Event('change', { bubbles: true })); }); }
+  seg.innerHTML = items.map(([v, lab]) => `<button type="button" data-v="${v}" class="${sel.value === v ? 'on' : ''}">${lab}</button>`).join('');
+}
 function tmPeriodLabels(sel, pre, rerender, end) {
   end = end || TM.common;
   const o = [...sel.options].find(x => x.value === 'last');
   if (o) o.textContent = `Last month available (${tmMl(end)})`;
+  if (!['last', 'ytd', 'custom'].includes(sel.value)) sel.value = 'last';
+  periodSeg(sel, [['last', `Last month available · ${tmMl(end)}`], ['ytd', `Year to date · Jan–${tmMl(end).split(' ')[0]}`], ['custom', 'Selected period']]);
   const box = document.getElementById(pre + 'Custom'), f = document.getElementById(pre + 'From'), t = document.getElementById(pre + 'To');
   if (!f.options.length) {
     const ms = []; for (let k = end; k >= 202201; k = tmBack(k, 1)) ms.push(k);
@@ -7296,14 +7337,36 @@ function genDisease(po, LAST) {
 //  - Etats-Unis (US Census) : valeur en douane hors fret (comparable au FOB), droits, frais d'acheminement ;
 //  - Chine et Hong Kong (UN Comtrade) : valeur CIF a l'arrivee (fret compris), pas de droits.
 const FOCUS = {
-  us: { data: () => USI, orig: ['NO', 'CL', 'CA', 'FO', 'IS', 'GB', 'NL', 'PL', 'DK'], dest: ['US'], market: 'US', cif: false, forms: new Set([0, 2]),
+  us: { data: () => USI, orig: ['NO', 'CL', 'CA', 'FO', 'IS', 'GB', 'NL', 'PL', 'DK'], dest: ['US'], market: 'US', cif: false, forms: new Set([0, 2]), def: [0, 2], defLab: 'Fresh whole + fresh fillets',
         title: 'US imports', render: () => renderUSA() },
-  cn: { data: () => CNI, orig: ['NO', 'CL', 'FO', 'GB', 'IS', 'AU', 'CA'], dest: ['CN', 'HK'], market: 'China', cif: true, forms: new Set([0, 2]), hk: true,
+  cn: { data: () => CNI, orig: ['NO', 'CL', 'FO', 'GB', 'IS', 'AU', 'CA'], dest: ['CN', 'HK'], market: 'China', cif: true, forms: new Set([0]), def: [0], defLab: 'Fresh whole (HOG) only', hk: true,
         title: 'China imports', render: () => renderChina() },
 };
 let usForms = FOCUS.us.forms;
 const US_LAB = Object.assign({}, PROD_LAB, { OTH: 'Other origins', AU: 'Australia', NL: 'Netherlands', PL: 'Poland', DK: 'Denmark' });
-function renderUSA() { renderFocus('us'); renderUsForms(); }
+function renderUSA() { renderFocus('us'); renderUsForms(); renderUsDuty(); }
+// Droits americains : droits calcules par les douanes US / valeur en douane, par origine et par mois (toutes formes de saumon atlantique)
+function renderUsDuty() {
+  const $u = id => document.getElementById(id);
+  if (!USI || !USI.rows || !USI.rows.length) { ['usDutySub', 'usDuty', 'usDutyNote'].forEach(id => $u(id).innerHTML = ''); return; }
+  const OR = ['NO', 'CL', 'CA', 'FO', 'IS', 'GB', 'NL', 'DK', 'PL'], A = {}, last = USI.meta.last;
+  USI.rows.forEach(([ym, o, pi, t, usd, eur, duty]) => { if (ym < 202501 || !OR.includes(o)) return; const x = (A[o] || (A[o] = {}))[ym] || (A[o][ym] = [0, 0, 0]); x[0] += usd; x[1] += duty || 0; x[2] += t; });
+  const ks = []; for (let k = 202501; k <= last; k = tmShift(k, 1)) ks.push(k);
+  const col = r => r === null ? 'transparent' : `rgba(255,138,101,${Math.min(1, r / 15) * 0.85 + 0.05})`;
+  $u('usDutySub').innerHTML = `Duty actually collected = duties calculated by US customs ÷ customs value, all Atlantic salmon forms, by country of origin (US Census Bureau). ` +
+    `The normal US duty on salmon is zero: everything here comes from the tariffs added since April 2025. Grey: under 20 t that month (rate not meaningful).`;
+  let h = `<table class="sig-table" style="font-size:11px"><thead><tr><th class="name">Origin</th>${ks.map(k => `<th style="padding:4px 3px">${tmMl(k).replace(' 20', ' ’')}</th>`).join('')}</tr></thead><tbody>`;
+  OR.forEach(o => { h += `<tr><td class="name">${FLAG(o, 14)} ${US_LAB[o] || o}</td>` + ks.map(k => { const x = (A[o] || {})[k]; if (!x || !x[0]) return '<td></td>';
+    const r = 100 * x[1] / x[0], small = x[2] < 20; return `<td style="padding:4px 3px;text-align:center;background:${small ? 'rgba(120,144,156,.15)' : col(r)};color:${small ? 'var(--muted)' : 'var(--ink)'}" title="${US_LAB[o] || o}, ${tmMl(k)}: ${r.toFixed(1)} % on ${tmF0(x[2])} t">${r.toFixed(r >= 9.95 || r < 0.05 ? 0 : 1)}</td>`; }).join('') + '</tr>'; });
+  $u('usDuty').innerHTML = h + '</tbody></table>';
+  $u('usDutyNote').innerHTML = `<b>Why the rates move.</b> ` +
+    `<b>5 Apr 2025</b>: 10 % on every origin (emergency-powers tariffs, IEEPA); Canada exempt for goods qualifying under USMCA, hence 0 % throughout. ` +
+    `<b>7 Aug 2025</b>: rates by country — Norway, Iceland and the EU (Netherlands, Denmark, Poland) 15 %; Chile, United Kingdom and Faroe Islands 10 %. ` +
+    `<b>20 Feb 2026</b>: the Supreme Court strikes these tariffs down; from <b>24 Feb 2026</b> a flat 10 % on all origins for 150 days (Section 122). ` +
+    `<b>24 Jul 2026</b>: that tariff lapses and the Section 301 "forced labour" tariffs take over — <b>Norway and Chile 12.5 %</b>, United Kingdom 10 %, EU 10 % at most; <b>Iceland and the Faroe Islands are not on the list: 0 %</b>. ` +
+    `<b>Why the figures are not round.</b> A month that straddles a change mixes both rates (August 2025, July 2026), goods already in transit keep the old rate for a few days, and smoked or prepared products from small origins (Poland) carry other duties. ` +
+    `The cards above show this rate averaged over the chosen period. Sources: US Census Bureau (calculated duty); dates from the USTR and CBP notices as summarised by EY (24 Jul 2026) and tariffstool.com.`;
+}
 // Importations americaines par forme de produit, toutes origines (douanes US) : evolution mensuelle
 function renderUsForms() {
   const $u = id => document.getElementById(id);
@@ -7335,7 +7398,7 @@ function renderUsForms() {
 // La nomenclature norvegienne ne separe pas les tetes des aretes. Poids produit, valeur FOB.
 const CP_MAIN = ['03039901', '03031312'];
 const CP_COL = ['#4fc3f7', '#ffd54f', '#ff8a65', '#81c784', '#ba68c8', '#e0e0e0'];
-let cpPeriodSel = 'l12';
+let cpPeriodSel = 'last';
 function cpData() {
   const S = DATA_RAW && DATA_RAW.ssb_coproducts; if (!S || !S.rows || !S.rows.length) return null;
   const codes = Object.keys(S.meta.products), main = codes.map((c, i) => CP_MAIN.includes(c) ? i : -1).filter(i => i >= 0);
@@ -7362,15 +7425,14 @@ function renderCoprod() {
   const conv = tmNok(), EUR = !!conv, cur = EUR ? '€' : 'NOK';
   const val = (nok, k) => EUR ? conv(nok, k) : nok;   // valeur dans la devise affichee
   // periodes
-  const sel = $c('cpPeriod'), years = [...new Set(D.ks.map(k => Math.floor(k / 100)))].filter(y => D.ks.filter(k => Math.floor(k / 100) === y).length === 12).sort((a, b) => b - a);
-  const opts = [['l12', 'Last 12 months'], ['ytd', `Year to date (${Math.floor(D.last / 100)})`], ...years.map(y => [String(y), String(y)])];
-  if (sel.options.length !== opts.length) { sel.innerHTML = opts.map(([v, l]) => `<option value="${v}">${l}</option>`).join(''); sel.onchange = () => { cpPeriodSel = sel.value; renderCoprod(); }; }
-  sel.value = cpPeriodSel;
-  const P = cpMonths(D, cpPeriodSel), Pp = P.map(k => k - 100);
+  const sel = $c('cpPeriod'); sel.value = cpPeriodSel;
+  if (!sel.dataset.w) { sel.dataset.w = 1; sel.onchange = () => { cpPeriodSel = sel.value; renderCoprod(); }; }
+  tmPeriodLabels(sel, 'cp', renderCoprod, D.last);
+  const P = tmPeriod(cpPeriodSel, 'cp', D.last).keys, Pp = P.map(k => k - 100);
   const sum = (ks, iso) => ks.reduce((a, k) => { const x = iso ? (D.C[k] || {})[iso] : D.M[k]; if (x) { a[0] += x[0]; a[1] += val(x[1], k); a[2] += x[1]; } return a; }, [0, 0, 0]);
   const T = sum(P), Tp = sum(Pp), pr = x => x[0] ? x[1] / x[0] : NaN, prN = x => x[0] ? x[2] / x[0] : NaN;
   const L = D.last, LM = D.M[L], LMp = D.M[L - 100];
-  const plab = cpPeriodSel === 'l12' ? `${tmMl(P[0])} – ${tmMl(P[P.length - 1])}` : cpPeriodSel === 'ytd' ? `Jan–${tmMl(L)}` : cpPeriodSel;
+  const plab = P.length === 1 ? tmMl(P[0]) : `${tmMl(P[0])} – ${tmMl(P[P.length - 1])}`;
   $c('cpSub').innerHTML = `Norwegian exports of <b>frozen edible by-products of farmed salmon</b> — heads, frames (backbones), tails and other edible parts. ` +
     `Norwegian statistics put them all under one commodity code, so heads and frames <b>cannot be separated</b>. Product weight, FOB value. ` +
     `Monthly, ${tmMl(D.first)} – ${tmMl(L)} (SSB publishes about 2–3 weeks after the month).`;
@@ -8206,14 +8268,15 @@ function renderFocus(k) {
   const PER = tmPeriod(perSel.value, pre, END), one = PER.keys.length === 1;
   const formsAll = FORMS_OK.filter(i => rowsN.some(r => r[2] === i));
   $('Forms').innerHTML = formsAll.map(i => `<label class="cc-check"><input type="checkbox" data-f="${i}" ${C.forms.has(i) ? 'checked' : ''}> <i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${FORM_COL[i]}"></i> ${P[i]}</label>`).join('') +
-    `<button type="button" class="ctrl" data-def="1" style="padding:2px 8px">Fresh whole + fresh fillets</button>`;
+    `<button type="button" class="ctrl" data-def="1" style="padding:2px 8px">${C.defLab}</button>`;
   $('Forms').querySelectorAll('input').forEach(c => c.addEventListener('change', () => { const f = +c.dataset.f; c.checked ? C.forms.add(f) : C.forms.delete(f); C.render(); }));
-  $('Forms').querySelector('[data-def]').onclick = () => { C.forms.clear(); [0, 2].forEach(f => C.forms.add(f)); C.render(); };
+  $('Forms').querySelector('[data-def]').onclick = () => { C.forms.clear(); C.def.forEach(f => C.forms.add(f)); C.render(); };
   const formsTxt = [...C.forms].filter(i => formsAll.includes(i)).sort().map(i => P[i].toLowerCase()).join(' + ') || 'no form selected';
   // ix[g][ym] = [t, k$, k€, droits, frais, t douanes, k€ douanes] ; dimI[g][ym] = mois tire des declarations des exportateurs
-  const ix = {}, dimI = {}, ixF = {}, Z = () => [0, 0, 0, 0, 0, 0, 0];
+  const ix = {}, dimI = {}, ixF = {}, othD = {}, Z = () => [0, 0, 0, 0, 0, 0, 0];
   rowsN.forEach(([ym, o, pi, t, usd, eur, duty, cha, src]) => { if (!C.forms.has(pi)) return;
     const g = C.orig.includes(o) ? o : 'OTH', A = ix[g] || (ix[g] = {}), x = A[ym] || (A[ym] = Z());
+    if (g === 'OTH') { const d = (othD[o] || (othD[o] = {})); d[ym] = (d[ym] || 0) + t; }
     const F = ((ixF[g] || (ixF[g] = {}))[ym] || (ixF[g][ym] = {})), f = F[pi] || (F[pi] = [0, 0, 0]); f[0] += t; f[1] += eur || 0; if (src === 'X') f[2] = 1;
     x[0] += t; x[1] += usd; x[2] += eur || 0; x[3] += duty || 0; x[4] += cha || 0;
     if (src === 'X') (dimI[g] || (dimI[g] = {}))[ym] = 1; else { x[5] += t; x[6] += eur || 0; } });
@@ -8267,6 +8330,9 @@ function renderFocus(k) {
       `<div class="big">${lost && !a[0] ? '—' : tmKt(a[0])} <span>${lost ? '' : tmVar(tmPc(a[0], b[0]))}</span> <span style="font-size:10px;color:var(--muted);font-weight:normal">${lost ? '' : 'vs N-1'}</span></div>` +
       (one && !lost ? `<div class="ln">vs previous month: ${tmVar(tmPc(a[0], m1[0]))}</div>` : '') +
       priceLn + src +
+      (g === 'OTH' && !total ? (() => { let dn; try { dn = new Intl.DisplayNames(['en'], { type: 'region' }); } catch (e) { dn = null; }
+        const L = Object.entries(othD).map(([o, d]) => [o, PER.keys.reduce((s2, kk) => s2 + (d[kk] || 0), 0)]).filter(([, t]) => t > 0).sort((p, q) => q[1] - p[1]);
+        return L.length ? `<div class="ln" style="color:var(--muted)">of which ${L.slice(0, 5).map(([o, t]) => `${(dn && dn.of(o)) || o} ${tmF0(t)} t`).join(', ')}${L.length > 5 ? `, ${L.length - 5} more` : ''}</div>` : ''; })() : '') +
       (total ? `<div class="pr-total-share" style="margin-top:6px">${orig.map(o => { const t = S(o, PER.keys)[0]; return t > 0 ? `<span title="${US_LAB[o]}: ${tmF0(t)} t" style="flex:${t};background:${ORIG_COL[o] || '#78909c'}"></span>` : ''; }).join('')}</div>` +
         `<div class="pr-total-leg" style="grid-column:1">${orig.map(o => { const t = S(o, PER.keys)[0]; return t > 0 ? `<span><i style="background:${ORIG_COL[o] || '#78909c'}"></i>${US_LAB[o]} ${a[0] ? (100 * t / a[0]).toFixed(1) : 0}%</span>` : ''; }).join('')}</div>` : '') +
       vzSpark(tmRange(END, 24).map(kk => total ? orig.reduce((s2, o) => s2 + ((ix[o] || {})[kk] ? ix[o][kk][0] : 0), 0) : ((ix[g] || {})[kk] ? ix[g][kk][0] : 0)), total ? '#e7eef2' : (ORIG_COL[g] || '#78909c')) + `</div>`; };
