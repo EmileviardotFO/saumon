@@ -276,6 +276,9 @@
   #genmapView .gm-t { font-size: 13.5px; font-weight: bold; margin-bottom: 4px; }
   #genmapView .gm-s { font-size: 11.5px; color: var(--muted); margin-bottom: 8px; line-height: 1.45; }
   #genmapView .gm-s b { color: var(--ink); }
+  #genmapView .gm-brief { margin: 8px 0 0; padding-left: 18px; font-size: 13px; line-height: 1.55; color: var(--ink); }
+  #genmapView .gm-brief li { margin: 3px 0; }
+  #genmapView .gm-brief b { color: #ffd54f; }
   #genmapView .gm-kpis { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin: 6px 0 12px; }
   #genmapView .gm-kpi { background: #0d1a24; border: 1px solid var(--border); border-radius: 8px; padding: 7px 9px; min-width: 0; }
   #genmapView .gm-kpi b { display: block; font-size: 17px; white-space: nowrap; }
@@ -833,6 +836,8 @@
   <div class="panel" id="genmapView" style="flex:1; min-width:0; max-width:1480px; display:none;">
 <div class="gm-h1">Generations at sea — growth, time at sea, water temperature, feed and biology, zone by zone</div>
 <div class="gm-sub" id="gm_topSub">Loading data…</div>
+    <div class="gm-panel" style="margin-bottom:14px"><div class="gm-t" id="gm_brT">This month</div><div class="gm-s" id="gm_brSub"></div>
+      <div id="gm_brChart"></div><div class="gm-s" id="gm_brLeg" style="margin-top:4px"></div><ul class="gm-brief" id="gm_brList"></ul></div>
     <div class="gm-panel" style="margin-bottom:14px"><div class="gm-t">Norway's strategy: shorter cycles, or bigger fish?</div><div class="gm-s" id="gm_stratSub"></div><div id="gm_strat"></div><table class="gm-mini" id="gm_stratTab"></table></div>
 <div class="gm-ctl">
   <span><span class="gm-lab">Generation</span><span id="gm_genChips"></span></span>
@@ -7468,7 +7473,7 @@ const GUT = 0.888, MON_GM = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Se
 const ml = k => `${MON_GM[k % 100 - 1]} ${Math.floor(k / 100)}`;
 const sh = (k, n) => { let y = Math.floor(k / 100), m = k % 100 - 1 + n; y += Math.floor(m / 12); m = ((m % 12) + 12) % 12; return y * 100 + m + 1; };
 const avg = a => a.reduce((x, y) => x + y, 0) / a.length;
-const f1 = v => isFinite(v) ? v.toFixed(1) : '—', f2 = v => isFinite(v) ? v.toFixed(2) : '—';
+const f1 = v => isFinite(v) ? v.toFixed(1) : '—', f2 = v => isFinite(v) ? v.toFixed(2) : '—', f0 = v => isFinite(v) ? Math.round(v).toLocaleString('en-US') : '—';
 const sg = (v, d = 1) => !isFinite(v) ? '—' : (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(d);
 const mix = (t, a, b) => `rgb(${a.map((x, i) => Math.round(x + (b[i] - x) * Math.max(0, Math.min(1, t))))})`;
 const $ = id => document.getElementById(id);
@@ -7616,6 +7621,27 @@ function harvFore(po, gen, origin, h = 3) {   // poids vif moyen attendu des poi
   const cf = cumFrac(ser, origin), band = hBand(c.weight_kg);
   return p.map((v, i) => v * Math.exp(dot(hFe({ w: c.weight_kg, cf, h: i + 1 }), B) - harvBias(origin, band, i + 1)));
 }
+// ---- offre norvegienne des 12 prochains mois (kt vides) : chaque generation sort au rythme habituel.
+// Ancienne generation = celle qui a le plus abattu sur les 3 derniers mois ; nouvelle = la suivante.
+// Pour chaque mois a venir : recolte prevue = biomasse de l'ancienne generation x part qu'en recoltait l'ancienne generation
+// le meme mois les 4 annees precedentes (partant du meme mois d'origine), + idem pour la nouvelle. Fourchette = annee la plus
+// basse / la plus haute. Teste oct. 2023 - sept. 2026 : ~10 % d'erreur par mois, a peine mieux que recopier l'an passe ;
+// l'interet est de suivre comment la prevision bouge quand les stocks restants changent.
+function supOld(k) { let old = null, bh = 0; Object.entries(G.COH[NOR] || {}).forEach(([g, ser]) => { const h = [0, -1, -2].reduce((t, i) => t + ((ser[sh(k, i)] || {}).harv_kg || 0), 0); if (h > bh) { bh = h; old = +g; } }); return old; }
+const supBio = (g, k) => { const c = ((G.COH[NOR] || {})[g] || {})[k]; return c && c.weight_kg ? c.stock * c.weight_kg : 0; };
+const supHarv = (gs, k) => gs.reduce((t, g) => t + ((((G.COH[NOR] || {})[g] || {})[k] || {}).harv_kg || 0), 0);
+function supplyProj(k) {
+  G.sp2 = G.sp2 || {}; if (G.sp2[k] !== undefined) return G.sp2[k];
+  const old = supOld(k), bO = old === null ? 0 : supBio(old, k), bN = old === null ? 0 : supBio(old + 1, k); if (!bO) return (G.sp2[k] = null);
+  const out = [];
+  for (let i = 1; i <= 12; i++) { const tot = [], po = [], pn = [];
+    for (let y = 1; y <= 4; y++) { const k0 = sh(k, -12 * y), o0 = supOld(k0); if (o0 === null) continue; const b0 = supBio(o0, k0), n0 = supBio(o0 + 1, k0), kk = sh(k0, i); if (!b0 || !n0 || kk > k) continue;
+      const a = supHarv([o0, o0 - 1], kk) / b0 * bO * GUT / 1e6, b = supHarv([o0 + 1, o0 + 2], kk) / n0 * bN * GUT / 1e6; po.push(a); pn.push(b); tot.push(a + b); }
+    if (tot.length < 2) break;
+    out.push({ k: sh(k, i), v: avg(tot), lo: Math.min(...tot), hi: Math.max(...tot), old: avg(po), nw: avg(pn) }); }
+  return (G.sp2[k] = out.length ? { k, old, bO: bO * GUT / 1e6, bN: bN * GUT / 1e6, p: out } : null);
+}
+const supActual = k => { const r = (G.REC[NOR] || {})[k]; return r ? r.uttak_kg * GUT / 1e6 : null; };
 // ---------------------------------------------------------------- indicateurs par zone
 // poissons mis a l'eau dans la generation jusqu'au mois k = max (poissons en mer + tous ceux deja sortis : abattus, morts, autres pertes)
 function stockedTo(ser, k) { let cum = 0, mx = 0; Object.keys(ser).map(Number).sort((a, b) => a - b).filter(x => x <= k).forEach(x => { const c = ser[x];
@@ -7946,7 +7972,7 @@ let ARC = null, ARC_LOADING = false, ARC_CLS = '6+';
 function loadArchive() {
   if (ARC || ARC_LOADING) return; ARC_LOADING = true;
   fetch(DATA_URL.replace('data.json', 'forecast_archive.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
-    .then(a => { ARC = a || { entries: [] }; ARC_LOADING = false; if (currentView === 'genmap') renderArchive(); });
+    .then(a => { ARC = a || { entries: [] }; ARC_LOADING = false; if (currentView === 'genmap') { renderArchive(); renderBrief(); } });
 }
 function renderArchive() {
   if (!ARC) { loadArchive(); return; }
@@ -8040,6 +8066,76 @@ function renderStrategy() {
     `A gap that widens year after year means the big fish are kept longer, or harvested bigger, than the farms used to.</td></tr>`;
 }
 
+// ---------------------------------------------------------------- resume du dernier mois publie
+function renderBrief() {
+  const k = G.months[G.months.length - 1], kp = sh(k, -1), ky = sh(k, -12), SP = supplyProj(k);
+  $('gm_brT').textContent = `This month — what the ${ml(k)} register says`;
+  const pc = (a, b) => a === null || b === null || !b ? null : 100 * (a / b - 1);
+  const pct = v => v === null || !isFinite(v) ? '—' : sg(v, 0) + ' %';
+  // previsions de l'offre archivees les mois precedents
+  const E = (ARC && ARC.entries) || [], byK = {}; E.forEach(e => { if (e.supply) byK[e.k] = e.supply; });
+  const prevOf = kk => byK[kk] ? Object.fromEntries(byK[kk].map(x => [x[0], x[1]])) : null;
+  const P1 = prevOf(kp), P3 = prevOf(sh(k, -3));
+  // graphique : 12 mois passes (reel) + 12 mois prevus, avec les previsions du mois precedent et d'il y a 3 mois
+  const keys = []; for (let i = -11; i <= 12; i++) keys.push(sh(k, i));
+  const act = keys.map(kk => kk <= k ? supActual(kk) : null), ly = keys.map(kk => supActual(sh(kk, -12)));
+  const pm = {}; (SP ? SP.p : []).forEach(x => { pm[x.k] = x; });
+  const at = (kk, f) => kk === k ? act[11] : pm[kk] ? pm[kk][f] : null;
+  const fc = keys.map(kk => at(kk, 'v')), lo = keys.map(kk => at(kk, 'lo')), hi = keys.map(kk => at(kk, 'hi'));
+  const f1v = keys.map(kk => P1 && P1[kk] !== undefined ? P1[kk] : null), f3v = keys.map(kk => P3 && P3[kk] !== undefined ? P3[kk] : null);
+  const mx = Math.max(...[...act, ...hi, ...ly, ...f1v, ...f3v].filter(v => v !== null && isFinite(v))) * 1.12;
+  $('gm_brChart').innerHTML = '<div style="max-width:1100px">' + chart(keys, { lmax: mx, ld: 0, lcol: '#e7eef2', H: 230, projFrom: 12,
+    band: [{ hi, lo, col: '#4fc3f7' }],
+    lines: [{ v: ly, col: '#8fa4b0', w: 1.2, dash: '1,3', lab: 'same month a year earlier, kt' }, { v: f3v, col: '#ce93d8', w: 1.3, dash: '3,3', lab: 'forecast made 3 months ago, kt' },
+      { v: f1v, col: '#ffb74d', w: 1.5, dash: '4,3', lab: 'forecast made last month, kt' }, { v: fc, col: '#4fc3f7', w: 2.2, dash: '6,3', dots: true, lab: 'forecast now, kt' },
+      { v: act, col: '#e7eef2', dots: true, lab: 'harvest, kt gutted' }] }) + '</div>';
+  $('gm_brLeg').innerHTML = `<span style="color:#e7eef2">● harvest</span> · <span style="color:#4fc3f7">● forecast now (shaded: lowest–highest of the 4 reference years)</span> · ` +
+    `<span style="color:#ffb74d">- - forecast made last month</span> · <span style="color:#ce93d8">- - made 3 months ago</span> · <span style="color:#8fa4b0">··· same month a year earlier</span>. ` +
+    `All Norway, thousand tonnes gutted per month.` + (P1 ? '' : ' Earlier forecasts appear once the archive has them.');
+  const li = [];
+  // creux et relais
+  if (SP) {
+    const p = SP.p.slice(0, 9), lowest = p.reduce((a, b) => b.v < a.v ? b : a), lyLow = supActual(sh(lowest.k, -12));
+    const q = SP.p.slice(0, 5), qs = q.reduce((t, x) => t + x.v, 0), qly = q.reduce((t, x) => t + (supActual(sh(x.k, -12)) || 0), 0);
+    // moyenne des 5 annees precedentes (l'annee passee peut etre exceptionnelle)
+    const av5 = kk => { const v = [1, 2, 3, 4, 5].map(y => supActual(sh(kk, -12 * y))).filter(x => x !== null); return v.length === 5 ? avg(v) : null; };
+    const low5 = av5(lowest.k), q5 = q.every(x => av5(x.k) !== null) ? q.reduce((t, x) => t + av5(x.k), 0) : null;
+    const hand = SP.p.find(x => x.nw > x.old);
+    $('gm_brSub').innerHTML = `Supply over the next 12 months, deduced from what is left at sea of each generation: each one leaves the sea at the pace of the past 4 years. ` +
+      `In tests it is about 10 % off per month, so read the direction and the changes from one month to the next more than the exact figure.`;
+    li.push(`<b>Low point</b> expected in <b>${ml(lowest.k)}</b>: about <b>${f0(lowest.v)} kt</b> (range ${f0(lowest.lo)}–${f0(lowest.hi)}), ${pct(pc(lowest.v, lyLow))} vs ${ml(sh(lowest.k, -12))}${low5 ? `, ${pct(pc(lowest.v, low5))} vs the average of the 5 previous years` : ''}. ` +
+      `Next 5 months together: ${f0(qs)} kt, ${pct(pc(qs, qly))} vs the same months a year earlier${q5 ? `, ${pct(pc(qs, q5))} vs the 5-year average` : ''}.` +
+      (hand ? ` Generation ${SP.old + 1} should take over (more than half of the harvest) from <b>${ml(hand.k)}</b>.` : ''));
+    if (P1) { const rv = SP.p.filter(x => P1[x.k] !== undefined).map(x => [x, x.v - P1[x.k]]);
+      if (rv.length) { const big = rv.reduce((a, b) => Math.abs(b[1]) > Math.abs(a[1]) ? b : a), sum = rv.reduce((t, x) => t + x[1], 0);
+        li.push(`<b>Since last month's forecast</b>: ${sum >= 0 ? '+' : '−'}${f0(Math.abs(sum))} kt over the months both cover` +
+          (Math.abs(big[1]) >= 1 ? `; largest change ${ml(big[0].k)}, ${sg(big[1], 0)} kt (now ${f0(big[0].v)} kt).` : ' — practically unchanged.')); } }
+    if (P1 && P1[k] !== undefined) { const a = supActual(k); li.push(`<b>${ml(k)} came in at ${f0(a)} kt</b>; last month's forecast was ${f0(P1[k])} kt (${pct(pc(a, P1[k]))}).`); }
+  } else $('gm_brSub').innerHTML = 'Not enough history for a supply forecast.';
+  // generation en cours d'abattage et generation suivante, vs le meme mois des 5 dernieres annees
+  const gz = gapStat(NOR, k);
+  if (gz) { const past = [1, 2, 3, 4, 5].map(y => [y, gapStat(NOR, sh(k, -12 * y))]).filter(([, x]) => x);
+    const u = past.length ? avg(past.map(([, x]) => x.bOld)) : null;
+    const wv = past.map(([y, x]) => { const c = ((G.COH[NOR] || {})[x.old + 1] || {})[sh(k, -12 * y)]; return c && c.weight_kg ? c.weight_kg : null; }).filter(v => v !== null), uw = wv.length ? avg(wv) : null;
+    const nx = ((G.COH[NOR] || {})[gz.old + 1] || {})[k];
+    li.push(`<b>Generation ${gz.old}</b>, being harvested: ${f0(gz.bOld * GUT / 1e6)} kt gutted left at sea${u ? `, ${pct(pc(gz.bOld, u))} vs the same month of the last 5 years` : ''}. ` +
+      (nx && nx.weight_kg ? `Generation ${gz.old + 1}, next in line: ${f2(nx.weight_kg * GUT)} kg on average${uw ? ` (${pct(pc(nx.weight_kg, uw))} vs usual — ${nx.weight_kg > uw * 1.03 ? 'ahead' : nx.weight_kg < uw * 0.97 ? 'behind' : 'on time'})` : ''}.` : '')); }
+  // recolte du mois, biomasse
+  const r = (G.REC[NOR] || {})[k], ry = (G.REC[NOR] || {})[ky];
+  if (r && ry) li.push(`<b>Harvest in ${ml(k)}</b>: ${f0(r.uttak_kg * GUT / 1e6)} kt gutted (${pct(pc(r.uttak_kg, ry.uttak_kg))} vs ${ml(ky)}), average fish ${f2(r.uttak_kg / r.uttak_stk * GUT)} kg (${f2(ry.uttak_kg / ry.uttak_stk * GUT)} a year earlier). ` +
+    `<b>Biomass at sea</b>: ${f0(r.biomasse_kg * GUT / 1e6)} kt gutted (${pct(pc(r.biomasse_kg, ry.biomasse_kg))})${G.MTB[NOR] ? `, ${f0(100 * r.biomasse_kg / G.MTB[NOR] / 1000)} % of MTB` : ''}.`);
+  // 6+ attendus
+  try { const P = computePeaks(G.d, PK_6P); if (P && P.fcN) li.push(`<b>6 kg+</b>: ${f1(P.fcN.v)} % of all fish harvested expected in ${ml(P.fcN.k)} (usually ${f1(P.fcN.usual)} %).`); } catch (e) { /* pas de prevision */ }
+  // temperature, mortalite, maladies
+  const ta = tAnom(NOR, k), zt = []; for (let po = 1; po <= 13; po++) { const a = tAnom(po, k); if (a !== null && Math.abs(a) >= 1) zt.push(`${po} (${sg(a)}°)`); }
+  if (ta !== null) li.push(`<b>Sea temperature</b>: ${sg(ta)}° vs a normal ${MON_GM[k % 100 - 1]}` + (zt.length ? `; zones 1° or more from normal: ${zt.join(', ')}` : '') + '.');
+  const zm = []; for (let po = 1; po <= 13; po++) { const a = (G.REC[po] || {})[k], b = (G.REC[po] || {})[ky]; if (a && b && a.mortality_pct >= 1.2 && a.mortality_pct >= 1.4 * b.mortality_pct) zm.push(`${po} (${f1(a.mortality_pct)} % vs ${f1(b.mortality_pct)} %)`); }
+  if (r && r.mortality_pct !== null) li.push(`<b>Mortality</b>: ${f2(r.mortality_pct)} % of the stock in the month` + (ry && ry.mortality_pct !== null ? ` (${f2(ry.mortality_pct)} % a year earlier)` : '') + (zm.length ? `; zones well above last year: ${zm.join(', ')}` : '') + '.');
+  const dz = (kk, d) => (G.DIS[NOR + '_' + kk] || {})[d] || 0, dl = [];
+  [['INFEKSIOES_LAKSEANEMI', 'ILA'], ['PANKREASSYKDOM', 'PD']].forEach(([d, lab]) => { const a = dz(k, d), b = dz(kp, d); if (a || b) dl.push(`${lab} ${a} sites (${a - b >= 0 ? '+' : '−'}${Math.abs(a - b)} in the month)`); });
+  if (dl.length) li.push(`<b>Disease</b> at the end of the month: ${dl.join(', ')}.`);
+  $('gm_brList').innerHTML = li.map(x => `<li>${x}</li>`).join('');
+}
 // ---------------------------------------------------------------- demarrage (appele par l'onglet)
 function gmStart() {
   if (!DATA_RAW || !DATA_RAW.cohort || !DATA_RAW.records) { $('gm_topSub').innerHTML = '<span class="gm-warn">Data not loaded yet.</span>'; return false; }
@@ -8054,7 +8150,7 @@ function gmStart() {
   $('gm_mPlay').onclick = () => { if (S.play) { clearInterval(S.play); S.play = null; $('gm_mPlay').textContent = '▶ play'; return; }
     if (S.k === G.months[G.months.length - 1]) S.k = G.months[0];
     $('gm_mPlay').textContent = '■ stop'; S.play = setInterval(() => { const i = G.months.indexOf(S.k); if (i >= G.months.length - 1 || currentView !== 'genmap') { clearInterval(S.play); S.play = null; $('gm_mPlay').textContent = '▶ play'; return; } S.k = G.months[i + 1]; renderAll(); }, 700); };
-  renderMethod(); renderStrategy();
+  renderMethod(); renderStrategy(); renderBrief();
   return true;
 }
 window.renderGenMap = function () { if (!G && !gmStart()) return; renderAll(); };
