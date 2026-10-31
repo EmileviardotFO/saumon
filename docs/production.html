@@ -285,7 +285,9 @@
   #genmapView .gm-kpis { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin: 6px 0 12px; }
   #genmapView .gm-kpi { background: #0d1a24; border: 1px solid var(--border); border-radius: 8px; padding: 7px 9px; min-width: 0; }
   #genmapView .gm-kpi b { display: block; font-size: 17px; white-space: nowrap; }
-  #genmapView .gm-kpi span { font-size: 10.5px; color: var(--muted); }
+  #genmapView .gm-kpi span { font-size: 10.5px; color: var(--muted); display: block; }
+  #genmapView .gm-kpi em { display: block; font-style: normal; font-size: 10.5px; color: var(--muted); margin-top: 4px; padding-top: 4px; border-top: 1px dashed #223642; }
+  #genmapView .gm-kpi em b { display: inline; font-size: 10.5px; }
   #genmapView .gm-sec { font-size: 12px; font-weight: bold; margin: 14px 0 2px; }
   #genmapView input[type=range] { width: 260px; accent-color: #2fb8a6; }
   #genmapView button.gm-ctrl { background: #0d1a24; color: var(--ink); border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; cursor: pointer; font-size: 12px; }
@@ -294,7 +296,9 @@
   #genmapView polygon.gm-zone:hover { opacity: .85; }
   #genmapView table.gm-mini { border-collapse: collapse; width: 100%; font-size: 12px; margin-top: 6px; }
   #genmapView table.gm-mini th, #genmapView table.gm-mini td { padding: 5px 7px; border-bottom: 1px solid var(--border); text-align: right; white-space: nowrap; }
-  #genmapView table.gm-mini th { color: var(--muted); font-weight: normal; font-size: 10.5px; text-transform: uppercase; }
+  #genmapView table.gm-mini th { color: var(--muted); font-weight: normal; font-size: 10.5px; text-transform: uppercase; white-space: normal; vertical-align: bottom; line-height: 1.25; }
+  #genmapView .gm-tw { overflow-x: auto; max-width: 100%; }
+  #genmapView table.gm-mini td small { display: block; font-size: 10px; color: var(--muted); }
   #genmapView table.gm-mini td:first-child, #genmapView table.gm-mini th:first-child { text-align: left; white-space: normal; }
   #genmapView .gm-good { color: #7ed98f; } #genmapView .gm-bad { color: #ff8a65; } #genmapView .gm-warn { color: #ffb74d; } #genmapView .gm-mut { color: var(--muted); }
   #genmapView .gm-note { font-size: 11px; color: var(--muted); line-height: 1.5; margin-top: 4px; }
@@ -852,7 +856,7 @@
 <div class="gm-sub" id="gm_topSub">Loading data…</div>
     <div class="gm-panel" style="margin-bottom:14px"><div class="gm-t" id="gm_brT">This month</div><div class="gm-s" id="gm_brSub"></div>
       <div id="gm_brChart"></div><div class="gm-s" id="gm_brLeg" style="margin-top:4px"></div><ul class="gm-brief" id="gm_brList"></ul></div>
-    <div class="gm-panel" style="margin-bottom:14px"><div class="gm-t">Norway's strategy: shorter cycles, or bigger fish?</div><div class="gm-s" id="gm_stratSub"></div><div id="gm_strat"></div><table class="gm-mini" id="gm_stratTab"></table></div>
+    <div class="gm-panel" style="margin-bottom:14px"><div class="gm-t">Norway's strategy: shorter cycles, or bigger fish?</div><div class="gm-s" id="gm_stratSub"></div><div id="gm_strat"></div><div class="gm-tw"><table class="gm-mini" id="gm_stratTab"></table></div></div>
 <div class="gm-ctl">
   <span><span class="gm-lab">Generation</span><span id="gm_genChips"></span></span>
   <span><span class="gm-lab">Colour the map by</span><span id="gm_metChips"></span></span>
@@ -872,9 +876,9 @@
     <div class="gm-sec">Growth and water temperature — with the next 3 months projected</div>
     <div class="gm-s" id="gm_zGrowSub"></div><div id="gm_zGrow"></div>
     <div class="gm-sec">Fish coming out of the water — expected harvest weight, next 3 months</div>
-    <div class="gm-s" id="gm_zHarvSub"></div><table class="gm-mini" id="gm_zHarv"></table>
+    <div class="gm-s" id="gm_zHarvSub"></div><div class="gm-tw"><table class="gm-mini" id="gm_zHarv"></table></div>
     <div class="gm-sec">Handover between generations — is a supply gap coming?</div>
-    <div class="gm-s" id="gm_zGapSub"></div><table class="gm-mini" id="gm_zGap"></table>
+    <div class="gm-s" id="gm_zGapSub"></div><div class="gm-tw"><table class="gm-mini" id="gm_zGap"></table></div>
     <div class="gm-sec">Biomass in the zone vs licensed capacity (MTB) — next 3 months</div>
     <div class="gm-s" id="gm_zMtbSub"></div><div id="gm_zMtb"></div>
     <div class="gm-sec">Biology, month by month</div>
@@ -892,8 +896,8 @@
   <div id="gm_gan"></div>
 </div>
 <div class="gm-panel" style="margin-top:14px"><div class="gm-t">Forecast archive — what was forecast each month, and what happened</div>
-  <div class="gm-s" id="gm_arcSub">Loading the archive…</div><div id="gm_arcChart"></div><table class="gm-mini" id="gm_arcTab"></table>
-  <div class="gm-sec" id="gm_arcZoneT"></div><div class="gm-s" id="gm_arcZoneSub"></div><table class="gm-mini" id="gm_arcZone"></table></div>
+  <div class="gm-s" id="gm_arcSub">Loading the archive…</div><div id="gm_arcChart"></div><div class="gm-tw"><table class="gm-mini" id="gm_arcTab" style="max-width:900px"></table></div>
+  <div class="gm-sec" id="gm_arcZoneT"></div><div class="gm-s" id="gm_arcZoneSub"></div><div class="gm-tw"><table class="gm-mini" id="gm_arcZone"></table></div></div>
 <div class="gm-panel" style="margin-top:14px"><div class="gm-t">How the projections are made, and how good they are</div><div class="gm-note" id="gm_method" style="margin-top:4px"></div>
   <table class="gm-mini" id="gm_scoreTab"></table>
 </div>
@@ -7633,18 +7637,23 @@ function project(po, w, origin, h, shift = 0, bio = false) {
 // (toutes zones et generations, uniquement des previsions deja verifiables au mois d'origine). Un premier essai qui tirait
 // temperature et croissance mois par mois au hasard donnait des fourchettes trop etroites : seuls 28 % des poids reels y tombaient
 // au lieu de 80 %, parce qu'une generation qui pousse plus vite que prevu le fait plusieurs mois de suite.
-function scenErrors(origin) {
-  G.se = G.se || {}; if (G.se[origin]) return G.se[origin];
+// harv = generation deja en cours d'abattage au mois de depart : le poids moyen des poissons restants progresse alors bien moins
+// que la croissance (les plus grosses cages partent d'abord) ; ses ecarts passes sont tires des seuls cas comparables
+const inHarv = c => !!c && (c.harv_stk || 0) > 0.01 * c.stock;
+function scenErrors(origin, nat = false, harv = false) {
+  G.se = G.se || {}; const key = origin + (nat ? 'N' : '') + (harv ? 'H' : ''); if (G.se[key]) return G.se[key];
   const E = [[], [], []];
-  for (let po = 1; po <= 13; po++) Object.values(G.COH[po] || {}).forEach(ser => Object.keys(ser).map(Number).forEach(o => {
-    const c0 = ser[o]; if (!c0 || !c0.weight_kg || c0.stock < 5e5 || o < 201901 || sh(o, 1) > origin) return;
+  // Norvege entiere : erreurs de la projection nationale elle-meme (les ecarts des zones se compensent en partie)
+  (nat ? [NOR] : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]).forEach(po => Object.values(G.COH[po] || {}).forEach(ser => Object.keys(ser).map(Number).forEach(o => {
+    const c0 = ser[o]; if (!c0 || !c0.weight_kg || c0.stock < 5e5 || o < 201901 || sh(o, 1) > origin || inHarv(c0) !== harv) return;
     const p = project(po, c0.weight_kg, o, 3); if (!p) return;
-    for (let h = 1; h <= 3; h++) { const t = sh(o, h), c = ser[t]; if (t > origin || !c || !c.weight_kg || c.stock < 5e5 || (c.harv_stk || 0) > 0.03 * c.stock) continue; E[h - 1].push(Math.log(c.weight_kg / p[h - 1])); } }));
+    for (let h = 1; h <= 3; h++) { const t = sh(o, h), c = ser[t]; if (t > origin || !c || !c.weight_kg || c.stock < 5e5 || (!harv && (c.harv_stk || 0) > 0.03 * c.stock)) continue; E[h - 1].push(Math.log(c.weight_kg / p[h - 1])); } })));
   E.forEach(a => a.sort((x, y) => x - y));
-  return (G.se[origin] = E);
+  return (G.se[key] = E);
 }
-function simulate(po, w, origin, h) {
-  const p = project(po, w, origin, h), E = scenErrors(origin); if (!p) return null;
+function simulate(po, w, origin, h, harv = false) {
+  const p = project(po, w, origin, h); if (!p) return null;
+  const EN = po === NOR ? scenErrors(origin, true, harv) : null, E = EN && EN[2].length >= 30 ? EN : scenErrors(origin, false, harv);
   const q = (a, f) => a[Math.min(a.length - 1, Math.floor(f * a.length))];
   return p.map((v, i) => { const a = E[i]; if (a.length < 30) return null; const r = f => v * Math.exp(q(a, f)); return { p10: r(.1), p25: r(.25), p50: r(.5), p75: r(.75), p90: r(.9), n: a.length }; });
 }
@@ -7675,6 +7684,16 @@ function harvBias(origin, band, h) {   // erreur moyenne des previsions verifiab
   G.hb = G.hb || {}; const key = origin + '_' + band + '_' + h; if (G.hb[key] !== undefined) return G.hb[key];
   const e = harvSamples().filter(x => x.h === h && hBand(x.w) === band && x.t <= origin && x.t > sh(origin, -12)).map(x => { const B = harvFit(x.o); return B ? dot(hFe(x), B) - x.r : null; }).filter(v => v !== null);
   return (G.hb[key] = e.length >= 10 ? avg(e) : 0);
+}
+// poids abattu prevu retenu : moyenne (geometrique) du modele et du poids abattu ce mois-ci quand la generation est deja abattue.
+// Teste 2021-2026 : meilleur que chacun des deux seul dans presque toutes les tranches de poids
+// (erreur a 1 / 2 / 3 mois : moins de 3 kg 8 / 11 / 14 %, 3-4 kg 6 / 8 / 10 %, 4-5 kg 6 / 8 / 11 %, 5 kg+ 5 / 10 / 13 %).
+function harvForeMix(po, gen, origin) {
+  const ser = ((G.COH[po] || {})[gen]) || {}, c = ser[origin]; if (!c || !c.weight_kg) return null;
+  const wh = c.harv_stk > 0.01 * c.stock && c.harv_kg ? c.harv_kg / c.harv_stk : null, f = harvFore(po, gen, origin, 3);
+  if (f && wh) return { v: f.map(v => Math.sqrt(v * wh)), how: 'mix' };
+  if (f) return { v: f, how: 'model' };
+  return wh ? { v: [wh, wh, wh], how: 'copy' } : null;
 }
 function cumFrac(ser, origin) { let cum = 0; Object.keys(ser).map(Number).filter(k => k <= origin).forEach(k => { cum += ser[k].harv_stk || 0; }); const c = ser[origin]; return c ? cum / (c.stock + cum || 1) : 0; }
 function harvFore(po, gen, origin, h = 3) {   // poids vif moyen attendu des poissons abattus en origin+1..h
@@ -7721,7 +7740,7 @@ function zoneStat(po, k, gen) {
     t: (G.T[po] || {})[k], ta: tAnom(po, k), mort: r ? r.mortality_pct : null, age: r ? r.age_months : null, lice: (G.L[po] || {})[k],
     feed: r ? r.feed_kg / 1e6 : null, feedP: rp ? rp.feed_kg / 1e6 : null, fytd: ytd(Math.floor(k / 100)), fytdP: ytd(Math.floor(k / 100) - 1), fcr: f3.length === 3 ? avg(f3) : null,
     bio: r ? r.biomasse_kg / 1e6 : null, mtb: (G.MTB[String(po)] || 0) / 1000, ila: dis.INFEKSIOES_LAKSEANEMI || 0, pd: dis.PANKREASSYKDOM || 0,
-    w3: proj ? proj[2] * GUT : null, w3sim: c && c.weight_kg ? simulate(po, c.weight_kg, k, 3) : null };
+    w3: proj ? proj[2] * GUT : null, w3sim: c && c.weight_kg ? simulate(po, c.weight_kg, k, 3, inHarv(c)) : null };
 }
 const METS = {
   gain: { lab: 'Weight gain in the month', v: z => z.gain, lo: 0.05, hi: 0.65, c: [[30, 58, 70], [47, 214, 180]], fmt: v => '+' + f2(v) + ' kg', unit: 'kg gutted per fish' },
@@ -7808,10 +7827,22 @@ function renderZone(z) {
   const po = S.po, k = S.k, gen = S.gen, ser = ((G.COH[po] || {})[gen]) || {};
   $('gm_zTitle').innerHTML = `${zName(po)} — generation ${gen}, ${ml(k)}`;
   const rk = Object.keys(G.REC[po] || {}).map(Number).filter(x => x <= k);
-  $('gm_zKpi').innerHTML = [[z.w === null ? '—' : f1(z.n) + ' M', `fish of generation ${gen}` + (z.left !== null ? ` — <b>${Math.round(100 * z.left)} %</b> of the ${f1(z.put)} M put to sea` : '')], [z.w === null ? '—' : f2(z.w) + ' kg', 'average weight (gutted)'],
-    [z.gain === null ? '—' : sg(z.gain, 2) + ' kg', `gained in ${MON_GM[k % 100 - 1]}`], [f1(z.t) + ' °C', z.ta === null ? 'water temperature' : `${sg(z.ta)}° vs normal ${MON_GM[k % 100 - 1]}`],
-    [f1(z.mort) + ' %', po === NOR ? 'mortality in the month (Norway)' : 'mortality in the month (zone)'], [z.mtb ? f1(100 * z.bio / z.mtb) + ' %' : '—', `biomass vs MTB (${Math.round(z.bio)} / ${Math.round(z.mtb)} kt)`]]
-    .map(([a, b]) => `<div class="gm-kpi"><b>${a}</b><span>${b}</span></div>`).join('');
+  // comparaison : generation precedente au meme stade (un an plus tot)
+  const z1 = zoneStat(po, sh(k, -12), gen - 1), ref = `gen. ${gen - 1}, ${ml(sh(k, -12))}`;
+  const dc = (v, good) => `<b style="color:${v === 0 ? 'var(--muted)' : (v > 0) === good ? '#7ed98f' : '#ff8a65'}">`;
+  const vp = (a, b, good = true) => a === null || b === null || !b || !isFinite(a / b) ? '—' : `${dc(a - b, good)}${sg(100 * (a / b - 1), 0)} %</b>`;
+  const vd = (a, b, d, u, good = true) => a === null || b === null || !isFinite(a - b) ? '—' : `${dc(Math.round((a - b) * 10 ** d), good)}${sg(a - b, d)}${u}</b>`;
+  const cmp = (txt) => `<em>vs ${ref}: ${txt}</em>`;
+  const pM = z1.mtb ? 100 * z1.bio / z1.mtb : null, pN = z.mtb ? 100 * z.bio / z.mtb : null;
+  $('gm_zKpi').innerHTML = [
+    [z.w === null ? '—' : f1(z.n) + ' M', `fish of generation ${gen}` + (z.left !== null ? ` · ${Math.round(100 * z.left)} % of the ${f1(z.put)} M put to sea` : ''),
+      cmp(`${z1.w === null ? '—' : f1(z1.n) + ' M'} (${vp(z.n, z1.w === null ? null : z1.n)})` + (z1.left !== null ? `, ${Math.round(100 * z1.left)} % left` : ''))],
+    [z.w === null ? '—' : f2(z.w) + ' kg', 'average weight (gutted)', cmp(`${z1.w === null ? '—' : f2(z1.w) + ' kg'} (${vp(z.w, z1.w)})`)],
+    [z.gain === null ? '—' : sg(z.gain, 2) + ' kg', `gained in ${MON_GM[k % 100 - 1]}`, cmp(`${z1.gain === null ? '—' : sg(z1.gain, 2) + ' kg'} (${vd(z.gain, z1.gain, 2, ' kg')})`)],
+    [f1(z.t) + ' °C', z.ta === null ? 'water temperature' : `${sg(z.ta)}° vs normal ${MON_GM[k % 100 - 1]}`, `<em>vs ${ml(sh(k, -12))}: ${f1(z1.t)} °C (<b>${isFinite(z.t - z1.t) ? sg(z.t - z1.t, 1) + '°' : '—'}</b>)</em>`],
+    [f1(z.mort) + ' %', po === NOR ? 'mortality in the month (Norway)' : 'mortality in the month (zone)', `<em>vs ${ml(sh(k, -12))}: ${f1(z1.mort)} % (${vd(z.mort, z1.mort, 1, ' pt', false)})</em>`],
+    [pN !== null ? f1(pN) + ' %' : '—', `biomass vs MTB (${Math.round(z.bio)} / ${Math.round(z.mtb)} kt, live)`, `<em>vs ${ml(sh(k, -12))}: ${pM !== null ? f1(pM) + ' %' : '—'} (${vd(pN, pM, 1, ' pt')})</em>`]]
+    .map(([a, b, c]) => `<div class="gm-kpi"><b>${a}</b><span>${b}</span>${c || ''}</div>`).join('');
   // croissance : 18 mois d'historique + 3 mois projetes
   const hist = []; for (let i = -17; i <= 0; i++) hist.push(sh(k, i));
   const keys = hist.concat([1, 2, 3].map(i => sh(k, i)));
@@ -7822,15 +7853,18 @@ function renderZone(z) {
   const tv = keys.map((kk, i) => i < 18 ? (G.T[po] || {})[kk] ?? null : tFore(po, kk, k));
   const tn = keys.map(kk => tNorm(po, kk % 100, k));
   const gmax = Math.max(0.3, ...gv.filter(v => v !== null)) * 1.1, wmax = Math.max(1, ...wv.filter(v => v !== null)) * 1.1;
-  const SIMt = c && c.weight_kg ? simulate(po, c.weight_kg, k, 3) : null;
+  const SIMt = c && c.weight_kg ? simulate(po, c.weight_kg, k, 3, inHarv(c)) : null;
   if (pr && pr.base) {
     const d = (a, b) => (a[2] - b[2]) * GUT;
     $('gm_zGrowSub').innerHTML = `<b>Bars</b>: kg gained each month (gutted, generation ${gen}); <b style="color:#ffd54f">yellow line</b>: sea temperature (dotted: the normal for the month); <b style="color:#90caf9">shaded</b>: average weight. ` +
       `<b style="color:#4fc3f7">Projection</b>: expected weight in ${ml(sh(k, 3))} = <b>${f2(pr.base[2] * GUT)} kg</b> with the expected temperature (normal + 60% of today's gap). ` +
       `A winter <b>1 °C colder</b> than expected: ${f2(pr.cold[2] * GUT)} kg (${sg(d(pr.cold, pr.base), 2)} kg); <b>1 °C milder</b>: ${f2(pr.mild[2] * GUT)} kg (${sg(d(pr.mild, pr.base), 2)} kg). ` +
-      (SIMt && SIMt[2] ? `<b>Scenarios</b>: the projection replayed with each of the model's past misses at the same horizon (${SIMt[2].n} cases, all zones): the fan shows where the weight lands in 5 cases out of 10 (dark) and 8 out of 10 (light) — <b>${f2(SIMt[2].p10 * GUT)}–${f2(SIMt[2].p90 * GUT)} kg</b> in ${ml(sh(k, 3))}.` : '');
+      (SIMt && SIMt[2] ? (inHarv(c)
+        ? `<b>This generation is being harvested</b>: the projection is how the fish grow, but the register will show the average of the fish <i>left</i> in the sea, which rises much less because the biggest cages go first. ` +
+          `In past comparable cases (generations already being harvested, ${SIMt[2].n} cases${po === NOR ? ', all Norway' : ', all zones'}), that average ended up around <b>${f2(SIMt[2].p50 * GUT)} kg</b>, half of the cases between ${f2(SIMt[2].p25 * GUT)} and ${f2(SIMt[2].p75 * GUT)} kg (the fan). It depends on which cages farmers harvest, not on growth.`
+        : `<b>Scenarios</b>: the projection replayed with the model's past misses at the same horizon (${SIMt[2].n} cases${po === NOR ? ', all Norway' : ', all zones'}): half of them land between <b>${f2(SIMt[2].p25 * GUT)} and ${f2(SIMt[2].p75 * GUT)} kg</b> (dark fan), 8 in 10 between ${f2(SIMt[2].p10 * GUT)} and ${f2(SIMt[2].p90 * GUT)} kg (light fan).`) : '');
   } else $('gm_zGrowSub').innerHTML = `No fish of generation ${gen} in this zone in ${ml(k)}.`;
-  const SIM = c && c.weight_kg ? simulate(po, c.weight_kg, k, 3) : null, qv = (q, i) => i < 18 || !SIM ? null : SIM[i - 18][q] * GUT;
+  const SIM = c && c.weight_kg ? simulate(po, c.weight_kg, k, 3, inHarv(c)) : null, qv = (q, i) => i < 18 || !SIM ? null : SIM[i - 18][q] * GUT;
   const p10 = keys.map((kk, i) => qv('p10', i)), p90 = keys.map((kk, i) => qv('p90', i)), p25 = keys.map((kk, i) => qv('p25', i)), p75 = keys.map((kk, i) => qv('p75', i));
   if (SIM) { p10[17] = p90[17] = p25[17] = p75[17] = wv[17]; }
   const wR = v => v === null ? null : v / wmax * gmax;   // poids ramene sur l'echelle de gauche
@@ -7838,7 +7872,7 @@ function renderZone(z) {
     area: [{ v: wv.map(wR), col: '#90caf9' }], band: [{ hi: p90.map(wR), lo: p10.map(wR), col: '#4fc3f7' }, { hi: p75.map(wR), lo: p25.map(wR), col: '#4fc3f7' }],
     bars: [{ v: gv, col: '#2fd6b4', lab: 'kg gained', op: i => i < 18 ? .85 : .35 }],
     lines: [{ v: tn, col: '#ffd54f', right: true, w: 1.2, dash: '2,3', lab: 'normal' }, { v: tv, col: '#ffd54f', right: true, dots: true, lab: '°C' }, { v: wv.map(wR), col: '#90caf9', w: 1.4, lab: 'weight (scaled)' }],
-    notes: wv[17] !== null ? [{ x: 50, y: 28, col: '#90caf9', txt: `average weight: ${f2(wv[17])} kg now → ${f2(wv[20])} kg in ${ml(sh(k, 3))}` + (SIM && SIM[2] ? ` · 8 chances in 10 between ${f2(SIM[2].p10 * GUT)} and ${f2(SIM[2].p90 * GUT)} kg` : '') }] : [] });
+    notes: wv[17] !== null ? [{ x: 50, y: 28, col: '#90caf9', txt: `average weight: ${f2(wv[17])} kg now → ${f2(wv[20])} kg of growth by ${ml(sh(k, 3))}` + (SIM && SIM[2] ? (inHarv(c) ? ` · fish left in the sea: about ${f2(SIM[2].p50 * GUT)} kg` : ` · half of past cases ${f2(SIM[2].p25 * GUT)}–${f2(SIM[2].p75 * GUT)} kg`) : '') }] : [] });
   renderHarv(po, k);
   renderGap(po, k);
   renderMtb(po, k);
@@ -7908,16 +7942,15 @@ function renderHarv(po, k) {
     .sort((a, b) => b[1][k].weight_kg - a[1][k].weight_kg);
   if (!gens.length) { $('gm_zHarvSub').innerHTML = 'No generation close to harvest in this zone.'; $('gm_zHarv').innerHTML = ''; return; }
   const kk = [1, 2, 3].map(i => sh(k, i));
-  $('gm_zHarvSub').innerHTML = `Average weight of the fish that will be <b>harvested</b> (not of those left in the sea: farms take the biggest cages first), gutted, and the share of 6 kg+ among them. ` +
-    `For generations of 4 kg and more: growth of the whole generation × the usual gap between harvested fish and the average at that point of the harvest × the model's error over the last 12 months. ` +
-    `Below 4 kg, what is harvested depends on other things (disease, space, plans): the weight harvested this month is carried forward. ` +
-    `Tested 2021–2026, generations of 5 kg+: off by 7 / 12 / 15 % at 1 / 2 / 3 months.`;
-  $('gm_zHarv').innerHTML = `<tr><th>Generation</th><th>Fish left (M)</th><th>Already harvested</th><th>Average now</th><th>Harvested in ${MON_GM[k % 100 - 1]}</th>${kk.map(x => `<th>Harvest ${ml(x)}</th>`).join('')}</tr>` +
-    gens.map(([g, ser]) => { const c = ser[k], cf = cumFrac(ser, k), wh = c.harv_stk > 0.01 * c.stock ? c.harv_kg / c.harv_stk : null;
-      const f = c.weight_kg >= 4 ? harvFore(po, g, k, 3) : (wh ? [wh, wh, wh] : null);
-      const cell = v => v ? `${f2(v * GUT)} kg <span class="gm-mut">· ${Math.round(100 * above(v * GUT, 6))} % 6+</span>` : '<span class="gm-mut">—</span>';
-      return `<tr><td>${g}</td><td>${f1(c.stock / 1e6)}</td><td>${Math.round(100 * cf)} %</td><td>${f2(c.weight_kg * GUT)} kg</td><td>${cell(wh)}</td>${(f || [null, null, null]).map((v, i) => `<td>${cell(v)}${c.weight_kg < 4 && v ? ' <span class="gm-mut">(=)</span>' : ''}</td>`).join('')}</tr>`; }).join('') +
-    `<tr><td colspan="8" class="gm-mut" style="white-space:normal;font-size:11px">6+ share: from the average weight, spread 0.27 as in the Summary. (=) carried forward. The harvest may stop before then: these are weights, not volumes.</td></tr>`;
+  $('gm_zHarvSub').innerHTML = `Average weight (gutted) of the fish that will be <b>harvested</b> — not of those left in the sea, since farms take the biggest cages first — and, under each weight, the <b>share of those fish weighing 6 kg or more</b>. ` +
+    `Forecast = the growth model (growth of the whole generation × the usual gap between harvested fish and the generation's average at that stage of its harvest, corrected by the model's error over the last 12 months), ` +
+    `averaged with the weight harvested this month when the generation is already being harvested: tested 2021–2026, this mix beats each of the two alone (off by about 6–8 % at 1 month, 8–11 % at 2, 10–14 % at 3).`;
+  $('gm_zHarv').innerHTML = `<tr><th style="text-align:left">Gener&shy;ation</th><th>Fish left</th><th>Harvested so far</th><th>Average now</th><th>Harvested ${MON_GM[k % 100 - 1]}</th>${kk.map(x => `<th>Forecast ${ml(x)}</th>`).join('')}</tr>` +
+    gens.map(([g, ser]) => { const c = ser[k], cf = cumFrac(ser, k), wh = c.harv_stk > 0.01 * c.stock ? c.harv_kg / c.harv_stk : null, F = harvForeMix(po, +g, k);
+      const cell = v => v ? `${f2(v * GUT)} kg<small>6 kg+: ${Math.round(100 * above(v, 6))} %</small>` : '<span class="gm-mut">—</span>';
+      return `<tr><td style="text-align:left"><b>${g}</b></td><td>${f1(c.stock / 1e6)} M</td><td>${Math.round(100 * cf)} %</td><td>${f2(c.weight_kg * GUT)} kg</td><td>${cell(wh)}</td>${(F ? F.v : [null, null, null]).map(v => `<td>${cell(v)}</td>`).join('')}</tr>`; }).join('') +
+    `<tr><td colspan="8" class="gm-mut" style="white-space:normal;font-size:11px;text-align:left">6 kg+ share: estimated from the average weight, assuming the same spread of weights around it as in the Summary (coefficient of variation 0.27). ` +
+    `"Harvested so far" = share of all the fish ever put to sea in this generation that have been harvested. The harvest may stop before the months shown: these are weights, not volumes.</td></tr>`;
 }
 // biomasse projetee vs MTB : poids projetes par generation x effectif qui evolue comme les memes mois l'an dernier
 function renderMtb(po, k) {
@@ -8030,7 +8063,7 @@ function renderMethod() {
 
 
 // ---------------------------------------------------------------- archive des previsions (data/forecast_archive.json)
-let ARC = null, ARC_LOADING = false, ARC_CLS = '6+';
+let ARC = null, ARC_LOADING = false, ARC_CLS = '6+', ARC_SRC = 'nat';   // nat = toute la Norvege (registre), pan = panel Akvafakta, both
 function loadArchive() {
   if (ARC || ARC_LOADING) return; ARC_LOADING = true;
   fetch(DATA_URL.replace('data.json', 'forecast_archive.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
@@ -8054,25 +8087,31 @@ function renderArchive() {
     if (pe.length) premTxt = `<br><b>Price premium of 6–9 kg over 4–5 kg</b> (Akvafakta prices), forecast 2 months ahead from the forecast 6 kg+ share: <b>${f1(avg(pe))} pt</b> off on average, calendar alone ${f1(avg(pc))} pt (${pe.length} months).`; }
   $('gm_arcSub').innerHTML = `Every month, when the Biomasseregisteret comes out, the update saves what this dashboard forecasts at that moment, so it can be checked later against what really happened. ` +
     `<b>${E.length} months</b> archived (${live} saved live, the others <i>reconstructed</i>: rebuilt with only the data available before each month, but with today's revised figures). ` +
-    `Size class: ${['6+', '5-6', '4-5'].map(c => `<span class="gm-chip${c === ARC_CLS ? ' on' : ''}" data-c="${c}">${c === '6+' ? '6 kg+' : c + ' kg'}</span>`).join('')}<br>` +
-    (done.length ? `Share of ${ARC_CLS === '6+' ? '6 kg+' : ARC_CLS + ' kg'} fish, forecast 2 months ahead — <b>in the sales of the Akvafakta panel</b> (SISALMONI: a third of spot sales of superior salmon to Europe, without SalMar or Lerøy): <b>${f1(em)} pt</b> off on average, calendar alone ${f1(ec)} pt (${done.length} months); ` +
-      `<b>in all fish harvested in Norway</b> (register): <b>${f1(enm)} pt</b> off, calendar alone ${f1(enc)} pt (${dn.length} months). ` +
-      `The panel misses big fish sold by air to Asia and the US, on contracts or by companies outside it: when the dotted white line (Norway) sits above the solid one (panel), big fish are going elsewhere. Norway's figure comes about 3 weeks after the month, with the register.` + premTxt : '');
-  $('gm_arcSub').querySelectorAll('.gm-chip').forEach(c => c.onclick = () => { ARC_CLS = c.dataset.c; renderArchive(); });
+    `Size class: ${['6+', '5-6', '4-5'].map(c => `<span class="gm-chip${c === ARC_CLS ? ' on' : ''}" data-c="${c}">${c === '6+' ? '6 kg+' : c + ' kg'}</span>`).join('')} ` +
+    `&nbsp; Compare: ${[['nat', 'All Norway'], ['pan', 'Akvafakta panel'], ['both', 'Both']].map(([v, l]) => `<span class="gm-chip${v === ARC_SRC ? ' on' : ''}" data-s="${v}">${l}</span>`).join('')}<br>` +
+    (done.length ? `Share of ${ARC_CLS === '6+' ? '6 kg+' : ARC_CLS + ' kg'} fish, forecast 2 months ahead — ` +
+      (ARC_SRC !== 'pan' ? `<b>in all fish harvested in Norway</b> (register): <b>${f1(enm)} pt</b> off on average, calendar alone ${f1(enc)} pt (${dn.length} months). Norway's figure comes about 3 weeks after the month, with the register. ` : '') +
+      (ARC_SRC !== 'nat' ? `<b>In the sales of the Akvafakta panel</b> (SISALMONI: a third of spot sales of superior salmon to Europe, without SalMar or Lerøy): <b>${f1(em)} pt</b> off, calendar alone ${f1(ec)} pt (${done.length} months). ` : '') +
+      (ARC_SRC === 'both' ? `The panel misses big fish sold by air to Asia and the US, on contracts or by companies outside it: when the dotted white line (Norway) sits above the solid one (panel), big fish are going elsewhere.` : '') + premTxt : '');
+  $('gm_arcSub').querySelectorAll('.gm-chip[data-c]').forEach(c => c.onclick = () => { ARC_CLS = c.dataset.c; renderArchive(); });
+  $('gm_arcSub').querySelectorAll('.gm-chip[data-s]').forEach(c => c.onclick = () => { ARC_SRC = c.dataset.s; renderArchive(); });
+  const showP = ARC_SRC !== 'nat', showN = ARC_SRC !== 'pan';
   // graphique : part reelle (ligne) et previsions faites 2 mois avant (points)
   const ks = Object.keys(act).map(Number).filter(k => k >= sh(rows[0].t, -2)).sort((a, b) => a - b).concat(rows.filter(r => r.a === null).map(r => r.t)).filter((k, i, a) => a.indexOf(k) === i).sort((a, b) => a - b);
   const byT = {}; rows.forEach(r => { byT[r.t] = r; });
-  const mx = Math.max(...ks.map(k => Math.max(act[k] || 0, (byT[k] || {}).v || 0))) * 1.15;
+  const mx = Math.max(...ks.map(k => Math.max(showP ? act[k] || 0 : 0, showP ? (byT[k] || {}).v || 0 : 0, showN ? nat[k] || 0 : 0, showN ? (byT[k] || {}).nv || 0 : 0))) * 1.15;
+  const LP = [{ v: ks.map(k => act[k] ?? null), col: '#e7eef2', dots: true, lab: 'panel, actual %' }, { v: ks.map(k => byT[k] ? byT[k].v : null), col: '#4fc3f7', dots: true, dash: '5,3', lab: 'panel, forecast 2 months before %' }];
+  const LN = [{ v: ks.map(k => nat[k] ?? null), col: '#e7eef2', w: showP ? 1.4 : 2.2, dash: showP ? '1,3' : null, dots: !showP, lab: 'all Norway (register), actual %' }, { v: ks.map(k => byT[k] && byT[k].nv !== null ? byT[k].nv : null), col: '#ffb74d', dots: true, dash: '5,3', lab: 'all Norway, forecast 2 months before %' }];
+  const NP = [{ x: 50, y: 28, col: '#e7eef2', txt: '— panel, actual' }, { x: 165, y: 28, col: '#4fc3f7', txt: '- - panel, forecast 2 months before' }];
+  const NN = [{ x: showP ? 400 : 50, y: 28, col: '#e7eef2', txt: showP ? '··· all Norway, actual' : '— all Norway, actual' }, { x: showP ? 545 : 200, y: 28, col: '#ffb74d', txt: '- - all Norway, forecast 2 months before' }];
   $('gm_arcChart').innerHTML = '<div style="max-width:1100px">' + chart(ks, { lmax: mx, ld: 0, lcol: '#e7eef2', H: 220,
-    lines: [{ v: ks.map(k => act[k] ?? null), col: '#e7eef2', dots: true, lab: 'panel, actual %' }, { v: ks.map(k => byT[k] ? byT[k].v : null), col: '#4fc3f7', dots: true, dash: '5,3', lab: 'panel, forecast 2 months before %' },
-      { v: ks.map(k => nat[k] ?? null), col: '#e7eef2', w: 1.4, dash: '1,3', lab: 'all Norway (register), actual %' }, { v: ks.map(k => byT[k] && byT[k].nv !== null ? byT[k].nv : null), col: '#ffb74d', dots: true, dash: '5,3', lab: 'all Norway, forecast 2 months before %' }],
-    notes: [{ x: 50, y: 28, col: '#e7eef2', txt: '— panel, actual' }, { x: 165, y: 28, col: '#4fc3f7', txt: '- - panel, forecast 2 months before' }, { x: 400, y: 28, col: '#e7eef2', txt: '··· all Norway, actual' }, { x: 545, y: 28, col: '#ffb74d', txt: '- - all Norway, forecast' }] }) + '</div>';
+    lines: [...(showP ? LP : []), ...(showN ? LN : [])], notes: [...(showP ? NP : []), ...(showN ? NN : [])] }) + '</div>';
   const nk = '<span class="gm-mut">not yet known</span>', bt = (v, u, a) => a === null || v === null ? '' : Math.abs(v - a) <= Math.abs(u - a) ? ' <span class="gm-good">✓</span>' : ' <span class="gm-bad">✗</span>';
-  $('gm_arcTab').innerHTML = `<tr><th rowspan="2">Register month (forecast made)</th><th rowspan="2">For</th><th colspan="3" style="text-align:center">Akvafakta panel (sales)</th><th colspan="3" style="text-align:center">All Norway (register)</th></tr>` +
-    `<tr><th>Forecast</th><th>Actual</th><th>Error</th><th>Forecast</th><th>Actual</th><th>Error</th></tr>` +
+  $('gm_arcTab').innerHTML = `<tr><th rowspan="2">Register month (forecast made)</th><th rowspan="2">For</th>${showN ? '<th colspan="3" style="text-align:center">All Norway (register)</th>' : ''}${showP ? '<th colspan="3" style="text-align:center">Akvafakta panel (sales)</th>' : ''}</tr>` +
+    `<tr>${'<th>Forecast</th><th>Actual</th><th>Error</th>'.repeat((showN ? 1 : 0) + (showP ? 1 : 0))}</tr>` +
     rows.slice(-12).reverse().map(r => `<tr><td>${ml(r.k)} <span class="gm-mut" style="font-size:10px">${r.kind === 'live' ? 'live' : 'reconstructed'}</span></td><td>${ml(r.t)}</td>` +
-      `<td>${f1(r.v)} %</td><td>${r.a === null ? nk : f1(r.a) + ' %'}</td><td>${r.a === null ? '' : sg(r.v - r.a) + ' pt' + bt(r.v, r.u, r.a)}</td>` +
-      `<td>${r.nv === null ? '—' : f1(r.nv) + ' %'}</td><td>${r.na === null ? nk : f1(r.na) + ' %'}</td><td>${r.na === null || r.nv === null ? '' : sg(r.nv - r.na) + ' pt' + bt(r.nv, r.nu, r.na)}</td></tr>`).join('') +
+      (showN ? `<td>${r.nv === null ? '—' : f1(r.nv) + ' %'}</td><td>${r.na === null ? nk : f1(r.na) + ' %'}</td><td>${r.na === null || r.nv === null ? '' : sg(r.nv - r.na) + ' pt' + bt(r.nv, r.nu, r.na)}</td>` : '') +
+      (showP ? `<td>${f1(r.v)} %</td><td>${r.a === null ? nk : f1(r.a) + ' %'}</td><td>${r.a === null ? '' : sg(r.v - r.a) + ' pt' + bt(r.v, r.u, r.a)}</td>` : '') + `</tr>`).join('') +
     `<tr><td colspan="8" class="gm-mut" style="font-size:11px">✓ = closer to the actual figure than the seasonal calendar alone.</td></tr>`;
   // zone choisie : biomasse prevue 3 mois avant vs reelle
   const po = S.po, R = G.REC[po] || {};
