@@ -1673,7 +1673,8 @@ function sourceStatus() {
   const out = [];
   const add = (name, last, late, note, step, next) => out.push({ name, last, late, note, step, next });
   // prochaine publication theorique : jour j du mois (dernier mois de donnees + n)
-  const nextM = (yy, mm, n, j) => { const t = new Date(Date.UTC(yy, mm - 1 + n, j)); return t; };
+  // jour j du mois (dernier mois de donnees + n), reporte au lundi s'il tombe un week-end (les instituts publient en semaine)
+  const nextM = (yy, mm, n, j) => { const t = new Date(Date.UTC(yy, mm - 1 + n, j)), d = t.getUTCDay(); if (d === 6) t.setUTCDate(t.getUTCDate() + 2); if (d === 0) t.setUTCDate(t.getUTCDate() + 1); return t; };
   const nextWd = (wd) => { const t = new Date(now); t.setDate(t.getDate() + ((wd - t.getDay() + 7) % 7 || 7)); return t; };
   const steps = {}; ((d.status && d.status.steps) || []).forEach(x => steps[x.id] = x.outcome);
   // Biomasseregisteret : publie vers le 20 pour le mois precedent
@@ -1686,12 +1687,12 @@ function sourceStatus() {
     wdiff(LAST_WEEK.year, LAST_WEEK.week) > 2, 'weekly, on Wednesday for the previous week', steps.AKVA_PARSE === 'failure' || steps.AKVA_FETCH === 'failure' ? 'failure' : steps.AKVA_PARSE, nextWd(3));
   const mk = (d.monthly_akvafakta || []).filter(r => r.price_nok_kg).reduce((a, r) => Math.max(a, ym(r.year, r.month)), 0);
   if (mk) add('Akvafakta monthly (markets, price)', mlab(Math.floor(mk / 12), mk % 12 + 1), mk < nowYM - 2,
-    'monthly, early in the following month', steps.AKVA_PARSE, nextM(Math.floor(mk / 12), mk % 12 + 1, 2, 7));
+    'monthly, in the second half of the following month', steps.AKVA_PARSE, nextM(Math.floor(mk / 12), mk % 12 + 1, 2, 26));
   // SSB
   if (SSBX) { const ks = Object.keys(SSBX.meta.months || {}).map(Number).sort((a, b) => a - b), k = ks[ks.length - 1];
     const prov = ks.filter(x => (SSBX.meta.months[String(x)] || {}).status === 'provisional').length;
     add('SSB exports by country and product', k ? mlab(Math.floor(k / 100), k % 100) : '—', k ? ym(Math.floor(k / 100), k % 100) < nowYM - 2 : true,
-      `monthly, around the 15th for the previous month; ${prov} recent month${prov > 1 ? 's' : ''} still provisional`, steps.SSB, k ? nextM(Math.floor(k / 100), k % 100, 2, 15) : null); }
+      `monthly, around the 15th for the previous month (SSB release calendar); ${prov} recent month${prov > 1 ? 's' : ''} still provisional`, steps.SSB, k ? nextM(Math.floor(k / 100), k % 100, 2, 15) : null); }
   if (d.ssb_weekly && d.ssb_weekly.meta) { const l = d.ssb_weekly.meta.last;
     add('SSB weekly exports (volume, price)', l ? `W${l % 100} ${Math.floor(l / 100)}` : '—', l ? wdiff(Math.floor(l / 100), l % 100) > 2 : true, 'weekly, on Wednesday for the previous week', steps.SSB_WEEKLY, nextWd(3)); }
   // BarentsWatch
@@ -1710,7 +1711,7 @@ function sourceStatus() {
     [['FO', 'Faroe export statistics (Hagstova)'], ['IS', 'Iceland export statistics (Hagstofa)'], ['GB', 'UK export statistics (HMRC)'], ['CL', 'Chile export statistics (UN Comtrade)'], ['CA', 'Canada export statistics (UN Comtrade)']].forEach(([c, lab]) => { const k = n[c] && n[c].last;
       add(lab, k ? mlab(Math.floor(k / 100), k % 100) : '—', !k || ym(Math.floor(k / 100), k % 100) < nowYM - 3, 'monthly, by destination country' + (c === 'CL' || c === 'CA' ? ' (Comtrade: irregular, 2–3 months)' : ''), steps.NATIONAL, k ? nextM(Math.floor(k / 100), k % 100, LAGP[c][0] + 1, LAGP[c][1]) : null); }); }
   if (typeof USI !== 'undefined' && USI && USI.meta && USI.meta.last) { const k = USI.meta.last;
-    add('US Census — US imports', mlab(Math.floor(k / 100), k % 100), ym(Math.floor(k / 100), k % 100) < nowYM - 3, 'monthly, about 5 weeks after the month', steps.NATIONAL, nextM(Math.floor(k / 100), k % 100, 2, 6)); }
+    add('US Census — US imports', mlab(Math.floor(k / 100), k % 100), ym(Math.floor(k / 100), k % 100) < nowYM - 3, 'monthly, about 5 weeks after the month (FT-900 release)', steps.NATIONAL, nextM(Math.floor(k / 100), k % 100, 3, 4)); }
   if (d.china && d.china.meta) { const g = daysSince(d.china.meta.fetched);
     add('GACC — Norwegian establishments registered for China', d.china.meta.fetched || '—', g === null || g > 10, 'every update run (customs search page, fragile source)', steps.CHINA); }
   if (ESTAB && ESTAB.meta) { const g = daysSince(ESTAB.meta.fetched);
