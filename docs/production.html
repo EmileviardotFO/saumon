@@ -426,12 +426,12 @@
 
 <div class="top-controls" id="metricRow" style="display:none;">
   <div class="metric-toggle" id="metricToggle">
-    <button data-m="vol" class="active">Harvested volume (t)</button>
+    <button data-m="vol" class="active">Harvested volume (t, live)</button>
     <button data-m="stk">Individuals harvested</button>
-    <button data-m="pma">Average harvest weight (kg)</button>
-    <button data-m="biomasse">Total biomass (t)</button>
+    <button data-m="pma">Average harvest weight (kg, live)</button>
+    <button data-m="biomasse">Total biomass (t, live)</button>
     <button data-m="stock">Live stock count</button>
-    <button data-m="stockweight">Average stock weight (kg)</button>
+    <button data-m="stockweight">Average stock weight (kg, live)</button>
     <button data-m="croissance">Cohort growth trend (kg/month)</button>
     <button data-m="mer">Average time at sea (months)</button>
     <button data-m="feed">Feed consumption (t)</button>
@@ -632,7 +632,7 @@
           <th>Δ% YoY</th>
           <th>Individuals harvested</th>
           <th>Δ% YoY</th>
-          <th>Avg harvest weight (kg)</th>
+          <th>Avg harvest weight (kg, live)</th>
           <th>Δ% YoY</th>
         </tr>
       </thead>
@@ -652,7 +652,7 @@
     <div class="sig-sub" id="rotSub"></div>
     <div class="sig-title" style="font-size:12px;margin-top:10px">By year (12 months to the latest reported month)</div>
     <table class="sig-table"><thead><tr><th class="name">12 months to</th><th>Harvest (t)</th><th>Avg biomass in the sea (t)</th><th>MTB (t)</th><th>Biomass / MTB</th>
-      <th class="sep-left">Biomass rotation</th><th>Fish rotation</th><th>Avg harvest weight (kg)</th></tr></thead><tbody id="tbodyRotY"></tbody></table>
+      <th class="sep-left">Biomass rotation</th><th>Fish rotation</th><th>Avg harvest weight (kg, live)</th></tr></thead><tbody id="tbodyRotY"></tbody></table>
     <div class="sig-title" style="font-size:12px;margin-top:18px">Month by month</div>
     <table class="sig-table"><thead><tr><th class="name">Month</th><th>Harvest (t)</th><th>Avg biomass (t)</th>
       <th class="sep-left">Biomass rotation in the month</th><th>vs a year earlier</th><th class="sep-left">Share of fish harvested</th><th>vs a year earlier</th><th class="sep-left">12-month rotation</th><th>vs a year earlier</th></tr></thead><tbody id="tbodyRotM"></tbody></table>
@@ -1056,7 +1056,7 @@
 
   <div class="panel" id="calibreView" style="flex:1; min-width: 700px; max-width: 1080px; display:none; overflow-x:auto;">
     <div class="sig-title">Calibre and premium, one line per year</div>
-    <div class="sig-sub">Harvested average weight and volume come from the Biomasseregisteret. Calibre shares and
+    <div class="sig-sub">Harvested average weight and volume come from the Biomasseregisteret, in <b>live weight</b> (round weight, before gutting; gutted ≈ × 0.888). Calibre shares and
       premiums come from the weekly Akvafakta split (NASDAQ index up to week 18 of 2025, Sitagri after).
       <b>Shares appear twice</b> — by headcount as published, and by tonnage, which is what actually reaches the
       market and is always the larger figure. Premiums are the volume-weighted price of the band minus the
@@ -1252,7 +1252,7 @@
 
 <div class="note">
   Mortality rate: cumulative mortality over the period, compounded month by month from the real monthly rates (dead/stock for each month) — not an average or a simple sum of the monthly rates. The national total compounds a national monthly rate the same way, weighted by each PO's actual headcount, month by month (not an average of the 13 zone rates). Live stock count: number of fish alive at the end of the last month of the period (not a cumulative total).
-  Average harvest weight: total harvested weight ÷ number harvested, cumulated over the period. Average time at sea: weighted average (by number of fish harvested) of the number of months elapsed between each cohort's release and its harvest — the release month for each cohort is itself a weighted average by PO (not at the individual farm level); for cohorts released before 2017 (outside the available history), a default release month (June) is assumed.
+  <b>All register weights are live weight</b> (round weight: bled, not gutted — Fiskeridirektoratet's definition); gutted weight ≈ live × 0.888. Average harvest weight: total harvested weight ÷ number harvested, cumulated over the period. Average time at sea: weighted average (by number of fish harvested) of the number of months elapsed between each cohort's release and its harvest — the release month for each cohort is itself a weighted average by PO (not at the individual farm level); for cohorts released before 2017 (outside the available history), a default release month (June) is assumed.
   Global smolt released: all fish released into the sea under 500 g, cumulated over the period, split into &lt; 250 g (<code>UTSETT_SMOLT_STK</code>) and 250–500 g (<code>UTSETT_SMOLT_STK_MINDRE_ENN_500G</code> minus <code>UTSETT_SMOLT_STK</code> — the 500 g column already contains the &lt; 250 g fish). Fish released above 500 g are in neither column.
   <br>Estimated post-smolt &gt; 500 g: fish that entered the water according to the stock count (closing stock − opening stock + harvest + mortality + other losses, per zone and month) minus Global smolt released. Fish released above 500 g are in no column of the source, so this gap is the only way to see them. <span class="warn">It is an estimate, ±5–8 M fish a year</span>: 2018–2023 hovered between −8 and +8 M (counting errors, reporting lags), then jumped to about +25 M a year in 2024–2025, concentrated in zones 2, 3 and 4 (south-west). Transfers between zones cancel out at national level (about 1–2 M of bias). Read it on a full year, never month by month, and ignore 2022 (December 2022 releases are over-declared by ~50 M).
   <br>Average stock weight: stock biomass ÷ headcount, at the end of the last month of the period (snapshot, like "Live stock count").
@@ -3216,12 +3216,12 @@ fromYearSel.addEventListener('change', () => { if (currentView === 'multi') rend
 toYearSel.addEventListener('change', () => { if (currentView === 'multi') renderMulti(); if (currentView === 'markets') renderMarketsView(); if (currentView === 'products') renderProductsView(); });
 
 const METRIC_LABELS = {
-  vol: 'Harvested volume (t)',
+  vol: 'Harvested volume (t, live weight)',
   stk: 'Individuals harvested',
-  pma: 'Average harvest weight (kg)',
-  biomasse: 'Total biomass (t)',
+  pma: 'Average harvest weight (kg, live weight)',
+  biomasse: 'Total biomass (t, live weight)',
   stock: 'Live stock count',
-  stockweight: 'Average stock weight (kg)',
+  stockweight: 'Average stock weight (kg, live weight)',
   croissance: 'Cohort growth trend (kg/month)',
   mer: 'Average time at sea (months)',
   feed: 'Feed consumption (t)',
