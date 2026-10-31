@@ -7980,9 +7980,9 @@ function renderGap(po, k) {
       late ? `The next generation is behind usual: if the harvest pace holds, the handover may be harder than in past years. ` :
       `<span class="gm-good">No sign of a gap</span> compared with past years. `) +
     `In past years the harvest pace slowed in winter, so "months left" is a pace indicator, not a date.`;
-  $('gm_zGap').innerHTML = `<tr><th>Month</th><th>Generation harvested</th><th>Left of it (M fish)</th><th>Share of fish at sea</th><th>Share of biomass</th><th>Months left at the pace of the last 3 months</th><th>Next generation, avg weight (kg gutted)</th></tr>` +
+  $('gm_zGap').innerHTML = `<tr><th>Month</th><th>Generation harvested</th><th>Left of it (M fish)</th><th>Share of all fish at sea (all generations)</th><th>Share of all biomass</th><th>Months left at the pace of the last 3 months</th><th>Next generation, avg weight (kg gutted)</th></tr>` +
     rows.map(([kk, g, w], i) => `<tr${i === 0 ? ' style="font-weight:bold;color:#ffd54f"' : ''}><td>${ml(kk)}</td><td>${g.old}</td><td>${f1(g.nOld / 1e6)}</td><td>${Math.round(100 * g.shN)} %</td><td>${Math.round(100 * g.shB)} %</td><td>${g.left === null ? '—' : f1(g.left)}</td><td>${w === null ? '—' : f2(w * GUT)}</td></tr>`).join('') +
-    `<tr><td colspan="7" class="gm-mut" style="white-space:normal;font-size:11px">Generation = year the smolt were put to sea. Months left = biomass left of that generation ÷ its average monthly harvest over the last 3 months. Compared with the same month of the last 5 years.</td></tr>`;
+    `<tr><td colspan="7" class="gm-mut" style="white-space:normal;font-size:11px">Generation = year the smolt were put to sea. Shares = this generation's fish (biomass) out of all the fish (biomass) at sea, every generation together: not comparable with "harvested so far" above, which is out of the fish put to sea in this generation. Months left = biomass left of that generation ÷ its average monthly harvest over the last 3 months. Compared with the same month of the last 5 years.</td></tr>`;
 }
 // poissons qui sortent de l'eau : poids abattu attendu par generation
 function renderHarv(po, k) {
@@ -7998,9 +7998,19 @@ function renderHarv(po, k) {
   $('gm_zHarv').innerHTML = `<tr><th style="text-align:left">Gener&shy;ation</th><th>Fish left</th><th>Harvested so far</th><th>Average now</th><th>Harvested ${MON_GM[k % 100 - 1]}</th>${kk.map(x => `<th>Forecast ${ml(x)}</th>`).join('')}</tr>` +
     gens.map(([g, ser]) => { const c = ser[k], cf = cumFrac(ser, k), wh = c.harv_stk > 0.01 * c.stock ? c.harv_kg / c.harv_stk : null, F = harvForeMix(po, +g, k);
       const cell = v => v ? `${f2(v * GUT)} kg<small>6 kg+: ${Math.round(100 * above(v, 6))} %</small>` : '<span class="gm-mut">—</span>';
-      return `<tr><td style="text-align:left"><b>${g}</b></td><td>${f1(c.stock / 1e6)} M</td><td>${Math.round(100 * cf)} %</td><td>${f2(c.weight_kg * GUT)} kg</td><td>${cell(wh)}</td>${(F ? F.v : [null, null, null]).map(v => `<td>${cell(v)}</td>`).join('')}</tr>`; }).join('') +
+      // devenir des poissons mis en mer : abattus, restants, morts, pertes (evades, comptages) ; le reste = corrections de comptage
+      const fateOf = (sr, kk) => { const cc = sr[kk]; if (!cc) return null; let h = 0, d = 0, l = 0;
+        Object.keys(sr).map(Number).filter(x => x <= kk).forEach(x => { h += sr[x].harv_stk || 0; d += sr[x].dead_stk || 0; l += sr[x].loss_stk || 0; });
+        const pu = stockedTo(sr, kk); return pu ? { h: 100 * h / pu, s: 100 * cc.stock / pu, d: 100 * d / pu, l: 100 * l / pu } : null; };
+      const F0 = fateOf(ser, k), F1 = fateOf(((G.COH[po] || {})[+g - 1]) || {}, sh(k, -12));
+      // N-1 au meme mois : gris, colore seulement si l'ecart depasse 2 pts (abattus : plus = sorti plus vite ; morts : plus = mauvais)
+      const cmpP = (v, r, badUp) => { if (!r) return ''; const dlt = Math.round(v) - Math.round(r), col = Math.abs(dlt) <= 2 ? 'var(--muted)' : (dlt > 0) === badUp ? '#ff8a65' : '#7ed98f';
+        return ` <span style="color:${col};font-weight:normal">(${Math.round(r)})</span>`; };
+      const fate = F0 ? `<b>${Math.round(F0.h)} %</b>` + (F1 ? ` <span style="color:${Math.abs(Math.round(F0.h) - Math.round(F1.h)) <= 2 ? 'var(--muted)' : '#ffd54f'};font-size:11px">(${+g - 1}: ${Math.round(F1.h)} %)</span>` : '') +
+        `<small>left ${Math.round(F0.s)} · dead ${Math.round(F0.d)}${F1 ? cmpP(F0.d, F1.d, true) : ''} · lost ${Math.round(F0.l)}${(o => Math.abs(o) >= 1 ? ` · other ${o}` : '')(100 - Math.round(F0.h) - Math.round(F0.s) - Math.round(F0.d) - Math.round(F0.l))} %</small>` : '—';
+      return `<tr><td style="text-align:left"><b>${g}</b></td><td>${f1(c.stock / 1e6)} M</td><td>${fate}</td><td>${f2(c.weight_kg * GUT)} kg</td><td>${cell(wh)}</td>${(F ? F.v : [null, null, null]).map(v => `<td>${cell(v)}</td>`).join('')}</tr>`; }).join('') +
     `<tr><td colspan="8" class="gm-mut" style="white-space:normal;font-size:11px;text-align:left">6 kg+ share: estimated from the average weight, assuming the same spread of weights around it as in the Summary (coefficient of variation 0.27). ` +
-    `"Harvested so far" = share of all the fish ever put to sea in this generation that have been harvested. The harvest may stop before the months shown: these are weights, not volumes.</td></tr>`;
+    `"Harvested so far" = share of all the fish put to sea in this generation that have been harvested; underneath, what became of the others: still at sea, dead, lost (escaped, missing at count) and other (count corrections), adding up to 100 %. In brackets: the previous generation at the same month (highlighted when the gap is over 2 points). The harvest may stop before the months shown: these are weights, not volumes.</td></tr>`;
 }
 // biomasse projetee vs MTB : poids projetes par generation x effectif qui evolue comme les memes mois l'an dernier
 function renderMtb(po, k) {
