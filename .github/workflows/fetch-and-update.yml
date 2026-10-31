@@ -149,6 +149,14 @@ jobs:
           CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
         run: python3 scripts/update_national_trade.py
 
+      - name: Veille des evenements de mortalite (presse multi-bassins, Ecosse FHI)
+        # Algues, meduses, oxygene, tempetes : absents de BarentsWatch. Flux RSS + Google News par bassin et par langue,
+        # et declarations de mortalite du Fish Health Inspectorate ecossais. Les evenements saisis a la main sont conserves.
+        id: events
+        continue-on-error: true
+        timeout-minutes: 10
+        run: python3 scripts/update_events.py
+
       - name: Archiver les previsions du mois (onglet Generations map)
         # Enregistre ce que le tableau de bord prevoit a la sortie de chaque mois du registre, pour comparer
         # plus tard prevision et realite. Les mois deja archives ne sont jamais reecrits.
