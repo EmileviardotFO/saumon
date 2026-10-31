@@ -149,6 +149,14 @@ jobs:
           CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
         run: python3 scripts/update_national_trade.py
 
+      - name: Ecosse - biomasse, mortalites et aliment par site (SEPA, export CSV depose dans xlsx/scotland/)
+        # Pas de telechargement automatique fiable (bouton d'export sur une page de recherche) : le fichier est depose
+        # a la main a chaque export ; le script reconstruit data/scotland.json a partir du plus recent.
+        id: scotland
+        continue-on-error: true
+        timeout-minutes: 5
+        run: python3 scripts/build_scotland.py
+
       - name: Veille des evenements de mortalite (presse multi-bassins, Ecosse FHI)
         # Algues, meduses, oxygene, tempetes : absents de BarentsWatch. Flux RSS + Google News par bassin et par langue,
         # et declarations de mortalite du Fish Health Inspectorate ecossais. Les evenements saisis a la main sont conserves.
