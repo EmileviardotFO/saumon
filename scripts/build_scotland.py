@@ -55,6 +55,14 @@ def main():
     df = df[df['Water Type'].fillna('Seawater').str.lower().str.startswith('sea')]
     bio, mort, feed, mtb = 'Actual Biomass on Site (tonnes)', 'Mortalities Kilograms', 'Feed Kilograms', 'Maximum Biomass Allowed (tonnes)'
     df['region'] = df['Local Authority'].map(REGION).fillna('Other')
+    # "Operator" = titulaire ACTUEL de l'autorisation, recopie sur tout l'historique ; "Submitted By" = celui qui a
+    # declare ce mois-la. On suit le declarant, avec les changements de nom regroupes (meme societe) ; les rachats
+    # (Grieg Shetland -> Scottish Sea Farms fin 2021, Wester Ross -> Mowi en 2022 mais declarant propre jusqu'en 2024) restent visibles.
+    RENAME = {'Marine Harvest (Scotland) Ltd': 'Mowi Scotland Ltd', 'The Scottish Salmon Company Ltd': 'Bakkafrost Scotland Ltd',
+              'Scottish Sea Farms ltd': 'Scottish Sea Farms Ltd', 'SSF Shetland Ltd': 'Scottish Sea Farms Ltd', 'Loch Duart Plc': 'Loch Duart Ltd',
+              'Dawnfresh Farming Ltd': 'Dawnfresh Farming Ltd (trout)'}
+    if 'Submitted By' in df.columns:
+        df['Operator'] = df['Submitted By'].fillna(df['Operator']).map(lambda x: RENAME.get(x, x))
     df['act'] = df[bio] > 0
     df['mtb_act'] = df[mtb].where(df['act'], 0)
 
