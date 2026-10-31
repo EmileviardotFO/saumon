@@ -6150,14 +6150,14 @@ function renderSummary() {
     const wLive = m0 && m0.fish ? m0.bio * 1000 / m0.fish : NaN, wLiveP = m1 && m1.fish ? m1.bio * 1000 / m1.fish : NaN;
     const rows = PK_CLS.map(cl => { const N = Mi.n[cl] || {}, rng = C.map(o => ((o.n[cl] || {})[L]) || 0);
       const yr = C.map(o => { const a = (o.n[cl] || {})[L], b = (o.n[cl] || {})[L - 100]; return a && b ? 100 * (a / b - 1) : NaN; }).filter(isFinite), ym = N[L - 100] ? 100 * (N[L] / N[L - 100] - 1) : NaN;
-      const P = PKs[cl], g2 = P && P.wf && P.wf.h2 ? 1 - P.wf.h2.mod / P.wf.h2.cal : NaN, useful = P && P.fc2 && P.lags[2].share >= 0.5 && g2 > 0.02;
+      const P = PKs[cl], nt = P && P.natTest && P.natTest.nat, useful = P && P.fcN && nt && nt.mod < 0.98 * nt.cal;   // part nationale, si elle bat le calendrier
       // 1-4 kg : la repartition depend trop de la methode (une loi par generation ou lots mensuels de mise a l'eau :
       // meme sens d'evolution sur un an seulement 56-63 % des mois 2021-2026) -> affiche comme indicatif
       const ind = ['1-2', '2-3', '3-4'].includes(cl);
       return `<tr${ind ? ' style="opacity:.62"' : ''}><td><b>${cl} kg</b>${ind ? ' <span style="color:#ffb74d;font-size:10px" title="Depends on the estimation method: two methods agree on the direction of the year-on-year change only about 6 months in 10">indicative</span>' : ''}</td><td>${genFmtN(N[L] || 0)} <span style="color:var(--muted)">(${genFmtN(Math.min(...rng))}–${genFmtN(Math.max(...rng))})</span></td>` +
         `<td>${fish ? (100 * (N[L] || 0) / fish < 1 ? (100 * (N[L] || 0) / fish).toFixed(2) : (100 * (N[L] || 0) / fish).toFixed(1)) + '%' : '—'}</td>` +
         `<td><b class="${ym > 0 ? 'delta-good' : ym < 0 ? 'delta-bad' : ''}">${genSg(ym)}</b>${yr.length > 1 ? ` <span style="color:var(--muted)">(${genSg(Math.min(...yr))} to ${genSg(Math.max(...yr))})</span>` : ''}</td>` +
-        `<td>${useful ? `${P.fc2.v.toFixed(1)}% <span style="color:var(--muted)">(usually ${P.fc2.usual.toFixed(1)}%)</span>` : '<span style="color:var(--muted)">—</span>'}</td></tr>`; }).join('');
+        `<td>${useful ? `${P.fcN.v.toFixed(1)}% <span style="color:var(--muted)">(usually ${P.fcN.usual.toFixed(1)}%)</span>` : '<span style="color:var(--muted)">—</span>'}</td></tr>`; }).join('');
     // poissons de moins de 1 kg vide (smolts et jeunes poissons recemment mis en mer) : le reste du total, pour que les parts fassent 100 %
     const under = o => k => (o.all[k] || 0) - PK_CLS.reduce((a, cl) => a + (((o.n[cl] || {})[k]) || 0), 0);
     const u0 = under(Mi)(L), u1 = under(Mi)(L - 100), uR = C.map(o => under(o)(L)), uY = C.map(o => { const a = under(o)(L), b = under(o)(L - 100); return b ? 100 * (a / b - 1) : NaN; }).filter(isFinite), uym = u1 ? 100 * (u0 / u1 - 1) : NaN;
@@ -6171,7 +6171,7 @@ function renderSummary() {
       `The direction of the change is robust, the levels are not (above all for the big classes). <span style="color:#ffb74d">1–4 kg = indicative</span>: young generations mix spring and autumn smolt, ` +
       `and splitting them into monthly release batches gives a different picture (same direction of the year-on-year change only about 6 months in 10, 2021–2026). ` +
       `The total at sea and the counts per generation are measured; 4 kg and above are checked against later harvests. Details by class in the Generations tab.</div>` +
-      `<table class="sm-sizes" style="grid-column:1/-1"><thead><tr><th>Class (gutted)</th><th>Fish at sea (range)</th><th>Share of fish</th><th>vs a year earlier (range)</th><th>Share of sales expected in ${tmMl(PKs['6-7'] && PKs['6-7'].fc2 ? PKs['6-7'].fc2.k : L)}</th></tr></thead><tbody>${rowsU}${rows}</tbody></table></div>`;
+      `<table class="sm-sizes" style="grid-column:1/-1"><thead><tr><th>Class (gutted)</th><th>Fish at sea (range)</th><th>Share of fish</th><th>vs a year earlier (range)</th><th>Share of Norway's harvest expected in ${tmMl(PKs['6-7'] && PKs['6-7'].fcN ? PKs['6-7'].fcN.k : L)}</th></tr></thead><tbody>${rowsU}${rows}</tbody></table></div>`;
   })();
   document.getElementById('smSub').innerHTML =
     `Norway, all production areas. Monthly figures are the latest month published (Biomasseregisteret ${mlab(ly, lm)}` +
@@ -7177,7 +7177,7 @@ function genClasses(po, LAST) {
     const share = M.all[LAST] ? 100 * (N[LAST] || 0) / M.all[LAST] : NaN, ym = yoy[yoy.length - 1];
     // derniere inversion du sens de la variation sur un an
     let turn = null; for (let i = yoy.length - 1; i > 0; i--) { if (yoy[i] === null || yoy[i - 1] === null) break; if (Math.sign(yoy[i]) !== Math.sign(yoy[i - 1])) { turn = { k: k36[i], up: yoy[i] > 0 }; break; } }
-    const P = PKs[cl], g2 = P && P.wf && P.wf.h2 ? 1 - P.wf.h2.mod / P.wf.h2.cal : NaN, useful = P && P.fc2 && P.lags[2].share >= 0.5 && g2 > 0.02;
+    const P = PKs[cl], nt = P && P.natTest && P.natTest.nat, g2 = nt ? 1 - nt.mod / nt.cal : NaN, useful = P && P.fcN && g2 > 0.02;   // part nationale (registre)
     const col = ['#90a4ae', '#7ec8e3', '#4fc3f7', '#2fb8a6', '#81c784', '#ffd54f', '#ffb74d', '#ff8a65', '#e57373'][ci];
     const yrs = yr.filter(isFinite);
     return `<div class="gen-mini"><div class="t"><b class="cl">${cl} kg</b> <span style="color:var(--muted)">gutted · ${tmMl(LAST)}</span></div>` +
@@ -7185,7 +7185,7 @@ function genClasses(po, LAST) {
       `<div class="l">vs a year earlier <b class="${ym > 0 ? 'delta-good' : ym < 0 ? 'delta-bad' : ''}">${genSg(ym)}</b>${yrs.length > 1 ? ` (${genSg(Math.min(...yrs))} to ${genSg(Math.max(...yrs))})` : ''}` +
       `${turn ? ` · turned ${turn.up ? 'positive' : 'negative'} in ${tmMl(turn.k)}` : ''}</div>` +
       genMiniSvg(k36, vals, prev, yoy, col) +
-      (po ? '' : useful ? `<div class="l">share of sales expected in ${tmMl(P.fc2.k)}: <b style="color:var(--ink)">${P.fc2.v.toFixed(1)}%</b> (usually ${P.fc2.usual.toFixed(1)}%) · beats the calendar by ${Math.round(100 * g2)}%${P.fc2.mix ? ` · incl. sales weight (${P.mixTest.gain >= 0 ? '−' : '+'}${Math.abs(Math.round(100 * P.mixTest.gain))}% error)` : ''}</div>`
+      (po ? '' : useful ? `<div class="l">share of Norway's harvest expected in ${tmMl(P.fcN.k)}: <b style="color:var(--ink)">${P.fcN.v.toFixed(1)}%</b> (usually ${P.fcN.usual.toFixed(1)}%) · beats the calendar by ${Math.round(100 * g2)}%</div>`
         : `<div class="l" style="opacity:.8">the stock does not announce sales for this size (harvest choices decide)</div>`) + `</div>`;
   }).join('');
 }
@@ -7206,13 +7206,15 @@ function genPeaks() {
       `<div class="ln">reservoir at ${tmMl(N.lastB)}</div><div class="big">${f1(N.cur)} kt <span>${tmVar((N.ratio - 1) * 100)}</span></div>` +
       `<div class="ln">vs ${f1(N.prev)} kt a year earlier</div>` +
       (PK.pPeak ? `<div class="ln">projected reservoir peak <b style="color:var(--ink)">${f1(PK.pPeak.v)} kt in ${tmMl(PK.pPeak.k)}</b> (${PK.pPeak.lo.toFixed(0)}–${PK.pPeak.hi.toFixed(0)} kt) → 6 kg+ peak around <b style="color:var(--ink)">${tmMl(PK.sh(PK.pPeak.k, N.gapTyp))}</b></div>` : '') +
-      (PK.fc2 ? `<div class="ln">6 kg+ share of sales expected in ${tmMl(PK.fc2.k)}: <b style="color:var(--ink)">${f1(PK.fc2.v)}%</b> (usually ${f1(PK.fc2.usual)}%` +
-        `${PK.fc2.mix && PK.fc2.base !== null ? `; ${f1(PK.fc2.base)}% without the sales-weight term` : ''})</div>` : '') +
-      (() => { if (!PK.fc2) return ''; const S = premSeries(DATA_RAW), ks = Object.keys(S).map(Number).sort((a, b) => a - b), last = ks[ks.length - 1], F = premFit(S, PK.S6, last); if (!F) return '';
-        const v = F.a + F.b * PK.fc2.v, same = ks.filter(k => k % 100 === PK.fc2.k % 100).map(k => S[k]), u = same.length ? same.reduce((a, b) => a + b, 0) / same.length : null;
-        return `<div class="ln">price premium of 6–9 kg over 4–5 kg expected in ${tmMl(PK.fc2.k)}: <b style="color:var(--ink)">${premPct(v) >= 0 ? '+' : ''}${f1(premPct(v))}%</b> ` +
-          `(${tmMl(last)}: ${premPct(S[last]) >= 0 ? '+' : ''}${f1(premPct(S[last]))}%${u !== null ? `; usually ${premPct(u) >= 0 ? '+' : ''}${f1(premPct(u))}% in ${MONTHS_FR[PK.fc2.k % 100 - 1].slice(0, 3)}` : ''}) — ` +
-          `from the expected 6 kg+ share: each point of 6 kg+ less in the panel's sales has meant about ${f1(-100 * F.b)} pt more premium. Checked against reality in the forecast archive (Generations map)</div>`; })() +
+      (PK.fcN ? `<div class="ln">6 kg+ share of <b>all fish harvested in Norway</b> expected in ${tmMl(PK.fcN.k)}: <b style="color:var(--ink)">${f1(PK.fcN.v)}%</b> (usually ${f1(PK.fcN.usual)}%; ${tmMl(PK.fcN.last)}: ${f1(PK.fcN.lastV)}%)` +
+        (PK.natTest && PK.natTest.nat ? ` · about ${f1(PK.natTest.nat.mod)} pt off on average in past tests` : '') + `</div>` : '') +
+      (PK.fc2 ? `<div class="ln" style="opacity:.75">in the Akvafakta panel's sales: ${f1(PK.fc2.v)}% (usually ${f1(PK.fc2.usual)}%)` +
+        (PK.natTest && PK.natTest.pan ? `, about ${f1(PK.natTest.pan.mod)} pt off in past tests` : '') + `</div>` : '') +
+      (() => { const FC = PK.fcN || PK.fc2, X = PK.fcN ? PK.NAT : PK.S6; if (!FC) return ''; const S = premSeries(DATA_RAW), ks = Object.keys(S).map(Number).sort((a, b) => a - b), last = ks[ks.length - 1], F = premFit(S, X, last); if (!F) return '';
+        const v = F.a + F.b * FC.v, same = ks.filter(k => k % 100 === FC.k % 100).map(k => S[k]), u = same.length ? same.reduce((a, b) => a + b, 0) / same.length : null;
+        return `<div class="ln">price premium of 6–9 kg over 4–5 kg expected in ${tmMl(FC.k)}: <b style="color:var(--ink)">${premPct(v) >= 0 ? '+' : ''}${f1(premPct(v))}%</b> ` +
+          `(${tmMl(last)}: ${premPct(S[last]) >= 0 ? '+' : ''}${f1(premPct(S[last]))}%${u !== null ? `; usually ${premPct(u) >= 0 ? '+' : ''}${f1(premPct(u))}% in ${MONTHS_FR[FC.k % 100 - 1].slice(0, 3)}` : ''}) — ` +
+          `from the expected 6 kg+ share ${PK.fcN ? 'of Norway\'s harvest' : 'of the panel\'s sales'}: each point of 6 kg+ less has meant about ${f1(-100 * F.b)} pt more premium. Checked against reality in the forecast archive (Generations map)</div>`; })() +
       (PK.hw ? `<div class="ln">harvested fish in ${tmMl(PK.hw.k)}: <b style="color:var(--ink)">${f2(PK.hw.v)} kg gutted</b> on average vs ${f2(PK.hw.usual)} usually ` +
         `(${PK.hw.v - PK.hw.usual >= 0 ? '+' : ''}${f2(PK.hw.v - PK.hw.usual)} kg) — heavier than usual = big fish taken early, the reservoir tends to come lower 3–4 months later (signal only)</div>` : '') +
       (PK.ssbw ? `<div class="ln">SSB weekly exports, fresh, last 4 weeks to week ${PK.ssbw.last % 100}: ${tmF0(PK.ssbw.vol)} t ${PK.ssbw.volPrev ? tmVar(tmPc(PK.ssbw.vol, PK.ssbw.volPrev)) : ''}, ` +
@@ -8130,9 +8132,10 @@ function renderArchive() {
   // prime des 6-9 kg sur les 4-5 kg : prevue a partir de la part de 6+ prevue (relation apprise sur les mois connus a l'origine) vs reelle
   let premTxt = '';
   if (ARC_CLS === '6+') { const PS = premSeries(G.d), pe = [], pc = [];
-    rows.forEach(r => { if (PS[r.t] === undefined) return; const F = premFit(PS, act, r.k); if (!F) return; const same = Object.keys(PS).map(Number).filter(k => k % 100 === r.t % 100 && k < r.k).map(k => PS[k]); if (!same.length) return;
-      pe.push(Math.abs(premPct(F.a + F.b * r.v) - premPct(PS[r.t]))); pc.push(Math.abs(premPct(avg(same)) - premPct(PS[r.t]))); });
-    if (pe.length) premTxt = `<br><b>Price premium of 6–9 kg over 4–5 kg</b> (Akvafakta prices), forecast 2 months ahead from the forecast 6 kg+ share: <b>${f1(avg(pe))} pt</b> off on average, calendar alone ${f1(avg(pc))} pt (${pe.length} months).`; }
+    const useN = ARC_SRC !== 'pan';   // part nationale par defaut, panel seulement si demande
+    rows.forEach(r => { const fv = useN ? r.nv : r.v; if (PS[r.t] === undefined || fv === null) return; const F = premFit(PS, useN ? nat : act, r.k); if (!F) return; const same = Object.keys(PS).map(Number).filter(k => k % 100 === r.t % 100 && k < r.k).map(k => PS[k]); if (!same.length) return;
+      pe.push(Math.abs(premPct(F.a + F.b * fv) - premPct(PS[r.t]))); pc.push(Math.abs(premPct(avg(same)) - premPct(PS[r.t]))); });
+    if (pe.length) premTxt = `<br><b>Price premium of 6–9 kg over 4–5 kg</b> (Akvafakta prices), forecast 2 months ahead from the forecast 6 kg+ share ${useN ? 'of Norway\'s harvest' : 'of the panel\'s sales'}: <b>${f1(avg(pe))} pt</b> off on average, calendar alone ${f1(avg(pc))} pt (${pe.length} months).`; }
   $('gm_arcSub').innerHTML = `Every month, when the Biomasseregisteret comes out, the update saves what this dashboard forecasts at that moment, so it can be checked later against what really happened. ` +
     `<b>${E.length} months</b> archived (${live} saved live, the others <i>reconstructed</i>: rebuilt with only the data available before each month, but with today's revised figures). ` +
     `Size class: ${['6+', '5-6', '4-5'].map(c => `<span class="gm-chip${c === ARC_CLS ? ' on' : ''}" data-c="${c}">${c === '6+' ? '6 kg+' : c + ' kg'}</span>`).join('')} ` +
