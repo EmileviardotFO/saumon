@@ -40,7 +40,7 @@
    "source": "SNP",
    "cadence": "semestrielle",
    "retard_semaines": 28,
-   "dernier": "annee 2025"
+   "dernier": "année 2025"
   },
   {
    "source": "SCH",
@@ -785,6 +785,340 @@
     "retard": "jours",
     "url": "https://www.salmonexpert.cl/"
    }
-  ]
+  ],
+  "sanitaire": {
+   "_src": "Sernapesca, Informe de situación sanitaria de la salmonicultura, años 2024 y 2025 (SIFA)",
+   "urls": {
+    "2025": "https://www.sernapesca.cl/app/uploads/2026/03/Informe-Situacion-Sanitaria-Salmonicultura-Ano-2025.pdf",
+    "2024": "https://www.sernapesca.cl/app/uploads/2025/07/Informe-Situacion-Sanitaria-Salmonicultura-Ano-2024V-V2.pdf"
+   },
+   "biomasse_mer_t": {
+    "2024": [
+     423500,
+     408800,
+     422200,
+     451900,
+     481800,
+     517000,
+     540900,
+     545500,
+     552600,
+     531000,
+     518300,
+     475600
+    ],
+    "2025": [
+     473400,
+     464700,
+     490600,
+     525800,
+     567600,
+     609900,
+     646100,
+     661100,
+     655400,
+     631300,
+     590700,
+     538100
+    ]
+   },
+   "centres_mer": {
+    "2024": [
+     313,
+     302,
+     313,
+     326,
+     337,
+     347,
+     350,
+     357,
+     340,
+     331,
+     332,
+     342
+    ],
+    "2025": [
+     346,
+     337,
+     337,
+     362,
+     364,
+     371,
+     374,
+     386,
+     381,
+     375,
+     372,
+     362
+    ]
+   },
+   "poissons_eau_douce_m": {
+    "2024": [
+     375.5,
+     359.9,
+     343.3,
+     309.7,
+     314.8,
+     334.1,
+     372.9,
+     419.5,
+     425.0,
+     425.7,
+     409.1,
+     404.0
+    ],
+    "2025": [
+     398.8,
+     374.8,
+     376.2,
+     395.1,
+     379.2,
+     413.4,
+     398.2,
+     416.1,
+     446.2,
+     408.9,
+     397.7,
+     375.5
+    ]
+   },
+   "mortalite": {
+    "2025": {
+     "total_pct": 9.7,
+     "biomasse_morte_t": 60273,
+     "mensuelle_moy_pct": {
+      "Los Lagos": 0.9,
+      "Aysén": 0.8,
+      "Magallanes": 0.4,
+      "salar": 0.7,
+      "trucha": 0.8,
+      "coho": 1.0
+     }
+    },
+    "2024": {
+     "total_pct": 11.2,
+     "mensuelle_moy_pct_total": 0.93,
+     "max_mois": "janvier 2,22 % (efflorescences d'algues, manque d'oxygène)"
+    }
+   },
+   "causes_salar_2025": {
+    "primaire_pct": {
+     "Infectieuse": 25.7,
+     "Dommage mécanique": 22.2,
+     "Élimination": 17.4,
+     "Autres": 14.0,
+     "Sans cause apparente": 1.9
+    },
+    "infectieuse_pct": {
+     "SRS (piscirickettsiose)": 52.8,
+     "Ténacibaculose": 31.5
+    },
+    "note": "le corps du rapport donne SRS 52,8 % des morts infectieuses ; les conclusions écrivent 60,1 %"
+   },
+   "cycle_ferme": {
+    "espece": {
+     "2024": {
+      "salar": [
+       17392619,
+       11.0
+      ],
+      "coho": [
+       4975468,
+       6.8
+      ],
+      "trucha": [
+       2885254,
+       12.9
+      ]
+     },
+     "2025": {
+      "salar": [
+       17353161,
+       10.1,
+       42240
+      ],
+      "coho": [
+       3492072,
+       4.8,
+       8265
+      ],
+      "trucha": [
+       963493,
+       7.2,
+       1930
+      ]
+     }
+    },
+    "region": {
+     "2024": {
+      "Los Lagos": [
+       12902460,
+       9.6
+      ],
+      "Aysén": [
+       10733611,
+       11.2
+      ],
+      "Magallanes": [
+       1617270,
+       7.2
+      ]
+     },
+     "2025": {
+      "Los Lagos": [
+       8858456,
+       8.0,
+       21369
+      ],
+      "Aysén": [
+       11232926,
+       9.4,
+       27999
+      ],
+      "Magallanes": [
+       1717344,
+       5.9,
+       3068
+      ]
+     }
+    },
+    "holding_salar": {
+     "2025": {
+      "Ventisqueros": [
+       1074920,
+       18.1,
+       2586
+      ],
+      "Australis": [
+       1759852,
+       15.4,
+       2871
+      ],
+      "Mowi Chile": [
+       2451288,
+       13.2,
+       6883
+      ],
+      "Cooke Chile": [
+       589848,
+       12.1,
+       1618
+      ],
+      "Yadran": [
+       699811,
+       11.7,
+       1827
+      ],
+      "Multiexport": [
+       2654437,
+       10.8,
+       7781
+      ],
+      "Salmones Austral": [
+       672719,
+       10.2,
+       2075
+      ],
+      "Marine Farm": [
+       638046,
+       9.9,
+       1389
+      ],
+      "Blumar": [
+       1209085,
+       8.7,
+       2837
+      ],
+      "Invermar": [
+       455644,
+       8.1,
+       1058
+      ],
+      "Cermaq Chile": [
+       1488841,
+       8.0,
+       3519
+      ],
+      "Nova Austral": [
+       224122,
+       7.9,
+       274
+      ],
+      "AquaChile": [
+       2573049,
+       7.7,
+       5058
+      ],
+      "Camanchaca": [
+       861499,
+       6.6,
+       2465
+      ]
+     },
+     "2024": {
+      "Australis": [
+       1367957,
+       10.7
+      ],
+      "Blumar": [
+       1701753,
+       14.6
+      ],
+      "Cermaq Chile": [
+       1717737,
+       10.6
+      ],
+      "Cooke Chile": [
+       411290,
+       13.8
+      ],
+      "AquaChile": [
+       3155741,
+       9.9
+      ],
+      "Yadran": [
+       897329,
+       11.3
+      ],
+      "Invermar": [
+       477613,
+       9.3
+      ],
+      "Marine Farm": [
+       387936,
+       8.7
+      ],
+      "Mowi Chile": [
+       2063199,
+       10.6
+      ],
+      "Multiexport": [
+       2501835,
+       12.5
+      ],
+      "Nova Austral": [
+       352441,
+       19.2
+      ],
+      "Ventisqueros": [
+       956562,
+       18.8
+      ],
+      "Salmones Austral": [
+       746410,
+       10.0
+      ],
+      "Camanchaca": [
+       654816,
+       6.0
+      ]
+     }
+    },
+    "note": "mortalité cumulée des cycles terminés dans l'année (nombre de poissons), déclarée par les titulaires ; hors centres de reproducteurs"
+   },
+   "caligus_2025": "charges stables à Los Lagos et Aysén ; maximum Aysén 3,6 femelles ovigères en moyenne (semaine 42) ; 8 à 25 % des centres à haute surveillance au-dessus de 3,0 ; Magallanes nettement plus bas",
+   "isa_2025": "aucun cas de la variante virulente (« Otros HPR ») pour la deuxième année consécutive",
+   "srs_2025": "Los Lagos : 6,5 % des centres en alerte par semaine (en baisse) ; Aysén : 9,0 % (légère hausse)"
+  }
  }
 }
