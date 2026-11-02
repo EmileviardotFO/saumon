@@ -364,6 +364,17 @@
 .nw-it a:hover { color:var(--accent); text-decoration:underline; }
 .nw-meta { color:var(--muted); font-size:11px; margin-top:2px; }
 .nw-tag { display:inline-block; border:1px solid #35505f; color:#9fb6c3; border-radius:8px; padding:0 5px; font-size:10px; margin-left:4px; white-space:nowrap; }
+.pm-total { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:10px; border:1px solid #2c5a52; border-radius:8px; padding:12px 14px; background:#0f2229; margin:12px 0 16px; }
+@media (max-width: 900px) { .pm-total { grid-template-columns:repeat(2, minmax(0, 1fr)); } }
+.pm-total .t { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+.pm-total .v { font-size:22px; color:var(--ink); font-weight:600; margin-top:2px; }
+.pm-total .v span { font-size:12px; color:var(--muted); font-weight:normal; }
+.pm-total .s { font-size:11.5px; color:var(--muted); margin-top:2px; }
+.pm-total .h { grid-column:1/-1; font-size:12.5px; color:var(--ink); }
+.ol-tag { display:inline-block; font-size:9.5px; font-style:normal; text-transform:uppercase; letter-spacing:.04em; border-radius:6px; padding:0 5px; margin-left:6px; vertical-align:1px; }
+.ol-rep { border:1px solid #35505f; color:#9fb6c3; }
+.ol-proj { border:1px solid #2c7a6e; color:#5FD3C4; }
+tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; background:#0f2229; border-top:2px solid #2c7a6e; padding:6px 10px; white-space:normal; }
 .nw-top { border:1px solid #2c5a52; border-radius:8px; padding:10px 14px; background:#0f2229; margin-bottom:14px; }
 .nw-top h4 { margin:0 0 4px; font-size:13px; color:var(--ink); }
 .nw-top .nw-it a { font-weight:600; }
@@ -1363,6 +1374,7 @@
       </select>
     </div>
 
+    <div class="pm-total" id="pmTotal"></div>
     <div class="sig-title" style="margin-top:6px;">1 · Exports by product</div>
     <div class="sig-sub" id="pmCardsSub"></div>
     <div class="pm-cards" id="pmCards"></div>
@@ -1914,7 +1926,9 @@ function showDataBanner(live) {
     pnl.style.display = pnl.style.display === 'none' ? 'block' : 'none';
   });
 }
-const PO_NAMES = {"1": "Svenskegrensen til Jæren", "2": "Ryfylket", "3": "Karmøy til Sotra", "4": "Nordhordland til Stadt", "5": "Stadt til Hustadvika", "6": "Nordmøre og Sør-Trøndelag", "7": "Nord-Trøndelag med Bindal", "8": "Helgeland til Bodø", "9": "Vestfjorden og Vesterålen", "10": "Andøya til Senja", "11": "Kvaløya til Loppa", "12": "Vest-Finnmark", "13": "Øst-Finnmark"};
+const PO_NAMES = {"0": "Other licences, no zone (broodstock, research, education, display)", "1": "Svenskegrensen til Jæren", "2": "Ryfylket", "3": "Karmøy til Sotra", "4": "Nordhordland til Stadt", "5": "Stadt til Hustadvika", "6": "Nordmøre og Sør-Trøndelag", "7": "Nord-Trøndelag med Bindal", "8": "Helgeland til Bodø", "9": "Vestfjorden og Vesterålen", "10": "Andøya til Senja", "11": "Kvaløya til Loppa", "12": "Vest-Finnmark", "13": "Øst-Finnmark"};
+// toutes les "zones" de donnees : 0 = licences sans zone de production (code (null) du Biomasseregisteret, gardees depuis novembre 2026)
+const ALL_PO = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
 let YEARS = [];   // annees presentes dans data.json, remplies au chargement (fillYearSelectors)
 const svgNS = "http://www.w3.org/2000/svg";
 const ZONE_POLYGONS = {"1": [[111.87, 424.3], [112.03, 424.32], [112.76, 424.02], [113.69, 423.42], [114.87, 422.86], [115.23, 422.38], [115.58, 421.62], [116.1, 419.5], [117.11, 419.23], [117.41, 419.05], [117.49, 419.0], [113.93, 389.16], [99.78, 389.16], [71.48, 430.35], [35.95, 430.29], [35.56, 430.91], [35.57, 430.95], [36.22, 433.2], [36.22, 433.2], [36.24, 433.26], [36.39, 433.64], [36.4, 433.67], [37.97, 437.09], [37.99, 437.12], [38.01, 437.17], [38.6, 438.07], [38.62, 438.09], [40.9, 441.27], [40.91, 441.29], [41.07, 441.49], [41.09, 441.52], [44.13, 444.81], [47.73, 448.75], [51.3, 452.7], [51.31, 452.71], [51.76, 453.19], [51.78, 453.21], [51.82, 453.24], [52.31, 453.6], [52.33, 453.61], [52.37, 453.64], [52.5, 453.71], [52.5, 453.71], [52.79, 453.85], [57.22, 456.1], [57.25, 456.12], [57.3, 456.13], [60.1, 456.87], [60.14, 456.87], [60.19, 456.88], [60.53, 456.88], [65.31, 456.98], [65.32, 456.98], [65.36, 456.98], [66.07, 456.88], [66.11, 456.87], [66.15, 456.86], [66.6, 456.69], [66.63, 456.67], [67.19, 456.4], [67.19, 456.39], [67.47, 456.25], [71.89, 453.97], [71.91, 453.95], [74.38, 452.5], [74.39, 452.5], [75.22, 452.01], [75.26, 451.99], [75.3, 451.95], [75.33, 451.92], [78.53, 448.3], [78.53, 448.29], [81.1, 445.33], [81.13, 445.29], [83.98, 441.32], [87.19, 436.88], [90.43, 432.46], [93.7, 428.06], [94.66, 427.45], [99.03, 424.76], [102.08, 423.79], [102.1, 423.78], [103.09, 423.43], [107.3, 423.85], [111.87, 424.3]], "2": [[34.17, 431.06], [34.58, 432.5], [35.95, 430.29], [71.48, 430.35], [57.33, 389.16], [41.9, 402.01], [33.84, 407.94], [33.22, 409.75], [32.71, 410.58], [32.85, 416.18], [31.76, 417.24], [25.61, 414.77], [25.67, 414.84], [25.68, 414.85], [25.72, 414.89], [25.76, 414.92], [25.77, 414.94], [25.78, 414.95], [25.97, 415.12], [30.18, 419.0], [32.49, 422.78], [33.23, 426.65], [33.24, 426.7], [34.12, 430.88], [34.13, 430.92], [34.17, 431.06]], "3": [[23.63, 379.25], [23.74, 379.73], [24.49, 385.35], [25.26, 391.19], [25.93, 396.29], [26.29, 400.44], [24.98, 405.18], [23.44, 410.8], [23.11, 412.48], [23.25, 413.83], [25.61, 414.77], [31.76, 417.24], [32.85, 416.18], [32.71, 410.58], [33.22, 409.75], [33.84, 407.94], [41.9, 402.01], [57.33, 389.16], [71.48, 366.09], [54.5, 366.09], [40.35, 375.65], [33.7, 375.65], [33.7, 374.33], [32.88, 374.0], [32.35, 374.03], [31.01, 373.01], [30.06, 373.84], [29.55, 374.03], [28.84, 374.1], [29.03, 374.99], [28.8, 375.42], [28.55, 374.63], [28.39, 374.1], [28.19, 373.92], [28.09, 374.07], [27.94, 374.2], [27.67, 374.46], [22.41, 373.99], [22.49, 374.34], [23.63, 379.25]], "4": [[24.27, 373.57], [24.4, 374.16], [27.67, 374.46], [27.94, 374.2], [28.09, 374.07], [28.19, 373.92], [28.39, 374.1], [28.55, 374.63], [28.8, 375.42], [29.03, 374.99], [28.84, 374.1], [29.55, 374.03], [30.06, 373.84], [31.01, 373.01], [32.35, 374.03], [32.88, 374.0], [33.7, 374.33], [33.7, 375.65], [40.35, 375.65], [54.5, 366.09], [71.48, 366.09], [71.48, 323.25], [35.25, 323.25], [35.25, 321.93], [30.46, 316.86], [29.61, 313.41], [28.59, 315.11], [28.12, 315.9], [28.11, 315.91], [28.04, 316.03], [27.98, 316.17], [25.77, 321.37], [25.75, 321.44], [24.59, 324.48], [24.59, 324.48], [23.1, 328.45], [21.06, 333.92], [21.02, 334.05], [20.98, 334.19], [20.95, 334.33], [20.93, 334.48], [20.92, 334.63], [20.85, 335.95], [20.57, 341.86], [20.28, 347.76], [20.0, 353.67], [20.0, 353.81], [20.01, 355.1], [20.01, 355.19], [20.02, 355.38], [20.02, 355.4], [20.04, 355.55], [20.06, 355.69], [20.09, 355.83], [20.23, 356.43], [21.59, 362.14], [22.93, 367.85], [24.27, 373.57]], "5": [[29.61, 313.41], [30.46, 316.86], [35.25, 321.93], [35.25, 323.25], [71.48, 323.25], [79.97, 306.77], [71.48, 295.9], [60.16, 293.59], [58.81, 290.69], [56.51, 286.05], [54.56, 287.57], [50.07, 291.09], [45.61, 294.64], [45.6, 294.65], [45.49, 294.74], [45.39, 294.84], [45.36, 294.88], [41.45, 299.09], [41.43, 299.11], [38.81, 302.07], [35.03, 306.37], [31.28, 310.68], [31.23, 310.74], [31.14, 310.86], [31.06, 310.98], [29.61, 313.41]], "6": [[55.54, 284.09], [58.81, 290.69], [60.16, 293.59], [71.48, 295.9], [79.97, 306.77], [132.32, 260.64], [108.45, 244.46], [106.99, 243.21], [97.59, 240.08], [97.58, 240.07], [96.75, 241.01], [92.84, 245.43], [88.97, 249.86], [80.38, 257.31], [74.71, 257.33], [74.61, 257.45], [71.02, 262.37], [67.61, 267.12], [65.47, 270.14], [64.15, 272.38], [60.91, 277.0], [57.59, 281.79], [56.55, 283.3], [55.54, 284.09]], "7": [[97.59, 240.08], [106.99, 243.21], [108.45, 244.46], [132.32, 260.64], [145.05, 237.57], [146.47, 212.86], [136.56, 212.86], [132.74, 210.88], [130.9, 213.52], [129.49, 217.14], [128.61, 217.25], [127.68, 216.83], [127.55, 216.78], [114.95, 208.17], [113.71, 211.18], [111.45, 216.16], [109.04, 221.58], [106.65, 227.0], [106.63, 227.04], [105.72, 229.76], [105.7, 229.8], [105.69, 229.86], [105.47, 231.36], [104.68, 232.23], [100.69, 236.61], [97.58, 240.07], [97.59, 240.08]], "8": [[115.06, 208.24], [127.55, 216.78], [127.68, 216.83], [128.61, 217.25], [129.49, 217.14], [130.9, 213.52], [132.74, 210.88], [136.56, 212.86], [146.47, 212.86], [159.2, 188.14], [179.01, 156.83], [180.43, 148.6], [171.94, 145.3], [167.69, 146.95], [160.76, 149.78], [147.88, 144.31], [130.8, 158.9], [131.38, 160.33], [133.59, 165.88], [132.33, 167.17], [128.06, 171.58], [128.05, 171.58], [128.01, 171.63], [127.98, 171.68], [127.95, 171.73], [125.96, 176.17], [123.55, 181.64], [121.17, 187.11], [121.16, 187.13], [121.14, 187.18], [120.0, 191.6], [118.52, 197.34], [117.07, 203.09], [115.98, 205.69], [114.95, 208.17], [115.06, 208.24]], "9": [[129.14, 154.78], [130.8, 158.9], [147.88, 144.31], [160.76, 149.78], [167.69, 146.95], [171.94, 145.3], [180.43, 148.6], [183.97, 142.01], [192.46, 132.12], [199.53, 118.94], [210.14, 122.23], [212.97, 105.76], [192.85, 104.83], [184.67, 105.76], [184.67, 109.05], [180.43, 109.05], [181.14, 102.46], [179.76, 93.86], [179.49, 93.66], [179.72, 92.57], [186.4, 82.03], [186.03, 80.48], [185.78, 80.58], [184.93, 80.92], [184.88, 80.94], [184.82, 80.97], [183.75, 81.64], [178.03, 85.2], [172.37, 88.79], [172.32, 88.82], [172.27, 88.86], [169.43, 91.61], [164.86, 96.11], [160.33, 100.63], [160.3, 100.66], [160.26, 100.71], [160.23, 100.76], [158.8, 103.65], [158.37, 104.25], [154.79, 109.31], [151.26, 114.39], [149.52, 115.47], [144.0, 118.95], [143.98, 118.97], [143.93, 119.0], [143.88, 119.05], [142.59, 120.42], [142.56, 120.46], [142.52, 120.52], [141.65, 121.98], [138.54, 127.23], [138.53, 127.26], [138.5, 127.31], [137.77, 129.34], [135.77, 134.98], [133.22, 136.7], [127.94, 140.3], [127.91, 140.32], [127.32, 140.77], [127.31, 140.78], [125.7, 142.11], [125.69, 142.11], [125.65, 142.16], [125.61, 142.2], [125.57, 142.25], [125.54, 142.31], [125.52, 142.36], [124.97, 144.14], [124.96, 144.17], [124.95, 144.18], [124.95, 144.21], [124.94, 144.27], [124.94, 144.33], [124.95, 144.39], [124.96, 144.44], [125.27, 145.4], [125.28, 145.44], [126.86, 149.24], [129.14, 154.78]], "10": [[186.03, 80.48], [186.4, 82.03], [179.72, 92.57], [179.49, 93.66], [179.76, 93.86], [181.14, 102.46], [180.43, 109.05], [184.67, 109.05], [184.67, 105.76], [192.85, 104.83], [212.97, 105.76], [229.95, 92.57], [229.95, 82.69], [224.01, 79.39], [223.47, 74.65], [223.36, 74.19], [222.88, 72.8], [217.22, 74.45], [213.64, 72.04], [212.99, 71.62], [212.25, 71.35], [209.4, 66.16], [208.68, 67.2], [205.14, 72.37], [203.99, 72.92], [197.73, 75.91], [191.42, 78.35], [186.03, 80.48]], "11": [[209.4, 66.16], [212.25, 71.35], [212.99, 71.62], [217.22, 74.45], [222.88, 72.8], [223.36, 74.19], [223.47, 74.65], [224.01, 79.39], [229.95, 82.69], [229.95, 92.57], [279.47, 69.51], [272.4, 59.62], [270.99, 54.68], [265.33, 56.33], [262.21, 53.36], [258.25, 52.27], [254.48, 40.99], [246.83, 43.25], [239.76, 45.39], [239.76, 45.39], [234.97, 46.88], [227.98, 49.1], [227.92, 49.12], [221.73, 51.74], [221.72, 51.75], [221.66, 51.78], [221.6, 51.82], [221.55, 51.86], [221.5, 51.9], [217.82, 55.96], [217.82, 55.96], [215.67, 58.39], [211.44, 63.23], [211.41, 63.28], [209.4, 66.16]], "12": [[254.48, 40.99], [258.25, 52.27], [262.21, 53.36], [265.33, 56.33], [270.99, 54.68], [272.4, 59.62], [279.47, 69.51], [312.02, 62.92], [341.31, 51.38], [350.51, 32.93], [355.26, 23.77], [355.56, 22.55], [349.76, 21.71], [349.69, 21.71], [345.12, 21.38], [337.3, 20.87], [329.46, 20.41], [321.62, 20.0], [321.58, 20.0], [321.5, 20.0], [321.42, 20.01], [315.59, 20.98], [307.94, 22.29], [306.49, 22.36], [298.68, 22.76], [298.61, 22.76], [297.42, 22.91], [297.35, 22.92], [297.28, 22.94], [297.21, 22.96], [297.09, 23.0], [297.04, 23.03], [293.75, 24.55], [287.14, 27.68], [280.59, 30.84], [280.57, 30.84], [275.3, 33.57], [268.96, 36.91], [268.28, 37.09], [261.09, 39.1], [254.48, 40.99]], "13": [[355.56, 22.55], [355.26, 23.77], [350.51, 32.93], [341.31, 51.38], [354.47, 51.38], [378.52, 76.1], [382.77, 70.5], [385.6, 70.17], [389.84, 72.8], [394.37, 66.64], [394.4, 66.6], [394.39, 66.58], [394.39, 66.56], [394.39, 66.5], [394.34, 66.38], [395.35, 64.86], [395.98, 61.88], [397.23, 56.05], [398.5, 50.23], [399.96, 47.06], [399.98, 47.02], [399.99, 46.96], [400.0, 46.9], [400.0, 46.84], [400.0, 46.82], [399.99, 46.76], [399.97, 46.7], [399.95, 46.65], [399.92, 46.59], [399.85, 46.49], [399.84, 46.47], [399.8, 46.42], [399.57, 46.18], [399.52, 46.14], [399.47, 46.09], [397.63, 44.79], [391.97, 40.84], [386.26, 36.93], [386.23, 36.91], [384.55, 35.89], [384.52, 35.87], [384.45, 35.84], [379.28, 33.74], [372.43, 31.01], [370.32, 29.83], [364.03, 26.36], [357.68, 22.92], [357.64, 22.9], [357.57, 22.87], [357.5, 22.85], [357.42, 22.83], [357.17, 22.79], [357.15, 22.79], [355.56, 22.55]]};
@@ -2083,7 +2097,7 @@ function computeCompoundedMortality(year, startMonth, endMonth, poFilter) {
 
 function computeForYear(year, startMonth, endMonth) {
   const perPo = {};
-  for (let po = 1; po <= 13; po++) perPo[po] = {
+  for (let po = 0; po <= 13; po++) perPo[po] = {
     vol:0, stk:0, survival_product:1, stock:0, biomasse_end:0, biomasse_start:0, smolt:0, mortnb:0, behfisk_sum:0, growth_sum:0, growth_n:0, feed:0,
     uttak_kg_sum:0, uttak_stk_sum:0, age_weighted_sum:0, age_weight_total:0,
     smoltmid:0, mid_missing:false, implied:0
@@ -2123,10 +2137,10 @@ function computeForYear(year, startMonth, endMonth) {
     }
   });
 
-  const nationalMortCompounded = computeCompoundedMortality(year, startMonth, endMonth, [1,2,3,4,5,6,7,8,9,10,11,12,13]);
+  const nationalMortCompounded = computeCompoundedMortality(year, startMonth, endMonth, ALL_PO);
 
   const out = {};
-  for (let po = 1; po <= 13; po++) {
+  for (let po = 0; po <= 13; po++) {
     const p = perPo[po];
     out[po] = {
       vol: p.vol,
@@ -2166,7 +2180,7 @@ function computeForYear(year, startMonth, endMonth) {
 // Helper: iterate only PO numeric keys 1..13, ignoring internal keys like _nationalMort
 function poValues(obj) {
   const arr = [];
-  for (let po = 1; po <= 13; po++) arr.push(obj[po]);
+  for (let po = 0; po <= 13; po++) arr.push(obj[po]);
   return arr;
 }
 
@@ -2203,14 +2217,14 @@ function render() {
 
   const cur = computeForYear(year, startMonth, endMonth);
   const prev = computeForYear(prevYear, startMonth, endMonth);
-  updateDataQualityBanner([year, prevYear], startMonth, endMonth, [1,2,3,4,5,6,7,8,9,10,11,12,13]);
+  updateDataQualityBanner([year, prevYear], startMonth, endMonth, ALL_PO);
 
   const conf = METRIC_CONF[metric];
   document.getElementById('thPrev').textContent = prevYear;
   document.getElementById('thCur').textContent = year;
 
   const rows = [];
-  for (let po = 1; po <= 13; po++) {
+  for (let po = 0; po <= 13; po++) {
     const vCur = cur[po][metric];
     const vPrev = prev[po][metric];
     const delta = vCur - vPrev;
@@ -3808,7 +3822,7 @@ function renderSmoltSize() {
   document.getElementById('periodSummary').textContent = `${label} ${year}  vs  ${label} ${prevYear}`;
   const cur = computeForYear(year, startMonth, endMonth);
   const prev = computeForYear(prevYear, startMonth, endMonth);
-  updateDataQualityBanner([year, prevYear], startMonth, endMonth, [1,2,3,4,5,6,7,8,9,10,11,12,13]);
+  updateDataQualityBanner([year, prevYear], startMonth, endMonth, ALL_PO);
 
   document.getElementById('sizeSub').innerHTML =
     `${label} ${year}, smolt released per zone, north (13) to south (1). Shares are of the zone total including the &gt; 500 g estimate; ` +
@@ -4182,7 +4196,7 @@ function renderMulti() {
   // or one row per production area for a single indicator (by zone).
   let rows, valueOf, fmtOf, rowHeader, convLag = null;
   const summaryEl = document.getElementById('multiSelectionSummary');
-  const zoneText = poFilter.length === 13 ? 'all 13 zones (all of Norway)' : 'zones ' + poFilter.slice().sort((a,b)=>a-b).join(', ');
+  const zoneText = poFilter.length >= ALL_PO.length ? 'all 13 zones and licences outside zones (all of Norway)' : 'zones ' + poFilter.slice().sort((a,b)=>a-b).join(', ');
 
   if (multiBreakdown === 'po') {
     const metric = multiPoMetricSel.value;
@@ -4383,7 +4397,7 @@ function addConversion(tot, year, startMonth, endMonth, poFilter) {
 
 // --- PO filter for the national view ---
 const poFilterSelect = document.getElementById('poFilterSelect');
-for (let po = 1; po <= 13; po++) {
+for (let po = 0; po <= 13; po++) {
   const opt = document.createElement('option');
   opt.value = po;
   opt.textContent = po + '. ' + (PO_NAMES[po] || po);
@@ -4407,7 +4421,7 @@ poFilterSelect.addEventListener('change', refreshFilteredView);
 
 function getSelectedPoFilter() {
   const selected = Array.from(poFilterSelect.selectedOptions).map(o => parseInt(o.value, 10));
-  return selected.length > 0 ? selected : [1,2,3,4,5,6,7,8,9,10,11,12,13];
+  return selected.length > 0 ? selected : ALL_PO;
 }
 
 function renderGlobal() {
@@ -4425,8 +4439,8 @@ function renderGlobal() {
   document.getElementById('thCurGlobal').textContent = year;
 
   const summaryEl = document.getElementById('globalSelectionSummary');
-  if (poFilter.length === 13) {
-    summaryEl.textContent = 'Zones included: all 13 zones (all of Norway)';
+  if (poFilter.length >= ALL_PO.length) {
+    summaryEl.textContent = 'Zones included: all 13 zones and licences outside zones (all of Norway)';
   } else {
     const names = poFilter.sort((a,b)=>a-b).map(po => po + '. ' + (PO_NAMES[po] || po));
     summaryEl.textContent = 'Zones included (' + poFilter.length + '): ' + names.join(', ');
@@ -4819,7 +4833,7 @@ function renderStructuralSignals(poFilter) {
   document.getElementById('sigColRoll').textContent = `to ${mLbl}`;
   document.getElementById('sigColRollPrev').textContent = `to ${mLblPrev}`;
 
-  const zoneLbl = poFilter.length === 13 ? 'Norway, all zones'
+  const zoneLbl = poFilter.length >= ALL_PO.length ? 'Norway, all zones'
     : `zones ${poFilter.slice().sort((a, b) => a - b).join(', ')}`;
   document.getElementById('sigSub').innerHTML =
     `${zoneLbl}. Four ratios, one per horizon — take-out rate (now), months of cover (0–6 months), ` +
@@ -5238,6 +5252,10 @@ function renderMarketsView() {
   };
 
   let rows = A.rows.slice();
+  // destinations presentes l'annee de comparaison seulement (sous le seuil de publication d'Akvafakta cette annee, ou renommees) :
+  // gardees avec 0 sur l'annee N, sinon leur volume disparaissait des totaux N-1 (avril 2025 : 119,3 kt affiches pour 122,5 kt publies)
+  const aKeys = new Set(rows.map(r => (r.groupe || '') + '||' + r.pays));
+  B.rows.forEach(r => { if (!aKeys.has((r.groupe || '') + '||' + r.pays)) rows.push({ pays: r.pays, groupe: r.groupe, q: 0, v: 0 }); });
   if (mktGroup !== 'all') rows = rows.filter(r => r.groupe === mktGroup);
   rows.sort((a, b) => b.q - a.q);
   const tot = rows.reduce((s, r) => s + r.q, 0);
@@ -5713,6 +5731,15 @@ function renderProductsView() {
   const dTxt = p => isFinite(p) ? (p >= 0 ? '+' : '') + p.toFixed(1) + '%' : '—';
   const dSpan = p => `<span class="${deltaClass('vol', p)}">${dTxt(p)}</span>`;
   const totA = A.prod.reduce((s, p) => s + p.q, 0), totB = B.prod.reduce((s, p) => s + p.q, 0);
+  // ---- bandeau : evolution globale, tous produits confondus (les quatre codes SSB), pour la periode et le groupe de marches choisis
+  { const vA = A.prod.reduce((t, p) => t + p.v, 0), vB = B.prod.reduce((t, p) => t + p.v, 0), pA = totA > 0 ? vA / totA : NaN, pB = totB > 0 ? vB / totB : NaN;
+    const fresh = A.prod[0].q + A.prod[1].q, freshB = B.prod[0].q + B.prod[1].q;
+    const cell = (t, v, d, sub) => `<div><div class="t">${t}</div><div class="v">${v} ${hasB && isFinite(d) ? dSpan(d) : ''}</div><div class="s">${sub}</div></div>`;
+    document.getElementById('pmTotal').innerHTML = `<div class="h"><b>All products together</b> — ${P.spanA}${hasB ? ` against ${P.spanB}` : ''}, ${grpLbl}, Statistics Norway (product weight, FOB)</div>` +
+      cell('Volume', `${num(totA / 1e6, 1)} <span>kt</span>`, pc(totA, totB), hasB ? `${num(totB / 1e6, 1)} kt a year earlier` : '') +
+      cell('Value', `${num(vA / 1e9, 2)} <span>bn NOK</span>`, pc(vA, vB), hasB ? `${num(vB / 1e9, 2)} bn a year earlier` : '') +
+      cell('Average price', `${num(pA, 2)} <span>NOK/kg</span>`, pc(pA, pB), hasB ? `${num(pB, 2)} a year earlier · mixes products: read with the product mix` : '') +
+      cell('Fresh share of volume', `${num(totA > 0 ? 100 * fresh / totA : NaN, 1)} <span>%</span>`, NaN, hasB && totB > 0 ? `${num(100 * freshB / totB, 1)} % a year earlier (fresh whole + fresh fillets)` : 'fresh whole + fresh fillets'); }
 
   // ---- 12-month sparkline per product (independent of the period, for shape)
   const spark = hs => {
@@ -6524,7 +6551,7 @@ function renderOutlook() {
     `Standing biomass (t) · ${MONTHS_FR[last.month-1]} ${last.year}`);
 
   updateDataQualityBanner(YEARS, 1, 12, poFilter);
-  const zoneLbl = poFilter.length === 13 ? 'Norway, all zones' : `zones ${poFilter.slice().sort((a,b)=>a-b).join(', ')}`;
+  const zoneLbl = poFilter.length >= ALL_PO.length ? 'Norway, all zones' : `zones ${poFilter.slice().sort((a,b)=>a-b).join(', ')}`;
   document.getElementById('outlookSummary').textContent =
     `Projection from ${MONTHS_FR[last.month-1]} ${last.year} — standing biomass ` +
     `${(last.bio/1000).toLocaleString('en-US',{maximumFractionDigits:0})} t, ` +
@@ -6565,9 +6592,14 @@ function renderOutlook() {
   for (let i = histStart; i < s.length; i++) {
     const rec = s[i];
     const wt = rec.stk > 0 ? rec.vol/rec.stk : null;
-    addRow(`${MONTHS_FR[rec.month-1]} ${rec.year}`, 'actual',
+    addRow(`${MONTHS_FR[rec.month-1]} ${rec.year} <span class="ol-tag ol-rep">reported</span>`, 'actual',
       rec.vol/1000, null, rec.stk, wt, byKey[(rec.year-1)*100 + rec.month]);
   }
+  // limite explicite entre mois publies (Biomasseregisteret) et mois projetes
+  { const lr = s[s.length - 1], sep = document.createElement('tr');
+    sep.className = 'ol-sep';
+    sep.innerHTML = `<td colspan="7">▼ Projected from here — the rows above are harvests already reported to the Biomasseregisteret (last month: ${MONTHS_FR[lr.month - 1]} ${lr.year}); Δ% on projected rows compares an estimate with the reported figure a year earlier</td>`;
+    tbody.appendChild(sep); }
 
   // ---- projected months
   for (let k = 1; k <= OUTLOOK_HORIZON; k++) {
@@ -6586,7 +6618,7 @@ function renderOutlook() {
       projW = (f.intercept + f.slope * xi) * hwNorm[mIdx+1] / 100;
     }
     if (projVol !== null && projW) projStk = projVol * 1000 / projW;
-    addRow(`${MONTHS_FR[mIdx]} ${yLbl} (projected)`, 'projected',
+    addRow(`${MONTHS_FR[mIdx]} ${yLbl} <span class="ol-tag ol-proj">projected</span>`, 'projected',
       projVol, volTxt, projStk, projW,
       byKey[(yLbl-1)*100 + (mIdx+1)], k === 1 ? 'sep-row' : '');
   }
@@ -8482,7 +8514,7 @@ function prepare(d) {
   Object.entries(rN).forEach(([k, a]) => { a.mortality_pct = a.mn ? a.mw / a.mn : null; a.age_months = a.an ? a.aw / a.an : null; });
   Object.entries(wt).forEach(([k, w]) => { if (w.tn) tN[k] = w.t / w.tn; if (w.ln) lN[k] = w.l / w.ln; });
   COH[NOR] = cN; REC[NOR] = rN; T[NOR] = tN; L[NOR] = lN;
-  const MTB2 = Object.assign({}, MTB); MTB2[NOR] = Object.entries(MTB).filter(([p]) => +p >= 1 && +p <= 13).reduce((t, [, v]) => t + v, 0);
+  const MTB2 = Object.assign({}, MTB); MTB2[NOR] = Object.entries(MTB).filter(([p]) => +p >= 0 && +p <= 13).reduce((t, [, v]) => t + v, 0);
   return { d, REC, COH, T, L, DIS, months, MTB: MTB2, rows, hrows, fits: {} };
 }
 // modele : ln(W1/W0) = a + b.lnW + c.T + e.T.lnW + mois ; appris en marche avant (uniquement le passe)
