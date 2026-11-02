@@ -25,7 +25,10 @@ import datetime as dt
 import io
 import json
 import os
+import re
+import urllib.request
 from collections import Counter, defaultdict
+from html.parser import HTMLParser
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BRUT = os.path.join(ROOT, 'farming', 'donnees_ca', 'brut')
@@ -44,6 +47,98 @@ PLANIFIES = {'routine monitoring', 'pre-migration', 'first pre-migration', 'firs
 def cause(c):
     c = (c or '').replace(' - explain', '').strip()
     return {'Unknow': 'Unknown', '': 'Not stated'}.get(c, c)
+
+
+# Production d'aquaculture par province (DFO, d'apres Statistique Canada 32-10-0107), une page par annee.
+DFO_PAGE = ['https://www.dfo-mpo.gc.ca/stats/aqua/aqua{yy:02d}-eng.html', 'https://www.dfo-mpo.gc.ca/stats/aqua/aqua{yy:02d}-eng.htm']
+PROVS = ['NL', 'PE', 'NS', 'NB', 'QC', 'ON', 'MB', 'SK', 'AB', 'BC', 'Canada']
+# 2024 verifie sur la page DFO (14/01/2026) : amorce si le site n'est pas joignable
+DFO_2024 = {'Salmon': {'NS': 9396, 'NB': 24864, 'BC': 53816, 'Canada': 88076},
+            'Total Finfish': {'NL': 23159, 'PE': 387, 'NS': 10060, 'NB': 24864, 'QC': 996, 'ON': 5647, 'BC': 54617, 'Canada': 122449}}
+
+
+class _Tables(HTMLParser):
+    def __init__(self):
+        super().__init__(); self.tables, self.row, self.cell, self.inside = [], None, None, 0
+    def handle_starttag(self, tag, a):
+        if tag == 'table': self.inside += 1; self.tables.append([])
+        elif tag == 'tr' and self.inside: self.row = []
+        elif tag in ('td', 'th') and self.row is not None: self.cell = ''
+    def handle_endtag(self, tag):
+        if tag in ('td', 'th') and self.cell is not None: self.row.append(self.cell.strip()); self.cell = None
+        elif tag == 'tr' and self.row is not None: self.tables[-1].append(self.row); self.row = None
+        elif tag == 'table': self.inside -= 1
+    def handle_data(self, d):
+        if self.cell is not None: self.cell += d
+
+
+def lire_page_dfo(html):
+    """Premier tableau (tonnes) : lignes Salmon et Total Finfish par province."""
+    p = _Tables(); p.feed(html)
+    for t in p.tables:
+        def code(c):
+            c = c.strip()
+            if c.startswith('Canada'): return 'Canada'             # « Canada » + renvoi de note colle
+            return c if c in PROVS else ''
+        tete = next((r for r in t if 'BC' in [code(c) for c in r]), None)
+        if not tete: continue
+        cols = [code(c) for c in tete]          # « Canada » suivi d'un renvoi de note -> « Canada »
+        out = {}
+        for r in t:
+            brut = (r[0] if r else '').strip()
+            lab = 'Salmon' if brut.startswith('Salmon') else 'Total Finfish' if brut.startswith('Total Finfish') else None
+            if lab:
+                vals = r[-len([c for c in cols if c in PROVS]):]
+                out[lab] = {pr: int(v.replace(',', '')) for pr, v in zip([c for c in cols if c in PROVS], vals) if re.fullmatch(r'[\d,]+', v.strip() or '-')}
+        if out: return out
+    return None
+
+
+def production_provinces():
+    """Cache farming/donnees_ca/dfo_production.json : { annee: { Salmon: {...}, Total Finfish: {...} } }."""
+    cache = os.path.join(ROOT, 'farming', 'donnees_ca', 'dfo_production.json')
+    data = json.load(io.open(cache, encoding='utf-8')) if os.path.exists(cache) else {}
+    data.setdefault('2024', DFO_2024)
+    if os.environ.get('CA_HORS_LIGNE') != '1':
+        for an in range(2015, dt.date.today().year):
+            if str(an) in data and an < dt.date.today().year - 2: continue      # les annees anciennes ne bougent plus
+            for modele in DFO_PAGE:
+                try:
+                    html = urllib.request.urlopen(urllib.request.Request(modele.format(yy=an % 100), headers={'User-Agent': 'suivi-salmonicole/1.0'}), timeout=60).read().decode('utf-8', 'replace')
+                    t = lire_page_dfo(html)
+                    if t: data[str(an)] = t; break
+                except Exception:  # noqa: BLE001
+                    continue
+        os.makedirs(os.path.dirname(cache), exist_ok=True)
+        io.open(cache, 'w', encoding='utf-8').write(json.dumps(data, ensure_ascii=False, indent=1))
+    return data
+
+
+def sites_bc(rows):
+    """Une entree par ferme : position, exploitant, zone, premier et dernier mois de comptage, poux moyens sur 12 mois."""
+    S = {}
+    for r in rows:
+        try:
+            m = int(col(r, 'Year')) * 100 + MOIS[col(r, 'Month').lower()]
+        except (ValueError, KeyError):
+            continue
+        fid = col(r, 'Facility Reference Number')
+        x = S.setdefault(fid, {'id': fid, 'n': col(r, 'Site Common Name'), 'co': soc(col(r, 'Licence Holder')), 'amu': col(r, 'Aquaculture Management Unit'),
+                               'lat': f(col(r, 'Latitude')), 'lon': f(col(r, 'Longitude')), 'first': m, 'last': m, 'yc': '', 'lice': []})
+        if m >= x['last']:
+            x['last'] = m; x['co'] = soc(col(r, 'Licence Holder')) or x['co']; x['yc'] = col(r, 'Year Class') or x['yc']
+        x['first'] = min(x['first'], m)
+        v = f(col(r, 'Average L. salmonis motiles per farmed fish'))
+        if v is not None: x['lice'].append((m, v))
+    out = []
+    for x in S.values():
+        if x['lat'] is None or x['lon'] is None: continue
+        lim = x['last'] - 100
+        l12 = [v for m, v in x['lice'] if m > lim]
+        x['lice12'] = round(sum(l12) / len(l12), 2) if l12 else None
+        del x['lice']
+        out.append(x)
+    return sorted(out, key=lambda x: -x['last'])
 
 
 def seuil(an):
@@ -189,7 +284,10 @@ def main():
                      'lice_last': lice[-1]['m'] if lice else None, 'lice_complete': complet, 'rows': {'lice': len(P), 'events': len(M), 'transfers': len(T)},
                      'thresholds': {'2011-2024': 3.0, '2025': 2.8, '2026-': 2.4}},
             'lice': lice, 'lice_by_company': by_co, 'lice_by_area': by_amu,
-            'events': mortalites(M) if M else None, 'transfers': transferts(T) if T else None}
+            'events': mortalites(M) if M else None, 'transfers': transferts(T) if T else None,
+            'sites': sites_bc(P) if P else [], 'provinces': production_provinces(),
+            'provinces_extra': [{'prov': 'NL', 'year': 2025, 'what': 'Salmonids (Atlantic salmon 30,567 t + steelhead 3,648 t)', 't': 34215,
+                                 'src': 'Government of Newfoundland and Labrador, 2025 Seafood Industry Year in Review'}]}
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     io.open(OUT, 'w', encoding='utf-8').write(json.dumps(data, ensure_ascii=False, separators=(',', ':')))
     print(f"data/canada.json : poux {len(P)} lignes (dernier mois {data['meta']['lice_last']}), "
