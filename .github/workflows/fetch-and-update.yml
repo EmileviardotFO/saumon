@@ -231,6 +231,11 @@ jobs:
           STEP_CHINA: ${{ steps.china.outcome }}
           STEP_EUROSTAT: ${{ steps.eurostat.outcome }}
           STEP_NATIONAL: ${{ steps.national.outcome }}
+          STEP_SCOTLAND: ${{ steps.scotland.outcome }}
+          STEP_SCOTLAND_SURVEY: ${{ steps.scotland_survey.outcome }}
+          STEP_CHILE_SITES: ${{ steps.chile_sites.outcome }}
+          STEP_EVENTS: ${{ steps.events.outcome }}
+          STEP_NEWS: ${{ steps.news.outcome }}
           STEP_SMOKE: ${{ steps.smoke.outcome }}
         run: |
           python3 scripts/write_status.py
