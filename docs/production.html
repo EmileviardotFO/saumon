@@ -364,6 +364,12 @@
 .nw-it a:hover { color:var(--accent); text-decoration:underline; }
 .nw-meta { color:var(--muted); font-size:11px; margin-top:2px; }
 .nw-tag { display:inline-block; border:1px solid #35505f; color:#9fb6c3; border-radius:8px; padding:0 5px; font-size:10px; margin-left:4px; white-space:nowrap; }
+.gen-cards { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:14px; margin:12px 0 6px; }
+@media (max-width: 900px) { .gen-cards { grid-template-columns:minmax(0, 1fr); } }
+.gen-cards .pr-card { padding:16px 18px; }
+.gen-cards .pr-card .nm { font-size:15px; }
+.gen-cards .pr-card .big { font-size:30px; margin:6px 0 8px; }
+.gen-cards .pr-card .ln { font-size:13.5px; line-height:1.55; margin-top:3px; }
 .pm-total { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:10px; border:1px solid #2c5a52; border-radius:8px; padding:12px 14px; background:#0f2229; margin:12px 0 16px; }
 @media (max-width: 900px) { .pm-total { grid-template-columns:repeat(2, minmax(0, 1fr)); } }
 .pm-total .t { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
@@ -984,7 +990,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
       <span class="cc-label" style="margin-left:14px">Generations compared</span>
       <select class="ctrl" id="genN"><option value="3">3</option><option value="5" selected>5</option><option value="7">7</option></select>
     </div>
-    <div id="genCards" class="pr-cards"></div>
+    <div id="genCards" class="gen-cards"></div>
     <div class="sig-title" style="margin-top:16px">1 · Same age, generation by generation</div>
     <div class="sig-sub" id="genAgeSub"></div>
     <div id="genW"></div><div id="genS"></div><div id="genM"></div>
@@ -6635,7 +6641,13 @@ function renderOutlook() {
   const i21 = s.findIndex(r => r.year === 2021 && r.month === 1);
   const accRows = [1, 3, 6, 9].map(h => [h, maeOf(projectOld, h, i21), maeOf(projectVol, h, i21)]);
   document.getElementById('outlookAcc').innerHTML = `<b>Average error by horizon</b>, forecasts issued every month since January 2021 and compared with what was then reported: ` +
-    accRows.map(([h, o, n]) => `${h} month${h > 1 ? 's' : ''} ahead <b>±${n.toFixed(1)}%</b> <span style="color:var(--muted)">(previous method ±${o.toFixed(1)}%)</span>`).join(' · ') + '.';
+    accRows.map(([h, o, n]) => `${h} month${h > 1 ? 's' : ''} ahead <b>±${n.toFixed(1)}%</b> <span style="color:var(--muted)">(previous method ±${o.toFixed(1)}%)</span>`).join(' · ') + '.' +
+    (() => { const qe = [[], []]; for (let i = i21; i < s.length; i++) { if (s[i].month % 3 !== 0) continue;
+        [[1, 0], [4, 1]].forEach(([a0, slot]) => { if (i + a0 + 2 >= s.length) return; let P = 0, A = 0, ok = true;
+          for (let h = a0; h < a0 + 3; h++) { const p = projectVol(i, h); if (p === null) ok = false; P += p || 0; A += s[i + h].vol; } if (ok && A > 0) qe[slot].push(Math.abs(P - A) / A * 100); }); }
+      const m = a => a.length ? (a.reduce((x, y) => x + y, 0) / a.length).toFixed(1) : '—';
+      return ` <b>By quarter</b> (the next calendar quarter, forecast at the end of the previous one): <b>±${m(qe[0])}%</b>, the quarter after: ±${m(qe[1])}% (${qe[0].length} quarters). ` +
+        `Monthly errors partly cancel out within a quarter, because farms move harvest between neighbouring months (around year end in particular): read the monthly rows for the shape, the quarters for the volume.`; })();
 
   // ---- by quarter: actual months + projected months, with a combined band
   const qRows = [];
@@ -6744,18 +6756,21 @@ function renderOutlook() {
       document.getElementById('outlookBtSub').innerHTML =
         `What the model would have said with data up to <b>${lbl(s[o])}</b> (and nothing after), against what was then reported. ` +
         `Same code as the projection above; the previous method is shown for comparison.`;
-      let sa = 0, sn = 0, so = 0, rows = '';
+      let sa = 0, sn = 0, so = 0, rows = ''; const QT = {};   // totaux par trimestre calendaire
       const err = (p, a) => { const e = (p - a) / a * 100; return `<td class="${Math.abs(e) > 10 ? 'delta-bad' : Math.abs(e) > 5 ? '' : 'delta-good'}">${e >= 0 ? '+' : ''}${e.toFixed(1)}%</td>`; };
       for (let h = 1; h <= 12 && o + h < s.length; h++) {
         const a = s[o + h].vol, pn = projectVol(o, h), po = projectOld(o, h);
         if (pn === null || po === null) continue;
         sa += a; sn += pn; so += po;
+        { const r = s[o + h], q = `Q${Math.ceil(r.month / 3)} ${r.year}`, t = QT[q] || (QT[q] = { a: 0, n: 0, o: 0, m: 0 }); t.a += a; t.n += pn; t.o += po; t.m++; }
         rows += `<tr><td class="name">${lbl(s[o + h])} <small style="display:inline;color:var(--muted)">(${h} mo ahead)</small></td><td>${num0(a / 1000)}</td><td>${num0(pn / 1000)}</td>${err(pn, a)}` +
           `<td class="sep-left" style="color:var(--muted)">${num0(po / 1000)}</td>${err(po, a)}</tr>`;
       }
       document.getElementById('tbodyOutlookBt').innerHTML = rows;
-      document.getElementById('tfootOutlookBt').innerHTML = sa ? `<tr><td class="name">12 months</td><td>${num0(sa / 1000)}</td><td>${num0(sn / 1000)}</td>${err(sn, sa)}` +
-        `<td class="sep-left">${num0(so / 1000)}</td>${err(so, sa)}</tr>` : '';
+      const qRows = Object.entries(QT).filter(([, t]) => t.m === 3).map(([q, t]) => `<tr><td class="name">${q} <small style="display:inline;color:var(--muted)">(quarter)</small></td><td>${num0(t.a / 1000)}</td><td>${num0(t.n / 1000)}</td>${err(t.n, t.a)}` +
+        `<td class="sep-left">${num0(t.o / 1000)}</td>${err(t.o, t.a)}</tr>`).join('');
+      document.getElementById('tfootOutlookBt').innerHTML = (sa ? qRows + `<tr><td class="name">12 months</td><td>${num0(sa / 1000)}</td><td>${num0(sn / 1000)}</td>${err(sn, sa)}` +
+        `<td class="sep-left">${num0(so / 1000)}</td>${err(so, sa)}</tr>` : '');
     }
   }
 
@@ -6991,7 +7006,19 @@ function renderSummary() {
       (evs.length ? evs.map(e => `<div class="ev ${e.c === 'pos' ? 'pos' : ''}">${e.t}</div>`).join('')
                   : `<div class="ev info">Nothing out of the ordinary: no new ILA case, no lice surge in any zone.</div>`) + `</div>`;
   }
-  document.getElementById('smBio').innerHTML = bio + hlHtml;
+  // licences sans zone de production (geniteurs, recherche, enseignement : code 0 depuis novembre 2026), suivies a part
+  let z0Html = '';
+  { const Z = (typeof RECORDS !== 'undefined' ? RECORDS : []).filter(r => r.po === 0);
+    if (Z.length) { const by = {}; Z.forEach(r => by[r.year * 100 + r.month] = r); const ks = Object.keys(by).map(Number).sort((x, y) => x - y), K = ks[ks.length - 1], KY = K - 100;
+      const tot = k => (RECORDS || []).filter(r => r.year * 100 + r.month === k).reduce((t, r) => t + (r.biomasse_kg || 0), 0);
+      const ytd = (y, m, f) => ks.filter(k => Math.floor(k / 100) === y && k % 100 <= m).reduce((t, k) => t + (by[k][f] || 0), 0);
+      const a = by[K], b = by[KY], y = Math.floor(K / 100), m = K % 100, hy = ytd(y, m, 'uttak_kg'), hp = ytd(y - 1, m, 'uttak_kg'), sm = ytd(y, m, 'smolt500_stk'), smp = ytd(y - 1, m, 'smolt500_stk');
+      const f0 = v => Math.round(v).toLocaleString('en-US'), f1 = v => v.toFixed(1), pc = (u, v) => v ? `${u >= v ? '+' : '−'}${Math.abs(100 * (u / v - 1)).toFixed(0)} %` : '—';
+      z0Html = `<div class="sm-row health"><div class="lbl"><b>Licences outside production zones</b><small>broodstock, research and education licences · Biomasseregisteret · ${MONTHS_FR[m - 1].slice(0, 3)} ${y}</small></div>` +
+        `<div class="hl">Biomass at sea <b>${f1(a.biomasse_kg / 1e6)} kt</b> (${b ? f1(b.biomasse_kg / 1e6) + ' kt a year earlier, ' + pc(a.biomasse_kg, b.biomasse_kg) : '—'}), ${f1(100 * a.biomasse_kg / tot(K))} % of Norway's · ` +
+        `${f1(a.behfisk_stk / 1e6)} M fish · harvest ${MONTHS_FR[0].slice(0, 3)}–${MONTHS_FR[m - 1].slice(0, 3)} <b>${f1(hy / 1e6)} kt</b> (${f1(hp / 1e6)} kt a year earlier) · smolts released ${f1(sm / 1e6)} M (${f1(smp / 1e6)} M)</div>` +
+        `<div class="ev info">Counted in every Norway total since November 2026. The register gives no holder or zone for these licences; the BarentsWatch licence register lists who holds broodstock, research and education licences (AquaGen, Mowi, Nordnorsk Stamfisk, Benchmark, feed and pharma companies, research institutes, county schools).</div></div>`; } }
+  document.getElementById('smBio').innerHTML = bio + z0Html + hlHtml;
 
   // ---------- ventes ----------
   let sales = bioRow('harv', 'Harvested volume', 'live weight, month', fmtT, { noun: 'harvest', upGood: true, stable: 0.02 });
@@ -7917,20 +7944,28 @@ function genBuild(po) {
   const flows = C.length > 0 && C[0].dead_stk !== undefined;
   const A = {};   // A[generation][ym]
   C.forEach(c => {
-    if (po && c.po !== po) return;
+    if (po && c.po !== (po === 100 ? 0 : po)) return;   // 100 = licences sans zone (code 0)
     const ym = c.year * 100 + c.month, G = A[c.cohort] || (A[c.cohort] = {});
-    const x = G[ym] || (G[ym] = { n: 0, b: 0, g: 0, gn: 0, h: 0, hk: 0, d: 0, l: 0, big: 0, f56: 0 });
+    const x = G[ym] || (G[ym] = { n: 0, b: 0, g: 0, gn: 0, h: 0, hk: 0, d: 0, l: 0, big: 0, f56: 0, ha: 0 });
     const n = c.stock || 0, w = c.weight_kg || 0;
     x.n += n; x.b += n * w;
     if (c.growth_kg !== null && c.growth_kg !== undefined && n > 0) { x.g += c.growth_kg * n; x.gn += n; }
     x.h += c.harv_stk || 0; x.hk += c.harv_kg || 0; x.d += c.dead_stk || 0; x.l += c.loss_stk || 0;
+    if (c.harv_stk > 0 && c.age_months !== null && c.age_months !== undefined) x.ha += c.harv_stk * c.age_months;   // mois en mer des poissons abattus
     if (w > 0 && n > 0) { const t6 = genTail(w); x.big += n * w * t6; x.f56 += n * w * (genTailAt(w, 5 / PK_GUT) - t6); }
   });
   // cumuls : poissons entres = max(stock + sorties cumulees), recolte et mortalite cumulees
-  Object.values(A).forEach(G => { let ch = 0, cd = 0, cl = 0, chk = 0, ent = 0;
+  Object.values(A).forEach(G => { let ch = 0, cd = 0, cl = 0, chk = 0, ent = 0, cha = 0, chA = 0, prev = null;
     Object.keys(G).map(Number).sort((a, b) => a - b).forEach(ym => { const x = G[ym];
       ch += x.h; cd += x.d; cl += x.l; chk += x.hk; ent = Math.max(ent, x.n + ch + cd + cl);
-      Object.assign(x, { ch, cd, cl, chk, ent, w: x.n ? x.b / x.n : NaN, gr: x.gn ? x.g / x.gn : NaN }); }); });
+      if (x.ha > 0) { cha += x.ha; chA += x.h; }
+      // croissance de TOUTE la generation dans le mois (poissons abattus et morts compris) : (biomasse + abattus + morts x poids du mois
+      // precedent) / poissons presents en debut de mois - poids du mois precedent. Mois ou des poissons entrent (mises a l'eau) :
+      // non calcule, la moyenne baisserait mecaniquement (c'est ce qui donnait une "croissance negative" en avril pour la generation 2026).
+      let wg = NaN;
+      if (prev && prev.n > 0 && prev.b > 0 && x.n + x.h + x.d + x.l <= prev.n * 1.02) { const wp = prev.b / prev.n; wg = (x.b + x.hk + (x.d + x.l) * wp) / prev.n - wp; }
+      Object.assign(x, { ch, cd, cl, chk, ent, w: x.n ? x.b / x.n : NaN, gr: x.gn ? x.g / x.gn : NaN, wg, tsh: chA > 0 ? cha / chA : NaN });
+      prev = x; }); });
   return { A, flows };
 }
 
@@ -7939,7 +7974,8 @@ function renderGenerations() {
   if (!DATA_RAW || !DATA_RAW.cohort) { $g('genSub').innerHTML = 'Loading…'; return; }
   const zs = $g('genPo');
   if (!zs.options.length) {
-    zs.innerHTML = '<option value="0">Norway (all zones)</option>' + Object.keys(PO_NAMES).map(k => `<option value="${k}">${k}. ${PO_NAMES[k]}</option>`).join('');
+    zs.innerHTML = '<option value="0">Norway (all zones)</option>' + Object.keys(PO_NAMES).filter(k => k !== '0').map(k => `<option value="${k}">${k}. ${PO_NAMES[k]}</option>`).join('') +
+      `<option value="100">Other licences, no zone (broodstock, research, education)</option>`;
     zs.addEventListener('change', () => { genPoSel = +zs.value; renderGenerations(); });
     $g('genN').addEventListener('change', () => { genNSel = +$g('genN').value; renderGenerations(); });
   }
@@ -7968,6 +8004,7 @@ function renderGenerations() {
       `<div class="ln">average weight <b style="color:var(--ink)">${x.w.toFixed(2)} kg</b> ${p ? tmVar(tmPc(x.w, p.w)) : ''} · biomass ${tmKt(x.b / 1000)} ${p ? tmVar(tmPc(x.b, p.b)) : ''}</div>` +
       `<div class="ln">growth, last 3 months <b style="color:var(--ink)">${isFinite(gr3) ? gr3.toFixed(2) + ' kg/month' : '—'}</b>${isFinite(gr3) && isFinite(pgr3) ? ` (${pgr3.toFixed(2)} a year earlier)` : ''}</div>` +
       `<div class="ln">dead so far <b style="color:var(--ink)">${pc(mort)}</b> ${dpt(mort, pmort)} · harvested ${pc(harv)} ${dpt(harv, pharv, true)}</div>` +
+      (isFinite(x.tsh) ? `<div class="ln">time at sea of the fish harvested so far <b style="color:var(--ink)">${x.tsh.toFixed(1)} months</b>${p && isFinite(p.tsh) ? ` (${p.tsh.toFixed(1)} a year earlier)` : ''}</div>` : '') +
       `<div class="ln">above ~6 kg gutted (estimate) <b style="color:var(--ink)">${tmKt(x.big / 1000)}</b> ${p && x.big > 5e5 && p.big > 5e5 ? tmVar(tmPc(x.big, p.big), 5) : ''}</div>` +
       `<div class="ln">5–6 kg gutted, next in line (estimate) <b style="color:var(--ink)">${tmKt(x.f56 / 1000)}</b> ${p && x.f56 > 5e5 && p.f56 > 5e5 ? tmVar(tmPc(x.f56, p.f56), 5) : ''}</div></div>`;
   }).join('');
@@ -7988,8 +8025,18 @@ function renderGenerations() {
   const alive = x => x.ent > 0 && x.n / x.ent >= 0.02;
   const ready = x => { const g = gOf(x); return !flows || !g || x.ent >= 0.2 * entMax[g]; };
   $g('genW').innerHTML = `<div class="sig-sub"><b>Average weight</b> (kg, live)</div>` + vzLines(ages, ser(x => ready(x) && (alive(x) || !flows) ? x.w : null), { axis: 'kg live', unit: 'kg', digits: 1, H: 230, xfmt: genAgeLab });
-  $g('genS').innerHTML = flows ? `<div class="sig-sub"><b>Fish still at sea</b> (% of the fish put to sea)</div>` + vzLines(ages, ser(x => x.ent ? 100 * x.n / x.ent : null), { axis: '% left', unit: '%', digits: 0, H: 230, xfmt: genAgeLab }) : '';
-  $g('genM').innerHTML = flows ? `<div class="sig-sub"><b>Cumulative mortality</b> (dead fish, % of the fish put to sea)</div>` + vzLines(ages, ser(x => x.ent && ready(x) ? 100 * x.cd / x.ent : null), { axis: '% dead', unit: '%', digits: 1, H: 230, xfmt: genAgeLab }) : '';
+  $g('genS').innerHTML = flows ? `<div class="sig-sub"><b>Average monthly growth</b> (kg live gained per fish in the month, whole generation: harvested and dead fish included; months when new smolts enter are left out)</div>` +
+    vzLines(ages, ser(x => ready(x) && alive(x) && isFinite(x.wg) && x.wg > -0.1 ? x.wg : null), { axis: 'kg / month', unit: 'kg', digits: 2, H: 230, xfmt: genAgeLab }) : '';
+  // duree en mer avant abattage : une barre par generation (moyenne ponderee par le nombre de poissons abattus), et la part deja abattue
+  { const gl = Object.keys(A).map(Number).filter(g => g >= Math.floor(LAST / 100) - 8 && g <= Math.floor(LAST / 100)).sort((a, b) => a - b).filter(g => { const x = at(g, LAST) || {}; const ks = Object.keys(A[g]).map(Number).filter(k => k <= LAST); const L2 = ks.length ? A[g][Math.max(...ks)] : null; return L2 && L2.ent && L2.ch >= 0.05 * L2.ent; });
+    const last = g => { const ks = Object.keys(A[g]).map(Number).filter(k => k <= LAST); return A[g][Math.max(...ks)]; };
+    const ts = gl.map(g => last(g).tsh), hv = gl.map(g => 100 * last(g).ch / last(g).ent), done = gl.map(g => { const x = last(g); return (x.ch + x.cd + x.cl) / x.ent >= 0.95; });
+    $g('genM').innerHTML = flows && gl.length ? `<div class="sig-sub"><b>Time at sea before harvest</b>, by generation: average months between release and harvest of the fish harvested (weighted by number of fish). ` +
+      `Bars = months at sea (left scale); the label shows the share of the fish put to sea that were harvested (the rest died or were lost) — generations still being harvested (darker) will move up as their last, oldest fish come out. ` +
+      `A lower bar = shorter cycles (bigger smolts, faster growth, or early harvests).</div>` +
+      scSvg(gl.map(String), [{ v: ts, bar: true, col: (i) => done[i] ? '#4fc3f7' : '#2c6f8c', lab: 'months at sea — generation finished (95 % of its fish out: harvested, dead or lost)', col0: '#4fc3f7' },
+        { v: ts.map(() => null), bar: true, lab: 'generation still being harvested', col: '#2c6f8c', col0: '#2c6f8c' }],
+        { H: 200, min: 0, fmt: v => v.toFixed(0), lab: g => { const i = gl.indexOf(+g); return `Generation ${g}: ${ts[i].toFixed(1)} months at sea, ${hv[i].toFixed(0)} % harvested`; }, xl: g => { const i = gl.indexOf(+g); return `${g} · ${ts[i].toFixed(1)} m · ${hv[i].toFixed(0)} %`; } }) : ''; }
   // ---- reservoir de gros poissons
   const k36 = tmRange(LAST, 36), bigG = Object.keys(A).map(Number).filter(g => k36.some(k => (at(g, k) || {}).big > 5e5)).sort((a, b) => a - b);
   const totBig = k => Object.keys(A).reduce((s2, g) => s2 + ((at(g, k) || {}).big || 0), 0) / 1e6;
@@ -8457,7 +8504,7 @@ const $ = id => document.getElementById(id);
 let G = null;            // donnees preparees
 const NOR = 99;          // "zone" Norvege entiere : somme des 13 zones (generations, registre, temperature et poux ponderes par la biomasse)
 const zName = po => po === NOR ? 'Norway, all zones' : `Zone ${po} · ${PO_NAMES[po]}`;
-const S = { gen: null, met: 'gain', k: null, po: 4, play: null };
+const S = { gen: null, met: 'gain', k: null, po: NOR, play: null };
 
 // ---------------------------------------------------------------- preparation
 function prepare(d) {
@@ -8713,7 +8760,8 @@ function renderMap(Z) {
     m += `</g>`; }
   // Norvege
   let n = 0, wsum = 0, g = 0, gn = 0, feed = 0, feedP = 0, put = 0;
-  for (let po = 1; po <= 13; po++) { const z = Z[po]; put += z.put || 0; if (z.w !== null) { n += z.n; wsum += z.n * z.w; } if (z.gain !== null) { g += z.n * z.gain; gn += z.n; } feed += z.feed || 0; feedP += z.feedP || 0; }
+  const z0 = zoneStat(0, k, S.gen);   // licences sans zone (code 0) : comptees dans le total Norvege, pas sur la carte
+  for (const z of [...Object.values(Z), z0]) { put += z.put || 0; if (z.w !== null) { n += z.n; wsum += z.n * z.w; } if (z.gain !== null) { g += z.n * z.gain; gn += z.n; } feed += z.feed || 0; feedP += z.feedP || 0; }
   m += `<g class="gm-zone" data-po="${NOR}" transform="translate(236,374)" style="cursor:pointer"><rect width="192" height="110" rx="8" fill="#0d1a24" stroke="${S.po === NOR ? '#ffd54f' : '#2a4352'}" stroke-width="${S.po === NOR ? 2 : 1}"/><text x="8" y="16" font-size="10" fill="#8fa4b0">NORWAY · generation ${S.gen}</text>` +
     `<text x="8" y="36" font-size="15" font-weight="bold" fill="#e7eef2">${f1(n)} M fish · ${n ? f2(wsum / n) : '—'} kg</text><text x="8" y="54" font-size="10.5" fill="#2fd6b4">${gn ? sg(g / gn, 2) + ' kg in ' + MON_GM[k % 100 - 1] : ''}</text>` +
     `<text x="8" y="70" font-size="10.5" fill="#ce93d8">feed ${f1(feed)} kt (${feedP ? sg(100 * (feed / feedP - 1), 1) + '% vs a year earlier' : ''})</text><text x="8" y="85" font-size="10" fill="#8fa4b0">${put ? Math.round(100 * n / put) + ' % of the ' + f1(put) + ' M put to sea' : ''}</text><text x="8" y="101" font-size="10" fill="${S.po === NOR ? '#ffd54f' : '#4fc3f7'}">${S.po === NOR ? '▸ shown on the right' : '▸ click for the national view'}</text></g>`;
