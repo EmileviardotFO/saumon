@@ -120,7 +120,18 @@ def fetch(url, timeout=30, headers=None):
 def strip(s): return re.sub(r'\s+', ' ', html.unescape(re.sub(r'<[^>]+>', ' ', s or ''))).strip()
 
 def parse_feed(raw):
-    out = []; root = ET.fromstring(raw)
+    out = []
+    try: root = ET.fromstring(raw)
+    except ET.ParseError:
+        # flux mal forme : salmonexpert.cl (nov. 2026) annonce de l'UTF-8 mais a envoye au robot des accents en Latin-1
+        # ("not well-formed" sur le "í" de "Artículos") ; aussi "&" nus ou caracteres de controle. On decode, on nettoie, on relit.
+        if isinstance(raw, bytes):
+            try: txt = raw.decode('utf-8')
+            except UnicodeDecodeError: txt = raw.decode('cp1252', 'replace')
+        else: txt = raw
+        txt = re.sub(r'&(?!(?:[a-zA-Z][a-zA-Z0-9]*|#[0-9]+|#x[0-9a-fA-F]+);)', '&amp;', txt)
+        txt = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', '', txt)
+        root = ET.fromstring(txt.encode('utf-8'))
     for it in root.iter():
         tag = it.tag.split('}')[-1]
         if tag not in ('item', 'entry'): continue

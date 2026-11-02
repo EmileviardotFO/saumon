@@ -27,7 +27,8 @@ def get(url, params, tries=3):
     last = None
     for i in range(tries):
         try:
-            req = urllib.request.Request(url + '?' + urllib.parse.urlencode(params), headers=UA)
+            # POST : avec des centaines d'identifiants, l'adresse GET depasse ~2 000 caracteres et Subpesca repond 404 (vu le 2 nov. 2026)
+            req = urllib.request.Request(url, data=urllib.parse.urlencode(params).encode(), headers=dict(UA, **{'Content-Type': 'application/x-www-form-urlencoded'}))
             with urllib.request.urlopen(req, timeout=120) as r: j = json.loads(r.read().decode('utf-8', 'ignore'))
             if isinstance(j, dict) and j.get('error'): raise RuntimeError(f"ArcGIS error {j['error'].get('code')}: {j['error'].get('message')}")
             return j
