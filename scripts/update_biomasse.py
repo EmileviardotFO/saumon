@@ -61,8 +61,13 @@ OTHER_LOSS_COLS = ['UTKAST_STK', 'RØMMING_STK', 'ANDRE_STK',
 def load_excel(path):
     df = pd.read_excel(path, sheet_name='Biomasse-prod-omr', skiprows=5)
     df.columns = [c.strip() for c in df.columns]
-    df = df[(df['ARTSID'] == 'LAKS') &
-            (df['PO_KODE'].apply(lambda x: isinstance(x, int)))].copy()
+    # Licences sans zone de production (PO_KODE "(null)" : geniteurs, recherche, enseignement, presentation...) :
+    # gardees depuis novembre 2026 sous le code 0. Elles pesent 1 a 2 % de la recolte (29,9 kt sur jan.-sept. 2026,
+    # 2,2 %) et leur MTB est deja compte dans le MTB "toutes licences" : les ecarter sous-estimait le total Norvege.
+    df = df[df['ARTSID'] == 'LAKS'].copy()
+    df['PO_KODE'] = df['PO_KODE'].apply(lambda x: 0 if str(x).strip().lower() in ('(null)', 'null', 'nan', '') else x)
+    df = df[df['PO_KODE'].apply(lambda x: isinstance(x, (int, float)) and not pd.isna(x))].copy()
+    df['PO_KODE'] = df['PO_KODE'].astype(int)
 
     # Certaines lignes arrivent sans annee de mise a l'eau (UTSETTSAAR vide),
     # ou plus rarement sans annee/mois. Vu en septembre 2026 : le fichier est
@@ -208,7 +213,7 @@ def main():
 
     print(f"Lecture de {path} ...")
     df = load_excel(path)
-    print(f"  {len(df)} lignes LAKS avec PO valide, "
+    print(f"  {len(df)} lignes LAKS (dont {int((df['PO_KODE'] == 0).sum())} hors zone, code 0), "
           f"{df['ÅR'].min()}-{df['ÅR'].max()}")
 
     cohort_rows = build_cohort(df, existing_cohort)
