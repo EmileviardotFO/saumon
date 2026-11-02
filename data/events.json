@@ -11,15 +11,15 @@
    "thefishsite.com": "error: HTTPError: HTTP Error 404: Not Found",
    "news.google.com (NO no #1)": "ok 10 articles, 8 kept",
    "news.google.com (NO no #2)": "ok 10 articles, 0 kept",
-   "news.google.com (CL es #3)": "ok 62 articles, 17 kept",
+   "news.google.com (CL es #3)": "ok 62 articles, 18 kept",
    "news.google.com (CL es #4)": "ok 10 articles, 6 kept",
    "news.google.com (IS is #5)": "ok 0 articles, 0 kept",
    "news.google.com (IS en #6)": "ok 27 articles, 9 kept",
-   "news.google.com (GB en #7)": "ok 51 articles, 11 kept",
-   "news.google.com (FO en #8)": "ok 8 articles, 2 kept",
+   "news.google.com (GB en #7)": "ok 19 articles, 10 kept",
+   "news.google.com (FO en #8)": "ok 9 articles, 2 kept",
    "news.google.com (FO fo #9)": "ok 0 articles, 0 kept",
-   "news.google.com (CA en #10)": "ok 12 articles, 4 kept",
-   "news.google.com (multi en #11)": "ok 42 articles, 3 kept",
+   "news.google.com (CA en #10)": "ok 31 articles, 5 kept",
+   "news.google.com (multi en #11)": "ok 41 articles, 3 kept",
    "gov.scot FHI": "error: no xlsx link"
   },
   "note": "news = articles kept by keyword (a mortality word + a farming word), classified by cause and basin; manual = events entered by hand with their losses; scotland_fhi = mortalities reported to the Scottish Fish Health Inspectorate",
@@ -167,6 +167,20 @@
     "IS"
    ],
    "id": "996a503c7407"
+  },
+  {
+   "date": "2026-10-25",
+   "title": "900 toneladas de pérdida: la salmonicultura frente a El Niño",
+   "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxNcHIyZ1B0eXZOcFBLVDF1VG9SOXNoVTY1SVdhYjZyOUc0UDk1emxqcmF2ZVo0OWdqdVZUM1dzU1hZcDlQdHpQam5VSWlJbU1vWTdTM25lb1FvQTJjOTFVNVRZMllIUXB4WkwwNUpESGRVTDZmVlE2amk2cnZlRDN4UWdzU0tpcVY2VVpXeWFLbHJ5OEtLb1UwLQ?oc=5",
+   "source": "El Reportero de Iquique",
+   "lang": "es",
+   "causes": [
+    "temperature"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "fa8a1d556575"
   },
   {
    "date": "2026-10-24",
@@ -843,6 +857,20 @@
     "IS"
    ],
    "id": "04895ac3212a"
+  },
+  {
+   "date": "2026-09-04",
+   "title": "3 deaths, 68 hours: Repeat Highway 1 crashes between Sicamous and Revelstoke spark safety fears",
+   "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxOSTI3SGhXdmxNNDZBT3hTR0hKNFZxOEhBbGZPaWd2azJybkRPMlZldDhvOUNZTmpGdzZocjhuMzNsMExwbmZKSERnRlYtVi1rMHU5dnNIOXBDZHBQU1YtcGx5SUItU3RsRy1PbHlzMkVDa201WV91aktjQlY4bWRFWXhrbHVFV3NwRkNTUDZPcW1RYnFnTEhQbjFmV0dnelQ0U3RCbkRnTkxlV19XZmExV0lWeXliS2VwOF9HdDBvS3pQNWE5UFpR?oc=5",
+   "source": "Salmon Arm Observer",
+   "lang": "en",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "CA"
+   ],
+   "id": "0b0a01bcd0e4"
   }
  ],
  "scotland_fhi": null
