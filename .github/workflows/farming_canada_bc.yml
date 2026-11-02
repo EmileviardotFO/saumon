@@ -1,0 +1,35 @@
+name: farming-canada-bc
+on:
+  schedule:
+    - cron: '30 5 * * *'
+  workflow_dispatch: {}
+permissions:
+  contents: write
+concurrency:
+  group: farming-commit
+  cancel-in-progress: false
+defaults:
+  run:
+    working-directory: farming
+jobs:
+  maj:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - name: Catalogue DFO (qu'est-ce qui a changé ?)
+        run: python scripts/ingest_bc.py catalogue
+      # Premier passage seulement, pour remplir COLS :
+      # - run: python scripts/ingest_bc.py inspect "<adresse donnée par l'étape catalogue>"
+      # Une fois COLS renseigné, décommenter :
+      # - run: mkdir -p donnees_ca && python scripts/ingest_bc.py build --catalogue -o donnees_ca/bc_mensuel.csv
+      - name: Publier les changements
+        if: always()
+        run: |
+          git config user.name "farming-canada"; git config user.email "actions@users.noreply.github.com"
+          git add -A .   # uniquement le dossier farming/
+          git diff --cached --quiet && exit 0
+          git commit -m "Canada BC $(date -u +%F)"
+          git pull --rebase --autostash origin "${GITHUB_REF_NAME}"
+          git push
