@@ -220,6 +220,27 @@ jobs:
         timeout-minutes: 10
         run: python3 scripts/smoke_test.py data/smoke.json
 
+      - name: Australie - mortalites EPA Tasmanie et production par entreprise (portail NRE)
+        # Pas d'API : la page EPA (tableau mensuel par methode de traitement) et le portail NRE sont lus comme
+        # du texte. Ecrit farming/donnees_au/ et remplit les onglets AU_ du classeur. Publication trimestrielle
+        # de l'EPA (vers le 21 janvier, avril, juillet, octobre) : le script signale revisions et retards.
+        id: australia
+        continue-on-error: true
+        timeout-minutes: 5
+        working-directory: farming
+        run: python3 scripts/maj_australie.py --xlsx farming_canada_australie.xlsx --sortie donnees_au --strict
+
+      - name: Canada Colombie-Britannique - catalogue DFO (poux, mortalites)
+        # Interroge le catalogue open.canada.ca : dit si un jeu du DFO a change depuis le dernier passage.
+        # La reconstruction mensuelle (etape commentee) s'active une fois COLS renseigne dans ingest_bc.py.
+        id: canada_bc
+        continue-on-error: true
+        timeout-minutes: 5
+        working-directory: farming
+        run: |
+          python3 scripts/ingest_bc.py catalogue
+          # mkdir -p donnees_ca && python3 scripts/ingest_bc.py build --catalogue -o donnees_ca/bc_mensuel.csv
+
       - name: Enregistrer l'etat des sources dans data.json
         if: always()
         env:
@@ -243,6 +264,8 @@ jobs:
           STEP_EVENTS: ${{ steps.events.outcome }}
           STEP_NEWS: ${{ steps.news.outcome }}
           STEP_SMOKE: ${{ steps.smoke.outcome }}
+          STEP_AUSTRALIA: ${{ steps.australia.outcome }}
+          STEP_CANADA_BC: ${{ steps.canada_bc.outcome }}
         run: |
           python3 scripts/write_status.py
           rm -f data/smoke.json
@@ -252,12 +275,12 @@ jobs:
         run: |
           git config user.name  "github-actions"
           git config user.email "actions@github.com"
-          # data/ entier : data.json et les caches BarentsWatch.
-          git add data/ pdf/ xlsx/biomasse/
+          # data/ entier : data.json et les caches BarentsWatch ; farming/ : Australie et Canada.
+          git add data/ pdf/ xlsx/biomasse/ farming/
           if git diff --staged --quiet; then
             echo "Aucun changement."
           else
-            git commit -m "Mise a jour auto Akvafakta + Fiskeridirektoratet + SSB ($(date -u +%Y-%m-%d))"
+            git commit -m "Mise a jour auto Akvafakta + Fiskeridirektoratet + SSB + nationales + Australie/Canada ($(date -u +%Y-%m-%d))"
             # un fichier envoye a la main pendant l'execution ne doit pas faire echouer la publication
             git pull --rebase
             git push
@@ -265,7 +288,9 @@ jobs:
 
       - name: Signaler les problemes (e-mail de GitHub)
         # Les donnees sont deja publiees. Cette etape fait seulement passer le
-        # passage en rouge si une source ou le test a echoue.
+        # passage en rouge si une source ou le test a echoue. Volontairement hors
+        # alerte (sources fragiles ou deposees a la main) : Chine GACC, Ecosse,
+        # concessions chiliennes, veille evenements, actualite.
         if: always()
         run: |
           FAILED=""
@@ -274,10 +299,16 @@ jobs:
           [ "${{ steps.biomasse_fetch.outcome }}" = "failure" ] && FAILED="$FAILED Biomasse-telechargement"
           [ "${{ steps.biomasse_build.outcome }}" = "failure" ] && FAILED="$FAILED Biomasse-reconstruction"
           [ "${{ steps.ssb.outcome }}" = "failure" ] && FAILED="$FAILED SSB"
+          [ "${{ steps.ssb_weekly.outcome }}" = "failure" ] && FAILED="$FAILED SSB-hebdo"
+          [ "${{ steps.ssb_coprod.outcome }}" = "failure" ] && FAILED="$FAILED SSB-coproduits"
           [ "${{ steps.bw_health.outcome }}" = "failure" ] && FAILED="$FAILED BarentsWatch-sante"
           [ "${{ steps.bw_sites.outcome }}" = "failure" ] && FAILED="$FAILED BarentsWatch-registre"
           [ "${{ steps.estab.outcome }}" = "failure" ] && FAILED="$FAILED Mattilsynet"
           [ "${{ steps.eurostat.outcome }}" = "failure" ] && FAILED="$FAILED Eurostat"
+          [ "${{ steps.national.outcome }}" = "failure" ] && FAILED="$FAILED Statistiques-nationales"
+          [ "${{ steps.archive.outcome }}" = "failure" ] && FAILED="$FAILED Archive-previsions"
+          [ "${{ steps.australia.outcome }}" = "failure" ] && FAILED="$FAILED Australie"
+          [ "${{ steps.canada_bc.outcome }}" = "failure" ] && FAILED="$FAILED Canada-BC"
           [ "${{ steps.smoke.outcome }}" = "failure" ] && FAILED="$FAILED Test-du-tableau-de-bord"
           if [ -n "$FAILED" ]; then
             echo "::error::Etapes en echec :$FAILED (les autres donnees ont bien ete publiees)"
