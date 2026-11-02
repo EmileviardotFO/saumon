@@ -1,0 +1,143 @@
+{
+ "meta": {
+  "generated": "2026-11-02",
+  "status": {},
+  "note": "seed file; items are filled by scripts/update_news.py. calendar = upcoming dates entered by hand (date YYYY-MM-DD, basin, theme, what, url), never overwritten by the script."
+ },
+ "calendar": [
+  {
+   "date": "2026-11-03",
+   "basin": "NO",
+   "theme": "companies",
+   "what": "SalMar Q3 2026 report",
+   "url": ""
+  },
+  {
+   "date": "2026-11-03",
+   "basin": "IS",
+   "theme": "companies",
+   "what": "Icelandic Salmon (Arnarlax) Q3 2026 report",
+   "url": ""
+  },
+  {
+   "date": "2026-11-03",
+   "basin": "global",
+   "theme": "feed",
+   "what": "Peru: multisector working group on the cancelled anchovy season is set up (RM 334-2026-TR)",
+   "url": ""
+  },
+  {
+   "date": "2026-11-04",
+   "basin": "NO",
+   "theme": "companies",
+   "what": "Mowi Q3 2026 report: first 2027 volume guidance and feed-cost outlook (also Mowi Scotland, Arctic Fish, Mowi Chile)",
+   "url": ""
+  },
+  {
+   "date": "2026-11-04",
+   "basin": "NO",
+   "theme": "market",
+   "what": "SSB weekly export price, week 44",
+   "url": ""
+  },
+  {
+   "date": "2026-11-05",
+   "basin": "NO",
+   "theme": "market",
+   "what": "Seafood Council monthly exports, October 2026",
+   "url": ""
+  },
+  {
+   "date": "2026-11-05",
+   "basin": "NO",
+   "theme": "regulation",
+   "what": "Registration deadline for the Norwegian capacity auction (23:59)",
+   "url": "https://www.fiskeridir.no/"
+  },
+  {
+   "date": "2026-11-10",
+   "basin": "NO",
+   "theme": "companies",
+   "what": "Lerøy Q3 2026 report (Scottish Sea Farms as associate)",
+   "url": ""
+  },
+  {
+   "date": "2026-11-11",
+   "basin": "NO",
+   "theme": "regulation",
+   "what": "Norwegian capacity auction: 7,755 t MTB in PO1, PO12 and PO13, floor price NOK 270,000/t",
+   "url": "https://www.fiskeridir.no/"
+  },
+  {
+   "date": "2026-11-12",
+   "basin": "global",
+   "theme": "feed",
+   "what": "NOAA CPC ENSO diagnostic discussion (updated El Niño probabilities)",
+   "url": "https://www.cpc.ncep.noaa.gov/products/analysis_monitoring/enso_advisory/"
+  },
+  {
+   "date": "2026-11-12",
+   "basin": "NO",
+   "theme": "companies",
+   "what": "Grieg Seafood extended trading update",
+   "url": ""
+  },
+  {
+   "date": "2026-11-13",
+   "basin": "global",
+   "theme": "feed",
+   "what": "ENFEN official statement no. 20-2026 (Peru, coastal El Niño)",
+   "url": ""
+  },
+  {
+   "date": "2026-11-13",
+   "basin": "IS",
+   "theme": "companies",
+   "what": "Kaldvík Q3 2026 presentation",
+   "url": ""
+  },
+  {
+   "date": "2026-11-20",
+   "basin": "NO",
+   "theme": "biology",
+   "what": "Norwegian biomass statistics, end of October (Fiskeridirektoratet)",
+   "url": ""
+  },
+  {
+   "date": "2026-11-20",
+   "basin": "global",
+   "theme": "market",
+   "what": "China customs import data update (GACC)",
+   "url": ""
+  },
+  {
+   "date": "2026-11-26",
+   "basin": "GB",
+   "theme": "regulation",
+   "what": "SEPA consultation closes: Mowi Sron MPFF (Loch Alsh), in-feed lice medicine",
+   "url": ""
+  },
+  {
+   "date": "2026-11-30",
+   "basin": "GB",
+   "theme": "regulation",
+   "what": "SEPA digest of marine pen fish farm authorisations",
+   "url": ""
+  },
+  {
+   "date": "2026-12-17",
+   "basin": "IS",
+   "theme": "companies",
+   "what": "Kaldvík covenant waiver expires (share issue of at least EUR 97 M due before)",
+   "url": ""
+  },
+  {
+   "date": "2027-02-15",
+   "basin": "FO",
+   "theme": "companies",
+   "what": "Bakkafrost Q4 2026 report",
+   "url": ""
+  }
+ ],
+ "items": []
+}

@@ -74,6 +74,32 @@
    "src": "iLaks"
   },
   {
+   "date": "2025-10",
+   "basin": "GB",
+   "region": "Skye — Gob na Hoe (Loch Dunvegan)",
+   "cause": "jellyfish",
+   "agent": "jellyfish",
+   "fish_m": null,
+   "tonnes": 1027,
+   "company": "Loch Duart",
+   "note": "the company's 'worst mortality event' (autumn 2025), at Gob na Hoe off Skye; operating loss of £8.4 M for the year to 31 March 2026 despite a record 8,142 t harvest; £1.7 M biomass insurance claim. Tonnes = deaths reported to SEPA at the site in 2025; Loch Duart lost 13 % of its biomass per month in October and November 2025",
+   "url": "https://www.thegrocer.co.uk/news/salmon-deaths-and-lower-prices-slash-profits-at-loch-duart/722513.article",
+   "src": "The Grocer / SEPA"
+  },
+  {
+   "date": "2025-09",
+   "basin": "GB",
+   "region": "Skye — Portree and Portree Outer (Sound of Raasay)",
+   "cause": "disease",
+   "agent": "Pasteurella",
+   "fish_m": null,
+   "tonnes": 1782,
+   "company": "Bakkafrost Scotland",
+   "note": "Pasteurella outbreak from Q3 2025, mortality peaking the week of 29 September; incident costs about USD 9 M in September and DKK 60 M in Q4 for Scotland, nearly half from Portree. Tonnes = 2025 deaths reported to SEPA at the two Portree sites; the company lost 8.5 % of its biomass in September and 8.2 % in October 2025",
+   "url": "https://www.salmonbusiness.com/scotland-remains-pressure-point-as-bakkafrost-reveals-brutal-q4-mortality-costs/",
+   "src": "SalmonBusiness / gov.scot FHI / SEPA"
+  },
+  {
    "date": "2021-04",
    "basin": "CL",
    "region": "Los Lagos (Comau fjord) and Aysén",
