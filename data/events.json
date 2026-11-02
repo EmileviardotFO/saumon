@@ -8,16 +8,16 @@
    "www.fishfarmermagazine.com": "ok 30 articles, 0 kept",
    "www.salmonexpert.cl": "ok 55 articles, 2 kept",
    "thefishsite.com": "ok 50 articles, 2 kept",
-   "news.google.com (NO no #1)": "ok 9 articles, 8 kept",
+   "news.google.com (NO no #1)": "ok 10 articles, 8 kept",
    "news.google.com (NO no #2)": "ok 10 articles, 1 kept",
-   "news.google.com (CL es #3)": "ok 60 articles, 15 kept",
+   "news.google.com (CL es #3)": "ok 29 articles, 11 kept",
    "news.google.com (CL es #4)": "ok 10 articles, 6 kept",
    "news.google.com (IS is #5)": "ok 0 articles, 0 kept",
-   "news.google.com (IS en #6)": "ok 10 articles, 4 kept",
-   "news.google.com (GB en #7)": "ok 52 articles, 11 kept",
+   "news.google.com (IS en #6)": "ok 28 articles, 10 kept",
+   "news.google.com (GB en #7)": "ok 19 articles, 10 kept",
    "news.google.com (FO en #8)": "ok 11 articles, 2 kept",
    "news.google.com (FO fo #9)": "ok 0 articles, 0 kept",
-   "news.google.com (CA en #10)": "ok 26 articles, 5 kept",
+   "news.google.com (CA en #10)": "ok 8 articles, 1 kept",
    "news.google.com (multi en #11)": "ok 44 articles, 3 kept",
    "news.google.com (multi en #12)": "ok 100 articles, 11 kept",
    "gov.scot FHI": "ok 6711 reports, last 2026-09-15"
@@ -195,6 +195,20 @@
     "IS"
    ],
    "id": "996a503c7407"
+  },
+  {
+   "date": "2026-10-27",
+   "title": "More than a million salmon died in sea cages in September",
+   "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxOdm11clBfWUlISDJqQ0ExeXJSV3E4Q2ZpNkVOS29JNWIyQkt3b19GbzJjcXEwYlB6bjJobDJTQThtQzFUUUd3MVljY1ZKZkowWGZDdlpRbFotcFRqdnFBS0VCU0JUSnpZYmwwWXZDSEktSS0xSDVFMGJRMDU0ZFVINHhkcUI1bkNNLUlEaUdtUV9CMjFkWnlCaElULXlzYUY2di1XMQ?oc=5",
+   "source": "RÚV.is",
+   "lang": "en",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "IS"
+   ],
+   "id": "df4ab39dae3a"
   },
   {
    "date": "2026-10-25",
