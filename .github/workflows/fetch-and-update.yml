@@ -65,13 +65,19 @@ jobs:
         continue-on-error: true
         # Nouveau fichier -> reconstruction. Sinon, reconstruction depuis le dernier
         # fichier deja archive si data.json a encore l'ancien format de cohort (sans
-        # les flux par generation ajoutes pour l'onglet Generations).
+        # les flux par generation ajoutes pour l'onglet Generations), ou s'il n'a pas
+        # encore les licences hors zone (code 0, novembre 2026).
         run: |
           if [ -n "${dest:-}" ]; then
             python3 scripts/update_biomasse.py "$dest"
           elif python3 -c "import json,sys; c=json.load(open('data/data.json')).get('cohort',[]); sys.exit(0 if c and 'dead_stk' not in c[0] else 1)"; then
             LAST=$(ls -1 xlsx/biomasse/biostat-total-omr-*.xlsx | sort | tail -1)
             echo "Ancien format de cohort : reconstruction depuis $LAST"
+            python3 scripts/update_biomasse.py "$LAST"
+          elif python3 -c "import json,sys; r=json.load(open('data/data.json')).get('records',[]); sys.exit(0 if r and not any(x.get('po')==0 for x in r) else 1)"; then
+            # novembre 2026 : les licences sans zone (code 0) sont gardees ; reconstruction une fois depuis le dernier fichier archive
+            LAST=$(ls -1 xlsx/biomasse/biostat-total-omr-*.xlsx | sort | tail -1)
+            echo "Licences hors zone absentes : reconstruction depuis $LAST"
             python3 scripts/update_biomasse.py "$LAST"
           else
             echo "Biomasse : rien a reconstruire."
