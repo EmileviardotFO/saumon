@@ -37,7 +37,8 @@ def http(url, data=None, essais=3):
         try:
             req = urllib.request.Request(url, data=json.dumps(data).encode() if data else None,
                                          headers={**UA, **({'Content-Type': 'application/json'} if data else {})})
-            return urllib.request.urlopen(req, timeout=90).read().decode('utf-8-sig')
+            rep = urllib.request.urlopen(req, timeout=90)
+            return rep.read().decode('utf-8-sig') if rep.status != 204 else ''
         except urllib.error.HTTPError as e:
             if e.code in (400, 404): raise RuntimeError(f'{e.code} sur {url} : {e.read()[:300]!r}')
             err = e
@@ -58,6 +59,8 @@ def periode_iso(p):
 def attendu(derniere, delai_jours, frequence='mois'):
     """Date à laquelle la période suivante devrait être publiée."""
     if not derniere: return None
+    if len(derniere) == 4 and derniere.isdigit():                       # table annuelle
+        return dt.date(int(derniere) + 1, 12, 31) + dt.timedelta(days=delai_jours)
     if frequence == 'semaine':
         an, sem = int(derniere[:4]), int(derniere[-2:])
         fin = dt.date.fromisocalendar(an, sem, 7) + dt.timedelta(days=7)
@@ -69,6 +72,7 @@ def attendu(derniere, delai_jours, frequence='mois'):
 def statut(derniere, cfg, aujourdhui):
     a = attendu(derniere, cfg.get('delai_jours', 40), cfg.get('frequence', 'mois'))
     if not derniere: return 'inconnu', a
+    if len(derniere) == 4 and derniere.isdigit(): return 'TABLE ANNUELLE : choisir la table mensuelle', a
     if a and aujourdhui > a + dt.timedelta(days=cfg.get('tolerance_jours', 7)):
         return 'EN RETARD', a
     return ('période suivante attendue maintenant' if a and aujourdhui >= a else 'à jour'), a
@@ -78,8 +82,13 @@ def statut(derniere, cfg, aujourdhui):
 CENSUS = 'https://api.census.gov/data/timeseries/intltrade/{flux}/hs'
 
 def census_tableau(texte):
-    """Réponse JSON du Census (liste de listes, 1re ligne = en-têtes) -> liste de dicts."""
-    t = json.loads(texte)
+    """Réponse JSON du Census (liste de listes, 1re ligne = en-têtes) -> liste de dicts.
+    Corps vide = HTTP 204, aucune donnée pour cette requête."""
+    if not texte.strip(): return []
+    try:
+        t = json.loads(texte)
+    except ValueError:
+        raise RuntimeError(f'réponse non JSON du Census : {texte[:200]!r}')
     out = []
     for r in t[1:]:
         d = {}
@@ -88,38 +97,44 @@ def census_tableau(texte):
         out.append(d)
     return out
 
-def census(cfg, debut, fin):
+def census_url(flux, params):
+    if os.environ.get('CENSUS_KEY'): params['key'] = os.environ['CENSUS_KEY']
+    return CENSUS.format(flux=flux) + '?' + urllib.parse.urlencode(params, safe='*,:', quote_via=urllib.parse.quote)
+
+def mois_entre(debut, fin):
+    a, m = int(debut[:4]), int(debut[5:7]); out = []
+    while (a, m) <= (int(fin[:4]), int(fin[5:7])):
+        out.append(f'{a}-{m:02d}'); a, m = (a + 1, 1) if m == 12 else (a, m + 1)
+    return out
+
+def census(cfg, mois):
+    """Une requête par mois et par code : simple, et c'est la syntaxe la mieux documentée."""
     flux = cfg.get('flux', 'imports')
     pref = 'I' if flux == 'imports' else 'E'
     val, qte = (('GEN_VAL_MO', 'GEN_QY1_MO') if flux == 'imports' else ('ALL_VAL_MO', 'QTY_1_MO'))
     lignes = []
-    for code in cfg['codes_sh']:
-        params = {'get': f'CTY_CODE,CTY_NAME,{pref}_COMMODITY,{val},{qte},UNIT_QY1',
-                  'time': f'from {debut} to {fin}', 'COMM_LVL': 'HS10', f'{pref}_COMMODITY': f'{code}*'}
-        if os.environ.get('CENSUS_KEY'): params['key'] = os.environ['CENSUS_KEY']
-        url = CENSUS.format(flux=flux) + '?' + urllib.parse.urlencode(params, safe='*,:')
-        try:
-            rows = census_tableau(http(url))
-        except RuntimeError as e:
-            if '204' in str(e) or 'No Content' in str(e): rows = []
-            else: raise
-        for r in rows:
-            if r.get('CTY_CODE', '').startswith(('-', '0')): continue   # total et regroupements (UE, OCDE...)
-            lignes.append({'periode': periode_iso(r['time']), 'partenaire': r['CTY_NAME'], 'code_partenaire': r['CTY_CODE'],
-                           'produit': r[f'{pref}_COMMODITY'], 'valeur': r.get(val) or '', 'quantite': r.get(qte) or '',
-                           'unite_quantite': r.get('UNIT_QY1', ''), 'unite_valeur': 'USD'})
+    for per in mois:
+        for code in cfg['codes_sh']:
+            params = {'get': f'CTY_CODE,CTY_NAME,{pref}_COMMODITY,{val},{qte},UNIT_QY1',
+                      'time': per, 'COMM_LVL': 'HS10', f'{pref}_COMMODITY': f'{code}*'}
+            for r in census_tableau(http(census_url(flux, params))):
+                if r.get('CTY_CODE', '').startswith(('-', '0')): continue   # total et regroupements (UE, OCDE...)
+                lignes.append({'periode': per, 'partenaire': r['CTY_NAME'], 'code_partenaire': r['CTY_CODE'],
+                               'produit': r[f'{pref}_COMMODITY'], 'valeur': r.get(val) or '', 'quantite': r.get(qte) or '',
+                               'unite_quantite': r.get('UNIT_QY1', ''), 'unite_valeur': 'USD'})
     return lignes
 
 def census_derniere(cfg):
-    """Dernier mois publié : on demande l'année en cours et la précédente sur un agrégat léger."""
-    an = dt.date.today().year
-    params = {'get': 'GEN_VAL_MO' if cfg.get('flux', 'imports') == 'imports' else 'ALL_VAL_MO',
-              'time': f'from {an - 1}-01 to {an}-12', 'COMM_LVL': 'HS2',
-              ('I_COMMODITY' if cfg.get('flux', 'imports') == 'imports' else 'E_COMMODITY'): '03'}
-    if os.environ.get('CENSUS_KEY'): params['key'] = os.environ['CENSUS_KEY']
-    url = CENSUS.format(flux=cfg.get('flux', 'imports')) + '?' + urllib.parse.urlencode(params, safe=',:')
-    rows = census_tableau(http(url))
-    return max((periode_iso(r['time']) for r in rows), default=None)
+    """Dernier mois publié : on sonde les mois en reculant depuis le mois dernier (au plus 8)."""
+    flux = cfg.get('flux', 'imports'); pref = 'I' if flux == 'imports' else 'E'
+    d = dt.date.today().replace(day=1)
+    for _ in range(8):
+        d = (d - dt.timedelta(days=1)).replace(day=1)
+        per = f'{d.year}-{d.month:02d}'
+        params = {'get': 'GEN_VAL_MO' if flux == 'imports' else 'ALL_VAL_MO', 'time': per,
+                  'COMM_LVL': 'HS2', f'{pref}_COMMODITY': '03'}
+        if census_tableau(http(census_url(flux, params))): return per
+    return None
 
 
 # ----------------------------------------------------------------------------- PxWeb
@@ -246,7 +261,18 @@ def main():
             if a.fraicheur: continue
             if cfg['type'] == 'pxweb' and not cfg.get('selection'):
                 journal(a.sortie, nom, 'sélection à configurer', 'lancer --decouvrir pour choisir les codes'); continue
-            lignes = census(cfg, a.depuis, fin) if cfg['type'] == 'census' else pxweb(cfg, a.depuis, fin)
+            if cfg['type'] == 'census':
+                deja = set()
+                p = os.path.join(a.sortie, f'{nom}.csv')
+                if os.path.exists(p):
+                    with open(p, encoding='utf-8-sig', newline='') as fh: deja = {r['periode'] for r in csv.DictReader(fh)}
+                tous = mois_entre(a.depuis, derniere) if derniere else []
+                a_tirer = [m for m in tous if m not in deja] + [m for m in tous[-3:] if m in deja]
+                lignes = census(cfg, sorted(set(a_tirer)))
+            else:
+                if len(derniere or '') == 4:
+                    journal(a.sortie, nom, 'ignorée', 'table annuelle : remplacer l\'adresse par la table mensuelle'); continue
+                lignes = pxweb(cfg, a.depuis, fin)
             for r in lignes: r['source'] = nom
             nouv, rev = fusionner(os.path.join(a.sortie, f'{nom}.csv'), lignes, releve)
             journal(a.sortie, nom, 'données', f'{len(lignes)} lignes ; nouvelles périodes : {", ".join(nouv) or "aucune"}')
