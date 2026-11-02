@@ -1076,6 +1076,16 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="sig-title">Canada, British Columbia — farms in use, sea lice, mortality events, smolt transfers (DFO public reporting)</div>
     <div class="sig-sub" id="caSub"></div>
     <div id="caCards" class="pr-cards"></div>
+    <div class="sig-title" style="margin-top:18px">Canadian farmed salmon by province</div>
+    <div class="sig-sub" id="caProvSub"></div>
+    <div id="caProvChart"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="caProv"></table></div>
+    <div class="sig-title" style="margin-top:18px">British Columbia farms and their operators</div>
+    <div class="sig-sub" id="caMapSub"></div>
+    <div class="sc-mapgrid">
+      <div id="caOpList"></div>
+      <div id="caMap" style="height:560px;border:1px solid var(--border);border-radius:8px;background:#0d1a24"></div>
+    </div>
     <div class="sig-title" style="margin-top:18px">Farms in use each month</div>
     <div class="sig-sub" id="caFarmSub"></div>
     <div id="caFarms"></div>
@@ -1099,10 +1109,19 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="sig-title">Australia (Tasmania) — salmon deaths and harvest by company (EPA Tasmania, NRE)</div>
     <div class="sig-sub" id="auSub"></div>
     <div id="auCards" class="pr-cards"></div>
+    <div class="sig-title" style="margin-top:18px">Salmon farm leases and the companies operating them</div>
+    <div class="sig-sub" id="auMapSub"></div>
+    <div class="sc-mapgrid">
+      <div id="auOpList"></div>
+      <div id="auMap" style="height:560px;border:1px solid var(--border);border-radius:8px;background:#0d1a24"></div>
+    </div>
     <div class="sig-title" style="margin-top:18px">Dead fish per month, by disposal route</div>
     <div class="sig-sub" id="auMortSub"></div>
     <div id="auMort"></div>
     <div style="overflow-x:auto"><table class="sig-table" id="auMortTab"></table></div>
+    <div class="sig-title" style="margin-top:18px">Deaths by company and by farm: what is public</div>
+    <div class="sig-sub" id="auCoSub"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="auFlags"></table></div>
     <div class="sig-title" style="margin-top:18px">Harvest by company, financial year (July–June)</div>
     <div class="sig-sub" id="auProdSub"></div>
     <div style="overflow-x:auto"><table class="sig-table" id="auProd"></table></div>
@@ -2877,7 +2896,32 @@ function renderNews() {
 // ===================== Chili (data/chili.json -> biologie, data/chile_sites.json, data/national_trade.json) =====================
 let CLD = null, CLS = null, CLT = null, CL_LOADING = false, CL_MAP = null, CL_LAYER = null, CL_OP = null;
 // ===================== Canada, Colombie-Britannique (data/canada.json <- scripts/build_canada.py <- farming/donnees_ca/brut) =====================
-let CAN = null, CAN_LOADING = false;
+let CAN = null, CAN_LOADING = false, CA_MAP = null, CA_LAYER = null, CA_OP = null;
+function caMap(lastC) {
+  const S = CAN.sites || [], sub = document.getElementById('caMapSub'), list = document.getElementById('caOpList');
+  const act = x => lastC && x.last >= tmBack(lastC, 2), ops = {};
+  S.forEach(x => { const o = ops[x.co] || (ops[x.co] = { n: 0, a: 0 }); o.n++; if (act(x)) o.a++; });
+  const order = Object.keys(ops).sort((a, b) => ops[b].a - ops[a].a || ops[b].n - ops[a].n), col = h => SC_COL[order.indexOf(h) % SC_COL.length];
+  const esc = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  sub.innerHTML = `Every BC marine salmon farm that has reported sea lice counts since 2011, at its DFO position, with its current operator. ` +
+    `<b>Filled</b>: farm in use (a count in the last three complete months); <b>faded</b>: no count since, i.e. fallow or closed — the Discovery Islands farms, for instance, closed after the federal decisions of 2020 and 2023. Click a company to keep only its farms.`;
+  list.innerHTML = `<div class="sc-op${CA_OP === null ? ' on' : ''}" data-h=""><i style="background:#e7eef2"></i><b>All companies</b><span>${S.filter(act).length} in use<br>${S.length} since 2011</span></div>` +
+    order.filter(h => ops[h].a || ops[h].n >= 3).map(h => `<div class="sc-op${CA_OP === h ? ' on' : ''}" data-h="${esc(h)}"><i style="background:${col(h)}"></i><b>${esc(h)}</b><span>${ops[h].a} in use<br>${ops[h].n} since 2011</span></div>`).join('');
+  list.querySelectorAll('.sc-op').forEach(el => el.onclick = () => { CA_OP = el.dataset.h || null; renderCanada(); });
+  if (!S.length) { document.getElementById('caMap').innerHTML = ''; return; }
+  scLeaflet(() => {
+    if (!CA_MAP) { CA_MAP = L.map('caMap', { scrollWheelZoom: false }).setView([50.2, -126.5], 7);
+      const esri = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', { attribution: 'Tiles &copy; Esri — Esri, HERE, Garmin, &copy; OpenStreetMap contributors · farms: DFO open data', maxZoom: 13 }).addTo(CA_MAP);
+      let fails = 0; esri.on('tileerror', () => { if (++fails === 4) { CA_MAP.removeLayer(esri); L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors', maxZoom: 13 }).addTo(CA_MAP); } }); }
+    if (CA_LAYER) CA_LAYER.remove(); CA_LAYER = L.layerGroup().addTo(CA_MAP); const pts = [];
+    [...S].sort((a, b) => act(a) - act(b)).forEach(x => { if (CA_OP && x.co !== CA_OP) return; const on = act(x), c = col(x.co);
+      L.circleMarker([x.lat, x.lon], { radius: on ? 6 : 4, color: on ? c : '#5d7685', weight: 1.2, fillColor: on ? c : '#5d7685', fillOpacity: on ? .7 : .25 }).addTo(CA_LAYER)
+        .bindPopup(`<b>${esc(x.n)}</b> (facility ${x.id})<br>${esc(x.amu)}<br>Operator: <b>${esc(x.co)}</b><br>Lice counts ${tmMl(x.first)} – ${tmMl(x.last)}${on ? ' · <b>in use</b>' : ' · not in use'}` +
+          `${x.yc ? `<br>Latest year class: ${x.yc === '1' ? 'less than a year at sea' : 'more than a year at sea'}` : ''}${x.lice12 !== null ? `<br>Average motile lice, last 12 months of counts: ${x.lice12}` : ''}`);
+      pts.push([x.lat, x.lon]); });
+    if (pts.length) CA_MAP.fitBounds(pts, { padding: [24, 24], maxZoom: 10 }); setTimeout(() => CA_MAP.invalidateSize(), 50);
+  });
+}
 function renderCanada() {
   if (!CAN) { if (!CAN_LOADING) { CAN_LOADING = true; fetch(DATA_URL.replace('data.json', 'canada.json'), { cache: 'no-store' })
       .then(r => r.ok ? r.json() : null).catch(() => null).then(j => { CAN = j || {}; CAN_LOADING = false; if (currentView === 'canada') renderCanada(); }); }
@@ -2913,6 +2957,23 @@ function renderCanada() {
       `previous 12 months: ${ev12p} · last reported ${EV.last}`, '#ff8a65') : '') +
     (trL ? card(`Smolt transfer licences · ${trL.y}`, `${trL.sites} sea farms ${trP ? vt(pct(trL.sites, trP.sites)) : ''}`,
       `farms authorised to receive smolts${trP ? ` · ${trP.y}: ${trP.sites}` : ''}`, '#81c784') : '');
+  // le saumon canadien par province (DFO / Statistique Canada, annuel)
+  const PV = CAN.provinces || {}, yrs = Object.keys(PV).sort(), ly2 = yrs[yrs.length - 1];
+  if (yrs.length) {
+    const g = (y, p, k = 'Salmon') => ((PV[y] || {})[k] || {})[p];
+    const PRV = [['BC', 'British Columbia', 'Salmon'], ['NB', 'New Brunswick', 'Salmon'], ['NS', 'Nova Scotia', 'Salmon'], ['NL', 'Newfoundland & Labrador*', 'Total Finfish'], ['Canada', 'Canada (salmon, published)', 'Salmon']];
+    document.getElementById('caProv').innerHTML = `<thead><tr><th class="name">Tonnes, live weight</th>${yrs.map(y => `<th>${y}</th>`).join('')}<th>Share ${ly2}, incl. NL</th></tr></thead><tbody>` +
+      PRV.map(([p, lab, k]) => `<tr${p === 'Canada' ? ' style="font-weight:bold"' : ''}><td class="name">${lab}</td>${yrs.map(y => `<td>${g(y, p, k) ? f0(g(y, p, k)) : '<span style="color:var(--muted)">..</span>'}</td>`).join('')}` +
+        `<td>${p !== 'Canada' && g(ly2, p, k) && g(ly2, 'Canada') ? (100 * g(ly2, p, k) / (g(ly2, 'Canada') + (g(ly2, 'NL', 'Total Finfish') || 0))).toFixed(0) + '%' : ''}</td></tr>`).join('') + `</tbody>`;
+    if (yrs.length > 1) document.getElementById('caProvChart').innerHTML = vzLines(yrs.map(y => +y * 100 + 6), PRV.slice(0, 4).map(([p, lab, k], i) => ({ lab, col: SC_COL[i], pts: yrs.map(y => g(y, p, k) || null) })),
+      { axis: 'Tonnes', unit: 't', digits: 0, H: 220, xfmt: k => String(Math.floor(k / 100)) }) + vzLegend(PRV.slice(0, 4).map(([, lab], i) => [lab, SC_COL[i]]));
+    const ex = (CAN.provinces_extra || []).map(x => `${x.prov} ${x.year}: ${f0(x.t)} t of ${x.what.toLowerCase()} (${esc(x.src)})`).join('; ');
+    document.getElementById('caProvSub').innerHTML = `Farmed salmon by province, live weight, from DFO's annual aquaculture statistics (Statistics Canada table 32-10-0107). ` +
+      `British Columbia makes about three fifths of the published Canadian salmon total, and about half once Newfoundland is counted; the rest comes from Atlantic Canada — the Bay of Fundy (New Brunswick), Newfoundland's south coast and Nova Scotia. ` +
+      `*Newfoundland's salmon figure is suppressed for confidentiality: its total finfish (almost entirely salmon and steelhead trout) is shown instead, and it is not in the published Canada salmon total. ` +
+      `Atlantic Canada publishes no monthly farm data comparable to BC's.` + (ex ? ` More recent: ${ex}.` : '');
+  }
+  caMap(last);
   // fermes en activite
   if (L.length) {
     const keys = tmRange(last, 60).filter(k => k >= L[0].m);
@@ -2968,6 +3029,32 @@ function renderCanada() {
     `Former company names are merged (Marine Harvest Canada into MOWI Canada West; Mainstream Canada and Cermaq British Columbia into Cermaq Canada).`;
 }
 
+let AU_MAP = null, AU_LAYER = null, AU_OP = null;
+function auMap(fyT, fyE, fyLab) {
+  const LS = AUS.leases || [], sub = document.getElementById('auMapSub'), list = document.getElementById('auOpList');
+  const ops = {}; LS.forEach(x => { const o = ops[x.co] || (ops[x.co] = { n: 0, ha: 0, z: {} }); o.n++; o.ha += x.ha || 0; o.z[x.zone] = (o.z[x.zone] || 0) + 1; });
+  const order = Object.keys(ops).sort((a, b) => ops[b].n - ops[a].n), col = h => SC_COL[order.indexOf(h) % SC_COL.length];
+  const P = AUS.production || [], last = fyE ? P.filter(p => p.fy_end === fyE) : [];
+  sub.innerHTML = LS.length ? `Marine farm leases holding salmon, placed at the centre of each lease (LIST Tasmania), with the company that operates them: from the NRE salmon data portal (lease-by-lease seabed monitoring, refreshed every run) and the NRE lease register for the D'Entrecasteaux Channel and Huon River. ` +
+      `A lease is a licensed area, not a measure of the fish in it. Leases held by a subsidiary or sublet are shown under the operating company (Aquatas Pty Ltd under Tassal). Click a company to keep only its leases.`
+    : `The lease map is built by the automatic update (LIST Tasmania lease boundaries and the NRE portal): it appears after the next run.`;
+  list.innerHTML = `<div class="sc-op${AU_OP === null ? ' on' : ''}" data-h=""><i style="background:#e7eef2"></i><b>All companies</b><span>${LS.length ? LS.length + ' leases' : ''}</span></div>` +
+    order.map(h => { const pr = last.find(p => p.company === h || p.company.startsWith(h));
+      return `<div class="sc-op${AU_OP === h ? ' on' : ''}" data-h="${h}"><i style="background:${col(h)}"></i><b>${h}</b><span>${ops[h].n} lease${ops[h].n > 1 ? 's' : ''} · ${Math.round(ops[h].ha)} ha${pr ? `<br>harvest FY ${fyLab(fyE)}: ${Math.round(pr.t).toLocaleString('en-US')} t` : ''}</span></div>`; }).join('');
+  list.querySelectorAll('.sc-op').forEach(el => el.onclick = () => { AU_OP = el.dataset.h || null; renderAustralia(); });
+  if (!LS.length) { document.getElementById('auMap').innerHTML = `<div style="padding:18px;color:var(--muted);font-size:12.5px">No lease positions yet: they are downloaded by the update step "Australie".</div>`; return; }
+  scLeaflet(() => {
+    if (!AU_MAP) { AU_MAP = L.map('auMap', { scrollWheelZoom: false }).setView([-42.9, 147.2], 7);
+      const esri = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', { attribution: 'Tiles &copy; Esri — Esri, HERE, Garmin, &copy; OpenStreetMap contributors · leases &copy; State of Tasmania (the LIST, CC BY 3.0 AU)', maxZoom: 14 }).addTo(AU_MAP);
+      let fails = 0; esri.on('tileerror', () => { if (++fails === 4) { AU_MAP.removeLayer(esri); L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors', maxZoom: 14 }).addTo(AU_MAP); } }); }
+    if (AU_LAYER) AU_LAYER.remove(); AU_LAYER = L.layerGroup().addTo(AU_MAP); const pts = [];
+    LS.forEach(x => { if (AU_OP && x.co !== AU_OP) return; const c = col(x.co);
+      L.circleMarker([x.lat, x.lon], { radius: 4 + Math.min(7, Math.sqrt(x.ha || 1) / 2), color: c, weight: 1.2, fillColor: c, fillOpacity: .6 }).addTo(AU_LAYER)
+        .bindPopup(`<b>Lease ${x.n}</b><br>${x.zone || ''}<br>Operated by <b>${x.co}</b>${x.holder && x.holder !== x.co ? `<br>Holder: ${x.holder}` : ''}${x.ha ? `<br>${x.ha.toFixed(1)} ha` : ''}<br><span style="color:#888">${x.src}</span>`);
+      pts.push([x.lat, x.lon]); });
+    if (pts.length) AU_MAP.fitBounds(pts, { padding: [24, 24], maxZoom: 10 }); setTimeout(() => AU_MAP.invalidateSize(), 50);
+  });
+}
 // ===================== Australie (data/australia.json <- scripts/build_australia.py <- farming/donnees_au) =====================
 let AUS = null, AUS_LOADING = false;
 function renderAustralia() {
@@ -3000,6 +3087,7 @@ function renderAustralia() {
   const full = last ? (lm === 12 ? ly : ly - 1) : null, fullT = full && nY(full, 12) === 12 ? sumY(full, 12) : null, fullP = full && nY(full - 1, 12) === 12 ? sumY(full - 1, 12) : null;
   const fyE = P.length ? Math.max(...P.map(p => p.fy_end)) : null, fyT = e => P.filter(p => p.fy_end === e).reduce((a, p) => a + (p.t || 0), 0);
   const fyLab = e => P.find(p => p.fy_end === e)?.fy || e;
+  const esc = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
   document.getElementById('auCards').innerHTML =
     (last ? card(`Dead fish · ${tmMl(last)}`, `${f0(by[last].total)} t ${prev ? vt(pct(by[last].total, prev.total), true) : ''}`,
       `${f0(by[last].total / new Date(ly, lm, 0).getDate())} t a day${prev ? ` · ${tmMl(last - 100)}: ${f0(prev.total)} t` : ''}`, '#ff8a65') : '') +
@@ -3042,6 +3130,39 @@ function renderAustralia() {
     document.getElementById('auProdSub').innerHTML = `Head-on gutted weight, financial year July–June (2025/26 = July 2025 to June 2026), NRE Tasmania data portal. ` +
       `Not comparable month by month with the deaths above, which are calendar months and whole-fish weight.`;
   }
+  // mortalite rapportee a la recolte de l'exercice (juillet-juin) qui contient le mois
+  const fyOf = m => (m % 100 >= 7 ? Math.floor(m / 100) + 1 : Math.floor(m / 100));
+  const prodFY = e => fyT(e) || (fyE ? fyT(fyE) : 0);
+  const shareM = r => { const p = prodFY(fyOf(r.m)); return p ? 100 * r.total / (p / 12) : null; };
+  const roll = M.map(r => { const ks = tmRange(r.m, 12); if (!ks.every(k => by[k])) return null; const t = ks.reduce((a, k) => a + by[k].total, 0), p = prodFY(fyOf(r.m)); return p ? { m: r.m, t, pct: 100 * t / p } : null; }).filter(Boolean);
+  const rl = roll[roll.length - 1], rlP = rl ? roll.find(x => x.m === rl.m - 100) : null;
+  if (rl) document.getElementById('auCards').innerHTML += card(`Dead fish vs harvest · 12 months to ${tmMl(rl.m)}`, `${rl.pct.toFixed(1)}% ${rlP ? `<span class="${rl.pct > rlP.pct ? 'delta-bad' : 'delta-good'}" style="font-size:12px">${rl.pct >= rlP.pct ? '+' : '−'}${Math.abs(rl.pct - rlP.pct).toFixed(1)} pt</span>` : ''}`,
+    `${f0(rl.t)} t of dead fish against ${f0(prodFY(fyOf(rl.m)))} t harvested in FY ${fyLab(fyOf(rl.m))}${rlP ? ` · a year earlier ${rlP.pct.toFixed(1)}%` : ' · no 12-month comparison yet (EPA data start January 2025)'}`, '#e57373');
+  // colonne supplementaire du tableau mensuel
+  const tabEl = document.getElementById('auMortTab');
+  if (tabEl.innerHTML) {
+    tabEl.innerHTML = tabEl.innerHTML.replace('<th>t a day</th>', '<th>t a day</th><th>% of a month\'s harvest</th><th>vs a year earlier</th>');
+    [...M].reverse().forEach(r => { const sh = shareM(r), p = by[r.m - 100], shp = p ? shareM(p) : null;
+      const cell = `<td>${sh === null ? '—' : sh.toFixed(0) + '%'}</td><td>${sh !== null && shp !== null ? `<span class="${sh > shp ? 'delta-bad' : 'delta-good'}">${sh >= shp ? '+' : '−'}${Math.abs(sh - shp).toFixed(0)} pt</span>` : '—'}</td>`;
+      tabEl.innerHTML = tabEl.innerHTML.replace(new RegExp(`(<td class="name">${tmMl(r.m)}</td>(?:<td>.*?</td>){3})`), `$1${cell}`); });
+  }
+  document.getElementById('auMortSub').innerHTML += ` <b>% of a month's harvest</b> = the month's dead fish against one twelfth of the harvest of the financial year (July–June) the month falls in — the size of the losses next to what the farms produce. ` +
+    `Dead fish are whole-fish weight and the harvest is head-on gutted, so the share is a few points higher than on a like-for-like basis.`;
+  // ce qui est public par entreprise et par ferme
+  const CP = AUS.company_points || [], SG = AUS.signals || [];
+  document.getElementById('auCoSub').innerHTML = `<b>Deaths are not published by company or by farm.</b> Each company reports its monthly dead-fish weight for all its leases to the EPA, which publishes only the Tasmanian total. ` +
+    `Farm-by-farm figures, and anything before 2025, have only come out through Right to Information requests. ` +
+    (CP.length ? `Published so far: ${CP.map(x => `${x.co}, ${tmMl(x.m)}: <b>${f0(x.t)} t</b>${by[x.m] ? ` (${(100 * x.t / by[x.m].total).toFixed(0)}% of all Tasmanian dead fish that month)` : ''} — ${esc(x.src)}`).join('; ')}. ` : '') +
+    `What the NRE portal does give each quarter, by area and company, is whether a <b>significant mortality event</b> was reported and whether a cage lost <b>more than 0.25% of its fish a day for three days</b> — the table below, archived at every update run since the portal only shows the current quarter.`;
+  const esc2 = t => String(t || '').replace(/</g, '&lt;');
+  const qs = [...new Set(SG.map(x => x.trimestre))].sort().reverse(), keyS = x => `${x.zone}|${x.exploitant}`;
+  const lines = [...new Set(SG.map(keyS))].sort();
+  const yn = v => v === 'Y' ? '<span class="delta-bad"><b>yes</b></span>' : v === 'N' ? '<span style="color:var(--muted)">no</span>' : '—';
+  document.getElementById('auFlags').innerHTML = SG.length ? `<thead><tr><th class="name">Area · company</th>${qs.map(q => `<th colspan="2">${q.replace('-T', ' Q')}</th>`).join('')}</tr>` +
+    `<tr><th></th>${qs.map(() => '<th>Significant event</th><th>Cage &gt; 0.25%/day</th>').join('')}</tr></thead><tbody>` +
+    lines.map(l => { const [z, c] = l.split('|'); return `<tr><td class="name">${esc2(z)} · <b>${esc2(c)}</b></td>` + qs.map(q => ['significant_event', 'cage_025'].map(ind => { const x = SG.find(y => y.trimestre === q && keyS(y) === l && y.indicateur === ind); return `<td>${yn(x && x.valeur)}</td>`; }).join('')).join('') + `</tr>`; }).join('') + `</tbody>`
+    : '<tbody><tr><td class="name" style="color:var(--muted)">The quarterly health flags appear after the next update run.</td></tr></tbody>';
+  auMap(fyT, fyE, fyLab);
   document.getElementById('auNote').innerHTML = `<b>Sources.</b> Deaths: EPA Tasmania, Salmon Waste Management page (monthly reporting under the environmental licences since 2025). ` +
     `Harvest: Department of Natural Resources and Environment Tasmania, Salmon Farming Data Portal. Read automatically at each update run; a figure revised at the source is flagged in the Sources panel.`;
 }
