@@ -4,7 +4,8 @@
   "statut": "amorce enrichie",
   "note": "Le grain reste annuel/semestriel. Les exportations sont trimestrielles car Aduanas publie au mois. Aucune valeur n'est interpolee : les champs derives sont calcules a l'affichage et signales comme tels.",
   "generated": "2026-08-12",
-  "pays": "Chili"
+  "pays": "Chili",
+  "note_licence": "novembre 2026 : retrait des donnees sous licence (prix Urner Barry / Expana, estimations Kontali via Arctic) — elles ne vont pas sur le depot public"
  },
  "provenance": {
   "ADU": "Servicio Nacional de Aduanas, Comex",
@@ -13,8 +14,6 @@
   "SNP": "Sernapesca, Informe de Situacion Sanitaria",
   "SPS": "Subpesca, Informe Sectorial",
   "AQB": "Aquabench, indicateurs annuels (base WFE)",
-  "UB": "Urner Barry / Expana, filet frais salar chilien EEUU",
-  "ARC": "Arctic Securities / Kontali, note de marche",
   "USTR": "Office of the US Trade Representative"
  },
  "latence": [
@@ -117,28 +116,6 @@
    "mortalidad_vs_n1_pct": -1.5,
    "ica_vs_n1_pct": 5.88,
    "src": "SNP"
-  }
- ],
- "biomasse_2026": [
-  {
-   "mois": 3,
-   "vs_n1_pct": -2.5,
-   "src": "ARC",
-   "note": "estimation Kontali"
-  },
-  {
-   "mois": 4,
-   "vs_n1_pct": -1.8,
-   "src": "ARC",
-   "note": "nombre de poissons en mer"
-  }
- ],
- "recolte_2026": [
-  {
-   "mois": 4,
-   "croissance_pct": 3.0,
-   "cumul_ytd_pct": 15.7,
-   "src": "ARC"
   }
  ],
  "mortalite_region": [
@@ -324,32 +301,6 @@
    "derive": true
   }
  ],
- "prix_ub": [
-  {
-   "date": "2026-01",
-   "usd_lb": 6.48,
-   "src": "UB",
-   "approx": true
-  },
-  {
-   "date": "2026-02",
-   "usd_lb": 5.8,
-   "src": "UB",
-   "approx": true
-  },
-  {
-   "date": "2026-04",
-   "usd_lb": 6.85,
-   "src": "UB",
-   "approx": true
-  },
-  {
-   "date": "2026-06",
-   "usd_lb": 6.97,
-   "src": "UB",
-   "approx": true
-  }
- ],
  "evenements": [
   {
    "date": "2026-07-24",
@@ -472,17 +423,6 @@
      0,
      1,
      0
-    ]
-   },
-   {
-    "champ": "prix reference",
-    "etat": [
-     0,
-     0,
-     0,
-     0,
-     0,
-     2
     ]
    },
    {
