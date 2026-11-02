@@ -236,16 +236,18 @@ jobs:
           python3 ../scripts/build_australia.py
           exit $rc
 
-      - name: Canada Colombie-Britannique - catalogue DFO (poux, mortalites)
-        # Interroge le catalogue open.canada.ca : dit si un jeu du DFO a change depuis le dernier passage.
-        # La reconstruction mensuelle (etape commentee) s'active une fois COLS renseigne dans ingest_bc.py.
+      - name: Canada Colombie-Britannique - donnees DFO (poux, mortalites, transferts de smolts)
+        # Le catalogue open.canada.ca dit si un jeu du DFO a change ; seuls les CSV modifies sont retelecharges
+        # (farming/donnees_ca/brut/). build_canada ecrit ensuite data/canada.json pour l'onglet Canada (BC).
         id: canada_bc
         continue-on-error: true
-        timeout-minutes: 5
+        timeout-minutes: 10
         working-directory: farming
         run: |
-          python3 scripts/ingest_bc.py catalogue
-          # mkdir -p donnees_ca && python3 scripts/ingest_bc.py build --catalogue -o donnees_ca/bc_mensuel.csv
+          rc=0
+          python3 scripts/ingest_bc.py telecharger || rc=$?
+          python3 ../scripts/build_canada.py
+          exit $rc
 
       - name: Enregistrer l'etat des sources dans data.json
         if: always()
