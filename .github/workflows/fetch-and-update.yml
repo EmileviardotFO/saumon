@@ -228,7 +228,13 @@ jobs:
         continue-on-error: true
         timeout-minutes: 5
         working-directory: farming
-        run: python3 scripts/maj_australie.py --xlsx farming_canada_australie.xlsx --sortie donnees_au --strict
+        # maj_australie relit les sources ; build_australia ecrit data/australia.json pour l'onglet Australia,
+        # meme si la relecture a signale une anomalie (le code de sortie de la relecture est conserve).
+        run: |
+          rc=0
+          python3 scripts/maj_australie.py --xlsx farming_canada_australie.xlsx --sortie donnees_au --strict || rc=$?
+          python3 ../scripts/build_australia.py
+          exit $rc
 
       - name: Canada Colombie-Britannique - catalogue DFO (poux, mortalites)
         # Interroge le catalogue open.canada.ca : dit si un jeu du DFO a change depuis le dernier passage.
