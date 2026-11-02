@@ -226,7 +226,7 @@ jobs:
         # de l'EPA (vers le 21 janvier, avril, juillet, octobre) : le script signale revisions et retards.
         id: australia
         continue-on-error: true
-        timeout-minutes: 5
+        timeout-minutes: 10
         working-directory: farming
         # maj_australie relit les sources ; build_australia ecrit data/australia.json pour l'onglet Australia,
         # meme si la relecture a signale une anomalie (le code de sortie de la relecture est conserve).
