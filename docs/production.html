@@ -347,6 +347,24 @@
 /* selecteur de periode commun a tous les onglets */
 .sc-mapgrid { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 12px; align-items: start; }
 @media (max-width: 800px) { .sc-mapgrid { grid-template-columns: 1fr; } #scMap { height: 420px !important; } }
+.nw-bar { display:flex; flex-wrap:wrap; gap:10px 18px; align-items:center; margin:14px 0 10px; font-size:12px; color:var(--muted); }
+.nw-bar select { padding:6px 8px; background:#0d1a24; color:var(--ink); border:1px solid var(--border); border-radius:6px; font-size:12.5px; }
+.nw-chips { display:flex; flex-wrap:wrap; gap:5px; }
+.nw-chips button { padding:4px 10px; background:#0d1a24; color:var(--muted); border:1px solid var(--border); border-radius:12px; font-size:12px; cursor:pointer; }
+.nw-chips button.on { border-color:var(--accent); color:var(--ink); background:#1a2b36; }
+.nw-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:14px; }
+@media (max-width: 900px) { .nw-grid { grid-template-columns:minmax(0, 1fr); } }
+.nw-sec { border:1px solid var(--border); border-radius:8px; padding:10px 12px; background:#0d1a24; min-width:0; }
+.nw-sec h4 { margin:0 0 8px; font-size:12.5px; color:var(--ink); display:flex; align-items:center; gap:7px; }
+.nw-sec h4 i { width:10px; height:10px; border-radius:50%; flex:none; }
+.nw-sec h4 span { color:var(--muted); font-weight:normal; font-size:11.5px; }
+.nw-it { padding:6px 0; border-top:1px solid #1d3140; font-size:12.5px; line-height:1.4; }
+.nw-it:first-of-type { border-top:none; }
+.nw-it a { color:var(--ink); text-decoration:none; overflow-wrap:anywhere; }
+.nw-it a:hover { color:var(--accent); text-decoration:underline; }
+.nw-meta { color:var(--muted); font-size:11px; margin-top:2px; }
+.nw-tag { display:inline-block; border:1px solid #35505f; color:#9fb6c3; border-radius:8px; padding:0 5px; font-size:10px; margin-left:4px; white-space:nowrap; }
+.nw-more { margin-top:6px; background:none; border:none; color:var(--accent); cursor:pointer; font-size:12px; padding:0; }
 .sc-op { display: flex; align-items: center; gap: 8px; padding: 7px 9px; border: 1px solid var(--border); border-radius: 7px; margin-bottom: 5px; cursor: pointer; font-size: 12.5px; background: #0d1a24; }
 .sc-op:hover { border-color: #4fc3f7; }
 .sc-op.on { border-color: #ffd54f; background: #1a2b36; }
@@ -404,6 +422,9 @@
 
 <div class="top-controls">
   <div class="view-toggle" id="viewToggle">
+    <div class="vt-row"><span class="vt-lab">News<small>weekly digest</small></span><div class="vt-btns">
+      <button data-v="news">This week</button>
+    </div></div>
     <div class="vt-row"><span class="vt-lab">Norway<small>production &amp; stock</small></span><div class="vt-btns">
       <button data-v="summary" class="active">Summary</button>
       <button data-v="global">National view (Norway)</button>
@@ -1008,6 +1029,18 @@
     <div class="sig-title" style="margin-top:18px">Unusual monthly deaths by area</div>
     <div class="sig-sub" id="scFlagSub"></div>
     <div style="overflow-x:auto"><table class="sig-table" id="scFlags"></table></div>
+  </div>
+
+  <div class="panel" id="newsView" style="flex:1; min-width:0; max-width:1400px; display:none;">
+    <div class="sig-title">This week in salmon — headlines, key figures and coming dates</div>
+    <div class="sig-sub" id="nwSub"></div>
+    <div id="nwCards" class="pr-cards"></div>
+    <div class="nw-bar" id="nwBar"></div>
+    <div class="nw-grid" id="nwThemes"></div>
+    <div class="sig-title" style="margin-top:18px">Coming dates</div>
+    <div class="sig-sub">Entered by hand in data/news.json (key "calendar"); past dates drop off after a week.</div>
+    <div style="overflow-x:auto"><table class="sig-table" id="nwCal"></table></div>
+    <details style="margin-top:14px;font-size:11.5px;color:var(--muted)"><summary style="cursor:pointer">Sources and last collection</summary><div id="nwSrc" style="margin-top:6px;line-height:1.6"></div></details>
   </div>
 
   <div class="panel" id="chileView" style="flex:1; min-width:0; max-width:1400px; display:none;">
@@ -2614,6 +2647,115 @@ function renderMortEvents() {
 }
 
 
+// ===================== This week (data/news.json : titres de presse classes par theme et bassin, echeances saisies a la main) =====================
+let NW = null, NW_LOADING = false, NW_P = '7d', NW_B = 'all', NW_OPEN = {};
+const NW_THEME = { market: ['Prices & markets', '#ffd54f'], feed: ['Feed & raw materials', '#81c784'], biology: ['Biology & fish health', '#ff8a65'],
+  regulation: ['Regulation, tax & policy', '#ba68c8'], companies: ['Companies & results', '#4fc3f7'], other: ['Other', '#8fa4b0'] };
+const NW_PRIMARY = ['feed', 'regulation', 'biology', 'companies', 'market', 'other'];   // un titre n'apparait que dans une rubrique : la plus specifique
+const NW_BASIN = { NO: 'Norway', CL: 'Chile', GB: 'Scotland', FO: 'Faroes', IS: 'Iceland', other: 'Other basins', global: 'Global' };
+const NW_OTHER = ['CA', 'IE', 'AU', 'NZ', 'US'];
+const nwEsc = v => String(v == null ? '' : v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const nwUrl = u => /^https?:\/\//i.test(u || '') ? nwEsc(u) : '#';
+const nwDay = iso => { const d = new Date(iso + 'T00:00:00Z'); return `${d.getUTCDate()} ${MONTHS_FR[d.getUTCMonth()].slice(0, 3)}`; };
+function nwMonday(wk) {   // '2026-W44' -> lundi de la semaine ISO (UTC)
+  const [y, w] = wk.split('-W').map(Number), j4 = new Date(Date.UTC(y, 0, 4)), dow = j4.getUTCDay() || 7;
+  return new Date(j4.getTime() + ((w - 1) * 7 - (dow - 1)) * 864e5); }
+function nwFigures() {
+  const D = DATA_RAW || {}, out = [];
+  const card = (lab, big, sub, col) => `<div class="pr-card" style="cursor:default"><div class="nm"><i style="background:${col}"></i>${lab}</div><div class="big">${big}</div><div class="ln">${sub}</div></div>`;
+  const dv = (d, unit, dec, goodUp) => !isFinite(d) ? '' : `<span class="${(d >= 0) === goodUp ? 'delta-good' : 'delta-bad'}" style="font-size:12px">${d >= 0 ? '+' : '−'}${Math.abs(d).toFixed(dec)}${unit}</span>`;
+  const pc = (a, b) => a && b ? 100 * (a / b - 1) : NaN, f0 = v => Math.round(v).toLocaleString('en-US');
+  // prix a l'export SSB (frais, entier)
+  const S = ((D.ssb_weekly || {}).rows || []).filter(r => r[1] === 0).sort((a, b) => a[0] - b[0]);
+  if (S.length > 1) { const L = S[S.length - 1], P = S[S.length - 2], Y = S.find(r => r[0] === L[0] - 100);
+    out.push(card(`Norway export price · wk ${L[0] % 100}`, `${L[3].toFixed(2)} <span>NOK/kg</span> ${dv(L[3] - P[3], '', 2, true)}`,
+      `wk ${P[0] % 100}: ${P[3].toFixed(2)}${Y ? ` · wk ${L[0] % 100} ${Math.floor(L[0] / 100) - 1}: ${Y[3].toFixed(2)}` : ''} · ${f0(L[2])} t ${Y ? dv(pc(L[2], Y[2]), '% y/y', 1, true) : ''} · SSB, fresh`, '#ffd54f')); }
+  // indice Sitagri par calibre : prime du gros poisson et part de 6 kg+
+  const W = (D.weekly || []).slice().sort((a, b) => a.report_year - b.report_year || a.report_week - b.report_week);
+  if (W.length > 4) { const L = W[W.length - 1], E = W[W.length - 4], pr = r => r['p_8-9'] - r['p_4-5'];
+    if (isFinite(pr(L))) out.push(card(`Big-fish premium · wk ${L.price_week}`, `${pr(L).toFixed(1)} <span>NOK/kg</span> ${dv(pr(L) - pr(E), '', 1, true)}`,
+      `8–9 kg minus 4–5 kg, Sitagri index · ${pr(E).toFixed(1)} three weeks earlier · average ${L.p_avg.toFixed(2)}`, '#ffb74d'));
+    const Y = W.find(r => r.report_year === L.report_year - 1 && r.dist_week === L.dist_week);
+    if (isFinite(L.sh_6plus)) out.push(card(`6 kg+ share of harvest · wk ${L.dist_week}`, `${L.sh_6plus.toFixed(0)} % ${Y ? dv(L.sh_6plus - Y.sh_6plus, ' pt y/y', 0, true) : ''}`,
+      `5 kg+ ${L.sh_5plus.toFixed(0)} %${Y ? ` · same week ${L.report_year - 1}: ${Y.sh_6plus.toFixed(0)} %` : ''} · Akvafakta`, '#a1887f')); }
+  // poux : moyenne nationale ponderee par le nombre de sites qui comptent
+  const B = (D.bw_weekly || {}).rows || [];
+  if (B.length) { const k = r => r.y * 100 + r.w, Lk = Math.max(...B.map(k)), avg = kk => { const R = B.filter(r => k(r) === kk && r.lice != null && r.nl);
+      const n = R.reduce((a, r) => a + r.nl, 0); return n ? R.reduce((a, r) => a + r.lice * r.nl, 0) / n : NaN; };
+    const a = avg(Lk), y = avg(Lk - 100);
+    if (isFinite(a)) out.push(card(`Sea lice, Norway · wk ${Lk % 100}`, `${a.toFixed(2)} ${isFinite(y) ? dv(a - y, ' y/y', 2, false) : ''}`,
+      `adult females per fish, site-weighted average${isFinite(y) ? ` · ${y.toFixed(2)} a year earlier` : ''} · BarentsWatch`, '#ba68c8')); }
+  // biomasse en mer (registre, dernier mois)
+  const R = (typeof RECORDS !== 'undefined' && RECORDS) || [];
+  if (R.length) { const Lk = Math.max(...R.map(r => r.year * 100 + r.month)), sum = kk => R.filter(r => r.year * 100 + r.month === kk).reduce((a, r) => a + (r.biomasse_kg || 0), 0) / 1e6;
+    const a = sum(Lk), y = sum(Lk - 100);
+    out.push(card(`Biomass at sea, Norway · ${MONTHS_FR[Lk % 100 - 1].slice(0, 3)} ${Math.floor(Lk / 100)}`, `${f0(a)} <span>kt</span> ${dv(pc(a, y), '%', 1, true)}`,
+      `salmon, live weight, end of month · ${f0(y)} kt a year earlier · Biomasseregisteret`, '#4fc3f7')); }
+  // exportations mensuelles (Akvafakta)
+  const A = (D.monthly_akvafakta || []).slice().sort((a, b) => a.year - b.year || a.month - b.month);
+  if (A.length) { const L = A[A.length - 1], Y = A.find(r => r.year === L.year - 1 && r.month === L.month);
+    out.push(card(`Exports, Norway · ${MONTHS_FR[L.month - 1].slice(0, 3)} ${L.year}`, `${f0(L.export_t / 1000)} <span>kt</span> ${Y ? dv(pc(L.export_t, Y.export_t), '%', 1, true) : ''}`,
+      `${L.price_nok_kg ? `${L.price_nok_kg.toFixed(2)} NOK/kg` : ''}${Y && Y.price_nok_kg ? ` (${Y.price_nok_kg.toFixed(2)} a year earlier)` : ''} · Akvafakta`, '#81c784')); }
+  return out.join('');
+}
+function renderNews() {
+  if (!NW) { if (!NW_LOADING) { NW_LOADING = true; fetch(DATA_URL.replace('data.json', 'news.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
+      .then(j => { NW = j || { items: [], calendar: [], meta: {} }; NW_LOADING = false; if (currentView === 'news') renderNews(); }); }
+    document.getElementById('nwSub').innerHTML = 'Loading…'; return; }
+  const items = NW.items || [], meta = NW.meta || {}, gen = meta.generated || new Date().toISOString().slice(0, 10);
+  const weeks = [...new Set(items.map(n => n.week))].sort().reverse();
+  if (NW_P !== '7d' && !weeks.includes(NW_P)) NW_P = '7d';
+  const from7 = new Date(new Date(gen + 'T00:00:00Z').getTime() - 6 * 864e5).toISOString().slice(0, 10);
+  const inP = n => NW_P === '7d' ? n.date >= from7 : n.week === NW_P;
+  const bOf = n => (n.basins || []).map(b => NW_OTHER.includes(b) ? 'other' : b);
+  const sel = items.filter(inP), shown = sel.filter(n => NW_B === 'all' || bOf(n).includes(NW_B));
+  const wLab = wk => { const m = nwMonday(wk), e = new Date(m.getTime() + 6 * 864e5), iso = d => d.toISOString().slice(0, 10); return `Week ${+wk.split('-W')[1]} · ${nwDay(iso(m))} – ${nwDay(iso(e))} ${e.getUTCFullYear()}`; };
+  const pLab = NW_P === '7d' ? `the last 7 days (${nwDay(from7)} – ${nwDay(gen)})` : wLab(NW_P).replace('Week', 'week');
+  document.getElementById('nwSub').innerHTML = `Headlines collected automatically from the trade press (RSS) and Google News searches by theme, basin and language, three times a week. ` +
+    `Each headline is kept only if it was published in the two weeks before collection, filed under one theme by keyword, and grouped with the same story from other outlets. ` +
+    `<b>Headlines are not verified or summarised</b>: open the article before relying on it; titles stay in their original language. Last collection: ${nwEsc(gen)}. ` +
+    `Key figures below are the latest available in the dashboard data, whatever period is selected.`;
+  document.getElementById('nwCards').innerHTML = nwFigures();
+  // barre : periode + bassins
+  const cnt = b => sel.filter(n => b === 'all' || bOf(n).includes(b)).length;
+  document.getElementById('nwBar').innerHTML = `<label>Period <select id="nwPer"><option value="7d"${NW_P === '7d' ? ' selected' : ''}>Last 7 days</option>` +
+    weeks.map(w => `<option value="${w}"${NW_P === w ? ' selected' : ''}>${wLab(w)} (${items.filter(n => n.week === w).length})</option>`).join('') + `</select></label>` +
+    `<div class="nw-chips">${['all', 'NO', 'CL', 'GB', 'FO', 'IS', 'other', 'global'].map(b => `<button type="button" data-b="${b}" class="${NW_B === b ? 'on' : ''}">${b === 'all' ? 'All basins' : NW_BASIN[b]} <span style="opacity:.6">${cnt(b)}</span></button>`).join('')}</div>`;
+  document.getElementById('nwPer').onchange = e => { NW_P = e.target.value; NW_OPEN = {}; renderNews(); };
+  document.querySelectorAll('#nwBar .nw-chips button').forEach(el => el.onclick = () => { NW_B = el.dataset.b; NW_OPEN = {}; renderNews(); });
+  // rubriques
+  const prim = n => NW_PRIMARY.find(t => (n.themes || []).includes(t)) || 'other';
+  const LIM = 12;
+  const secs = Object.keys(NW_THEME).map(t => {
+    const L = shown.filter(n => prim(n) === t).sort((a, b) => (b.srcs || []).length - (a.srcs || []).length || (b.date > a.date ? 1 : b.date < a.date ? -1 : 0));
+    if (!L.length && t === 'other') return '';
+    const vis = NW_OPEN[t] ? L : L.slice(0, LIM);
+    const row = n => { const o = (n.srcs || []).length - 1, oth = (n.themes || []).filter(x => x !== t && NW_THEME[x]);
+      return `<div class="nw-it"><a href="${nwUrl(n.url)}" target="_blank" rel="noopener">${nwEsc(n.title)}</a>` +
+        `<div class="nw-meta">${nwDay(n.date)} · ${nwEsc(n.source)}${o > 0 ? ` <span title="${nwEsc((n.srcs || []).slice(1).join(', '))}">+${o} other${o > 1 ? 's' : ''}</span>` : ''}` +
+        `${n.lang && n.lang !== 'en' ? `<span class="nw-tag">${nwEsc(n.lang.toUpperCase())}</span>` : ''}` +
+        `${bOf(n).filter((b, i, a) => b !== 'global' && a.indexOf(b) === i).map(b => `<span class="nw-tag">${NW_BASIN[b]}</span>`).join('')}` +
+        `${oth.map(x => `<span class="nw-tag" style="border-color:${NW_THEME[x][1]}55;color:${NW_THEME[x][1]}">${NW_THEME[x][0].split(' ')[0].replace(',', '')}</span>`).join('')}</div></div>`; };
+    return `<div class="nw-sec"><h4><i style="background:${NW_THEME[t][1]}"></i>${NW_THEME[t][0]} <span>${L.length}</span></h4>` +
+      (L.length ? vis.map(row).join('') : `<div class="nw-meta">Nothing collected for ${pLab}${NW_B !== 'all' ? ' in this basin' : ''}.</div>`) +
+      (L.length > LIM ? `<button type="button" class="nw-more" data-t="${t}">${NW_OPEN[t] ? 'Show fewer' : `Show all ${L.length}`}</button>` : '') + `</div>`; }).join('');
+  document.getElementById('nwThemes').innerHTML = items.length ? secs :
+    `<div class="nw-meta" style="grid-column:1/-1;padding:10px 0">No headlines yet: data/news.json is filled by the next update run (Monday, Wednesday and Friday, 06:00 UTC).</div>`;
+  document.querySelectorAll('#nwThemes .nw-more').forEach(el => el.onclick = () => { NW_OPEN[el.dataset.t] = !NW_OPEN[el.dataset.t]; renderNews(); });
+  // echeances
+  const lastWk = new Date(new Date(gen + 'T00:00:00Z').getTime() - 7 * 864e5).toISOString().slice(0, 10), today = new Date().toISOString().slice(0, 10);
+  const cal = (NW.calendar || []).filter(c => c.date >= lastWk && (NW_B === 'all' || (NW_OTHER.includes(c.basin) ? 'other' : c.basin) === NW_B)).sort((a, b) => a.date < b.date ? -1 : 1);
+  document.getElementById('nwCal').innerHTML = '<thead><tr><th style="text-align:left">Date</th><th style="text-align:left">Basin</th><th style="text-align:left">Theme</th><th style="text-align:left">What</th></tr></thead><tbody>' +
+    (cal.map(c => { const past = c.date < today, th = NW_THEME[c.theme] || NW_THEME.other;
+      return `<tr style="${past ? 'opacity:.5' : ''}"><td style="text-align:left;white-space:nowrap">${nwDay(c.date)} ${c.date.slice(0, 4)}${past ? ' <span style="color:var(--muted)">(past)</span>' : ''}</td>` +
+        `<td style="text-align:left">${NW_BASIN[c.basin] || nwEsc(c.basin)}</td><td style="text-align:left;color:${th[1]}">${th[0]}</td>` +
+        `<td style="text-align:left;white-space:normal;min-width:280px">${c.url ? `<a href="${nwUrl(c.url)}" target="_blank" rel="noopener" style="color:var(--ink)">${nwEsc(c.what)}</a>` : nwEsc(c.what)}</td></tr>`; }).join('') ||
+     '<tr><td colspan="4" style="color:var(--muted)">No dates entered.</td></tr>') + '</tbody>';
+  // sources
+  const st = Object.entries(meta.status || {});
+  document.getElementById('nwSrc').innerHTML = st.length ? st.map(([k, v]) => `<span style="color:${String(v).startsWith('ok') ? 'var(--muted)' : '#ff8a65'}">${nwEsc(k)}: ${nwEsc(v)}</span>`).join('<br>') : 'No collection run yet.';
+}
+
 // ===================== Chili (data/chili.json -> biologie, data/chile_sites.json, data/national_trade.json) =====================
 let CLD = null, CLS = null, CLT = null, CL_LOADING = false, CL_MAP = null, CL_LAYER = null, CL_OP = null;
 function renderChile() {
@@ -2710,7 +2852,10 @@ function renderChileMap(H5, H4) {
   sel.innerHTML = CL_OP ? `<div class="sig-title">${CL_OP}</div><div class="sig-sub">` +
     (a ? `Atlantic salmon, cycles ended in 2025: <b>${f1(a[1])} %</b> of the fish died (${(a[0] / 1e6).toFixed(2)} M fish, ${Math.round(a[2] || 0).toLocaleString('en-US')} t)` + (b ? `, against ${f1(b[1])} % in 2024` : '') + '. ' : 'No Atlantic salmon cycle closed in Sernapesca\'s tables. ') +
     (h ? `Concessions on the Subpesca map: ${h.n} (${Object.entries(h.reg).map(([r, n]) => `${r || '—'} ${n}`).join(', ')}), ${Math.round(h.ha).toLocaleString('en-US')} ha.` : '') + `</div>` : '';
-  if (!sites.length) { document.getElementById('clMap').innerHTML = '<div style="padding:18px;color:var(--muted);font-size:12.5px">Concessions map not downloaded yet: it is fetched from Subpesca by the next automatic update.</div>'; return; }
+  if (!sites.length) { const er = CLS && CLS.meta && CLS.meta.last_error;
+    document.getElementById('clMap').innerHTML = `<div style="padding:18px;color:var(--muted);font-size:12.5px;line-height:1.5">` + (er
+      ? `The concessions map could not be downloaded from Subpesca (last attempt ${nwEsc(er.date)}: <span style="color:#ff8a65">${nwEsc(er.error)}</span>). It is retried at every automatic update. The company list on the left still shows Sernapesca's closed-cycle mortality.`
+      : `Concessions map not downloaded yet: data/chile_sites.json is created by the automatic update (step "Chili - concessions de salmoniculture"). Run the workflow from the Actions tab to get it now.`) + `</div>`; return; }
   scLeaflet(() => {
     if (!CL_MAP) { CL_MAP = L.map('clMap', { scrollWheelZoom: false }).setView([-45, -73], 5);
       const esri = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', { attribution: 'Tiles &copy; Esri — Esri, HERE, Garmin, &copy; OpenStreetMap contributors', maxZoom: 13 }).addTo(CL_MAP);
@@ -3824,15 +3969,16 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     document.getElementById('chinaView').style.display = currentView === 'china' ? 'block' : 'none';
     document.getElementById('scotlandView').style.display = currentView === 'scotland' ? 'block' : 'none';
     document.getElementById('chileView').style.display = currentView === 'chile' ? 'block' : 'none';
+    document.getElementById('newsView').style.display = currentView === 'news' ? 'block' : 'none';
     document.getElementById('coprodView').style.display = currentView === 'coprod' ? 'block' : 'none';
     document.getElementById('generationsView').style.display = currentView === 'generations' ? 'block' : 'none';
     document.getElementById('genmapView').style.display = currentView === 'genmap' ? 'block' : 'none';
     // The year / period selectors do not apply to the weekly fish-health view.
-    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
+    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'news' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
     // La carte des zones ne sert qu'aux vues qui raisonnent par PO. Les onglets
     // Markets et Calibre sont nationaux, elle n'y afficherait rien d'utile.
     const mw = document.querySelector('.panel.mapwrap');
-    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
+    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'news' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
     document.getElementById('poFilterField').style.display = (currentView === 'global' || currentView === 'multi' || currentView === 'outlook') ? 'flex' : 'none';
     document.getElementById('yearField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'none' : 'flex';
     document.getElementById('yearRangeField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'flex' : 'none';
@@ -3855,6 +4001,7 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     else if (currentView === 'china') { renderChina(); }
     else if (currentView === 'scotland') { renderScotland(); }
     else if (currentView === 'chile') { renderChile(); }
+    else if (currentView === 'news') { renderNews(); }
     else if (currentView === 'coprod') { renderCoprod(); }
     else if (currentView === 'generations') { renderGenerations(); }
     else if (currentView === 'genmap') { renderGenMap(); }
