@@ -698,7 +698,7 @@
     <div class="sig-title">Stock rotation — how fast the fish in the sea are turned into harvest</div>
     <div class="sig-sub" id="rotSub"></div>
     <div class="sig-title" style="font-size:12px;margin-top:10px">By year (12 months to the latest reported month)</div>
-    <table class="sig-table"><thead><tr><th class="name">12 months to</th><th>Harvest (t)</th><th>Avg biomass in the sea (t)</th><th>MTB (t)</th><th>Biomass / MTB</th>
+    <table class="sig-table"><thead><tr><th class="name">12 months to</th><th>Harvest (t)</th><th>Avg biomass in the sea (t)</th><th title="Every sea-based salmon licence, including research, display, education and slaughter-cage licences (Farm register, zone table)">MTB, all licences (t)</th><th>Biomass / MTB</th>
       <th class="sep-left">Biomass rotation</th><th>Fish rotation</th><th>Avg harvest weight (kg, live)</th></tr></thead><tbody id="tbodyRotY"></tbody></table>
     <div class="sig-title" style="font-size:12px;margin-top:18px">Month by month</div>
     <table class="sig-table"><thead><tr><th class="name">Month</th><th>Harvest (t)</th><th>Avg biomass (t)</th>
@@ -1203,22 +1203,27 @@
     <div class="sig-sub">Harvested average weight and volume come from the Biomasseregisteret, in <b>live weight</b> (round weight, before gutting; gutted ≈ × 0.888). Calibre shares and
       premiums come from the weekly Akvafakta split (NASDAQ index up to week 18 of 2025, Sitagri after).
       <b>Shares appear twice</b> — by headcount as published, and by tonnage, which is what actually reaches the
-      market and is always the larger figure. Premiums are the volume-weighted price of the band minus the
-      3–4 kg price. <span class="warn">This tab is national and ignores the zone filter</span> — no calibre or
+      market and is always the larger figure. <b>Premiums</b> are the price of the 6–7 kg and of the 7–8 kg class minus the
+      average price of 3–6 kg fish (3–4, 4–5 and 5–6 kg weighted by the tonnage sold), in NOK/kg. The 6–7 kg premium follows Norway's own big-fish supply;
+      the 7–8 kg premium answers more to world supply and demand for large salmon. <span class="warn">This tab is national and ignores the zone filter</span> — no calibre or
       price data exists by production area.</div>
     <table class="sig-table">
       <thead>
         <tr><th class="name" rowspan="2">Year</th><th rowspan="2">Avg weight</th><th rowspan="2">Volume</th>
             <th class="grp sep-left" colspan="2">Share, headcount</th>
             <th class="grp sep-left" colspan="2">Share, tonnage</th>
-            <th class="grp sep-left" colspan="2">Premium over 3–4 kg</th>
+            <th class="grp sep-left" colspan="2">Premium over the 3–6 kg average</th>
             <th rowspan="2" class="sep-left">Avg price</th></tr>
         <tr><th class="sep-left">6+</th><th>7+</th><th class="sep-left">6+</th><th>7+</th>
-            <th class="sep-left">6+</th><th>7+</th></tr>
+            <th class="sep-left">6–7 kg</th><th>7–8 kg</th></tr>
       </thead>
       <tbody id="tbodyCalibre"></tbody>
     </table>
     <div class="verdict v-flat" id="calibreNote"></div>
+    <div class="sig-title" style="margin-top:18px">The season — 6 kg+ share and big-fish premiums by calendar month</div>
+    <div class="sig-sub" id="calSeasonSub"></div>
+    <div id="calSeason6"></div>
+    <div id="calSeasonP" style="margin-top:10px"></div>
 
     <div class="sig-title" style="margin-top:26px;">Compare months</div>
     <div class="sig-sub">Two modes. <b>Two months</b> puts any two months side by side — a month against
@@ -1257,7 +1262,7 @@
       <th class="name">Year</th><th>Avg weight</th><th>Volume</th>
       <th class="sep-left">6+ head</th><th>7+ head</th>
       <th class="sep-left">6+ ton</th><th>7+ ton</th>
-      <th class="sep-left">Prem 6+</th><th>Prem 7+</th><th class="sep-left">Months</th><th>Weeks</th>
+      <th class="sep-left" title="6–7 kg price minus the 3–6 kg average, NOK/kg">Prem 6–7</th><th title="7–8 kg price minus the 3–6 kg average, NOK/kg">Prem 7–8</th><th class="sep-left">Months</th><th>Weeks</th>
     </tr></thead><tbody id="tbodyCalCum"></tbody></table>
     <div class="verdict v-flat" id="calCmpNote"></div>
 
@@ -1266,7 +1271,7 @@
       <th class="name">Month</th><th>Avg weight</th><th>Volume</th>
       <th class="sep-left">6+ head</th><th>7+ head</th>
       <th class="sep-left">6+ ton</th><th>7+ ton</th>
-      <th class="sep-left">Prem 6+</th><th>Prem 7+</th><th class="sep-left">Weeks</th>
+      <th class="sep-left" title="6–7 kg price minus the 3–6 kg average, NOK/kg">Prem 6–7</th><th title="7–8 kg price minus the 3–6 kg average, NOK/kg">Prem 7–8</th><th class="sep-left">Weeks</th>
     </tr></thead><tbody id="tbodyCalMonth"></tbody></table>
   </div>
 
@@ -1535,8 +1540,9 @@
         if (r.sh_6plus !== undefined) {
           const w6 = CL6.reduce((s, c) => s + (r['sh_' + c] || 0), 0);
           const w7 = CL7.reduce((s, c) => s + (r['sh_' + c] || 0), 0);
-          if (w6 > 0) o.p6w = CL6.reduce((s, c) => s + r['sh_' + c] * r['p_' + c], 0) / w6 - r['p_3-4'];
-          if (w7 > 0) o.p7w = CL7.reduce((s, c) => s + r['sh_' + c] * r['p_' + c], 0) / w7 - r['p_3-4'];
+          const bp = bigPrem(r);   // primes 6-7 et 7-8 kg sur la moyenne 3-6 kg (p6w / p7w gardent leur nom dans le code)
+          if (w6 > 0 && bp && bp.p67 !== null) o.p6w = bp.p67;
+          if (w7 > 0 && bp && bp.p78 !== null) o.p7w = bp.p78;
         }
         o.slope = r['p_8-9'] - r['p_6-7'];
       }
@@ -1728,6 +1734,7 @@
 // smolt500_stk / other_loss_stk on each record, those win. Key "po|year|month" -> [mid, other].
 
 let CALIBRE = null;
+let CALSEAS = null;   // saisonnalite mensuelle (part de 6+ du panel, primes 6-7 et 7-8 kg) pour l'onglet Calibre
 let BW = null;   // BarentsWatch weekly fish health by zone (data.json -> bw_weekly)
 let BWR = null;  // BarentsWatch site register aggregates (data.json -> bw_register)
 let ESTAB = null; // Mattilsynet approved fishery establishments (data.json -> establishments)
@@ -1772,6 +1779,7 @@ async function loadRemoteData() {
         if (c.calibre && c.calibre.years.length) {
           CALIBRE = c.calibre;
           LAST_WEEK = c.lastweek;
+          CALSEAS = { y6: c.y6, prem6: c.prem6, prem7: c.prem7 };
         }
       } catch (e) { console.warn('Recalcul du calibre impossible :', e.message); }
     }
@@ -2683,12 +2691,12 @@ function nwFigures() {
       `wk ${P[0] % 100}: ${P[3].toFixed(2)}${Y ? ` · wk ${L[0] % 100} ${Math.floor(L[0] / 100) - 1}: ${Y[3].toFixed(2)}` : ''} · ${f0(L[2])} t ${Y ? dv(pc(L[2], Y[2]), '% y/y', 1, true) : ''} · SSB, fresh`, '#ffd54f')); }
   // indice Sitagri par calibre : prime du gros poisson et part de 6 kg+
   const W = (D.weekly || []).slice().sort((a, b) => a.report_year - b.report_year || a.report_week - b.report_week);
-  if (W.length > 4) { const L = W[W.length - 1], E = W[W.length - 4], pr = r => r['p_8-9'] - r['p_4-5'];
-    if (isFinite(pr(L))) out.push(card(`Big-fish premium · wk ${L.price_week}`, `${pr(L).toFixed(1)} <span>NOK/kg</span> ${dv(pr(L) - pr(E), '', 1, true)}`,
-      `8–9 kg minus 4–5 kg, Sitagri index · ${pr(E).toFixed(1)} three weeks earlier · average ${L.p_avg.toFixed(2)}`, '#ffb74d'));
+  if (W.length > 4) { const L = W[W.length - 1], E = W[W.length - 4], bl = bigPrem(L), be = bigPrem(E);
+    if (bl && bl.p67 !== null) out.push(card(`Big-fish premium · wk ${L.price_week}`, `+${bl.p67.toFixed(1)} <span>6–7 kg</span> · ${bl.p78 !== null ? (bl.p78 >= 0 ? '+' : '') + bl.p78.toFixed(1) : '—'} <span>7–8 kg</span>`,
+      `NOK/kg over the 3–6 kg average (${bl.b.toFixed(2)}), Sitagri index${be && be.p67 !== null ? ` · three weeks earlier ${be.p67 >= 0 ? '+' : ''}${be.p67.toFixed(1)} / ${be.p78 !== null ? (be.p78 >= 0 ? '+' : '') + be.p78.toFixed(1) : '—'}` : ''}`, '#ffb74d'));
     const Y = W.find(r => r.report_year === L.report_year - 1 && r.dist_week === L.dist_week);
-    if (isFinite(L.sh_6plus)) out.push(card(`6 kg+ share of harvest · wk ${L.dist_week}`, `${L.sh_6plus.toFixed(0)} % ${Y ? dv(L.sh_6plus - Y.sh_6plus, ' pt y/y', 0, true) : ''}`,
-      `5 kg+ ${L.sh_5plus.toFixed(0)} %${Y ? ` · same week ${L.report_year - 1}: ${Y.sh_6plus.toFixed(0)} %` : ''} · Akvafakta`, '#a1887f')); }
+    if (isFinite(L.sh_6plus)) out.push(card(`6 kg+ share of panel sales · wk ${L.dist_week}`, `${L.sh_6plus.toFixed(0)} % ${Y ? dv(L.sh_6plus - Y.sh_6plus, ' pt y/y', 0, true) : ''}`,
+      `5 kg+ ${L.sh_5plus.toFixed(0)} %${Y ? ` · same week ${L.report_year - 1}: ${Y.sh_6plus.toFixed(0)} %` : ''} · Akvafakta exporters' panel (by number of fish), not all of Norway's harvest`, '#a1887f')); }
   // poux : moyenne nationale ponderee par le nombre de sites qui comptent
   const B = (D.bw_weekly || {}).rows || [];
   if (B.length) { const k = r => r.y * 100 + r.w, Lk = Math.max(...B.map(k)), avg = kk => { const R = B.filter(r => k(r) === kk && r.lice != null && r.nl);
@@ -2705,8 +2713,8 @@ function nwFigures() {
   // exportations mensuelles (Akvafakta)
   const A = (D.monthly_akvafakta || []).slice().sort((a, b) => a.year - b.year || a.month - b.month);
   if (A.length) { const L = A[A.length - 1], Y = A.find(r => r.year === L.year - 1 && r.month === L.month);
-    out.push(card(`Exports, Norway · ${MONTHS_FR[L.month - 1].slice(0, 3)} ${L.year}`, `${f0(L.export_t / 1000)} <span>kt</span> ${Y ? dv(pc(L.export_t, Y.export_t), '%', 1, true) : ''}`,
-      `${L.price_nok_kg ? `${L.price_nok_kg.toFixed(2)} NOK/kg` : ''}${Y && Y.price_nok_kg ? ` (${Y.price_nok_kg.toFixed(2)} a year earlier)` : ''} · Akvafakta`, '#81c784')); }
+    out.push(card(`Exports, Norway (Akvafakta) · ${MONTHS_FR[L.month - 1].slice(0, 3)} ${L.year}`, `${f0(L.export_t / 1000)} <span>kt</span> ${Y ? dv(pc(L.export_t, Y.export_t), '%', 1, true) : ''}`,
+      `${L.price_nok_kg ? `${L.price_nok_kg.toFixed(2)} NOK/kg` : ''}${Y && Y.price_nok_kg ? ` (${Y.price_nok_kg.toFixed(2)} a year earlier)` : ''} · Akvafakta, round-weight equivalent, all products (SSB product-weight figures: Summary, Product per market)`, '#81c784')); }
   return out.join('');
 }
 function nwRow(n, t, bOf, rank) {   // un sujet : titre de tete, source, nombre de sources, reprises depliables
@@ -2800,7 +2808,7 @@ function renderChile() {
   const card = (lab, big, sub, col) => `<div class="pr-card" style="cursor:default"><div class="nm"><i style="background:${col}"></i>${lab}</div><div class="big">${big}</div><div class="ln">${sub}</div></div>`;
   const ex = (CLD.export_periode || []).filter(r => r.periode === 'S1').sort((a, b) => b.year - a.year);
   document.getElementById('clCards').innerHTML = (b5.length ? card('Biomass at sea · Dec 2025', `${f0(b5[11] / 1000)} kt ${vt(b5[11], b4[11])}`, `2025 average ${f0(avg(b5) / 1000)} kt (${vt(avg(b5), avg(b4))}) · all salmonids`, '#4fc3f7') : '') +
-    (M['2025'] ? card('Mortality 2025', `${f1(M['2025'].total_pct)} %`, `${f0(M['2025'].biomasse_morte_t)} t of dead fish · ${f1(M['2024'].total_pct)} % in 2024`, '#ff8a65') : '') +
+    (M['2025'] ? card('Mortality at sea 2025 · all salmonids', `${f1(M['2025'].total_pct)} %`, `share of the stock dying over the year (Sernapesca, all species, all farms at sea) · ${f0(M['2025'].biomasse_morte_t)} t of dead fish · ${f1(M['2024'].total_pct)} % in 2024. Not the closed-cycle rate in the table below`, '#ff8a65') : '') +
     (cum ? card(`Atlantic salmon harvest · Jan–${MON[cum.fin % 100 - 1]} ${Math.floor(cum.fin / 100)}`, `${f1(cum.t / 1000)} kt ${vt(cum.t, cum.t / (1 + cum.var_pct / 100))}`, 'Subpesca, cumulative from January', '#81c784') : '') +
     (ex.length > 1 ? card(`Exports · H1 ${ex[0].year}`, `${f0(ex[0].tons / 1000)} kt ${vt(ex[0].tons, ex[1].tons)}`, `$${f0(ex[0].usd_m)} M (${vt(ex[0].usd_m, ex[1].usd_m)}) · all salmonids, product weight`, '#ffd54f') : '');
   // mortalite par entreprise (cycles fermes), comme le tableau annuel ecossais
@@ -2829,7 +2837,9 @@ function renderChile() {
   const CO = (B.cosecha_cumul || []).slice().sort((a, b) => b.fin - a.fin || ['salar', 'coho', 'trucha'].indexOf(a.espece) - ['salar', 'coho', 'trucha'].indexOf(b.espece)), ESP = { salar: 'Atlantic salmon', coho: 'Coho', trucha: 'Trout' };
   const fins = [...new Set(CO.map(r => r.fin))].sort((a, b) => a - b), last = fins[fins.length - 1], prev = fins[fins.length - 2];
   const sl = (() => { const a = CO.find(r => r.fin === last && r.espece === 'salar'), b = CO.find(r => r.fin === prev && r.espece === 'salar'); if (!a || !b) return null; const n = a.t - b.t, n1 = a.t / (1 + a.var_pct / 100) - b.t / (1 + b.var_pct / 100); return { n, v: 100 * (n / n1 - 1), a: b.fin, b: a.fin }; })();
-  document.getElementById('clHarvSub').innerHTML = `Subpesca publishes only totals from January (preliminary). ` + (sl ? `Taking two of them apart: Atlantic salmon harvested ${MON[sl.a % 100]}–${MON[sl.b % 100 - 1]} ${Math.floor(sl.b / 100)} ≈ <b>${f0(sl.n / 1000)} kt, ${sl.v >= 0 ? '+' : '−'}${Math.abs(sl.v).toFixed(1)} %</b> on a year earlier, after +${f1(CO.find(r => r.fin === prev && r.espece === 'salar').var_pct)} % in the first months: the 2025 stock was harvested early and the biomass at sea is now lower (Pareto: −6 % at the end of June 2026). ` : '') + `Regions: Aysén, Los Lagos; the rest is mostly Magallanes.`;
+  document.getElementById('clHarvSub').innerHTML = `Subpesca publishes only totals from January (preliminary). ` + (sl ? `Taking two of them apart: Atlantic salmon harvested ${MON[sl.a % 100]}–${MON[sl.b % 100 - 1]} ${Math.floor(sl.b / 100)} ≈ <b>${f0(sl.n / 1000)} kt, ${sl.v >= 0 ? '+' : '−'}${Math.abs(sl.v).toFixed(1)} %</b> on a year earlier, after +${f1(CO.find(r => r.fin === prev && r.espece === 'salar').var_pct)} % in the first months: the 2025 stock was harvested early and the biomass at sea is now lower (Pareto: −6 % at the end of June 2026). ` : '') + `Regions: Aysén, Los Lagos; the rest is mostly Magallanes.` +
+    (() => { const O = (B.ovas_cumul || []).slice().sort((x, y) => y.fin - x.fin)[0]; return O ? `<br><b>Eggs put into incubation</b> (the harvest of 2 to 3 years ahead), ${MON[O.debut % 100 - 1]}–${MON[O.fin % 100 - 1]} ${Math.floor(O.fin / 100)}: ` +
+      `<b>${f1(O.millions)} M</b>, ${O.var_pct >= 0 ? '+' : '−'}${Math.abs(O.var_pct).toFixed(1)} % on a year earlier, ${f0(O.part_salar_pct)} % Atlantic salmon (Subpesca${O.url ? `, <a href="${O.url}" target="_blank" rel="noopener" style="color:var(--accent)">report</a>` : ''}).` : ''; })();
   document.getElementById('clHarv').innerHTML = `<thead><tr><th class="name">Species</th><th>Period</th><th>Harvest</th><th>vs year before</th><th>Aysén</th><th>Los Lagos</th><th>Rest</th></tr></thead><tbody>` +
     CO.map(r => { const ay = (r.regions || {})['Aysén'], ll = (r.regions || {})['Los Lagos']; return `<tr><td class="name">${ESP[r.espece] || r.espece}</td><td>${MON[r.debut % 100 - 1]}–${MON[r.fin % 100 - 1]} ${Math.floor(r.fin / 100)}</td><td>${f1(r.t / 1000)} kt</td>` +
       `<td class="${r.var_pct >= 0 ? 'delta-good' : 'delta-bad'}">${r.var_pct >= 0 ? '+' : '−'}${Math.abs(r.var_pct).toFixed(1)} %</td><td>${ay ? f1(ay / 1000) + ' kt' : '—'}</td><td>${ll ? f1(ll / 1000) + ' kt' : '—'}</td><td>${ay && ll ? f1((r.t - ay - ll) / 1000) + ' kt' : '—'}</td></tr>`; }).join('') + '</tbody>';
@@ -3685,6 +3695,8 @@ function renderRegister() {
   document.getElementById('rgGrpSub').innerHTML =
     `${rows.length} ${level === 'holder' ? 'licence holders' : 'groups'}${zone ? ' with capacity in zone ' + zone + ' (' + PO_NAMES[zone] + ')' : ''}, ` +
     `ranked by licensed capacity${zone ? ' in that zone' : ''}. ` +
+    `<b>Scope: commercial food-fish licences only</b> (${tmF0(tot)} t here); the zone table above, the "% of MTB" figures elsewhere in the dashboard (Supply outlook, Generations map) ` +
+    `also count research, display, education and slaughter-cage licences, whose fish are in the biomass, so their total MTB is higher. ` +
     (level === 'holder' ? 'Each legal company holding licences; its group is shown underneath. '
                         : 'Subsidiaries are attached to their group through a name table in the update script; companies not in the table appear under their own name. ') +
     (zone ? '' : 'Columns 13 → 1 give the capacity in each zone (tonnes).');
@@ -4038,8 +4050,8 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
 const fromYearSel = document.getElementById('fromYearSel');
 const toYearSel = document.getElementById('toYearSel');
 // (options remplies par fillYearSelectors une fois data.json charge)
-fromYearSel.addEventListener('change', () => { if (currentView === 'multi') renderMulti(); if (currentView === 'markets') renderMarketsView(); if (currentView === 'products') renderProductsView(); });
-toYearSel.addEventListener('change', () => { if (currentView === 'multi') renderMulti(); if (currentView === 'markets') renderMarketsView(); if (currentView === 'products') renderProductsView(); });
+fromYearSel.addEventListener('change', () => { if (currentView === 'multi') renderMulti(); if (currentView === 'products') renderProductsView(); });
+toYearSel.addEventListener('change', () => { if (currentView === 'multi') renderMulti(); if (currentView === 'products') renderProductsView(); });
 
 const METRIC_LABELS = {
   vol: 'Harvested volume (t, live weight)',
@@ -5179,7 +5191,9 @@ function renderMarketsView() {
 
   // --- periode issue du selecteur commun
   const per = getEffectivePeriod();
-  const yA = parseInt(toYearSel.value, 10), yB = parseInt(fromYearSel.value, 10);
+  // annee N du selecteur commun, comparee a la meme periode N-1 (comme les autres onglets ; avant novembre 2026,
+  // l'onglet lisait par erreur les selecteurs de Multi-year, d'ou une comparaison avec 2018)
+  const yA = parseInt(yearSel.value, 10), yB = yA - 1;
   // Douze mois glissants : option propre a cet onglet, qui n'a de sens que pour
   // des flux. Elle remonte de onze mois avant le mois de fin choisi en haut.
   const win = (y, m0, m1) => {
@@ -6045,6 +6059,32 @@ function mktBind() {
   });
 }
 
+// ---- saison : part de 6 kg+ et primes par mois calendaire (repris de l'ancienne page fenetre.html, novembre 2026)
+function renderCalSeason() {
+  const el6 = document.getElementById('calSeason6'), elP = document.getElementById('calSeasonP'), sub = document.getElementById('calSeasonSub');
+  if (!CALSEAS || !el6) { if (el6) el6.innerHTML = ''; return; }
+  const ks = Object.keys(CALSEAS.y6).map(Number); if (!ks.length) return;
+  const cy = Math.floor(Math.max(...ks) / 100), y0 = Math.min(...ks.map(k => Math.floor(k / 100)));
+  const by = (S, m, f) => Object.keys(S || {}).map(Number).filter(k => k % 100 === m && f(Math.floor(k / 100))).map(k => S[k]);
+  const avgA = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
+  const M = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], past = y => y < cy && y >= 2018;
+  const s6 = M.map(m => by(CALSEAS.y6, m, past)), cur6 = M.map(m => { const v = by(CALSEAS.y6, m, y => y === cy); return v.length ? v[0] : null; });
+  const mean6 = s6.map(avgA), lo6 = s6.map(v => v.length ? Math.min(...v) : null), hi6 = s6.map(v => v.length ? Math.max(...v) : null);
+  const p6 = M.map(m => avgA(by(CALSEAS.prem6, m, past))), p7 = M.map(m => avgA(by(CALSEAS.prem7, m, past)));
+  const c6 = M.map(m => { const v = by(CALSEAS.prem6, m, y => y === cy); return v.length ? v[0] : null; }), c7 = M.map(m => { const v = by(CALSEAS.prem7, m, y => y === cy); return v.length ? v[0] : null; });
+  const lab = i => MONTHS_FR[i].slice(0, 3), keys = M.map((m, i) => i);
+  const lowM = mean6.indexOf(Math.min(...mean6.filter(v => v !== null))), highM = mean6.indexOf(Math.max(...mean6.filter(v => v !== null)));
+  sub.innerHTML = `Akvafakta weekly split (exporters' panel), averaged by calendar month, ${Math.max(2018, y0)}–${cy - 1}, against ${cy}. ` +
+    `The seasonal pattern is large and stable: the 6 kg+ share is lowest in <b>${MONTHS_FR[lowM]}</b> (${mean6[lowM].toFixed(1)} % on average) and highest in <b>${MONTHS_FR[highM]}</b> (${mean6[highM].toFixed(1)} %); ` +
+    `beyond two months ahead, this calendar is a better guide than any model (see the 6 kg+ forecast in the Generations tab for the next two months). ` +
+    `Premiums: price of the 6–7 kg and 7–8 kg classes minus the 3–6 kg average, NOK/kg.`;
+  el6.innerHTML = scSvg(keys, [{ v: hi6, col: '#5a7180', w: 1, dash: '2,3', lab: `highest ${Math.max(2018, y0)}–${cy - 1}` }, { v: lo6, col: '#5a7180', w: 1, dash: '2,3', lab: 'lowest' },
+    { v: mean6, col: '#8fa4b0', w: 2, lab: 'average' }, { v: cur6, col: '#ffb74d', w: 2.4, dots: true, lab: String(cy) }],
+    { H: 200, min: 0, fmt: v => v.toFixed(0) + ' %', lab: i => `${lab(i)} — 6 kg+ share of panel sales`, xl: lab });
+  elP.innerHTML = scSvg(keys, [{ v: p6, col: '#81c784', w: 1.6, dash: '5,3', lab: `6–7 kg, average ${Math.max(2018, y0)}–${cy - 1}` }, { v: c6, col: '#81c784', w: 2.4, dots: true, lab: `6–7 kg, ${cy}` },
+    { v: p7, col: '#4fc3f7', w: 1.6, dash: '5,3', lab: '7–8 kg, average' }, { v: c7, col: '#4fc3f7', w: 2.4, dots: true, lab: `7–8 kg, ${cy}` }],
+    { H: 200, min: Math.min(0, ...[...p6, ...p7, ...c6, ...c7].filter(v => v !== null)), fmt: v => v.toFixed(0), lab: i => `${lab(i)} — premium, NOK/kg`, xl: lab });
+}
 function renderCalibreView() {
   const pct = (v,d=1) => (v === null || v === undefined) ? '—' : v.toFixed(d) + ' %';
   // Les primes sont le seul indicateur de la page ou le signe s'interprete a
@@ -6074,11 +6114,12 @@ function renderCalibreView() {
   const cur = CALIBRE.years[CALIBRE.years.length - 1];
   const sg = v => (v > 0 ? '+' : '') + v;
   document.getElementById('calibreNote').innerHTML = (lo && hi && cur) ? (
-    `<b>Extremes of the series.</b> ${lo.y} has the lowest share of tonnage at 6 kg and above (${lo.t6}%), with a premium of ${sg(lo.p6)} NOK/kg; ` +
-    `${hi.y} has the highest (${hi.t6}%), with a premium of ${sg(hi.p6)} NOK/kg. A larger share of big fish usually comes with a smaller premium.` +
+    `<b>Extremes of the series.</b> ${lo.y} has the lowest share of tonnage at 6 kg and above (${lo.t6}%), with a 6–7 kg premium of ${sg(lo.p6)} NOK/kg; ` +
+    `${hi.y} has the highest (${hi.t6}%), with a 6–7 kg premium of ${sg(hi.p6)} NOK/kg. A larger share of big fish usually comes with a smaller premium.` +
     `<br><span style="color:var(--muted)">Use the tonnage column, not the headcount one, when judging what competes ` +
     `with your own volume: in ${cur.y}, a ${cur.n6}% headcount share is ${cur.t6}% of the tonnage, because these fish are heavy.` +
     (cur.months < 12 ? ` ${cur.y} covers ${cur.months} months, so its volume is not comparable to a full year.` : '') + `</span>`) : '';
+  renderCalSeason();
   const tm = document.getElementById('tbodyCalMonth');
   tm.innerHTML = '';
   CALIBRE.months.slice(-24).forEach(r => {
@@ -6162,8 +6203,8 @@ const CAL_ROWS = [
   { lab: 'Share 7+, headcount', k: 'n7', unit: ' %',  d: 1, better: -1 },
   { lab: 'Share 6+, tonnage',   k: 't6', unit: ' %',  d: 1, better: -1 },
   { lab: 'Share 7+, tonnage',   k: 't7', unit: ' %',  d: 1, better: -1 },
-  { lab: 'Premium 6+',  k: 'p6', unit: ' NOK/kg', d: 2, better: +1 },
-  { lab: 'Premium 7+',  k: 'p7', unit: ' NOK/kg', d: 2, better: +1 },
+  { lab: 'Premium 6–7 kg (vs 3–6 kg avg)',  k: 'p6', unit: ' NOK/kg', d: 2, better: +1 },
+  { lab: 'Premium 7–8 kg (vs 3–6 kg avg)',  k: 'p7', unit: ' NOK/kg', d: 2, better: +1 },
 ];
 
 function renderCalPair(months, selA, selB) {
@@ -6730,7 +6771,7 @@ document.getElementById('ratioFromYear').addEventListener('change', (e) => {
   if (currentView === 'outlook') renderOutlook();
 });
 
-yearSel.addEventListener('change', () => { render(); if (currentView === 'global') renderGlobal(); if (currentView === 'outlook') renderOutlook(); if (currentView === 'products') renderProductsView(); if (currentView === 'register') renderRegister(); });
+yearSel.addEventListener('change', () => { render(); if (currentView === 'global') renderGlobal(); if (currentView === 'outlook') renderOutlook(); if (currentView === 'products') renderProductsView(); if (currentView === 'markets') renderMarketsView(); if (currentView === 'register') renderRegister(); });
 monthSel.addEventListener('change', () => { render(); if (currentView === 'register') renderRegister(); if (currentView === 'global') renderGlobal(); if (currentView === 'multi') renderMulti(); if (currentView === 'markets') renderMarketsView(); if (currentView === 'products') renderProductsView(); });
 mktBind();
 pmBind();
@@ -6921,7 +6962,7 @@ function renderSummary() {
   document.getElementById('smBio').innerHTML = bio + hlHtml;
 
   // ---------- ventes ----------
-  let sales = bioRow('harv', 'Harvested volume', 'round weight, month', fmtT, { noun: 'harvest', upGood: true, stable: 0.02 });
+  let sales = bioRow('harv', 'Harvested volume', 'live weight, month', fmtT, { noun: 'harvest', upGood: true, stable: 0.02 });
   if (SSBX && SSBX.rows) {
     const X = {};
     SSBX.rows.forEach(([k, hs, iso, kg]) => { const o = X[k] || (X[k] = [0, 0, 0, 0]); o[hs] += kg / 1000; });
@@ -7510,7 +7551,7 @@ function renderProducers() {
     `Destination = country declared at export, wherever the salmon is cleared.`;
 }
 
-// ===== Reservoir de gros poissons et pics de 6+ (commun a production.html et fenetre.html) =====
+// ===== Reservoir de gros poissons et pics de 6+ (fenetre.html, qui partageait ce code, a ete retiree en novembre 2026) =====
 // Reservoir : biomasse estimee au-dessus de 6 kg vide (6,75 kg vif : le registre donne vide = vif x 0,888), chaque zone x generation
 // suivant une loi lognormale (CV 0,30) autour de son poids moyen (Biomasseregisteret).
 // Cible : part 6+ (en nombre) des recoltes hebdomadaires Akvafakta, moyenne par mois.
@@ -8033,9 +8074,12 @@ function genPeaks() {
         (PK.natTest && PK.natTest.pan ? `, about ${f1(PK.natTest.pan.mod)} pt off in past tests` : '') + `</div>` : '') +
       (() => { const FC = PK.fcN || PK.fc2, X = PK.fcN ? PK.NAT : PK.S6; if (!FC) return ''; const S = premSeries(DATA_RAW), ks = Object.keys(S).map(Number).sort((a, b) => a - b), last = ks[ks.length - 1], F = premFit(S, X, last); if (!F) return '';
         const v = F.a + F.b * FC.v, same = ks.filter(k => k % 100 === FC.k % 100).map(k => S[k]), u = same.length ? same.reduce((a, b) => a + b, 0) / same.length : null;
-        return `<div class="ln">price premium of 6–9 kg over 4–5 kg expected in ${tmMl(FC.k)}: <b style="color:var(--ink)">${premPct(v) >= 0 ? '+' : ''}${f1(premPct(v))}%</b> ` +
+        const W = (DATA_RAW.weekly || []).slice(-4).map(bigPrem).filter(x => x), m = f => W.length ? W.reduce((t, x) => t + (f(x) || 0), 0) / W.length : null;
+        const b36 = m(x => x.b), p78 = m(x => x.p78), nok = b36 ? ` ≈ ${(b36 * (Math.exp(v) - 1)) >= 0 ? '+' : ''}${f1(b36 * (Math.exp(v) - 1))} NOK/kg` : '';
+        return `<div class="ln">price premium of 6–7 kg over the 3–6 kg average expected in ${tmMl(FC.k)}: <b style="color:var(--ink)">${premPct(v) >= 0 ? '+' : ''}${f1(premPct(v))}%</b>${nok} ` +
           `(${tmMl(last)}: ${premPct(S[last]) >= 0 ? '+' : ''}${f1(premPct(S[last]))}%${u !== null ? `; usually ${premPct(u) >= 0 ? '+' : ''}${f1(premPct(u))}% in ${MONTHS_FR[FC.k % 100 - 1].slice(0, 3)}` : ''}) — ` +
-          `from the expected 6 kg+ share ${PK.fcN ? 'of Norway\'s harvest' : 'of the panel\'s sales'}: each point of 6 kg+ less has meant about ${f1(-100 * F.b)} pt more premium. Checked against reality in the forecast archive (Generations map)</div>`; })() +
+          `from the expected 6 kg+ share ${PK.fcN ? 'of Norway\'s harvest' : 'of the panel\'s sales'}: each point of 6 kg+ less has meant about ${f1(-100 * F.b)} pt more premium. Checked against reality in the forecast archive (Generations map)` +
+          (p78 !== null ? `. 7–8 kg premium, last 4 weeks: ${p78 >= 0 ? '+' : ''}${f1(p78)} NOK/kg — not forecast here: it answers to world supply and demand for large fish more than to Norway's stock` : '') + `</div>`; })() +
       (PK.hw ? `<div class="ln">harvested fish in ${tmMl(PK.hw.k)}: <b style="color:var(--ink)">${f2(PK.hw.v)} kg gutted</b> on average vs ${f2(PK.hw.usual)} usually ` +
         `(${PK.hw.v - PK.hw.usual >= 0 ? '+' : ''}${f2(PK.hw.v - PK.hw.usual)} kg) — heavier than usual = big fish taken early, the reservoir tends to come lower 3–4 months later (signal only)</div>` : '') +
       (PK.ssbw ? `<div class="ln">SSB weekly exports, fresh, last 4 weeks to week ${PK.ssbw.last % 100}: ${tmF0(PK.ssbw.vol)} t ${PK.ssbw.volPrev ? tmVar(tmPc(PK.ssbw.vol, PK.ssbw.volPrev)) : ''}, ` +
@@ -8334,17 +8378,28 @@ function renderCoprod() {
     `Prices are FOB Norway, product weight.`;
 }
 
-// ===================== Prime des gros poissons (6-9 kg vs 4-5 kg) =====================
-// Prix Akvafakta par calibre, chaque mois : ecart (log) entre le prix moyen des 6-9 kg (pondere par les volumes vendus) et celui des 4-5 kg.
+// ===================== Prime des gros poissons (novembre 2026 : deux primes, 6-7 kg et 7-8 kg, sur la moyenne 3-6 kg) =====================
+// Reference de prix : moyenne des calibres 3-4, 4-5 et 5-6 kg ponderee par le tonnage vendu (part en tetes x poids moyen de la classe).
+// 6-7 kg : suit l'offre norvegienne de gros poisson (reservoir, part de 6+). 7-8 kg : obeit davantage a l'offre et a la demande mondiales.
+const MID36 = { '3-4': 3.5, '4-5': 4.5, '5-6': 5.5 };
+function base36(w) {
+  const cs = ['3-4', '4-5', '5-6'].filter(c => w['p_' + c] > 0); if (cs.length < 3) return null;
+  const wt = cs.map(c => Math.max(w['sh_' + c] || 0, 0) * MID36[c]), tw = wt.reduce((a, b) => a + b, 0);
+  return tw > 0 ? cs.reduce((t, c, i) => t + w['p_' + c] * wt[i], 0) / tw : cs.reduce((t, c) => t + w['p_' + c], 0) / cs.length;
+}
+function bigPrem(w) {   // {b: prix moyen 3-6 kg, p67, p78} en NOK/kg
+  const b = base36(w); if (b === null) return null;
+  return { b, p67: w['p_6-7'] > 0 ? w['p_6-7'] - b : null, p78: w['p_7-8'] > 0 ? w['p_7-8'] - b : null };
+}
+// Prix Akvafakta par calibre, chaque mois : ecart (log) entre le prix des 6-7 kg et la moyenne 3-6 kg.
 // Moins il y a de 6+ dans les ventes du panel, plus leur prime est forte : on applique cette relation a la part de 6+ prevue 2 mois plus tot.
 // Verifie dans l'archive des previsions (onglet Generations map) : 2021-2026, ~6 pts d'erreur contre ~7 pour le calendrier seul.
 function premSeries(raw) {
   const M = {};
-  (raw.weekly || []).forEach(w => { const pw = w.price_week; if (!pw || !['4-5', '6-7', '7-8', '8-9'].every(c => w['p_' + c] > 0)) return;
+  (raw.weekly || []).forEach(w => { const pw = w.price_week; if (!pw || !['3-4', '4-5', '5-6', '6-7'].every(c => w['p_' + c] > 0)) return;
     const y = w.report_year - (pw >= 50 && w.report_week <= 2 ? 1 : 0), j4 = Date.UTC(y, 0, 4), d0 = new Date(j4).getUTCDay();
     const th = new Date(j4 - ((d0 + 6) % 7) * 864e5 + (pw - 1) * 7 * 864e5 + 3 * 864e5), k = th.getUTCFullYear() * 100 + th.getUTCMonth() + 1;
-    const ws = ['6-7', '7-8', '8-9'].map(c => Math.max(w['sh_' + c] || 0.1, 0.1)), big = ['6-7', '7-8', '8-9'].reduce((t, c, i) => t + w['p_' + c] * ws[i], 0) / ws.reduce((a, b) => a + b, 0);
-    (M[k] || (M[k] = [])).push(Math.log(big / w['p_4-5'])); });
+    (M[k] || (M[k] = [])).push(Math.log(w['p_6-7'] / base36(w))); });
   const S = {}; Object.entries(M).forEach(([k, v]) => { if (v.length >= 3) S[+k] = v.reduce((a, b) => a + b, 0) / v.length; });
   return S;
 }
@@ -8960,13 +9015,13 @@ function renderArchive() {
   const done = rows.filter(r => r.a !== null), em = done.length ? avg(done.map(r => Math.abs(r.v - r.a))) : NaN, ec = done.length ? avg(done.map(r => Math.abs(r.u - r.a))) : NaN;
   const dn = rows.filter(r => r.na !== null && r.nv !== null), enm = dn.length ? avg(dn.map(r => Math.abs(r.nv - r.na))) : NaN, enc = dn.length ? avg(dn.map(r => Math.abs(r.nu - r.na))) : NaN;
   const live = rows.filter(r => r.kind === 'live').length;
-  // prime des 6-9 kg sur les 4-5 kg : prevue a partir de la part de 6+ prevue (relation apprise sur les mois connus a l'origine) vs reelle
+  // prime des 6-7 kg sur la moyenne 3-6 kg : prevue a partir de la part de 6+ prevue (relation apprise sur les mois connus a l'origine) vs reelle
   let premTxt = '';
   if (ARC_CLS === '6+') { const PS = premSeries(G.d), pe = [], pc = [];
     const useN = ARC_SRC !== 'pan';   // part nationale par defaut, panel seulement si demande
     rows.forEach(r => { const fv = useN ? r.nv : r.v; if (PS[r.t] === undefined || fv === null) return; const F = premFit(PS, useN ? nat : act, r.k); if (!F) return; const same = Object.keys(PS).map(Number).filter(k => k % 100 === r.t % 100 && k < r.k).map(k => PS[k]); if (!same.length) return;
       pe.push(Math.abs(premPct(F.a + F.b * fv) - premPct(PS[r.t]))); pc.push(Math.abs(premPct(avg(same)) - premPct(PS[r.t]))); });
-    if (pe.length) premTxt = `<br><b>Price premium of 6–9 kg over 4–5 kg</b> (Akvafakta prices), forecast 2 months ahead from the forecast 6 kg+ share ${useN ? 'of Norway\'s harvest' : 'of the panel\'s sales'}: <b>${f1(avg(pe))} pt</b> off on average, calendar alone ${f1(avg(pc))} pt (${pe.length} months).`; }
+    if (pe.length) premTxt = `<br><b>Price premium of 6–7 kg over the 3–6 kg average</b> (Akvafakta prices), forecast 2 months ahead from the forecast 6 kg+ share ${useN ? 'of Norway\'s harvest' : 'of the panel\'s sales'}: <b>${f1(avg(pe))} pt</b> off on average, calendar alone ${f1(avg(pc))} pt (${pe.length} months).`; }
   $('gm_arcSub').innerHTML = `Every month, when the Biomasseregisteret comes out, the update saves what this dashboard forecasts at that moment, so it can be checked later against what really happened. ` +
     `<b>${E.length} months</b> archived (${live} saved live, the others <i>reconstructed</i>: rebuilt with only the data available before each month, but with today's revised figures). ` +
     `Size class: ${['6+', '5-6', '4-5'].map(c => `<span class="gm-chip${c === ARC_CLS ? ' on' : ''}" data-c="${c}">${c === '6+' ? '6 kg+' : c + ' kg'}</span>`).join('')} ` +
@@ -9059,42 +9114,18 @@ function renderBrief() {
   const E = (ARC && ARC.entries) || [], byK = {}; E.forEach(e => { if (e.supply) byK[e.k] = e.supply; });
   const prevOf = kk => byK[kk] ? Object.fromEntries(byK[kk].map(x => [x[0], x[1]])) : null;
   const P1 = prevOf(kp), P3 = prevOf(sh(k, -3));
-  // graphique : 12 mois passes (reel) + 12 mois prevus, avec les previsions du mois precedent et d'il y a 3 mois
-  const keys = []; for (let i = -11; i <= 12; i++) keys.push(sh(k, i));
-  const act = keys.map(kk => kk <= k ? supActual(kk) : null), ly = keys.map(kk => supActual(sh(kk, -12)));
-  const pm = {}; (SP ? SP.p : []).forEach(x => { pm[x.k] = x; });
-  const at = (kk, f) => kk === k ? act[11] : pm[kk] ? pm[kk][f] : null;
-  const fc = keys.map(kk => at(kk, 'v')), lo = keys.map(kk => at(kk, 'lo')), hi = keys.map(kk => at(kk, 'hi'));
-  const f1v = keys.map(kk => P1 && P1[kk] !== undefined ? P1[kk] : null), f3v = keys.map(kk => P3 && P3[kk] !== undefined ? P3[kk] : null);
-  const mx = Math.max(...[...act, ...hi, ...ly, ...f1v, ...f3v].filter(v => v !== null && isFinite(v))) * 1.12;
-  $('gm_brChart').innerHTML = '<div style="max-width:1100px">' + chart(keys, { lmax: mx, ld: 0, lcol: '#e7eef2', H: 230, projFrom: 12,
-    band: [{ hi, lo, col: '#4fc3f7' }],
-    lines: [{ v: ly, col: '#8fa4b0', w: 1.2, dash: '1,3', lab: 'same month a year earlier, kt' }, { v: f3v, col: '#ce93d8', w: 1.3, dash: '3,3', lab: 'forecast made 3 months ago, kt' },
-      { v: f1v, col: '#ffb74d', w: 1.5, dash: '4,3', lab: 'forecast made last month, kt' }, { v: fc, col: '#4fc3f7', w: 2.2, dash: '6,3', dots: true, lab: 'forecast now, kt' },
-      { v: act, col: '#e7eef2', dots: true, lab: 'harvest, kt gutted' }] }) + '</div>';
-  $('gm_brLeg').innerHTML = `<span style="color:#e7eef2">● harvest</span> · <span style="color:#4fc3f7">● forecast now (shaded: lowest–highest of the 4 reference years)</span> · ` +
-    `<span style="color:#ffb74d">- - forecast made last month</span> · <span style="color:#ce93d8">- - made 3 months ago</span> · <span style="color:#8fa4b0">··· same month a year earlier</span>. ` +
-    `All Norway, thousand tonnes gutted per month.` + (P1 ? '' : ' Earlier forecasts appear once the archive has them.');
+  // Prevision de volume retiree de cet onglet (novembre 2026) : rejouees sur les memes mois 2021-2026, la projection de Supply outlook
+  // se trompe moins a tous les horizons (5 mois cumules : 3,4 % d'erreur moyenne contre 6,2 %) et la projection generation par
+  // generation affichee ici sous-estimait la recolte d'environ 5 % (de -8 a -15 % sur les 12 dernieres origines). Une seule prevision
+  // de volume reste donc sur la page : Supply outlook. Le relais entre generations (date) est garde.
+  $('gm_brChart').innerHTML = ''; $('gm_brLeg').innerHTML = '';
   const li = [];
-  // creux et relais
-  if (SP) {
-    const p = SP.p.slice(0, 9), lowest = p.reduce((a, b) => b.v < a.v ? b : a), lyLow = supActual(sh(lowest.k, -12));
-    const q = SP.p.slice(0, 5), qs = q.reduce((t, x) => t + x.v, 0), qly = q.reduce((t, x) => t + (supActual(sh(x.k, -12)) || 0), 0);
-    // moyenne des 5 annees precedentes (l'annee passee peut etre exceptionnelle)
-    const av5 = kk => { const v = [1, 2, 3, 4, 5].map(y => supActual(sh(kk, -12 * y))).filter(x => x !== null); return v.length === 5 ? avg(v) : null; };
-    const low5 = av5(lowest.k), q5 = q.every(x => av5(x.k) !== null) ? q.reduce((t, x) => t + av5(x.k), 0) : null;
-    const hand = SP.p.find(x => x.nw > x.old);
-    $('gm_brSub').innerHTML = `Supply over the next 12 months, deduced from what is left at sea of each generation: each one leaves the sea at the pace of the past 4 years. ` +
-      `In tests it is about 10 % off per month, so read the direction and the changes from one month to the next more than the exact figure.`;
-    li.push(`<b>Low point</b> expected in <b>${ml(lowest.k)}</b>: about <b>${f0(lowest.v)} kt</b> (range ${f0(lowest.lo)}–${f0(lowest.hi)}), ${pct(pc(lowest.v, lyLow))} vs ${ml(sh(lowest.k, -12))}${low5 ? `, ${pct(pc(lowest.v, low5))} vs the average of the 5 previous years` : ''}. ` +
-      `Next 5 months together: ${f0(qs)} kt, ${pct(pc(qs, qly))} vs the same months a year earlier${q5 ? `, ${pct(pc(qs, q5))} vs the 5-year average` : ''}.` +
-      (hand ? ` Generation ${SP.old + 1} should take over (more than half of the harvest) from <b>${ml(hand.k)}</b>.` : ''));
-    if (P1) { const rv = SP.p.filter(x => P1[x.k] !== undefined).map(x => [x, x.v - P1[x.k]]);
-      if (rv.length) { const big = rv.reduce((a, b) => Math.abs(b[1]) > Math.abs(a[1]) ? b : a), sum = rv.reduce((t, x) => t + x[1], 0);
-        li.push(`<b>Since last month's forecast</b>: ${sum >= 0 ? '+' : '−'}${f0(Math.abs(sum))} kt over the months both cover` +
-          (Math.abs(big[1]) >= 1 ? `; largest change ${ml(big[0].k)}, ${sg(big[1], 0)} kt (now ${f0(big[0].v)} kt).` : ' — practically unchanged.')); } }
-    if (P1 && P1[k] !== undefined) { const a = supActual(k); li.push(`<b>${ml(k)} came in at ${f0(a)} kt</b>; last month's forecast was ${f0(P1[k])} kt (${pct(pc(a, P1[k]))}).`); }
-  } else $('gm_brSub').innerHTML = 'Not enough history for a supply forecast.';
+  $('gm_brSub').innerHTML = `Harvest volume forecast: see <a href="#" id="gm_toOutlook" style="color:var(--accent)">Supply outlook</a>, the only volume forecast on this page. ` +
+    `Replayed side by side on the same months (forecasts issued every month since January 2021), it came closer to what was then harvested than the generation-by-generation estimate that used to be shown here ` +
+    `(next 5 months together: 3.4 % average error against 6.2 %; that estimate ran about 5 % too low on average).`;
+  if (SP) { const hand = SP.p.find(x => x.nw > x.old);
+    if (hand) li.push(`<b>Handover</b>: generation ${SP.old + 1} should make more than half of the harvest from <b>${ml(hand.k)}</b> (pace of the past 4 years).`); }
+  { const lk = document.getElementById('gm_toOutlook'); if (lk) lk.onclick = e => { e.preventDefault(); const b = document.querySelector('button[data-v="outlook"]'); if (b) { b.click(); window.scrollTo(0, 0); } }; }
   // generation en cours d'abattage et generation suivante, vs le meme mois des 5 dernieres annees
   const gz = gapStat(NOR, k);
   if (gz) { const past = [1, 2, 3, 4, 5].map(y => [y, gapStat(NOR, sh(k, -12 * y))]).filter(([, x]) => x);
@@ -9355,7 +9386,8 @@ function renderFocus(k) {
     const flags = [], lim = k === 'us' ? -15 : -40;
     if (!covered) flags.push(`<span style="color:var(--muted)">exporter data not yet published for the whole period</span>`);
     else { if (isFinite(gp) && gp < lim && e[0] >= 20) flags.push('<span class="warn">⚠ atypical declared price</span>'); if (isFinite(gv) && Math.abs(gv) > 25 && Math.max(e[0], u[0]) >= 50) flags.push('<span class="warn">⚠ volume gap</span>');
-      if (u[0] < 1 && e[0] >= 50) flags.push(`<span class="warn">⚠ not found in ${C.market}'s import figures</span>`); }
+      if (u[0] < 1 && e[0] >= 50) flags.push(`<span class="warn">⚠ not found in ${C.market}'s import figures</span>`);
+      if (k !== 'us' && isFinite(fr) && fr < 0 && e[0] >= 20) flags.push('<span class="warn">⚠ CIF below FOB (freight negative)</span>'); }
     if (!flags.length) flags.push('<span class="delta-good">✓ consistent</span>');
     return `<tr><td class="name">${FLAG(o, 16)} ${US_LAB[o]}</td><td style="text-align:left">${P[pi]}</td><td class="sep-left">${tmF0(u[0])}</td><td>${isFinite(pu) ? pu.toFixed(2) : '—'}</td>` +
       `<td class="sep-left">${tmF0(e[0])}</td><td>${isFinite(pe) ? pe.toFixed(2) : (cur !== '€' ? cur : '—')}</td>` +
