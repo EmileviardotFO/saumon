@@ -7963,7 +7963,11 @@ function genBuild(po) {
       // precedent) / poissons presents en debut de mois - poids du mois precedent. Mois ou des poissons entrent (mises a l'eau) :
       // non calcule, la moyenne baisserait mecaniquement (c'est ce qui donnait une "croissance negative" en avril pour la generation 2026).
       let wg = NaN;
-      if (prev && prev.n > 0 && prev.b > 0 && x.n + x.h + x.d + x.l <= prev.n * 1.02) { const wp = prev.b / prev.n; wg = (x.b + x.hk + (x.d + x.l) * wp) / prev.n - wp; }
+      // Poissons disparus sans etre abattus ni morts (reclassement vers une autre generation, transfert de zone, correction de comptage :
+      // zone 9 en sept. 2026, 4,8 M de poissons de 2025 sortis pendant que la generation 2026 gagnait 6,5 M) : comptes au poids du mois
+      // precedent, sinon leur biomasse passait pour une perte de croissance.
+      if (prev && prev.n > 0 && prev.b > 0 && x.n + x.h + x.d + x.l <= prev.n * 1.02) { const wp = prev.b / prev.n, gone = Math.max(0, prev.n - (x.n + x.h + x.d + x.l));
+        wg = (x.b + x.hk + (x.d + x.l + gone) * wp) / prev.n - wp; }
       Object.assign(x, { ch, cd, cl, chk, ent, w: x.n ? x.b / x.n : NaN, gr: x.gn ? x.g / x.gn : NaN, wg, tsh: chA > 0 ? cha / chA : NaN });
       prev = x; }); });
   return { A, flows };
@@ -8025,7 +8029,7 @@ function renderGenerations() {
   const alive = x => x.ent > 0 && x.n / x.ent >= 0.02;
   const ready = x => { const g = gOf(x); return !flows || !g || x.ent >= 0.2 * entMax[g]; };
   $g('genW').innerHTML = `<div class="sig-sub"><b>Average weight</b> (kg, live)</div>` + vzLines(ages, ser(x => ready(x) && (alive(x) || !flows) ? x.w : null), { axis: 'kg live', unit: 'kg', digits: 1, H: 230, xfmt: genAgeLab });
-  $g('genS').innerHTML = flows ? `<div class="sig-sub"><b>Average monthly growth</b> (kg live gained per fish in the month, whole generation: harvested and dead fish included; months when new smolts enter are left out)</div>` +
+  $g('genS').innerHTML = flows ? `<div class="sig-sub"><b>Average monthly growth</b> (kg live gained per fish in the month, whole generation: harvested and dead fish included; fish that leave the generation without being harvested or dying — moved to another year class or zone, count corrections — are counted at their last weight; months when new smolts enter are left out)</div>` +
     vzLines(ages, ser(x => ready(x) && alive(x) && isFinite(x.wg) && x.wg > -0.1 ? x.wg : null), { axis: 'kg / month', unit: 'kg', digits: 2, H: 230, xfmt: genAgeLab }) : '';
   // duree en mer avant abattage : une barre par generation (moyenne ponderee par le nombre de poissons abattus), et la part deja abattue
   { const gl = Object.keys(A).map(Number).filter(g => g >= Math.floor(LAST / 100) - 8 && g <= Math.floor(LAST / 100)).sort((a, b) => a - b).filter(g => { const x = at(g, LAST) || {}; const ks = Object.keys(A[g]).map(Number).filter(k => k <= LAST); const L2 = ks.length ? A[g][Math.max(...ks)] : null; return L2 && L2.ent && L2.ch >= 0.05 * L2.ent; });
