@@ -1882,6 +1882,32 @@ function sourceStatus() {
     add('GACC — Norwegian establishments registered for China', d.china.meta.fetched || '—', g === null || g > 10, 'every update run (customs search page, fragile source)', steps.CHINA); }
   if (ESTAB && ESTAB.meta) { const g = daysSince(ESTAB.meta.fetched);
     add('Mattilsynet approved establishments', ESTAB.meta.fetched || '—', g === null || g > 10, 'every update run', steps.ESTAB); }
+  // Australie (EPA Tasmanie, portail NRE) et Canada BC (catalogue DFO) : bloc status.farming ecrit par write_status.py,
+  // derniere periode REELLEMENT presente dans farming/ (pas une date de calendrier)
+  const fm = d.status && d.status.farming;
+  if (fm) {
+    const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    const am = fm.australia_mortality;
+    if (am && am.last) {
+      const nx = am.next_expected ? new Date(am.next_expected + 'T00:00:00Z') : null;
+      const al = fm.australia_alerts || [];
+      add('Australia — EPA Tasmania salmon mortalities', mlab(+am.last.slice(0, 4), +am.last.slice(5, 7)),
+        nx ? now > new Date(nx.getTime() + 14 * 864e5) : ym(+am.last.slice(0, 4), +am.last.slice(5, 7)) < nowYM - 5,
+        'monthly tonnage by disposal method, published quarterly about 3 weeks after the quarter'
+          + (al.length ? ` — <span class="delta-bad">last run: ${al.map(esc).join('; ')}</span>` : ''),
+        steps.AUSTRALIA, nx); }
+    const ap = fm.australia_production;
+    if (ap && ap.last) {
+      const fyEnd = +ap.last.slice(2, 6) + 1;   // 'FY2025/26' -> exercice clos en juin 2026
+      add('Australia — NRE Tasmania production by company', ap.last, now > new Date(Date.UTC(fyEnd + 1, 9, 31)),
+        'financial year (July–June), head-on gutted, Tassal / Huon / Petuna; publication delay not yet measured',
+        steps.AUSTRALIA, new Date(Date.UTC(fyEnd + 1, 7, 31))); }
+    const LAB_BC = { poux: ['sea lice counts', 45], mortalite: ['mortality events', 120], transferts: ['fish transfers', 120] };
+    Object.entries(fm.canada_bc || {}).forEach(([k, v]) => {
+      const [lab, lim] = LAB_BC[k] || [k, 120], g = daysSince(v.dfo_modified);
+      add(`Canada BC — DFO ${lab}`, v.dfo_modified ? v.dfo_modified.slice(0, 10) : '—', g === null || g > lim,
+        `date the DFO dataset was last modified (open.canada.ca catalogue); late after ${lim} days without change`, steps.CANADA_BC); });
+  }
   return out;
 }
 
@@ -7487,6 +7513,8 @@ function tmBest(pr) {
   if (pr === 'IE' || EU_HUBS[pr]) { const d = tmProducer(pr, 'all'); if (!d.euOnly) return d; }
   return tmProducer(pr, 'eu');
 }
+// Couleur des mois plus recents que le dernier mois commun a tous les producteurs (vue d'un pays)
+const PR_AHEAD = '#4fc3f7';
 function renderProducers() {
   const sub = document.getElementById('prSub');
   if (!EU) { sub.innerHTML = EU_LOADING ? 'Loading data…' : 'Loading…'; loadEurostat(); return; }
@@ -7520,6 +7548,7 @@ function renderProducers() {
       `<div class="big">${tmKt(a[0])} <span style="font-size:13px">${tmVar(p)}</span> <span style="font-size:10px;color:var(--muted);font-weight:normal">vs N-1</span></div>` +
       (PER.keys.length === 1 ? `<div class="ln">vs previous month: ${tmVar(tmPc(a[0], S(by, [tmBack(PER.keys[0], 1)])[0]))}</div>` : '') +
       `<div class="ln">price <b style="color:var(--ink)">${isFinite(pa) ? pa.toFixed(2) + ' ' + D.cur + '/kg' : '—'}</b> ${isFinite(pa) && isFinite(pb) ? tmVar(tmPc(pa, pb)) : ''}</div>` +
+      (D.last > END && perSel.value !== 'custom' ? `<div class="ln" style="color:${PR_AHEAD}">${tmMl(D.last)} available — open the country</div>` : '') +
       vzSpark(tmRange(end, 24).map(k => by[k] ? by[k][0] : 0), ORIG_COL[pr]) + `</div>`;
   });
   // bandeau total : tous les producteurs, meme periode, prix en euros (moyenne ponderee par les volumes)
@@ -7553,7 +7582,12 @@ function renderProducers() {
   document.getElementById('prCards').innerHTML = totalCard + cards.join('');
   document.querySelectorAll('#prCards .pr-card').forEach(c => c.addEventListener('click', () => { prSel = c.dataset.p; renderProducers(); }));
   // producteur choisi
-  const D = SRC[prSel], cur = D.cur, lastP = D.last, endP = Math.min(END, lastP), PER = tmPeriod(perSel.value, 'pr', endP);
+  // Vue d'un pays : jusqu'a SON dernier mois publie (la vue globale reste au dernier mois commun, END).
+  // Les mois plus recents que END sont affiches dans la couleur PR_AHEAD.
+  const D = SRC[prSel], cur = D.cur, lastP = D.last, endP = lastP, PER = tmPeriod(perSel.value, 'pr', endP);
+  const ahead = endP > END && perSel.value !== 'custom';
+  const ah = t => ahead ? `<span style="color:${PR_AHEAD}">${t}</span>` : t;
+  const aheadNote = ahead ? ` <span style="color:${PR_AHEAD}">Latest month for ${PROD_LAB[prSel]}: <b>${tmMl(endP)}</b>, more recent than the all-country month (${tmMl(END)}) used in the overview above.</span>` : '';
   document.getElementById('prMetrics').innerHTML = [['q', 'Volume'], ['p', 'Price'], ['v', 'Value']]
     .map(([k, l]) => `<label class="cc-check"><input type="checkbox" data-m="${k}" ${prMetrics.has(k) ? 'checked' : ''}> ${l}</label>`).join('');
   document.querySelectorAll('#prMetrics input').forEach(c => c.addEventListener('change', () => { c.checked ? prMetrics.add(c.dataset.m) : prMetrics.delete(c.dataset.m); if (!prMetrics.size) prMetrics.add('q'); renderProducers(); }));
@@ -7575,7 +7609,7 @@ function renderProducers() {
     if (cmp.checked) ser.push({ lab: 'Same month a year earlier', col: multi ? '#e7eef2' : (FORM_COL[sel[0]] || '#e7eef2'), pts: pts(tot, keys.map(k => k - 100)), dash: '5,4', w: 1.6, op: .55 });
     if (!j) lines.push(...ser);
     return vzLines(keys, ser, { axis: m.axis, unit: m.unit, digits: m.d, zero: !m.nz, H: mets.length > 1 ? 210 : 280, xAxis: j === mets.length - 1 }); }).join('');
-  document.getElementById('prChartSub').innerHTML = `<b>${PROD_LAB[prSel]}</b> — ${D.src}, ${tmMl(keys[0])} to ${tmMl(keys[keys.length - 1])}.` +
+  document.getElementById('prChartSub').innerHTML = `<b>${PROD_LAB[prSel]}</b> — ${D.src}, ${tmMl(keys[0])} to ${ah(tmMl(keys[keys.length - 1]))}.` + aheadNote +
     (D.euOnly ? ` <span class="warn">Exports to non-EU countries are not included.</span>` : '') +
     (prSel === 'CL' ? ` <span class="warn">Chilean frozen fillets mix Atlantic salmon and coho; the code does not separate them.</span>` : '') +
     vzLegend(lines.map(x => [x.lab, x.col, !!x.dash]));
@@ -7586,7 +7620,7 @@ function renderProducers() {
   const f2 = v => isFinite(v) ? v.toFixed(2) : '—';
   document.getElementById('prFormTitle').textContent = `${PROD_LAB[prSel]} — by form (${D.euOnly ? 'into the EU only' : 'all destinations'})`;
   const one = kN.length === 1, kM1 = one ? tmBack(kN[0], 1) : null;
-  document.getElementById('theadPrF').innerHTML = `<tr><th class="name" rowspan="2">Form</th><th class="grp" colspan="${one ? 6 : 5}">${PER.lab}</th>${one ? '' : `<th class="grp sep-left" colspan="3">Last month available, ${tmMl(LM)}</th>`}</tr>` +
+  document.getElementById('theadPrF').innerHTML = `<tr><th class="name" rowspan="2">Form</th><th class="grp" colspan="${one ? 6 : 5}">${ah(PER.lab)}</th>${one ? '' : `<th class="grp sep-left" colspan="3">Last month available, ${ah(tmMl(LM))}</th>`}</tr>` +
     `<tr><th>Tonnes</th><th>Share</th>${one ? '<th>vs M-1</th>' : ''}<th>vs N-1</th><th>${cur}/kg</th><th>price vs N-1</th>${one ? '' : '<th class="sep-left">Tonnes</th><th>vs M-1</th><th>vs N-1</th>'}</tr>`;
   const T12 = sumK(tot, kN)[0];
   const row = (lab, o, strong) => { const L = g(o, LM), Lm = g(o, kp), Ly = g(o, LM - 100), A = sumK(o, kN), B = sumK(o, kNp);
@@ -7599,7 +7633,7 @@ function renderProducers() {
     const x = dst[de] || (dst[de] = [0, 0, 0, 0]); x[n ? 0 : 1] += t; x[n ? 2 : 3] += v || 0; });
   const top = Object.entries(dst).filter(([, x]) => x[0] >= 1 || x[1] >= 1).sort((a, b) => b[1][0] - a[1][0]).slice(0, 18);
   document.getElementById('prDestTitle').textContent = `${PROD_LAB[prSel]} — ${D.euOnly ? 'EU country of arrival' : 'destinations'}, ${PER.lab}`;
-  document.getElementById('prDestSub').innerHTML = `${formsTxt[0].toUpperCase() + formsTxt.slice(1)}, ${PER.lab}. The white tick marks the volume of the same period a year earlier; on the right, the average price per destination and its change (price a year earlier in brackets). Prices mix forms when several are ticked: select one form for a like-for-like comparison.` +
+  document.getElementById('prDestSub').innerHTML = `${formsTxt[0].toUpperCase() + formsTxt.slice(1)}, ${ah(PER.lab)}. The white tick marks the volume of the same period a year earlier; on the right, the average price per destination and its change (price a year earlier in brackets). Prices mix forms when several are ticked: select one form for a like-for-like comparison.` +
     (D.euOnly ? ` <span class="warn">EU country of arrival = where customs clearance takes place</span>, not always where the salmon is eaten.` : '');
   document.getElementById('prDest').innerHTML = top.length ? vzHBars(top.map(([de, x]) => ({ lab: euName(de), v: x[0], vp: x[1], col: ORIG_COL[prSel],
     pr: x[0] >= 1 && x[2] > 0 ? x[2] / x[0] : NaN, prp: x[1] >= 1 && x[3] > 0 ? x[3] / x[1] : NaN })), { unit: 't', price: `${cur}/kg` }) : '';
