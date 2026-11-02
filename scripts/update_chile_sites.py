@@ -40,8 +40,27 @@ def holding(t):
         if re.search(rx, t or '', re.I): return h
     return 'Other'
 
+# Subpesca prefixe les noms de champs par la table d'origine (REP_SUBPESCA2.ADM_UOT.PULLINQUE4_T_ACUICULTURA.TITULAR,
+# novembre 2026) et certains noms ont change : on compare sur le dernier segment, avec ces equivalences.
+ALIASES = {'T_GRUPOESP': ['T_GRUPOESP', 'T_GRUPOESPECIE'], 'SUPERFICIE': ['SUPERFICIE', 'SUPERFICIEPOLIGONO'],
+           'N_CODIGOCE': ['N_CODIGOCE', 'N_CODIGOCENTRO'], 'T_ESTADOTR': ['T_ESTADOTR', 'T_ESTADOTRAMITE'],
+           'ESTADO_UOT': ['ESTADO_UOT', 'C_ESTADOUOT']}
+WANTED = ['TITULAR', 'ESPECIES', 'T_GRUPOESP', 'REGION', 'COMUNA', 'TOPONIMIO', 'SUPERFICIE', 'N_CODIGOCE', 'T_ESTADOTR', 'ESTADO_UOT']
+
+def short(name): return (name or '').split('.')[-1].upper()
+
+def field_map(names):
+    """noms courts attendus -> nom complet du service"""
+    by_short = {short(n): n for n in names}
+    out = {}
+    for w in WANTED:
+        for a in ALIASES.get(w, [w]):
+            if a in by_short: out[w] = by_short[a]; break
+    return out
+
 def site_of(ft):
-    a = {k.upper(): v for k, v in (ft.get('attributes') or {}).items()}
+    raw = {short(k): v for k, v in (ft.get('attributes') or {}).items()}
+    a = {w: next((raw[x] for x in ALIASES.get(w, [w]) if x in raw), None) for w in WANTED}
     sp = f"{a.get('ESPECIES') or ''} {a.get('T_GRUPOESP') or ''}"
     if not SALMO.search(sp): return None
     rings = (ft.get('geometry') or {}).get('rings') or []
@@ -49,26 +68,30 @@ def site_of(ft):
     if not pts: return None
     lon = sum(p[0] for p in pts) / len(pts); lat = sum(p[1] for p in pts) / len(pts)
     t = (a.get('TITULAR') or '').strip()
-    return {'t': t, 'h': holding(t), 'lat': round(lat, 4), 'lon': round(lon, 4), 'r': a.get('REGION'), 'c': a.get('COMUNA'),
-            'n': a.get('TOPONIMIO'), 'sp': (a.get('ESPECIES') or '')[:80], 'ha': a.get('SUPERFICIE'), 'code': a.get('N_CODIGOCE'),
+    st = lambda v: v.strip() if isinstance(v, str) else v
+    return {'t': t, 'h': holding(t), 'lat': round(lat, 4), 'lon': round(lon, 4), 'r': st(a.get('REGION')), 'c': st(a.get('COMUNA')),
+            'n': st(a.get('TOPONIMIO')), 'sp': (a.get('ESPECIES') or '')[:80], 'ha': a.get('SUPERFICIE'), 'code': a.get('N_CODIGOCE'),
             'st': a.get('T_ESTADOTR') or a.get('ESTADO_UOT')}
 
 def download(status):
     info = get(BASE, {'f': 'json'})
     layers = info.get('layers', [])
     status['layers'] = ', '.join(f"{L['id']}:{L.get('name', '')}" for L in layers)[:300]
-    lid, fields, maxrec = None, set(), 1000
-    for L in layers:   # couche qui porte TITULAR et ESPECIES (champs documentes dans la fiche Subpesca)
+    lid, fm, maxrec = None, {}, 1000
+    # couche des concessions (pas des demandes) qui porte TITULAR et ESPECIES ; les couches "Solicitudes" passent en dernier
+    for L in sorted(layers, key=lambda L: 'solicitud' in (L.get('name') or '').lower()):
         meta = get(f"{BASE}/{L['id']}", {'f': 'json'})
-        names = {f['name'].upper() for f in meta.get('fields') or []}
-        if 'TITULAR' in names and ('ESPECIES' in names or 'T_GRUPOESP' in names):
-            lid, fields, maxrec = L['id'], names, min(int(meta.get('maxRecordCount') or 1000), 1000); break
+        m = field_map([f['name'] for f in meta.get('fields') or []])
+        if 'TITULAR' in m and ('ESPECIES' in m or 'T_GRUPOESP' in m):
+            lid, fm, maxrec = L['id'], m, min(int(meta.get('maxRecordCount') or 1000), 1000); break
     if lid is None: raise RuntimeError('no layer with TITULAR/ESPECIES among: ' + status['layers'])
-    out_f = ','.join(f for f in ['TITULAR', 'ESPECIES', 'T_GRUPOESP', 'REGION', 'COMUNA', 'TOPONIMIO', 'SUPERFICIE', 'N_CODIGOCE', 'T_ESTADOTR', 'ESTADO_UOT'] if f in fields)
+    status['layer'] = f"{lid}: {next((L.get('name') for L in layers if L['id'] == lid), '')}"
+    out_f = ','.join(fm.values())
     q = f'{BASE}/{lid}/query'
     geo = {'outFields': out_f, 'returnGeometry': 'true', 'outSR': 4326, 'maxAllowableOffset': 0.001, 'f': 'json'}
     # filtre cote serveur (salmonides) ; si le serveur le refuse, tout est demande et filtre ici
-    where = "UPPER(ESPECIES) LIKE '%SALM%' OR UPPER(ESPECIES) LIKE '%TRUCHA%' OR UPPER(T_GRUPOESP) LIKE '%SALM%'" if 'ESPECIES' in fields else '1=1'
+    where = (f"UPPER({fm['ESPECIES']}) LIKE '%SALM%' OR UPPER({fm['ESPECIES']}) LIKE '%TRUCHA%'" +
+             (f" OR UPPER({fm['T_GRUPOESP']}) LIKE '%SALM%'" if 'T_GRUPOESP' in fm else '')) if 'ESPECIES' in fm else '1=1'
     try: ids = get(q, {'where': where, 'returnIdsOnly': 'true', 'f': 'json'}).get('objectIds') or []
     except Exception: where = '1=1'; ids = get(q, {'where': where, 'returnIdsOnly': 'true', 'f': 'json'}).get('objectIds') or []
     if not ids: raise RuntimeError(f'layer {lid}: no object ids for where={where}')

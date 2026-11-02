@@ -34,6 +34,11 @@ STEPS = [
     ('CHINA', 'GACC — establishments registered for China'),
     ('EUROSTAT', 'Eurostat — EU salmon flows'),
     ('NATIONAL', 'National export statistics (Faroes, Iceland, UK, Chile, Canada)'),
+    ('SCOTLAND', 'Scotland — SEPA monthly site reports'),
+    ('SCOTLAND_SURVEY', 'Scotland — annual production survey'),
+    ('CHILE_SITES', 'Chile — Subpesca concessions map'),
+    ('EVENTS', 'Mortality events watch (press, Scotland FHI)'),
+    ('NEWS', 'This week — headlines'),
     ('SMOKE', 'Dashboard test'),
 ]
 

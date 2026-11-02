@@ -84,12 +84,13 @@ RB = {k: rx(v) for k, v in BASINS.items()}
 # ------------------------------------------------------------------ sources presse
 FEEDS = [  # (url, bassin par defaut, langue)
     ('https://ilaks.no/feed/', 'NO', 'no'),
-    ('https://www.kyst.no/rss', 'NO', 'no'),
-    ('https://www.salmonbusiness.com/feed/', None, 'en'),
-    ('https://www.fishfarmingexpert.com/rss', None, 'en'),
+    # kyst.no, fishfarmingexpert.com et salmonexpert.cl (Labrador CMS) : flux a /?lab_viewport=rss (les anciennes adresses /rss
+    # repondent 404 depuis l'automne 2026) ; thefishsite.com : /feed.xml. Verifie le 2 novembre 2026.
+    ('https://www.kyst.no/?lab_viewport=rss', 'NO', 'no'),
+    ('https://www.fishfarmingexpert.com/?lab_viewport=rss', None, 'en'),
     ('https://www.fishfarmermagazine.com/feed/', None, 'en'),
-    ('https://www.salmonexpert.cl/rss', 'CL', 'es'),
-    ('https://thefishsite.com/rss', None, 'en'),
+    ('https://www.salmonexpert.cl/?lab_viewport=rss', 'CL', 'es'),
+    ('https://thefishsite.com/feed.xml', None, 'en'),
 ]
 def gnews(q, hl, gl, ceid): return 'https://news.google.com/rss/search?' + urllib.parse.urlencode({'q': q + ' when:60d', 'hl': hl, 'gl': gl, 'ceid': ceid})
 GQ = [
@@ -104,10 +105,16 @@ GQ = [
     (gnews('(laksur OR alibrúk) deyð OR deydu OR algur', 'da', 'DK', 'DK:da'), 'FO', 'fo'),
     (gnews('salmon farm (Canada OR "British Columbia" OR "New Brunswick" OR Newfoundland) (mortality OR "algal bloom" OR "die-off" OR deaths OR oxygen)', 'en', 'CA', 'CA:en'), 'CA', 'en'),
     (gnews('salmon farm (Ireland OR Tasmania OR "New Zealand") (mortality OR "algal bloom" OR jellyfish OR heatwave OR deaths)', 'en', 'GB', 'GB:en'), None, 'en'),
+    # salmonbusiness.com n'a plus de flux RSS (novembre 2026) : ses articles passent par Google News
+    (gnews('site:salmonbusiness.com (mortality OR deaths OR algae OR jellyfish OR disease OR lice OR ILA OR ISA)', 'en', 'GB', 'GB:en'), None, 'en'),
 ]
 
-def fetch(url, timeout=30):
-    req = urllib.request.Request(url, headers=UA)
+# en-tetes d'un navigateur ordinaire, pour les sites qui renvoient une autre page aux robots (gov.scot)
+BROWSER = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36',
+           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Accept-Language': 'en-GB,en;q=0.9'}
+
+def fetch(url, timeout=30, headers=None):
+    req = urllib.request.Request(url, headers=headers or UA)
     with urllib.request.urlopen(req, timeout=timeout) as r: return r.read()
 
 def strip(s): return re.sub(r'\s+', ' ', html.unescape(re.sub(r'<[^>]+>', ' ', s or ''))).strip()
@@ -170,13 +177,16 @@ def news_items(status):
 FHI_PAGE = 'https://www.gov.scot/publications/fish-health-inspectorate-mortality-information/'
 def scotland_fhi(status):
     try:
-        page = fetch(FHI_PAGE).decode('utf-8', 'ignore')
-        links = re.findall(r'href="([^"]+\.xlsx)"', page)
+        page = fetch(FHI_PAGE, 60, BROWSER).decode('utf-8', 'ignore')
+        links = re.findall(r'href=["\']([^"\']+\.xlsx)["\']', page, re.I)
         link = next((l for l in links if 'ortality' in l and 'notification' not in l.lower()), None)
-        if not link: status['gov.scot FHI'] = 'error: no xlsx link'; return None
+        if not link:
+            # la page recue n'est pas celle d'un navigateur (le 2 nov. 2026 la vraie page avait bien le lien) : on note ce qui est arrive
+            t = re.search(r'<title[^>]*>(.*?)</title>', page, re.S | re.I)
+            status['gov.scot FHI'] = f"error: no xlsx link ({len(page)} chars, {len(links)} xlsx links, title: {strip(t.group(1))[:80] if t else '—'})"; return None
         if link.startswith('/'): link = 'https://www.gov.scot' + link
         import openpyxl
-        wb = openpyxl.load_workbook(io.BytesIO(fetch(link, 90)), read_only=True, data_only=True)
+        wb = openpyxl.load_workbook(io.BytesIO(fetch(link, 90, BROWSER)), read_only=True, data_only=True)
         rows_out, sheets = [], []
         for ws in wb.worksheets:
             rows = list(ws.iter_rows(values_only=True)); hdr_i = None

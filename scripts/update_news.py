@@ -54,14 +54,14 @@ THEME_ORDER = ['market', 'feed', 'biology', 'regulation', 'companies']
 # specialisee = presse d'aquaculture : un titre y est garde des qu'il touche un theme, meme sans le mot "saumon"
 FEEDS = [  # (url, bassin par defaut, langue, specialisee)
     ('https://ilaks.no/feed/', 'NO', 'no', True),
-    ('https://www.kyst.no/rss', 'NO', 'no', True),
-    ('https://www.fiskeribladet.no/rss', 'NO', 'no', False),
-    ('https://www.salmonbusiness.com/feed/', None, 'en', True),
-    ('https://www.fishfarmingexpert.com/rss', None, 'en', True),
+    # kyst.no, fishfarmingexpert.com, salmonexpert.cl (Labrador CMS) : /?lab_viewport=rss ; thefishsite.com : /feed.xml.
+    # fiskeribladet.no et salmonbusiness.com n'ont pas de flux : recherches Google News "site:" plus bas. Verifie le 2 novembre 2026.
+    ('https://www.kyst.no/?lab_viewport=rss', 'NO', 'no', True),
+    ('https://www.fishfarmingexpert.com/?lab_viewport=rss', None, 'en', True),
     ('https://www.fishfarmermagazine.com/feed/', None, 'en', True),
     ('https://www.undercurrentnews.com/feed/', None, 'en', False),
-    ('https://thefishsite.com/rss', None, 'en', False),
-    ('https://www.salmonexpert.cl/rss', 'CL', 'es', True),
+    ('https://thefishsite.com/feed.xml', None, 'en', False),
+    ('https://www.salmonexpert.cl/?lab_viewport=rss', 'CL', 'es', True),
     ('https://www.mundoacuicola.cl/new/feed/', 'CL', 'es', True),
 ]
 def gnews(q, hl, gl, ceid): return 'https://news.google.com/rss/search?' + urllib.parse.urlencode({'q': q + ' when:10d', 'hl': hl, 'gl': gl, 'ceid': ceid})
@@ -85,6 +85,8 @@ GQ = [  # (requete, parametres de langue, bassin par defaut, langue)
     ('salmon (prices OR tariff OR imports OR demand) (China OR "United States" OR Japan OR Brazil OR EU)', ('en', 'US', 'US:en'), None, 'en'),
     ('"salmon price" OR "salmon prices" OR "spot price" salmon', ('en', 'US', 'US:en'), None, 'en'),
     ('salmon farming (regulation OR tax OR licence OR "sea lice" OR consultation)', EN_, None, 'en'),
+    ('site:salmonbusiness.com', EN_, None, 'en'),
+    ('site:fiskeribladet.no (laks OR oppdrett OR havbruk OR fôr OR fiskemel)', NO_, 'NO', 'no'),
 ]
 
 def norm_title(t): return re.sub(r'[^0-9a-zæøåáéíóúñðþ]+', '', t.lower())[:90]

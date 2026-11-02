@@ -58,6 +58,9 @@ SOURCES = {
         'urls': ['https://statbank.hagstova.fo/api/v1/en/H2/UH/UH01/uh_cn_t.px',
                  'https://statbank.hagstova.fo/api/v1/fo/H2/UH/UH01/uh_cn_t.px'],
         'currency': 'DKK',
+        # Hagstova repond lentement (≈20 s pour 2 produits x 2 mois x tous pays, novembre 2026) : petites requetes,
+        # delai long, et seuls les mois recents sont redemandes (les plus anciens restent ceux du fichier precedent)
+        'chunk': 1, 'timeout': 420, 'refetch_months': 8,
         # code CN8 -> indice de forme du tableau de bord
         'codes': {'03021400': 0, '03031300': 1, '03044100': 2, '03048100': 3, '03054100': 5, '16041100': 6},
     },
@@ -110,13 +113,13 @@ SOURCES['AU'] = {
 DKK_PER_EUR = 7.46038       # parite centrale MCE II
 
 
-def http(url, body=None, tries=3):
+def http(url, body=None, tries=3, timeout=180):
     data = json.dumps(body).encode() if body is not None else None
     for a in range(tries):
         req = urllib.request.Request(url, data=data, headers={'User-Agent': UA, 'Accept': 'application/json',
                                                               'Content-Type': 'application/json'})
         try:
-            with urllib.request.urlopen(req, timeout=180) as r:
+            with urllib.request.urlopen(req, timeout=timeout) as r:
                 return r.status, r.read()
         except urllib.error.HTTPError as e:
             txt = e.read()
@@ -311,7 +314,7 @@ def fetch_hmrc(key, src, to_iso, fx):
                  'last': max((r[0] for r in out), default=None), 'first': min((r[0] for r in out), default=None)}
 
 
-def fetch_source(key, src, to_iso, fx):
+def fetch_source(key, src, to_iso, fx, old_last=None):
     meta = url = None
     urls = list(src['urls'])
     if src.get('folder'):
@@ -371,15 +374,33 @@ def fetch_source(key, src, to_iso, fx):
         query_base.append({'code': ov['code'], 'selection': {'filter': 'item', 'values': ov['values'][:1]}})
     ctext = dict(zip(cv['values'], cv.get('valueTexts', cv['values'])))
     times = tv['values']
+    if old_last and src.get('refetch_months'):
+        # seuls les mois recents (revisions) et les nouveaux sont redemandes ; les autres sont repris du fichier precedent
+        def ymv(x):
+            m = re.match(r'(\d{4})M(\d{2})', x)
+            return int(m.group(1)) * 100 + int(m.group(2)) if m else 0
+        y, mo = divmod(old_last, 100)
+        k = y * 12 + mo - 1 - src['refetch_months']
+        cut = (k // 12) * 100 + k % 12 + 1
+        recent = [x for x in times if ymv(x) > cut]
+        if recent:
+            print(f'  {key} : {len(recent)} mois redemandes ({recent[0]} -> {recent[-1]}), les plus anciens repris du fichier precedent')
+            times = recent
     agg = {}
     unknown = set()
-    for i in range(0, len(times), 6):
-        chunk = times[i:i + 6]
+    step, bad = src.get('chunk', 6), []
+    for i in range(0, len(times), step):
+        chunk = times[i:i + step]
         body = {'query': query_base + [{'code': tv['code'], 'selection': {'filter': 'item', 'values': chunk}}],
                 'response': {'format': 'json'}}
-        st, raw = http(url, body)
+        t0 = time.time()
+        st, raw = http(url, body, timeout=src.get('timeout', 180))
         if st != 200:
-            raise RuntimeError(f'{key} : requete {chunk[0]}-{chunk[-1]} -> {st} {raw[:200]!r}')
+            # un lot en echec ne fait pas tout echouer : ses mois restent ceux du fichier precedent
+            print(f'  {key} : requete {chunk[0]}-{chunk[-1]} -> {st} {raw[:200]!r} ({time.time() - t0:.0f} s)')
+            bad += chunk
+            continue
+        print(f'  {key} : {chunk[0]}-{chunk[-1]} ok ({time.time() - t0:.0f} s)')
         j = json.loads(raw)
         cols = [c['code'] for c in j['columns']]
         for d in j['data']:
@@ -413,6 +434,10 @@ def fetch_source(key, src, to_iso, fx):
             x[0] += qty
             x[1] += val
         time.sleep(1)
+    if bad and len(bad) == len(times):
+        raise RuntimeError(f'{key} : toutes les requetes ont echoue ({bad[0]} -> {bad[-1]})')
+    if bad:
+        print(f'  {key} : {len(bad)} mois en echec, repris du fichier precedent : {bad}')
     if unknown:
         print(f'  {key} : pays non reconnus (ignores) : {sorted(unknown)[:30]}')
     # unite monetaire : on suppose des couronnes (pas des milliers) ; controle par le prix au kilo
@@ -683,7 +708,12 @@ def main():
     for key, src in SOURCES.items():
         print(f'{key} :')
         try:
-            r, m = {'hmrc': fetch_hmrc, 'comtrade': fetch_comtrade}.get(src.get('kind'), fetch_source)(key, src, to_iso, fx)
+            fn = {'hmrc': fetch_hmrc, 'comtrade': fetch_comtrade}.get(src.get('kind'))
+            if fn:
+                r, m = fn(key, src, to_iso, fx)
+            else:
+                ol = max((x[0] for x in old['rows'] if x[1] == key), default=None)
+                r, m = fetch_source(key, src, to_iso, fx, ol)
             if not r:
                 raise RuntimeError('aucune ligne')
             # les mois absents du nouveau releve restent : plus anciens (table islandaise glissante)
@@ -701,8 +731,11 @@ def main():
             print(f'  ECHEC {key} : {e}' + (' (source optionnelle : la mise a jour continue)' if src.get('optional') else ''))
             (failed_opt if src.get('optional') else failed).append(key)
             rows += [x for x in old['rows'] if x[1] == key]
-            if key in old.get('meta', {}):
-                meta[key] = old['meta'][key]
+            # on garde la description de la source du passage precedent (derniere periode, nom) : sans elle, la page
+            # affichait la source comme vide alors que ses donnees sont toujours la
+            prev = old.get('meta', {}).get('sources', {})
+            if key in prev:
+                meta[key] = dict(prev[key], failed=dt.date.today().isoformat())
     # taux de change (unites pour 1 EUR) gardes pour le tableau de bord (conversion des NOK norvegiennes)
     fxm = {c: {str(k): v for k, v in r.items()} for c, r in fx.items() if r}
     if not fxm and old.get('meta', {}).get('fx'):
