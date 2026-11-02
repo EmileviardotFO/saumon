@@ -476,6 +476,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
       <button data-v="scotland">Scotland</button>
       <button data-v="chile">Chile</button>
       <button data-v="australia">Australia</button>
+      <button data-v="canada">Canada (BC)</button>
     </div></div>
   </div>
   <div class="field" id="poFilterField" style="display:none;">
@@ -1069,6 +1070,29 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="sig-sub">Entered by hand in data/news.json (key "calendar"); past dates drop off after a week.</div>
     <div style="overflow-x:auto"><table class="sig-table" id="nwCal"></table></div>
     <details style="margin-top:14px;font-size:11.5px;color:var(--muted)"><summary style="cursor:pointer">Sources and last collection</summary><div id="nwSrc" style="margin-top:6px;line-height:1.6"></div></details>
+  </div>
+
+  <div class="panel" id="canadaView" style="flex:1; min-width:0; max-width:1400px; display:none;">
+    <div class="sig-title">Canada, British Columbia — farms in use, sea lice, mortality events, smolt transfers (DFO public reporting)</div>
+    <div class="sig-sub" id="caSub"></div>
+    <div id="caCards" class="pr-cards"></div>
+    <div class="sig-title" style="margin-top:18px">Farms in use each month</div>
+    <div class="sig-sub" id="caFarmSub"></div>
+    <div id="caFarms"></div>
+    <div class="sig-title" style="margin-top:18px">Sea lice per farmed fish</div>
+    <div class="sig-sub" id="caLiceSub"></div>
+    <div id="caLice"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="caMonthTab"></table></div>
+    <div style="overflow-x:auto;margin-top:10px"><table class="sig-table" id="caCoTab"></table></div>
+    <div class="sig-title" style="margin-top:18px">Mortality events reported to DFO</div>
+    <div class="sig-sub" id="caEvSub"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="caEvTab"></table></div>
+    <div style="overflow-x:auto;margin-top:10px"><table class="sig-table" id="caEvList"></table></div>
+    <div class="sig-title" style="margin-top:18px">Smolt transfer licences to sea farms</div>
+    <div class="sig-sub" id="caTrSub"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="caTrTab"></table></div>
+    <div style="overflow-x:auto;margin-top:10px"><table class="sig-table" id="caTrList"></table></div>
+    <div class="sig-sub" id="caNote" style="margin-top:14px"></div>
   </div>
 
   <div class="panel" id="australiaView" style="flex:1; min-width:0; max-width:1400px; display:none;">
@@ -2852,6 +2876,98 @@ function renderNews() {
 
 // ===================== Chili (data/chili.json -> biologie, data/chile_sites.json, data/national_trade.json) =====================
 let CLD = null, CLS = null, CLT = null, CL_LOADING = false, CL_MAP = null, CL_LAYER = null, CL_OP = null;
+// ===================== Canada, Colombie-Britannique (data/canada.json <- scripts/build_canada.py <- farming/donnees_ca/brut) =====================
+let CAN = null, CAN_LOADING = false;
+function renderCanada() {
+  if (!CAN) { if (!CAN_LOADING) { CAN_LOADING = true; fetch(DATA_URL.replace('data.json', 'canada.json'), { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : null).catch(() => null).then(j => { CAN = j || {}; CAN_LOADING = false; if (currentView === 'canada') renderCanada(); }); }
+    document.getElementById('caSub').innerHTML = 'Loading…'; return; }
+  const L = CAN.lice || [], EV = CAN.events, TR = CAN.transfers;
+  const ids = ['caCards', 'caFarmSub', 'caFarms', 'caLiceSub', 'caLice', 'caMonthTab', 'caCoTab', 'caEvSub', 'caEvTab', 'caEvList', 'caTrSub', 'caTrTab', 'caTrList', 'caNote'];
+  if (!L.length && !EV && !TR) {
+    document.getElementById('caSub').innerHTML = 'No Canadian data yet: data/canada.json is built by the update step "Canada BC" (DFO open data: sea lice counts, mortality events, transfer licences). Run the workflow from the Actions tab.';
+    ids.forEach(id => document.getElementById(id).innerHTML = ''); return; }
+  const f0 = v => v === null || v === undefined || !isFinite(v) ? '—' : Math.round(v).toLocaleString('en-US'), f2 = v => v === null || v === undefined || !isFinite(v) ? '—' : (+v).toFixed(2);
+  const pct = (a, b) => a && b ? 100 * (a / b - 1) : null;
+  const vt = (v, badUp) => v === null ? '' : `<span class="${(v >= 0) !== !!badUp ? 'delta-good' : 'delta-bad'}" style="font-size:12px">${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(1)}%</span>`;
+  const esc = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const by = {}; L.forEach(r => by[r.m] = r);
+  // mois de reference = dernier mois complet (toutes les entreprises ont declare) ; le mois suivant, partiel, reste visible dans le tableau
+  const lastAll = L.length ? L[L.length - 1].m : null, last = (CAN.meta && CAN.meta.lice_complete) || lastAll, partial = lastAll && last !== lastAll ? lastAll : null;
+  const cur = last ? by[last] : null, yAgo = last ? by[last - 100] : null;
+  document.getElementById('caSub').innerHTML = `British Columbia is Canada's Pacific salmon-farming province (Atlantic salmon in open net pens; MOWI Canada West, Cermaq Canada, Grieg Seafood BC). ` +
+    `<b>Open net-pen farming in BC coastal waters is to end by 30 June 2029</b>: the number of farms in use and smolt transfers are the leading signs of that run-down. ` +
+    `All figures come from DFO public reporting, read at each update run.` + (last ? ` Latest complete month: <b>${tmMl(last)}</b>` + (partial ? ` — ${tmMl(partial)} is still being reported by some companies and is shown apart.` : '.') : '');
+  const card = (lab, big, sub, col) => `<div class="pr-card" style="cursor:default"><div class="nm"><i style="background:${col}"></i>${lab}</div><div class="big">${big}</div><div class="ln">${sub}</div></div>`;
+  // evenements : 12 derniers mois contre les 12 precedents
+  const evM = (EV && EV.by_month) || {}, lastEv = EV && EV.last ? +EV.last.slice(0, 4) * 100 + +EV.last.slice(5, 7) : null;
+  const evSum = (end, n) => tmRange(end, n).reduce((a, k) => a + (evM[String(k)] || 0), 0);
+  const ev12 = lastEv ? evSum(lastEv, 12) : null, ev12p = lastEv ? evSum(tmBack(lastEv, 12), 12) : null;
+  const trY = TR ? TR.by_year.filter(x => +x.y < new Date().getFullYear()) : [], trL = trY[trY.length - 1], trP = trY[trY.length - 2];
+  document.getElementById('caCards').innerHTML =
+    (cur ? card(`Farms in use · ${tmMl(last)}`, `${cur.sites} ${yAgo ? vt(pct(cur.sites, yAgo.sites)) : ''}`,
+      `${cur.y1} with fish less than a year at sea · ${cur.y2} more than a year${yAgo ? ` · ${tmMl(last - 100)}: ${yAgo.sites}` : ''}`, '#4fc3f7') : '') +
+    (cur ? card(`Sea lice · ${tmMl(last)}`, `${f2(cur.lice)} <span style="font-size:12px;color:var(--muted)">motile per fish</span>`,
+      `threshold ${cur.thr} · <span class="${cur.over ? 'delta-bad' : 'delta-good'}">${cur.over} farm${cur.over === 1 ? '' : 's'} above it</span> in the month${yAgo && yAgo.lice !== null ? ` · ${tmMl(last - 100)}: ${f2(yAgo.lice)}` : ''}`, '#ffb74d') : '') +
+    (ev12 !== null ? card(`Mortality events · 12 months to ${tmMl(lastEv)}`, `${ev12} ${ev12p ? vt(pct(ev12, ev12p), true) : ''}`,
+      `previous 12 months: ${ev12p} · last reported ${EV.last}`, '#ff8a65') : '') +
+    (trL ? card(`Smolt transfer licences · ${trL.y}`, `${trL.sites} sea farms ${trP ? vt(pct(trL.sites, trP.sites)) : ''}`,
+      `farms authorised to receive smolts${trP ? ` · ${trP.y}: ${trP.sites}` : ''}`, '#81c784') : '');
+  // fermes en activite
+  if (L.length) {
+    const keys = tmRange(last, 60).filter(k => k >= L[0].m);
+    const stacks = [{ lab: 'Fish less than a year at sea', col: '#4fc3f7', vals: keys.map(k => by[k] ? by[k].y1 : 0) },
+      { lab: 'Fish more than a year at sea', col: '#1f7a8c', vals: keys.map(k => by[k] ? by[k].y2 : 0) },
+      { lab: 'Year class not stated', col: '#5d7685', vals: keys.map(k => by[k] ? Math.max(0, by[k].sites - by[k].y1 - by[k].y2) : 0) }];
+    document.getElementById('caFarms').innerHTML = vzStack(keys, stacks, { axis: 'Farms with a sea lice count', unit: 'farms', H: 260 }) +
+      vzLegend(stacks.map(x => [x.lab, x.col, false, true]));
+    document.getElementById('caFarmSub').innerHTML = `A farm in production must count its sea lice every month, so the farms with a count in the month are the farms in use. ` +
+      `Farms with fish less than a year at sea were stocked within the year: they are the harvest of the next 12–20 months. A farm with two year classes is counted in both.`;
+    const thr = keys.map(k => by[k] ? by[k].thr : null);
+    document.getElementById('caLice').innerHTML = vzLines(keys, [
+      { lab: 'Average motile lice per fish (scheduled counts)', col: '#ffb74d', pts: keys.map(k => by[k] ? by[k].lice : null), w: 2.4 },
+      { lab: 'Threshold', col: '#ff8a65', pts: thr, dash: '5,4', w: 1.6 }], { axis: 'Motile L. salmonis per fish', unit: '', digits: 2, H: 240 }) +
+      vzLegend([['Average motile lice per fish (scheduled counts)', '#ffb74d'], ['Threshold (3 to 2024, 2.8 in 2025, 2.4 from 2026)', '#ff8a65', true]]);
+    document.getElementById('caLiceSub').innerHTML = `Average over farms (each farm counted once) of the <b>scheduled</b> counts only — monthly routine, pre-migration and first out-migration counts. ` +
+      `Counts taken because of a problem (threshold exceedance, before or after a treatment) are high by design and would inflate the average; they still count for the farms above the threshold.`;
+    const rows = [...(partial ? [partial] : []), ...tmRange(last, 13).filter(k => by[k]).reverse()];
+    document.getElementById('caMonthTab').innerHTML = `<thead><tr><th class="name">Month</th><th>Farms in use</th><th>&lt; 1 year at sea</th><th>&gt; 1 year at sea</th><th>Lice per fish</th><th>Threshold</th><th>Farms above threshold</th></tr></thead><tbody>` +
+      rows.map(k => { const r = by[k], p = by[k - 100]; return `<tr${k === partial ? ' style="opacity:.55"' : ''}><td class="name">${tmMl(k)}${k === partial ? ' <span style="font-size:11px">(incomplete)</span>' : ''}</td><td><b>${r.sites}</b>${p ? ` <span style="color:var(--muted);font-size:11px">(${p.sites})</span>` : ''}</td><td>${r.y1}</td><td>${r.y2}</td>` +
+        `<td style="${r.lice !== null && r.lice > r.thr ? 'color:#ff8a65;font-weight:bold' : ''}">${f2(r.lice)}</td><td>${r.thr}</td><td class="${r.over ? 'delta-bad' : ''}">${r.over}</td></tr>`; }).join('') +
+      `</tbody>`;
+    const CO = CAN.lice_by_company || {}, k3 = tmRange(last, 3).map(String);
+    const coRows = Object.entries(CO).map(([c, m]) => [c, m[String(last)], m[String(last - 100)]]).filter(x => x[1] || x[2]).sort((a, b) => ((b[1] || [0])[0]) - ((a[1] || [0])[0]));
+    document.getElementById('caCoTab').innerHTML = coRows.length ? `<thead><tr><th class="name">Company</th><th>Farms in use, ${tmMl(last)}</th><th>a year earlier</th><th>Lice per fish (all counts), ${tmMl(last)}</th></tr></thead><tbody>` +
+      coRows.map(([c, a, b]) => `<tr><td class="name">${esc(c)}</td><td><b>${a ? a[0] : 0}</b></td><td>${b ? b[0] : '—'}</td><td>${a ? f2(a[1]) : '—'}</td></tr>`).join('') + `</tbody>` : '';
+  }
+  // evenements de mortalite
+  if (EV) {
+    const yrs = Object.keys(EV.by_year).sort().slice(-7), tot = {};
+    yrs.forEach(y => Object.entries(EV.by_year[y]).forEach(([c, n]) => tot[c] = (tot[c] || 0) + n));
+    const causes = Object.keys(tot).sort((a, b) => tot[b] - tot[a]);
+    document.getElementById('caEvTab').innerHTML = `<thead><tr><th class="name">Probable cause</th>${yrs.map(y => `<th>${y}</th>`).join('')}</tr></thead><tbody>` +
+      causes.map(c => `<tr><td class="name">${esc(c)}</td>${yrs.map(y => `<td>${EV.by_year[y][c] || '<span style="color:var(--muted)">·</span>'}</td>`).join('')}</tr>`).join('') +
+      `<tr style="font-weight:bold"><td class="name">All events</td>${yrs.map(y => `<td>${Object.values(EV.by_year[y]).reduce((a, b) => a + b, 0)}</td>`).join('')}</tr></tbody>`;
+    document.getElementById('caEvSub').innerHTML = `Events the farms must report to DFO: unusually high deaths over one or five days. A count of events, not of dead fish (DFO does not publish tonnages). ` +
+      `The current year is partial. Fewer events also reflects fewer farms in use.`;
+    document.getElementById('caEvList').innerHTML = `<thead><tr><th class="name">Date</th><th>Company</th><th>Farm</th><th>Area</th><th>Probable cause</th><th>Action taken</th></tr></thead><tbody>` +
+      (EV.recent || []).slice(0, 12).map(e => `<tr><td class="name">${e.d}</td><td>${esc(e.co)}</td><td>${esc(e.site)}</td><td>${esc(e.amu)}</td><td>${esc(e.cause)}</td><td style="white-space:normal">${esc(e.action)}</td></tr>`).join('') + `</tbody>`;
+  }
+  // transferts de smolts
+  if (TR) {
+    const cos = [...new Set(TR.by_year.flatMap(x => Object.keys(x.co)))].sort();
+    document.getElementById('caTrTab').innerHTML = `<thead><tr><th class="name">Licence year</th><th>Sea farms authorised</th>${cos.map(c => `<th>${esc(c)}</th>`).join('')}<th>Hatchery-to-farm pairs</th></tr></thead><tbody>` +
+      [...TR.by_year].reverse().map(x => `<tr><td class="name">${x.y}${+x.y >= new Date().getFullYear() ? ' <span style="color:var(--muted);font-size:11px">(so far)</span>' : ''}</td><td><b>${x.sites}</b></td>${cos.map(c => `<td>${x.co[c] || '—'}</td>`).join('')}<td>${x.pairs}</td></tr>`).join('') + `</tbody>`;
+    document.getElementById('caTrSub').innerHTML = `Licences DFO issues before smolts move from a hatchery to a sea farm. <b>An authorisation, not a number of fish</b>: DFO does not publish quantities. ` +
+      `The number of sea farms authorised per year is the best public proxy for restocking, and so for harvests about two years later.`;
+    document.getElementById('caTrList').innerHTML = `<thead><tr><th class="name">Valid from</th><th>to</th><th>Company</th><th>From (hatchery)</th><th>To (sea farm)</th><th>Area</th></tr></thead><tbody>` +
+      (TR.recent || []).slice(0, 12).map(t => `<tr><td class="name">${t.start}</td><td>${t.end}</td><td>${esc(t.co)}</td><td>${esc(t.from)}</td><td>${esc(t.to)}</td><td>${esc(t.amu)}</td></tr>`).join('') + `</tbody>`;
+  }
+  document.getElementById('caNote').innerHTML = `<b>Sources.</b> Fisheries and Oceans Canada, Pacific region, open data (open.canada.ca): industry sea lice counts at BC marine finfish sites (2011 onward), ` +
+    `mortality events at BC marine finfish sites (2011 onward), fish transfer licences (2015 onward). Downloaded again only when DFO updates a dataset. ` +
+    `Former company names are merged (Marine Harvest Canada into MOWI Canada West; Mainstream Canada and Cermaq British Columbia into Cermaq Canada).`;
+}
+
 // ===================== Australie (data/australia.json <- scripts/build_australia.py <- farming/donnees_au) =====================
 let AUS = null, AUS_LOADING = false;
 function renderAustralia() {
@@ -4146,16 +4262,17 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     document.getElementById('scotlandView').style.display = currentView === 'scotland' ? 'block' : 'none';
     document.getElementById('chileView').style.display = currentView === 'chile' ? 'block' : 'none';
     document.getElementById('australiaView').style.display = currentView === 'australia' ? 'block' : 'none';
+    document.getElementById('canadaView').style.display = currentView === 'canada' ? 'block' : 'none';
     document.getElementById('newsView').style.display = currentView === 'news' ? 'block' : 'none';
     document.getElementById('coprodView').style.display = currentView === 'coprod' ? 'block' : 'none';
     document.getElementById('generationsView').style.display = currentView === 'generations' ? 'block' : 'none';
     document.getElementById('genmapView').style.display = currentView === 'genmap' ? 'block' : 'none';
     // The year / period selectors do not apply to the weekly fish-health view.
-    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'news' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
+    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'news' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
     // La carte des zones ne sert qu'aux vues qui raisonnent par PO. Les onglets
     // Markets et Calibre sont nationaux, elle n'y afficherait rien d'utile.
     const mw = document.querySelector('.panel.mapwrap');
-    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'news' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
+    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'news' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
     document.getElementById('poFilterField').style.display = (currentView === 'global' || currentView === 'multi' || currentView === 'outlook') ? 'flex' : 'none';
     document.getElementById('yearField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'none' : 'flex';
     document.getElementById('yearRangeField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'flex' : 'none';
@@ -4179,6 +4296,7 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     else if (currentView === 'scotland') { renderScotland(); }
     else if (currentView === 'chile') { renderChile(); }
     else if (currentView === 'australia') { renderAustralia(); }
+    else if (currentView === 'canada') { renderCanada(); }
     else if (currentView === 'news') { renderNews(); }
     else if (currentView === 'coprod') { renderCoprod(); }
     else if (currentView === 'generations') { renderGenerations(); }
