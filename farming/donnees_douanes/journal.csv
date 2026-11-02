@@ -1,0 +1,8 @@
+﻿horodatage,source,statut,detail
+2026-11-02T20:19:23,census_us,ERREUR,Expecting value: line 1 column 1 (char 0)
+2026-11-02T20:19:24,ssb_semaine,à jour,dernière période réellement disponible : 2026-W43
+2026-11-02T20:19:24,ssb_semaine,sélection à configurer,lancer --decouvrir pour choisir les codes
+2026-11-02T20:19:26,ssb_mois,ERREUR,invalid literal for int() with base 10: ''
+2026-11-02T20:19:27,islande,à jour,dernière période réellement disponible : 2026-09
+2026-11-02T20:19:27,islande,sélection à configurer,lancer --decouvrir pour choisir les codes
+2026-11-02T20:19:29,feroe,ERREUR,invalid literal for int() with base 10: ''
