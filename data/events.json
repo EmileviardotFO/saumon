@@ -10,17 +10,17 @@
    "thefishsite.com": "ok 50 articles, 2 kept",
    "news.google.com (NO no #1)": "ok 10 articles, 8 kept",
    "news.google.com (NO no #2)": "ok 15 articles, 1 kept",
-   "news.google.com (CL es #3)": "ok 61 articles, 17 kept",
+   "news.google.com (CL es #3)": "ok 60 articles, 17 kept",
    "news.google.com (CL es #4)": "ok 10 articles, 6 kept",
    "news.google.com (IS is #5)": "ok 0 articles, 0 kept",
-   "news.google.com (IS en #6)": "ok 27 articles, 9 kept",
+   "news.google.com (IS en #6)": "ok 11 articles, 4 kept",
    "news.google.com (GB en #7)": "ok 19 articles, 10 kept",
    "news.google.com (FO en #8)": "ok 10 articles, 2 kept",
    "news.google.com (FO fo #9)": "ok 0 articles, 0 kept",
-   "news.google.com (CA en #10)": "ok 12 articles, 4 kept",
+   "news.google.com (CA en #10)": "ok 8 articles, 1 kept",
    "news.google.com (multi en #11)": "ok 15 articles, 1 kept",
    "news.google.com (multi en #12)": "ok 65 articles, 11 kept",
-   "gov.scot FHI": "ok 6711 reports, last 2026-09-15"
+   "gov.scot FHI": "error: no xlsx link (1983 chars, 0 xlsx links, title: )"
   },
   "note": "news = articles kept by keyword (a mortality word + a farming word), classified by cause and basin; manual = events entered by hand with their losses; scotland_fhi = mortalities reported to the Scottish Fish Health Inspectorate",
   "causes": [
