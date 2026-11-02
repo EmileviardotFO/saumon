@@ -364,6 +364,15 @@
 .nw-it a:hover { color:var(--accent); text-decoration:underline; }
 .nw-meta { color:var(--muted); font-size:11px; margin-top:2px; }
 .nw-tag { display:inline-block; border:1px solid #35505f; color:#9fb6c3; border-radius:8px; padding:0 5px; font-size:10px; margin-left:4px; white-space:nowrap; }
+.nw-top { border:1px solid #2c5a52; border-radius:8px; padding:10px 14px; background:#0f2229; margin-bottom:14px; }
+.nw-top h4 { margin:0 0 4px; font-size:13px; color:var(--ink); }
+.nw-top .nw-it a { font-weight:600; }
+.nw-top .nw-rank { display:inline-block; min-width:18px; color:var(--accent); font-weight:700; }
+.nw-rel summary { cursor:pointer; color:var(--accent); display:inline; list-style:none; }
+.nw-rel summary::-webkit-details-marker { display:none; }
+.nw-rel ul { margin:4px 0 2px; padding-left:16px; }
+.nw-rel li { margin:2px 0; font-size:11.5px; }
+.nw-rel li a { font-weight:normal !important; color:#c9d6de; }
 .nw-more { margin-top:6px; background:none; border:none; color:var(--accent); cursor:pointer; font-size:12px; padding:0; }
 .sc-op { display: flex; align-items: center; gap: 8px; padding: 7px 9px; border: 1px solid var(--border); border-radius: 7px; margin-bottom: 5px; cursor: pointer; font-size: 12.5px; background: #0d1a24; }
 .sc-op:hover { border-color: #4fc3f7; }
@@ -1036,6 +1045,7 @@
     <div class="sig-sub" id="nwSub"></div>
     <div id="nwCards" class="pr-cards"></div>
     <div class="nw-bar" id="nwBar"></div>
+    <div id="nwTop"></div>
     <div class="nw-grid" id="nwThemes"></div>
     <div class="sig-title" style="margin-top:18px">Coming dates</div>
     <div class="sig-sub">Entered by hand in data/news.json (key "calendar"); past dates drop off after a week.</div>
@@ -2699,6 +2709,17 @@ function nwFigures() {
       `${L.price_nok_kg ? `${L.price_nok_kg.toFixed(2)} NOK/kg` : ''}${Y && Y.price_nok_kg ? ` (${Y.price_nok_kg.toFixed(2)} a year earlier)` : ''} · Akvafakta`, '#81c784')); }
   return out.join('');
 }
+function nwRow(n, t, bOf, rank) {   // un sujet : titre de tete, source, nombre de sources, reprises depliables
+  const more = n.more || [], ns = n.nsrc || (n.srcs || []).length, o = ns - 1, oth = (n.themes || []).filter(x => x !== t && NW_THEME[x] && (t || x !== 'other'));
+  const rel = more.length ? `<details class="nw-rel"><summary>${ns > 1 ? ns + ' sources' : more.length + 1 + ' headlines'} ▾</summary><ul>` +
+      more.map(m => `<li><a href="${nwUrl(m.u)}" target="_blank" rel="noopener">${nwEsc(m.t)}</a> <span style="color:var(--muted)">· ${nwEsc(m.s)}, ${nwDay(m.d)}</span></li>`).join('') + `</ul></details>`
+    : o > 0 ? `<span title="${nwEsc((n.srcs || []).slice(1).join(', '))}">+${o} other${o > 1 ? 's' : ''}</span>` : '';
+  return `<div class="nw-it">${rank ? `<span class="nw-rank">${rank}</span>` : ''}<a href="${nwUrl(n.url)}" target="_blank" rel="noopener">${nwEsc(n.title)}</a>` +
+    `<div class="nw-meta">${nwDay(n.date)} · ${nwEsc(n.source)} ${rel}` +
+    `${n.lang && n.lang !== 'en' ? `<span class="nw-tag">${nwEsc(n.lang.toUpperCase())}</span>` : ''}` +
+    `${bOf(n).filter((b, i, a) => b !== 'global' && a.indexOf(b) === i).map(b => `<span class="nw-tag">${NW_BASIN[b]}</span>`).join('')}` +
+    `${oth.map(x => `<span class="nw-tag" style="border-color:${NW_THEME[x][1]}55;color:${NW_THEME[x][1]}">${NW_THEME[x][0].split(' ')[0].replace(',', '')}</span>`).join('')}</div></div>`;
+}
 function renderNews() {
   if (!NW) { if (!NW_LOADING) { NW_LOADING = true; fetch(DATA_URL.replace('data.json', 'news.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
       .then(j => { NW = j || { items: [], calendar: [], meta: {} }; NW_LOADING = false; if (currentView === 'news') renderNews(); }); }
@@ -2709,34 +2730,37 @@ function renderNews() {
   const from7 = new Date(new Date(gen + 'T00:00:00Z').getTime() - 6 * 864e5).toISOString().slice(0, 10);
   const inP = n => NW_P === '7d' ? n.date >= from7 : n.week === NW_P;
   const bOf = n => (n.basins || []).map(b => NW_OTHER.includes(b) ? 'other' : b);
-  const sel = items.filter(inP), shown = sel.filter(n => NW_B === 'all' || bOf(n).includes(NW_B));
+  const isLead = n => n.score != null || !n.cl;   // les reprises d'un meme sujet sont rangees sous le titre de tete
+  const sel = items.filter(n => inP(n) && isLead(n)), shown = sel.filter(n => NW_B === 'all' || bOf(n).includes(NW_B));
+  const drp = meta.dropped || {}, nDrop = (drp.source || 0) + (drp.title || 0) + (drp.manual || 0) + (drp.off_topic || 0);
   const wLab = wk => { const m = nwMonday(wk), e = new Date(m.getTime() + 6 * 864e5), iso = d => d.toISOString().slice(0, 10); return `Week ${+wk.split('-W')[1]} · ${nwDay(iso(m))} – ${nwDay(iso(e))} ${e.getUTCFullYear()}`; };
   const pLab = NW_P === '7d' ? `the last 7 days (${nwDay(from7)} – ${nwDay(gen)})` : wLab(NW_P).replace('Week', 'week');
   document.getElementById('nwSub').innerHTML = `Headlines collected automatically from the trade press (RSS) and Google News searches by theme, basin and language, three times a week. ` +
-    `Each headline is kept only if it was published in the two weeks before collection, filed under one theme by keyword, and grouped with the same story from other outlets. ` +
+    `Each headline is kept only if it was published in the two weeks before collection and is about salmon farming or fish-feed raw materials; financial aggregators, market-report generators and social networks are dropped` +
+    `${nDrop ? ` (${nDrop} headlines set aside at the last collection)` : ''}. Headlines on the same story are grouped under one, filed under one theme by keyword. ` +
+    `<b>Major stories</b> are ranked by a simple score: number of outlets (general press counts half), specialist press or official source, and weight of the subject (results, prices, decisions, mortality, finance). ` +
     `<b>Headlines are not verified or summarised</b>: open the article before relying on it; titles stay in their original language. Last collection: ${nwEsc(gen)}. ` +
     `Key figures below are the latest available in the dashboard data, whatever period is selected.`;
   document.getElementById('nwCards').innerHTML = nwFigures();
   // barre : periode + bassins
   const cnt = b => sel.filter(n => b === 'all' || bOf(n).includes(b)).length;
   document.getElementById('nwBar').innerHTML = `<label>Period <select id="nwPer"><option value="7d"${NW_P === '7d' ? ' selected' : ''}>Last 7 days</option>` +
-    weeks.map(w => `<option value="${w}"${NW_P === w ? ' selected' : ''}>${wLab(w)} (${items.filter(n => n.week === w).length})</option>`).join('') + `</select></label>` +
+    weeks.map(w => `<option value="${w}"${NW_P === w ? ' selected' : ''}>${wLab(w)} (${items.filter(n => n.week === w && isLead(n)).length})</option>`).join('') + `</select></label>` +
     `<div class="nw-chips">${['all', 'NO', 'CL', 'GB', 'FO', 'IS', 'other', 'global'].map(b => `<button type="button" data-b="${b}" class="${NW_B === b ? 'on' : ''}">${b === 'all' ? 'All basins' : NW_BASIN[b]} <span style="opacity:.6">${cnt(b)}</span></button>`).join('')}</div>`;
   document.getElementById('nwPer').onchange = e => { NW_P = e.target.value; NW_OPEN = {}; renderNews(); };
   document.querySelectorAll('#nwBar .nw-chips button').forEach(el => el.onclick = () => { NW_B = el.dataset.b; NW_OPEN = {}; renderNews(); });
+  // sujets majeurs de la periode (bassin choisi) : les mieux notes, au moins deux sources ou une source specialisee sur un sujet lourd
+  const top = shown.filter(n => n.score != null && (n.nsrc >= 2 || n.score >= 5)).sort((a, b) => b.score - a.score || (b.date > a.date ? 1 : -1)).slice(0, 8);
+  document.getElementById('nwTop').innerHTML = top.length ? `<div class="nw-top"><h4>Major stories — ${nwEsc(pLab)}</h4>` +
+    top.map((n, i) => nwRow(n, null, bOf, i + 1)).join('') + `</div>` : '';
   // rubriques
   const prim = n => NW_PRIMARY.find(t => (n.themes || []).includes(t)) || 'other';
   const LIM = 12;
   const secs = Object.keys(NW_THEME).map(t => {
-    const L = shown.filter(n => prim(n) === t).sort((a, b) => (b.srcs || []).length - (a.srcs || []).length || (b.date > a.date ? 1 : b.date < a.date ? -1 : 0));
+    const L = shown.filter(n => prim(n) === t).sort((a, b) => (b.score || 0) - (a.score || 0) || (b.nsrc || (b.srcs || []).length) - (a.nsrc || (a.srcs || []).length) || (b.date > a.date ? 1 : b.date < a.date ? -1 : 0));
     if (!L.length && t === 'other') return '';
     const vis = NW_OPEN[t] ? L : L.slice(0, LIM);
-    const row = n => { const o = (n.srcs || []).length - 1, oth = (n.themes || []).filter(x => x !== t && NW_THEME[x]);
-      return `<div class="nw-it"><a href="${nwUrl(n.url)}" target="_blank" rel="noopener">${nwEsc(n.title)}</a>` +
-        `<div class="nw-meta">${nwDay(n.date)} · ${nwEsc(n.source)}${o > 0 ? ` <span title="${nwEsc((n.srcs || []).slice(1).join(', '))}">+${o} other${o > 1 ? 's' : ''}</span>` : ''}` +
-        `${n.lang && n.lang !== 'en' ? `<span class="nw-tag">${nwEsc(n.lang.toUpperCase())}</span>` : ''}` +
-        `${bOf(n).filter((b, i, a) => b !== 'global' && a.indexOf(b) === i).map(b => `<span class="nw-tag">${NW_BASIN[b]}</span>`).join('')}` +
-        `${oth.map(x => `<span class="nw-tag" style="border-color:${NW_THEME[x][1]}55;color:${NW_THEME[x][1]}">${NW_THEME[x][0].split(' ')[0].replace(',', '')}</span>`).join('')}</div></div>`; };
+    const row = n => nwRow(n, t, bOf);
     return `<div class="nw-sec"><h4><i style="background:${NW_THEME[t][1]}"></i>${NW_THEME[t][0]} <span>${L.length}</span></h4>` +
       (L.length ? vis.map(row).join('') : `<div class="nw-meta">Nothing collected for ${pLab}${NW_B !== 'all' ? ' in this basin' : ''}.</div>`) +
       (L.length > LIM ? `<button type="button" class="nw-more" data-t="${t}">${NW_OPEN[t] ? 'Show fewer' : `Show all ${L.length}`}</button>` : '') + `</div>`; }).join('');
