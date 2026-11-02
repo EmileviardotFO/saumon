@@ -217,7 +217,7 @@ def scotland_fhi(status):
             k = r['date'][:7]; a = agg.setdefault(k, {'reports': 0, 'causes': {}})
             a['reports'] += 1
             for c in r['causes']: a['causes'][c] = a['causes'].get(c, 0) + 1
-        recent = sorted([r for r in rows_out if r['date'] >= cut], key=lambda r: r['date'], reverse=True)[:300]
+        recent = sorted([r for r in rows_out if r['date'] >= cut], key=lambda r: r['date'], reverse=True)[:3000]   # toutes les declarations de 3 ans (causes par site sur la carte)
         status['gov.scot FHI'] = f'ok {len(rows_out)} reports, last {max(r["date"] for r in rows_out)}'
         return {'source': link, 'monthly': dict(sorted(agg.items())), 'reports': recent}
     except Exception as e:
