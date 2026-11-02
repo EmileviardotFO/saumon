@@ -177,6 +177,14 @@ jobs:
         timeout-minutes: 10
         run: python3 scripts/update_events.py
 
+      - name: Recueil hebdomadaire de l'actualite (onglet This week)
+        # Titres de la presse specialisee (RSS) + recherches Google News par theme et bassin, classes par mot-cle.
+        # Seuls titre, source, date et lien sont gardes ; les echeances saisies a la main ("calendar") sont conservees.
+        id: news
+        continue-on-error: true
+        timeout-minutes: 10
+        run: python3 scripts/update_news.py
+
       - name: Archiver les previsions du mois (onglet Generations map)
         # Enregistre ce que le tableau de bord prevoit a la sortie de chaque mois du registre, pour comparer
         # plus tard prevision et realite. Les mois deja archives ne sont jamais reecrits.
