@@ -475,6 +475,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="vt-row"><span class="vt-lab">Other basins<small>biomass &amp; biology</small></span><div class="vt-btns">
       <button data-v="scotland">Scotland</button>
       <button data-v="chile">Chile</button>
+      <button data-v="australia">Australia</button>
     </div></div>
   </div>
   <div class="field" id="poFilterField" style="display:none;">
@@ -1068,6 +1069,20 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="sig-sub">Entered by hand in data/news.json (key "calendar"); past dates drop off after a week.</div>
     <div style="overflow-x:auto"><table class="sig-table" id="nwCal"></table></div>
     <details style="margin-top:14px;font-size:11.5px;color:var(--muted)"><summary style="cursor:pointer">Sources and last collection</summary><div id="nwSrc" style="margin-top:6px;line-height:1.6"></div></details>
+  </div>
+
+  <div class="panel" id="australiaView" style="flex:1; min-width:0; max-width:1400px; display:none;">
+    <div class="sig-title">Australia (Tasmania) — salmon deaths and harvest by company (EPA Tasmania, NRE)</div>
+    <div class="sig-sub" id="auSub"></div>
+    <div id="auCards" class="pr-cards"></div>
+    <div class="sig-title" style="margin-top:18px">Dead fish per month, by disposal route</div>
+    <div class="sig-sub" id="auMortSub"></div>
+    <div id="auMort"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="auMortTab"></table></div>
+    <div class="sig-title" style="margin-top:18px">Harvest by company, financial year (July–June)</div>
+    <div class="sig-sub" id="auProdSub"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="auProd"></table></div>
+    <div class="sig-sub" id="auNote" style="margin-top:14px"></div>
   </div>
 
   <div class="panel" id="chileView" style="flex:1; min-width:0; max-width:1400px; display:none;">
@@ -2837,6 +2852,84 @@ function renderNews() {
 
 // ===================== Chili (data/chili.json -> biologie, data/chile_sites.json, data/national_trade.json) =====================
 let CLD = null, CLS = null, CLT = null, CL_LOADING = false, CL_MAP = null, CL_LAYER = null, CL_OP = null;
+// ===================== Australie (data/australia.json <- scripts/build_australia.py <- farming/donnees_au) =====================
+let AUS = null, AUS_LOADING = false;
+function renderAustralia() {
+  if (!AUS) { if (!AUS_LOADING) { AUS_LOADING = true; fetch(DATA_URL.replace('data.json', 'australia.json'), { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : null).catch(() => null).then(j => { AUS = j || {}; AUS_LOADING = false; if (currentView === 'australia') renderAustralia(); }); }
+    document.getElementById('auSub').innerHTML = 'Loading…'; return; }
+  const M = (AUS.mortality || []).filter(r => r.total !== null), P = AUS.production || [], meta = AUS.meta || {};
+  if (!M.length && !P.length) {
+    document.getElementById('auSub').innerHTML = 'No Australian data yet: data/australia.json is built by the update step "Australie" (EPA Tasmania page and NRE data portal). Run the workflow from the Actions tab.';
+    ['auCards', 'auMort', 'auMortTab', 'auProd', 'auMortSub', 'auProdSub', 'auNote'].forEach(id => document.getElementById(id).innerHTML = '');
+    return; }
+  const f0 = v => v === null || v === undefined || !isFinite(v) ? '—' : Math.round(v).toLocaleString('en-US');
+  const pct = (a, b) => a && b ? 100 * (a / b - 1) : null;
+  const vt = (v, badUp) => v === null ? '' : `<span class="${(v >= 0) !== !!badUp ? 'delta-good' : 'delta-bad'}" style="font-size:12px">${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(1)}%</span>`;
+  const by = {}; M.forEach(r => by[r.m] = r);
+  const last = M.length ? M[M.length - 1].m : null, ly = last ? Math.floor(last / 100) : null, lm = last ? last % 100 : null;
+  const sumY = (y, upTo) => M.filter(r => Math.floor(r.m / 100) === y && r.m % 100 <= upTo).reduce((a, r) => a + r.total, 0);
+  const nY = (y, upTo) => M.filter(r => Math.floor(r.m / 100) === y && r.m % 100 <= upTo).length;
+  const nx = meta.next_expected ? new Date(meta.next_expected + 'T00:00:00Z') : null, due = nx && nx < new Date();
+  document.getElementById('auSub').innerHTML = `Tasmania produces virtually all Australian farmed salmon (three companies: Tassal, Huon Aquaculture, Petuna). ` +
+    `<b>Deaths</b>: tonnes of dead fish reported each month to the EPA by all farms together, with where they were sent — weights, not mortality rates (no public stock count to divide by). ` +
+    `Reported monthly, <b>published quarterly</b> about three weeks after the quarter. ` +
+    `<b>Harvest</b>: head-on gutted tonnes by company and financial year (NRE data portal). Only figures read at the source are shown.` +
+    (last ? ` Latest month: <b>${tmMl(last)}</b>` + (nx ? ` · next EPA release ${due ? `<span class="delta-bad">due ${meta.next_expected}</span>` : '≈ ' + meta.next_expected}` : '') + '.' : '') +
+    ((meta.alerts || []).length ? ` <span class="delta-bad">Last update run: ${meta.alerts.map(a => String(a).replace(/</g, '&lt;')).join('; ')}</span>` : '');
+  // cartes
+  const card = (lab, big, sub, col) => `<div class="pr-card" style="cursor:default"><div class="nm"><i style="background:${col}"></i>${lab}</div><div class="big">${big}</div><div class="ln">${sub}</div></div>`;
+  const prev = last ? by[last - 100] : null;
+  const ytd = last ? sumY(ly, lm) : 0, ytdP = last && nY(ly - 1, lm) === lm ? sumY(ly - 1, lm) : null;
+  const full = last ? (lm === 12 ? ly : ly - 1) : null, fullT = full && nY(full, 12) === 12 ? sumY(full, 12) : null, fullP = full && nY(full - 1, 12) === 12 ? sumY(full - 1, 12) : null;
+  const fyE = P.length ? Math.max(...P.map(p => p.fy_end)) : null, fyT = e => P.filter(p => p.fy_end === e).reduce((a, p) => a + (p.t || 0), 0);
+  const fyLab = e => P.find(p => p.fy_end === e)?.fy || e;
+  document.getElementById('auCards').innerHTML =
+    (last ? card(`Dead fish · ${tmMl(last)}`, `${f0(by[last].total)} t ${prev ? vt(pct(by[last].total, prev.total), true) : ''}`,
+      `${f0(by[last].total / new Date(ly, lm, 0).getDate())} t a day${prev ? ` · ${tmMl(last - 100)}: ${f0(prev.total)} t` : ''}`, '#ff8a65') : '') +
+    (last ? (nY(ly, lm) === lm
+      ? card(`Dead fish · Jan–${MONTHS_FR[lm - 1].slice(0, 3)} ${ly}`, `${f0(ytd)} t ${ytdP ? vt(pct(ytd, ytdP), true) : ''}`,
+          ytdP ? `same months ${ly - 1}: ${f0(ytdP)} t` : `no complete comparison for ${ly - 1}`, '#ffb74d')
+      : card(`Dead fish · ${ly} so far`, `${f0(ytd)} t`, `<span class="warn">${nY(ly, lm)} of ${lm} months read at the source</span> — not comparable with ${ly - 1} until the missing months are published`, '#ffb74d')) : '') +
+    (fullT ? card(`Dead fish · year ${full}`, `${(fullT / 1000).toFixed(1)} kt ${fullP ? vt(pct(fullT, fullP), true) : ''}`,
+      fullP ? `${full - 1}: ${(fullP / 1000).toFixed(1)} kt` : 'first complete year of EPA reporting', '#ce93d8') : '') +
+    (fyE ? card(`Harvest · FY ${fyLab(fyE)}`, `${(fyT(fyE) / 1000).toFixed(1)} kt ${fyT(fyE - 1) ? vt(pct(fyT(fyE), fyT(fyE - 1))) : ''}`,
+      `head-on gutted · ${fyLab(fyE - 1) !== fyE - 1 ? `FY ${fyLab(fyE - 1)}: ${(fyT(fyE - 1) / 1000).toFixed(1)} kt` : ''}`, '#81c784') : '');
+  // graphique : barres empilees par filiere, trait = total un an plus tot
+  if (M.length) {
+    const first = M[0].m, keys = []; for (let k = first; k <= last; k = tmBack(k, -1)) keys.push(k);
+    const ST = [['rendering', 'Rendering', '#4fc3f7'], ['ensiling', 'Ensiled / land spread', '#ffd54f'], ['compost', 'Compost', '#81c784'],
+                ['landfill', 'Landfill', '#ff8a65'], ['burial', 'Shallow burial', '#ce93d8']];
+    const stacks = ST.map(([k, lab, col]) => ({ lab, col, vals: keys.map(m => by[m] ? (by[m][k] || 0) : 0) }));
+    const lines = [{ lab: 'Same month a year earlier', col: '#e7eef2', pts: keys.map(m => by[m - 100] ? by[m - 100].total : null), dash: '5,4' }];
+    document.getElementById('auMort').innerHTML = vzStack(keys, stacks, { axis: 'Tonnes of dead fish', unit: 't', H: 280, lines }) +
+      vzLegend([...ST.map(([, lab, col]) => [lab, col, false, true]), ['Total a year earlier', '#e7eef2', true]]);
+    document.getElementById('auMortSub').innerHTML = `Each bar is a month's dead fish (tonnes, all Tasmanian farms), split by where they went. ` +
+      `Deaths peak in summer (December–March) with warm water; 2025 included a mass mortality event in the D'Entrecasteaux Channel (February–April). ` +
+      `A month where the routes do not add up exactly to the total is a rounding in the EPA table.`;
+    const rows = [...M].reverse();
+    document.getElementById('auMortTab').innerHTML = `<thead><tr><th class="name">Month</th><th>Dead fish (t)</th><th>vs a year earlier</th><th>t a day</th>` +
+      ST.map(([, lab]) => `<th>${lab}</th>`).join('') + `</tr></thead><tbody>` +
+      rows.map(r => { const p = by[r.m - 100];
+        return `<tr><td class="name">${tmMl(r.m)}</td><td><b>${f0(r.total)}</b></td><td>${p ? vt(pct(r.total, p.total), true) : '—'}</td><td>${f0(r.total / new Date(Math.floor(r.m / 100), r.m % 100, 0).getDate())}</td>` +
+          ST.map(([k]) => `<td>${r[k] ? f0(r[k]) : '<span style="color:var(--muted)">—</span>'}</td>`).join('') + `</tr>`; }).join('') + `</tbody>`;
+  }
+  // production par entreprise
+  if (P.length) {
+    const fys = [...new Set(P.map(p => p.fy_end))].sort((a, b) => a - b), cos = [...new Set(P.map(p => p.company))];
+    const v = (c, e) => (P.find(p => p.company === c && p.fy_end === e) || {}).t;
+    cos.sort((a, b) => (v(b, fys[fys.length - 1]) || 0) - (v(a, fys[fys.length - 1]) || 0));
+    const L = fys[fys.length - 1], tL = fyT(L), tP = fyT(L - 1);
+    document.getElementById('auProd').innerHTML = `<thead><tr><th class="name">Company</th>${fys.map(e => `<th>FY ${fyLab(e)}</th>`).join('')}<th>Change, last year</th><th>Share, last year</th></tr></thead><tbody>` +
+      cos.map(c => `<tr><td class="name">${c}</td>${fys.map(e => `<td>${v(c, e) ? f0(v(c, e)) + ' t' : '—'}</td>`).join('')}<td>${vt(pct(v(c, L), v(c, L - 1)))}</td><td>${tL && v(c, L) ? (100 * v(c, L) / tL).toFixed(1) + '%' : '—'}</td></tr>`).join('') +
+      `<tr style="font-weight:bold"><td class="name">Tasmania</td>${fys.map(e => `<td>${f0(fyT(e))} t</td>`).join('')}<td>${vt(pct(tL, tP))}</td><td>100%</td></tr></tbody>`;
+    document.getElementById('auProdSub').innerHTML = `Head-on gutted weight, financial year July–June (2025/26 = July 2025 to June 2026), NRE Tasmania data portal. ` +
+      `Not comparable month by month with the deaths above, which are calendar months and whole-fish weight.`;
+  }
+  document.getElementById('auNote').innerHTML = `<b>Sources.</b> Deaths: EPA Tasmania, Salmon Waste Management page (monthly reporting under the environmental licences since 2025). ` +
+    `Harvest: Department of Natural Resources and Environment Tasmania, Salmon Farming Data Portal. Read automatically at each update run; a figure revised at the source is flagged in the Sources panel.`;
+}
+
 function renderChile() {
   if (!CLD) { if (!CL_LOADING) { CL_LOADING = true; const g = n => fetch(DATA_URL.replace('data.json', n), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
       Promise.all([g('chili.json'), g('chile_sites.json'), g('national_trade.json')]).then(([a, b, c]) => { CLD = a || {}; CLS = b; CLT = c; CL_LOADING = false; if (currentView === 'chile') renderChile(); }); }
@@ -4052,16 +4145,17 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     document.getElementById('chinaView').style.display = currentView === 'china' ? 'block' : 'none';
     document.getElementById('scotlandView').style.display = currentView === 'scotland' ? 'block' : 'none';
     document.getElementById('chileView').style.display = currentView === 'chile' ? 'block' : 'none';
+    document.getElementById('australiaView').style.display = currentView === 'australia' ? 'block' : 'none';
     document.getElementById('newsView').style.display = currentView === 'news' ? 'block' : 'none';
     document.getElementById('coprodView').style.display = currentView === 'coprod' ? 'block' : 'none';
     document.getElementById('generationsView').style.display = currentView === 'generations' ? 'block' : 'none';
     document.getElementById('genmapView').style.display = currentView === 'genmap' ? 'block' : 'none';
     // The year / period selectors do not apply to the weekly fish-health view.
-    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'news' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
+    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'news' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
     // La carte des zones ne sert qu'aux vues qui raisonnent par PO. Les onglets
     // Markets et Calibre sont nationaux, elle n'y afficherait rien d'utile.
     const mw = document.querySelector('.panel.mapwrap');
-    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'news' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
+    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'news' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
     document.getElementById('poFilterField').style.display = (currentView === 'global' || currentView === 'multi' || currentView === 'outlook') ? 'flex' : 'none';
     document.getElementById('yearField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'none' : 'flex';
     document.getElementById('yearRangeField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'flex' : 'none';
@@ -4084,6 +4178,7 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     else if (currentView === 'china') { renderChina(); }
     else if (currentView === 'scotland') { renderScotland(); }
     else if (currentView === 'chile') { renderChile(); }
+    else if (currentView === 'australia') { renderAustralia(); }
     else if (currentView === 'news') { renderNews(); }
     else if (currentView === 'coprod') { renderCoprod(); }
     else if (currentView === 'generations') { renderGenerations(); }
