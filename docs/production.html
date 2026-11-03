@@ -471,6 +471,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
       <button data-v="euflows">EU markets</button>
       <button data-v="usa">USA focus</button>
       <button data-v="china">China focus</button>
+      <button data-v="world">World imports</button>
     </div></div>
     <div class="vt-row"><span class="vt-lab">Other basins<small>biomass &amp; biology</small></span><div class="vt-btns">
       <button data-v="scotland">Scotland</button>
@@ -1071,6 +1072,21 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="sig-sub">Entered by hand in data/news.json (key "calendar"); past dates drop off after a week.</div>
     <div style="overflow-x:auto"><table class="sig-table" id="nwCal"></table></div>
     <details style="margin-top:14px;font-size:11.5px;color:var(--muted)"><summary style="cursor:pointer">Sources and last collection</summary><div id="nwSrc" style="margin-top:6px;line-height:1.6"></div></details>
+  </div>
+
+  <div class="panel" id="worldView" style="flex:1; min-width:0; max-width:1400px; display:none;">
+    <div class="sig-title">World salmon imports — every country that declares monthly imports to UN Comtrade</div>
+    <div class="sig-sub" id="wiSub"></div>
+    <div id="wiAlerts"></div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0">
+      <label style="font-size:12px;color:var(--muted)">Product</label><select id="wiForm"></select>
+      <label style="font-size:12px;color:var(--muted)">Period</label><select id="wiPer"><option value="12">last 12 months declared</option><option value="3">last 3 months declared</option></select>
+    </div>
+    <div style="overflow-x:auto"><table class="sig-table" id="wiTab"></table></div>
+    <div class="sig-title" style="margin-top:18px" id="wiDetTitle"></div>
+    <div class="sig-sub" id="wiDetSub"></div>
+    <div id="wiDet"></div>
+    <div class="sig-sub" id="wiNote" style="margin-top:14px"></div>
   </div>
 
   <div class="panel" id="faroeView" style="flex:1; min-width:0; max-width:1400px; display:none;">
@@ -2918,6 +2934,65 @@ function renderNews() {
 
 // ===================== Chili (data/chili.json -> biologie, data/chile_sites.json, data/national_trade.json) =====================
 let CLD = null, CLS = null, CLT = null, CL_LOADING = false, CL_MAP = null, CL_LAYER = null, CL_OP = null;
+// ===================== Importations mondiales (data/world_imports.json <- scripts/update_world_imports.py) =====================
+let WI = null, WI_LOADING = false, WI_SEL = null;
+const WI_ORIG = [['NO', 'Norway', '#4fc3f7'], ['CL', 'Chile', '#ff8a65'], ['FO', 'Faroes', '#81c784'], ['GB', 'UK', '#ce93d8'], ['IS', 'Iceland', '#ffd54f'],
+  ['CA', 'Canada', '#90a4ae'], ['AU', 'Australia', '#a1887f'], ['US', 'USA', '#64b5f6'], ['RU', 'Russia', '#e57373'], ['CN', 'China', '#f06292']];
+function renderWorld() {
+  if (!WI) { if (!WI_LOADING) { WI_LOADING = true; fetch(DATA_URL.replace('data.json', 'world_imports.json'), { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : null).catch(() => null).then(j => { WI = j || {}; WI_LOADING = false; if (currentView === 'world') renderWorld(); }); }
+    document.getElementById('wiSub').innerHTML = 'Loading…'; return; }
+  const R = WI.rows || [], M = WI.meta || {}, ids = ['wiAlerts', 'wiTab', 'wiDetTitle', 'wiDetSub', 'wiDet', 'wiNote'];
+  if (!R.length) { document.getElementById('wiSub').innerHTML = 'No world import data yet. The update step "World imports" needs a free UN Comtrade key (GitHub secret COMTRADE_KEY); it then downloads every country\'s monthly salmon imports.';
+    ids.forEach(id => document.getElementById(id).innerHTML = ''); return; }
+  const esc = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), f0 = v => Math.round(v).toLocaleString('en-US');
+  const codes = M.codes || {}, fSel = document.getElementById('wiForm'), pSel = document.getElementById('wiPer');
+  if (!fSel.options.length) { fSel.innerHTML = `<option value="all">All salmon</option>` + Object.entries(codes).map(([c, l]) => `<option value="${c}">${esc(l)} (${c})</option>`).join('');
+    fSel.onchange = renderWorld; pSel.onchange = renderWorld; }
+  const form = fSel.value, n = +pSel.value, ok = hs => form === 'all' || hs === form;
+  const back = (ym, k) => { let a = Math.floor(ym / 100), m = ym % 100 - k; while (m < 1) { m += 12; a--; } return a * 100 + m; };
+  const LAST = M.last_by_reporter || {}, names = M.names || {};
+  const W = {}, O = {};                                         // W[rep][ym] = [kg, usd] ; O[rep][ym][orig] = kg
+  R.forEach(([ym, rep, hs, part, kg, usd]) => { if (!ok(hs)) return;
+    if (part === 'W') { const x = ((W[rep] = W[rep] || {})[ym] = W[rep][ym] || [0, 0]); x[0] += kg; x[1] += usd; }
+    else { const o = ((O[rep] = O[rep] || {})[ym] = O[rep][ym] || {}); o[part] = (o[part] || 0) + kg; } });
+  const rows = Object.keys(W).map(rep => { const L = LAST[rep]; if (!L) return null;
+    const cur = [...Array(n).keys()].map(i => back(L, i)), prv = cur.map(k => back(k, 12));
+    const sum = (ks, i) => ks.reduce((a, k) => a + ((W[rep][k] || [0, 0])[i]), 0);
+    const kg = sum(cur, 0), usd = sum(cur, 1), kgp = prv.every(k => W[rep][k]) ? sum(prv, 0) : 0;   // comparaison seulement si l'annee d'avant est complete
+    const og = {}; cur.forEach(k => Object.entries((O[rep] || {})[k] || {}).forEach(([o, v]) => og[o] = (og[o] || 0) + v));
+    return { rep, name: names[rep] || rep, L, kg, usd, kgp, og }; }).filter(x => x && x.kg > 0).sort((a, b) => b.kg - a.kg);
+  const now = new Date(), lagM = L => (now.getFullYear() * 12 + now.getMonth() + 1) - (Math.floor(L / 100) * 12 + L % 100);
+  document.getElementById('wiSub').innerHTML = `Salmon imports declared by each importing country to UN Comtrade, month by month, with the share of the main producing origins. ` +
+    `<b>${Object.keys(LAST).length} countries</b> have declared at least one month; each country is shown up to its own latest declared month — some publish within two months, others a year late or not at all (China, for instance, often lags). ` +
+    `Weights are product weight as declared; values are CIF in US dollars. Updated ${esc(M.fetched || '')}.`;
+  const AL = M.alerts || [];
+  document.getElementById('wiAlerts').innerHTML = AL.length ? `<div style="border:1px solid #ff8a65;border-radius:8px;padding:10px 14px;margin:8px 0">` +
+    `<b style="color:#ff8a65">Large changes</b> <span style="color:var(--muted);font-size:12px">(last 3 declared months against a year earlier: volume ±${M.thresholds.pct}% on ${M.thresholds.t} t or more, or an origin's share moving ${M.thresholds.share_pts} points; all salmon)</span><br>` +
+    AL.slice(0, 12).map(x => `<span style="display:inline-block;margin:3px 14px 0 0;font-size:12.5px"><b>${esc(x.name)}</b> to ${tmMl(x.last)}: ` +
+      (x.kind === 'volume' ? `<span class="${x.pct > 0 ? 'delta-good' : 'delta-bad'}">${x.pct > 0 ? '+' : '−'}${Math.abs(x.pct).toFixed(0)}%</span> (${f0(x.now_t)} t vs ${f0(x.prev_t)} t)`
+        : `${x.origin} share ${x.share_prev.toFixed(0)}% → <b>${x.share_now.toFixed(0)}%</b>`) + `</span>`).join('') + `</div>` : '';
+  const top = WI_ORIG.slice(0, 5);
+  document.getElementById('wiTab').innerHTML = `<thead><tr><th class="name">Importing country</th><th>Declared to</th><th>Tonnes</th><th>vs a year earlier</th><th>USD/kg CIF</th>` +
+    top.map(([o, l]) => `<th>${l}</th>`).join('') + `<th>Other</th></tr></thead><tbody>` +
+    rows.map(x => { const ch = x.kgp ? 100 * (x.kg / x.kgp - 1) : null, lg = lagM(x.L), sh = o => x.og[o] ? 100 * x.og[o] / x.kg : 0, oth = Math.max(0, 100 - top.reduce((a, [o]) => a + sh(o), 0));
+      return `<tr style="cursor:pointer${WI_SEL === x.rep ? ';background:var(--hover,rgba(79,195,247,.08))' : ''}" data-r="${x.rep}"><td class="name"><b>${esc(x.name)}</b></td>` +
+        `<td style="${lg > 6 ? 'color:var(--muted)' : ''}">${tmMl(x.L)}${lg > 6 ? ` <span style="font-size:11px">(${lg} months ago)</span>` : ''}</td><td><b>${f0(x.kg / 1000)}</b></td>` +
+        `<td>${ch === null ? '—' : `<span class="${ch >= 0 ? 'delta-good' : 'delta-bad'}">${ch >= 0 ? '+' : '−'}${Math.abs(ch).toFixed(0)}%</span>`}</td><td>${x.kg ? (x.usd / x.kg).toFixed(2) : '—'}</td>` +
+        top.map(([o]) => `<td>${sh(o) >= 0.5 ? sh(o).toFixed(0) + '%' : '<span style="color:var(--muted)">·</span>'}</td>`).join('') + `<td>${oth >= 0.5 ? oth.toFixed(0) + '%' : ''}</td></tr>`; }).join('') + `</tbody>`;
+  document.getElementById('wiTab').querySelectorAll('tr[data-r]').forEach(tr => tr.onclick = () => { WI_SEL = tr.dataset.r; renderWorld(); });
+  const sel = rows.find(x => x.rep === WI_SEL) || rows[0];
+  if (sel) { const keys = [...Array(36).keys()].map(i => back(sel.L, 35 - i)).filter(k => W[sel.rep][k] || (O[sel.rep] || {})[k]);
+    const stacks = WI_ORIG.map(([o, l, c]) => ({ lab: l, col: c, vals: keys.map(k => (((O[sel.rep] || {})[k] || {})[o] || 0) / 1000) }))
+      .concat([{ lab: 'Other origins', col: '#5d7685', vals: keys.map(k => Math.max(0, ((W[sel.rep][k] || [0])[0] - Object.values((O[sel.rep] || {})[k] || {}).reduce((a, b) => a + b, 0)) / 1000)) }])
+      .filter(x => x.vals.some(v => v > 0));
+    document.getElementById('wiDetTitle').innerHTML = `${esc(sel.name)} — monthly imports by origin`;
+    document.getElementById('wiDetSub').innerHTML = `Tonnes per month (${fSel.options[fSel.selectedIndex].text.toLowerCase()}), up to ${tmMl(sel.L)}. Click another country in the table to see it here.`;
+    document.getElementById('wiDet').innerHTML = keys.length ? vzStack(keys, stacks, { axis: 'Tonnes', unit: 't', H: 260 }) + vzLegend(stacks.map(x => [x.lab, x.col, false, true])) : ''; }
+  document.getElementById('wiNote').innerHTML = `<b>Source.</b> UN Comtrade, monthly imports declared by each country, HS 6-digit codes (fresh and frozen whole salmon, fresh and frozen fillets, smoked, Pacific salmon). ` +
+    `Comtrade publishes what countries send it, with no estimates: a missing country has not declared yet. Fillet codes mix Atlantic and Pacific salmon. New large changes are also posted as a GitHub issue at each update run, which sends an e-mail notification.`;
+}
+
 // ===================== Feroe (data/faroe.json <- scripts/build_faroe.py) =====================
 let FO = null, FO_LOADING = false, FO_MAP = null, FO_LAYER = null, FO_OP = null;
 const FO_OPCOL = { Bakkafrost: '#4fc3f7', Hiddenfjord: '#b39ddb', 'Mowi Faroes': '#ffb74d' };
@@ -4557,16 +4632,17 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     document.getElementById('australiaView').style.display = currentView === 'australia' ? 'block' : 'none';
     document.getElementById('canadaView').style.display = currentView === 'canada' ? 'block' : 'none';
     document.getElementById('faroeView').style.display = currentView === 'faroe' ? 'block' : 'none';
+    document.getElementById('worldView').style.display = currentView === 'world' ? 'block' : 'none';
     document.getElementById('newsView').style.display = currentView === 'news' ? 'block' : 'none';
     document.getElementById('coprodView').style.display = currentView === 'coprod' ? 'block' : 'none';
     document.getElementById('generationsView').style.display = currentView === 'generations' ? 'block' : 'none';
     document.getElementById('genmapView').style.display = currentView === 'genmap' ? 'block' : 'none';
     // The year / period selectors do not apply to the weekly fish-health view.
-    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'news' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
+    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'news' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
     // La carte des zones ne sert qu'aux vues qui raisonnent par PO. Les onglets
     // Markets et Calibre sont nationaux, elle n'y afficherait rien d'utile.
     const mw = document.querySelector('.panel.mapwrap');
-    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'news' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
+    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'news' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
     document.getElementById('poFilterField').style.display = (currentView === 'global' || currentView === 'multi' || currentView === 'outlook') ? 'flex' : 'none';
     document.getElementById('yearField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'none' : 'flex';
     document.getElementById('yearRangeField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'flex' : 'none';
@@ -4592,6 +4668,7 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     else if (currentView === 'australia') { renderAustralia(); }
     else if (currentView === 'canada') { renderCanada(); }
     else if (currentView === 'faroe') { renderFaroe(); }
+    else if (currentView === 'world') { renderWorld(); }
     else if (currentView === 'news') { renderNews(); }
     else if (currentView === 'coprod') { renderCoprod(); }
     else if (currentView === 'generations') { renderGenerations(); }
