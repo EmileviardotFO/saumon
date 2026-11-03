@@ -3,24 +3,24 @@
   "generated": "2026-11-03",
   "status": {
    "ilaks.no": "ok 12 articles, 0 kept",
-   "www.kyst.no": "ok 31 articles, 0 kept",
+   "www.kyst.no": "ok 37 articles, 0 kept",
    "www.fishfarmingexpert.com": "ok 65 articles, 2 kept",
    "www.fishfarmermagazine.com": "ok 30 articles, 0 kept",
-   "www.salmonexpert.cl": "ok 55 articles, 2 kept",
-   "thefishsite.com": "ok 50 articles, 2 kept",
+   "www.salmonexpert.cl": "ok 55 articles, 3 kept",
+   "thefishsite.com": "ok 50 articles, 1 kept",
    "news.google.com (NO no #1)": "ok 10 articles, 8 kept",
-   "news.google.com (NO no #2)": "ok 13 articles, 1 kept",
-   "news.google.com (CL es #3)": "ok 29 articles, 12 kept",
-   "news.google.com (CL es #4)": "ok 9 articles, 6 kept",
+   "news.google.com (NO no #2)": "ok 11 articles, 1 kept",
+   "news.google.com (CL es #3)": "ok 31 articles, 13 kept",
+   "news.google.com (CL es #4)": "ok 10 articles, 6 kept",
    "news.google.com (IS is #5)": "ok 0 articles, 0 kept",
-   "news.google.com (IS en #6)": "ok 27 articles, 10 kept",
-   "news.google.com (GB en #7)": "ok 52 articles, 11 kept",
-   "news.google.com (FO en #8)": "ok 10 articles, 2 kept",
+   "news.google.com (IS en #6)": "ok 40 articles, 11 kept",
+   "news.google.com (GB en #7)": "ok 34 articles, 11 kept",
+   "news.google.com (FO en #8)": "ok 11 articles, 3 kept",
    "news.google.com (FO fo #9)": "ok 0 articles, 0 kept",
-   "news.google.com (CA en #10)": "ok 26 articles, 5 kept",
-   "news.google.com (multi en #11)": "ok 15 articles, 1 kept",
-   "news.google.com (multi en #12)": "ok 100 articles, 11 kept",
-   "gov.scot FHI": "error: BadZipFile: File is not a zip file"
+   "news.google.com (CA en #10)": "ok 7 articles, 1 kept",
+   "news.google.com (multi en #11)": "ok 46 articles, 5 kept",
+   "news.google.com (multi en #12)": "ok 100 articles, 12 kept",
+   "gov.scot FHI": "ok 6711 reports, last 2026-09-15"
   },
   "note": "news = articles kept by keyword (a mortality word + a farming word), classified by cause and basin; manual = events entered by hand with their losses; scotland_fhi = mortalities reported to the Scottish Fish Health Inspectorate",
   "causes": [
@@ -140,6 +140,34 @@
   }
  ],
  "news": [
+  {
+   "date": "2026-11-03",
+   "title": "Se hunde barcaza de alimentación de salmones durante la tormenta",
+   "url": "https://www.salmonexpert.cl/accidente-alimentacion-bakkafrost/se-hunde-barcaza-de-alimentacion-de-salmones-durante-la-tormenta/2204890",
+   "source": "www.salmonexpert.cl",
+   "lang": "es",
+   "causes": [
+    "storm"
+   ],
+   "basins": [
+    "FO"
+   ],
+   "id": "1366bd5aff5c"
+  },
+  {
+   "date": "2026-11-03",
+   "title": "Scottish Sea Farms: mortality problems force 3,000-tonne harvest forecast cut",
+   "url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxQeVpQZFRjZENDMDloLXZTNlBheFBfNlNRZkoyU0dPX0ZfWXlKaVNfVDBvbWNWZldCX0ZTakU0NUVGR0NXdV83Uklqc3NwYzN6ZGFKb0FQNjMzQVA2dEdFMjEzZENSX1hKaHhxYmJkbEVUdUFISEJaNFZ2YzRTckxIbElndzFKWF9RSGxLcHNXZVZTX0xPc2wwU1NWOGFZZkNoLTdIUWZ6dXVHNVU?oc=5",
+   "source": "Salmon Business",
+   "lang": "en",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "GB"
+   ],
+   "id": "84d0971c78b4"
+  },
   {
    "date": "2026-11-02",
    "title": "Eficacia sistémica contra P. salmonis: Solución fitogénica que protege la biomasa",
@@ -493,6 +521,20 @@
    "id": "fe3640222fb6"
   },
   {
+   "date": "2026-10-14",
+   "title": "Impacto ambiental: aparecieron 642 toneladas de salmones muertos en la Reserva Nacional Kawésqar de Chile",
+   "url": "https://news.google.com/rss/articles/CBMi3wFBVV95cUxPYzFBN2dORVZnak5RVy1Fcy1oQlZGTnJmRUNZekpNd0dGbEI0RzVUNUU3U2dwbzdhMHo1UmhuVDcwOFYtemNSVWlwdGRDOVlPN05GZm5WWmpXYm1ueW1uSUthY3ZULU44YXFNVUc3djhaTUhqV1ZtSU1ndThBXzQ0bjcwSVV0V1NOLTRzbWxsQnV1bXNkTTlSMERpMHFVM3ZsYTFKU1JXLUJOd0R3TGRFUGk0R29OUko2VXJQQVRMYlZ6TEQ4eXNyM0Q1Zkt1SE9hWHdWbWJ2MlRHVmJ6Zms40gHkAUFVX3lxTE9aM1JiOGt6TERrS1lWUXkzelJmUFhOV1dVQ3BORzZxV1c0X0ptWHowalZheWowZVk0TnBRNUk0cU1XanNycXZyU1FIbGVPcDdpNWYtYXFzMTNvWkVKekxGa3Z1akh6NDFmenlZRzNwMW8wZFJEcldlN0lzYWt3dmpnbll2RTBQUVBkSzVac2FuZXpMY3p6cTViV2U3MXp1aUphV0NBTEdOcmREUUMtZF90QzZ0bmZaUkFTWXlYaEFvdnBHUmZuMzBCbzA0M3BjM3FwODNzRWJfSGczZUpsQm9BZUt0Mg?oc=5",
+   "source": "Noticias Ambientales",
+   "lang": "es",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "a80170847a87"
+  },
+  {
    "date": "2026-10-12",
    "title": "Giftig algeoppblomstring har doblet tap på en uke",
    "url": "https://news.google.com/rss/articles/CBMidkFVX3lxTE4tOHRaM001bjQ1SjhidlFMNk40NHRSeUJxcFBNamUtelJ1T1Z4SWdPVUQ0VGgwMkV3Z2wzTWUta2xnSHFXR1YycXB6T1Vjdnd1NkxyRHBfZ1N3T1JQWTZjeWY5TTc3clBmbnpsUjh4cld3NjNPbEE?oc=5",
@@ -715,6 +757,20 @@
     "CL"
    ],
    "id": "bcefa3b241b5"
+  },
+  {
+   "date": "2026-10-09",
+   "title": "Sernapesca fiscaliza el manejo y traslado de mortalidades por evento FAN en Magallanes",
+   "url": "https://news.google.com/rss/articles/CBMi5AFBVV95cUxORWZsZTZjM1J2VWo4S1loZnRFUUFzMFFudnVsZS1CVjRiTkxON085SkpwSC00eXhEdFhnY2Q3NExIRWtmOUVwX09kbFBrX3RsMjF1U1dOZkNkd0FCSVUtYUhBaWtodWlVenRleHQyMmJVNzZSREJudEh3dWE4NXlJdWhaV09jQVpIcWFvNzkyQjhoQWNVa2lZWU5WaVE2M1pQeGYweS1KZmZEcG9KUHlvTUgzQ0prTXBtaldNa1cxTGNGOEV5Uk5TR0ttYm9yNmh0X1RXRDBYay1LdEpTZ0U4Y3dBbjU?oc=5",
+   "source": "Salmonexpert",
+   "lang": "es",
+   "causes": [
+    "algae"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "89349521c366"
   },
   {
    "date": "2026-10-08",
