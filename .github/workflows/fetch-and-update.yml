@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: write
+  issues: write      # tickets de notification des variations importantes (importations mondiales)
 
 # Chaque source est independante : une etape en echec n'empeche ni les autres
 # ni la publication (continue-on-error). Le resultat de chaque etape est ecrit
@@ -181,6 +182,26 @@ jobs:
           CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
         run: python3 scripts/update_national_trade.py
 
+      - name: Japon - importations de saumon et truite par forme et origine (UN Comtrade, declarations japonaises)
+        # Poids de produit et valeur CAF par code SH6 (entier, filet, frais, congele, coho, sockeye, truite) et par pays.
+        # Le Japon declare avec 2 a 3 mois de retard ; seules l'annee en cours et la precedente sont retelechargees.
+        id: japan
+        continue-on-error: true
+        timeout-minutes: 15
+        env:
+          COMTRADE_KEY: ${{ secrets.COMTRADE_KEY }}
+        run: python3 scripts/update_japan_imports.py
+
+      - name: Importations mondiales de saumon par pays (UN Comtrade, tous les pays qui declarent chaque mois)
+        # Necessite le secret COMTRADE_KEY (cle gratuite) ; sans cle, l'etape le signale et ne fait rien.
+        # Ecrit data/world_imports.json et, s'il y a de nouvelles variations importantes, data/world_imports_new_alerts.md.
+        id: world
+        continue-on-error: true
+        timeout-minutes: 20
+        env:
+          COMTRADE_KEY: ${{ secrets.COMTRADE_KEY }}
+        run: python3 scripts/update_world_imports.py
+
       - name: Ecosse - biomasse, mortalites et aliment par site (SEPA, export CSV depose dans xlsx/scotland/)
         # Pas de telechargement automatique fiable (bouton d'export sur une page de recherche) : le fichier est depose
         # a la main a chaque export ; le script reconstruit data/scotland.json a partir du plus recent.
@@ -300,6 +321,8 @@ jobs:
           STEP_CHINA: ${{ steps.china.outcome }}
           STEP_EUROSTAT: ${{ steps.eurostat.outcome }}
           STEP_NATIONAL: ${{ steps.national.outcome }}
+          STEP_JAPAN: ${{ steps.japan.outcome }}
+          STEP_WORLD: ${{ steps.world.outcome }}
           STEP_SCOTLAND: ${{ steps.scotland.outcome }}
           STEP_SCOTLAND_SURVEY: ${{ steps.scotland_survey.outcome }}
           STEP_CHILE_SITES: ${{ steps.chile_sites.outcome }}
@@ -329,6 +352,21 @@ jobs:
             git push
           fi
 
+      - name: Notifier les variations importantes des importations mondiales (ticket GitHub)
+        # Un ticket par passage qui trouve de nouvelles alertes : GitHub envoie un courriel de notification.
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -s data/world_imports_new_alerts.md ]; then
+            TITRE="Importations de saumon : variations importantes ($(date -u +%Y-%m-%d))"
+            gh issue create --title "$TITRE" --body-file data/world_imports_new_alerts.md --label "alerte-marche" \
+              || gh issue create --title "$TITRE" --body-file data/world_imports_new_alerts.md
+          else
+            echo "Aucune nouvelle variation importante."
+          fi
+
       - name: Signaler les problemes (e-mail de GitHub)
         # Les donnees sont deja publiees. Cette etape fait seulement passer le
         # passage en rouge si une source ou le test a echoue. Volontairement hors
@@ -349,6 +387,8 @@ jobs:
           [ "${{ steps.estab.outcome }}" = "failure" ] && FAILED="$FAILED Mattilsynet"
           [ "${{ steps.eurostat.outcome }}" = "failure" ] && FAILED="$FAILED Eurostat"
           [ "${{ steps.national.outcome }}" = "failure" ] && FAILED="$FAILED Statistiques-nationales"
+          [ "${{ steps.japan.outcome }}" = "failure" ] && FAILED="$FAILED Japon-importations"
+          [ "${{ steps.world.outcome }}" = "failure" ] && FAILED="$FAILED Importations-mondiales"
           [ "${{ steps.archive.outcome }}" = "failure" ] && FAILED="$FAILED Archive-previsions"
           [ "${{ steps.australia.outcome }}" = "failure" ] && FAILED="$FAILED Australie"
           [ "${{ steps.canada_bc.outcome }}" = "failure" ] && FAILED="$FAILED Canada-BC"
