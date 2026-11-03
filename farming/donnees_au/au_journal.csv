@@ -14,3 +14,9 @@
 2026-11-02T22:01:25,NRE,ok,"9 valeurs, période courante T1 2026"
 2026-11-02T22:39:22,EPA,inchangé,rien lu
 2026-11-02T22:39:27,NRE,ok,"9 valeurs, période courante T1 2026"
+2026-11-03T01:47:15,EPA,ERREUR,aucun mois lu sur la page EPA (48345 caractères reçus) — les 21 mois déjà enregistrés sont conservés
+2026-11-03T01:47:18,NRE,ok,"9 valeurs, période courante T1 2026"
+2026-11-03T01:47:19,classeur,RÉVISION,AU_Entreprises Tassal 2025/26 : 33388 -> 33388.31
+2026-11-03T01:47:19,classeur,RÉVISION,AU_Entreprises Huon Aquaculture 2025/26 : 34588 -> 34588.21
+2026-11-03T01:47:19,classeur,RÉVISION,AU_Entreprises Petuna 2024/25 : 7139 -> 7139.18
+2026-11-03T01:47:19,classeur,RÉVISION,AU_Entreprises Petuna 2025/26 : 6272 -> 6272.19
