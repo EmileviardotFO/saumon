@@ -477,6 +477,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
       <button data-v="chile">Chile</button>
       <button data-v="australia">Australia</button>
       <button data-v="canada">Canada (BC)</button>
+      <button data-v="faroe">Faroe Islands</button>
     </div></div>
   </div>
   <div class="field" id="poFilterField" style="display:none;">
@@ -1070,6 +1071,28 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="sig-sub">Entered by hand in data/news.json (key "calendar"); past dates drop off after a week.</div>
     <div style="overflow-x:auto"><table class="sig-table" id="nwCal"></table></div>
     <details style="margin-top:14px;font-size:11.5px;color:var(--muted)"><summary style="cursor:pointer">Sources and last collection</summary><div id="nwSrc" style="margin-top:6px;line-height:1.6"></div></details>
+  </div>
+
+  <div class="panel" id="faroeView" style="flex:1; min-width:0; max-width:1400px; display:none;">
+    <div class="sig-title">Faroe Islands — fish at sea farm by farm, harvest and biology</div>
+    <div class="sig-sub" id="foSub"></div>
+    <div id="foCards" class="pr-cards"></div>
+    <div class="sig-title" style="margin-top:18px">Farming areas and fish at each Bakkafrost farm</div>
+    <div class="sig-sub" id="foMapSub"></div>
+    <div class="sc-mapgrid">
+      <div id="foOpList"></div>
+      <div id="foMap" style="height:600px;border:1px solid var(--border);border-radius:8px;background:#0d1a24"></div>
+    </div>
+    <div class="sig-title" style="margin-top:18px">Fish at each farm, end of month</div>
+    <div class="sig-sub" id="foTabSub"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="foTab"></table></div>
+    <div id="foTot"></div>
+    <div class="sig-title" style="margin-top:18px">Harvest and smolt releases</div>
+    <div class="sig-sub" id="foHarvSub"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="foHarv"></table></div>
+    <div class="sig-title" style="margin-top:18px">Bakkafrost Faroe Islands, year by year</div>
+    <div style="overflow-x:auto"><table class="sig-table" id="foYear"></table></div>
+    <div class="sig-sub" id="foNote" style="margin-top:14px"></div>
   </div>
 
   <div class="panel" id="canadaView" style="flex:1; min-width:0; max-width:1400px; display:none;">
@@ -2895,6 +2918,106 @@ function renderNews() {
 
 // ===================== Chili (data/chili.json -> biologie, data/chile_sites.json, data/national_trade.json) =====================
 let CLD = null, CLS = null, CLT = null, CL_LOADING = false, CL_MAP = null, CL_LAYER = null, CL_OP = null;
+// ===================== Feroe (data/faroe.json <- scripts/build_faroe.py) =====================
+let FO = null, FO_LOADING = false, FO_MAP = null, FO_LAYER = null, FO_OP = null;
+const FO_OPCOL = { Bakkafrost: '#4fc3f7', Hiddenfjord: '#81c784', 'Mowi Faroes': '#ffb74d' };
+function foStatus(prev, cur) {
+  if (prev === null || prev === undefined) return cur > 0 ? ['in sea', ''] : ['empty', ''];
+  if (prev === 0 && cur === 0) return ['empty (fallow)', 'muted'];
+  if (prev === 0 && cur > 0) return ['stocked', 'good'];
+  if (prev > 0 && cur === 0) return ['harvested out', 'bad'];
+  const ch = cur / prev - 1;
+  if (ch > 0.08) return ['fish added', 'good'];
+  if (ch < -0.08) return ['harvesting', 'bad'];
+  return ['growing', ''];
+}
+function renderFaroe() {
+  if (!FO) { if (!FO_LOADING) { FO_LOADING = true; fetch(DATA_URL.replace('data.json', 'faroe.json'), { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : null).catch(() => null).then(j => { FO = j || {}; FO_LOADING = false; if (currentView === 'faroe') renderFaroe(); }); }
+    document.getElementById('foSub').innerHTML = 'Loading…'; return; }
+  const S = FO.sites || [], D = (FO.meta || {}).dates || [], ids = ['foCards', 'foMapSub', 'foOpList', 'foTabSub', 'foTab', 'foTot', 'foHarvSub', 'foHarv', 'foYear', 'foNote'];
+  if (!S.length) { document.getElementById('foSub').innerHTML = 'No Faroese data yet: data/faroe.json is built by the update step "Feroe". Run the workflow from the Actions tab.';
+    ids.forEach(id => document.getElementById(id).innerHTML = ''); return; }
+  const esc = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const f0 = v => v === null || v === undefined || !isFinite(v) ? '—' : Math.round(v).toLocaleString('en-US');
+  const fk = v => v ? (v / 1e6).toFixed(2) + ' M' : '<span style="color:var(--muted)">empty</span>';
+  const ym = d => +d.slice(0, 4) * 100 + +d.slice(5, 7), lab = d => tmMl(ym(d));
+  const L = D.length - 1, tot = i => S.reduce((a, x) => a + (x.fish[i] || 0), 0);
+  const st = x => foStatus(L > 0 ? x.fish[L - 1] : null, x.fish[L]);
+  const nIn = S.filter(x => x.fish[L] > 0).length, harv = S.filter(x => ['harvesting', 'harvested out'].includes(st(x)[0])), stock = S.filter(x => ['stocked', 'fish added'].includes(st(x)[0]));
+  // pertes mensuelles des fermes qui ne recoltent ni ne recoivent de poissons (mortalite + retraits) : mediane
+  const att = []; S.forEach(x => { for (let i = 1; i <= L; i++) if (x.fish[i - 1] > 0 && x.fish[i] > 0 && foStatus(x.fish[i - 1], x.fish[i])[0] === 'growing') att.push(1 - x.fish[i] / x.fish[i - 1]); });
+  att.sort((a, b) => a - b); const med = att.length ? att[Math.floor(att.length / 2)] : null;
+  const H = FO.harvest || [], hb = H.filter(h => h.co === 'Bakkafrost' && /^\d{4}-\d{2}$/.test(h.p)).sort((a, b) => a.p < b.p ? -1 : 1), hl = hb[hb.length - 1];
+  const wM = (H.find(h => h.co === 'Bakkafrost' && h.p === D[L].slice(0, 7)) || {}), estH = x => L > 0 && wM.w && x.fish[L - 1] > x.fish[L] && ['harvesting', 'harvested out'].includes(st(x)[0]) ? (x.fish[L - 1] - x.fish[L]) * wM.w / 1000 : null;
+  const estT = S.reduce((a, x) => a + (estH(x) || 0), 0);
+  const yr = hl ? hl.p.slice(0, 4) : null, ytd = H.filter(h => h.co === 'Bakkafrost' && yr && h.p.startsWith(yr)).reduce((a, h) => a + h.t, 0);
+  const A = FO.annual || {}, ay = Object.keys(A.mortality_pct || {}).sort(), la = ay[ay.length - 1];
+  document.getElementById('foSub').innerHTML = `Three companies farm salmon at sea in the Faroes: <b>Bakkafrost</b> (most of the licences), <b>Hiddenfjord</b> (licence holder Luna P/f) and <b>Mowi Faroes</b>. ` +
+    `Since mid-2026 Bakkafrost publishes the <b>number of fish at each of its Faroese farms at the end of every month</b> — the only farm-level stock figure published in the islands; the page shows only recent months, so every update run archives them here. ` +
+    `Harvest by month comes from Bakkafrost's quarterly trading updates. Hiddenfjord publishes no volumes; Mowi gives one quarterly figure.` + (FO.meta.note ? ` <span class="delta-bad">${esc(FO.meta.note)}</span>` : '');
+  const card = (t, big, sub, col) => `<div class="pr-card" style="cursor:default"><div class="nm"><i style="background:${col}"></i>${t}</div><div class="big">${big}</div><div class="ln">${sub}</div></div>`;
+  const dT = L > 0 ? tot(L) - tot(L - 1) : null;
+  document.getElementById('foCards').innerHTML =
+    card(`Bakkafrost fish at sea · ${lab(D[L])}`, `${(tot(L) / 1e6).toFixed(1)} M`, `${dT !== null ? `${dT >= 0 ? '+' : '−'}${(Math.abs(dT) / 1e6).toFixed(2)} M on ${lab(D[L - 1])} · ` : ''}${nIn} farms with fish`, '#4fc3f7') +
+    card(`Farm movements · ${lab(D[L])}`, `${harv.length} harvesting · ${stock.length} stocked`, `harvesting: ${harv.map(x => esc(x.name)).join(', ') || '—'}<br>stocked: ${stock.map(x => esc(x.name)).join(', ') || '—'}` +
+      (estT ? `<br>fish removed × ${wM.w} kg ≈ <b>${f0(estT)} t</b> (Bakkafrost reported ${f0(wM.t)} t)` : ''), '#ff8a65') +
+    (hl ? card(`Bakkafrost harvest · ${tmMl(+hl.p.replace('-', ''))}`, `${f0(hl.t)} t`, `head-on gutted, average ${hl.w} kg · ${yr} so far ${(ytd / 1000).toFixed(1)} kt`, '#81c784') : '') +
+    (med !== null ? card('Monthly losses at growing farms', `${(100 * med).toFixed(1)}%`, `median monthly fall in fish numbers where nothing was harvested or added (${att.length} farm-months): mortality plus small removals`, '#e57373') : '') +
+    (la ? card(`Bakkafrost Faroes · ${la}`, `${A.mortality_pct[la]}% mortality`, `${A.lice_af[la]} adult female lice per fish on average · fallow ${A.fallow_weeks[la]} weeks`, '#ce93d8') : '');
+  // tableau par ferme
+  const order = [...S].sort((a, b) => (b.fish[L] || 0) - (a.fish[L] || 0) || a.name.localeCompare(b.name));
+  document.getElementById('foTab').innerHTML = `<thead><tr><th class="name">Farm</th><th>Fjord</th>${D.map(d => `<th>${lab(d)}</th>`).join('')}<th>Last month</th><th>Status</th><th>≈ harvested (t)</th></tr></thead><tbody>` +
+    order.map(x => { const [stt, cl] = st(x), pv = L > 0 ? x.fish[L - 1] : null, ch = pv ? 100 * (x.fish[L] / pv - 1) : null;
+      return `<tr><td class="name"><b>${esc(x.name)}</b> <span style="color:var(--muted);font-size:11px">${esc(x.id.split(' ')[0])}</span></td><td style="font-size:12px">${esc(x.fjord.replace(/^C-\d+\s*/, ''))}</td>` +
+        x.fish.map(v => `<td>${fk(v)}</td>`).join('') + `<td>${ch === null ? '—' : `<span class="${ch < -8 ? 'delta-bad' : ch > 8 ? 'delta-good' : ''}">${ch >= 0 ? '+' : '−'}${Math.abs(ch).toFixed(1)}%</span>`}</td>` +
+        `<td class="${cl === 'bad' ? 'delta-bad' : cl === 'good' ? 'delta-good' : ''}" style="${cl === 'muted' ? 'color:var(--muted)' : ''}">${stt}</td><td>${estH(x) ? f0(estH(x)) : ''}</td></tr>`; }).join('') +
+    `<tr style="font-weight:bold"><td class="name">Total</td><td></td>${D.map((d, i) => `<td>${(tot(i) / 1e6).toFixed(2)} M</td>`).join('')}<td>${dT !== null ? `${dT >= 0 ? '+' : '−'}${(100 * Math.abs(dT) / tot(L - 1)).toFixed(1)}%` : ''}</td><td></td><td>${estT ? f0(estT) : ''}</td></tr></tbody>`;
+  document.getElementById('foTabSub').innerHTML = `Millions of fish at each Bakkafrost farm on the last day of the month. <b>Harvesting</b>: more than 8% fewer fish than a month earlier; <b>harvested out</b>: emptied; <b>stocked</b> / <b>fish added</b>: smolts put in. ` +
+    `A farm being harvested now is where the coming weeks' fish come from; the fish removed times Bakkafrost's average harvest weight of the month gives an estimated harvest per farm (≈ harvested), checked against the company's monthly total. Two licences can share a fjord (Hvannasund S, Gøtuvík).`;
+  if (D.length > 1) document.getElementById('foTot').innerHTML = vzLines(D.map(ym), [{ lab: 'Bakkafrost fish at sea, Faroes', col: '#4fc3f7', pts: D.map((d, i) => tot(i) / 1e6), w: 2.4 }],
+    { axis: 'Million fish', unit: 'M', digits: 1, H: 200 });
+  // recolte et smolts
+  const SM = FO.smolts || [];
+  document.getElementById('foHarv').innerHTML = `<thead><tr><th class="name">Period</th><th>Company</th><th>Harvest (t)</th><th>Average weight</th><th>Source</th></tr></thead><tbody>` +
+    [...H].sort((a, b) => a.p < b.p ? 1 : -1).map(h => `<tr><td class="name">${h.p.includes('Q') ? h.p.replace('-', ' ') : tmMl(+h.p.replace('-', ''))}</td><td>${esc(h.co)}</td><td><b>${f0(h.t)}</b></td><td>${h.w ? h.w + ' kg' : '—'}</td><td style="font-size:11px;color:var(--muted)">${esc(h.src)}</td></tr>`).join('') + `</tbody>`;
+  document.getElementById('foHarvSub').innerHTML = `Bakkafrost: head-on gutted tonnes by month, from its quarterly trading updates (about a week after each quarter). Mowi Faroes: one gutted-weight figure per quarter. ` +
+    (SM.length ? `Bakkafrost smolts put to sea in the Faroes: ${SM.map(x => `${x.p.replace('-', ' ')} ${x.m} M`).join(', ')}.` : '');
+  document.getElementById('foYear').innerHTML = ay.length ? `<thead><tr><th class="name"></th>${ay.map(y => `<th>${y}</th>`).join('')}</tr></thead><tbody>` +
+    [['mortality_pct', 'Mortality at sea, % of fish', v => v + '%'], ['lice_af', 'Adult female lice per fish (12-month average)', v => v], ['fallow_weeks', 'Fallow between cycles (weeks)', v => v], ['feed_factor', 'Biological feed factor', v => v]]
+      .map(([k, t, fm]) => `<tr><td class="name">${t}</td>${ay.map(y => `<td>${A[k] && A[k][y] !== undefined ? fm(A[k][y]) : '—'}</td>`).join('')}</tr>`).join('') + `</tbody>` : '';
+  foMap(L, st);
+  document.getElementById('foNote').innerHTML = `<b>Sources.</b> Bakkafrost, Sustainability data page (fish per farm, monthly; annual indicators). Landsverk, register of sea farming areas (licence holder, fjord, area number). ` +
+    `Bakkafrost and Mowi quarterly trading updates. Farm positions are the approximate centre of the fjord or bay (within 2–3 km): the official area drawings are PDF plans. ` +
+    `<b>Not yet included:</b> sea lice counts per farm, which the Food and Veterinary Agency publishes every two weeks — to be added once the page is identified; fish numbers at Hiddenfjord and Mowi farms, which are not published.`;
+}
+function foMap(li, st) {
+  const S = FO.sites || [], O = FO.register_other || [], list = document.getElementById('foOpList');
+  const esc = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const ops = { Bakkafrost: S.length + O.filter(x => x.op === 'Bakkafrost').length, Hiddenfjord: O.filter(x => x.op === 'Hiddenfjord').length, 'Mowi Faroes': O.filter(x => x.op === 'Mowi Faroes').length };
+  document.getElementById('foMapSub').innerHTML = `Every licensed sea farming area (Landsverk register), coloured by company. Bakkafrost farms are sized by the fish they held at the end of ${tmMl(+FO.meta.dates[li].slice(0, 7).replace('-', ''))} and outlined by what happened in the month: ` +
+    `<span style="color:#ff8a65">red</span> harvesting, <span style="color:#81c784">green</span> stocked, grey empty. Click a farm for its month-by-month numbers; click a company to keep only its areas.`;
+  list.innerHTML = `<div class="sc-op${FO_OP === null ? ' on' : ''}" data-h=""><i style="background:#e7eef2"></i><b>All companies</b><span>${S.length + O.length} areas</span></div>` +
+    Object.keys(ops).map(h => `<div class="sc-op${FO_OP === h ? ' on' : ''}" data-h="${h}"><i style="background:${FO_OPCOL[h]}"></i><b>${h}</b><span>${ops[h]} areas${h === 'Bakkafrost' ? `<br>${(S.reduce((a, x) => a + (x.fish[li] || 0), 0) / 1e6).toFixed(1)} M fish` : '<br>fish numbers not published'}</span></div>`).join('');
+  list.querySelectorAll('.sc-op').forEach(el => el.onclick = () => { FO_OP = el.dataset.h || null; renderFaroe(); });
+  scLeaflet(() => {
+    if (!FO_MAP) { FO_MAP = L.map('foMap', { scrollWheelZoom: false }).setView([62.0, -6.85], 9);
+      const esri = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', { attribution: 'Tiles &copy; Esri — Esri, HERE, Garmin, &copy; OpenStreetMap contributors · areas: Landsverk; fish: Bakkafrost', maxZoom: 13 }).addTo(FO_MAP);
+      let fails = 0; esri.on('tileerror', () => { if (++fails === 4) { FO_MAP.removeLayer(esri); L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors', maxZoom: 13 }).addTo(FO_MAP); } }); }
+    if (FO_LAYER) FO_LAYER.remove(); FO_LAYER = L.layerGroup().addTo(FO_MAP); const pts = [];
+    O.forEach(x => { if (x.lat === null || (FO_OP && x.op !== FO_OP)) return; const c = FO_OPCOL[x.op] || '#888';
+      L.circleMarker([x.lat, x.lon], { radius: 5, color: c, weight: 1.5, fillColor: c, fillOpacity: x.op === 'Bakkafrost' ? .1 : .45 }).addTo(FO_LAYER)
+        .bindPopup(`<b>${esc(x.fjord)}</b><br>Area ${x.code} · <b>${esc(x.op)}</b>${x.op === 'Bakkafrost' ? '<br>not in Bakkafrost\'s monthly list (unused or fallow)' : '<br>fish numbers not published'}`); pts.push([x.lat, x.lon]); });
+    if (!FO_OP || FO_OP === 'Bakkafrost') S.forEach(x => { if (x.lat === null) return; const n = x.fish[li] || 0, [stt] = st(x);
+      const edge = stt === 'harvesting' || stt === 'harvested out' ? '#ff8a65' : stt === 'stocked' || stt === 'fish added' ? '#81c784' : n ? '#4fc3f7' : '#5d7685';
+      L.circleMarker([x.lat, x.lon], { radius: n ? 5 + 9 * Math.sqrt(n / 2.5e6) : 5, color: edge, weight: 2.5, fillColor: n ? '#4fc3f7' : '#5d7685', fillOpacity: n ? .55 : .2 }).addTo(FO_LAYER)
+        .bindPopup(`<b>${esc(x.name)}</b> (${esc(x.id.split(' ')[0])}) · Bakkafrost<br>${esc(x.fjord)}<br><b>${stt}</b> in the last month<br>` +
+          FO.meta.dates.map((d, i) => `${tmMl(+d.slice(0, 7).replace('-', ''))}: ${x.fish[i] ? (x.fish[i] / 1e6).toFixed(2) + ' M fish' : 'empty'}`).join('<br>'));
+      pts.push([x.lat, x.lon]); });
+    if (pts.length) FO_MAP.fitBounds(pts, { padding: [24, 24], maxZoom: 10 }); setTimeout(() => FO_MAP.invalidateSize(), 50);
+  });
+}
+
 // ===================== Canada, Colombie-Britannique (data/canada.json <- scripts/build_canada.py <- farming/donnees_ca/brut) =====================
 let CAN = null, CAN_LOADING = false, CA_MAP = null, CA_LAYER = null, CA_OP = null;
 function caMap(lastC) {
@@ -4384,16 +4507,17 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     document.getElementById('chileView').style.display = currentView === 'chile' ? 'block' : 'none';
     document.getElementById('australiaView').style.display = currentView === 'australia' ? 'block' : 'none';
     document.getElementById('canadaView').style.display = currentView === 'canada' ? 'block' : 'none';
+    document.getElementById('faroeView').style.display = currentView === 'faroe' ? 'block' : 'none';
     document.getElementById('newsView').style.display = currentView === 'news' ? 'block' : 'none';
     document.getElementById('coprodView').style.display = currentView === 'coprod' ? 'block' : 'none';
     document.getElementById('generationsView').style.display = currentView === 'generations' ? 'block' : 'none';
     document.getElementById('genmapView').style.display = currentView === 'genmap' ? 'block' : 'none';
     // The year / period selectors do not apply to the weekly fish-health view.
-    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'news' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
+    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'news' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
     // La carte des zones ne sert qu'aux vues qui raisonnent par PO. Les onglets
     // Markets et Calibre sont nationaux, elle n'y afficherait rien d'utile.
     const mw = document.querySelector('.panel.mapwrap');
-    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'news' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
+    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'news' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
     document.getElementById('poFilterField').style.display = (currentView === 'global' || currentView === 'multi' || currentView === 'outlook') ? 'flex' : 'none';
     document.getElementById('yearField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'none' : 'flex';
     document.getElementById('yearRangeField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'flex' : 'none';
@@ -4418,6 +4542,7 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     else if (currentView === 'chile') { renderChile(); }
     else if (currentView === 'australia') { renderAustralia(); }
     else if (currentView === 'canada') { renderCanada(); }
+    else if (currentView === 'faroe') { renderFaroe(); }
     else if (currentView === 'news') { renderNews(); }
     else if (currentView === 'coprod') { renderCoprod(); }
     else if (currentView === 'generations') { renderGenerations(); }
@@ -8323,9 +8448,14 @@ function genBuild(po) {
     if (w > 0 && n > 0) { const t6 = genTail(w); x.big += n * w * t6; x.f56 += n * w * (genTailAt(w, 5 / PK_GUT) - t6); }
   });
   // cumuls : poissons entres = max(stock + sorties cumulees), recolte et mortalite cumulees
-  Object.values(A).forEach(G => { let ch = 0, cd = 0, cl = 0, chk = 0, ent = 0, cha = 0, chA = 0, prev = null;
+  Object.values(A).forEach(G => { let ch = 0, cd = 0, cl = 0, chk = 0, ent = 0, cha = 0, chA = 0, prev = null, rW = 0, rN = 0, hI = 0, hN = 0;
     Object.keys(G).map(Number).sort((a, b) => a - b).forEach(ym => { const x = G[ym];
-      ch += x.h; cd += x.d; cl += x.l; chk += x.hk; ent = Math.max(ent, x.n + ch + cd + cl);
+      ch += x.h; cd += x.d; cl += x.l; chk += x.hk; const ent0 = ent; ent = Math.max(ent, x.n + ch + cd + cl);
+      // temps en mer comparable d'une generation a l'autre : mois de mise a l'eau moyen calcule avec les seules mises a l'eau
+      // DEJA faites a ce mois-ci (age_months du registre utilise la moyenne de toute l'annee, smolts d'automne compris, ce qui
+      // rajeunit artificiellement les poissons abattus tot dans une generation terminee par rapport a la generation en cours)
+      const idx = Math.floor(ym / 100) * 12 + ym % 100, rel = Math.max(0, ent - ent0);
+      rW += rel * idx; rN += rel; if (x.h > 0) { hI += x.h * idx; hN += x.h; }
       if (x.ha > 0) { cha += x.ha; chA += x.h; }
       // croissance de TOUTE la generation dans le mois (poissons abattus et morts compris) : (biomasse + abattus + morts x poids du mois
       // precedent) / poissons presents en debut de mois - poids du mois precedent. Mois ou des poissons entrent (mises a l'eau) :
@@ -8336,7 +8466,7 @@ function genBuild(po) {
       // precedent, sinon leur biomasse passait pour une perte de croissance.
       if (prev && prev.n > 0 && prev.b > 0 && x.n + x.h + x.d + x.l <= prev.n * 1.02) { const wp = prev.b / prev.n, gone = Math.max(0, prev.n - (x.n + x.h + x.d + x.l));
         wg = (x.b + x.hk + (x.d + x.l + gone) * wp) / prev.n - wp; }
-      Object.assign(x, { ch, cd, cl, chk, ent, w: x.n ? x.b / x.n : NaN, gr: x.gn ? x.g / x.gn : NaN, wg, tsh: chA > 0 ? cha / chA : NaN });
+      Object.assign(x, { ch, cd, cl, chk, ent, w: x.n ? x.b / x.n : NaN, gr: x.gn ? x.g / x.gn : NaN, wg, tsh: chA > 0 ? cha / chA : NaN, tsc: hN > 0 && rN > 0 ? Math.max(0, hI / hN - rW / rN) : NaN });
       prev = x; }); });
   return { A, flows };
 }
@@ -8376,7 +8506,7 @@ function renderGenerations() {
       `<div class="ln">average weight <b style="color:var(--ink)">${x.w.toFixed(2)} kg</b> ${p ? tmVar(tmPc(x.w, p.w)) : ''} · biomass ${tmKt(x.b / 1000)} ${p ? tmVar(tmPc(x.b, p.b)) : ''}</div>` +
       `<div class="ln">growth, last 3 months <b style="color:var(--ink)">${isFinite(gr3) ? gr3.toFixed(2) + ' kg/month' : '—'}</b>${isFinite(gr3) && isFinite(pgr3) ? ` (${pgr3.toFixed(2)} a year earlier)` : ''}</div>` +
       `<div class="ln">dead so far <b style="color:var(--ink)">${pc(mort)}</b> ${dpt(mort, pmort)} · harvested ${pc(harv)} ${dpt(harv, pharv, true)}</div>` +
-      (isFinite(x.tsh) ? `<div class="ln">time at sea of the fish harvested so far <b style="color:var(--ink)">${x.tsh.toFixed(1)} months</b>${p && isFinite(p.tsh) ? ` (${p.tsh.toFixed(1)} a year earlier)` : ''}</div>` : '') +
+      (isFinite(x.tsc) ? `<div class="ln" title="Months between the average release month (releases made so far) and the harvest month, both generations measured the same way at the same point">time at sea of the fish harvested so far <b style="color:var(--ink)">${x.tsc.toFixed(1)} months</b>${p && isFinite(p.tsc) ? ` (${p.tsc.toFixed(1)} a year earlier)` : ''}</div>` : '') +
       `<div class="ln">above ~6 kg gutted (estimate) <b style="color:var(--ink)">${tmKt(x.big / 1000)}</b> ${p && x.big > 5e5 && p.big > 5e5 ? tmVar(tmPc(x.big, p.big), 5) : ''}</div>` +
       `<div class="ln">5–6 kg gutted, next in line (estimate) <b style="color:var(--ink)">${tmKt(x.f56 / 1000)}</b> ${p && x.f56 > 5e5 && p.f56 > 5e5 ? tmVar(tmPc(x.f56, p.f56), 5) : ''}</div></div>`;
   }).join('');
