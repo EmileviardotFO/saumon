@@ -27,7 +27,7 @@ jobs:
         run: |
           set -e
           moved=""
-          for d in correctif_* maj_onglets_* maj_cartes_*; do
+          for d in correctif_* maj_onglets_* maj_cartes_* onglet_*; do
             [ -d "$d" ] || continue
             for sub in scripts farming data docs; do
               if [ -d "$d/$sub" ]; then mkdir -p "$sub"; cp -R "$d/$sub/." "$sub/"; fi
@@ -275,6 +275,14 @@ jobs:
           python3 ../scripts/build_canada.py
           exit $rc
 
+      - name: Feroe - poissons par ferme (Bakkafrost, mensuel), recolte et registre des zones
+        # La page Bakkafrost ne montre que les derniers mois : chaque passage archive les colonnes dans
+        # farming/donnees_fo/bakkafrost_fermes.csv, puis ecrit data/faroe.json pour l'onglet Faroe Islands.
+        id: faroe
+        continue-on-error: true
+        timeout-minutes: 5
+        run: python3 scripts/build_faroe.py
+
       - name: Enregistrer l'etat des sources dans data.json
         if: always()
         env:
@@ -300,6 +308,7 @@ jobs:
           STEP_SMOKE: ${{ steps.smoke.outcome }}
           STEP_AUSTRALIA: ${{ steps.australia.outcome }}
           STEP_CANADA_BC: ${{ steps.canada_bc.outcome }}
+          STEP_FAROE: ${{ steps.faroe.outcome }}
         run: |
           python3 scripts/write_status.py
           rm -f data/smoke.json
@@ -343,6 +352,7 @@ jobs:
           [ "${{ steps.archive.outcome }}" = "failure" ] && FAILED="$FAILED Archive-previsions"
           [ "${{ steps.australia.outcome }}" = "failure" ] && FAILED="$FAILED Australie"
           [ "${{ steps.canada_bc.outcome }}" = "failure" ] && FAILED="$FAILED Canada-BC"
+          [ "${{ steps.faroe.outcome }}" = "failure" ] && FAILED="$FAILED Feroe"
           [ "${{ steps.smoke.outcome }}" = "failure" ] && FAILED="$FAILED Test-du-tableau-de-bord"
           if [ -n "$FAILED" ]; then
             echo "::error::Etapes en echec :$FAILED (les autres donnees ont bien ete publiees)"
