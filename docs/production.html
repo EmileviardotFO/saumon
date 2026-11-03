@@ -8323,14 +8323,9 @@ function genBuild(po) {
     if (w > 0 && n > 0) { const t6 = genTail(w); x.big += n * w * t6; x.f56 += n * w * (genTailAt(w, 5 / PK_GUT) - t6); }
   });
   // cumuls : poissons entres = max(stock + sorties cumulees), recolte et mortalite cumulees
-  Object.values(A).forEach(G => { let ch = 0, cd = 0, cl = 0, chk = 0, ent = 0, cha = 0, chA = 0, prev = null, rW = 0, rN = 0, hI = 0, hN = 0;
+  Object.values(A).forEach(G => { let ch = 0, cd = 0, cl = 0, chk = 0, ent = 0, cha = 0, chA = 0, prev = null;
     Object.keys(G).map(Number).sort((a, b) => a - b).forEach(ym => { const x = G[ym];
-      ch += x.h; cd += x.d; cl += x.l; chk += x.hk; const ent0 = ent; ent = Math.max(ent, x.n + ch + cd + cl);
-      // temps en mer comparable d'une generation a l'autre : mois de mise a l'eau moyen calcule avec les seules mises a l'eau
-      // DEJA faites a ce mois-ci (age_months du registre utilise la moyenne de toute l'annee, smolts d'automne compris, ce qui
-      // rajeunit artificiellement les poissons abattus tot dans une generation terminee par rapport a la generation en cours)
-      const idx = Math.floor(ym / 100) * 12 + ym % 100, rel = Math.max(0, ent - ent0);
-      rW += rel * idx; rN += rel; if (x.h > 0) { hI += x.h * idx; hN += x.h; }
+      ch += x.h; cd += x.d; cl += x.l; chk += x.hk; ent = Math.max(ent, x.n + ch + cd + cl);
       if (x.ha > 0) { cha += x.ha; chA += x.h; }
       // croissance de TOUTE la generation dans le mois (poissons abattus et morts compris) : (biomasse + abattus + morts x poids du mois
       // precedent) / poissons presents en debut de mois - poids du mois precedent. Mois ou des poissons entrent (mises a l'eau) :
@@ -8341,7 +8336,7 @@ function genBuild(po) {
       // precedent, sinon leur biomasse passait pour une perte de croissance.
       if (prev && prev.n > 0 && prev.b > 0 && x.n + x.h + x.d + x.l <= prev.n * 1.02) { const wp = prev.b / prev.n, gone = Math.max(0, prev.n - (x.n + x.h + x.d + x.l));
         wg = (x.b + x.hk + (x.d + x.l + gone) * wp) / prev.n - wp; }
-      Object.assign(x, { ch, cd, cl, chk, ent, w: x.n ? x.b / x.n : NaN, gr: x.gn ? x.g / x.gn : NaN, wg, tsh: chA > 0 ? cha / chA : NaN, tsc: hN > 0 && rN > 0 ? Math.max(0, hI / hN - rW / rN) : NaN });
+      Object.assign(x, { ch, cd, cl, chk, ent, w: x.n ? x.b / x.n : NaN, gr: x.gn ? x.g / x.gn : NaN, wg, tsh: chA > 0 ? cha / chA : NaN });
       prev = x; }); });
   return { A, flows };
 }
@@ -8381,7 +8376,7 @@ function renderGenerations() {
       `<div class="ln">average weight <b style="color:var(--ink)">${x.w.toFixed(2)} kg</b> ${p ? tmVar(tmPc(x.w, p.w)) : ''} · biomass ${tmKt(x.b / 1000)} ${p ? tmVar(tmPc(x.b, p.b)) : ''}</div>` +
       `<div class="ln">growth, last 3 months <b style="color:var(--ink)">${isFinite(gr3) ? gr3.toFixed(2) + ' kg/month' : '—'}</b>${isFinite(gr3) && isFinite(pgr3) ? ` (${pgr3.toFixed(2)} a year earlier)` : ''}</div>` +
       `<div class="ln">dead so far <b style="color:var(--ink)">${pc(mort)}</b> ${dpt(mort, pmort)} · harvested ${pc(harv)} ${dpt(harv, pharv, true)}</div>` +
-      (isFinite(x.tsc) ? `<div class="ln" title="Months between the average release month (releases made so far) and the harvest month, both generations measured the same way at the same point">time at sea of the fish harvested so far <b style="color:var(--ink)">${x.tsc.toFixed(1)} months</b>${p && isFinite(p.tsc) ? ` (${p.tsc.toFixed(1)} a year earlier)` : ''}</div>` : '') +
+      (isFinite(x.tsh) ? `<div class="ln">time at sea of the fish harvested so far <b style="color:var(--ink)">${x.tsh.toFixed(1)} months</b>${p && isFinite(p.tsh) ? ` (${p.tsh.toFixed(1)} a year earlier)` : ''}</div>` : '') +
       `<div class="ln">above ~6 kg gutted (estimate) <b style="color:var(--ink)">${tmKt(x.big / 1000)}</b> ${p && x.big > 5e5 && p.big > 5e5 ? tmVar(tmPc(x.big, p.big), 5) : ''}</div>` +
       `<div class="ln">5–6 kg gutted, next in line (estimate) <b style="color:var(--ink)">${tmKt(x.f56 / 1000)}</b> ${p && x.f56 > 5e5 && p.f56 > 5e5 ? tmVar(tmPc(x.f56, p.f56), 5) : ''}</div></div>`;
   }).join('');

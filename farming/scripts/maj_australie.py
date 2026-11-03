@@ -231,15 +231,21 @@ def main():
         mensuel, anom = lire_epa(brut)
         alertes += [f'EPA : {x}' for x in anom]
         base = charger_csv(os.path.join(a.sortie, 'au_mensuel.csv'), ['mois'])
+        if not mensuel:
+            # page modifiee, incomplete ou inaccessible : on NE reecrit PAS le fichier (sinon les mois deja lus seraient effaces)
+            raise RuntimeError(f'aucun mois lu sur la page EPA ({len(brut)} caractères reçus) — les {len(base)} mois déjà enregistrés sont conservés')
         nouveaux, revisions = [], []
         for (an, m), v in sorted(mensuel.items()):
             k = (f'{an}-{m:02d}',)
             if k not in base: nouveaux.append(k[0])
             elif int(base[k]['total']) != v['total']: revisions.append(f'{k[0]} : {base[k]["total"]} -> {v["total"]}')
         if not a.seche:
-            lignes = [{'mois': f'{an}-{m:02d}', **{x: v[x] for x in METHODES + ['total']},
-                       'note': v.get('note', ''), 'source': EPA_URL, 'releve': releve}
-                      for (an, m), v in sorted(mensuel.items())]
+            # fusion : les mois lus remplacent les anciens, les mois absents de la page sont gardes tels quels
+            fusion = {k[0]: dict(r) for k, r in base.items()}
+            for (an, m), v in mensuel.items():
+                fusion[f'{an}-{m:02d}'] = {'mois': f'{an}-{m:02d}', **{x: v[x] for x in METHODES + ['total']},
+                                           'note': v.get('note', ''), 'source': EPA_URL, 'releve': releve}
+            lignes = [fusion[k] for k in sorted(fusion)]
             ecrire_csv(os.path.join(a.sortie, 'au_mensuel.csv'),
                        ['mois'] + METHODES + ['total', 'note', 'source', 'releve'], lignes)
         dernier = max(mensuel) if mensuel else None
