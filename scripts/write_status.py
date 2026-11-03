@@ -38,6 +38,8 @@ STEPS = [
     ('CHINA', 'GACC — establishments registered for China'),
     ('EUROSTAT', 'Eurostat — EU salmon flows'),
     ('NATIONAL', 'National export statistics (Faroes, Iceland, UK, Chile, Canada)'),
+    ('JAPAN', 'Japan imports of salmon and trout by form and origin (UN Comtrade)'),
+    ('WORLD', 'World salmon imports by importing country (UN Comtrade)'),
     ('SCOTLAND', 'Scotland — SEPA monthly site reports'),
     ('SCOTLAND_SURVEY', 'Scotland — annual production survey'),
     ('CHILE_SITES', 'Chile — Subpesca concessions map'),
