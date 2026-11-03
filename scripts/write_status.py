@@ -45,6 +45,7 @@ STEPS = [
     ('NEWS', 'This week — headlines'),
     ('AUSTRALIA', 'Australia — EPA Tasmania mortalities, NRE production'),
     ('CANADA_BC', 'Canada BC — DFO catalogue (sea lice, mortalities)'),
+    ('FAROE', 'Faroe Islands — Bakkafrost fish per farm (monthly), harvest'),
     ('SMOKE', 'Dashboard test'),
 ]
 
