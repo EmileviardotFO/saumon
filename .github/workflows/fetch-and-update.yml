@@ -238,6 +238,16 @@ jobs:
         timeout-minutes: 10
         run: python3 scripts/update_news.py
 
+      - name: Page d'accueil This week - sujets par bassin et entreprise (resumes en anglais)
+        # Regroupe les titres de data/news.json en sujets ; avec le secret ANTHROPIC_API_KEY, titres et resumes sont ecrits
+        # par Claude a partir des titres et des descriptions publiques des pages gratuites. Sans cle : regroupement par regles.
+        id: stories
+        continue-on-error: true
+        timeout-minutes: 10
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python3 scripts/build_stories.py
+
       - name: Archiver les previsions du mois (onglet Generations map)
         # Enregistre ce que le tableau de bord prevoit a la sortie de chaque mois du registre, pour comparer
         # plus tard prevision et realite. Les mois deja archives ne sont jamais reecrits.
@@ -328,6 +338,7 @@ jobs:
           STEP_CHILE_SITES: ${{ steps.chile_sites.outcome }}
           STEP_EVENTS: ${{ steps.events.outcome }}
           STEP_NEWS: ${{ steps.news.outcome }}
+          STEP_STORIES: ${{ steps.stories.outcome }}
           STEP_SMOKE: ${{ steps.smoke.outcome }}
           STEP_AUSTRALIA: ${{ steps.australia.outcome }}
           STEP_CANADA_BC: ${{ steps.canada_bc.outcome }}
@@ -389,6 +400,7 @@ jobs:
           [ "${{ steps.national.outcome }}" = "failure" ] && FAILED="$FAILED Statistiques-nationales"
           [ "${{ steps.japan.outcome }}" = "failure" ] && FAILED="$FAILED Japon-importations"
           [ "${{ steps.world.outcome }}" = "failure" ] && FAILED="$FAILED Importations-mondiales"
+          [ "${{ steps.stories.outcome }}" = "failure" ] && FAILED="$FAILED This-week-sujets"
           [ "${{ steps.archive.outcome }}" = "failure" ] && FAILED="$FAILED Archive-previsions"
           [ "${{ steps.australia.outcome }}" = "failure" ] && FAILED="$FAILED Australie"
           [ "${{ steps.canada_bc.outcome }}" = "failure" ] && FAILED="$FAILED Canada-BC"
