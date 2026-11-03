@@ -1,0 +1,222 @@
+#!/usr/bin/env python3
+"""
+Builds data/stories.json for the "This week" home page from data/news.json (headlines collected by
+scripts/update_news.py): headlines grouped into stories, by basin then by company, each with a short
+English title and summary, the sources ordered free first, and a small chart when two comparable
+figures are stated in the sources.
+
+    python3 scripts/build_stories.py            # last 8 days
+    python3 scripts/build_stories.py --days 14
+
+With the secret ANTHROPIC_API_KEY, grouping, titles and summaries are written by Claude from the
+headlines and the publishers' own short descriptions (og:description of free pages only, never
+paywalled text). Without it, or if the call fails, headlines are grouped by rules (same company or
+same key words within a few days) and the title is the most representative free English headline.
+"""
+import argparse
+import datetime as dt
+import html
+import io
+import json
+import os
+import re
+import urllib.request
+from collections import defaultdict
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+NEWS = os.path.join(ROOT, 'data', 'news.json')
+OUT = os.path.join(ROOT, 'data', 'stories.json')
+MODEL = os.environ.get('CLAUDE_MODEL', 'claude-sonnet-5-5')
+UA = {'User-Agent': 'Mozilla/5.0 (salmon dashboard; contact via GitHub)'}
+
+# Access to each source: free / metered (a few free articles a month) / pay (subscription). Unknown = '?'.
+ACCESS = {
+    'free': ['salmon business', 'salmonbusiness', 'fish farmer', 'fishfarmermagazine', 'fishfarming expert', 'fishfarmingexpert',
+             'kyst.no', 'kyst', 'thefishsite', 'the fish site', 'landbasedaq', 'salmonexpert', 'mundoacuicola', 'aqua.cl', 'trade-news',
+             'ilaks', 'globenewswire', 'investing.com', 'yahoo', 'tradingview', 'tipranks', 'infobae', 'seafoodsource', 'nrk',
+             'grocery trade news', 'biggo', 'marketscreener', 'cision', 'mfn', 'newsweb', 'oslo børs', 'hagstova', 'ssb', 'fiskeridir',
+             'gov.scot', 'regjeringen', 'sernapesca', 'subpesca', 'salmonchile', 'aquafeed', 'feednavigator', 'thefishsite.com',
+             'nettavisen', 'shetland news', 'feed strategy', 'mispeces', 'ap news', 'euronews', 'agencia andina', 'andina', 'mundo marítimo',
+             'diario acuícola', 'ipac', 'sea west news', 'fishfarmer.affino', 'food ingredients first', 'el peruano', 'tvperú', 'rpp'],
+    'metered': ['la tercera', 'el mercurio', 'diario financiero', 'the herald', 'heraldscotland', 'the press and journal', 'e24',
+                'gestión', 'gestion', 'el comercio', 'tridge', 'forbes',
+                'reuters', 'indexbox', 'the guardian', 'abc news', 'bbc'],
+    'pay': ['stavanger aftenblad', 'intrafish', 'undercurrent', 'fiskeribladet', 'finansavisen', 'dagens næringsliv', 'dn.no', 'seafoodnews', 'seafood news',
+            'bloomberg', 'financial times', 'ft.com', 'wall street journal', 'tradewinds', 'kontali', 'nikkei'],
+}
+COMPANIES = ['Mowi', 'SalMar', 'Lerøy', 'Leroy', 'Bakkafrost', 'Grieg', 'Cermaq', 'Måsøval', 'Nova Sea', 'Nordlaks', 'Eidsfjord', 'Kvarøy',
+             'Scottish Sea Farms', 'Icelandic Salmon', 'Arnarlax', 'Arctic Fish', 'Kaldvík', 'Ice Fish Farm', 'Hiddenfjord', 'Luna',
+             'AquaChile', 'Multi X', 'Australis', 'Blumar', 'Camanchaca', 'Salmones Austral', 'Cooke', 'Tassal', 'Huon', 'Petuna',
+             'BioMar', 'Skretting', 'Cargill', 'Mowi Feed', 'Benchmark', 'Salmon Evolution', 'Andfjord', 'Atlantic Sapphire', 'Proximar']
+ALIAS = {'Leroy': 'Lerøy', 'Luna': 'Hiddenfjord'}
+BASINS = {'NO': 'Norway', 'CL': 'Chile', 'GB': 'Scotland', 'FO': 'Faroe Islands', 'IS': 'Iceland', 'CA': 'Canada', 'AU': 'Australia',
+          'IE': 'Ireland', 'NZ': 'New Zealand', 'US': 'United States', 'global': 'Global', 'FEED': 'Feed & raw materials'}
+THEMES = ['market', 'feed', 'biology', 'regulation', 'companies', 'other']
+
+
+def access(src):
+    s = (src or '').lower()
+    for k in ('pay', 'metered', 'free'):
+        if any(w in s for w in ACCESS[k]): return k
+    return '?'
+
+
+def company(text):
+    for c in COMPANIES:
+        if re.search(r'(?<![A-Za-zÀ-ÿ])' + re.escape(c) + r'(?![A-Za-zÀ-ÿ])', text, re.I): return ALIAS.get(c, c)
+    return None
+
+
+FEED_CO = {'BioMar', 'Skretting', 'Cargill', 'Mowi Feed', 'Benchmark'}
+
+
+def basin_of(n):
+    th = n.get('themes') or []
+    if company(n['title']) in FEED_CO or (th and th[0] == 'feed'): return 'FEED'
+    b = [x for x in (n.get('basins') or []) if x != 'global']
+    return b[0] if b else 'global'
+
+
+def og_description(url):
+    try:
+        raw = urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=10).read(400000).decode('utf-8', 'replace')
+    except Exception:  # noqa: BLE001
+        return ''
+    m = re.search(r'<meta[^>]+(?:property|name)=["\'](?:og:description|description)["\'][^>]+content=["\']([^"\']{20,600})', raw, re.I) \
+        or re.search(r'<meta[^>]+content=["\']([^"\']{20,600})["\'][^>]+(?:property|name)=["\'](?:og:description|description)', raw, re.I)
+    return html.unescape(m.group(1)).strip()[:400] if m else ''
+
+
+# ----------------------------------------------------------------------------- rules (fallback)
+def mots(t):
+    stop = {'the', 'and', 'for', 'with', 'from', 'after', 'into', 'over', 'says', 'said', 'salmon', 'laks', 'salmón', 'de', 'la', 'el',
+            'en', 'los', 'las', 'del', 'og', 'i', 'på', 'til', 'av', 'som', 'med', 'for', 'to', 'of', 'in', 'on', 'a', 'an', 'its', 'as'}
+    return {w for w in re.findall(r'[a-zà-ÿ0-9]{3,}', t.lower()) if w not in stop}
+
+
+def rules(items):
+    groups = []
+    for n in sorted(items, key=lambda x: x['date']):
+        c, w, b = company(n['title']), mots(n['title']), basin_of(n)
+        best = None
+        for g in groups:
+            if abs((dt.date.fromisoformat(n['date']) - dt.date.fromisoformat(g['last'])).days) > 4: continue
+            same_co = c and g['who'] == c
+            common = len(w & g['words'])
+            jac = common / max(1, len(w | g['words']))
+            if len(g['items']) >= 15 and not same_co: continue
+            if (same_co and (common >= 1 or g['basin'] == b)) or (not c and not g['who'] and g['basin'] == b and common >= 4 and jac >= 0.3):
+                best = g; break
+        if best:
+            best['items'].append(n); best['words'] |= w; best['last'] = max(best['last'], n['date'])
+        else:
+            groups.append({'who': c, 'basin': b, 'words': w, 'last': n['date'], 'items': [n]})
+    out = []
+    for g in groups:
+        its = g['items']
+        lead = sorted(its, key=lambda x: (access(x['source']) != 'free', x.get('lang') != 'en', -len(x['title'])))[0]
+        th = []
+        for n in its:
+            for t in n.get('themes') or []:
+                if t in THEMES and t != 'other' and t not in th: th.append(t)
+        out.append({'basin': g['basin'], 'who': g['who'] or 'Sector', 'event': '', 'title': lead['title'], 'summary': '',
+                    'themes': th[:2] or ['other'], 'ids': [n['id'] for n in its], 'chart': None})
+    return out
+
+
+# ----------------------------------------------------------------------------- Claude
+PROMPT = """You turn a week of salmon-farming trade-press headlines into a news digest for an industry analyst.
+
+Group the headlines into stories (one real-world event or development each; several outlets reporting the same results are ONE story).
+For each story return:
+- "basin": one of NO, CL, GB, FO, IS, CA, AU, IE, NZ, US, global, FEED (FEED = fish feed and its raw materials: fishmeal, fish oil, soy, krill, feed companies). Scottish Sea Farms is GB even when reported by SalMar or Lerøy; Icelandic Salmon is IS.
+- "who": the company the story is about (e.g. "SalMar", "Scottish Sea Farms", "Bakkafrost"), or "Sector" when it is about a country, market or policy.
+- "event": a short label such as "Q3 2026 results, published 3 Nov" when relevant, else "".
+- "title": one plain English sentence (max 16 words) saying what happened.
+- "summary": 1-3 English sentences giving the context and key figures. Use ONLY facts stated in the headlines and descriptions given; never add outside knowledge, never guess numbers.
+- "themes": 1-2 of market, feed, biology, regulation, companies.
+- "ids": the ids of every headline belonging to the story (each id at most once).
+- "chart": only if the inputs state two to four directly comparable figures (same unit, e.g. guidance before/after, a quarter vs the same quarter a year earlier): {"title": "...", "bars": [{"label": "...", "value": number, "display": "as written"}]}. Otherwise null.
+Skip headlines that are not about salmon farming, salmon markets or fish feed. Answer with JSON only: {"stories": [...]}"""
+
+
+def claude(items, cle):
+    lignes = [{'id': n['id'], 'date': n['date'], 'source': n['source'], 'title': n['title'], 'basins': n.get('basins'),
+               **({'desc': n['desc']} if n.get('desc') else {})} for n in items]
+    body = {'model': MODEL, 'max_tokens': 12000, 'system': PROMPT,
+            'messages': [{'role': 'user', 'content': json.dumps(lignes, ensure_ascii=False)}]}
+    req = urllib.request.Request('https://api.anthropic.com/v1/messages', data=json.dumps(body).encode('utf-8'),
+                                 headers={'x-api-key': cle, 'anthropic-version': '2023-06-01', 'content-type': 'application/json'})
+    rep = json.loads(urllib.request.urlopen(req, timeout=300).read().decode('utf-8'))
+    txt = ''.join(b.get('text', '') for b in rep.get('content', []) if b.get('type') == 'text')
+    txt = re.sub(r'^```(?:json)?|```$', '', txt.strip(), flags=re.M).strip()
+    return json.loads(txt)['stories']
+
+
+def check(stories, by_id):
+    """Keeps only valid ids (each once), drops a chart whose figures are not written in the story's own sources."""
+    seen, out = set(), []
+    for s in stories:
+        ids = [i for i in s.get('ids') or [] if i in by_id and i not in seen]
+        if not ids: continue
+        seen.update(ids)
+        ch = s.get('chart')
+        if ch:
+            src = ' '.join(by_id[i]['title'] + ' ' + by_id[i].get('desc', '') for i in ids)
+            digits = lambda x: re.sub(r'[^\d.]', '', str(x)).strip('.')
+            norm = re.sub(r'(?<=\d)[ ,\u00a0\u202f](?=\d{3})', '', src)
+            ok = 2 <= len(ch.get('bars') or []) <= 4 and all(digits(b.get('display')) and digits(b.get('display')) in norm for b in ch['bars'])
+            if not ok: ch = None
+        out.append({'basin': s.get('basin') if s.get('basin') in BASINS else 'global', 'who': (s.get('who') or 'Sector')[:60],
+                    'event': (s.get('event') or '')[:80], 'title': (s.get('title') or by_id[ids[0]]['title'])[:200],
+                    'summary': (s.get('summary') or '')[:700], 'themes': [t for t in s.get('themes') or [] if t in THEMES][:2] or ['other'],
+                    'ids': ids, 'chart': ch})
+    return out, seen
+
+
+def main():
+    ap = argparse.ArgumentParser(); ap.add_argument('--days', type=int, default=8); a = ap.parse_args()
+    news = json.load(io.open(NEWS, encoding='utf-8'))
+    gen = (news.get('meta') or {}).get('generated') or dt.date.today().isoformat()
+    since = (dt.date.fromisoformat(gen) - dt.timedelta(days=a.days - 1)).isoformat()
+    items = [n for n in news.get('items', []) if n.get('date', '') >= since]
+    by_id = {n['id']: n for n in items}
+    # descriptions des editeurs : pages gratuites seulement, sujets les plus repris d'abord (au plus 80 pages)
+    cles = defaultdict(int)
+    for n in items:
+        c = company(n['title'])
+        if c: cles[c] += 1
+    cand = [n for n in items if access(n['source']) == 'free' and 'news.google.com' not in n['url']]
+    cand.sort(key=lambda n: -cles.get(company(n['title']) or '', 0))
+    if os.environ.get('STORIES_HORS_LIGNE') != '1':
+        for n in cand[:80]:
+            n['desc'] = og_description(n['url'])
+    method, note, stories = 'rules', '', []
+    cle = os.environ.get('ANTHROPIC_API_KEY')
+    if cle and items:
+        try:
+            stories, seen = check(claude(items, cle), by_id)
+            rest = [n for n in items if n['id'] not in seen and company(n['title'])]
+            stories += rules(rest) if rest else []
+            method = 'claude'
+        except Exception as e:  # noqa: BLE001
+            note = f'Claude call failed ({e}); grouped by rules'
+            stories = rules(items)
+    else:
+        note = '' if cle else 'no ANTHROPIC_API_KEY: grouped by rules, no summaries'
+        stories = rules(items)
+    out = []
+    for s in stories:
+        arts = [{'date': by_id[i]['date'], 'source': by_id[i]['source'], 'title': by_id[i]['title'], 'url': by_id[i]['url'],
+                 'lang': by_id[i].get('lang', ''), 'access': access(by_id[i]['source'])} for i in s['ids']]
+        arts.sort(key=lambda x: ({'free': 0, '?': 1, 'metered': 2, 'pay': 3}[x['access']], x['date']), reverse=False)
+        out.append({k: v for k, v in s.items() if k != 'ids'} | {'arts': arts, 'last': max(x['date'] for x in arts)})
+    out.sort(key=lambda s: (-len(s['arts']), s['last']), reverse=False)
+    meta = {'generated': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'), 'news_generated': gen, 'from': since, 'to': gen,
+            'method': method, 'model': MODEL if method == 'claude' else None, 'headlines': len(items), 'note': note, 'basins': BASINS}
+    io.open(OUT, 'w', encoding='utf-8').write(json.dumps({'meta': meta, 'stories': out}, ensure_ascii=False, separators=(',', ':')))
+    print(f'data/stories.json : {len(out)} stories from {len(items)} headlines ({method})' + (f' — {note}' if note else ''))
+
+
+if __name__ == '__main__':
+    main()

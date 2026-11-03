@@ -45,6 +45,7 @@ STEPS = [
     ('CHILE_SITES', 'Chile — Subpesca concessions map'),
     ('EVENTS', 'Mortality events watch (press, Scotland FHI)'),
     ('NEWS', 'This week — headlines'),
+    ('STORIES', 'This week — stories by basin and company'),
     ('AUSTRALIA', 'Australia — EPA Tasmania mortalities, NRE production'),
     ('CANADA_BC', 'Canada BC — DFO catalogue (sea lice, mortalities)'),
     ('FAROE', 'Faroe Islands — Bakkafrost fish per farm (monthly), harvest'),
