@@ -91,6 +91,93 @@ ANNUEL = {'mortality_pct': {2016: 6.33, 2017: 8.96, 2018: 11.56, 2019: 4.57, 202
           'feed_factor': {2016: 1.13, 2017: 1.18, 2018: 1.17, 2019: 1.12, 2020: 1.08, 2021: 1.06, 2022: 1.06, 2023: 1.096, 2024: 1.11, 2025: 1.106}}
 
 
+# ----------------------------------------------------------------------------- poids moyen theorique
+# Croissance « TGC » (coefficient de croissance thermique) : W^(1/3) augmente de TGC/1000 x temperature chaque jour (W en g).
+# Temperatures : moyennes mensuelles approximatives de la mer cotiere feroienne (environ 7 degres en hiver, 11 en aout).
+TEMP = {1: 7.3, 2: 6.9, 3: 6.8, 4: 7.0, 5: 7.7, 6: 8.9, 7: 10.2, 8: 10.9, 9: 10.5, 10: 9.6, 11: 8.6, 12: 7.9}
+TGC = 2.5                 # valeur moyenne pour du saumon atlantique en mer (2,0 a 3,0 selon la taille et les sources)
+SMOLT_KG = 0.5            # Bakkafrost met en mer des smolts d'environ 500 g
+VIF_HOG = 0.88            # poids vide tete (HOG) / poids vif
+
+
+def croissance(w_kg, d0, d1):
+    """Poids vif (kg) au jour d1 d'un poisson de w_kg au jour d0 ; a rebours si d1 < d0."""
+    c = (w_kg * 1000) ** (1 / 3)
+    pas = 1 if d1 >= d0 else -1
+    d = d0
+    while d != d1:
+        jour = d if pas > 0 else d - dt.timedelta(days=1)
+        c += pas * TGC / 1000 * TEMP[jour.month]
+        d += dt.timedelta(days=pas)
+    return max(c, 1) ** 3 / 1000
+
+
+def mi_mois(date_fin):
+    return date_fin.replace(day=15)
+
+
+def poids_ferme(dates, fish, poids_recolte):
+    """Poids vif estime a chaque fin de mois. Trois cas, par cycle (un cycle s'arrete quand la ferme est vide) :
+       - cycle commence dans l'archive (0 -> poissons) : smolts de 500 g mis en mer au milieu du mois ;
+       - cycle avec recolte dans l'archive : au milieu du premier mois de recolte, poids = poids moyen de recolte
+         publie par Bakkafrost pour ce mois (converti en vif), puis croissance avant et apres ;
+       - sinon age inconnu : fourchette entre smolts mis en mer a la mi-mars 2026 et a la mi-septembre 2025.
+       Les ajouts de poissons en cours de cycle sont des smolts de 500 g melanges au stock existant."""
+    D = [dt.date.fromisoformat(d) for d in dates]
+    n = len(D)
+    w, lo, hi, meth = [None] * n, [None] * n, [None] * n, [''] * n
+    i = 0
+    while i < n:
+        if not fish[i]: i += 1; continue
+        j = i
+        while j + 1 < n and fish[j + 1]: j += 1                      # cycle = mois i..j avec des poissons
+        debut_vu = i > 0                                             # la ferme etait vide le mois d'avant
+        rec = next((k for k in range(i + 1, min(j + 2, n)) if (k > j or fish[k] < fish[k - 1] * 0.92)
+                    and poids_recolte.get(dates[k][:7])), None)
+        def suivre(w0, d0, k0, k1, cible):
+            """remplit cible[k] pour k0..k1 depuis un poids w0 au jour d0, en melangeant les ajouts de smolts"""
+            ww, dd = w0, d0
+            for k in range(k0, k1 + 1):
+                if k > k0 and fish[k - 1] and fish[k] > fish[k - 1] * 1.08 and dd <= mi_mois(D[k]):
+                    ww = croissance(ww, dd, mi_mois(D[k])); dd = mi_mois(D[k])
+                    ww = (fish[k - 1] * ww + (fish[k] - fish[k - 1]) * SMOLT_KG) / fish[k]
+                cible[k] = round(croissance(ww, dd, D[k]), 2) if D[k] >= dd else round(croissance(ww, dd, D[k]), 2)
+                ww, dd = cible[k], D[k]
+        if debut_vu:
+            suivre(SMOLT_KG, mi_mois(D[i]), i, j, w); meth[i:j + 1] = ['from stocking'] * (j - i + 1)
+        elif rec is not None:
+            # chaque mois de recolte : au milieu du mois, poids = poids moyen de recolte publie (converti en vif) ;
+            # avant la premiere recolte, croissance a rebours ; entre deux recoltes, croissance normale
+            ancres = {k: poids_recolte[dates[k][:7]] / VIF_HOG for k in range(i, j + 1)
+                      if k > i and fish[k] < fish[k - 1] * 0.92 and poids_recolte.get(dates[k][:7])}
+            if rec > j: ancres[rec] = poids_recolte[dates[rec][:7]] / VIF_HOG     # ferme videe le mois suivant
+            k0 = min(ancres)
+            for k in range(i, min(k0, j + 1)):
+                w[k] = round(croissance(ancres[k0], mi_mois(D[k0]), D[k]), 2)
+            for k in range(k0, j + 1):
+                if k in ancres: w[k] = round(croissance(ancres[k], mi_mois(D[k]), D[k]), 2)
+                else: w[k] = round(croissance(w[k - 1], D[k - 1], D[k]), 2)
+            meth[i:j + 1] = ['harvest-anchored'] * (j - i + 1)
+        elif any(fish[k] > fish[k - 1] * 1.08 for k in range(i + 1, j + 1)):
+            # age inconnu mais ajout de smolts dans l'archive : un complement suit de peu la mise en mer principale,
+            # on retient une mise en mer principale un mois plus tot
+            k = next(k for k in range(i + 1, j + 1) if fish[k] > fish[k - 1] * 1.08)
+            d0 = mi_mois(D[k - 1])
+            suivre(SMOLT_KG, d0 if d0 <= D[i] else D[i], i, j, w)
+            meth[i:j + 1] = ['from stocking (inferred from a top-up)'] * (j - i + 1)
+        else:
+            # age inconnu : au plus tot, smolts de la mi-mars 2026 ; au plus tard, smolts de la mi-septembre 2025,
+            # plafonnes au poids de recolte du mois (des poissons plus gros seraient deja en recolte)
+            suivre(SMOLT_KG, dt.date(2026, 3, 15), i, j, lo)
+            suivre(SMOLT_KG, dt.date(2025, 9, 15), i, j, hi)
+            for k in range(i, j + 1):
+                cap = poids_recolte.get(dates[k][:7])
+                if cap and hi[k] and hi[k] > cap / VIF_HOG: hi[k] = round(cap / VIF_HOG, 2)
+            meth[i:j + 1] = ['unknown age'] * (j - i + 1)
+        i = j + 1
+    return w, lo, hi, meth
+
+
 class Tables(HTMLParser):
     """Tableaux HTML, chacun precede du dernier titre (h1-h4) rencontre."""
     def __init__(self):
@@ -161,14 +248,34 @@ def main():
     noms = sorted({f for d in data.values() for f in d})
     # fermes Bakkafrost -> zones du registre
     reg = {z: (op, fj) for op, fj, zs in REGISTRE for z in zs}
+    POIDS_RECOLTE = {p: wt for c, p, t, wt, src in RECOLTE if c == 'Bakkafrost' and wt and re.match(r'\d{4}-\d{2}$', p)}
     sites = []
     for f in noms:
         m = re.match(r'A(\d+)\s*-\s*(.+)', f)
         code = ALIAS.get(f'A-{int(m.group(1)):02d}', f'A-{int(m.group(1)):02d}') if m else None
         op, fj = reg.get(code, ('Bakkafrost', ''))
         lat, lon = POS.get(code, (None, None))
+        fish = [data[d].get(f, 0) for d in dates]
+        w, lo, hi, meth = poids_ferme(dates, fish, POIDS_RECOLTE)
         sites.append({'id': f, 'code': code, 'name': m.group(2).strip() if m else f, 'fjord': fj, 'op': 'Bakkafrost',
-                      'lat': lat, 'lon': lon, 'fish': [data[d].get(f, 0) for d in dates]})
+                      'lat': lat, 'lon': lon, 'fish': fish, 'w': w, 'wlo': lo, 'whi': hi, 'wm': meth})
+    L = len(dates) - 1
+    an = dates[L][:4]
+    inconnus = [x for x in sites if x['wm'][L] == 'unknown age' and x['fish'][L]]
+    n_inc = sum(x['fish'][L] for x in inconnus)
+    # smolts du 1er semestre de l'annee deja places dans des fermes d'age connu (complement deduit) : retires du compte
+    deja = sum(x['fish'][L] for x in sites if x['wm'][L].startswith('from stocking (inferred') and x['fish'][L])
+    s1 = sum(m for c, p, m in SMOLTS if c == 'Bakkafrost' and p in (f'{an}-Q1', f'{an}-Q2')) * 1e6
+    jeunes = max(0.0, min(n_inc, s1 * 0.97 - deja))           # ~3 % de pertes depuis la mise en mer
+    vieux = n_inc - jeunes
+    dfin = dt.date.fromisoformat(dates[L])
+    w_jeunes = (croissance(SMOLT_KG, dt.date(int(an), 2, 15), dfin) * 3.9 + croissance(SMOLT_KG, dt.date(int(an), 5, 15), dfin) * 5.6) / 9.5
+    cap = POIDS_RECOLTE.get(dates[L][:7])
+    w_vieux = min(croissance(SMOLT_KG, dt.date(int(an) - 1, 9, 15), dfin), cap / VIF_HOG if cap else 99)
+    connus = sum(x['fish'][L] * x['w'][L] for x in sites if x['w'][L] and x['fish'][L])
+    cohorte = {'date': dates[L], 'unknown_fish': n_inc, 'young_fish': round(jeunes), 'old_fish': round(vieux),
+               'w_young': round(w_jeunes, 2), 'w_old': round(w_vieux, 2), 'h1_releases': s1,
+               'biomass_known_t': round(connus / 1000), 'biomass_unknown_t': round((jeunes * w_jeunes + vieux * w_vieux) / 1000)}
     autres = [{'code': z, 'fjord': fj, 'op': op, 'lat': POS.get(z, (None, None))[0], 'lon': POS.get(z, (None, None))[1]}
               for op, fj, zs in REGISTRE for z in zs if op != 'Bakkafrost' or not any(s['code'] == z for s in sites)]
     out = {'meta': {'built': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'), 'dates': dates, 'note': note,
@@ -176,7 +283,10 @@ def main():
            'sites': sites, 'register_other': autres,
            'harvest': [{'co': c, 'p': p, 't': t, 'w': w, 'src': s} for c, p, t, w, s in RECOLTE],
            'smolts': [{'co': c, 'p': p, 'm': m} for c, p, m in SMOLTS],
-           'annual': {k: {str(a): v for a, v in d.items()} for k, d in ANNUEL.items()}}
+           'annual': {k: {str(a): v for a, v in d.items()} for k, d in ANNUEL.items()},
+           'cohort': cohorte,
+           'model': {'tgc': TGC, 'smolt_kg': SMOLT_KG, 'live_per_hog': VIF_HOG, 'temp': TEMP,
+                     'unknown_range': ['smolts put to sea mid-March 2026', 'smolts put to sea mid-September 2025, capped at the month\'s harvest weight']}}
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     io.open(OUT, 'w', encoding='utf-8').write(json.dumps(out, ensure_ascii=False, separators=(',', ':')))
     print(f'data/faroe.json : {len(sites)} fermes Bakkafrost, {len(dates)} fins de mois ({dates[0]} -> {dates[-1]}), '
