@@ -21,6 +21,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Ranger les fichiers deposes dans un mauvais dossier
+        # Un dossier glisse en entier dans GitHub (correctif_xxx/scripts/... au lieu de scripts/...) ou glisse
+        # dans lui-meme (scripts/scripts/) : le contenu est remis a sa place et le dossier en trop supprime.
+        run: |
+          set -e
+          moved=""
+          for d in correctif_* maj_onglets_* maj_cartes_*; do
+            [ -d "$d" ] || continue
+            for sub in scripts farming data docs; do
+              if [ -d "$d/$sub" ]; then mkdir -p "$sub"; cp -R "$d/$sub/." "$sub/"; fi
+            done
+            git rm -r -q "$d"; moved="$moved $d"
+          done
+          for sub in scripts farming data docs; do
+            if [ -d "$sub/$sub" ]; then cp -R "$sub/$sub/." "$sub/"; git rm -r -q "$sub/$sub"; moved="$moved $sub/$sub"; fi
+          done
+          if [ -n "$moved" ]; then
+            git config user.name "github-actions"; git config user.email "actions@github.com"
+            git add -A -- $(ls -d scripts farming data docs 2>/dev/null)
+            git commit -q -m "Rangement des fichiers deposes :$moved"
+            git push
+            echo "Ranges :$moved"
+          else
+            echo "Rien a ranger."
+          fi
+
       - name: Installer pdftotext
         run: sudo apt-get update && sudo apt-get install -y poppler-utils
 
