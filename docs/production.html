@@ -1085,7 +1085,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     </div>
     <div class="sig-title" style="margin-top:18px">Fish at each farm, end of month</div>
     <div class="sig-sub" id="foTabSub"></div>
-    <div style="overflow-x:auto"><table class="sig-table" id="foTab"></table></div>
+    <div id="foTab"></div>
     <div id="foTot"></div>
     <div class="sig-title" style="margin-top:18px">Harvest and smolt releases</div>
     <div class="sig-sub" id="foHarvSub"></div>
@@ -2942,8 +2942,8 @@ function foW(x, i) {
 function foModelNote() {
   const M = FO.model || {}, C = FO.cohort || {};
   return `<br><b>Estimated weight</b> is theoretical: thermal growth model (TGC ${M.tgc}) on average Faroese sea temperatures, ${M.smolt_kg * 1000} g smolts. ` +
-    `Farms stocked since June start from the smolt weight; farms harvested since June are anchored on Bakkafrost's average harvest weight of each month (<span style="color:var(--muted)">h</span>; company average, so a single farm can differ); ` +
-    `a top-up of smolts dates the main stocking about a month earlier (<span style="color:var(--muted)">i</span>). For farms stocked before June the age is unknown: the grey range runs from smolts put to sea in mid-March to mid-September of the year before. ` +
+    `Farms stocked since June start from the smolt weight; farms harvested since June are anchored on Bakkafrost's average harvest weight of each month (basis "harvest weight"; a company average, so a single farm can differ); ` +
+    `a top-up of smolts dates the main stocking about a month earlier (basis "stocking (from top-up)"). All weights are live weight in kg. For farms stocked before June the age is unknown: the grey range runs from smolts put to sea in mid-March to mid-September of the year before. ` +
     (C.unknown_fish ? `Taken together, those farms hold ${(C.unknown_fish / 1e6).toFixed(1)} M fish, of which about ${(C.young_fish / 1e6).toFixed(1)} M should be this year's smolts (${(C.h1_releases / 1e6).toFixed(1)} M released in the first half, minus losses) and the other ${(C.old_fish / 1e6).toFixed(1)} M older fish — the totals use those two groups.` : '');
 }
 function renderFaroe() {
@@ -2984,16 +2984,32 @@ function renderFaroe() {
     (FO.cohort && FO.cohort.old_fish ? card('Older fish, next in line', `≈ ${(FO.cohort.old_fish / 1e6).toFixed(1)} M fish`,
       `about ${FO.cohort.w_old} kg live (≈ ${(FO.cohort.old_fish * FO.cohort.w_old / 1e6).toFixed(0)} kt) — fish in farms of unknown age that are not ${D[L].slice(0, 4)} smolts, by subtraction from the published releases`, '#ff8a65') : '') +
     (la ? card(`Bakkafrost Faroes · ${la}`, `${A.mortality_pct[la]}% mortality`, `${A.lice_af[la]} adult female lice per fish on average · fallow ${A.fallow_weeks[la]} weeks`, '#ce93d8') : '');
-  // tableau par ferme
+  // tableau par ferme : colonnes fixes a gauche (ferme, fjord) et a droite (situation du dernier mois), mois au milieu qui defilent
   const order = [...S].sort((a, b) => (b.fish[L] || 0) - (a.fish[L] || 0) || a.name.localeCompare(b.name));
-  document.getElementById('foTab').innerHTML = `<thead><tr><th class="name">Farm</th><th>Fjord</th>${D.map(d => `<th>${lab(d)}</th>`).join('')}<th>Last month</th><th>Status</th><th>≈ harvested (t)</th><th>Est. weight (kg, live)</th><th>Est. biomass (t)</th></tr></thead><tbody>` +
+  const foot = `style="font-weight:bold"`, kgN = v => v === null || v === undefined ? '' : (+v).toFixed(1).replace('.0', '.0') + ' kg';
+  const basis = (x, i) => { const m = (x.wm || [])[i] || ''; return !x.fish[i] ? '' : m.startsWith('harvest') ? 'harvest weight' : m.includes('inferred') ? 'stocking (from top-up)' : m.startsWith('from') ? 'stocking' : 'age unknown'; };
+  const wCell = (x, i) => !x.fish[i] ? '' : x.w && x.w[i] ? kgN(x.w[i]) : x.wlo && x.wlo[i] ? `<span style="color:var(--muted)">${x.wlo[i].toFixed(1)}–${x.whi[i].toFixed(1)} kg</span>` : '';
+  const bioCell = (x, i) => !x.fish[i] ? '' : x.w && x.w[i] ? f0(x.fish[i] * x.w[i] / 1000) : x.wlo && x.wlo[i] ? `<span style="color:var(--muted)">${f0(x.fish[i] * x.wlo[i] / 1000)}–${f0(x.fish[i] * x.whi[i] / 1000)}</span>` : '';
+  const left = `<table class="sig-table fo-t"><thead><tr><th class="name">Farm</th><th>Fjord</th></tr></thead><tbody>` +
+    order.map(x => `<tr><td class="name"><b>${esc(x.name)}</b> <span style="color:var(--muted);font-size:11px">${esc(x.id.split(' ')[0])}</span></td><td style="font-size:12px">${esc(x.fjord.replace(/^C-\d+\s*/, ''))}</td></tr>`).join('') +
+    `<tr ${foot}><td class="name">Total</td><td></td></tr></tbody></table>`;
+  const mid = `<table class="sig-table fo-t"><thead><tr>${D.map(d => `<th>${lab(d)}</th>`).join('')}</tr></thead><tbody>` +
+    order.map(x => `<tr>${x.fish.map(v => `<td>${fk(v)}</td>`).join('')}</tr>`).join('') +
+    `<tr ${foot}>${D.map((d, i) => `<td>${(tot(i) / 1e6).toFixed(2)} M</td>`).join('')}</tr></tbody></table>`;
+  const right = `<table class="sig-table fo-t"><thead><tr><th>Change, last month</th><th>Status</th><th>Harvested last month (t)</th><th>Est. weight (live)</th><th>Basis</th><th>Est. biomass (t)</th></tr></thead><tbody>` +
     order.map(x => { const [stt, cl] = st(x), pv = L > 0 ? x.fish[L - 1] : null, ch = pv ? 100 * (x.fish[L] / pv - 1) : null;
-      return `<tr><td class="name"><b>${esc(x.name)}</b> <span style="color:var(--muted);font-size:11px">${esc(x.id.split(' ')[0])}</span></td><td style="font-size:12px">${esc(x.fjord.replace(/^C-\d+\s*/, ''))}</td>` +
-        x.fish.map(v => `<td>${fk(v)}</td>`).join('') + `<td>${ch === null ? '—' : `<span class="${ch < -8 ? 'delta-bad' : ch > 8 ? 'delta-good' : ''}">${ch >= 0 ? '+' : '−'}${Math.abs(ch).toFixed(1)}%</span>`}</td>` +
-        `<td class="${cl === 'bad' ? 'delta-bad' : cl === 'good' ? 'delta-good' : ''}" style="${cl === 'muted' ? 'color:var(--muted)' : ''}">${stt}</td><td>${estH(x) ? f0(estH(x)) : ''}</td>${foW(x, L)}</tr>`; }).join('') +
-    `<tr style="font-weight:bold"><td class="name">Total</td><td></td>${D.map((d, i) => `<td>${(tot(i) / 1e6).toFixed(2)} M</td>`).join('')}<td>${dT !== null ? `${dT >= 0 ? '+' : '−'}${(100 * Math.abs(dT) / tot(L - 1)).toFixed(1)}%` : ''}</td><td></td><td>${estT ? f0(estT) : ''}</td><td>${FO.cohort ? '≈ ' + (((FO.cohort.biomass_known_t || 0) + (FO.cohort.biomass_unknown_t || 0)) * 1000 / tot(L)).toFixed(1) : ''}</td><td>${FO.cohort ? '≈ ' + f0((FO.cohort.biomass_known_t || 0) + (FO.cohort.biomass_unknown_t || 0)) : ''}</td></tr></tbody>`;
-  document.getElementById('foTabSub').innerHTML = `Millions of fish at each Bakkafrost farm on the last day of the month. <b>Harvesting</b>: more than 8% fewer fish than a month earlier; <b>harvested out</b>: emptied; <b>stocked</b> / <b>fish added</b>: smolts put in. ` +
-    foModelNote() + ` A farm being harvested now is where the coming weeks' fish come from; the fish removed times Bakkafrost's average harvest weight of the month gives an estimated harvest per farm (≈ harvested), checked against the company's monthly total. Two licences can share a fjord (Hvannasund S, Gøtuvík).`;
+      return `<tr><td>${ch === null ? '—' : `<span class="${ch < -8 ? 'delta-bad' : ch > 8 ? 'delta-good' : ''}">${ch >= 0 ? '+' : '−'}${Math.abs(ch).toFixed(1)}%</span>`}</td>` +
+        `<td class="${cl === 'bad' ? 'delta-bad' : cl === 'good' ? 'delta-good' : ''}" style="${cl === 'muted' ? 'color:var(--muted)' : ''}">${stt}</td>` +
+        `<td>${estH(x) ? (stt === 'harvested out' ? `<span style="color:#e5534b;font-weight:bold" title="farm emptied during the month">${f0(estH(x))}</span>` : f0(estH(x))) : ''}</td><td>${wCell(x, L)}</td><td style="font-size:12px;color:var(--muted)">${basis(x, L)}</td><td>${bioCell(x, L)}</td></tr>`; }).join('') +
+    `<tr ${foot}><td>${dT !== null ? `${dT >= 0 ? '+' : '−'}${(100 * Math.abs(dT) / tot(L - 1)).toFixed(1)}%` : ''}</td><td></td><td>${estT ? f0(estT) : ''}</td>` +
+    `<td>${FO.cohort ? '≈ ' + (((FO.cohort.biomass_known_t || 0) + (FO.cohort.biomass_unknown_t || 0)) * 1000 / tot(L)).toFixed(1) + ' kg' : ''}</td><td></td><td>${FO.cohort ? '≈ ' + f0((FO.cohort.biomass_known_t || 0) + (FO.cohort.biomass_unknown_t || 0)) : ''}</td></tr></tbody></table>`;
+  document.getElementById('foTab').innerHTML = `<style>.fo-t td,.fo-t th{height:34px;padding-top:0;padding-bottom:0;white-space:nowrap;vertical-align:middle;box-sizing:border-box}.fo-t thead th{height:40px}</style>` +
+    `<div style="display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:start">${left}<div id="foScroll" style="overflow-x:auto;border-left:1px solid var(--border);border-right:1px solid var(--border)">${mid}</div>${right}</div>`;
+  const sc = document.getElementById('foScroll'); if (sc) sc.scrollLeft = sc.scrollWidth;
+  document.getElementById('foTabSub').innerHTML = `Number of fish at each Bakkafrost farm on the last day of each month — the month columns scroll sideways as the archive grows (latest month on the right). ` +
+    `<b>Harvesting</b>: more than 8% fewer fish than a month earlier; <b>harvested out</b>: emptied; <b>stocked</b> / <b>fish added</b>: smolts put in. ` +
+    `<b>Harvested last month</b> = fish that left the farm during the month × Bakkafrost's average harvest weight for that month (head-on gutted): it covers that month only, so a farm harvested over two months has part of its volume in the previous month. ` +
+    foModelNote();
   if (D.length > 1) document.getElementById('foTot').innerHTML = vzLines(D.map(ym), [{ lab: 'Bakkafrost fish at sea, Faroes', col: '#4fc3f7', pts: D.map((d, i) => tot(i) / 1e6), w: 2.4 }],
     { axis: 'Million fish', unit: 'M', digits: 1, H: 200 });
   // recolte et smolts
@@ -3034,8 +3050,12 @@ function foMap(li, st) {
       // remplissage = classe de poids estime ; pointille = age inconnu ; contour orange = recolte dans le mois ; taille = nombre de poissons
       L.circleMarker([x.lat, x.lon], { radius: n ? 5 + 9 * Math.sqrt(n / 2.5e6) : 5, color: harv ? '#ff8a65' : unk ? '#9aa5ad' : n ? '#1D9E75' : '#5d7685', weight: harv ? 3 : 1.8,
         dashArray: unk ? '4 3' : null, fillColor: !n ? '#5d7685' : wc ? FO_WCOL(wc) : '#22323d', fillOpacity: n ? .85 : .15 }).addTo(FO_LAYER)
+        .bindTooltip(`<b>${esc(x.name)}</b> · ${stt}<br>${n ? (n / 1e6).toFixed(2) + ' M fish' : 'no fish'}${wc ? ` · ≈ ${wc.toFixed(1)} kg` : unk ? ` · ${x.wlo[li].toFixed(1)}–${x.whi[li].toFixed(1)} kg` : ''}`, { direction: 'top', offset: [0, -6] })
         .bindPopup(`<b>${esc(x.name)}</b> (${esc(x.id.split(' ')[0])}) · Bakkafrost<br>${esc(x.fjord)}<br><b>${stt}</b> in the last month<br>` +
-          FO.meta.dates.map((d, i) => `${tmMl(+d.slice(0, 7).replace('-', ''))}: ${x.fish[i] ? (x.fish[i] / 1e6).toFixed(2) + ' M fish' + (x.w && x.w[i] ? ` · ≈ ${x.w[i].toFixed(1)} kg` : x.wlo && x.wlo[i] ? ` · ${x.wlo[i].toFixed(1)}–${x.whi[i].toFixed(1)} kg` : '') : 'empty'}`).join('<br>'));
+          FO.meta.dates.map((d, i) => { const hw = (FO.harvest || []).find(h => h.co === 'Bakkafrost' && h.p === d.slice(0, 7)), out = i ? (x.fish[i - 1] || 0) - (x.fish[i] || 0) : 0,
+            hv = hw && hw.w && out > 0 && (x.fish[i] < x.fish[i - 1] * 0.92) ? out * hw.w / 1000 : 0;
+            return `${tmMl(+d.slice(0, 7).replace('-', ''))}: ${x.fish[i] ? (x.fish[i] / 1e6).toFixed(2) + ' M fish' + (x.w && x.w[i] ? ` · ≈ ${x.w[i].toFixed(1)} kg` : x.wlo && x.wlo[i] ? ` · ${x.wlo[i].toFixed(1)}–${x.whi[i].toFixed(1)} kg` : '') : 'empty'}` +
+              (hv ? ` · <span style="color:#ff8a65">harvested ≈ ${Math.round(hv).toLocaleString('en-US')} t (${(out / 1e6).toFixed(2)} M fish × ${hw.w} kg)</span>` : ''); }).join('<br>'));
       pts.push([x.lat, x.lon]); });
     if (pts.length) FO_MAP.fitBounds(pts, { padding: [24, 24], maxZoom: 10 }); setTimeout(() => FO_MAP.invalidateSize(), 50);
   });
