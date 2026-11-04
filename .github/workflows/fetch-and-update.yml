@@ -38,6 +38,10 @@ jobs:
           for sub in scripts farming data docs; do
             if [ -d "$sub/$sub" ]; then cp -R "$sub/$sub/." "$sub/"; git rm -r -q "$sub/$sub"; moved="$moved $sub/$sub"; fi
           done
+          # scripts propres a farming/ deposes par erreur dans scripts/ : remis a leur place (la version deposee fait foi)
+          for f in maj_australie.py ingest_bc.py; do
+            if [ -f "scripts/$f" ]; then mkdir -p farming/scripts; cp "scripts/$f" "farming/scripts/$f"; git rm -q "scripts/$f"; moved="$moved scripts/$f"; fi
+          done
           if [ -n "$moved" ]; then
             git config user.name "github-actions"; git config user.email "actions@github.com"
             git add -A -- $(ls -d scripts farming data docs 2>/dev/null)
