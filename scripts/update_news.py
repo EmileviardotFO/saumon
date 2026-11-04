@@ -204,25 +204,44 @@ def iso_week(d):
     y, w, _ = d.isocalendar(); return f'{y}-W{w:02d}'
 
 def collect(status, today):
-    items = []
+    """Lit toutes les sources en parallele (8 a la fois), 20 s au plus chacune, et s'arrete de toute facon apres 6 minutes :
+    l'etape du workflow est coupee a 10 minutes, et une source lente ne doit plus faire perdre toute la collecte."""
+    import concurrent.futures as cf, sys
+    t0 = time.time()
     srcs = [(u, b, l, sp, urllib.parse.urlparse(u).netloc) for u, b, l, sp in FEEDS] + \
            [(gnews(q, *p), b, l, q.startswith('site:'), f'news.google.com ({b or "multi"} {l} #{i + 1})') for i, (q, p, b, l) in enumerate(GQ)]
-    for url, b0, lang, spec, name in srcs:
+    def lire(src):
+        url, b0, lang, spec, name = src
+        t = time.time(); arts = parse_feed(fetch(url, timeout=20)); out = []
+        for a in arts:
+            d = to_date(a['date'])
+            if not d or d > today + dt.timedelta(days=1) or (today - d).days > FRESH_DAYS: continue
+            g = 'google' in url
+            title = a['title'].rsplit(' - ', 1)[0] if g and ' - ' in a['title'] else a['title']
+            src = a['source'] or (a['title'].rsplit(' - ', 1)[1] if g and ' - ' in a['title'] else urllib.parse.urlparse(a['url']).netloc.replace('www.', ''))
+            c = classify(title, a['summary'] if not g else '', b0, spec)
+            if not c or len(title) < 12: continue
+            out.append({'date': d.isoformat(), 'title': title, 'url': a['url'], 'source': src, 'lang': lang, **c})
+        return name, len(arts), out, time.time() - t
+    items = []
+    with cf.ThreadPoolExecutor(max_workers=8) as ex:
+        futs = {ex.submit(lire, s): s[4] for s in srcs}
         try:
-            arts = parse_feed(fetch(url)); kept = 0
-            for a in arts:
-                d = to_date(a['date'])
-                if not d or d > today + dt.timedelta(days=1) or (today - d).days > FRESH_DAYS: continue
-                g = 'google' in url
-                title = a['title'].rsplit(' - ', 1)[0] if g and ' - ' in a['title'] else a['title']
-                src = a['source'] or (a['title'].rsplit(' - ', 1)[1] if g and ' - ' in a['title'] else urllib.parse.urlparse(a['url']).netloc.replace('www.', ''))
-                c = classify(title, a['summary'] if not g else '', b0, spec)
-                if not c or len(title) < 12: continue
-                items.append({'date': d.isoformat(), 'title': title, 'url': a['url'], 'source': src, 'lang': lang, **c}); kept += 1
-            status[name] = f'ok {len(arts)} items, {kept} kept'
-        except Exception as e:
-            status[name] = f'error: {type(e).__name__}: {str(e)[:120]}'
-        time.sleep(1)
+            for f in cf.as_completed(futs, timeout=360):
+                name = futs[f]
+                try:
+                    name, n, out, sec = f.result()
+                    items += out; status[name] = f'ok {n} items, {len(out)} kept'
+                    print(f'  {name}: {n} items, {len(out)} kept ({sec:.0f} s)', flush=True)
+                except Exception as e:
+                    status[name] = f'error: {type(e).__name__}: {str(e)[:120]}'
+                    print(f'  {name}: ERROR {type(e).__name__}: {str(e)[:120]}', flush=True)
+        except cf.TimeoutError:
+            for f, name in futs.items():
+                if not f.done(): status[name] = 'error: no answer within the 6-minute collection window'; f.cancel()
+            ex.shutdown(wait=False, cancel_futures=True)
+            print('  collection stopped after 6 minutes; the sources that did answer are kept', flush=True)
+    print(f'collection: {len(items)} headlines from {sum(1 for v in status.values() if v.startswith("ok"))}/{len(srcs)} sources in {time.time() - t0:.0f} s', flush=True)
     return items
 
 def main():
@@ -259,7 +278,11 @@ def main():
         if c is None: continue
         b0 = [b for b in n.get('basins', []) if b != 'global']   # bassin par defaut de la source d'origine, garde s'il n'en est pas trouve d'autre
         keep.append(dict(n, themes=c['themes'], basins=c['basins'] if c['basins'] != ['global'] or not b0 else b0))
-    kept, dropped = curate(keep, excl)
+    try:
+        kept, dropped = curate(keep, excl)
+    except Exception as e:                       # le regroupement ne doit jamais empecher de publier les titres collectes
+        print(f'curate failed ({type(e).__name__}: {e}); headlines published without grouping', flush=True)
+        kept, dropped = keep, {'curate_error': str(e)[:200]}
     items = sorted(kept, key=lambda n: (n['date'], len(n['srcs'])), reverse=True)
     # plafond par semaine (les plus reprises d'abord)
     weeks = {}
