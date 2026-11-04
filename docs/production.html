@@ -1056,6 +1056,9 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="sig-sub" id="scTabSub"></div>
     <div style="overflow-x:auto"><table class="sig-table" id="scReg"></table></div>
     <div style="overflow-x:auto;margin-top:14px"><table class="sig-table" id="scOps"></table></div>
+    <div class="sig-title" style="margin-top:18px">Company results in Scotland — from quarterly reports</div>
+    <div class="sig-sub" id="scQrSub"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="scQr"></table></div>
     <div class="sig-title" style="margin-top:18px">Unusual monthly deaths by area</div>
     <div class="sig-sub" id="scFlagSub"></div>
     <div style="overflow-x:auto"><table class="sig-table" id="scFlags"></table></div>
@@ -2936,7 +2939,37 @@ function renderNewsLegacy() {
 
 
 // ===================== This week, version par bassin et entreprise (data/stories.json <- scripts/build_stories.py) =====================
-let ST = null, ST_LOADING = false, ST_B = 'all', ST_FREE = true, ST_HIDEPAY = false;
+let ST = null, ST_LOADING = false, ST_B = 'all', ST_FREE = true, ST_HIDEPAY = false, QR = null;
+// ---- resultats trimestriels (data/quarterly.json <- scripts/build_quarterly.py) ----
+function qrLoad(cb) { if (QR) return cb(); fetch(DATA_URL.replace('data.json', 'quarterly.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
+  .then(j => { QR = j || { reports: [] }; cb(); }); }
+function qrFind(who, ev, title) {
+  const m = /Q([1-4])\s*(20\d\d)/.exec((ev || '') + ' ' + (title || '')); if (!m || !QR) return null;
+  const q = `${m[2]}-Q${m[1]}`, R = QR.reports || [];
+  const r = R.find(x => x.company === who && x.quarter === q); if (r) return { r, segs: r.segments || [] };
+  for (const x of R) { if (x.quarter !== q) continue; const sg = (x.segments || []).filter(g => g.segment === who); if (sg.length) return { r: x, segs: sg }; }
+  return null; }
+function qrStrip(found, basin) {
+  if (!found) return ''; const segs = found.segs.filter(g => !basin || g.basin === basin || g.segment === 'Group');
+  const fmt = (v, d = 1) => v === undefined || v === null ? null : (Math.abs(v) >= 1000 ? Math.round(v).toLocaleString('en-US') : (+v).toFixed(d).replace(/\.0$/, ''));
+  const chg = (a, b, lowerIsGood) => (a === undefined || b === undefined || a === null || b === null || !b) ? '' :
+    (() => { const p = 100 * (a / b - 1), good = lowerIsGood ? p < 0 : p > 0; return ` <span class="${good ? 'delta-good' : 'delta-bad'}">${p >= 0 ? '+' : '−'}${Math.abs(p).toFixed(0)}%</span>`; })();
+  const rows = segs.map(g => { const c = g.currency || '', parts = [];
+    if (g.cost_per_kg !== undefined) parts.push(`<b>Cost</b> ${fmt(g.cost_per_kg, 2)} ${c}/kg${g.cost_per_kg_ly !== undefined ? ` (${fmt(g.cost_per_kg_ly, 2)})` : ''}${chg(g.cost_per_kg, g.cost_per_kg_ly, true)}${(g.cost_drivers || []).length ? ` — ${nwEsc(g.cost_drivers.join('; '))}` : ''}`);
+    if (g.ebit_per_kg !== undefined) parts.push(`<b>EBIT</b> ${fmt(g.ebit_per_kg, 2)} ${c}/kg${g.ebit_per_kg_ly !== undefined ? ` (${fmt(g.ebit_per_kg_ly, 2)})` : ''}${chg(g.ebit_per_kg, g.ebit_per_kg_ly, false)}`);
+    else if (g.ebit_m !== undefined) parts.push(`<b>EBIT</b> ${fmt(g.ebit_m, 0)} ${c} m${g.ebit_m_ly !== undefined ? ` (${fmt(g.ebit_m_ly, 0)})` : ''}`);
+    if (g.ebit_per_kg === undefined && g.ebit_m === undefined && g.net_profit_m !== undefined) parts.push(`<b>Net profit</b> ${fmt(g.net_profit_m, 0)} ${c} m${g.net_profit_m_ly !== undefined ? ` (${fmt(g.net_profit_m_ly, 0)})` : ''}${g.period ? ` — ${nwEsc(g.period)}` : ''}`);
+    if (g.harvest_t !== undefined) parts.push(`<b>Harvest</b> ${fmt(g.harvest_t)} t${g.harvest_t_ly !== undefined ? ` (${fmt(g.harvest_t_ly)})` : ''}${chg(g.harvest_t, g.harvest_t_ly, false)}`);
+    if (g.price_achievement_pct !== undefined) parts.push(`<b>Price achievement</b> ${fmt(g.price_achievement_pct, 0)} % of reference${g.contract_share_pct !== undefined ? `, ${fmt(g.contract_share_pct, 0)} % contracts` : ''}`);
+    if (g.superior_share_pct !== undefined) parts.push(`<b>Superior</b> ${fmt(g.superior_share_pct, 0)} %`);
+    if (g.incident_mortality_cost_m !== undefined) parts.push(`<b>Incident mortality</b> ${fmt(g.incident_mortality_cost_m, 0)} ${c} m`);
+    if (g.guidance_t !== undefined) { const d = g.guidance_prev_t !== undefined ? g.guidance_t - g.guidance_prev_t : null;
+      parts.push(`<b>${g.guidance_year || ''} guidance</b> ${fmt(g.guidance_t)} t${d ? ` <span class="${d > 0 ? 'delta-good' : 'delta-bad'}">${d > 0 ? '+' : '−'}${fmt(Math.abs(d))} t</span>` : ''}${g.guidance_reason ? ` — ${nwEsc(g.guidance_reason)}` : ''}`); }
+    const extra = [...(g.biology || []), ...(g.market || [])].slice(0, 3);
+    return parts.length || extra.length ? `<div style="font-size:12.5px;line-height:1.5"><span style="color:var(--muted)">${nwEsc(g.segment)}:</span> ${parts.join(' · ')}` +
+      (extra.length ? `<div style="color:var(--muted);font-size:12px">${extra.map(nwEsc).join(' · ')}</div>` : '') + `</div>` : ''; }).join('');
+  return rows ? `<div style="border-left:2px solid #4fc3f7;padding:4px 0 4px 10px;display:flex;flex-direction:column;gap:3px">${rows}` +
+    `<div style="font-size:11px;color:var(--muted)">Figures from the report (${nwEsc(found.r.quarter)}), same quarter a year earlier in brackets.</div></div>` : ''; }
 const ST_ICON = {
   free: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" role="img" aria-label="Free"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/></svg>',
   metered: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffd54f" stroke-width="2" role="img" aria-label="A few free articles a month"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0"/><path d="M12 15v2"/></svg>',
@@ -2947,6 +2980,7 @@ function renderNews() {
       .then(r => r.ok ? r.json() : null).catch(() => null).then(j => { ST = j || { stories: [] }; ST_LOADING = false; if (currentView === 'news') renderNews(); }); }
     document.getElementById('nwSub').innerHTML = 'Loading…'; return; }
   if (!(ST.stories || []).length) return renderNewsLegacy();         // pas encore de sujets : ancienne page
+  if (!QR) { qrLoad(() => { if (currentView === 'news') renderNews(); }); }
   if (!NW) { if (!NW_LOADING) { NW_LOADING = true; fetch(DATA_URL.replace('data.json', 'news.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
       .then(j => { NW = j || { items: [], calendar: [], meta: {} }; NW_LOADING = false; if (currentView === 'news') renderNews(); }); } }
   const M = ST.meta || {}, B = M.basins || {}, S = ST.stories;
@@ -2972,23 +3006,32 @@ function renderNews() {
       c.bars.map(b => `<div style="display:grid;grid-template-columns:72px minmax(0,1fr) 64px;gap:8px;align-items:center;font-size:12px;margin-top:5px">` +
         `<span style="color:var(--muted)">${nwEsc(b.label)}</span><span style="height:10px;border-radius:3px;background:rgba(128,128,128,.18)"><span style="display:block;height:10px;border-radius:3px;width:${Math.max(3, Math.round(100 * Math.abs(+b.value) / mx))}%;background:${+b.value < 0 ? '#ff8a65' : '#4fc3f7'}"></span></span>` +
         `<span style="text-align:right;font-weight:600">${nwEsc(b.display)}</span></div>`).join('') + `</figure>`; };
-  const card = (s, i) => { let arts = s.arts.filter(a => !(ST_HIDEPAY && a.access === 'pay'));
+  const card = (s) => { const i = S.indexOf(s); let arts = s.arts.filter(a => !(ST_HIDEPAY && a.access === 'pay'));
     if (!arts.length) return '';
     if (ST_FREE) arts = arts.slice().sort((a, b) => rank[a.access] - rank[b.access] || (a.date < b.date ? 1 : -1)); else arts = arts.slice().sort((a, b) => a.date < b.date ? 1 : -1);
     const c = k => arts.filter(a => a.access === k).length;
     const parts = [c('free') ? c('free') + ' free' : '', c('metered') ? c('metered') + ' with a monthly limit' : '', c('pay') ? c('pay') + ' subscription' : '', c('?') ? c('?') + ' not checked' : ''].filter(Boolean).join(' · ');
     const tags = (s.themes || []).filter(t => NW_THEME[t]).map(t => `<span style="padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:600;color:#0f1a22;background:${NW_THEME[t][1]}">${NW_THEME[t][0]}</span>`).join('');
-    return `<article style="display:flex;flex-direction:column;gap:9px;padding:14px 16px;border:1px solid var(--border);border-radius:10px">` +
+    return `<article id="st-${i}" style="display:flex;flex-direction:column;gap:9px;padding:14px 16px;border:1px solid var(--border);border-radius:10px;scroll-margin-top:12px">` +
       `<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center"><span style="font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)">${nwEsc(s.who)}${s.event ? ' · ' + nwEsc(s.event) : ''}</span>${tags}</div>` +
       `<h3 style="margin:0;font-size:15.5px;font-weight:600;line-height:1.35">${nwEsc(s.title)}</h3>` +
       (s.summary || s.chart ? `<div style="display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start">${s.summary ? `<p style="margin:0;flex:999 1 280px;min-width:0;opacity:.9">${nwEsc(s.summary)}</p>` : ''}${chart(s.chart)}</div>` : '') +
-      `<details${i < 2 && ST_B !== 'all' ? ' open' : ''} style="border-top:1px solid var(--border);padding-top:6px"><summary style="cursor:pointer;font-size:12.5px;color:var(--muted);min-height:28px;display:flex;align-items:center">${arts.length} source${arts.length > 1 ? 's' : ''} — ${parts}</summary>` +
+      qrStrip(qrFind(s.who, s.event, s.title)) +
+      `<details style="border-top:1px solid var(--border);padding-top:6px"><summary style="cursor:pointer;font-size:12.5px;color:var(--muted);min-height:28px;display:flex;align-items:center">${arts.length} source${arts.length > 1 ? 's' : ''} — ${parts}</summary>` +
       `<ul style="list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:5px">` +
       arts.map(a => `<li style="display:grid;grid-template-columns:18px 50px minmax(0,1fr);gap:8px;font-size:12.5px;align-items:start"><span style="margin-top:1px">${ST_ICON[a.access] || ST_ICON['?']}</span>` +
         `<span style="color:var(--muted)">${nwDay(a.date)}</span><span><a href="${nwUrl(a.url)}" target="_blank" rel="noopener">${nwEsc(a.title)}</a> <span style="color:var(--muted)">· ${nwEsc(a.source)}${a.lang && a.lang !== 'en' ? ' · ' + nwEsc(a.lang.toUpperCase()) : ''}</span></span></li>`).join('') +
       `</ul></details></article>`; };
   const shown = order.filter(b => ST_B === 'all' || b === ST_B);
-  document.getElementById('nwStories').innerHTML = shown.map(b => { const L = S.filter(s => s.basin === b).sort((x, y) => nSrc(y) - nSrc(x) || (x.last < y.last ? 1 : -1));
+  const TOP = (ST.top || []).map(t => ({ ...t, s: S[t.i] })).filter(t => t.s);
+  const topBox = TOP.length && ST_B === 'all' ? `<section style="margin:6px 0 18px;padding:14px 16px;border:1px solid var(--border);border-radius:10px">` +
+    `<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2 style="margin:0;font-size:17px">This week in five</h2><span style="font-size:12px;color:var(--muted)">${nwDay(M.from || '')} – ${nwDay(M.to || '')}</span></div>` +
+    TOP.map((t, n) => `<div style="display:grid;grid-template-columns:22px minmax(0,1fr);gap:0 8px;margin-top:12px"><span style="font-size:15px;font-weight:600;color:var(--muted)">${n + 1}</span><div>` +
+      `<div style="font-size:12px;color:var(--muted)">${nwEsc(B[t.s.basin] || t.s.basin)} · ${nwEsc(t.s.who)}${t.s.event ? ' · ' + nwEsc(t.s.event) : ''}</div>` +
+      `<div style="font-size:14.5px;font-weight:600;line-height:1.4"><a href="#st-${t.i}" style="color:inherit">${nwEsc(t.s.title)}</a></div>` +
+      (t.why ? `<div style="font-size:13px;color:var(--muted);line-height:1.45">${nwEsc(t.why)}</div>` : '') + qrStrip(qrFind(t.s.who, t.s.event, t.s.title)) + `</div></div>`).join('') +
+    `<div style="font-size:11.5px;color:var(--muted);border-top:1px solid var(--border);padding-top:8px;margin-top:12px">Picked for likely impact on salmon supply, prices and costs, then by how widely reported; at most two per basin.</div></section>` : '';
+  document.getElementById('nwStories').innerHTML = topBox + shown.map(b => { const L = S.filter(s => s.basin === b).sort((x, y) => nSrc(y) - nSrc(x) || (x.last < y.last ? 1 : -1));
     const lim = ST_B === 'all' ? 6 : 999, vis = L.slice(0, lim);
     return `<section style="margin:16px 0 4px"><div style="display:flex;gap:10px;align-items:baseline;border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:10px">` +
       `<h2 style="margin:0;font-size:18px">${nwEsc(B[b] || b)}</h2><span style="color:var(--muted);font-size:12.5px">${L.length} stor${L.length > 1 ? 'ies' : 'y'} · ${tally[b]} sources</span>` +
@@ -3710,6 +3753,26 @@ function scMortByCompany(D, sites, js_, sel, col) {
     `Above 2 %/month is heavy; the Scottish average is about 1–2 %, with peaks in autumn.` +
     (ev.length ? ` Known events: ${ev.map(e => `<b>${ml(+e.date.slice(0, 4) * 100 + +e.date.slice(5, 7))}</b> ${e.company} — ${e.agent} at ${e.region.split(' — ')[1] || e.region}`).join('; ')}.` : '') + `</div>` +
     scSvg(ms, series, { lab: ml, xl: k => k % 100 === 1 || k === ms[0] ? ml(k) : MONTHS_FR[k % 100 - 1].slice(0, 1), fmt: v => v.toFixed(0) + '%', H: 220 });
+}
+// Ecosse : resultats trimestriels des entreprises, segment Ecosse (Bakkafrost Scotland, Scottish Sea Farms, Mowi Scotland...)
+function renderScotlandResults() {
+  const T = document.getElementById('scQr'), sub = document.getElementById('scQrSub'); if (!T) return;
+  const rows = []; ((QR || {}).reports || []).forEach(r => (r.segments || []).forEach(g => { if (g.basin === 'GB') rows.push({ r, g }); }));
+  if (!rows.length) { sub.innerHTML = 'No quarterly figures for Scotland yet: they are read from the companies\' reports at each update run.'; T.innerHTML = ''; return; }
+  rows.sort((a, b) => a.r.quarter < b.r.quarter ? 1 : a.r.quarter > b.r.quarter ? -1 : (a.g.segment < b.g.segment ? -1 : 1));
+  const f = (v, d = 1) => v === undefined || v === null ? '—' : (Math.abs(v) >= 1000 ? Math.round(v).toLocaleString('en-US') : (+v).toFixed(d).replace(/\.0$/, ''));
+  const ly = (a, b, d) => b === undefined || b === null ? '' : ` <span style="color:var(--muted)">(${f(b, d)})</span>`;
+  const e = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  sub.innerHTML = `Scottish figures reported by the listed groups that farm in Scotland, read from their quarterly reports and releases at each update run; same quarter a year earlier in brackets. ` +
+    `Each figure is kept only if it is written in the report. Costs and EBIT are in each group's reporting currency, so compare a company with itself over time rather than across companies.`;
+  T.innerHTML = `<thead><tr><th class="name">Company</th><th>Quarter</th><th>Harvest (t)</th><th>Cost per kg</th><th>EBIT per kg</th><th>Guidance</th><th>Price achievement</th><th style="text-align:left">Cost drivers, biology, market</th></tr></thead><tbody>` +
+    rows.map(({ r, g }) => { const d = g.guidance_prev_t !== undefined && g.guidance_t !== undefined ? g.guidance_t - g.guidance_prev_t : null;
+      return `<tr><td class="name"><b>${e(g.segment === 'Scotland' ? r.company + ' Scotland' : g.segment)}</b></td><td>${e(r.quarter.replace('-', ' '))}</td>` +
+        `<td>${f(g.harvest_t)}${ly(g.harvest_t, g.harvest_t_ly)}</td><td>${g.cost_per_kg !== undefined ? f(g.cost_per_kg, 2) + ' ' + e(g.currency) : '—'}${ly(g.cost_per_kg, g.cost_per_kg_ly, 2)}</td>` +
+        `<td>${g.ebit_per_kg !== undefined ? f(g.ebit_per_kg, 2) + ' ' + e(g.currency) : '—'}${ly(g.ebit_per_kg, g.ebit_per_kg_ly, 2)}</td>` +
+        `<td>${g.guidance_t !== undefined ? `${g.guidance_year || ''} ${f(g.guidance_t)} t${d ? ` <span class="${d > 0 ? 'delta-good' : 'delta-bad'}">${d > 0 ? '+' : '−'}${f(Math.abs(d))}</span>` : ''}` : '—'}</td>` +
+        `<td>${g.price_achievement_pct !== undefined ? f(g.price_achievement_pct, 0) + ' %' : '—'}</td>` +
+        `<td style="text-align:left;white-space:normal;min-width:260px;font-size:12px">${e([...(g.cost_drivers || []), g.guidance_reason, ...(g.biology || []), ...(g.market || []), ...(g.notes || [])].filter(Boolean).join('; '))}</td></tr>`; }).join('') + `</tbody>`;
 }
 function renderScotlandMap() {
   const D = SCO && SCO.site_data; const sub = document.getElementById('scMapSub'); if (!D) { sub.innerHTML = 'No site data in scotland.json yet.'; return; }
@@ -4739,7 +4802,7 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     else if (currentView === 'producers') { renderProducers(); }
     else if (currentView === 'usa') { renderUSA(); }
     else if (currentView === 'china') { renderChina(); }
-    else if (currentView === 'scotland') { renderScotland(); }
+    else if (currentView === 'scotland') { renderScotland(); qrLoad(renderScotlandResults); }
     else if (currentView === 'chile') { renderChile(); }
     else if (currentView === 'australia') { renderAustralia(); }
     else if (currentView === 'canada') { renderCanada(); }
@@ -9923,7 +9986,24 @@ function renderBrief() {
   if (r && ry) li.push(`<b>Harvest in ${ml(k)}</b>: ${f0(r.uttak_kg * GUT / 1e6)} kt gutted (${pct(pc(r.uttak_kg, ry.uttak_kg))} vs ${ml(ky)}), average fish ${f2(r.uttak_kg / r.uttak_stk * GUT)} kg (${f2(ry.uttak_kg / ry.uttak_stk * GUT)} a year earlier). ` +
     `<b>Biomass at sea</b>: ${f0(r.biomasse_kg * GUT / 1e6)} kt gutted (${pct(pc(r.biomasse_kg, ry.biomasse_kg))})${G.MTB[NOR] ? `, ${f0(100 * r.biomasse_kg / G.MTB[NOR] / 1000)} % of MTB` : ''}.`);
   // 6+ attendus
-  try { const P = computePeaks(G.d, PK_6P); if (P && P.fcN) li.push(`<b>6 kg+</b>: ${f1(P.fcN.v)} % of all fish harvested expected in ${ml(P.fcN.k)} (usually ${f1(P.fcN.usual)} %).`); } catch (e) { /* pas de prevision */ }
+  // calibres attendus le mois M+2 : 5-6 kg et 6 kg+, part de tous les poissons abattus en Norvege (registre, toutes generations),
+  // puis part dans la recolte de chacune des deux generations (poids d'abattage prevu + dispersion 0,27, comme Generations map)
+  try {
+    const P6 = computePeaks(G.d, PK_6P), P5 = computePeaks(G.d, ['5-6']);
+    const f6 = P6 && P6.fcN, f5 = P5 && P5.fcN;
+    if (f6 || f5) {
+      const kt = (f6 || f5).k, h = (Math.floor(kt / 100) * 12 + kt % 100) - (Math.floor(k / 100) * 12 + k % 100);
+      const Phi = z => { const t = 1 / (1 + 0.3275911 * Math.abs(z / Math.SQRT2)), y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-z * z / 2); return 0.5 * (1 + (z >= 0 ? y : -y)); };
+      const s2 = Math.log(1 + 0.27 * 0.27), above = (w, lo) => 1 - Phi((Math.log(lo / GUT) - (Math.log(w) - s2 / 2)) / Math.sqrt(s2));
+      const gz2 = gapStat(NOR, k), gens = gz2 ? [gz2.old, gz2.old + 1] : [];
+      const per = gens.map(g => { const F = harvForeMix(NOR, g, k), w = F && F.v && F.v[h - 1]; if (!w) return null;
+        return `${g} <b>${f1(100 * (above(w, 5) - above(w, 6)))} %</b> / <b>${f1(100 * above(w, 6))} %</b>`; }).filter(Boolean);
+      li.push(`<b>Sizes expected in ${ml(kt)}</b> (share of all fish harvested): ` +
+        (f5 ? `5–6 kg <b>${f1(f5.v)} %</b> (usually ${f1(f5.usual)} %)` : '') + (f5 && f6 ? ', ' : '') +
+        (f6 ? `6 kg+ <b>${f1(f6.v)} %</b> (usually ${f1(f6.usual)} %)` : '') + '.' +
+        (per.length ? `<br>Within each generation's harvest (5–6 kg / 6 kg+): generation ${per.join(', ')}.` : ''));
+    }
+  } catch (e) { /* pas de prevision */ }
   // temperature, mortalite, maladies
   const ta = tAnom(NOR, k), zt = []; for (let po = 1; po <= 13; po++) { const a = tAnom(po, k); if (a !== null && Math.abs(a) >= 1) zt.push(`${po} (${sg(a)}°)`); }
   if (ta !== null) li.push(`<b>Sea temperature</b>: ${sg(ta)}° vs a normal ${MON_GM[k % 100 - 1]}` + (zt.length ? `; zones 1° or more from normal: ${zt.join(', ')}` : '') + '.');
