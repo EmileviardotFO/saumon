@@ -32,14 +32,6 @@ STAT = os.path.join(ROOT, 'data', 'bw_site_status.json')
 OUT = os.path.join(ROOT, 'data', 'big_fish.json')
 GUT = 0.888
 CV = 0.27
-# Societes rattachees a leur groupe (le registre les liste a part) : Ocean Farming AS (Ocean Farm 1, a Håbranden) appartient a
-# SalMar a 93,4 % ; Mariculture AS (Smart Fish Farm, site « Frøya » en mer de Norvege) est une filiale de SalMar Aker Ocean.
-GROUPE = {'ocean farming as': 'SalMar', 'mariculture as': 'SalMar'}
-# Sites qui recoivent des poissons deja grands, transferes d'un autre site : leur cycle commence avec des poissons de plusieurs mois.
-# Havfarm 1 « Jostein Albert » (Nordlaks, site 39777 Ytre Hadseløya) recoit des saumons d'environ 2 kg -> environ 9 mois de croissance.
-DECALAGE = {'39777': 9.0}
-SITES_LARGE = {'39777': 'Havfarm 1 "Jostein Albert" (Nordlaks)', '33757': 'Ocean Farm 1 (SalMar, Ocean Farming AS)',
-               '45196': 'Smart Fish Farm (SalMar Aker Ocean, Mariculture AS) — not stocked yet'}
 PAS_COMMERCIAL = re.compile(r'fylkeskommune|akademi|\bfou\b|forskning|genetics|aquagen|stamfisk|benchmark|inkubator|universitet|skole|'
                             r'visning|havforskning|nofima|rogn|polarfeed', re.I)
 
@@ -55,7 +47,6 @@ def main():
     d = json.load(io.open(DATA, encoding='utf-8'))
     st = json.load(io.open(STAT, encoding='utf-8'))
     R, C = d['bw_register'], d['cohort']
-    R['site_org'] = {k: GROUPE.get((v or '').lower(), v) for k, v in R['site_org'].items()}
     y0, w0 = map(int, st['first'].split('-'))
     n = max(len(v) for v in st['sites'].values())
     weeks = [dt.date.fromisocalendar(y0, w0, 1) + dt.timedelta(weeks=i) for i in range(n)]
@@ -134,7 +125,7 @@ def main():
         if not po or not commercial(site): continue
         j = debut(s, last)
         if j is None: continue
-        age = (now - weeks[j]).days / 30.44 + DECALAGE.get(site, 0.0)
+        age = (now - weeks[j]).days / 30.44
         f = rythme.get((po, R['site_org'].get(site)), 1.0)
         age_eq = age * f                                   # age equivalent dans la zone, au rythme de cet eleveur
         w1, w2 = poids(po, age_eq + f), poids(po, age_eq + 2 * f)
@@ -144,7 +135,7 @@ def main():
         score56 = (R['site_cap'].get(site) or 0) * pv(age_eq) * s5
         sites.append({'id': site, 'name': R['site_name'].get(site), 'co': R['site_org'].get(site), 'po': po, 'cap': R['site_cap'].get(site) or 0,
                       'stocked': weeks[j].isoformat(), 'age': round(age, 1), 'g2': round(w2 * GUT, 2) if w2 else None,
-                      'pace': round(f, 2), 'p_harvest': round(pv(age_eq), 3), 'note': SITES_LARGE.get(site, ''), 'p6': round(big, 3), 'p56': round(s5, 3), 'score': score, 'score56': score56})
+                      'pace': round(f, 2), 'p_harvest': round(pv(age_eq), 3), 'p6': round(big, 3), 'p56': round(s5, 3), 'score': score, 'score56': score56})
     zones = []
     for po in sorted({x['po'] for x in sites}):
         L = [x for x in sites if x['po'] == po]
@@ -161,12 +152,11 @@ def main():
                       'sites': sorted([{k: v for k, v in x.items() if k not in ('score', 'score56', 'po')} for x in L if x['score'] + x['score56'] > 0],
                                       key=lambda x: -(x['p_harvest'] * (x['p6'] + x['p56'] / 2)))[:15]})
     # ---- durees de cycle par eleveur et par zone (cycles termines depuis 2023) ----
-    maladie = collections.defaultdict(list)                     # site -> [(debut aaaass, fin aaaass, maladie)]
+    maladie = collections.defaultdict(list)                     # site -> [(debut aaaass, fin aaaass)] des episodes de maladie
     for x in (d.get('bw_weekly') or {}).get('site_dis', []):
-        maladie[str(x[0])].append((x[3], x[4], x[2]))
-    tous = []
+        maladie[str(x[0])].append((x[3], x[4]))
     yw = lambda k: weeks[k].isocalendar()[0] * 100 + weeks[k].isocalendar()[1]
-    det = collections.defaultdict(lambda: {'len': [], 'len_ok': [], 'len_dis': [], 'fallow': [], 'by_year': collections.defaultdict(list), 'disease': 0})
+    det = collections.defaultdict(lambda: {'len': [], 'fallow': [], 'by_year': collections.defaultdict(list), 'disease': 0})
     for site, s in st['sites'].items():
         po = R['site_po'].get(site); co = R['site_org'].get(site)
         if not po or not commercial(site): continue
@@ -176,12 +166,9 @@ def main():
                 j = debut(s, k - 1)
                 if j is not None and weeks[k] >= dt.date(2023, 1, 1) and (weeks[k] - weeks[j]).days > 120:
                     m = (weeks[k] - weeks[j]).days / 30.44
-                    types = sorted({t for a, b, t in maladie.get(site, []) if a <= yw(k) and b >= yw(j)})
-                    tous.append({'po': po, 'co': co, 'len': m, 'dis': types})
                     for key in ((po, co), (0, co), (po, '*')):
                         x = det[key]; x['len'].append(m); x['by_year'][weeks[k].year].append(m)
-                        (x['len_dis'] if types else x['len_ok']).append(m)
-                        if types: x['disease'] += 1
+                        if any(a <= yw(k) and b >= yw(j) for a, b in maladie.get(site, [])): x['disease'] += 1
                     # jachere qui suit : semaines jusqu'a la prochaine mise en mer
                     e = k
                     while e <= last and s[e] != 'a': e += 1
@@ -203,8 +190,6 @@ def main():
                     'fallow_weeks': round(statistics.median(x['fallow'])) if x['fallow'] else None,
                     'by_year': {str(a): round(statistics.median(L), 1) for a, L in sorted(x['by_year'].items()) if len(L) >= 2},
                     'disease_share': round(100 * x['disease'] / len(x['len'])),
-                    'median_ok': round(statistics.median(x['len_ok']), 1) if len(x['len_ok']) >= 3 else None,
-                    'median_dis': round(statistics.median(x['len_dis']), 1) if len(x['len_dis']) >= 3 else None,
                     'active_sites': len(actifs.get((po, co), [])), 'active_age': round(statistics.median(actifs[(po, co)]), 1) if actifs.get((po, co)) else None})
     # rythme national d'un eleveur : moyenne de ses rythmes de zone ponderee par ses cycles (les zones du nord ont des cycles plus longs :
     # comparer a la mediane nationale penaliserait les eleveurs du nord)
@@ -212,34 +197,7 @@ def main():
         if c['po'] == 0:
             Z = [(z['pace'], z['cycles']) for z in cyc if z['co'] == c['co'] and z['po'] and z['pace']]
             c['pace'] = round(sum(p * n for p, n in Z) / sum(n for _, n in Z), 2) if Z else None
-    # impact des maladies : ecart de duree de chaque cycle touche a la mediane des cycles sains de sa zone
-    sain = {po: statistics.median(det[(po, '*')]['len_ok']) for (po, co) in det if co == '*' and len(det[(po, '*')]['len_ok']) >= 5}
-    impact = []
-    for t in sorted({t for c in tous for t in c['dis']}):
-        L = [c for c in tous if t in c['dis'] and c['po'] in sain]
-        if len(L) < 3: continue
-        ec = [c['len'] - sain[c['po']] for c in L]
-        impact.append({'disease': t, 'cycles': len(L), 'median': round(statistics.median([c['len'] for c in L]), 1),
-                       'vs_healthy': round(statistics.median(ec), 1), 'shorter_share': round(100 * sum(1 for e in ec if e < -1) / len(ec)),
-                       'zones': [[po, k] for po, k in collections.Counter(c['po'] for c in L).most_common()]})
-    tous_sains = [c for c in tous if not c['dis']]
-    # poids moyen abattu par zone (vide), 12 derniers mois et 12 mois d'avant, depuis le registre de la biomasse
-    mois = sorted({c['year'] * 100 + c['month'] for c in C})
-    der = mois[-12:]; avant = mois[-24:-12]
-    def pm(po, M):
-        h = sum(c['harv_stk'] or 0 for c in C if c['po'] == po and c['year'] * 100 + c['month'] in M)
-        k = sum(c['harv_kg'] or 0 for c in C if c['po'] == po and c['year'] * 100 + c['month'] in M)
-        return (round(k / h * GUT, 2) if h else None), round(k * GUT / 1e6, 1)
-    poids_zone = {}
-    for po in sorted({c['po'] for c in C if c['po']}):
-        (w, v), (wp, vp) = pm(po, set(der)), pm(po, set(avant))
-        poids_zone[po] = {'harvest_kg': w, 'harvest_kg_prev': wp, 'harvest_kt': v, 'harvest_kt_prev': vp}
     zones_cyc = [{'po': po, 'cycles': len(x['len']), 'median': round(statistics.median(x['len']), 1),
-                  'median_ok': round(statistics.median(x['len_ok']), 1) if len(x['len_ok']) >= 3 else None,
-                  'median_dis': round(statistics.median(x['len_dis']), 1) if len(x['len_dis']) >= 3 else None,
-                  'disease_share': round(100 * x['disease'] / len(x['len'])), 'active_sites': sum(1 for y in sites if y['po'] == po),
-                  'active_age': round(statistics.median([y['age'] for y in sites if y['po'] == po]), 1) if any(y['po'] == po for y in sites) else None,
-                  **poids_zone.get(po, {}),
                   'fallow_weeks': round(statistics.median(x['fallow'])) if x['fallow'] else None,
                   'by_year': {str(a): round(statistics.median(L), 1) for a, L in sorted(x['by_year'].items()) if len(L) >= 3}}
                  for (po, co), x in det.items() if co == '*']
@@ -247,16 +205,11 @@ def main():
     for z in zones: z['zone_share6'] = round(100 * z['score6'] / tot_all, 1)
     zones.sort(key=lambda z: -z['score6'])
     out = {'meta': {'generated': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'), 'week': now.isoformat(),
-                    'active_sites': len(sites), 'offshore': [{'id': k, 'name': R['site_name'].get(k), 'what': v, 'po': R['site_po'].get(k),
-                    'cap': R['site_cap'].get(k), 'status_last_12_weeks': st['sites'].get(k, '')[-12:]} for k, v in SITES_LARGE.items()], 'backtest': {str(b): round(100 * v, 1) for b, v in sorted(p_vide.items())},
+                    'active_sites': len(sites), 'backtest': {str(b): round(100 * v, 1) for b, v in sorted(p_vide.items())},
                     'method': 'site age from fallow history (BarentsWatch) x zone growth curve (biomass register) x measured harvest chance by age'},
            'zones': zones,
            'cycles': {'since': '2023-01-01', 'min_cycles': 3, 'farmers': sorted(cyc, key=lambda c: (c['po'], -c['cycles'])),
-                      'zones': sorted(zones_cyc, key=lambda z: z['po']), 'disease_impact': impact,
-                      'norway': {'cycles': len(tous), 'median': round(statistics.median([c['len'] for c in tous]), 1) if tous else None,
-                                 'median_ok': round(statistics.median([c['len'] for c in tous_sains]), 1) if tous_sains else None,
-                                 'disease_share': round(100 * (len(tous) - len(tous_sains)) / len(tous)) if tous else None,
-                                 'harvest_months': [der[0], der[-1]]}}}
+                      'zones': sorted(zones_cyc, key=lambda z: z['po'])}}
     io.open(OUT, 'w', encoding='utf-8').write(json.dumps(out, ensure_ascii=False, separators=(',', ':')))
     print(f"data/big_fish.json : {len(sites)} commercial sites with fish, week of {now}, {len(zones)} zones")
 
