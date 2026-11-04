@@ -45,14 +45,14 @@ PAYS = {152: 'CL', 578: 'NO', 643: 'RU', 842: 'US', 234: 'FO', 36: 'AU', 124: 'C
 def appel(codes, periodes):
     cle = os.environ.get('COMTRADE_KEY')
     params = {'reporterCode': JAPON, 'flowCode': 'M', 'period': ','.join(periodes), 'cmdCode': ','.join(codes),
-              'includeDesc': 'false'}
+              'includeDesc': 'true'}
     url = (KEYED if cle else PUBLIC) + '?' + urllib.parse.urlencode(params)
     req = urllib.request.Request(url, headers={'User-Agent': 'suivi-salmonicole/1.0', **({'Ocp-Apim-Subscription-Key': cle} if cle else {})})
     for essai in range(4):
         try:
             return json.loads(urllib.request.urlopen(req, timeout=90).read().decode('utf-8')).get('data') or []
         except urllib.error.HTTPError as e:
-            if e.code in (429, 503) and essai < 3: time.sleep(10 * (essai + 1)); continue
+            if e.code in (429, 503) and essai < 3: time.sleep(30 * (essai + 1)); continue
             raise
     return []
 
@@ -80,12 +80,17 @@ def main():
     garde = [r for r in ancien['rows'] if r[0] // 100 not in a_tirer]
     neuves, echecs = [], []
     for y in a_tirer:
-        periodes = [f'{y}{m:02d}' for m in range(1, 13) if dt.date(y, m, 1) <= dt.date.today()]
-        for code in CODES:                                          # un code par appel : l'API publique plafonne a 500 lignes
+        # l'API publique (preview) n'accepte qu'un mois par appel : tous les codes d'un mois en une fois
+        # (comme update_national_trade.py, qui fonctionne) ; environ 250 lignes par mois, sous la limite de 500
+        for m in range(1, 13):
+            if dt.date(y, m, 1) > dt.date.today(): break
+            per = f'{y}{m:02d}'
             try:
-                neuves += lignes(appel([code], periodes))
+                rows = appel(list(CODES), [per])
+                neuves += lignes(rows)
+                if len(rows) >= 500: echecs.append(f'{per} : 500 lignes, limite de la preview atteinte')
             except Exception as e:  # noqa: BLE001
-                echecs.append(f'{y} {code} : {e}')
+                echecs.append(f'{per} : {e}')
             time.sleep(1.2)
     rows = sorted(garde + neuves)
     if not rows: raise SystemExit('aucune donnee recue de Comtrade : ' + '; '.join(echecs[:3]))
@@ -95,6 +100,7 @@ def main():
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     io.open(OUT, 'w', encoding='utf-8').write(json.dumps({'meta': meta, 'rows': rows}, ensure_ascii=False, separators=(',', ':')))
     print(f"data/japan_imports.json : {len(rows)} lignes, {meta['first']} -> {meta['last']}" + (f", {len(echecs)} appels en echec" if echecs else ''))
+    if echecs: print('  appels en echec :', '; '.join(echecs[:8]))
     if echecs and not neuves: raise SystemExit(1)
 
 

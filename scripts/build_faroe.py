@@ -206,7 +206,8 @@ def lire_bakkafrost(html):
         if not rows: continue
         tete = rows[0]
         dates = [re.match(r'(\d{2})/(\d{2})/(\d{4})', c.replace('*', '').strip()) for c in tete[1:]]
-        if 'FAROE' in t['titre'].upper() and 'BIOMASS' in t['titre'].upper() and any(dates):
+        codes_fo = sum(1 for r in rows[1:] if r and re.match(r'A\d{2}\s*-', r[0].strip()))   # numeros de zones feroiens : A04 - ...
+        if any(dates) and (codes_fo >= 3 or ('FAROE' in t['titre'].upper() and 'BIOMASS' in t['titre'].upper())):
             for r in rows[1:]:
                 if not r or r[0].lower().startswith('total') or not re.match(r'A\d', r[0]): continue
                 for m, v in zip(dates, r[1:]):
@@ -239,7 +240,11 @@ def main():
         try:
             html = urllib.request.urlopen(urllib.request.Request(BAKKA_URL, headers={'User-Agent': 'suivi-salmonicole/1.0'}), timeout=60).read().decode('utf-8', 'replace')
             lu, _ = lire_bakkafrost(html)
-            if not lu: note = 'tableau des fermes introuvable sur la page Bakkafrost (mise en page changée ?)'
+            if not lu:
+                p = Tables(); p.feed(html)
+                apercu = ' | '.join(' / '.join(t['rows'][0][:4]) for t in p.out[:6] if t['rows'])
+                note = (f'tableau des fermes introuvable sur la page Bakkafrost ({len(html)} caractères, {len(p.out)} tableaux'
+                        + (f' : {apercu[:300]}' if apercu else ' : aucun tableau HTML, page peut-être construite en JavaScript') + ')')
         except Exception as e:  # noqa: BLE001
             note = f'page Bakkafrost inaccessible : {e}'
     base = AMORCE.copy(); base.update(lu)

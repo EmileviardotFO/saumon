@@ -297,7 +297,7 @@ def main():
                             'calendar = upcoming dates entered by hand (date YYYY-MM-DD, basin, theme, what, url), never overwritten by the script.'},
            'calendar': old.get('calendar', []), 'exclude': excl, 'items': items}
     json.dump(out, open(OUT, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
-    print(f'news: {len(items)} headlines kept over {len(weeks)} weeks ({sum(1 for n in items if "score" in n)} stories), {added} new this run, {len(new)} collected, dropped {out['meta']['dropped']}')
+    print(f'news: {len(items)} headlines kept over {len(weeks)} weeks ({sum(1 for n in items if "score" in n)} stories), {added} new this run, {len(new)} collected, dropped {out["meta"]["dropped"]}')
     for k, v in status.items(): print(f'  {k}: {v}')
 
 if __name__ == '__main__':
