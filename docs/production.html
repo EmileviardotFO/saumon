@@ -1065,7 +1065,9 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
   </div>
 
   <div class="panel" id="newsView" style="flex:1; min-width:0; max-width:1400px; display:none;">
-    <div class="sig-title">This week in salmon — stories by basin and company, key figures and coming dates</div>
+    <div class="sig-title">This week in salmon — news by basin and company, and coming dates</div>
+    <style>#newsView a{color:var(--ink);text-decoration:underline;text-decoration-color:rgba(160,180,195,.55);text-underline-offset:2px}
+      #newsView a:hover{color:#ffd54f;text-decoration-color:#ffd54f}</style>
     <div class="sig-sub" id="nwSub"></div>
     <div id="nwCards" class="pr-cards"></div>
     <div class="nw-bar" id="nwBar"></div>
@@ -2991,7 +2993,7 @@ function renderNews() {
     (M.method === 'claude' ? `Titles and summaries are written automatically from the headlines and the publishers' own short descriptions — never from paywalled text; open the sources before relying on a figure. `
       : `Stories are grouped by simple rules; the title is the most representative free headline. `) +
     `Sources marked with a closed lock need a subscription. Updated ${nwEsc((M.generated || '').slice(0, 10))}.` + (M.note ? ` <span style="color:var(--muted)">(${nwEsc(M.note)})</span>` : '');
-  document.getElementById('nwCards').innerHTML = nwFigures();
+  document.getElementById('nwCards').innerHTML = '';                 // page reservee aux actualites : pas de chiffres de marche
   document.getElementById('nwBar').innerHTML = `<div class="nw-chips">${['all'].concat(order).map(b => `<button type="button" data-b="${b}" class="${ST_B === b ? 'on' : ''}">${b === 'all' ? 'All basins' : nwEsc(B[b] || b)} <span style="opacity:.6">${b === 'all' ? '' : tally[b]}</span></button>`).join('')}</div>` +
     `<label style="display:inline-flex;gap:6px;align-items:center;margin-left:12px"><input type="checkbox" id="stFree"${ST_FREE ? ' checked' : ''}> Free sources first</label>` +
     `<label style="display:inline-flex;gap:6px;align-items:center;margin-left:12px"><input type="checkbox" id="stPay"${ST_HIDEPAY ? ' checked' : ''}> Hide subscription sources</label>` +
@@ -3023,6 +3025,11 @@ function renderNews() {
         `<span style="color:var(--muted)">${nwDay(a.date)}</span><span><a href="${nwUrl(a.url)}" target="_blank" rel="noopener">${nwEsc(a.title)}</a> <span style="color:var(--muted)">· ${nwEsc(a.source)}${a.lang && a.lang !== 'en' ? ' · ' + nwEsc(a.lang.toUpperCase()) : ''}</span></span></li>`).join('') +
       `</ul></details></article>`; };
   const shown = order.filter(b => ST_B === 'all' || b === ST_B);
+  // priorite editoriale : 1 = acces aux marches et droits de douane, prix et exportations, mortalites, maladies et algues, poids
+  // economique ; 2 = resultats, regles de production, aliment ; 3 = le reste. Donnee par Claude, sinon deduite des mots du sujet.
+  const P1 = /tariff|arancel|dut(y|ies)|impuesto|tax\b|taxes|levy|ban\b|inspect|fiscaliz|brazil|brasil|china|export|exporta|price|precio|pris|demand|mortal|dead|die\b|disease|enfermedad|isa\b|srs|virus|alga|bloom|fan\b|jellyfish|medusa|oxygen|gdp|pib|econom|jobs|empleo|employ/i;
+  const P2 = /result|q[1-4]\b|quarter|trimestre|guidance|ebit|profit|licen|lice|lus\b|capacity|feed|fishmeal|harina|soy|krill/i;
+  const prio = s => s.priority || (P1.test(s.title + ' ' + (s.summary || '')) ? 1 : P2.test(s.title + ' ' + (s.summary || '')) ? 2 : 3);
   const TOP = (ST.top || []).map(t => ({ ...t, s: S[t.i] })).filter(t => t.s);
   const topBox = TOP.length && ST_B === 'all' ? `<section style="margin:6px 0 18px;padding:14px 16px;border:1px solid var(--border);border-radius:10px">` +
     `<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2 style="margin:0;font-size:17px">This week in five</h2><span style="font-size:12px;color:var(--muted)">${nwDay(M.from || '')} – ${nwDay(M.to || '')}</span></div>` +
@@ -3031,7 +3038,7 @@ function renderNews() {
       `<div style="font-size:14.5px;font-weight:600;line-height:1.4"><a href="#st-${t.i}" style="color:inherit">${nwEsc(t.s.title)}</a></div>` +
       (t.why ? `<div style="font-size:13px;color:var(--muted);line-height:1.45">${nwEsc(t.why)}</div>` : '') + qrStrip(qrFind(t.s.who, t.s.event, t.s.title)) + `</div></div>`).join('') +
     `<div style="font-size:11.5px;color:var(--muted);border-top:1px solid var(--border);padding-top:8px;margin-top:12px">Picked for likely impact on salmon supply, prices and costs, then by how widely reported; at most two per basin.</div></section>` : '';
-  document.getElementById('nwStories').innerHTML = topBox + shown.map(b => { const L = S.filter(s => s.basin === b).sort((x, y) => nSrc(y) - nSrc(x) || (x.last < y.last ? 1 : -1));
+  document.getElementById('nwStories').innerHTML = topBox + shown.map(b => { const L = S.filter(s => s.basin === b).sort((x, y) => prio(x) - prio(y) || nSrc(y) - nSrc(x) || (x.last < y.last ? 1 : -1));
     const lim = ST_B === 'all' ? 6 : 999, vis = L.slice(0, lim);
     return `<section style="margin:16px 0 4px"><div style="display:flex;gap:10px;align-items:baseline;border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:10px">` +
       `<h2 style="margin:0;font-size:18px">${nwEsc(B[b] || b)}</h2><span style="color:var(--muted);font-size:12.5px">${L.length} stor${L.length > 1 ? 'ies' : 'y'} · ${tally[b]} sources</span>` +
