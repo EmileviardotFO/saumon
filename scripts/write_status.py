@@ -46,6 +46,7 @@ STEPS = [
     ('EVENTS', 'Mortality events watch (press, Scotland FHI)'),
     ('NEWS', 'This week — headlines'),
     ('STORIES', 'This week — stories by basin and company'),
+    ('QUARTERLY', 'Quarterly reports — cost per kg, EBIT, guidance'),
     ('AUSTRALIA', 'Australia — EPA Tasmania mortalities, NRE production'),
     ('CANADA_BC', 'Canada BC — DFO catalogue (sea lice, mortalities)'),
     ('FAROE', 'Faroe Islands — Bakkafrost fish per farm (monthly), harvest'),

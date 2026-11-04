@@ -46,9 +46,10 @@ ACCESS = {
 }
 COMPANIES = ['Mowi', 'SalMar', 'Lerøy', 'Leroy', 'Bakkafrost', 'Grieg', 'Cermaq', 'Måsøval', 'Nova Sea', 'Nordlaks', 'Eidsfjord', 'Kvarøy',
              'Scottish Sea Farms', 'Icelandic Salmon', 'Arnarlax', 'Arctic Fish', 'Kaldvík', 'Ice Fish Farm', 'Hiddenfjord', 'Luna',
-             'AquaChile', 'Multi X', 'Australis', 'Blumar', 'Camanchaca', 'Salmones Austral', 'Cooke', 'Tassal', 'Huon', 'Petuna',
+             'AquaChile', 'Agrosuper', 'Multi X', 'Australis', 'Blumar', 'Salmones Camanchaca', 'Camanchaca', 'Salmones Austral', 'Ventisqueros',
+             'Invermar', 'Nova Austral', 'Yadran', 'Cooke', 'Tassal', 'Huon', 'Petuna', 'Organic Sea Harvest', 'Loch Duart',
              'BioMar', 'Skretting', 'Cargill', 'Mowi Feed', 'Benchmark', 'Salmon Evolution', 'Andfjord', 'Atlantic Sapphire', 'Proximar']
-ALIAS = {'Leroy': 'Lerøy', 'Luna': 'Hiddenfjord'}
+ALIAS = {'Leroy': 'Lerøy', 'Luna': 'Hiddenfjord', 'Agrosuper': 'AquaChile', 'Salmones Camanchaca': 'Camanchaca'}
 BASINS = {'NO': 'Norway', 'CL': 'Chile', 'GB': 'Scotland', 'FO': 'Faroe Islands', 'IS': 'Iceland', 'CA': 'Canada', 'AU': 'Australia',
           'IE': 'Ireland', 'NZ': 'New Zealand', 'US': 'United States', 'global': 'Global', 'FEED': 'Feed & raw materials'}
 THEMES = ['market', 'feed', 'biology', 'regulation', 'companies', 'other']
@@ -177,6 +178,43 @@ def claude(items, cle):
     return tous, journal
 
 
+TOP_PROMPT = """You pick the five biggest salmon-industry stories of the week for a salmon sales and market analyst. Write in English.
+Criteria, in order: (1) likely impact on salmon supply, prices or costs: taxes and market access, production rules, feed and raw-material
+costs, results and guidance of large farmers, price and volume moves; (2) how widely the story was reported; (3) diversity: at most two
+stories from the same basin. Merge nothing: pick from the numbered list only.
+Output ONE JSON object PER LINE, nothing else: {"i": <story number>, "why": "<one short English sentence on why it matters, using only facts in the story>"}"""
+
+
+def top5(stories, cle):
+    liste = [{'i': i, 'basin': s['basin'], 'who': s['who'], 'event': s.get('event', ''), 'title': s['title'], 'summary': s.get('summary', ''),
+              'sources': len({a['source'] for a in s['arts']})} for i, s in enumerate(stories)]
+    body = {'model': MODEL, 'max_tokens': 4000, 'system': TOP_PROMPT, 'messages': [{'role': 'user', 'content': json.dumps(liste, ensure_ascii=False)}]}
+    req = urllib.request.Request('https://api.anthropic.com/v1/messages', data=json.dumps(body).encode('utf-8'),
+                                 headers={'x-api-key': cle, 'anthropic-version': '2023-06-01', 'content-type': 'application/json'})
+    rep = json.loads(urllib.request.urlopen(req, timeout=300).read().decode('utf-8'))
+    txt = ''.join(b.get('text', '') for b in rep.get('content', []) if b.get('type') == 'text')
+    out, par_bassin = [], defaultdict(int)
+    for ligne in txt.splitlines():
+        ligne = ligne.strip().strip(',')
+        if not ligne.startswith('{'): continue
+        try: x = json.loads(ligne)
+        except ValueError: continue
+        i = x.get('i')
+        if isinstance(i, int) and 0 <= i < len(stories) and i not in [t['i'] for t in out] and par_bassin[stories[i]['basin']] < 2:
+            par_bassin[stories[i]['basin']] += 1; out.append({'i': i, 'why': str(x.get('why') or '')[:220]})
+        if len(out) == 5: break
+    return out
+
+
+def top5_regles(stories):
+    out, par_bassin = [], defaultdict(int)
+    for i, s in sorted(enumerate(stories), key=lambda t: -len({a['source'] for a in t[1]['arts']})):
+        if s['who'] == 'Sector' and s['basin'] == 'global': continue
+        if par_bassin[s['basin']] < 2: par_bassin[s['basin']] += 1; out.append({'i': i, 'why': ''})
+        if len(out) == 5: break
+    return out
+
+
 def check(stories, by_id):
     """Keeps only valid ids (each once), drops a chart whose figures are not written in the story's own sources."""
     seen, out = set(), []
@@ -239,9 +277,16 @@ def main():
         arts.sort(key=lambda x: ({'free': 0, '?': 1, 'metered': 2, 'pay': 3}[x['access']], x['date']), reverse=False)
         out.append({k: v for k, v in s.items() if k != 'ids'} | {'arts': arts, 'last': max(x['date'] for x in arts)})
     out.sort(key=lambda s: (-len(s['arts']), s['last']), reverse=False)
+    top = []
+    if method == 'claude' and cle:
+        try: top = top5(out, cle)
+        except Exception as e:  # noqa: BLE001
+            note += f'; top five by rules ({str(e)[:80]})'
+    if not top: top = top5_regles(out)
     meta = {'generated': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'), 'news_generated': gen, 'from': since, 'to': gen,
             'method': method, 'model': MODEL if method == 'claude' else None, 'headlines': len(items), 'note': note, 'basins': BASINS}
-    io.open(OUT, 'w', encoding='utf-8').write(json.dumps({'meta': meta, 'stories': out}, ensure_ascii=False, separators=(',', ':')))
+    meta['note'] = note
+    io.open(OUT, 'w', encoding='utf-8').write(json.dumps({'meta': meta, 'stories': out, 'top': top}, ensure_ascii=False, separators=(',', ':')))
     print(f'data/stories.json : {len(out)} stories from {len(items)} headlines ({method})' + (f' — {note}' if note else ''))
 
 
