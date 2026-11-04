@@ -12,14 +12,12 @@ depuis l'environnement de travail. D'où deux temps.
 2) python ingest_bc.py build --poux <csv> [--mortalite <csv>] [--transferts <csv>] -o bc_mensuel.csv
    ou python ingest_bc.py build --catalogue      (adresses lues dans le catalogue, ne refait rien si inchangé)
    python ingest_bc.py catalogue                 (dit seulement ce qui a changé côté DFO)
-   python ingest_bc.py telecharger               (télécharge les 3 CSV du DFO s'ils ont changé -> donnees_ca/brut/,
-                                                  que scripts/build_canada.py transforme en data/canada.json)
 
 Poux : moyenne par mois des moyennes par ferme, pondérée par le nombre de
 poissons comptés si la colonne existe, sinon moyenne simple (signalé en sortie).
 Mortalité et transferts : somme (transferts) ou nombre de lignes (événements) par mois.
 """
-import argparse, csv, io, sys, urllib.parse, urllib.request
+import argparse, csv, io, sys, urllib.request
 from collections import defaultdict
 from datetime import datetime
 
@@ -44,62 +42,17 @@ def _nom(r):
     t = r.get('name_translated') or {}
     return f"{n} {t.get('en', '') if isinstance(t, dict) else ''}"
 
-MOTIFS = {'poux': 'lice-count', 'mortalite': 'mort-ev', 'transferts': 'transfers-transfert'}   # noms des fichiers du DFO
-
-def _api(action, **params):
-    import json
-    url = CKAN.replace('package_show?id=', action + '?') + urllib.parse.urlencode(params)
-    rep = json.loads(urllib.request.urlopen(url, timeout=60).read().decode('utf-8'))
-    if not rep.get('success'): raise RuntimeError(f'catalogue : échec {action} {params}')
-    return rep['result']
-
-def _csv_anglais(resources, motif=None):
-    """Le CSV de DONNÉES en anglais : fichier « ...-rpt-...-eng.csv » (« -def- » = terminologie)."""
-    def ok(r):
-        u = (r.get('url') or '').lower()
-        if motif: return motif in u and '-rpt-' in u and u.endswith('eng.csv')
-        return 'data' in _nom(r).lower() and ('english' in _nom(r).lower() or 'en' in (r.get('language') or [])) \
-            and (r.get('format') or '').upper() == 'CSV'
-    return [r for r in resources if ok(r)]
-
-def ressource(package_id, motif=None):
+def ressource(package_id):
     """-> (url du CSV de données en anglais, date de dernière modification)"""
-    res = _api('package_show', id=package_id)['resources']
-    cand = _csv_anglais(res, motif) or _csv_anglais(res)
+    import json
+    rep = json.loads(urllib.request.urlopen(CKAN + package_id, timeout=60).read().decode('utf-8'))
+    if not rep.get('success'): raise RuntimeError(f'catalogue : échec pour {package_id}')
+    cand = [r for r in rep['result']['resources']
+            if 'data' in _nom(r).lower() and ('english' in _nom(r).lower() or 'en' in (r.get('language') or []))
+            and (r.get('format') or '').upper() == 'CSV']
     if not cand: raise RuntimeError(f'catalogue : aucun CSV de données anglais dans {package_id}')
     r = cand[0]
     return r['url'], (r.get('last_modified') or r.get('metadata_modified') or '')
-
-def trouver_jeu(motif):
-    """Identifiant d'un jeu dont on connaît le nom de fichier mais pas l'identifiant."""
-    for q in (motif, 'Introductions Transfers British Columbia aquaculture', 'finfish transfers British Columbia aquaculture'):
-        for pkg in _api('package_search', q=q, rows=20).get('results', []):
-            if _csv_anglais(pkg.get('resources', []), motif): return pkg['id']
-    return None
-
-def telecharger():
-    """Télécharge les CSV de données du DFO dans donnees_ca/brut/ quand le catalogue dit qu'ils ont changé."""
-    import json, os
-    etat = json.load(open(ETAT)) if os.path.exists(ETAT) else {}
-    os.makedirs(os.path.join('donnees_ca', 'brut'), exist_ok=True)
-    echecs = []
-    for jeu, motif in MOTIFS.items():
-        try:
-            pid = JEUX.get(jeu) or trouver_jeu(motif)
-            if not pid: raise RuntimeError('jeu introuvable dans le catalogue')
-            url, modif = ressource(pid, motif)
-            dest = os.path.join('donnees_ca', 'brut', f'{jeu}.csv')
-            if etat.get(jeu) == modif and os.path.exists(dest):
-                print(f'{jeu:11} : inchangé (modifié {modif})'); continue
-            data = urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': 'suivi-salmonicole/1.0'}), timeout=180).read()
-            if len(data) < 1000 or b',' not in data[:500]: raise RuntimeError(f'fichier suspect ({len(data)} octets)')
-            open(dest, 'wb').write(data)
-            etat[jeu] = modif
-            print(f'{jeu:11} : TÉLÉCHARGÉ ({len(data) // 1024} ko, modifié {modif})')
-        except Exception as e:                                    # noqa: BLE001
-            echecs.append(jeu); print(f'{jeu:11} : ERREUR {e}')
-    json.dump(etat, open(ETAT, 'w'), indent=1)
-    if echecs: raise SystemExit(f'échec pour : {", ".join(echecs)}')
 
 def catalogue():
     """Affiche, pour chaque jeu, l'adresse du CSV et s'il a changé depuis le dernier passage."""
@@ -109,7 +62,7 @@ def catalogue():
     for jeu, pid in JEUX.items():
         if not pid:
             print(f'{jeu:11} : identifiant inconnu, à renseigner dans JEUX'); continue
-        url, modif = ressource(pid, MOTIFS.get(jeu))
+        url, modif = ressource(pid)
         change = etat.get(jeu) != modif
         changes[jeu] = (url, change)
         print(f'{jeu:11} : {"CHANGÉ" if change else "inchangé"} (modifié {modif or "?"})  {url}')
@@ -231,9 +184,7 @@ if __name__ == '__main__':
     b.add_argument('--catalogue', action='store_true', help='adresses et dates lues dans le catalogue open.canada.ca')
     b.add_argument('--force', action='store_true', help='reconstruire même si rien n\'a changé')
     sp.add_parser('catalogue')
-    sp.add_parser('telecharger')
     a = p.parse_args()
     if a.cmd == 'inspect': inspect(a.src)
     elif a.cmd == 'catalogue': catalogue()
-    elif a.cmd == 'telecharger': telecharger()
     else: build(a)
