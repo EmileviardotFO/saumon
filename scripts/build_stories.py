@@ -121,7 +121,7 @@ def rules(items):
             for t in n.get('themes') or []:
                 if t in THEMES and t != 'other' and t not in th: th.append(t)
         out.append({'basin': g['basin'], 'who': g['who'] or 'Sector', 'event': '', 'title': lead['title'], 'summary': '',
-                    'themes': th[:2] or ['other'], 'ids': [n['id'] for n in its], 'chart': None})
+                    'themes': th[:2] or ['other'], 'ids': [n['id'] for n in its], 'chart': None, 'priority': None})
     return out
 
 
@@ -130,7 +130,7 @@ PROMPT = """You turn salmon-farming trade-press headlines into a news digest for
 
 Group the headlines into stories (one real-world event or development each; several outlets reporting the same results are ONE story).
 Output ONE JSON object PER LINE (JSON Lines), nothing else: no array, no prose, no code fences. Each line:
-{"basin": "...", "who": "...", "event": "...", "title": "...", "summary": "...", "themes": [...], "ids": [...], "chart": null}
+{"basin": "...", "who": "...", "event": "...", "title": "...", "summary": "...", "themes": [...], "ids": [...], "chart": null, "priority": 1}
 - basin: one of NO, CL, GB, FO, IS, CA, AU, IE, NZ, US, global, FEED (FEED = fish feed and its raw materials: fishmeal, fish oil, anchovy, El Nino, soy, krill, feed companies). Scottish Sea Farms is GB even when reported by SalMar or Leroy; Icelandic Salmon is IS.
 - who: the company the story is about, or "Sector" for a country, market or policy story.
 - event: short label such as "Q3 2026 results, published 3 Nov" when relevant, else "".
@@ -139,6 +139,12 @@ Output ONE JSON object PER LINE (JSON Lines), nothing else: no array, no prose, 
 - themes: 1-2 of market, feed, biology, regulation, companies.
 - ids: ids of every headline in the story (each id at most once).
 - chart: null, or only if the inputs state 2-4 directly comparable figures (same unit): {"title": "...", "bars": [{"label": "...", "value": number, "display": "as written"}]}.
+- priority: 1, 2 or 3, for a salmon market analyst.
+  1 = market access and trade (tariffs, duties, export taxes, bans, inspections by an importing country, e.g. Brazil or China),
+      prices, exports and demand; mortality, disease, algal blooms, jellyfish or other losses; the economic weight of salmon farming
+      for the country (GDP, exports, jobs).
+  2 = results and guidance of farmers, production rules (licences, lice rules, capacity), feed costs and raw materials.
+  3 = everything else (people, awards, events, technology, local news).
 Skip headlines that are not about salmon farming, salmon markets or fish feed."""
 
 LOTS = [('NO',), ('CL', 'CA', 'AU', 'US', 'NZ', 'IE'), ('FO', 'GB', 'IS'), ('FEED', 'global')]
@@ -232,7 +238,7 @@ def check(stories, by_id):
         out.append({'basin': s.get('basin') if s.get('basin') in BASINS else 'global', 'who': (s.get('who') or 'Sector')[:60],
                     'event': (s.get('event') or '')[:80], 'title': (s.get('title') or by_id[ids[0]]['title'])[:200],
                     'summary': (s.get('summary') or '')[:700], 'themes': [t for t in s.get('themes') or [] if t in THEMES][:2] or ['other'],
-                    'ids': ids, 'chart': ch})
+                    'ids': ids, 'chart': ch, 'priority': s.get('priority') if s.get('priority') in (1, 2, 3) else None})
     return out, seen
 
 
