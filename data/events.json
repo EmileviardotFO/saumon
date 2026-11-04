@@ -4,23 +4,23 @@
   "status": {
    "ilaks.no": "ok 12 articles, 0 kept",
    "www.kyst.no": "ok 43 articles, 0 kept",
-   "www.fishfarmingexpert.com": "ok 65 articles, 1 kept",
+   "www.fishfarmingexpert.com": "ok 65 articles, 0 kept",
    "www.fishfarmermagazine.com": "ok 30 articles, 0 kept",
    "www.salmonexpert.cl": "ok 55 articles, 3 kept",
    "thefishsite.com": "ok 50 articles, 1 kept",
-   "news.google.com (NO no #1)": "ok 9 articles, 7 kept",
+   "news.google.com (NO no #1)": "ok 10 articles, 8 kept",
    "news.google.com (NO no #2)": "ok 9 articles, 1 kept",
    "news.google.com (CL es #3)": "ok 29 articles, 10 kept",
    "news.google.com (CL es #4)": "ok 10 articles, 6 kept",
    "news.google.com (IS is #5)": "ok 0 articles, 0 kept",
-   "news.google.com (IS en #6)": "ok 44 articles, 12 kept",
-   "news.google.com (GB en #7)": "ok 71 articles, 12 kept",
-   "news.google.com (FO en #8)": "ok 10 articles, 2 kept",
+   "news.google.com (IS en #6)": "ok 8 articles, 3 kept",
+   "news.google.com (GB en #7)": "ok 34 articles, 11 kept",
+   "news.google.com (FO en #8)": "ok 8 articles, 1 kept",
    "news.google.com (FO fo #9)": "ok 0 articles, 0 kept",
-   "news.google.com (CA en #10)": "ok 8 articles, 1 kept",
-   "news.google.com (multi en #11)": "ok 16 articles, 1 kept",
-   "news.google.com (multi en #12)": "ok 100 articles, 12 kept",
-   "gov.scot FHI": "error: no xlsx link (1983 chars, 0 xlsx links, title: )"
+   "news.google.com (CA en #10)": "ok 12 articles, 2 kept",
+   "news.google.com (multi en #11)": "ok 17 articles, 1 kept",
+   "news.google.com (multi en #12)": "ok 76 articles, 12 kept",
+   "gov.scot FHI": "ok 6824 reports, last 2026-10-14"
   },
   "note": "news = articles kept by keyword (a mortality word + a farming word), classified by cause and basin; manual = events entered by hand with their losses; scotland_fhi = mortalities reported to the Scottish Fish Health Inspectorate",
   "causes": [
@@ -1126,7 +1126,7 @@
   }
  ],
  "scotland_fhi": {
-  "source": "https://www.gov.scot/binaries/content/documents/govscot/publications/transparency-data/2019/12/fish-health-inspectorate-mortality-information/documents/mortality-information---until-end-october-2019/mortality-information---until-end-october-2019/govscot%3Adocument/Mortality%2Binformation%2B-%2Buntil%2Bend%2BAugust%2B2026.xlsx",
+  "source": "https://www.gov.scot/binaries/content/documents/govscot/publications/transparency-data/2019/12/fish-health-inspectorate-mortality-information/documents/mortality-information---until-end-october-2019/mortality-information---until-end-october-2019/govscot%3Adocument/Mortality%2Binformation%2B-%2Buntil%2Bend%2BSeptember%2B2026.xlsx",
   "monthly": {
    "2023-10": {
     "reports": 63,
@@ -1463,17 +1463,1218 @@
     }
    },
    "2026-09": {
-    "reports": 85,
+    "reports": 157,
     "causes": {
-     "gill": 40,
-     "disease": 42,
+     "gill": 97,
+     "disease": 56,
      "jellyfish": 5,
-     "treatment": 7,
-     "unspecified": 3
+     "treatment": 14,
+     "unspecified": 9
+    }
+   },
+   "2026-10": {
+    "reports": 41,
+    "causes": {
+     "gill": 32,
+     "unspecified": 5,
+     "disease": 9,
+     "jellyfish": 1
     }
    }
   },
   "reports": [
+   {
+    "date": "2026-10-14",
+    "site": "Scalpay",
+    "company": "Mowi Scotland Ltd",
+    "cause": "Gill health",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 2.06
+   },
+   {
+    "date": "2026-10-14",
+    "site": "Bagh Dail Nan Cean",
+    "company": "Mowi Scotland Ltd",
+    "cause": "Bacterial infection",
+    "causes": [
+     "disease"
+    ],
+    "n": null,
+    "pct": 1.48
+   },
+   {
+    "date": "2026-10-14",
+    "site": "Poll Na Gille",
+    "company": "Mowi Scotland Ltd",
+    "cause": "Gill health and bacteria",
+    "causes": [
+     "gill",
+     "disease"
+    ],
+    "n": null,
+    "pct": 4.64
+   },
+   {
+    "date": "2026-10-14",
+    "site": "Shuna SW (Rubh'an Trilleachain)",
+    "company": "Kames Fish Farming Ltd",
+    "cause": "Gill health and bacteria",
+    "causes": [
+     "gill",
+     "disease"
+    ],
+    "n": null,
+    "pct": 8.09
+   },
+   {
+    "date": "2026-10-14",
+    "site": "Marulaig Bay",
+    "company": "Mowi Scotland Ltd",
+    "cause": "Gill health",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 2.16
+   },
+   {
+    "date": "2026-10-14",
+    "site": "Hellisay",
+    "company": "Mowi Scotland Ltd",
+    "cause": "AGD",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 1.38
+   },
+   {
+    "date": "2026-10-14",
+    "site": "Tabhaigh",
+    "company": "Mowi Scotland Ltd",
+    "cause": "Failed smolts and transfer mortality",
+    "causes": [
+     "unspecified"
+    ],
+    "n": null,
+    "pct": 1.94
+   },
+   {
+    "date": "2026-10-14",
+    "site": "Soay",
+    "company": "Mowi Scotland Ltd",
+    "cause": "Maturation, bacteria",
+    "causes": [
+     "disease"
+    ],
+    "n": null,
+    "pct": 2.47
+   },
+   {
+    "date": "2026-10-14",
+    "site": "Corry Farm",
+    "company": "Mowi Scotland Ltd",
+    "cause": "Failed smolts and transfer mortality",
+    "causes": [
+     "unspecified"
+    ],
+    "n": null,
+    "pct": 1.82
+   },
+   {
+    "date": "2026-10-13",
+    "site": "Ardifuir",
+    "company": "Mowi Scotland Ltd",
+    "cause": "Complex Gill Disease",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 2.01
+   },
+   {
+    "date": "2026-10-13",
+    "site": "Loch Snizort East",
+    "company": "Loch Duart Plc",
+    "cause": "Combination of factors, Gill issues and viral",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 7.61
+   },
+   {
+    "date": "2026-10-13",
+    "site": "Gob Na Hoe",
+    "company": "Loch Duart Plc",
+    "cause": "Complex Gill issues/Solmaris corona",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 1.13
+   },
+   {
+    "date": "2026-10-12",
+    "site": "Bastaness",
+    "company": "Cooke Aquaculture Scotland Ltd",
+    "cause": "Gill Health Related + Viral",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 1.39
+   },
+   {
+    "date": "2026-10-12",
+    "site": "Bay of Vady",
+    "company": "Cooke Aquaculture Scotland Ltd",
+    "cause": "Gill Health Related",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 4.39
+   },
+   {
+    "date": "2026-10-12",
+    "site": "East Mochlett",
+    "company": "Cooke Aquaculture Scotland Ltd",
+    "cause": "Gill Health Related",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 1.22
+   },
+   {
+    "date": "2026-10-12",
+    "site": "East Skelwick",
+    "company": "Cooke Aquaculture Scotland Ltd",
+    "cause": "Gill Health Related",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 1.36
+   },
+   {
+    "date": "2026-10-12",
+    "site": "Wick of Vatsetter",
+    "company": "Cooke Aquaculture Scotland Ltd",
+    "cause": "Gill Health Related + Viral",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 1.22
+   },
+   {
+    "date": "2026-10-12",
+    "site": "Chalmers Hope",
+    "company": "Cooke Aquaculture Scotland Ltd",
+    "cause": "Gill Health Related",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 2
+   },
+   {
+    "date": "2026-10-09",
+    "site": "Scalpay",
+    "company": "Mowi Scotland Ltd",
+    "cause": "Gill health",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 1.43
+   },
+   {
+    "date": "2026-10-09",
+    "site": "Bagh Dail Nan Cean",
+    "company": "Mowi Scotland Ltd",
+    "cause": "Bacterial infection",
+    "causes": [
+     "disease"
+    ],
+    "n": null,
+    "pct": 1.17
+   },
+   {
+    "date": "2026-10-09",
+    "site": "Poll Na Gille",
+    "company": "Mowi Scotland Ltd",
+    "cause": "Gill health and bacteria",
+    "causes": [
+     "gill",
+     "disease"
+    ],
+    "n": null,
+    "pct": 2.98
+   },
+   {
+    "date": "2026-10-09",
+    "site": "Shuna SW (Rubh'an Trilleachain)",
+    "company": "Kames Fish Farming Ltd",
+    "cause": "Gill health and bacteria",
+    "causes": [
+     "gill",
+     "disease"
+    ],
+    "n": null,
+    "pct": 2.16
+   },
+   {
+    "date": "2026-10-09",
+    "site": "Marulaig Bay",
+    "company": "Mowi Scotland Ltd",
+    "cause": "Gill health",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 3.3
+   },
+   {
+    "date": "2026-10-09",
+    "site": "Tabhaigh",
+    "company": "Mowi Scotland Ltd",
+    "cause": "Failed smolts and transfer mortality",
+    "causes": [
+     "unspecified"
+    ],
+    "n": null,
+    "pct": 2.1
+   },
+   {
+    "date": "2026-10-07",
+    "site": "Scallastle",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Gill health related (CGD); Maturation",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 2.4
+   },
+   {
+    "date": "2026-10-07",
+    "site": "Bight of Foraness",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Gill Health related (CGD)",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 1.6
+   },
+   {
+    "date": "2026-10-07",
+    "site": "Poseidon",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Gill health related (CGD); viral disease",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 8.4
+   },
+   {
+    "date": "2026-10-07",
+    "site": "Nevis A",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Bacterial disease (Pasturella)",
+    "causes": [
+     "disease"
+    ],
+    "n": null,
+    "pct": 1.1
+   },
+   {
+    "date": "2026-10-07",
+    "site": "Shapinsay",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Bacterial disease (Yersina); Gill Health related (CGD)",
+    "causes": [
+     "gill",
+     "disease"
+    ],
+    "n": null,
+    "pct": 3.1
+   },
+   {
+    "date": "2026-10-07",
+    "site": "Puldrite",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Gill health related (CGD)",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 3.4
+   },
+   {
+    "date": "2026-10-07",
+    "site": "Slocka Ronas Voe",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Gill health related (CGD) post jellyfish bloom",
+    "causes": [
+     "jellyfish",
+     "gill"
+    ],
+    "n": null,
+    "pct": 1.2
+   },
+   {
+    "date": "2026-10-07",
+    "site": "Setterness North (Bomlo)",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Gill health related (CGD)",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 2.1
+   },
+   {
+    "date": "2026-10-06",
+    "site": "Bay of Holland",
+    "company": "Cooke Aquaculture Scotland Ltd",
+    "cause": "Gill Health Related",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 2.4
+   },
+   {
+    "date": "2026-10-06",
+    "site": "Bay of Vady",
+    "company": "Cooke Aquaculture Scotland Ltd",
+    "cause": "Gill Health Related",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 5.51
+   },
+   {
+    "date": "2026-10-06",
+    "site": "East Moclett",
+    "company": "Cooke Aquaculture Scotland Ltd",
+    "cause": "Gill Health Related",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 1.11
+   },
+   {
+    "date": "2026-10-06",
+    "site": "Skelwick Skerry",
+    "company": "Cooke Aquaculture Scotland Ltd",
+    "cause": "Gill Health Related",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 1.44
+   },
+   {
+    "date": "2026-10-06",
+    "site": "Wick of Vatsetter",
+    "company": "Cooke Aquaculture Scotland Ltd",
+    "cause": "Gill Health Related, viral",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 1.87
+   },
+   {
+    "date": "2026-10-05",
+    "site": "Loch Snizort East",
+    "company": "Loch Duart Plc",
+    "cause": "Viral Disease",
+    "causes": [
+     "unspecified"
+    ],
+    "n": null,
+    "pct": 14.47
+   },
+   {
+    "date": "2026-10-05",
+    "site": "Gob na Hoe",
+    "company": "Loch Duart Plc",
+    "cause": "Complex Gill issues/Solmaris corona",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 2.86
+   },
+   {
+    "date": "2026-10-05",
+    "site": "Geisgeil (Tank Site)",
+    "company": "Loch Duart Plc",
+    "cause": "Post transfer mortality from marine",
+    "causes": [
+     "unspecified"
+    ],
+    "n": null,
+    "pct": 3.25
+   },
+   {
+    "date": "2026-10-04",
+    "site": "Ardifuir",
+    "company": "Mowi Scotland Ltd",
+    "cause": "Complex Gill Disease",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 2.25
+   },
+   {
+    "date": "2026-09-30",
+    "site": "Scallastle",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Gill health related (CGD); Maturation",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 3.4
+   },
+   {
+    "date": "2026-09-30",
+    "site": "Scallastle",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Gill health related (CGD); Maturation",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 2.3
+   },
+   {
+    "date": "2026-09-30",
+    "site": "Bight of Foraness",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Gill Health related (CGD)",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 1.1
+   },
+   {
+    "date": "2026-09-30",
+    "site": "Nevis A",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Bacterial disease (Pasturella)",
+    "causes": [
+     "disease"
+    ],
+    "n": null,
+    "pct": 1.9
+   },
+   {
+    "date": "2026-09-30",
+    "site": "Shapinsay",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Bacterial disease (Yersina); Gill Health related (CGD)",
+    "causes": [
+     "gill",
+     "disease"
+    ],
+    "n": null,
+    "pct": 2.1
+   },
+   {
+    "date": "2026-09-30",
+    "site": "Fiunary",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Environmental (low DO); Gill health related (CGD)",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 1.6
+   },
+   {
+    "date": "2026-09-30",
+    "site": "Puldrite",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Gill health related (CGD)",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 5.1
+   },
+   {
+    "date": "2026-09-30",
+    "site": "Tanera",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Gill health related (CGD)",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 5.3
+   },
+   {
+    "date": "2026-09-30",
+    "site": "Bloody Bay",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Gill health related (CGD)",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 2.3
+   },
+   {
+    "date": "2026-09-30",
+    "site": "Setterness North (Bomlo)",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Gill health related (CGD)",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 1.8
+   },
+   {
+    "date": "2026-09-30",
+    "site": "Wyre",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Gill health related (CGD)",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 1.1
+   },
+   {
+    "date": "2026-09-30",
+    "site": "Bight of Bellister, Dury Voe",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Environmental (low DO); Gill health related (CGD)",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 1.9
+   },
+   {
+    "date": "2026-09-30",
+    "site": "Swarta Skerry, Dury Voe",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Environmental (low DO); Gill health related (CGD)",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 4.2
+   },
+   {
+    "date": "2026-09-28",
+    "site": "Wick of Vatsetter",
+    "company": "Cooke Aquaculture Scotland Ltd",
+    "cause": "Gill Health Related",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 1.77
+   },
+   {
+    "date": "2026-09-28",
+    "site": "Bay of Vady",
+    "company": "Cooke Aquaculture Scotland Ltd",
+    "cause": "Gill Health Related",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 5.61
+   },
+   {
+    "date": "2026-09-28",
+    "site": "Bastaness",
+    "company": "Cooke Aquaculture Scotland Ltd",
+    "cause": "Gill Health Related",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 1.18
+   },
+   {
+    "date": "2026-09-28",
+    "site": "Outer Bay (Loch Droighniche)",
+    "company": "Loch Duart Plc",
+    "cause": "Complex Gill issues/handling",
+    "causes": [
+     "gill",
+     "treatment"
+    ],
+    "n": null,
+    "pct": 3.92
+   },
+   {
+    "date": "2026-09-28",
+    "site": "Loch Snizort East",
+    "company": "Loch Duart Plc",
+    "cause": "AGD/Complex Gill Issues ",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 4.61
+   },
+   {
+    "date": "2026-09-28",
+    "site": "Leinish",
+    "company": "Loch Duart Plc",
+    "cause": "Complex Gill issues/Solmaris corona",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 6.75
+   },
+   {
+    "date": "2026-09-28",
+    "site": "Sound of Harris",
+    "company": "Loch Duart Plc",
+    "cause": "AGD",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 5.33
+   },
+   {
+    "date": "2026-09-28",
+    "site": "Geisgeil (Tank Site)",
+    "company": "Loch Duart Plc",
+    "cause": "Post transfer mortality from marine",
+    "causes": [
+     "unspecified"
+    ],
+    "n": null,
+    "pct": 6.42
+   },
+   {
+    "date": "2026-09-28",
+    "site": "Reibinish",
+    "company": "Bakkafrost Scotland",
+    "cause": "Viral Disease (CMS)",
+    "causes": [
+     "disease"
+    ],
+    "n": null,
+    "pct": 3.9
+   },
+   {
+    "date": "2026-09-28",
+    "site": "Scadabay",
+    "company": "Bakkafrost Scotland",
+    "cause": "Viral disease (CMS)",
+    "causes": [
+     "disease"
+    ],
+    "n": null,
+    "pct": 12.62
+   },
+   {
+    "date": "2026-09-28",
+    "site": "Quarry Point",
+    "company": "Bakkafrost Scotland",
+    "cause": "Gill health related; Handling (Post-lice treatment)",
+    "causes": [
+     "gill",
+     "treatment"
+    ],
+    "n": null,
+    "pct": 1.07
+   },
+   {
+    "date": "2026-09-28",
+    "site": "Ardcastle",
+    "company": "Bakkafrost Scotland",
+    "cause": "Gill health related",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 1.57
+   },
+   {
+    "date": "2026-09-27",
+    "site": "Ardifuir",
+    "company": "Mowi Scotland Ltd",
+    "cause": "Complex Gill Disease",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 1.38
+   },
+   {
+    "date": "2026-09-25",
+    "site": "Poll Na Gille",
+    "company": "Mowi Scotland Ltd",
+    "cause": "Bacterial infection",
+    "causes": [
+     "disease"
+    ],
+    "n": null,
+    "pct": 2.32
+   },
+   {
+    "date": "2026-09-25",
+    "site": "Colonsay",
+    "company": "Mowi Scotland Ltd",
+    "cause": "Gill Treatment mortality",
+    "causes": [
+     "gill",
+     "treatment"
+    ],
+    "n": null,
+    "pct": 6.89
+   },
+   {
+    "date": "2026-09-25",
+    "site": "Groatay",
+    "company": "Mowi Scotland Ltd",
+    "cause": "Gill Treatment mortality",
+    "causes": [
+     "gill",
+     "treatment"
+    ],
+    "n": null,
+    "pct": 3.81
+   },
+   {
+    "date": "2026-09-25",
+    "site": "Grey Horse Channel",
+    "company": "Mowi Scotland Ltd",
+    "cause": "CMS and gill health (PGD)",
+    "causes": [
+     "gill",
+     "disease"
+    ],
+    "n": null,
+    "pct": 1.04
+   },
+   {
+    "date": "2026-09-25",
+    "site": "Marulaig Bay",
+    "company": "Mowi Scotland Ltd",
+    "cause": "Gill treatment mortalty and CGD ",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 2.33
+   },
+   {
+    "date": "2026-09-25",
+    "site": "Shuna SW (Rubh'an Trilleachain)",
+    "company": "Kames Fish Farming Ltd",
+    "cause": "Bacterial infection",
+    "causes": [
+     "disease"
+    ],
+    "n": null,
+    "pct": 1.75
+   },
+   {
+    "date": "2026-09-25",
+    "site": "Yetts O' Muckart",
+    "company": "Cooke Aquaculture (Freshwater) Ltd",
+    "cause": "Furunculosis",
+    "causes": [
+     "unspecified"
+    ],
+    "n": null,
+    "pct": 1.85
+   },
+   {
+    "date": "2026-09-24",
+    "site": "Bight of Foraness",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Gill Health related (CGD)",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 1.1
+   },
+   {
+    "date": "2026-09-24",
+    "site": "Nevis A",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Bacterial disease (Pasturella)",
+    "causes": [
+     "disease"
+    ],
+    "n": null,
+    "pct": 2.6
+   },
+   {
+    "date": "2026-09-24",
+    "site": "Shapinsay",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Bacterial disease (Yersina); Gill Health related (CGD)",
+    "causes": [
+     "gill",
+     "disease"
+    ],
+    "n": null,
+    "pct": 2.3
+   },
+   {
+    "date": "2026-09-24",
+    "site": "Puldrite",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Gill health related (CGD)",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 4.1
+   },
+   {
+    "date": "2026-09-24",
+    "site": "Tanera",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Gill health related (CGD)",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 2.5
+   },
+   {
+    "date": "2026-09-24",
+    "site": "Bloody Bay",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Gill health related (CGD)",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 3.5
+   },
+   {
+    "date": "2026-09-24",
+    "site": "Wyre",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Gill health related (CGD)",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 2.2
+   },
+   {
+    "date": "2026-09-24",
+    "site": "Bight of Bellister, Dury Voe",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Environmental (low DO); Gill health related (CGD)",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 5.8
+   },
+   {
+    "date": "2026-09-24",
+    "site": "Swarta Skerry, Dury Voe",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Environmental (low DO); Gill health related (CGD)",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 4.8
+   },
+   {
+    "date": "2026-09-24",
+    "site": "Cairndow Hatchery",
+    "company": "Cooke Aquaculture (Freshwater) Ltd",
+    "cause": "Furunculosis and environmenal challenge from spate condtions",
+    "causes": [
+     "unspecified"
+    ],
+    "n": null,
+    "pct": 6.68
+   },
+   {
+    "date": "2026-09-21",
+    "site": "Outer Bay (Loch Droighniche)",
+    "company": "Loch Duart Plc",
+    "cause": "Complex Gill issues/handling",
+    "causes": [
+     "gill",
+     "treatment"
+    ],
+    "n": null,
+    "pct": 4.15
+   },
+   {
+    "date": "2026-09-21",
+    "site": "Gob na Hoe",
+    "company": "Loch Duart Plc",
+    "cause": "Solmaris corona / Complex gill disease",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 1.64
+   },
+   {
+    "date": "2026-09-21",
+    "site": "Leinish",
+    "company": "Loch Duart Plc",
+    "cause": "Solmaris corona / Complex gill disease",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 8.55
+   },
+   {
+    "date": "2026-09-21",
+    "site": "Sound of Harris",
+    "company": "Loch Duart Plc",
+    "cause": "AGD",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 5.09
+   },
+   {
+    "date": "2026-09-21",
+    "site": "Geisgeil (Tank Site)",
+    "company": "Loch Duart Plc",
+    "cause": "Post transfer mortality from marine",
+    "causes": [
+     "unspecified"
+    ],
+    "n": null,
+    "pct": 3.31
+   },
+   {
+    "date": "2026-09-21",
+    "site": "Ardifuir",
+    "company": "Mowi Scotland Ltd",
+    "cause": "Complex Gill Disease",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 1.38
+   },
+   {
+    "date": "2026-09-21",
+    "site": "Reibinish",
+    "company": "Bakkafrost Scotland",
+    "cause": "Viral Disease (CMS)",
+    "causes": [
+     "disease"
+    ],
+    "n": null,
+    "pct": 10.72
+   },
+   {
+    "date": "2026-09-21",
+    "site": "Scadabay",
+    "company": "Bakkafrost Scotland",
+    "cause": "Viral disease (CMS)",
+    "causes": [
+     "disease"
+    ],
+    "n": null,
+    "pct": 10.13
+   },
+   {
+    "date": "2026-09-21",
+    "site": "Djubawick",
+    "company": "Cooke Aquaculture Scotland Ltd",
+    "cause": "Gill Health Related",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 1.25
+   },
+   {
+    "date": "2026-09-21",
+    "site": "Balta Isle",
+    "company": "Cooke Aquaculture Scotland Ltd",
+    "cause": "Gill Health Related",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 1.16
+   },
+   {
+    "date": "2026-09-21",
+    "site": "Bay of Vady",
+    "company": "Cooke Aquaculture Scotland Ltd",
+    "cause": "Gill Health Related",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 1.87
+   },
+   {
+    "date": "2026-09-21",
+    "site": "Bastaness",
+    "company": "Cooke Aquaculture Scotland Ltd",
+    "cause": "Gill Health Related",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 1.13
+   },
+   {
+    "date": "2026-09-21",
+    "site": "Meil Bay",
+    "company": "Cooke Aquaculture Scotland Ltd",
+    "cause": "Gill Health Related",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 1.48
+   },
+   {
+    "date": "2026-09-16",
+    "site": "Scallastle",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Gill health related (CGD); Maturation",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 3.6
+   },
+   {
+    "date": "2026-09-16",
+    "site": "Bight of Foraness",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Gill Health related (CGD)",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 3.2
+   },
+   {
+    "date": "2026-09-16",
+    "site": "Nevis A",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Bacterial disease (Pasturella)",
+    "causes": [
+     "disease"
+    ],
+    "n": null,
+    "pct": 2.5
+   },
+   {
+    "date": "2026-09-16",
+    "site": "Shapinsay",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Bacterial disease (Yersina); Gill Health related (CGD)",
+    "causes": [
+     "gill",
+     "disease"
+    ],
+    "n": null,
+    "pct": 1.7
+   },
+   {
+    "date": "2026-09-16",
+    "site": "Puldrite",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Gill health related (CGD)",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 4.8
+   },
+   {
+    "date": "2026-09-16",
+    "site": "Tanera",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Gill health related (CGD)",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 9.6
+   },
+   {
+    "date": "2026-09-16",
+    "site": "Bloody Bay",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Gill health related (CGD)",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 2
+   },
+   {
+    "date": "2026-09-16",
+    "site": "Wyre",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Gill health related (CGD)",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 1.5
+   },
+   {
+    "date": "2026-09-16",
+    "site": "Bight of Bellister, Dury Voe",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Gill health related (CGD)",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 2
+   },
+   {
+    "date": "2026-09-16",
+    "site": "Barcaldine Smolt Unit ",
+    "company": "Scottish Sea Farms Ltd",
+    "cause": "Saprolegniosis",
+    "causes": [
+     "unspecified"
+    ],
+    "n": null,
+    "pct": 2.6
+   },
    {
     "date": "2026-09-15",
     "site": "Groatay",
@@ -1531,6 +2732,75 @@
     ],
     "n": null,
     "pct": 1.86
+   },
+   {
+    "date": "2026-09-15",
+    "site": "Groatay",
+    "company": "Mowi Scotland Ltd",
+    "cause": "Gill treatment mortality",
+    "causes": [
+     "gill",
+     "treatment"
+    ],
+    "n": null,
+    "pct": 3.55
+   },
+   {
+    "date": "2026-09-15",
+    "site": "Grey Horse Channel",
+    "company": "Mowi Scotland Ltd",
+    "cause": "CMS and gill health (PDG)",
+    "causes": [
+     "gill",
+     "disease"
+    ],
+    "n": null,
+    "pct": 2.37
+   },
+   {
+    "date": "2026-09-15",
+    "site": "Stulaigh South",
+    "company": "Mowi Scotland Ltd",
+    "cause": "Gill health (PGD)",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 3.04
+   },
+   {
+    "date": "2026-09-15",
+    "site": "Marulaig Bay",
+    "company": "Mowi Scotland Ltd",
+    "cause": "Gill treatment mortality",
+    "causes": [
+     "gill",
+     "treatment"
+    ],
+    "n": null,
+    "pct": 3.31
+   },
+   {
+    "date": "2026-09-15",
+    "site": "Soay",
+    "company": "Mowi Scotland Ltd",
+    "cause": "AGD and gill health (PGD)",
+    "causes": [
+     "gill"
+    ],
+    "n": null,
+    "pct": 3.21
+   },
+   {
+    "date": "2026-09-15",
+    "site": "Cairndow Hatchery",
+    "company": "Cooke Aquaculture (Freshwater) Ltd",
+    "cause": "Furunculosis and environmenal challenge from spate condtions",
+    "causes": [
+     "unspecified"
+    ],
+    "n": null,
+    "pct": 9.83
    },
    {
     "date": "2026-09-14",
