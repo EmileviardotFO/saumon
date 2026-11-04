@@ -160,6 +160,21 @@ jobs:
           BW_CLIENT_SECRET: ${{ secrets.BW_CLIENT_SECRET }}
         run: python3 scripts/update_bw_sites.py
 
+      - name: Gros poissons par eleveur et par zone, deux mois a venir (historique des sites BarentsWatch + registre)
+        # Calcul gratuit, sans appel externe : date de mise en mer de chaque site, courbe de croissance de sa zone,
+        # probabilite de recolte selon l'age mesuree sur l'historique. Ecrit data/big_fish.json (onglet Generations map).
+        id: bigfish
+        continue-on-error: true
+        timeout-minutes: 5
+        run: python3 scripts/build_big_fish.py
+
+      - name: Comptes annuels des eleveurs prives (registres de Brønnøysund, API publique gratuite)
+        # Nordlaks, Nova Sea, Lingalaks, Kvarøy, Cermaq Norway... : chiffre d'affaires, resultat d'exploitation et net, par titulaire de licences.
+        id: accounts
+        continue-on-error: true
+        timeout-minutes: 10
+        run: python3 scripts/build_private_accounts.py
+
       - name: Etablissements agrees (Mattilsynet)
         id: estab
         continue-on-error: true
@@ -340,6 +355,8 @@ jobs:
           STEP_ARCHIVE: ${{ steps.archive.outcome }}
           STEP_BW_HEALTH: ${{ steps.bw_health.outcome }}
           STEP_BW_SITES: ${{ steps.bw_sites.outcome }}
+          STEP_BIGFISH: ${{ steps.bigfish.outcome }}
+          STEP_ACCOUNTS: ${{ steps.accounts.outcome }}
           STEP_ESTAB: ${{ steps.estab.outcome }}
           STEP_CHINA: ${{ steps.china.outcome }}
           STEP_EUROSTAT: ${{ steps.eurostat.outcome }}
@@ -409,6 +426,8 @@ jobs:
           [ "${{ steps.ssb_coprod.outcome }}" = "failure" ] && FAILED="$FAILED SSB-coproduits"
           [ "${{ steps.bw_health.outcome }}" = "failure" ] && FAILED="$FAILED BarentsWatch-sante"
           [ "${{ steps.bw_sites.outcome }}" = "failure" ] && FAILED="$FAILED BarentsWatch-registre"
+          [ "${{ steps.bigfish.outcome }}" = "failure" ] && FAILED="$FAILED Gros-poissons"
+          [ "${{ steps.accounts.outcome }}" = "failure" ] && FAILED="$FAILED Comptes-prives"
           [ "${{ steps.estab.outcome }}" = "failure" ] && FAILED="$FAILED Mattilsynet"
           [ "${{ steps.eurostat.outcome }}" = "failure" ] && FAILED="$FAILED Eurostat"
           [ "${{ steps.national.outcome }}" = "failure" ] && FAILED="$FAILED Statistiques-nationales"
