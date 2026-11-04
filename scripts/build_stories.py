@@ -125,32 +125,56 @@ def rules(items):
 
 
 # ----------------------------------------------------------------------------- Claude
-PROMPT = """You turn a week of salmon-farming trade-press headlines into a news digest for an industry analyst.
+PROMPT = """You turn salmon-farming trade-press headlines into a news digest for an industry analyst. Write in English only.
 
 Group the headlines into stories (one real-world event or development each; several outlets reporting the same results are ONE story).
-For each story return:
-- "basin": one of NO, CL, GB, FO, IS, CA, AU, IE, NZ, US, global, FEED (FEED = fish feed and its raw materials: fishmeal, fish oil, soy, krill, feed companies). Scottish Sea Farms is GB even when reported by SalMar or Lerøy; Icelandic Salmon is IS.
-- "who": the company the story is about (e.g. "SalMar", "Scottish Sea Farms", "Bakkafrost"), or "Sector" when it is about a country, market or policy.
-- "event": a short label such as "Q3 2026 results, published 3 Nov" when relevant, else "".
-- "title": one plain English sentence (max 16 words) saying what happened.
-- "summary": 1-3 English sentences giving the context and key figures. Use ONLY facts stated in the headlines and descriptions given; never add outside knowledge, never guess numbers.
-- "themes": 1-2 of market, feed, biology, regulation, companies.
-- "ids": the ids of every headline belonging to the story (each id at most once).
-- "chart": only if the inputs state two to four directly comparable figures (same unit, e.g. guidance before/after, a quarter vs the same quarter a year earlier): {"title": "...", "bars": [{"label": "...", "value": number, "display": "as written"}]}. Otherwise null.
-Skip headlines that are not about salmon farming, salmon markets or fish feed. Answer with JSON only: {"stories": [...]}"""
+Output ONE JSON object PER LINE (JSON Lines), nothing else: no array, no prose, no code fences. Each line:
+{"basin": "...", "who": "...", "event": "...", "title": "...", "summary": "...", "themes": [...], "ids": [...], "chart": null}
+- basin: one of NO, CL, GB, FO, IS, CA, AU, IE, NZ, US, global, FEED (FEED = fish feed and its raw materials: fishmeal, fish oil, anchovy, El Nino, soy, krill, feed companies). Scottish Sea Farms is GB even when reported by SalMar or Leroy; Icelandic Salmon is IS.
+- who: the company the story is about, or "Sector" for a country, market or policy story.
+- event: short label such as "Q3 2026 results, published 3 Nov" when relevant, else "".
+- title: one plain English sentence (max 16 words) saying what happened, translated if the headlines are in Norwegian, Spanish, Faroese or Icelandic.
+- summary: 1-3 English sentences with context and key figures, using ONLY facts stated in the given headlines and descriptions. Never add outside knowledge or guess numbers. Do not use double quotes inside text values.
+- themes: 1-2 of market, feed, biology, regulation, companies.
+- ids: ids of every headline in the story (each id at most once).
+- chart: null, or only if the inputs state 2-4 directly comparable figures (same unit): {"title": "...", "bars": [{"label": "...", "value": number, "display": "as written"}]}.
+Skip headlines that are not about salmon farming, salmon markets or fish feed."""
+
+LOTS = [('NO',), ('CL', 'CA', 'AU', 'US', 'NZ', 'IE'), ('FO', 'GB', 'IS'), ('FEED', 'global')]
 
 
-def claude(items, cle):
+def claude_lot(items, cle):
     lignes = [{'id': n['id'], 'date': n['date'], 'source': n['source'], 'title': n['title'], 'basins': n.get('basins'),
                **({'desc': n['desc']} if n.get('desc') else {})} for n in items]
-    body = {'model': MODEL, 'max_tokens': 12000, 'system': PROMPT,
+    body = {'model': MODEL, 'max_tokens': 32000, 'system': PROMPT,
             'messages': [{'role': 'user', 'content': json.dumps(lignes, ensure_ascii=False)}]}
     req = urllib.request.Request('https://api.anthropic.com/v1/messages', data=json.dumps(body).encode('utf-8'),
                                  headers={'x-api-key': cle, 'anthropic-version': '2023-06-01', 'content-type': 'application/json'})
-    rep = json.loads(urllib.request.urlopen(req, timeout=300).read().decode('utf-8'))
+    rep = json.loads(urllib.request.urlopen(req, timeout=600).read().decode('utf-8'))
     txt = ''.join(b.get('text', '') for b in rep.get('content', []) if b.get('type') == 'text')
-    txt = re.sub(r'^```(?:json)?|```$', '', txt.strip(), flags=re.M).strip()
-    return json.loads(txt)['stories']
+    out, bad = [], 0
+    for ligne in txt.splitlines():                                  # une ligne = un sujet : une ligne abimee ne perd qu'un sujet
+        ligne = ligne.strip().strip(',')
+        if not ligne.startswith('{'): continue
+        try: out.append(json.loads(ligne))
+        except ValueError: bad += 1
+    return out, {'stop': rep.get('stop_reason'), 'in': (rep.get('usage') or {}).get('input_tokens'),
+                 'out': (rep.get('usage') or {}).get('output_tokens'), 'bad_lines': bad}
+
+
+def claude(items, cle):
+    """Un appel par groupe de bassins : des reponses plus courtes, qui ne sont pas coupees."""
+    tous, journal = [], []
+    for lot in LOTS:
+        part = [n for n in items if basin_of(n) in lot]
+        if not part: continue
+        try:
+            st, info = claude_lot(part, cle)
+            tous += st; journal.append({'lot': '+'.join(lot), 'headlines': len(part), 'stories': len(st), **info})
+        except Exception as e:  # noqa: BLE001
+            journal.append({'lot': '+'.join(lot), 'headlines': len(part), 'error': str(e)[:200]})
+    if not tous: raise RuntimeError('; '.join(x.get('error', '') for x in journal) or 'no story returned')
+    return tous, journal
 
 
 def check(stories, by_id):
@@ -195,10 +219,13 @@ def main():
     cle = os.environ.get('ANTHROPIC_API_KEY')
     if cle and items:
         try:
-            stories, seen = check(claude(items, cle), by_id)
+            brut, journal = claude(items, cle)
+            stories, seen = check(brut, by_id)
             rest = [n for n in items if n['id'] not in seen and company(n['title'])]
             stories += rules(rest) if rest else []
             method = 'claude'
+            note = '; '.join(f"{x['lot']}: {x.get('stories', 0)} stories" + (f", stop={x['stop']}" if x.get('stop') not in (None, 'end_turn') else '')
+                             + (f", {x['bad_lines']} unreadable lines" if x.get('bad_lines') else '') + (f", ERROR {x['error']}" if x.get('error') else '') for x in journal)
         except Exception as e:  # noqa: BLE001
             note = f'Claude call failed ({e}); grouped by rules'
             stories = rules(items)
