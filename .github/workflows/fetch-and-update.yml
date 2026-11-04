@@ -248,6 +248,15 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: python3 scripts/build_stories.py
 
+      - name: Rapports trimestriels - cout par kg, EBIT, guidance par entreprise et region (pour This week et Scotland)
+        # Lit les communiques et rapports des resultats repris dans data/stories.json ; chaque chiffre garde doit figurer dans le texte source.
+        id: quarterly
+        continue-on-error: true
+        timeout-minutes: 15
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python3 scripts/build_quarterly.py
+
       - name: Archiver les previsions du mois (onglet Generations map)
         # Enregistre ce que le tableau de bord prevoit a la sortie de chaque mois du registre, pour comparer
         # plus tard prevision et realite. Les mois deja archives ne sont jamais reecrits.
@@ -339,6 +348,7 @@ jobs:
           STEP_EVENTS: ${{ steps.events.outcome }}
           STEP_NEWS: ${{ steps.news.outcome }}
           STEP_STORIES: ${{ steps.stories.outcome }}
+          STEP_QUARTERLY: ${{ steps.quarterly.outcome }}
           STEP_SMOKE: ${{ steps.smoke.outcome }}
           STEP_AUSTRALIA: ${{ steps.australia.outcome }}
           STEP_CANADA_BC: ${{ steps.canada_bc.outcome }}
@@ -400,7 +410,9 @@ jobs:
           [ "${{ steps.national.outcome }}" = "failure" ] && FAILED="$FAILED Statistiques-nationales"
           [ "${{ steps.japan.outcome }}" = "failure" ] && FAILED="$FAILED Japon-importations"
           [ "${{ steps.world.outcome }}" = "failure" ] && FAILED="$FAILED Importations-mondiales"
+          [ "${{ steps.news.outcome }}" = "failure" ] && FAILED="$FAILED Actualite-titres"
           [ "${{ steps.stories.outcome }}" = "failure" ] && FAILED="$FAILED This-week-sujets"
+          [ "${{ steps.quarterly.outcome }}" = "failure" ] && FAILED="$FAILED Rapports-trimestriels"
           [ "${{ steps.archive.outcome }}" = "failure" ] && FAILED="$FAILED Archive-previsions"
           [ "${{ steps.australia.outcome }}" = "failure" ] && FAILED="$FAILED Australie"
           [ "${{ steps.canada_bc.outcome }}" = "failure" ] && FAILED="$FAILED Canada-BC"
