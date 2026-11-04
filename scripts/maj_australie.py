@@ -87,25 +87,64 @@ def nombre(tok):
 
 
 # ----------------------------------------------------------------------------- EPA
+MOIS_COURTS = {'jan': 1, 'feb': 2, 'mar': 3, 'apr': 4, 'may': 5, 'jun': 6, 'jul': 7, 'aug': 8, 'sep': 9, 'oct': 10, 'nov': 11, 'dec': 12}
+COLONNES = [('rendering', r'render'), ('compost', r'compost'), ('decharge', r'landfill'), ('ensilage', r'ensil|land ?spread'),
+            ('enfouissement', r'burial|bury'), ('total', r'total')]
+
+
+def _ligne_mois(c):
+    """'September 2026 Tonnage', 'Sept 2026', 'Sep-26 (t)' -> (2026, 9) ; sinon None."""
+    c = re.sub('[\u200b-\u200f\u2060\ufeff]', '', c).replace('\xa0', ' ')
+    m = re.search(r'\b([A-Za-z]{3})[a-z]*\.?[\s\-]+(\d{4}|\d{2})\b', c)
+    if not m or m.group(1).lower() not in MOIS_COURTS: return None
+    an = int(m.group(2)); an = an + 2000 if an < 100 else an
+    return (an, MOIS_COURTS[m.group(1).lower()]) if 2020 <= an <= 2100 else None
+
+
+def _par_tableau(brut):
+    """Lecture cellule par cellule des tableaux HTML : cellules vides et colonnes deplacees acceptees."""
+    res = {}
+    for table in re.findall(r'(?is)<table.*?</table>', brut):
+        lignes = [[normaliser(c) for c in re.findall(r'(?is)<t[dh][^>]*>(.*?)</t[dh]>', tr)] for tr in re.findall(r'(?is)<tr.*?</tr>', table)]
+        ordre = None
+        for cells in lignes:
+            entete = ' '.join(cells).lower()
+            if 'render' in entete and 'total' in entete and not any(_ligne_mois(c) for c in cells[:1]):
+                ordre = []
+                for c in cells[1:]:
+                    k = next((k for k, motif in COLONNES if re.search(motif, c, re.I)), None)
+                    ordre.append(k)
+                continue
+            if not cells or not _ligne_mois(cells[0]): continue
+            cles = ordre if ordre and len(ordre) == len(cells) - 1 else [k for k, _ in COLONNES]
+            vals = {k: nombre(v) for k, v in zip(cles, cells[1:]) if k}
+            if 'total' in vals and len(vals) >= 3:
+                res[_ligne_mois(cells[0])] = {k: vals.get(k, 0) for k, _ in COLONNES}
+    return res
+
+
 def lire_epa(texte):
-    """-> ({(année, mois): {...}}, [anomalies])"""
-    t = normaliser(texte)
-    motif = re.compile(r'(' + '|'.join(MOIS) + r')\s+(\d{4})\s+Tonnage\s+' + r'\s+'.join([r'(\S+)'] * 6))
+    """-> ({(annee, mois): {...}}, [anomalies]). Tableau HTML d'abord (robuste aux cellules vides), puis le texte."""
     res, anomalies = {}, []
-    for m in motif.finditer(t):
-        mois, an = MOIS[m.group(1)], int(m.group(2))
-        vals = [nombre(x) for x in m.groups()[2:]]
-        ligne = dict(zip(METHODES + ['total'], vals))
+    if '<t' in texte:
+        res = _par_tableau(texte)
+    if not res:
+        t = normaliser(texte)
+        motif = re.compile(r'(' + '|'.join(MOIS) + r')\s+(\d{4})\s+Tonnage\s+' + r'\s+'.join([r'(\S+)'] * 6))
+        for m in motif.finditer(t):
+            vals = [nombre(x) for x in m.groups()[2:]]
+            res[(int(m.group(2)), MOIS[m.group(1)])] = dict(zip(METHODES + ['total'], vals))
+    for (an, mois), ligne in list(res.items()):
+        vals = [ligne.get(k, 0) for k in METHODES] + [ligne.get('total', 0)]
         ecart = sum(vals[:5]) - vals[5]
         if abs(ecart) > 1:
             anomalies.append(f'{an}-{mois:02d} : somme des méthodes {sum(vals[:5])} ≠ total {vals[5]}')
         elif ecart:
             ligne['note'] = f'somme des méthodes {sum(vals[:5])} pour un total de {vals[5]} (arrondi de la source)'
-        if (an, mois) in res and res[(an, mois)] != ligne:
-            anomalies.append(f'{an}-{mois:02d} : deux lignes différentes sur la page')
-        res[(an, mois)] = ligne
     if not res:
-        anomalies.append('aucune ligne « <Mois> <année> Tonnage » trouvée : la mise en page a peut-être changé')
+        t = normaliser(texte); k = t.lower().find('tonnage'); k = k if k >= 0 else t.lower().find('rendering')
+        extrait = t[max(0, k - 150): k + 250] if k >= 0 else t[:300]
+        anomalies.append(f'aucune ligne de mois trouvée : la mise en page a peut-être changé. Extrait : « {extrait} »')
     return res, anomalies
 
 
@@ -231,15 +270,21 @@ def main():
         mensuel, anom = lire_epa(brut)
         alertes += [f'EPA : {x}' for x in anom]
         base = charger_csv(os.path.join(a.sortie, 'au_mensuel.csv'), ['mois'])
+        if not mensuel:
+            # page modifiee, incomplete ou inaccessible : on NE reecrit PAS le fichier (sinon les mois deja lus seraient effaces)
+            raise RuntimeError(f'aucun mois lu sur la page EPA ({len(brut)} caractères reçus) — les {len(base)} mois déjà enregistrés sont conservés')
         nouveaux, revisions = [], []
         for (an, m), v in sorted(mensuel.items()):
             k = (f'{an}-{m:02d}',)
             if k not in base: nouveaux.append(k[0])
             elif int(base[k]['total']) != v['total']: revisions.append(f'{k[0]} : {base[k]["total"]} -> {v["total"]}')
         if not a.seche:
-            lignes = [{'mois': f'{an}-{m:02d}', **{x: v[x] for x in METHODES + ['total']},
-                       'note': v.get('note', ''), 'source': EPA_URL, 'releve': releve}
-                      for (an, m), v in sorted(mensuel.items())]
+            # fusion : les mois lus remplacent les anciens, les mois absents de la page sont gardes tels quels
+            fusion = {k[0]: dict(r) for k, r in base.items()}
+            for (an, m), v in mensuel.items():
+                fusion[f'{an}-{m:02d}'] = {'mois': f'{an}-{m:02d}', **{x: v[x] for x in METHODES + ['total']},
+                                           'note': v.get('note', ''), 'source': EPA_URL, 'releve': releve}
+            lignes = [fusion[k] for k in sorted(fusion)]
             ecrire_csv(os.path.join(a.sortie, 'au_mensuel.csv'),
                        ['mois'] + METHODES + ['total', 'note', 'source', 'releve'], lignes)
         dernier = max(mensuel) if mensuel else None
