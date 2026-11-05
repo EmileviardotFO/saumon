@@ -1,0 +1,78 @@
+# Marches — Akvafakta, SSB hebdomadaire, test du tableau de bord
+# SSB hebdomadaire (table 03024) sort le mercredi, le rapport hebdomadaire Akvafakta le jeudi : passages lundi, mercredi, jeudi et vendredi a 10 h UTC.
+# Le rapport mensuel Akvafakta sort entre le 20 et le 29 : passage tous les jours a 10 h UTC sur cette periode.
+# Les cinq workflows de mise a jour ne tournent jamais en meme temps (groupe maj-donnees) : chacun attend la fin du precedent.
+name: Marches — Akvafakta, SSB hebdomadaire, test du tableau de bord
+on:
+  schedule:
+  - cron: 0 10 * * 1,3,4,5
+  - cron: 0 10 20-29 * *
+  workflow_dispatch: {}
+permissions:
+  contents: write
+  issues: write
+concurrency:
+  group: maj-donnees
+  cancel-in-progress: false
+jobs:
+  maj:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+    - uses: actions/checkout@v4
+    - name: Ranger les fichiers deposes dans un mauvais dossier
+      run: "set -e\nmoved=\"\"\nfor d in correctif_* maj_onglets_* maj_cartes_* onglet_*; do\n  [ -d \"$d\" ] || continue\n  for sub in scripts farming data docs; do\n    if [ -d \"$d/$sub\" ]; then mkdir\
+        \ -p \"$sub\"; cp -R \"$d/$sub/.\" \"$sub/\"; fi\n  done\n  git rm -r -q \"$d\"; moved=\"$moved $d\"\ndone\nfor sub in scripts farming data docs; do\n  if [ -d \"$sub/$sub\" ]; then cp -R \"$sub/$sub/.\"\
+        \ \"$sub/\"; git rm -r -q \"$sub/$sub\"; moved=\"$moved $sub/$sub\"; fi\ndone\n# scripts propres a farming/ deposes par erreur dans scripts/ : remis a leur place (la version deposee fait foi)\n\
+        for f in maj_australie.py ingest_bc.py; do\n  if [ -f \"scripts/$f\" ]; then mkdir -p farming/scripts; cp \"scripts/$f\" \"farming/scripts/$f\"; git rm -q \"scripts/$f\"; moved=\"$moved scripts/$f\"\
+        ; fi\ndone\nif [ -n \"$moved\" ]; then\n  git config user.name \"github-actions\"; git config user.email \"actions@github.com\"\n  git add -A -- $(ls -d scripts farming data docs 2>/dev/null)\n\
+        \  git commit -q -m \"Rangement des fichiers deposes :$moved\"\n  git push\n  echo \"Ranges :$moved\"\nelse\n  echo \"Rien a ranger.\"\nfi\n"
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - name: Installer les dependances Python
+      run: pip install pandas openpyxl playwright pycountry
+    - name: Telecharger les derniers rapports Akvafakta (hebdo + mensuel)
+      id: akva_fetch
+      continue-on-error: true
+      run: python3 scripts/fetch_akvafakta.py
+    - name: Parser les nouveaux rapports Akvafakta
+      id: akva_parse
+      continue-on-error: true
+      run: python3 scripts/parse_akvafakta.py
+    - name: Exportations hebdomadaires de saumon (SSB, table 03024)
+      id: ssb_weekly
+      continue-on-error: true
+      timeout-minutes: 10
+      run: python3 scripts/update_ssb_weekly.py
+    - name: Installer le navigateur sans ecran (Playwright)
+      continue-on-error: true
+      run: python3 -m playwright install --with-deps chromium
+    - name: Tester le tableau de bord avec les nouvelles donnees
+      id: smoke
+      continue-on-error: true
+      timeout-minutes: 10
+      run: python3 scripts/smoke_test.py data/smoke.json
+    - name: Enregistrer l'etat des sources dans data.json
+      if: always()
+      env:
+        STEP_AKVA_FETCH: ${{ steps.akva_fetch.outcome }}
+        STEP_AKVA_PARSE: ${{ steps.akva_parse.outcome }}
+        STEP_SSB_WEEKLY: ${{ steps.ssb_weekly.outcome }}
+        STEP_SMOKE: ${{ steps.smoke.outcome }}
+        WORKFLOW_GROUP: maj-marches
+      run: 'python3 scripts/write_status.py
+
+        rm -f data/smoke.json
+
+        '
+    - name: Publier data.json (et les fichiers bruts telecharges)
+      if: always()
+      run: "git config user.name  \"github-actions\"\ngit config user.email \"actions@github.com\"\n# data/ entier : data.json et les caches BarentsWatch ; farming/ : Australie et Canada.\ngit add data/\
+        \ pdf/ xlsx/biomasse/ farming/\nif git diff --staged --quiet; then\n  echo \"Aucun changement.\"\nelse\n  git commit -m \"Marches ($(date -u +%Y-%m-%d))\"\n  # un fichier envoye a la main pendant\
+        \ l'execution ne doit pas faire echouer la publication\n  git pull --rebase\n  git push\nfi\n"
+    - name: Signaler les problemes (e-mail de GitHub)
+      if: always()
+      run: "FAILED=\"\"\n[ \"${{ steps.akva_fetch.outcome }}\" = \"failure\" ] && FAILED=\"$FAILED Akvafakta-telechargement\"\n[ \"${{ steps.akva_parse.outcome }}\" = \"failure\" ] && FAILED=\"$FAILED Akvafakta-lecture\"\
+        \n[ \"${{ steps.ssb_weekly.outcome }}\" = \"failure\" ] && FAILED=\"$FAILED SSB-hebdo\"\n[ \"${{ steps.smoke.outcome }}\" = \"failure\" ] && FAILED=\"$FAILED Test-du-tableau-de-bord\"\nif [ -n \"\
+        $FAILED\" ]; then\n  echo \"::error::Etapes en echec :$FAILED (les autres donnees ont bien ete publiees)\"\n  exit 1\nfi\necho \"Tout s'est bien passe.\"\n"

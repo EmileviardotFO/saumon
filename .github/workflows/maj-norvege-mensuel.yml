@@ -1,0 +1,92 @@
+# Norvege, donnees mensuelles — registre de la biomasse, exportations SSB (chaque jour, lu seulement s'il y a du nouveau)
+# Verification quotidienne : le fichier du registre n'est relu que s'il a change, de sorte que chaque publication est prise le jour meme.
+# Les cinq workflows de mise a jour ne tournent jamais en meme temps (groupe maj-donnees) : chacun attend la fin du precedent.
+name: Norvege, donnees mensuelles — registre de la biomasse, exportations SSB (chaque jour, lu seulement s'il y a du nouveau)
+on:
+  schedule:
+  - cron: 30 5 * * *
+  workflow_dispatch: {}
+permissions:
+  contents: write
+  issues: write
+concurrency:
+  group: maj-donnees
+  cancel-in-progress: false
+jobs:
+  maj:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+    - uses: actions/checkout@v4
+    - name: Ranger les fichiers deposes dans un mauvais dossier
+      run: "set -e\nmoved=\"\"\nfor d in correctif_* maj_onglets_* maj_cartes_* onglet_*; do\n  [ -d \"$d\" ] || continue\n  for sub in scripts farming data docs; do\n    if [ -d \"$d/$sub\" ]; then mkdir\
+        \ -p \"$sub\"; cp -R \"$d/$sub/.\" \"$sub/\"; fi\n  done\n  git rm -r -q \"$d\"; moved=\"$moved $d\"\ndone\nfor sub in scripts farming data docs; do\n  if [ -d \"$sub/$sub\" ]; then cp -R \"$sub/$sub/.\"\
+        \ \"$sub/\"; git rm -r -q \"$sub/$sub\"; moved=\"$moved $sub/$sub\"; fi\ndone\n# scripts propres a farming/ deposes par erreur dans scripts/ : remis a leur place (la version deposee fait foi)\n\
+        for f in maj_australie.py ingest_bc.py; do\n  if [ -f \"scripts/$f\" ]; then mkdir -p farming/scripts; cp \"scripts/$f\" \"farming/scripts/$f\"; git rm -q \"scripts/$f\"; moved=\"$moved scripts/$f\"\
+        ; fi\ndone\nif [ -n \"$moved\" ]; then\n  git config user.name \"github-actions\"; git config user.email \"actions@github.com\"\n  git add -A -- $(ls -d scripts farming data docs 2>/dev/null)\n\
+        \  git commit -q -m \"Rangement des fichiers deposes :$moved\"\n  git push\n  echo \"Ranges :$moved\"\nelse\n  echo \"Rien a ranger.\"\nfi\n"
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - name: Installer les dependances Python
+      run: pip install pandas openpyxl playwright pycountry
+    - name: Verifier et telecharger le fichier Biomasseregisteret
+      id: biomasse_fetch
+      continue-on-error: true
+      run: "mkdir -p xlsx/biomasse\ncurl -sSfL -o /tmp/biostat-total-omr.xlsx \\\n  https://register.fiskeridir.no/biomassestatistikk/BIOSTAT-LAKS-OMR/biostat-total-omr.xlsx\nNEW_HASH=$(sha256sum /tmp/biostat-total-omr.xlsx\
+        \ | cut -d' ' -f1)\nOLD_HASH=$(cat xlsx/biomasse/.last-hash 2>/dev/null || echo \"\")\nif [ \"$NEW_HASH\" != \"$OLD_HASH\" ]; then\n  DEST=\"xlsx/biomasse/biostat-total-omr-$(date -u +%Y-%m-%d).xlsx\"\
+        \n  cp /tmp/biostat-total-omr.xlsx \"$DEST\"\n  echo \"$NEW_HASH\" > xlsx/biomasse/.last-hash\n  echo \"dest=$DEST\" >> \"$GITHUB_ENV\"\n  echo \"Nouveau fichier biomasse : $DEST\"\nelse\n  echo\
+        \ \"Biomasse : rien de nouveau depuis le dernier passage.\"\nfi\n"
+    - name: Reconstruire records et cohort si nouveau fichier biomasse
+      id: biomasse_build
+      continue-on-error: true
+      run: "if [ -n \"${dest:-}\" ]; then\n  python3 scripts/update_biomasse.py \"$dest\"\nelif python3 -c \"import json,sys; c=json.load(open('data/data.json')).get('cohort',[]); sys.exit(0 if c and 'dead_stk'\
+        \ not in c[0] else 1)\"; then\n  LAST=$(ls -1 xlsx/biomasse/biostat-total-omr-*.xlsx | sort | tail -1)\n  echo \"Ancien format de cohort : reconstruction depuis $LAST\"\n  python3 scripts/update_biomasse.py\
+        \ \"$LAST\"\nelif python3 -c \"import json,sys; r=json.load(open('data/data.json')).get('records',[]); sys.exit(0 if r and not any(x.get('po')==0 for x in r) else 1)\"; then\n  # novembre 2026 :\
+        \ les licences sans zone (code 0) sont gardees ; reconstruction une fois depuis le dernier fichier archive\n  LAST=$(ls -1 xlsx/biomasse/biostat-total-omr-*.xlsx | sort | tail -1)\n  echo \"Licences\
+        \ hors zone absentes : reconstruction depuis $LAST\"\n  python3 scripts/update_biomasse.py \"$LAST\"\nelse\n  echo \"Biomasse : rien a reconstruire.\"\nfi\n"
+    - name: Exports par pays et par produit (SSB, avec revisions)
+      id: ssb
+      continue-on-error: true
+      run: python3 scripts/parse_ssb.py
+    - name: Co-produits du saumon (SSB, table 08799 - tetes, aretes, biproduits congeles)
+      id: ssb_coprod
+      continue-on-error: true
+      timeout-minutes: 10
+      run: python3 scripts/update_ssb_coproducts.py
+    - name: Archiver les previsions du mois (onglet Generations map)
+      id: archive
+      continue-on-error: true
+      timeout-minutes: 10
+      run: node scripts/archive_forecasts.js
+    - name: Gros poissons par eleveur et par zone, deux mois a venir (historique des sites BarentsWatch + registre)
+      id: bigfish
+      continue-on-error: true
+      timeout-minutes: 5
+      run: python3 scripts/build_big_fish.py
+    - name: Enregistrer l'etat des sources dans data.json
+      if: always()
+      env:
+        STEP_BIOMASSE_FETCH: ${{ steps.biomasse_fetch.outcome }}
+        STEP_BIOMASSE_BUILD: ${{ steps.biomasse_build.outcome }}
+        STEP_SSB: ${{ steps.ssb.outcome }}
+        STEP_SSB_COPROD: ${{ steps.ssb_coprod.outcome }}
+        STEP_ARCHIVE: ${{ steps.archive.outcome }}
+        WORKFLOW_GROUP: maj-norvege-mensuel
+        STEP_BIGFISH: ${{ steps.bigfish.outcome }}
+      run: 'python3 scripts/write_status.py
+
+        rm -f data/smoke.json
+
+        '
+    - name: Publier data.json (et les fichiers bruts telecharges)
+      if: always()
+      run: "git config user.name  \"github-actions\"\ngit config user.email \"actions@github.com\"\n# data/ entier : data.json et les caches BarentsWatch ; farming/ : Australie et Canada.\ngit add data/\
+        \ pdf/ xlsx/biomasse/ farming/\nif git diff --staged --quiet; then\n  echo \"Aucun changement.\"\nelse\n  git commit -m \"Norvege, donnees mensuelles ($(date -u +%Y-%m-%d))\"\n  # un fichier envoye\
+        \ a la main pendant l'execution ne doit pas faire echouer la publication\n  git pull --rebase\n  git push\nfi\n"
+    - name: Signaler les problemes (e-mail de GitHub)
+      if: always()
+      run: "FAILED=\"\"\n[ \"${{ steps.bigfish.outcome }}\" = \"failure\" ] && FAILED=\"$FAILED Gros-poissons\"\n[ \"${{ steps.biomasse_fetch.outcome }}\" = \"failure\" ] && FAILED=\"$FAILED Biomasse-telechargement\"\
+        \n[ \"${{ steps.biomasse_build.outcome }}\" = \"failure\" ] && FAILED=\"$FAILED Biomasse-reconstruction\"\n[ \"${{ steps.ssb.outcome }}\" = \"failure\" ] && FAILED=\"$FAILED SSB\"\n[ \"${{ steps.ssb_coprod.outcome\
+        \ }}\" = \"failure\" ] && FAILED=\"$FAILED SSB-coproduits\"\n[ \"${{ steps.archive.outcome }}\" = \"failure\" ] && FAILED=\"$FAILED Archive-previsions\"\nif [ -n \"$FAILED\" ]; then\n  echo \"::error::Etapes\
+        \ en echec :$FAILED (les autres donnees ont bien ete publiees)\"\n  exit 1\nfi\necho \"Tout s'est bien passe.\"\n"

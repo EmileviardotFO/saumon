@@ -1,0 +1,81 @@
+# Actualite et resultats trimestriels — chaque jour ouvre
+# Titres de presse, evenements de mortalite, sujets de la page d'accueil (Claude), rapports trimestriels publies dans la journee.
+# Les cinq workflows de mise a jour ne tournent jamais en meme temps (groupe maj-donnees) : chacun attend la fin du precedent.
+name: Actualite et resultats trimestriels — chaque jour ouvre
+on:
+  schedule:
+  - cron: 0 6 * * 1-5
+  workflow_dispatch: {}
+permissions:
+  contents: write
+  issues: write
+concurrency:
+  group: maj-donnees
+  cancel-in-progress: false
+jobs:
+  maj:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+    - uses: actions/checkout@v4
+    - name: Ranger les fichiers deposes dans un mauvais dossier
+      run: "set -e\nmoved=\"\"\nfor d in correctif_* maj_onglets_* maj_cartes_* onglet_*; do\n  [ -d \"$d\" ] || continue\n  for sub in scripts farming data docs; do\n    if [ -d \"$d/$sub\" ]; then mkdir\
+        \ -p \"$sub\"; cp -R \"$d/$sub/.\" \"$sub/\"; fi\n  done\n  git rm -r -q \"$d\"; moved=\"$moved $d\"\ndone\nfor sub in scripts farming data docs; do\n  if [ -d \"$sub/$sub\" ]; then cp -R \"$sub/$sub/.\"\
+        \ \"$sub/\"; git rm -r -q \"$sub/$sub\"; moved=\"$moved $sub/$sub\"; fi\ndone\n# scripts propres a farming/ deposes par erreur dans scripts/ : remis a leur place (la version deposee fait foi)\n\
+        for f in maj_australie.py ingest_bc.py; do\n  if [ -f \"scripts/$f\" ]; then mkdir -p farming/scripts; cp \"scripts/$f\" \"farming/scripts/$f\"; git rm -q \"scripts/$f\"; moved=\"$moved scripts/$f\"\
+        ; fi\ndone\nif [ -n \"$moved\" ]; then\n  git config user.name \"github-actions\"; git config user.email \"actions@github.com\"\n  git add -A -- $(ls -d scripts farming data docs 2>/dev/null)\n\
+        \  git commit -q -m \"Rangement des fichiers deposes :$moved\"\n  git push\n  echo \"Ranges :$moved\"\nelse\n  echo \"Rien a ranger.\"\nfi\n"
+    - name: Installer pdftotext
+      run: sudo apt-get update && sudo apt-get install -y poppler-utils
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - name: Installer les dependances Python
+      run: pip install pandas openpyxl playwright pycountry
+    - name: Veille des evenements de mortalite (presse multi-bassins, Ecosse FHI)
+      id: events
+      continue-on-error: true
+      timeout-minutes: 10
+      run: python3 scripts/update_events.py
+    - name: Recueil hebdomadaire de l'actualite (onglet This week)
+      id: news
+      continue-on-error: true
+      timeout-minutes: 10
+      run: python3 scripts/update_news.py
+    - name: Page d'accueil This week - sujets par bassin et entreprise (resumes en anglais)
+      id: stories
+      continue-on-error: true
+      timeout-minutes: 10
+      env:
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      run: python3 scripts/build_stories.py
+    - name: Rapports trimestriels - cout par kg, EBIT, guidance par entreprise et region (pour This week et Scotland)
+      id: quarterly
+      continue-on-error: true
+      timeout-minutes: 15
+      env:
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      run: python3 scripts/build_quarterly.py
+    - name: Enregistrer l'etat des sources dans data.json
+      if: always()
+      env:
+        STEP_EVENTS: ${{ steps.events.outcome }}
+        STEP_NEWS: ${{ steps.news.outcome }}
+        STEP_STORIES: ${{ steps.stories.outcome }}
+        STEP_QUARTERLY: ${{ steps.quarterly.outcome }}
+        WORKFLOW_GROUP: maj-actualite
+      run: 'python3 scripts/write_status.py
+
+        rm -f data/smoke.json
+
+        '
+    - name: Publier data.json (et les fichiers bruts telecharges)
+      if: always()
+      run: "git config user.name  \"github-actions\"\ngit config user.email \"actions@github.com\"\n# data/ entier : data.json et les caches BarentsWatch ; farming/ : Australie et Canada.\ngit add data/\
+        \ pdf/ xlsx/biomasse/ farming/\nif git diff --staged --quiet; then\n  echo \"Aucun changement.\"\nelse\n  git commit -m \"Actualite et resultats trimestriels ($(date -u +%Y-%m-%d))\"\n  # un fichier\
+        \ envoye a la main pendant l'execution ne doit pas faire echouer la publication\n  git pull --rebase\n  git push\nfi\n"
+    - name: Signaler les problemes (e-mail de GitHub)
+      if: always()
+      run: "FAILED=\"\"\n[ \"${{ steps.news.outcome }}\" = \"failure\" ] && FAILED=\"$FAILED Actualite-titres\"\n[ \"${{ steps.stories.outcome }}\" = \"failure\" ] && FAILED=\"$FAILED This-week-sujets\"\
+        \n[ \"${{ steps.quarterly.outcome }}\" = \"failure\" ] && FAILED=\"$FAILED Rapports-trimestriels\"\nif [ -n \"$FAILED\" ]; then\n  echo \"::error::Etapes en echec :$FAILED (les autres donnees ont\
+        \ bien ete publiees)\"\n  exit 1\nfi\necho \"Tout s'est bien passe.\"\n"

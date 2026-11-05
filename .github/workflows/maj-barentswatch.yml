@@ -1,0 +1,75 @@
+# BarentsWatch — sante des poissons, registre et historique des sites, gros poissons par eleveur
+# L'etape la plus longue (jusqu'a une heure) : a part, mercredi et samedi a 2 h UTC, quand personne ne consulte le tableau de bord.
+# Les cinq workflows de mise a jour ne tournent jamais en meme temps (groupe maj-donnees) : chacun attend la fin du precedent.
+name: BarentsWatch — sante des poissons, registre et historique des sites, gros poissons par eleveur
+on:
+  schedule:
+  - cron: 0 2 * * 3,6
+  workflow_dispatch: {}
+permissions:
+  contents: write
+  issues: write
+concurrency:
+  group: maj-donnees
+  cancel-in-progress: false
+jobs:
+  maj:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+    - uses: actions/checkout@v4
+    - name: Ranger les fichiers deposes dans un mauvais dossier
+      run: "set -e\nmoved=\"\"\nfor d in correctif_* maj_onglets_* maj_cartes_* onglet_*; do\n  [ -d \"$d\" ] || continue\n  for sub in scripts farming data docs; do\n    if [ -d \"$d/$sub\" ]; then mkdir\
+        \ -p \"$sub\"; cp -R \"$d/$sub/.\" \"$sub/\"; fi\n  done\n  git rm -r -q \"$d\"; moved=\"$moved $d\"\ndone\nfor sub in scripts farming data docs; do\n  if [ -d \"$sub/$sub\" ]; then cp -R \"$sub/$sub/.\"\
+        \ \"$sub/\"; git rm -r -q \"$sub/$sub\"; moved=\"$moved $sub/$sub\"; fi\ndone\n# scripts propres a farming/ deposes par erreur dans scripts/ : remis a leur place (la version deposee fait foi)\n\
+        for f in maj_australie.py ingest_bc.py; do\n  if [ -f \"scripts/$f\" ]; then mkdir -p farming/scripts; cp \"scripts/$f\" \"farming/scripts/$f\"; git rm -q \"scripts/$f\"; moved=\"$moved scripts/$f\"\
+        ; fi\ndone\nif [ -n \"$moved\" ]; then\n  git config user.name \"github-actions\"; git config user.email \"actions@github.com\"\n  git add -A -- $(ls -d scripts farming data docs 2>/dev/null)\n\
+        \  git commit -q -m \"Rangement des fichiers deposes :$moved\"\n  git push\n  echo \"Ranges :$moved\"\nelse\n  echo \"Rien a ranger.\"\nfi\n"
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - name: Installer les dependances Python
+      run: pip install pandas openpyxl playwright pycountry
+    - name: Sante des poissons par zone (BarentsWatch)
+      id: bw_health
+      continue-on-error: true
+      timeout-minutes: 60
+      env:
+        BW_CLIENT_ID: ${{ secrets.BW_CLIENT_ID }}
+        BW_CLIENT_SECRET: ${{ secrets.BW_CLIENT_SECRET }}
+      run: python3 scripts/update_barentswatch.py
+    - name: Registre des sites d'elevage (BarentsWatch, une fois par mois)
+      id: bw_sites
+      continue-on-error: true
+      timeout-minutes: 45
+      env:
+        BW_CLIENT_ID: ${{ secrets.BW_CLIENT_ID }}
+        BW_CLIENT_SECRET: ${{ secrets.BW_CLIENT_SECRET }}
+      run: python3 scripts/update_bw_sites.py
+    - name: Gros poissons par eleveur et par zone, deux mois a venir (historique des sites BarentsWatch + registre)
+      id: bigfish
+      continue-on-error: true
+      timeout-minutes: 5
+      run: python3 scripts/build_big_fish.py
+    - name: Enregistrer l'etat des sources dans data.json
+      if: always()
+      env:
+        STEP_BW_HEALTH: ${{ steps.bw_health.outcome }}
+        STEP_BW_SITES: ${{ steps.bw_sites.outcome }}
+        STEP_BIGFISH: ${{ steps.bigfish.outcome }}
+        WORKFLOW_GROUP: maj-barentswatch
+      run: 'python3 scripts/write_status.py
+
+        rm -f data/smoke.json
+
+        '
+    - name: Publier data.json (et les fichiers bruts telecharges)
+      if: always()
+      run: "git config user.name  \"github-actions\"\ngit config user.email \"actions@github.com\"\n# data/ entier : data.json et les caches BarentsWatch ; farming/ : Australie et Canada.\ngit add data/\
+        \ pdf/ xlsx/biomasse/ farming/\nif git diff --staged --quiet; then\n  echo \"Aucun changement.\"\nelse\n  git commit -m \"BarentsWatch ($(date -u +%Y-%m-%d))\"\n  # un fichier envoye a la main pendant\
+        \ l'execution ne doit pas faire echouer la publication\n  git pull --rebase\n  git push\nfi\n"
+    - name: Signaler les problemes (e-mail de GitHub)
+      if: always()
+      run: "FAILED=\"\"\n[ \"${{ steps.bw_health.outcome }}\" = \"failure\" ] && FAILED=\"$FAILED BarentsWatch-sante\"\n[ \"${{ steps.bw_sites.outcome }}\" = \"failure\" ] && FAILED=\"$FAILED BarentsWatch-registre\"\
+        \n[ \"${{ steps.bigfish.outcome }}\" = \"failure\" ] && FAILED=\"$FAILED Gros-poissons\"\nif [ -n \"$FAILED\" ]; then\n  echo \"::error::Etapes en echec :$FAILED (les autres donnees ont bien ete\
+        \ publiees)\"\n  exit 1\nfi\necho \"Tout s'est bien passe.\"\n"

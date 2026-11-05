@@ -1,0 +1,173 @@
+# International et autres bassins — Eurostat, statistiques nationales, Comtrade, Ecosse, Chili, Chine, Australie, Canada, Feroe, Islande
+# Sources publiees a des dates variables d'un pays a l'autre : passage lundi et jeudi a 4 h UTC ; rien n'est retelecharge quand rien n'a change.
+# Les cinq workflows de mise a jour ne tournent jamais en meme temps (groupe maj-donnees) : chacun attend la fin du precedent.
+name: International et autres bassins — Eurostat, statistiques nationales, Comtrade, Ecosse, Chili, Chine, Australie, Canada, Feroe, Islande
+on:
+  schedule:
+  - cron: 0 4 * * 1,4
+  workflow_dispatch: {}
+permissions:
+  contents: write
+  issues: write
+concurrency:
+  group: maj-donnees
+  cancel-in-progress: false
+jobs:
+  maj:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+    - uses: actions/checkout@v4
+    - name: Ranger les fichiers deposes dans un mauvais dossier
+      run: "set -e\nmoved=\"\"\nfor d in correctif_* maj_onglets_* maj_cartes_* onglet_*; do\n  [ -d \"$d\" ] || continue\n  for sub in scripts farming data docs; do\n    if [ -d \"$d/$sub\" ]; then mkdir\
+        \ -p \"$sub\"; cp -R \"$d/$sub/.\" \"$sub/\"; fi\n  done\n  git rm -r -q \"$d\"; moved=\"$moved $d\"\ndone\nfor sub in scripts farming data docs; do\n  if [ -d \"$sub/$sub\" ]; then cp -R \"$sub/$sub/.\"\
+        \ \"$sub/\"; git rm -r -q \"$sub/$sub\"; moved=\"$moved $sub/$sub\"; fi\ndone\n# scripts propres a farming/ deposes par erreur dans scripts/ : remis a leur place (la version deposee fait foi)\n\
+        for f in maj_australie.py ingest_bc.py; do\n  if [ -f \"scripts/$f\" ]; then mkdir -p farming/scripts; cp \"scripts/$f\" \"farming/scripts/$f\"; git rm -q \"scripts/$f\"; moved=\"$moved scripts/$f\"\
+        ; fi\ndone\nif [ -n \"$moved\" ]; then\n  git config user.name \"github-actions\"; git config user.email \"actions@github.com\"\n  git add -A -- $(ls -d scripts farming data docs 2>/dev/null)\n\
+        \  git commit -q -m \"Rangement des fichiers deposes :$moved\"\n  git push\n  echo \"Ranges :$moved\"\nelse\n  echo \"Rien a ranger.\"\nfi\n"
+    - name: Installer pdftotext
+      run: sudo apt-get update && sudo apt-get install -y poppler-utils
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - name: Installer les dependances Python
+      run: pip install pandas openpyxl playwright pycountry
+    - name: Islande - acces aux donnees de MAST (serveur cartographique, tableau de bord de l'aquaculture)
+      id: iceland
+      continue-on-error: true
+      timeout-minutes: 10
+      run: python3 scripts/build_iceland.py
+    - name: Comptes annuels des eleveurs prives (registres de Brønnøysund, API publique gratuite)
+      id: accounts
+      continue-on-error: true
+      timeout-minutes: 10
+      run: python3 scripts/build_private_accounts.py
+    - name: Etablissements agrees (Mattilsynet)
+      id: estab
+      continue-on-error: true
+      run: python3 scripts/fetch_establishments.py --update
+    - name: Flux de saumon dans l'UE (Eurostat Comext)
+      id: eurostat
+      continue-on-error: true
+      timeout-minutes: 30
+      run: python3 scripts/update_eurostat.py
+    - name: Statistiques nationales (Feroe, Islande, Royaume-Uni, Chili, Canada, importations Etats-Unis et Chine)
+      id: national
+      continue-on-error: true
+      timeout-minutes: 35
+      env:
+        CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
+      run: python3 scripts/update_national_trade.py
+    - name: Japon - importations de saumon et truite par forme et origine (UN Comtrade, declarations japonaises)
+      id: japan
+      continue-on-error: true
+      timeout-minutes: 15
+      env:
+        COMTRADE_KEY: ${{ secrets.COMTRADE_KEY }}
+      run: python3 scripts/update_japan_imports.py
+    - name: Importations mondiales de saumon par pays (UN Comtrade, tous les pays qui declarent chaque mois)
+      id: world
+      continue-on-error: true
+      timeout-minutes: 20
+      env:
+        COMTRADE_KEY: ${{ secrets.COMTRADE_KEY }}
+      run: python3 scripts/update_world_imports.py
+    - name: Ecosse - biomasse, mortalites et aliment par site (SEPA, export CSV depose dans xlsx/scotland/)
+      id: scotland
+      continue-on-error: true
+      timeout-minutes: 5
+      run: python3 scripts/build_scotland.py
+    - name: Ecosse - enquete annuelle de production (tableaux complementaires deposes dans xlsx/scotland/)
+      id: scotland_survey
+      continue-on-error: true
+      timeout-minutes: 5
+      run: python3 scripts/build_scotland_survey.py
+    - name: Chili - concessions de salmoniculture (carte Subpesca)
+      id: chile_sites
+      continue-on-error: true
+      timeout-minutes: 10
+      run: python3 scripts/update_chile_sites.py
+    - name: Installer le navigateur sans ecran (Playwright)
+      continue-on-error: true
+      run: python3 -m playwright install --with-deps chromium
+    - name: Etablissements enregistres pour la Chine (GACC CIFER)
+      id: china
+      continue-on-error: true
+      timeout-minutes: 20
+      run: python3 scripts/fetch_china_gacc.py
+    - name: Australie - mortalites EPA Tasmanie et production par entreprise (portail NRE)
+      id: australia
+      continue-on-error: true
+      timeout-minutes: 10
+      working-directory: farming
+      run: 'rc=0
+
+        python3 scripts/maj_australie.py --xlsx farming_canada_australie.xlsx --sortie donnees_au --strict || rc=$?
+
+        python3 ../scripts/build_australia.py
+
+        exit $rc
+
+        '
+    - name: Canada Colombie-Britannique - donnees DFO (poux, mortalites, transferts de smolts)
+      id: canada_bc
+      continue-on-error: true
+      timeout-minutes: 10
+      working-directory: farming
+      run: 'rc=0
+
+        python3 scripts/ingest_bc.py telecharger || rc=$?
+
+        python3 ../scripts/build_canada.py
+
+        exit $rc
+
+        '
+    - name: Feroe - poissons par ferme (Bakkafrost, mensuel), recolte et registre des zones
+      id: faroe
+      continue-on-error: true
+      timeout-minutes: 5
+      run: python3 scripts/build_faroe.py
+    - name: Enregistrer l'etat des sources dans data.json
+      if: always()
+      env:
+        STEP_ICELAND: ${{ steps.iceland.outcome }}
+        STEP_ACCOUNTS: ${{ steps.accounts.outcome }}
+        STEP_ESTAB: ${{ steps.estab.outcome }}
+        STEP_EUROSTAT: ${{ steps.eurostat.outcome }}
+        STEP_NATIONAL: ${{ steps.national.outcome }}
+        STEP_JAPAN: ${{ steps.japan.outcome }}
+        STEP_WORLD: ${{ steps.world.outcome }}
+        STEP_SCOTLAND: ${{ steps.scotland.outcome }}
+        STEP_SCOTLAND_SURVEY: ${{ steps.scotland_survey.outcome }}
+        STEP_CHILE_SITES: ${{ steps.chile_sites.outcome }}
+        STEP_CHINA: ${{ steps.china.outcome }}
+        STEP_AUSTRALIA: ${{ steps.australia.outcome }}
+        STEP_CANADA_BC: ${{ steps.canada_bc.outcome }}
+        STEP_FAROE: ${{ steps.faroe.outcome }}
+        WORKFLOW_GROUP: maj-international
+      run: 'python3 scripts/write_status.py
+
+        rm -f data/smoke.json
+
+        '
+    - name: Publier data.json (et les fichiers bruts telecharges)
+      if: always()
+      run: "git config user.name  \"github-actions\"\ngit config user.email \"actions@github.com\"\n# data/ entier : data.json et les caches BarentsWatch ; farming/ : Australie et Canada.\ngit add data/\
+        \ pdf/ xlsx/biomasse/ farming/\nif git diff --staged --quiet; then\n  echo \"Aucun changement.\"\nelse\n  git commit -m \"International et autres bassins ($(date -u +%Y-%m-%d))\"\n  # un fichier\
+        \ envoye a la main pendant l'execution ne doit pas faire echouer la publication\n  git pull --rebase\n  git push\nfi\n"
+    - name: Notifier les variations importantes des importations mondiales (ticket GitHub)
+      if: always()
+      continue-on-error: true
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: "if [ -s data/world_imports_new_alerts.md ]; then\n  TITRE=\"Importations de saumon : variations importantes ($(date -u +%Y-%m-%d))\"\n  gh issue create --title \"$TITRE\" --body-file data/world_imports_new_alerts.md\
+        \ --label \"alerte-marche\" \\\n    || gh issue create --title \"$TITRE\" --body-file data/world_imports_new_alerts.md\nelse\n  echo \"Aucune nouvelle variation importante.\"\nfi\n"
+    - name: Signaler les problemes (e-mail de GitHub)
+      if: always()
+      run: "FAILED=\"\"\n[ \"${{ steps.iceland.outcome }}\" = \"failure\" ] && FAILED=\"$FAILED Islande\"\n[ \"${{ steps.accounts.outcome }}\" = \"failure\" ] && FAILED=\"$FAILED Comptes-prives\"\n[ \"\
+        ${{ steps.estab.outcome }}\" = \"failure\" ] && FAILED=\"$FAILED Mattilsynet\"\n[ \"${{ steps.eurostat.outcome }}\" = \"failure\" ] && FAILED=\"$FAILED Eurostat\"\n[ \"${{ steps.national.outcome\
+        \ }}\" = \"failure\" ] && FAILED=\"$FAILED Statistiques-nationales\"\n[ \"${{ steps.japan.outcome }}\" = \"failure\" ] && FAILED=\"$FAILED Japon-importations\"\n[ \"${{ steps.world.outcome }}\"\
+        \ = \"failure\" ] && FAILED=\"$FAILED Importations-mondiales\"\n[ \"${{ steps.australia.outcome }}\" = \"failure\" ] && FAILED=\"$FAILED Australie\"\n[ \"${{ steps.canada_bc.outcome }}\" = \"failure\"\
+        \ ] && FAILED=\"$FAILED Canada-BC\"\n[ \"${{ steps.faroe.outcome }}\" = \"failure\" ] && FAILED=\"$FAILED Feroe\"\nif [ -n \"$FAILED\" ]; then\n  echo \"::error::Etapes en echec :$FAILED (les autres\
+        \ donnees ont bien ete publiees)\"\n  exit 1\nfi\necho \"Tout s'est bien passe.\"\n"
