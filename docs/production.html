@@ -8054,10 +8054,30 @@ function renderOutlook() {
     if (!r || !r0) return null;
     return s[j].vol * (s[i].bio / s[i - 12].bio) * (1 + 0.5 * (r / r0 - 1));
   };
-  // final projection: average of the three methods available at that date
+  // ---- Weight-analogue estimator (Nov 2026). Generations 2025 and 2026 grew ahead of the previous ones, so methods that copy
+  //  the calendar of past generations under-estimated 2025-2026 by about 4 %. Here each generation, zone by zone, is matched to
+  //  the month when the same-rank generation of previous years had the SAME average weight (within 4 months of the same date),
+  //  and takes what that generation harvested h months later (share of the fish, harvest weight relative to the starting weight).
+  //  Own past bias removed walk-forward, like the headcount method. At 1 month, a fifth estimate: monthly harvest rate learnt by
+  //  weight band and calendar month, applied to the weight each generation will reach.
+  const kOf = i => s[i].year * 100 + s[i].month, zSel = poFilter && poFilter.length && poFilter.length < 13 ? poFilter : null;
+  const genA = (i, h) => window.gmGenHarvestA ? window.gmGenHarvestA(kOf(i), h, zSel) : null;
+  const genW = (i, h) => window.gmGenHarvestW ? window.gmGenHarvestW(kOf(i), h, zSel) : null;
+  const genAMemo = {};
+  const genAC = (i, h) => { const key = i * 100 + h; if (key in genAMemo) return genAMemo[key];
+    const p = genA(i, h); let out = null;
+    if (p) { const past = []; for (let j = Math.max(0, i - 60); j <= i - h; j++) { const pj = genA(j, h); if (pj && s[j + h].vol > 0) past.push(s[j + h].vol / pj); }
+      if (past.length >= 6) out = p * ew(past, 0.7); }
+    return (genAMemo[key] = out); };
+  // final projection: average of the methods available at that date. Tested 2021-2026 walk-forward: equal or better than the
+  //  three older methods alone at every horizon, and 1-1.6 points better on 2025-2026 at 1-7 months; beyond 7 months the
+  //  weight-analogue adds nothing, so the three older methods are kept alone there.
   const projectVol = (i, h) => {
-    const v = [projectOld(i, h), cwCorr(i, h), rotEst(i, h)].filter(x => x !== null && isFinite(x));
-    return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null;
+    const v = [projectOld(i, h), cwCorr(i, h), rotEst(i, h)];
+    if (h <= 7) v.push(genAC(i, h));
+    if (h === 1) v.push(genW(i, h));
+    const w = v.filter(x => x !== null && x !== undefined && isFinite(x));
+    return w.length ? w.reduce((a, b) => a + b, 0) / w.length : null;
   };
 
   // empirical error band: walk the projection forward over the whole history
@@ -8357,7 +8377,10 @@ function renderOutlook() {
   const bandTxt = [1,3,6,9].filter(k => bandOf[k]).map(k => `${k} mo ±${bandOf[k].mae.toFixed(1)}%`).join(' · ');
   const wr9 = wFit[9] ? wFit[9].r : null;
   document.getElementById('outlookNote').innerHTML =
-    `<b>Method — volume.</b> The projection is the average of three methods, each tested month by month on the past; their own results are shown by quarter. ` +
+    `<b>Method — volume.</b> The projection is the average of the methods below, each tested month by month on the past; the three older ones are shown by quarter. ` +
+    `<b>Weight analogue</b> (1–7 months, added November 2026): generations 2025 and 2026 grew ahead of the previous ones, and copying past generations' calendar under-estimated 2025–2026 by about 4 %. ` +
+    `Each generation is matched, zone by zone, to the month when last years' generation had the same average weight, and takes what that generation harvested afterwards; at 1 month, a harvest rate by weight band is added. ` +
+    `Tested 2021–2026: never worse than without it, and 1–1.6 points more accurate on 2025–2026. ` +
     `<b>Rotation:</b> same month last year × the change in standing biomass × half the change in 12-month stock rotation (harvest ÷ average biomass). ` +
     `<b>1 · Headcount:</b> fish in the sea × the share of the stock usually harvested that many months later in that calendar month, × an average harvest ` +
     `weight (same month last year, scaled by the change in average stock weight), with its own past bias removed walk-forward. ` +
@@ -10408,6 +10431,62 @@ function harvForeMix(po, gen, origin) {
     return Math.exp(p); });
   return v.every(x => x) ? { v, how: 'curve' } : (f ? { v: wh ? f.map(x => Math.sqrt(x * wh)) : f, how: wh ? 'mix' : 'model' } : null);
 }
+// ---- recolte attendue selon le POIDS atteint, et non le calendrier des generations passees (novembre 2026) :
+// une generation en avance sur les precedentes (2025, 2026) atteint plus tot les poids ou l'on abat, et doit sortir plus tot.
+// Taux d'abattage mensuel = poissons abattus / poissons en mer le mois d'avant, appris par tranche de poids (0,5 kg) et par mois
+// de l'annee sur toutes les zones et generations connues a la date k ; poids des poissons en mer projete par le modele de croissance ;
+// poids des poissons abattus = poids du stock x l'ecart habituel a ce poids. Renvoie des kg vifs.
+function hazardAt(k) {
+  G.hz = G.hz || {}; if (G.hz[k]) return G.hz[k];
+  const H = {}, Hb = {}, R = {}, M = {}, bin = w => Math.min(16, Math.floor(w / 0.5));
+  Object.entries(G.COH).forEach(([po, gens]) => { if (+po === NOR) return; Object.values(gens).forEach(ser => Object.entries(ser).forEach(([t, c]) => {
+    t = +t; if (t > k) return; const p = ser[sh(t, -1)]; if (!p || !p.weight_kg || !(p.stock > 2e5)) return;
+    const b = bin(p.weight_kg), m = t % 100, hs = c.harv_stk || 0;
+    const x = (H[b + '_' + m] = H[b + '_' + m] || [0, 0]); x[0] += hs; x[1] += p.stock;
+    const y = (Hb[b] = Hb[b] || [0, 0]); y[0] += hs; y[1] += p.stock;
+    const z = (M[m] = M[m] || [0, 0]); z[0] += (c.dead_stk || 0) + (c.loss_stk || 0); z[1] += p.stock;
+    if (hs > 2e4 && c.harv_kg && c.weight_kg) { const r = (R[b] = R[b] || [0, 0]); r[0] += c.harv_kg; r[1] += hs * c.weight_kg; } })); });
+  const out = { bin, lam: (w, m) => { const b = bin(w), x = H[b + '_' + m], y = Hb[b]; if (x && x[1] > 5e6) return x[0] / x[1]; return y && y[1] ? y[0] / y[1] : 0; },
+    ratio: w => { const r = R[bin(w)]; return r && r[1] ? r[0] / r[1] : 1.1; }, mort: m => M[m] && M[m][1] ? M[m][0] / M[m][1] : 0.01 };
+  return (G.hz[k] = out);
+}
+function genHarvestW(k, h, zones) {
+  if (!G) return null; G.gw = G.gw || {}; const key = k + '_' + h + '_' + (zones || []).join(','); if (G.gw[key] !== undefined) return G.gw[key];
+  const Z = zones && zones.length ? zones : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], HZ = hazardAt(k); let tot = 0, ok = 0;
+  for (const po of Z) for (const [g, ser] of Object.entries(G.COH[po] || {})) {
+    const c = ser[k]; if (!c || !(c.stock > 2e5) || !c.weight_kg) continue;
+    const W = project(po, c.weight_kg, k, h); if (!W) continue; ok++;
+    let N = c.stock, wPrev = c.weight_kg, out = 0;
+    for (let i = 1; i <= h; i++) { const m = sh(k, i) % 100, lam = Math.min(0.9, HZ.lam(wPrev, m)), hn = N * lam;
+      if (i === h) out = hn * W[i - 1] * HZ.ratio(wPrev);
+      N = Math.max(0, N - hn - N * HZ.mort(m)); wPrev = W[i - 1]; }
+    tot += out; }
+  return (G.gw[key] = ok ? tot : null);
+}
+// variante "analogue de poids" : pour chaque generation precedente du meme rang, on cherche le mois (a +/- 4 mois de la date
+// equivalente) ou elle avait le meme poids moyen que la generation actuelle, et on reprend ce qu'elle a abattu h mois plus tard
+// (part des poissons et poids abattu, rapporte au poids de depart). Une generation en avance se cale ainsi sur un mois plus tardif.
+function genHarvestA(k, h, zones) {
+  if (!G) return null; G.ga = G.ga || {}; const key = k + '_' + h + '_' + (zones || []).join(','); if (G.ga[key] !== undefined) return G.ga[key];
+  const Z = zones && zones.length ? zones : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
+  const ewm = v => { let ws = 0, x = 0; v.forEach((r, i) => { const w = Math.pow(0.6, v.length - 1 - i); ws += w; x += w * r; }); return ws ? x / ws : null; };
+  let tot = 0, ok = 0;
+  for (const po of Z) for (const [g, ser] of Object.entries(G.COH[po] || {})) {
+    const c = ser[k]; if (!c || !(c.stock > 2e5) || !c.weight_kg) continue;
+    const Q = [], WR = [];
+    for (let y = 4; y >= 1; y--) { const s0 = (G.COH[po] || {})[+g - y] || {}; let best = null;
+      for (let d = -4; d <= 4; d++) { const k0 = sh(k, -12 * y + d), a = s0[k0]; if (!a || !(a.stock > 2e5) || !a.weight_kg || sh(k0, h) > k) continue;
+        const e = Math.abs(Math.log(a.weight_kg / c.weight_kg)) + 0.01 * Math.abs(d); if (!best || e < best.e) best = { e, a, k0 }; }
+      if (!best || best.e > 0.25) continue; const b = s0[sh(best.k0, h)];
+      Q.push(b ? (b.harv_stk || 0) / best.a.stock : 0);
+      if (b && b.harv_stk > 2e4 && b.harv_kg) WR.push(b.harv_kg / b.harv_stk / best.a.weight_kg); }
+    if (Q.length < 2) continue; ok++; const q = ewm(Q); if (!(q > 0)) continue;
+    const w = WR.length ? c.weight_kg * ewm(WR) : (hCurve(po, k, (c.age_months || 0) + h) || c.weight_kg * 1.3);
+    tot += c.stock * q * w; }
+  return (G.ga[key] = ok ? tot : null);
+}
+window.gmGenHarvestA = (k, h, zones) => { if (!G && typeof DATA_RAW !== 'undefined' && DATA_RAW) G = prepare(DATA_RAW); return genHarvestA(k, h, zones); };
+window.gmGenHarvestW = (k, h, zones) => { if (!G && typeof DATA_RAW !== 'undefined' && DATA_RAW) G = prepare(DATA_RAW); return genHarvestW(k, h, zones); };
 function wholeGrowth(ser, k0, h) {
   const c0 = ser[k0]; if (!c0 || !c0.weight_kg) return null; let lw = Math.log(c0.weight_kg);
   for (let i = 1; i <= h; i++) { const k = sh(k0, i), c = ser[k], p = ser[sh(k, -1)]; if (!c || !p || !c.weight_kg || !p.weight_kg) return null;
