@@ -1159,8 +1159,9 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
   </div>
 
   <div class="panel" id="isView" style="flex:1; min-width:0; max-width:1400px; display:none;">
-    <div class="sig-title">Iceland — licences, farmers, exports and news</div>
+    <div class="sig-title">Iceland — fish at sea, cycles, licences, farmers, exports and news</div>
     <div class="sig-sub" id="isSub"></div>
+    <div class="pr-cards" id="isMastCards"></div>
     <div class="sig-title" style="margin-top:14px;font-size:15px">Map — farming fjords, licences and limits</div>
     <div class="sig-sub" id="isMapSub"></div>
     <div class="nw-chips" id="isMapZ" style="margin:6px 0"><button type="button" data-z="w" class="on">Westfjords</button><button type="button" data-z="e">East fjords</button><button type="button" data-z="a">All Iceland</button></div>
@@ -1174,8 +1175,15 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="sig-sub" id="isExpSub"></div>
     <div id="isExpChart"></div><div id="isExpLeg"></div>
     <div style="overflow-x:auto"><table class="sig-table" id="isExpTab" style="max-width:1000px;font-size:12.5px"></table></div>
-    <div class="sig-title" style="margin-top:16px;font-size:15px">Production at sea by fjord (MAST)</div>
+    <div class="sig-title" style="margin-top:16px;font-size:15px">Fish at sea, harvest, feed and mortality (MAST)</div>
     <div class="sig-sub" id="isMast"></div>
+    <div id="isMastChart"></div><div class="sig-sub" id="isMastLeg"></div>
+    <div class="sig-title" style="margin-top:16px;font-size:15px">Cycle length — months at sea, site by site</div>
+    <div class="sig-sub" id="isCycSub"></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:14px;align-items:start">
+      <div style="overflow-x:auto"><table class="sig-table" id="isCycCo"></table></div>
+      <div style="overflow-x:auto"><table class="sig-table" id="isCycFj"></table></div>
+    </div>
     <div class="sig-title" style="margin-top:16px;font-size:15px">News</div>
     <div id="isNews"></div>
   </div>
@@ -3311,7 +3319,7 @@ function renderUsaPrices() {
     `Import prices are customs values recorded on arrival (US Census; Eurostat, EU arrivals from that origin). All are monthly averages mixing spot and contract sales, and they arrive with one to two months' delay. Wholesale quotes in the US (Miami, East Coast) are sold by private price services and are not included.`;
 }
 // ===================== Islande (sources : communiques des eleveurs, MAST, Hagstofa via national_trade.json, sujets) =====================
-let IS_NT = null, IS_PROBE = null, IS_LOADING = false;
+let IS_NT = null, IS_PROBE = null, IS_MAST = null, IS_LOADING = false;
 const IS_LIC = [
   { co: 'Arnarlax (Icelandic Salmon, SalMar)', fj: 'Arnarfjörður', t: 11500, kind: 'fertile', src: 'Icelandic Salmon, NASF presentation, March 2025' },
   { co: 'Arnarlax (Icelandic Salmon, SalMar)', fj: 'Patreksfjörður & Tálknafjörður', t: 12200, kind: 'fertile', src: 'same' },
@@ -3367,7 +3375,7 @@ function isMap() {
 function renderIceland() {
   const sub = document.getElementById('isSub'), e = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), t0 = v => Math.round(v).toLocaleString('en-US');
   if (!IS_NT && !IS_LOADING) { IS_LOADING = true; const g = f => fetch(DATA_URL.replace('data.json', f), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
-    Promise.all([g('national_trade.json'), g('iceland.json')]).then(([a, b]) => { IS_NT = a || { rows: [] }; IS_PROBE = b; IS_LOADING = false; if (currentView === 'iceland') renderIceland(); });
+    Promise.all([g('national_trade.json'), g('iceland.json'), g('iceland_mast.json')]).then(([a, b, c]) => { IS_NT = a || { rows: [] }; IS_PROBE = b; IS_MAST = c; IS_LOADING = false; if (currentView === 'iceland') renderIceland(); });
     if (!QR) qrLoad(() => { if (currentView === 'iceland') renderIceland(); });
     if (!ST) fetch(DATA_URL.replace('data.json', 'stories.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null).then(j => { if (j && !ST) ST = j; if (currentView === 'iceland') renderIceland(); });
     sub.innerHTML = 'Loading…'; return; }
@@ -3409,12 +3417,48 @@ function renderIceland() {
       `<tr style="font-weight:700"><td class="name">All destinations</td><td>${t0(tot(Y))}</td><td>${chg(tot(Y), tot(Y - 1))}</td><td>100 %</td></tr>` +
       Object.entries(D).sort((a, b) => ((b[1][Y] || {}).t || 0) - ((a[1][Y] || {}).t || 0)).slice(0, 12).map(([k, o]) => `<tr><td class="name">${flagImg(k)} ${e(CNAME[k] || k)}</td><td>${t0((o[Y] || {}).t || 0)}</td><td>${chg((o[Y] || {}).t || 0, (o[Y - 1] || {}).t || 0)}</td><td>${tot(Y) ? (100 * ((o[Y] || {}).t || 0) / tot(Y)).toFixed(1) + ' %' : '—'}</td></tr>`).join('') + `</tbody>`;
   } else document.getElementById('isExpSub').innerHTML = 'No Icelandic export data in national_trade.json yet.';
-  // ---- MAST ----
-  const P = IS_PROBE;
-  document.getElementById('isMast').innerHTML = !P ? `MAST (the Icelandic Food and Veterinary Authority) publishes monthly biomass, fish numbers, mortality and sea lice by fjord in its aquaculture dashboard, and its farm sites through a public map server. The update run tests both; nothing has been read yet.`
-    : `<b>Data access, last test ${e((P.meta || {}).probed || '')}:</b> ${e((P.meta || {}).summary || '')}` +
-      ((P.layers || []).length ? `<br>Map-server layers found: ${(P.layers || []).slice(0, 12).map(l => `${e(l.title || l.name)} (${l.features ?? '?'} features)`).join(' · ')}` : '') +
-      ((P.meta || {}).dashboard_embed ? `<br>Dashboard embed: ${e(P.meta.dashboard_embed)}` : '');
+  // ---- MAST : tableau de bord (data/iceland_mast.json) ----
+  const MS = IS_MAST, $i = id => document.getElementById(id);
+  if (!MS || !(MS.national || []).length) {
+    $i('isMast').innerHTML = `MAST (the Icelandic Food and Veterinary Authority) publishes monthly biomass, fish numbers, feed, harvest and mortality site by site in its aquaculture dashboard. ` +
+      `The update run reads it; nothing has been read yet.`;
+    ['isMastCards', 'isMastChart', 'isMastLeg', 'isCycSub', 'isCycCo', 'isCycFj'].forEach(id => $i(id).innerHTML = '');
+  } else {
+    const N = MS.national, k = N.length - 1, L12 = N.slice(-12), P12 = N.slice(-24, -12), sm = (A, f) => A.reduce((a, x) => a + (x[f] || 0), 0);
+    const ch = (a, b) => b ? `<span class="${a >= b ? 'delta-good' : 'delta-bad'}">${a >= b ? '+' : '−'}${Math.abs(100 * (a / b - 1)).toFixed(0)} %</span>` : '';
+    const chm = (a, b) => b ? `<span class="${a <= b ? 'delta-good' : 'delta-bad'}">${a >= b ? '+' : '−'}${Math.abs(100 * (a / b - 1)).toFixed(0)} %</span>` : '';
+    const kt = v => (v / 1000).toLocaleString('en-US', { maximumFractionDigits: 1 }) + ' kt', mo = m => fdMon(m);
+    const B = N[k], B12 = N[k - 12] || {}, fish = (MS.sites || []).filter(x => x.m === MS.sites_last_month).reduce((a, x) => a + (x.fish || 0), 0);
+    const grown = sm(L12, 'harvest_t') + (B.biomass_t - (B12.biomass_t || B.biomass_t));
+    const card = (t, big, ln) => `<div class="pr-card" style="cursor:default"><div class="nm">${t}</div><div class="big">${big}</div><div class="ln">${ln}</div></div>`;
+    $i('isMast').innerHTML = `Atlantic salmon in sea cages, all companies, from the monthly reports each farm sends to MAST (live weight). Last month: <b>${mo(B.m)}</b>. ` +
+      `<a href="${(MS.meta || {}).url || '#'}" target="_blank" rel="noopener">MAST, Mælaborð fiskeldis</a>.`;
+    $i('isMastCards').innerHTML =
+      card('Biomass at sea', kt(B.biomass_t), `${ch(B.biomass_t, B12.biomass_t)} on a year · ${fish ? (fish / 1e6).toFixed(1) + ' M fish' : ''}`) +
+      card('Harvest, 12 months', kt(sm(L12, 'harvest_t')), `${ch(sm(L12, 'harvest_t'), sm(P12, 'harvest_t'))} on the 12 months before`) +
+      card('Feed, 12 months', kt(sm(L12, 'feed_t')), `${ch(sm(L12, 'feed_t'), sm(P12, 'feed_t'))} · conversion ${grown > 0 ? (sm(L12, 'feed_t') / grown).toFixed(2) : '—'}`) +
+      card('Dead fish, 12 months', kt(sm(L12, 'mortality_t')), `${chm(sm(L12, 'mortality_t'), sm(P12, 'mortality_t'))} · last month ${Math.round(B.mortality_t).toLocaleString('en-US')} t`) +
+      ((MS.cycles || {}).iceland ? card('Cycle length', `${MS.cycles.iceland.median} months`, `median of ${MS.cycles.iceland.n} completed cycles (Norway ≈ 15–16)`) : '');
+    const NN = N.slice(-36), X = NN.map(x => mo(x.m));
+    const ser = [{ label: 'Biomass at sea (kt)', col: '#4fc3f7', values: NN.map(x => x.biomass_t / 1000) },
+      { label: 'Feed in the month (kt)', col: '#ffd54f', values: NN.map(x => x.feed_t / 1000) },
+      { label: 'Harvest in the month (kt)', col: '#81c784', values: NN.map(x => x.harvest_t / 1000) },
+      { label: 'Dead fish in the month (kt)', col: '#ff8a65', values: NN.map(x => x.mortality_t / 1000) }];
+    $i('isMastChart').innerHTML = fdLines(X, ser, { h: 230, zero: true, fmt: v => v.toFixed(0) });
+    $i('isMastLeg').innerHTML = fdLeg(ser);
+    // cycles
+    const C = MS.cycles || {}, act = C.active || [];
+    const due = (co) => { const m = ((C.by_company || {})[co] || C.iceland || {}).median; return m ? act.filter(a => a.co === co && a.age >= m - 2.5 && a.age <= m).length : 0; };
+    $i('isCycSub').innerHTML = C.iceland ? `Months from the first month with fish in a site (after at least two empty months) to the month it is emptied, for every cycle completed since ${(MS.national[0] || {}).m || '2021'}. ` +
+      `Iceland's cycles are long — cold water, slower growth, and most smolts stocked in spring and autumn. Runs shorter than ${C.min_months} months (${C.short_runs} of them: fish moved, sites emptied early, the 2021-22 ISA outbreak in the east) are left out. ` +
+      `<b>${act.length}</b> sites have fish now.` : 'No cycle could be rebuilt yet.';
+    const rowC = (nm, x, extra) => x ? `<tr><td class="name"><b>${e(nm)}</b></td><td>${x.n}</td><td><b>${x.median}</b></td><td>${x.p25}–${x.p75}</td>${extra}</tr>` : '';
+    $i('isCycCo').innerHTML = C.by_company ? `<thead><tr><th class="name">Company</th><th>Cycles</th><th>Median<br>(months)</th><th>Middle<br>half</th><th>Sites with<br>fish now</th><th>Due<br>≤ 2 months</th></tr></thead><tbody>` +
+      Object.entries(C.by_company).sort((a, b) => b[1].n - a[1].n).map(([co, x]) => rowC(co, x, `<td>${act.filter(a => a.co === co).length}</td><td>${due(co)}</td>`)).join('') +
+      rowC('Iceland', C.iceland, `<td>${act.length}</td><td>${Object.keys(C.by_company).reduce((s2, co) => s2 + due(co), 0)}</td>`) + `</tbody>` : '';
+    $i('isCycFj').innerHTML = C.by_fjord && Object.keys(C.by_fjord).length ? `<thead><tr><th class="name">Fjord</th><th>Cycles</th><th>Median<br>(months)</th><th>Middle<br>half</th></tr></thead><tbody>` +
+      Object.entries(C.by_fjord).sort((a, b) => b[1].n - a[1].n).map(([f, x]) => rowC(f, x, '')).join('') + `</tbody>` : '';
+  }
   // ---- actualites ----
   const SS = ((ST || {}).stories || []).filter(x => x.basin === 'IS').sort((a, b) => a.last < b.last ? 1 : -1).slice(0, 10);
   document.getElementById('isNews').innerHTML = SS.length ? SS.map(x => `<div style="padding:8px 0;border-bottom:1px solid var(--border)"><div style="font-weight:600">${e(x.title)} <span style="font-size:11.5px;font-weight:400;color:var(--muted)">${stDates(x)}</span></div>` +
@@ -9929,10 +9973,13 @@ function renderFeed() {
   const roll = (L, k) => L.map((_, i) => i >= 11 ? L.slice(i - 11, i + 1).reduce((s, x) => s + (x[k] || 0), 0) : null);
   const basins = [['Norway', FD.norway, '#4fc3f7'], ['Scotland', FD.scotland, '#ffb74d'], ['Iceland', FD.iceland, '#aed581']].filter(b => b[1] && b[1].length > 12);
   const UM = [...new Set(basins.flatMap(b => b[1].map(x => x.m)))].sort().slice(-Math.min(fdRange, 120));
-  const useSer = basins.map(([nm, L, col]) => { const r = roll(L, 'feed_t'), by = {}; L.forEach((x, i) => by[x.m] = r[i]); return { label: nm + ' (12 months, kt)', col, values: UM.map(m => by[m] ? by[m] / 1000 : null) }; });
-  $f('fdUseSub').innerHTML = `Feed fed to salmon at sea, 12-month running total in thousand tonnes, from each country's farm reports (Norway: Directorate of Fisheries' biomass register; Scotland: SEPA; Iceland: MAST). ` +
+  // Norvege = 10 fois l'Ecosse : on compare les rythmes, pas les volumes (aliment sur 12 mois / meme total un an plus tot)
+  const useSer = basins.map(([nm, L, col]) => { const r = roll(L, 'feed_t'), by = {}; L.forEach((x, i) => by[x.m] = r[i] && r[i - 12] ? 100 * (r[i] / r[i - 12] - 1) : null);
+    return { label: nm, col, values: UM.map(m => by[m] ?? null) }; });
+  $f('fdUseSub').innerHTML = `Feed fed to salmon at sea over 12 months, from each country's farm reports (Norway: Directorate of Fisheries' biomass register; Scotland: SEPA; Iceland: MAST). ` +
     `Feed conversion = feed ÷ fish grown (harvest + change in standing biomass, live weight) over 12 months.`;
-  $f('fdUse').innerHTML = useSer.length ? fdLines(UM.map(fdMon), useSer, { h: 220 }) + `<div class="sig-sub">${fdLeg(useSer)}</div>` : '';
+  $f('fdUse').innerHTML = useSer.length ? fdLines(UM.map(fdMon), useSer, { h: 220, ref: 0, fmt: v => (v > 0 ? '+' : '') + v.toFixed(0) + ' %' }) +
+    `<div class="sig-sub">${fdLeg(useSer)}<br>Change of the 12-month feed total on the same total a year earlier: above zero, farmers are feeding more than a year ago (more fish, or bigger fish).</div>` : '';
   const rowU = ([nm, L]) => { const k = L.length - 1, t = L.slice(k - 11, k + 1), p = L.slice(k - 23, k - 11), sm2 = (A, f) => A.reduce((s, x) => s + (x[f] || 0), 0);
     const f12 = sm2(t, 'feed_t'), f12p = p.length === 12 ? sm2(p, 'feed_t') : null;
     const grown = L[k].harvest_t !== undefined && L[k - 12] ? sm2(t, 'harvest_t') + (L[k].biomass_t - L[k - 12].biomass_t) : null;
@@ -11320,6 +11367,13 @@ loadRemoteData().then(live => {
   #sideNav .sn-item:hover{background:rgba(79,195,247,.08)}
   #sideNav .sn-item.on{background:rgba(79,195,247,.16);color:#fff;font-weight:600;box-shadow:inset 3px 0 0 #4fc3f7}
   #sideNav .sn-group.closed .sn-item{display:none}
+  /* autres bassins : meme ordre de blocs partout */
+  .bs-nav{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px}
+  .bs-nav button{font:inherit;font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid var(--border);background:none;color:var(--ink);cursor:pointer}
+  .bs-nav button.off{color:var(--muted);opacity:.45;cursor:default;text-decoration:line-through}
+  .bs-slot{margin:26px 0 8px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#4fc3f7;scroll-margin-top:60px}
+  .bs-miss{font-size:11.5px;color:var(--muted);margin-top:18px}
+  #feedView a,.bs-news a{color:#4fc3f7}
   #tasCo th,#tasCo td{text-align:center;padding:5px 7px;white-space:nowrap}
   #tasCo th{line-height:1.25;vertical-align:bottom}
   #tasCo td.name,#tasCo th.name{text-align:left}
@@ -11395,6 +11449,62 @@ loadRemoteData().then(live => {
   let n = 0; const t = setInterval(() => { n++; if (typeof DATA_RAW !== 'undefined' && DATA_RAW || n > 60) { clearInterval(t);
     const v = location.hash.slice(1); if (btn(v) && v !== 'news') go(v, false); else mark('news');
     const sub = document.getElementById('snSub'); if (sub && typeof DATA_DATE !== 'undefined' && DATA_DATE) sub.textContent = 'data of ' + DATA_DATE; } }, 300);
+})();
+</script>
+<script>
+// Autres bassins : chaque onglet garde ses graphiques, mais les blocs sont ranges dans le meme ordre partout
+// (exploitations -> poissons en mer -> recolte -> cycles -> mortalite et sante -> societes -> exportations -> actualites),
+// avec une barre de liens en tete et la liste de ce que le pays ne publie pas.
+(function () {
+  const SLOTS = [['map', 'Farms, licences and companies'], ['stock', 'Fish at sea'], ['harvest', 'Harvest and production'], ['cycles', 'Cycles and time at sea'],
+    ['bio', 'Mortality and fish health'], ['companies', 'Company results'], ['trade', 'Exports'], ['news', 'News']];
+  const RULES = [[/cycle length|time at sea/i, 'cycles'], [/^news$/i, 'news'], [/export/i, 'trade'], [/^fish at sea|smolt transfer/i, 'stock'],
+    [/^mortality/i, 'bio'], [/company results|year by year$|farmers' results|bakkafrost scotland/i, 'companies'],
+    [/farms and|farming areas|farm leases|licences|^map/i, 'map'],
+    [/mortal|death|dead fish|lice|disease|health/i, 'bio'], [/harvest|survey|by province|production/i, 'harvest'],
+    [/biomass|fish at|farms in use/i, 'stock']];
+  const BS_CODE = { scotlandView: 'GB', faroeView: 'FO', chileView: 'CL', canadaView: 'CA', australiaView: 'AU' };
+  const fillNews = vid => { const box = document.getElementById(vid + '-newsbox'); if (!box) return;
+    const e = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    const draw = () => { const SS = ((typeof ST !== 'undefined' && ST) ? ST.stories || [] : []).filter(x => x.basin === BS_CODE[vid] || (x.basins || []).includes(BS_CODE[vid]))
+        .sort((a, b) => a.last < b.last ? 1 : -1).slice(0, 8);
+      box.innerHTML = SS.length ? SS.map(x => { const a0 = (x.arts || [])[0];
+        return `<div style="padding:8px 0;border-bottom:1px solid var(--border)"><div style="font-weight:600">${a0 ? `<a href="${nwHref(a0.url, a0.link, a0.lang)}" target="_blank" rel="noopener">${e(x.title)}</a>` : e(x.title)} ` +
+          `<span style="font-size:11.5px;font-weight:400;color:var(--muted)">${typeof stDates === 'function' ? stDates(x) : ''}</span></div>` +
+          (x.summary ? `<div style="font-size:13px;color:var(--muted)">${e(x.summary)}</div>` : '') + `</div>`; }).join('') : '<div class="sig-sub">No story for this basin in the last weeks.</div>'; };
+    if (typeof ST !== 'undefined' && ST) return draw();
+    fetch(DATA_URL.replace('data.json', 'stories.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null).then(j => { if (j && !ST) ST = j; draw(); }); };
+  Object.keys(BS_CODE).forEach(vid => { const P = document.getElementById(vid); if (!P) return;
+    new MutationObserver(() => { if (P.style.display === 'block') fillNews(vid); }).observe(P, { attributes: true, attributeFilter: ['style'] }); });
+  const NAMES = { scotlandView: 'Scotland', faroeView: 'the Faroe Islands', isView: 'Iceland', chileView: 'Chile', canadaView: 'British Columbia', australiaView: 'Tasmania' };
+  Object.keys(NAMES).forEach(vid => {
+    const P = document.getElementById(vid); if (!P || P.dataset.bs) return; P.dataset.bs = 1;
+    const kids = [...P.children]; let i = 1;                       // en-tete : titre, sous-titre, chiffres cles
+    while (i < kids.length && !kids[i].classList.contains('sig-title')) i++;
+    const head = kids.slice(0, i), groups = {}, notes = []; let cur = null;
+    for (const el of kids.slice(i)) {
+      if (el.classList.contains('sig-sub') && /Note$/.test(el.id || '') && el === kids[kids.length - 1]) { notes.push(el); continue; }
+      if (el.classList.contains('sig-title')) { const t = el.textContent.trim(); const r = RULES.find(([rx]) => rx.test(t));
+        if (r) cur = r[1]; else if (!cur) cur = 'stock'; }
+      (groups[cur] = groups[cur] || []).push(el);
+    }
+    // actualites de la semaine pour chaque bassin (l'Islande a deja les siennes)
+    if (!groups.news && BS_CODE[vid]) { const t = document.createElement('div'); t.className = 'bs-news'; t.id = vid + '-newsbox'; groups.news = [t]; }
+    // un bloc traite dans une autre section (l'Islande : recolte et mortalite dans "Fish at sea") n'est pas "manquant"
+    const titles = [...P.querySelectorAll('.sig-title')].map(x => x.textContent).join(' | ');
+    const COVER = { harvest: /harvest/i, bio: /mortal|death|lice/i, stock: /biomass|fish at/i };
+    const nav = document.createElement('div'); nav.className = 'bs-nav';
+    const have = SLOTS.filter(([k]) => groups[k]), miss = SLOTS.filter(([k]) => !groups[k] && !(COVER[k] && COVER[k].test(titles)));
+    nav.innerHTML = SLOTS.filter(([k]) => groups[k] || miss.some(x => x[0] === k)).map(([k, lab]) => `<button type="button" data-k="${k}" class="${groups[k] ? '' : 'off'}" ${groups[k] ? '' : 'title="Not yet in this tab"'}>${lab}</button>`).join('');
+    nav.querySelectorAll('button:not(.off)').forEach(b => b.onclick = () => document.getElementById(vid + '-' + b.dataset.k).scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    const frag = document.createDocumentFragment(); head.forEach(h => frag.appendChild(h)); frag.appendChild(nav);
+    have.forEach(([k, lab], n) => { const h = document.createElement('div'); h.className = 'bs-slot'; h.id = vid + '-' + k; h.textContent = `${n + 1} · ${lab}`;
+      frag.appendChild(h); groups[k].forEach(el => frag.appendChild(el)); });
+    if (miss.length) { const m = document.createElement('div'); m.className = 'bs-miss';
+      m.textContent = `Not yet in this tab for ${NAMES[vid]}: ${miss.map(x => x[1].toLowerCase()).join(', ')}.`; frag.appendChild(m); }
+    notes.forEach(x => frag.appendChild(x));
+    P.innerHTML = ''; P.appendChild(frag);
+  });
 })();
 </script>
 </body>
