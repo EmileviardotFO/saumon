@@ -33,10 +33,11 @@ is_salmon = lambda t: bool(t) and re.match(r'(?i)\s*(lax|atlantic salmon|salmo s
 
 
 def http(url, data=None, headers=None, timeout=90):
-    req = urllib.request.Request(url, data=json.dumps(data).encode() if data is not None else None,
-                                 headers=dict(UA, **(headers or {}), **({'Content-Type': 'application/json'} if data is not None else {})))
-    with urllib.request.urlopen(req, timeout=timeout) as r:
-        return json.loads(r.read().decode('utf-8'))
+    import requests          # Power BI refuses urllib's default request (no compression, bare headers)
+    h = dict(UA, **(headers or {}))
+    r = requests.post(url, json=data, headers=h, timeout=timeout) if data is not None else requests.get(url, headers=h, timeout=timeout)
+    r.raise_for_status()
+    return r.json()
 
 
 class Report:
@@ -52,10 +53,11 @@ class Report:
                 self.mx = http(f'{host}/public/reports/{self.key}/modelsAndExploration?preferReadOnlySession=true', headers=self.h, timeout=30)
                 self.host = host
                 break
-            except Exception:
+            except Exception as ex:
+                self.err = f'{host}: {type(ex).__name__} {str(ex)[:160]}'
                 continue
         if not self.mx:
-            raise RuntimeError('no Power BI cluster answered')
+            raise RuntimeError('no Power BI cluster answered; last error ' + getattr(self, 'err', ''))
         m = self.mx['models'][0]
         self.model_id, self.db = m['id'], m['dbName']
         self.report_id = (self.mx.get('exploration', {}).get('report') or {}).get('objectId')
