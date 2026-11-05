@@ -482,6 +482,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
       <button data-v="australia">Australia</button>
       <button data-v="canada">Canada (BC)</button>
       <button data-v="faroe">Faroe Islands</button>
+      <button data-v="iceland">Iceland</button>
     </div></div>
   </div>
   <div class="field" id="poFilterField" style="display:none;">
@@ -722,10 +723,10 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="sig-title">Stock rotation — how fast the fish in the sea are turned into harvest</div>
     <div class="sig-sub" id="rotSub"></div>
     <div class="sig-title" style="font-size:12px;margin-top:10px">By year (12 months to the latest reported month)</div>
-    <table class="sig-table"><thead><tr><th class="name">12 months to</th><th>Harvest (t)</th><th>Avg biomass in the sea (t)</th><th title="Every sea-based salmon licence, including research, display, education and slaughter-cage licences (Farm register, zone table)">MTB, all licences (t)</th><th>Biomass / MTB</th>
+    <table class="sig-table"><thead><tr><th class="name">12 months to</th><th>Harvest (t)</th><th>Avg biomass in the sea (t)</th><th title="Food-fish licences at sea under the production-area rules, at 31 December of the year before (Fiskeridirektoratet); latest year: current licence register, sea licences">MTB in force (t)</th><th>Biomass / MTB</th>
       <th class="sep-left">Biomass rotation</th><th>Fish rotation</th><th>Avg harvest weight (kg, live)</th></tr></thead><tbody id="tbodyRotY"></tbody></table>
     <div class="sig-title" style="font-size:12px;margin-top:18px">Month by month</div>
-    <table class="sig-table"><thead><tr><th class="name">Month</th><th>Harvest (t)</th><th>Avg biomass (t)</th>
+    <table class="sig-table"><thead><tr><th class="name">Month</th><th>Harvest (t)</th><th>Avg biomass (t)</th><th>MTB in force (t)</th><th>Biomass / MTB (end of month)</th><th>vs a year earlier</th>
       <th class="sep-left">Biomass rotation in the month</th><th>vs a year earlier</th><th class="sep-left">Share of fish harvested</th><th>vs a year earlier</th><th class="sep-left">12-month rotation</th><th>vs a year earlier</th></tr></thead><tbody id="tbodyRotM"></tbody></table>
     <div class="sig-title" style="font-size:12px;margin-top:18px">By zone (12 months to the latest reported month)</div>
     <table class="sig-table"><thead><tr><th class="name">Zone</th><th>Harvest (t)</th><th>Avg biomass (t)</th><th class="sep-left">Biomass rotation</th><th>a year earlier</th><th>Δ</th>
@@ -1069,6 +1070,9 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="sig-title" style="margin-top:18px">Company results in Scotland — from quarterly reports</div>
     <div class="sig-sub" id="scQrSub"></div>
     <div style="overflow-x:auto"><table class="sig-table" id="scQr"></table></div>
+    <div class="sig-title" style="margin-top:18px">Bakkafrost Scotland — harvest, smolts and exceptional mortality, quarter by quarter</div>
+    <div class="sig-sub" id="scTuSub"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="scTu"></table></div>
     <div class="sig-title" style="margin-top:18px">Unusual monthly deaths by area</div>
     <div class="sig-sub" id="scFlagSub"></div>
     <div style="overflow-x:auto"><table class="sig-table" id="scFlags"></table></div>
@@ -1088,6 +1092,24 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="sig-sub">Entered by hand in data/news.json (key "calendar"); past dates drop off after a week.</div>
     <div style="overflow-x:auto"><table class="sig-table" id="nwCal"></table></div>
     <details style="margin-top:14px;font-size:11.5px;color:var(--muted)"><summary style="cursor:pointer">Sources and last collection</summary><div id="nwSrc" style="margin-top:6px;line-height:1.6"></div></details>
+  </div>
+
+  <div class="panel" id="isView" style="flex:1; min-width:0; max-width:1400px; display:none;">
+    <div class="sig-title">Iceland — licences, farmers, exports and news</div>
+    <div class="sig-sub" id="isSub"></div>
+    <div class="sig-title" style="margin-top:14px;font-size:15px">Licences (maximum allowed biomass) by farmer</div>
+    <div style="overflow-x:auto"><table class="sig-table" id="isLic" style="max-width:1100px"></table></div>
+    <div class="sig-sub" id="isLicNote"></div>
+    <div class="sig-title" style="margin-top:16px;font-size:15px">Farmers' results and harvest</div>
+    <div style="overflow-x:auto"><table class="sig-table" id="isRes" style="max-width:1100px"></table></div>
+    <div class="sig-title" style="margin-top:16px;font-size:15px">Exports, month by month (Statistics Iceland)</div>
+    <div class="sig-sub" id="isExpSub"></div>
+    <div id="isExpChart"></div><div id="isExpLeg"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="isExpTab" style="max-width:1000px;font-size:12.5px"></table></div>
+    <div class="sig-title" style="margin-top:16px;font-size:15px">Production at sea by fjord (MAST)</div>
+    <div class="sig-sub" id="isMast"></div>
+    <div class="sig-title" style="margin-top:16px;font-size:15px">News</div>
+    <div id="isNews"></div>
   </div>
 
   <div class="panel" id="prView" style="flex:1; min-width:0; max-width:1400px; display:none;">
@@ -1463,7 +1485,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="sig-sub">Volume, value and realised price for the four markets Akvafakta reports monthly:
       China and Hong Kong, the United States, the EU27 and Japan. Everything below is rebuilt from the
       monthly reports each time one is added, so this tab follows the data with no manual step.
-      <span class="warn">Volumes are round weight, values are the declared export value</span>, so the
+      <span class="warn">Volumes are in whole-fish equivalent (WFE, round weight: fillets and other products converted back to whole fish), values are the declared export value</span>, so the
       implied price mixes product formats — a market buying fillet shows a higher price per kilo than one
       buying whole fish. Compare movements between periods, not levels between countries.</div>
 
@@ -1490,7 +1512,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <table class="sig-table">
       <thead>
         <tr><th class="name" rowspan="2">Market / destination</th>
-            <th class="grp mkt-c-q" colspan="3">Volume</th>
+            <th class="grp mkt-c-q" colspan="3">Volume (t WFE)</th>
             <th class="grp sep-left mkt-c-p" colspan="3">Price, NOK/kg</th>
             <th class="grp sep-left mkt-c-v" colspan="3">Value</th></tr>
         <tr><th class="mkt-c-q" id="mktH1"></th><th class="mkt-c-q" id="mktH2"></th><th class="mkt-c-q">Δ%</th>
@@ -3135,6 +3157,73 @@ let CLD = null, CLS = null, CLT = null, CL_LOADING = false, CL_MAP = null, CL_LA
 let BF = null, BF_LOADING = false;
 // ===================== Temps en mer (data/big_fish.json, partie cycles <- scripts/build_big_fish.py) =====================
 let TAS_OPEN = {};
+// ===================== Islande (sources : communiques des eleveurs, MAST, Hagstofa via national_trade.json, sujets) =====================
+let IS_NT = null, IS_PROBE = null, IS_LOADING = false;
+const IS_LIC = [
+  { co: 'Arnarlax (Icelandic Salmon, SalMar)', fj: 'Arnarfjörður', t: 11500, kind: 'fertile', src: 'Icelandic Salmon, NASF presentation, March 2025' },
+  { co: 'Arnarlax (Icelandic Salmon, SalMar)', fj: 'Patreksfjörður & Tálknafjörður', t: 12200, kind: 'fertile', src: 'same' },
+  { co: 'Arnarlax (Icelandic Salmon, SalMar)', fj: 'Ísafjarðardjúp', t: 10000, kind: 'sterile', src: 'licence granted June 2024 (MAST, UST)' },
+  { co: 'Arnarlax (Icelandic Salmon, SalMar)', fj: 'Arnarfjörður (application)', t: 4500, kind: 'pending', src: 'company, June 2024' },
+  { co: 'Arctic Fish (Mowi)', fj: '10 sites in 5 Westfjords fjords', t: 29800, kind: 'total', src: 'company website' },
+  { co: 'Kaldvík (Fiskeldi Austfjarða)', fj: 'East fjords, all sites', t: 27800, kind: 'total, of which 9,300 t sterile', src: 'company, 2026' },
+  { co: 'Kaldvík (Fiskeldi Austfjarða)', fj: 'Berufjörður', t: 7500, kind: 'fertile', src: 'MAST, licence file' },
+  { co: 'Kaldvík (Fiskeldi Austfjarða)', fj: 'Stöðvarfjörður (new)', t: 7000, kind: 'fertile', src: 'licence awarded 2026' },
+  { co: 'Kaldvík (Fiskeldi Austfjarða)', fj: 'Seyðisfjörður (application)', t: 10000, kind: 'pending', src: 'company, 2026' }];
+function renderIceland() {
+  const sub = document.getElementById('isSub'), e = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), t0 = v => Math.round(v).toLocaleString('en-US');
+  if (!IS_NT && !IS_LOADING) { IS_LOADING = true; const g = f => fetch(DATA_URL.replace('data.json', f), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
+    Promise.all([g('national_trade.json'), g('iceland.json')]).then(([a, b]) => { IS_NT = a || { rows: [] }; IS_PROBE = b; IS_LOADING = false; if (currentView === 'iceland') renderIceland(); });
+    if (!QR) qrLoad(() => { if (currentView === 'iceland') renderIceland(); });
+    if (!ST) fetch(DATA_URL.replace('data.json', 'stories.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null).then(j => { if (j && !ST) ST = j; if (currentView === 'iceland') renderIceland(); });
+    sub.innerHTML = 'Loading…'; return; }
+  if (!IS_NT) return;
+  sub.innerHTML = `Iceland farms salmon in open pens in the Westfjords and the East fjords, under licences set by maximum allowed biomass (MAB) per fjord, capped by each fjord's carrying capacity and by a genetic-risk assessment for wild salmon; part of the newer licences are for sterile salmon. ` +
+    `Four companies hold the sea licences: Arnarlax (Icelandic Salmon, owned by SalMar), Arctic Fish (Mowi), Kaldvík (Fiskeldi Austfjarða) and Háafell.`;
+  // ---- licences ----
+  const cos = [...new Set(IS_LIC.map(x => x.co))];
+  document.getElementById('isLic').innerHTML = `<thead><tr><th class="name">Farmer</th><th class="name">Fjord / site</th><th>MAB (t)</th><th class="name">Type</th><th class="name">Source</th></tr></thead><tbody>` +
+    cos.map(c => IS_LIC.filter(x => x.co === c).map((x, i) => `<tr style="${x.kind === 'pending' ? 'color:var(--muted)' : ''}"><td class="name">${i ? '' : `<b>${e(c)}</b>`}</td><td class="name">${e(x.fj)}</td><td>${t0(x.t)}</td><td class="name">${e(x.kind)}</td><td class="name" style="font-size:11.5px;color:var(--muted)">${e(x.src)}</td></tr>`).join('')).join('') + `</tbody>`;
+  document.getElementById('isLicNote').innerHTML = `Granted sea licences add up to roughly 91,000 t of MAB (Arnarlax 33,700, Arctic Fish 29,800, Kaldvík 27,800), with about 14,500 t more applied for; Háafell (Ísafjarðardjúp) to be added. ` +
+    `Fjord caps, example: Ísafjarðardjúp has a carrying capacity of 30,000 t and a genetic-risk cap of 12,000 t of fertile salmon. Figures from company announcements and MAST licence files; to be replaced by MAST's licence register once its data feed is confirmed (see below).`;
+  // ---- resultats des eleveurs ----
+  const R = ((QR || {}).reports || []), rows = [];
+  R.forEach(r => (r.segments || []).forEach(g => { if (g.basin === 'IS' || /iceland|arnarlax|arctic fish|kaldv/i.test(r.company + ' ' + g.segment)) rows.push({ r, g }); }));
+  rows.sort((a, b) => a.r.quarter < b.r.quarter ? 1 : -1);
+  const f1 = v => v === undefined || v === null ? '—' : (Math.abs(v) >= 1000 ? t0(v) : (+v).toFixed(1));
+  document.getElementById('isRes').innerHTML = rows.length ? `<thead><tr><th class="name">Farmer</th><th>Quarter</th><th>Harvest (t)</th><th>Cost per kg</th><th>EBIT</th><th>Guidance (t)</th><th class="name">Notes</th></tr></thead><tbody>` +
+    rows.map(({ r, g }) => { const d = g.guidance_t !== undefined && g.guidance_prev_t !== undefined ? g.guidance_t - g.guidance_prev_t : null;
+      return `<tr><td class="name"><b>${e(g.segment === 'Group' ? r.company : g.segment)}</b></td><td>${e(r.quarter.replace('-', ' '))}</td><td>${f1(g.harvest_t)}</td><td>${g.cost_per_kg !== undefined ? f1(g.cost_per_kg) + ' ' + e(g.currency) : '—'}</td>` +
+        `<td>${g.ebit_per_kg !== undefined ? f1(g.ebit_per_kg) + ' ' + e(g.currency) + '/kg' : g.ebit_m !== undefined ? f1(g.ebit_m) + ' ' + e(g.currency) + ' m' + (g.ebit_m_ly !== undefined ? ` (${f1(g.ebit_m_ly)})` : '') : '—'}</td>` +
+        `<td>${g.guidance_t !== undefined ? t0(g.guidance_t) + (d ? ` <span class="${d > 0 ? 'delta-good' : 'delta-bad'}">${d > 0 ? '+' : '−'}${t0(Math.abs(d))}</span>` : '') : '—'}</td><td class="name" style="font-size:12px">${e([g.guidance_reason, ...(g.biology || []), ...(g.notes || [])].filter(Boolean).join('; '))}</td></tr>`; }).join('') + `</tbody>`
+    : `<tbody><tr><td class="name" style="color:var(--muted)">No Icelandic report read yet: Icelandic Salmon, Arctic Fish and Kaldvík are followed by the quarterly-report step.</td></tr></tbody>`;
+  // ---- exportations ----
+  const NR = (IS_NT.rows || []).filter(r => r[1] === 'IS'), W = { 0: 1, 1: 1, 2: 1.75, 3: 1.75, 5: 2.1, 6: 2.0 }, FN = (IS_NT.meta || {}).forms || {};
+  if (NR.length) {
+    const last = Math.max(...NR.map(r => r[0])), Y = Math.floor(last / 100), mL = last % 100, keys = [];
+    for (let k = (Y - 1) * 100 + 1; k <= last; k = k % 100 === 12 ? k + 89 : k + 1) keys.push(k);
+    const fl = [...new Set(NR.map(r => r[3]))], COLS = ['#4fc3f7', '#ffb74d', '#81c784', '#ce93d8', '#ff8a65', '#ffd54f', '#90a4ae'];
+    const stacks = fl.map((f, i) => ({ lab: FN[f] || FN[String(f)] || `form ${f}`, col: COLS[i % 7], vals: keys.map(k => NR.reduce((a, r) => a + (r[0] === k && r[3] === f ? r[4] * (W[f] || 1) : 0), 0)) })).filter(x => x.vals.some(v => v > 0));
+    document.getElementById('isExpSub').innerHTML = `Iceland's salmon exports by form, whole-fish equivalent (fillets ×1.75, smoked ×2.1), from Statistics Iceland, to ${tmMl(last)}. Destinations below: January–${tmMl(last)} against the same months of ${Y - 1}.`;
+    document.getElementById('isExpChart').innerHTML = vzStack(keys, stacks, { axis: 'Tonnes WFE', unit: 't', H: 230 });
+    document.getElementById('isExpLeg').innerHTML = vzLegend(stacks.map(x => [x.lab, x.col, false, true]));
+    const D = {}; NR.forEach(r => { for (const y of [Y, Y - 1]) if (Math.floor(r[0] / 100) === y && r[0] % 100 <= mL) { const o = ((D[r[2]] = D[r[2]] || {})[y] = D[r[2]][y] || { t: 0, v: 0 }); o.t += r[4] * (W[r[3]] || 1); o.v += r[6] || 0; } });
+    const chg = (a, b) => b ? `<span class="${a >= b ? 'delta-good' : 'delta-bad'}">${a >= b ? '+' : '−'}${Math.abs(100 * (a / b - 1)).toFixed(0)} %</span>` : '—';
+    const tot = y => Object.values(D).reduce((a, o) => a + ((o[y] || {}).t || 0), 0);
+    document.getElementById('isExpTab').innerHTML = `<thead><tr><th class="name">Destination</th><th>${Y} (t WFE)</th><th>vs ${Y - 1}</th><th>Share</th></tr></thead><tbody>` +
+      `<tr style="font-weight:700"><td class="name">All destinations</td><td>${t0(tot(Y))}</td><td>${chg(tot(Y), tot(Y - 1))}</td><td>100 %</td></tr>` +
+      Object.entries(D).sort((a, b) => ((b[1][Y] || {}).t || 0) - ((a[1][Y] || {}).t || 0)).slice(0, 12).map(([k, o]) => `<tr><td class="name">${flagImg(k)} ${e(CNAME[k] || k)}</td><td>${t0((o[Y] || {}).t || 0)}</td><td>${chg((o[Y] || {}).t || 0, (o[Y - 1] || {}).t || 0)}</td><td>${tot(Y) ? (100 * ((o[Y] || {}).t || 0) / tot(Y)).toFixed(1) + ' %' : '—'}</td></tr>`).join('') + `</tbody>`;
+  } else document.getElementById('isExpSub').innerHTML = 'No Icelandic export data in national_trade.json yet.';
+  // ---- MAST ----
+  const P = IS_PROBE;
+  document.getElementById('isMast').innerHTML = !P ? `MAST (the Icelandic Food and Veterinary Authority) publishes monthly biomass, fish numbers, mortality and sea lice by fjord in its aquaculture dashboard, and its farm sites through a public map server. The update run tests both; nothing has been read yet.`
+    : `<b>Data access, last test ${e((P.meta || {}).probed || '')}:</b> ${e((P.meta || {}).summary || '')}` +
+      ((P.layers || []).length ? `<br>Map-server layers found: ${(P.layers || []).slice(0, 12).map(l => `${e(l.title || l.name)} (${l.features ?? '?'} features)`).join(' · ')}` : '') +
+      ((P.meta || {}).dashboard_embed ? `<br>Dashboard embed: ${e(P.meta.dashboard_embed)}` : '');
+  // ---- actualites ----
+  const SS = ((ST || {}).stories || []).filter(x => x.basin === 'IS').sort((a, b) => a.last < b.last ? 1 : -1).slice(0, 10);
+  document.getElementById('isNews').innerHTML = SS.length ? SS.map(x => `<div style="padding:8px 0;border-bottom:1px solid var(--border)"><div style="font-weight:600">${e(x.title)} <span style="font-size:11.5px;font-weight:400;color:var(--muted)">${stDates(x)}</span></div>` +
+    (x.summary ? `<div style="font-size:13px;color:var(--muted)">${e(x.summary)}</div>` : '') + `</div>`).join('') : '<div class="sig-sub">No Icelandic story this week.</div>';
+}
 // ===================== Prix : historique hebdomadaire (SSB 03024 ; indice spot des rapports Akvafakta) =====================
 let PR_YEARS = null;
 function renderPrices() {
@@ -3204,7 +3293,7 @@ function flagImg(iso, size) {
 const CNAME = { DE: 'Germany', FR: 'France', IT: 'Italy', ES: 'Spain', NL: 'Netherlands', BE: 'Belgium', DK: 'Denmark', SE: 'Sweden', PL: 'Poland', US: 'United States', GB: 'United Kingdom', CZ: 'Czechia', AT: 'Austria', CH: 'Switzerland',
   LT: 'Lithuania', LV: 'Latvia', EE: 'Estonia', FI: 'Finland', NO: 'Norway', IE: 'Ireland', PT: 'Portugal', GR: 'Greece', EL: 'Greece', RO: 'Romania', BG: 'Bulgaria', HU: 'Hungary', SK: 'Slovakia', SI: 'Slovenia', HR: 'Croatia',
   LU: 'Luxembourg', CY: 'Cyprus', MT: 'Malta', CA: 'Canada', JP: 'Japan', CN: 'China', IL: 'Israel', AE: 'UAE', AU: 'Australia', TH: 'Thailand', VN: 'Vietnam', UA: 'Ukraine', TR: 'Türkiye', RU: 'Russia', FO: 'Faroe Islands',
-  IS: 'Iceland', CL: 'Chile', NZ: 'New Zealand', GH: 'Ghana', ZZ: 'Small partners (grouped)', QV: 'Not specified', XS: 'Serbia' };
+  IS: 'Iceland', CL: 'Chile', NZ: 'New Zealand', GH: 'Ghana', SG: 'Singapore', KR: 'South Korea', TW: 'Taiwan', HK: 'Hong Kong', BR: 'Brazil', MX: 'Mexico', SA: 'Saudi Arabia', IN: 'India', MY: 'Malaysia', PH: 'Philippines', ID: 'Indonesia', ZZ: 'Small partners (grouped)', QV: 'Not specified', XS: 'Serbia' };
 function renderPoland() {
   const sub = document.getElementById('plSub');
   if (!PL_EU) { if (!PL_LOADING) { PL_LOADING = true; fetch(DATA_URL.replace('data.json', 'eurostat.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
@@ -4122,6 +4211,15 @@ function scMortByCompany(D, sites, js_, sel, col) {
 // Ecosse : resultats trimestriels des entreprises, segment Ecosse (Bakkafrost Scotland, Scottish Sea Farms, Mowi Scotland...)
 function renderScotlandResults() {
   const T = document.getElementById('scQr'), sub = document.getElementById('scQrSub'); if (!T) return;
+  // mises a jour d'activite de Bakkafrost (Ecosse ; Feroe pour comparaison)
+  const TU = ((QR || {}).trading_updates || []).filter(x => x.company === 'Bakkafrost'), tuT = document.getElementById('scTu');
+  if (tuT) { const f1 = v => v === undefined || v === null ? '—' : (+v).toFixed(1), es = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    document.getElementById('scTuSub').innerHTML = TU.length ? `From Bakkafrost's quarterly trading updates, published a few days after each quarter, before the full report: harvest in thousand tonnes gutted (HOG), average harvest weight, smolts released and exceptional mortality costs in farming. The Faroe Islands are shown for comparison.` : 'No trading update read yet.';
+    tuT.innerHTML = TU.length ? `<thead><tr><th class="name">Quarter</th><th>Region</th><th>Harvest (kt HOG)</th><th>Avg weight (kg)</th><th style="text-align:left">Month by month (kt @ kg)</th><th>Year to date (kt)</th><th>Smolts released (m)</th><th>Smolts, year to date (m)</th><th>Exceptional mortality (DKK m)</th></tr></thead><tbody>` +
+      TU.map(x => ['Scotland', 'Faroe Islands'].filter(r => (x.regions || {})[r]).map((r, i) => { const g = x.regions[r];
+        return `<tr style="${r === 'Scotland' ? 'font-weight:600' : 'color:var(--muted);font-size:12px'}"><td class="name">${i ? '' : `<a href="${es(x.url)}" target="_blank" rel="noopener" style="color:inherit">${es(x.quarter.replace('-', ' '))}</a>`}</td><td>${es(r)}</td><td>${f1(g.harvest_kt)}</td><td>${f1(g.avg_kg)}</td>` +
+          `<td style="text-align:left">${(g.months || []).map(m => `${m[0]} ${f1(m[1])} @ ${f1(m[2])}`).join(' · ') || '—'}</td><td>${f1(g.ytd_kt)}</td><td>${f1(g.smolt_m)}</td><td>${f1(g.smolt_ytd_m)}</td>` +
+          `<td>${g.exc_mort_mdkk === undefined ? '—' : `<span class="${g.exc_mort_mdkk > 0 ? 'delta-bad' : ''}">${f1(g.exc_mort_mdkk)}</span>`}${g.exc_note ? ` <span style="font-size:11px;color:var(--muted)">${es(g.exc_note)}</span>` : ''}</td></tr>`; }).join('')).join('') + `</tbody>` : ''; }
   const rows = []; ((QR || {}).reports || []).forEach(r => (r.segments || []).forEach(g => { if (g.basin === 'GB') rows.push({ r, g }); }));
   if (!rows.length) { sub.innerHTML = 'No quarterly figures for Scotland yet: they are read from the companies\' reports at each update run.'; T.innerHTML = ''; return; }
   rows.sort((a, b) => a.r.quarter < b.r.quarter ? 1 : a.r.quarter > b.r.quarter ? -1 : (a.g.segment < b.g.segment ? -1 : 1));
@@ -5140,16 +5238,17 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     document.getElementById('tasView').style.display = currentView === 'timeatsea' ? 'block' : 'none';
     document.getElementById('plView').style.display = currentView === 'poland' ? 'block' : 'none';
     document.getElementById('prView').style.display = currentView === 'prices' ? 'block' : 'none';
+    document.getElementById('isView').style.display = currentView === 'iceland' ? 'block' : 'none';
     document.getElementById('newsView').style.display = currentView === 'news' ? 'block' : 'none';
     document.getElementById('coprodView').style.display = currentView === 'coprod' ? 'block' : 'none';
     document.getElementById('generationsView').style.display = currentView === 'generations' ? 'block' : 'none';
     document.getElementById('genmapView').style.display = currentView === 'genmap' ? 'block' : 'none';
     // The year / period selectors do not apply to the weekly fish-health view.
-    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'news' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
+    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'news' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
     // La carte des zones ne sert qu'aux vues qui raisonnent par PO. Les onglets
     // Markets et Calibre sont nationaux, elle n'y afficherait rien d'utile.
     const mw = document.querySelector('.panel.mapwrap');
-    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'news' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
+    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'news' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
     document.getElementById('poFilterField').style.display = (currentView === 'global' || currentView === 'multi' || currentView === 'outlook') ? 'flex' : 'none';
     document.getElementById('yearField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'none' : 'flex';
     document.getElementById('yearRangeField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'flex' : 'none';
@@ -5179,6 +5278,7 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     else if (currentView === 'timeatsea') { renderTimeAtSea(); }
     else if (currentView === 'poland') { renderPoland(); }
     else if (currentView === 'prices') { renderPrices(); }
+    else if (currentView === 'iceland') { renderIceland(); }
     else if (currentView === 'news') { renderNews(); }
     else if (currentView === 'coprod') { renderCoprod(); }
     else if (currentView === 'generations') { renderGenerations(); }
@@ -7821,14 +7921,31 @@ function renderOutlook() {
       const d = a - b; return `<td class="${d > 0.01 ? 'delta-good' : d < -0.01 ? 'delta-bad' : 'delta-zero'}">${d >= 0 ? '+' : ''}${d.toFixed(2)}</td>`; };
     const sum12 = (i, f) => { let t = 0; for (let k = i - 11; k <= i; k++) t += s[k][f]; return t; };
     const fishRot = i => { let c = 0, n = 0; for (let k = i - 11; k <= i; k++) { c += s[k].stk; n += s[k].stock; } return n > 0 ? c / (n / 12) : NaN; };
-    // MTB : seul le registre actuel est connu (pas d'historique des licences)
-    const mtbNow = (BWR && (BWR.mtb_po_all || BWR.mtb_po)) ? poFilter.reduce((t, po) => t + ((BWR.mtb_po_all || BWR.mtb_po)[String(po)] || 0), 0) : null;
+    // MTB : capacite des licences de grossissement en mer au 31 decembre (Fiskeridirektoratet, « Nøkkeltall fra norsk havbruksnæring »,
+    // tableau Tillatelseskapasitet (MTB) pr. produksjonsområde ; 2019 : rapport annuel 2019, matfisk i sjø ; 2017 : NOU 2019:18, « i underkant av 820 000 »).
+    // Apres le dernier chiffre publie : registre actuel, licences en mer (hors fermes a terre), meme perimetre.
+    const MTB_HIST = {
+      2017: { tot: 820000, approx: true }, 2019: { tot: 839882 },
+      2020: { po: [20815, 43888, 94679, 100432, 50746, 136880, 59958, 82554, 86769, 62158, 52709, 89541, 17851], tot: 898980 },
+      2021: { po: [20815, 43888, 94679, 100432, 50746, 136880, 59958, 82538, 86785, 62158, 53654, 89541, 17851], tot: 899925 },
+      2022: { po: [20815, 43100, 92513, 101665, 50746, 140704, 60018, 86339, 91899, 66842, 55525, 89541, 17972], tot: 917679 },
+      2023: { po: [22064, 43100, 92513, 97587, 52626, 145093, 60018, 87692, 92129, 65897, 56625, 93803, 18061], tot: 927208 },
+      2024: { tot: 947943 } };
+    const allZones = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].every(po => poFilter.includes(po));
+    const mtbReg = (BWR && BWR.mtb_po) ? poFilter.reduce((t, po) => t + (BWR.mtb_po[String(po)] || 0), 0) : null;
+    const lastHist = Math.max(...Object.keys(MTB_HIST).map(Number));
+    // MTB en vigueur une annee donnee : celle du 31 decembre de l'annee precedente ; au-dela du dernier chiffre publie, le registre actuel
+    const mtbAt = y => { if (y - 1 > lastHist) return mtbReg ? { v: mtbReg, src: 'register' } : null;
+      const h = MTB_HIST[y - 1]; if (!h) return null;
+      if (allZones) return { v: h.tot, approx: h.approx };
+      return h.po ? { v: poFilter.reduce((t, po) => t + (po >= 1 && po <= 13 ? h.po[po - 1] : 0), 0) } : null; };
     let yr = '';
     for (let i = s.length - 1; i >= 11; i -= 12) {
       const h = sum12(i, 'vol'), b = sum12(i, 'bio') / 12, c = sum12(i, 'stk');
-      const mtb = i === s.length - 1 ? mtbNow : null;
+      const M = mtbAt(s[i].year), mtb = M ? M.v : null;
       yr += `<tr><td class="name">${ml(s[i])}</td><td>${num0(h / 1000)}</td><td>${num0(b / 1000)}</td>` +
-        `<td>${mtb ? num0(mtb) : '<span style="color:var(--muted)">n/a</span>'}</td><td>${mtb ? Math.round(100 * b / 1000 / mtb) + '%' : '—'}</td>` +
+        `<td title="${M ? (M.src === 'register' ? 'current licence register, sea licences' : `31 Dec ${s[i].year - 1}, Fiskeridirektoratet`) : ''}">${mtb ? (M.approx ? '≈ ' : '') + num0(mtb) + (M.src === 'register' ? ' <span style="color:var(--muted);font-size:11px">register</span>' : ` <span style="color:var(--muted);font-size:11px">31 Dec ${s[i].year - 1}</span>`) : '<span style="color:var(--muted)">n/a</span>'}</td>` +
+        `<td>${mtb ? Math.round(100 * b / 1000 / mtb) + '%' : '—'}</td>` +
         `<td class="sep-left"><b>${f2(h / b)}×</b></td><td>${f2(fishRot(i))}</td><td>${f2(h / c)}</td></tr>`;
     }
     document.getElementById('tbodyRotY').innerHTML = yr;
@@ -7838,7 +7955,10 @@ function renderOutlook() {
     let mr = '';
     for (let i = s.length - 1; i >= Math.max(13, s.length - 13); i--) {
       const r12 = rot12(i), r12p = i >= 23 ? rot12(i - 12) : NaN;
+      const Mm = mtbAt(s[i].year), Mp = mtbAt(s[i].year - 1);
+      const fill = Mm ? 100 * s[i].bio / 1000 / Mm.v : NaN, fillP = Mp && s[i - 12] ? 100 * s[i - 12].bio / 1000 / Mp.v : NaN;
       mr += `<tr><td class="name">${ml(s[i])}</td><td>${num0(s[i].vol / 1000)}</td><td>${num0((s[i].bio + s[i - 1].bio) / 2000)}</td>` +
+        `<td>${Mm ? num0(Mm.v) : '—'}</td><td>${isFinite(fill) ? fill.toFixed(0) + '%' : '—'}</td>${isFinite(fill) && isFinite(fillP) ? `<td class="${fill - fillP > 0.5 ? 'delta-good' : fill - fillP < -0.5 ? 'delta-bad' : 'delta-zero'}">${fill - fillP >= 0 ? '+' : ''}${(fill - fillP).toFixed(0)} pt</td>` : '<td class="delta-zero">—</td>'}` +
         `<td class="sep-left">${mRot(i).toFixed(1)}%</td>${pp(mRot(i), mRot(i - 12))}` +
         `<td class="sep-left">${mFish(i).toFixed(1)}%</td>${pp(mFish(i), mFish(i - 12))}` +
         `<td class="sep-left"><b>${f2(r12)}×</b></td>${rx(r12, r12p)}</tr>`;
@@ -10831,6 +10951,61 @@ loadRemoteData().then(live => {
   });
   let t = null; new MutationObserver(() => { clearTimeout(t); t = setTimeout(wrap, 60); }).observe(document.documentElement, { childList: true, subtree: true });
   document.addEventListener('DOMContentLoaded', wrap);
+})();
+</script>
+
+<style>
+  /* Menu lateral (ordinateur) / tiroir (telephone) */
+  #sideNav{position:fixed;left:0;top:0;bottom:0;width:236px;background:#0b141b;border-right:1px solid #22384a;overflow-y:auto;z-index:900;padding:12px 8px 24px;
+    padding-top:calc(12px + env(safe-area-inset-top,0px));transition:transform .2s ease}
+  #sideNav .sn-brand{font-weight:800;font-size:15px;color:#fff;padding:6px 12px 2px}
+  #sideNav .sn-sub{font-size:11.5px;color:#7f95a3;padding:0 12px 6px}
+  #sideNav .sn-cat{display:flex;justify-content:space-between;align-items:center;width:100%;font:inherit;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#7f95a3;
+    font-weight:700;padding:14px 12px 4px;background:none;border:0;cursor:pointer;text-align:left}
+  #sideNav .sn-item{display:block;width:100%;text-align:left;padding:7px 12px 7px 22px;border:0;background:none;color:#c9d5dd;font:inherit;font-size:13.5px;cursor:pointer;border-radius:6px;min-height:34px}
+  #sideNav .sn-item:hover{background:rgba(79,195,247,.08)}
+  #sideNav .sn-item.on{background:rgba(79,195,247,.16);color:#fff;font-weight:600;box-shadow:inset 3px 0 0 #4fc3f7}
+  #sideNav .sn-group.closed .sn-item{display:none}
+  #snBurger{display:none;position:fixed;left:10px;top:calc(10px + env(safe-area-inset-top,0px));z-index:950;padding:7px 12px;border-radius:8px;border:1px solid #2a4352;background:#0d1a24;color:#e7eef2;font-size:18px;cursor:pointer}
+  #snShade{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:880}
+  #viewToggle{display:none!important}
+  @media (min-width:901px){ body{padding-left:244px} }
+  @media (max-width:900px){ #sideNav{transform:translateX(-102%);width:min(82vw,300px);box-shadow:8px 0 30px rgba(0,0,0,.5)} body.sn-open #sideNav{transform:none}
+    body.sn-open #snShade{display:block} #snBurger{display:block} }
+</style>
+<script>
+// Menu lateral : les cinq rubriques, construit a partir des boutons existants (qui restent la mecanique d'affichage des onglets)
+(function () {
+  const CATS = [['Front page', ['news', 'summary']],
+    ['Norway — production', ['global', 'po', 'multi', 'outlook', 'generations', 'genmap', 'timeatsea', 'health', 'register']],
+    ['Other basins', ['scotland', 'faroe', 'iceland', 'chile', 'canada', 'australia']],
+    ['Prices & products', ['prices', 'calibre', 'products', 'coprod']],
+    ['Markets & trade', ['markets', 'producers', 'euflows', 'poland', 'usa', 'china', 'world']]];
+  const btn = v => document.querySelector(`#viewToggle button[data-v="${v}"]`);
+  const nav = document.createElement('nav'); nav.id = 'sideNav'; nav.setAttribute('aria-label', 'Dashboard sections');
+  const closed = JSON.parse((() => { try { return localStorage.getItem('snClosed') || '{}'; } catch (e) { return '{}'; } })());
+  nav.innerHTML = `<div class="sn-brand">Salmon dashboard</div><div class="sn-sub" id="snSub"></div>` +
+    CATS.map(([c, L], i) => `<div class="sn-group${closed[i] ? ' closed' : ''}" data-g="${i}"><button type="button" class="sn-cat" aria-expanded="${!closed[i]}">${c}<span>${closed[i] ? '▸' : '▾'}</span></button>` +
+      L.filter(btn).map(v => `<button type="button" class="sn-item" data-v="${v}">${btn(v).textContent.trim()}</button>`).join('') + `</div>`).join('');
+  document.body.prepend(nav);
+  const burger = document.createElement('button'); burger.id = 'snBurger'; burger.type = 'button'; burger.setAttribute('aria-label', 'Open the menu'); burger.textContent = '☰'; document.body.prepend(burger);
+  const shade = document.createElement('div'); shade.id = 'snShade'; document.body.prepend(shade);
+  const close = () => document.body.classList.remove('sn-open');
+  burger.onclick = () => document.body.classList.toggle('sn-open'); shade.onclick = close;
+  nav.querySelectorAll('.sn-cat').forEach(c => c.onclick = () => { const g = c.parentNode, i = g.dataset.g; g.classList.toggle('closed');
+    closed[i] = g.classList.contains('closed'); c.querySelector('span').textContent = closed[i] ? '▸' : '▾'; c.setAttribute('aria-expanded', !closed[i]);
+    try { localStorage.setItem('snClosed', JSON.stringify(closed)); } catch (e) { /* pas de stockage */ } });
+  const mark = v => nav.querySelectorAll('.sn-item').forEach(x => x.classList.toggle('on', x.dataset.v === v));
+  const go = (v, push) => { const b = btn(v); if (!b) return; b.click(); mark(v); close(); window.scrollTo(0, 0);
+    if (push && location.hash.slice(1) !== v) history.pushState(null, '', '#' + v); };
+  nav.querySelectorAll('.sn-item').forEach(x => x.onclick = () => go(x.dataset.v, true));
+  // l'onglet ouvert par d'autres moyens (liens internes) reste surligne
+  document.querySelectorAll('#viewToggle button[data-v]').forEach(b => b.addEventListener('click', () => mark(b.dataset.v)));
+  window.addEventListener('popstate', () => { const v = location.hash.slice(1); go(btn(v) ? v : 'news', false); });
+  // ouverture directe d'un onglet par son adresse (#prices...), une fois les donnees chargees
+  let n = 0; const t = setInterval(() => { n++; if (typeof DATA_RAW !== 'undefined' && DATA_RAW || n > 60) { clearInterval(t);
+    const v = location.hash.slice(1); if (btn(v) && v !== 'news') go(v, false); else mark('news');
+    const sub = document.getElementById('snSub'); if (sub && typeof DATA_DATE !== 'undefined' && DATA_DATE) sub.textContent = 'data of ' + DATA_DATE; } }, 300);
 })();
 </script>
 </body>
