@@ -123,6 +123,18 @@ def _par_tableau(brut):
     return res
 
 
+def page_rendue(url):
+    """Page apres execution du JavaScript (navigateur sans ecran installe par le workflow) ; '' si indisponible."""
+    try:
+        from playwright.sync_api import sync_playwright
+        with sync_playwright() as pw:
+            b = pw.chromium.launch(args=['--no-sandbox']); pg = b.new_page()
+            pg.goto(url, wait_until='networkidle', timeout=90000); pg.wait_for_timeout(3000)
+            h = pg.content(); b.close(); return h
+    except Exception:  # noqa: BLE001
+        return ''
+
+
 def lire_epa(texte):
     """-> ({(annee, mois): {...}}, [anomalies]). Tableau HTML d'abord (robuste aux cellules vides), puis le texte."""
     res, anomalies = {}, []
@@ -130,10 +142,12 @@ def lire_epa(texte):
         res = _par_tableau(texte)
     if not res:
         t = normaliser(texte)
-        motif = re.compile(r'(' + '|'.join(MOIS) + r')\s+(\d{4})\s+Tonnage\s+' + r'\s+'.join([r'(\S+)'] * 6))
+        motif = re.compile(r'\b([A-Z][a-z]{2})[a-z]*\.?\s+(\d{4})\s+(?:Tonnage\s+|\(t\)\s+|Tonnes\s+)?' + r'\s+'.join([r'(\S+)'] * 6))
         for m in motif.finditer(t):
+            if m.group(1).lower() not in MOIS_COURTS: continue
             vals = [nombre(x) for x in m.groups()[2:]]
-            res[(int(m.group(2)), MOIS[m.group(1)])] = dict(zip(METHODES + ['total'], vals))
+            if vals[5] and abs(sum(vals[:5]) - vals[5]) <= max(2, 0.02 * vals[5]):   # ligne coherente : les methodes font le total
+                res[(int(m.group(2)), MOIS_COURTS[m.group(1).lower()])] = dict(zip(METHODES + ['total'], vals))
     for (an, mois), ligne in list(res.items()):
         vals = [ligne.get(k, 0) for k in METHODES] + [ligne.get('total', 0)]
         ecart = sum(vals[:5]) - vals[5]
@@ -268,6 +282,11 @@ def main():
     try:
         brut = open(a.epa_fichier, encoding='utf-8').read() if a.epa_fichier else telecharger(EPA_URL)
         mensuel, anom = lire_epa(brut)
+        if not mensuel and not a.epa_fichier:
+            rendu = page_rendue(EPA_URL)                    # mise en page construite en JavaScript : on fait executer la page
+            if rendu:
+                m2, an2 = lire_epa(rendu)
+                if m2: mensuel, anom = m2, an2
         alertes += [f'EPA : {x}' for x in anom]
         base = charger_csv(os.path.join(a.sortie, 'au_mensuel.csv'), ['mois'])
         if not mensuel:
