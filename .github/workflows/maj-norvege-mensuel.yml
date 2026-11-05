@@ -29,7 +29,7 @@ jobs:
       with:
         python-version: '3.11'
     - name: Installer les dependances Python
-      run: pip install pandas openpyxl playwright pycountry
+      run: pip install pandas openpyxl playwright pycountry requests
     - name: Verifier et telecharger le fichier Biomasseregisteret
       id: biomasse_fetch
       continue-on-error: true
@@ -64,6 +64,16 @@ jobs:
       continue-on-error: true
       timeout-minutes: 5
       run: python3 scripts/build_big_fish.py
+    - name: Islande, tableau de bord MAST (biomasse, aliment, recolte ; poissons site par site et durees de cycle)
+      id: iceland_mast
+      continue-on-error: true
+      timeout-minutes: 10
+      run: python3 scripts/build_iceland_mast.py
+    - name: Aliment et matieres premieres (Pink Sheet de la Banque mondiale, consommations d'aliment)
+      id: feed
+      continue-on-error: true
+      timeout-minutes: 5
+      run: python3 scripts/build_feed.py
     - name: Enregistrer l'etat des sources dans data.json
       if: always()
       env:

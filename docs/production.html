@@ -480,6 +480,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
       <button data-v="products">Product per market</button>
       <button data-v="calibre">Calibre &amp; premium</button>
       <button data-v="coprod">Co-products</button>
+      <button data-v="feed">Feed &amp; raw materials</button>
       <button data-v="producers">Producers</button>
       <button data-v="euflows">EU markets</button>
       <button data-v="poland">EU hubs</button>
@@ -924,6 +925,40 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="sig-sub" id="cnChkSub"></div>
     <table class="sig-table"><thead id="cnChkHead"></thead><tbody id="cnChkBody"></tbody></table>
     <div class="note" id="cnNote" style="text-align:left;max-width:none;margin-top:16px"></div>
+  </div>
+
+  <div class="panel" id="feedView" style="flex:1; min-width:0; max-width:1400px; display:none;">
+    <div class="sig-title">Feed and raw materials — what salmon feed is made of, what it costs, and the world feed market around it</div>
+    <div class="sig-sub" id="fdSub">Loading…</div>
+    <div class="pr-cards" id="fdCards"></div>
+    <div class="sig-title" style="margin-top:16px;font-size:15px">1 · Raw-material prices</div>
+    <div class="chart-controls" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0">
+      <label class="sig-sub" style="margin:0">Period <select id="fdRange"><option value="36">3 years</option><option value="60" selected>5 years</option><option value="120">10 years</option><option value="999">since 2010</option></select></label>
+      <label class="sig-sub" style="margin:0">Show <select id="fdMode"><option value="idx" selected>Index (start of period = 100)</option><option value="usd">USD per tonne</option></select></label>
+      <label class="sig-sub" style="margin:0">Group <select id="fdGroup"><option value="feed" selected>Feed ingredients</option><option value="ctx">Energy, fertiliser, other proteins</option></select></label>
+    </div>
+    <div id="fdChart"></div><div class="sig-sub" id="fdChartLeg"></div>
+    <div class="sig-title" style="margin-top:16px;font-size:15px">2 · Fish meal against soybean meal</div>
+    <div class="sig-sub">Tonnes of soybean meal one tonne of fish meal buys. The higher it goes, the more feed makers replace marine protein with plant protein (and the less omega-3 the fillet carries).</div>
+    <div id="fdRatio"></div>
+    <div class="sig-title" style="margin-top:16px;font-size:15px">3 · Feed used by salmon farming</div>
+    <div class="sig-sub" id="fdUseSub"></div>
+    <div id="fdUse"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="fdUseTab" style="max-width:900px"></table></div>
+    <div class="sig-title" style="margin-top:16px;font-size:15px">4 · Feed makers</div>
+    <div class="sig-sub" id="fdMakersSub"></div>
+    <div id="fdMakers"></div>
+    <div class="sig-title" style="margin-top:16px;font-size:15px">5 · The world feed market</div>
+    <div class="sig-sub" id="fdWorldSub"></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:14px;align-items:start">
+      <div id="fdSpecies"></div>
+      <div style="overflow-x:auto"><table class="sig-table" id="fdCountries"></table></div>
+    </div>
+    <div class="sig-title" style="margin-top:16px;font-size:15px">6 · Marine ingredients and Peru's anchovy</div>
+    <div class="sig-sub" id="fdMarineSub"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="fdPeru" style="max-width:900px"></table></div>
+    <ul class="sig-sub" id="fdMarine" style="padding-left:18px"></ul>
+    <div class="sig-sub" id="fdNote" style="margin-top:12px"></div>
   </div>
 
   <div class="panel" id="coprodView" style="flex:1; min-width:0; max-width:1400px; display:none;">
@@ -5439,14 +5474,15 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     document.getElementById('upView').style.display = currentView === 'usaprices' ? 'block' : 'none';
     document.getElementById('newsView').style.display = currentView === 'news' ? 'block' : 'none';
     document.getElementById('coprodView').style.display = currentView === 'coprod' ? 'block' : 'none';
+    document.getElementById('feedView').style.display = currentView === 'feed' ? 'block' : 'none';
     document.getElementById('generationsView').style.display = currentView === 'generations' ? 'block' : 'none';
     document.getElementById('genmapView').style.display = currentView === 'genmap' ? 'block' : 'none';
     // The year / period selectors do not apply to the weekly fish-health view.
-    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'usaprices' || currentView === 'news' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
+    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'usaprices' || currentView === 'news' || currentView === 'coprod' || currentView === 'feed' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
     // La carte des zones ne sert qu'aux vues qui raisonnent par PO. Les onglets
     // Markets et Calibre sont nationaux, elle n'y afficherait rien d'utile.
     const mw = document.querySelector('.panel.mapwrap');
-    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'usaprices' || currentView === 'news' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
+    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'usaprices' || currentView === 'news' || currentView === 'coprod' || currentView === 'feed' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
     document.getElementById('poFilterField').style.display = (currentView === 'global' || currentView === 'multi' || currentView === 'outlook') ? 'flex' : 'none';
     document.getElementById('yearField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'none' : 'flex';
     document.getElementById('yearRangeField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'flex' : 'none';
@@ -5477,6 +5513,7 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     else if (currentView === 'poland') { renderPoland(); }
     else if (currentView === 'prices') { renderPrices(); }
     else if (currentView === 'iceland') { renderIceland(); }
+    else if (currentView === 'feed') { renderFeed(); }
     else if (currentView === 'usaprices') { renderUsaPrices(); }
     else if (currentView === 'news') { renderNews(); }
     else if (currentView === 'coprod') { renderCoprod(); }
@@ -9826,6 +9863,117 @@ function cpMonths(D, sel) {
   return out;
 }
 function tmShift(k, n) { let y = Math.floor(k / 100), m = k % 100 - 1 + n; y += Math.floor(m / 12); m = ((m % 12) + 12) % 12; return y * 100 + m + 1; }
+// ===================== Feed and raw materials (data/feed.json : Pink Sheet de la Banque mondiale, consommations d'aliment, contexte saisi a la main) =====================
+let FD = null, FD_LOADING = false, fdRange = 60, fdMode = 'idx', fdGroup = 'feed';
+const FD_COL = { fishmeal: '#4fc3f7', soymeal: '#aed581', soybeans: '#7cb342', soyoil: '#ffd54f', rapeoil: '#ffb74d', palmoil: '#e57373', sunoil: '#f06292',
+  maize: '#ba68c8', wheat: '#9575cd', brent: '#90a4ae', urea: '#80cbc4', chicken: '#ffcc80', beef: '#bcaaa4', shrimp: '#ef9a9a' };
+const FD_GROUPS = { feed: ['fishmeal', 'soymeal', 'soyoil', 'rapeoil', 'wheat', 'maize'], ctx: ['brent', 'urea', 'palmoil', 'chicken', 'beef', 'shrimp'] };
+// petit graphique en lignes, SVG, sans bibliotheque : series = [{label, col, values}], x = libelles
+function fdLines(x, series, o = {}) {
+  const W = 900, H = o.h || 260, L = 46, R = 12, T = 10, B = 26;
+  const all = series.flatMap(s => s.values).filter(v => v !== null && v !== undefined && isFinite(v));
+  if (!all.length) return '<div class="sig-sub">No data.</div>';
+  let lo = Math.min(...all), hi = Math.max(...all); if (o.zero) lo = Math.min(0, lo); const pad = (hi - lo) * 0.06 || 1; lo -= pad; hi += pad;
+  const X = i => L + (W - L - R) * (x.length > 1 ? i / (x.length - 1) : 0.5), Y = v => T + (H - T - B) * (1 - (v - lo) / (hi - lo));
+  let g = '';
+  const step = Math.pow(10, Math.floor(Math.log10((hi - lo) / 4))), nice = [1, 2, 2.5, 5, 10].map(m => m * step).find(s => (hi - lo) / s <= 6) || step * 10;
+  for (let v = Math.ceil(lo / nice) * nice; v <= hi; v += nice)
+    g += `<line x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="#22384a" stroke-width="1"/><text x="${L - 6}" y="${Y(v) + 3}" text-anchor="end" font-size="10" fill="#8fa4b0">${o.fmt ? o.fmt(v) : Math.round(v).toLocaleString('en-US')}</text>`;
+  if (o.ref !== undefined) g += `<line x1="${L}" x2="${W - R}" y1="${Y(o.ref)}" y2="${Y(o.ref)}" stroke="#8fa4b0" stroke-dasharray="3 3"/>`;
+  const every = Math.max(1, Math.ceil(x.length / 10));
+  x.forEach((k, i) => { if (i % every === 0 || i === x.length - 1) g += `<text x="${X(i)}" y="${H - 8}" text-anchor="middle" font-size="10" fill="#8fa4b0">${k}</text>`; });
+  series.forEach(s => { let d = '', pen = false;
+    s.values.forEach((v, i) => { if (v === null || v === undefined || !isFinite(v)) { pen = false; return; } d += `${pen ? 'L' : 'M'}${X(i).toFixed(1)},${Y(v).toFixed(1)}`; pen = true; });
+    g += `<path d="${d}" fill="none" stroke="${s.col}" stroke-width="${s.w || 2}" ${s.dash ? `stroke-dasharray="${s.dash}"` : ''}/>`;
+    const li = s.values.map((v, i) => v !== null && v !== undefined && isFinite(v) ? i : -1).filter(i => i >= 0).pop();
+    if (li !== undefined && o.labels !== false) g += `<circle cx="${X(li)}" cy="${Y(s.values[li])}" r="3" fill="${s.col}"/>`; });
+  return `<svg viewBox="0 0 ${W} ${H}" style="display:block;width:100%;height:auto">${g}</svg>`;
+}
+const fdLeg = series => series.map(s => `<span style="display:inline-flex;align-items:center;gap:5px;margin-right:12px;white-space:nowrap"><i style="width:14px;height:3px;background:${s.col};display:inline-block"></i>${s.label}</span>`).join('');
+const fdMon = k => { const [y, m] = k.split('-'); return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][+m - 1] + ' ' + y.slice(2); };
+
+function renderFeed() {
+  const $f = id => document.getElementById(id), e = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  if (!FD) { if (!FD_LOADING) { FD_LOADING = true; fetch(DATA_URL.replace('data.json', 'feed.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
+      .then(j => { FD = j || {}; FD_LOADING = false; if (currentView === 'feed') renderFeed(); }); }
+    $f('fdSub').innerHTML = 'Loading…'; return; }
+  if (!QR) { qrLoad(() => { if (currentView === 'feed') renderFeed(); }); }
+  const P = FD.prices || {}, S = P.series || {}, M = P.months || [];
+  if (!M.length) { $f('fdSub').innerHTML = 'No feed data yet: data/feed.json is built at the next update run.'; return; }
+  const n = M.length - 1, ago = (k, back) => { const v = (S[k] || {}).values || []; return v[n - back]; };
+  const pct = (a, b) => a && b ? (a / b - 1) * 100 : null, sg = v => v === null ? '—' : `<span class="${v >= 0 ? 'delta-bad' : 'delta-good'}">${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(0)} %</span>`;
+  $f('fdSub').innerHTML = `Salmon feed is roughly a quarter marine (fish meal and fish oil) and three quarters plant (soy protein, rapeseed oil, wheat, pulses), and feed is about half of the cost of a farmed salmon. ` +
+    `Prices below are world reference prices in US dollars per tonne (World Bank, updated ${e(P.updated || '—')}; last month ${fdMon(M[n])}). ` +
+    `A rise in red means dearer feed for farmers.`;
+  // cartes
+  const card = k => { const s = S[k]; if (!s) return ''; const v = ago(k, 0);
+    return `<div class="pr-card" style="cursor:default"><div class="nm"><i style="background:${FD_COL[k]}"></i>${e(s.label)}</div><div class="big">${v ? Math.round(v).toLocaleString('en-US') : '—'} <span style="font-size:11px;color:var(--muted)">${e((s.unit || '$/t').replace('/mt', '/t'))}</span></div>` +
+      `<div class="ln">${sg(pct(v, ago(k, 1)))} on a month · ${sg(pct(v, ago(k, 12)))} on a year</div></div>`; };
+  $f('fdCards').innerHTML = ['fishmeal', 'soymeal', 'soyoil', 'rapeoil', 'wheat', 'maize', 'brent'].map(card).join('');
+  // graphique des prix
+  const rs = $f('fdRange'), md = $f('fdMode'), gp = $f('fdGroup');
+  if (!rs.dataset.w) { rs.dataset.w = 1; rs.onchange = () => { fdRange = +rs.value; renderFeed(); }; md.onchange = () => { fdMode = md.value; renderFeed(); }; gp.onchange = () => { fdGroup = gp.value; renderFeed(); }; }
+  const a = Math.max(0, M.length - fdRange), X = M.slice(a).map(fdMon);
+  const ser = FD_GROUPS[fdGroup].filter(k => S[k]).map(k => { let v = S[k].values.slice(a);
+    if (fdMode === 'idx') { const b = v.find(x => x); v = v.map(x => x && b ? 100 * x / b : null); }
+    return { label: S[k].label + (fdMode === 'usd' ? ` (${S[k].unit || '$/t'})` : ''), col: FD_COL[k], values: v }; });
+  $f('fdChart').innerHTML = fdLines(X, ser, { ref: fdMode === 'idx' ? 100 : undefined });
+  $f('fdChartLeg').innerHTML = fdLeg(ser) + (fdMode === 'idx' ? '<br>Index: each price divided by its own level in the first month shown, so ingredients with very different prices can be compared.' : '');
+  // ratio farine de poisson / tourteau de soja
+  const fm = (S.fishmeal || {}).values || [], sm = (S.soymeal || {}).values || [];
+  const ratio = M.map((_, i) => fm[i] && sm[i] ? fm[i] / sm[i] : null);
+  const rr = ratio.slice(a), avg = (() => { const v = ratio.filter(x => x); return v.reduce((s, x) => s + x, 0) / (v.length || 1); })();
+  $f('fdRatio').innerHTML = fdLines(X, [{ label: 'Fish meal ÷ soybean meal', col: '#4fc3f7', values: rr }], { h: 200, ref: avg, fmt: v => v.toFixed(1) }) +
+    `<div class="sig-sub">Now <b>${ratio[n] ? ratio[n].toFixed(1) : '—'}</b> tonnes of soybean meal for one tonne of fish meal; dashed line = average since 2010 (${avg.toFixed(1)}).</div>`;
+  // consommation d'aliment
+  const roll = (L, k) => L.map((_, i) => i >= 11 ? L.slice(i - 11, i + 1).reduce((s, x) => s + (x[k] || 0), 0) : null);
+  const basins = [['Norway', FD.norway, '#4fc3f7'], ['Scotland', FD.scotland, '#ffb74d'], ['Iceland', FD.iceland, '#aed581']].filter(b => b[1] && b[1].length > 12);
+  const UM = [...new Set(basins.flatMap(b => b[1].map(x => x.m)))].sort().slice(-Math.min(fdRange, 120));
+  const useSer = basins.map(([nm, L, col]) => { const r = roll(L, 'feed_t'), by = {}; L.forEach((x, i) => by[x.m] = r[i]); return { label: nm + ' (12 months, kt)', col, values: UM.map(m => by[m] ? by[m] / 1000 : null) }; });
+  $f('fdUseSub').innerHTML = `Feed fed to salmon at sea, 12-month running total in thousand tonnes, from each country's farm reports (Norway: Directorate of Fisheries' biomass register; Scotland: SEPA; Iceland: MAST). ` +
+    `Feed conversion = feed ÷ fish grown (harvest + change in standing biomass, live weight) over 12 months.`;
+  $f('fdUse').innerHTML = useSer.length ? fdLines(UM.map(fdMon), useSer, { h: 220 }) + `<div class="sig-sub">${fdLeg(useSer)}</div>` : '';
+  const rowU = ([nm, L]) => { const k = L.length - 1, t = L.slice(k - 11, k + 1), p = L.slice(k - 23, k - 11), sm2 = (A, f) => A.reduce((s, x) => s + (x[f] || 0), 0);
+    const f12 = sm2(t, 'feed_t'), f12p = p.length === 12 ? sm2(p, 'feed_t') : null;
+    const grown = L[k].harvest_t !== undefined && L[k - 12] ? sm2(t, 'harvest_t') + (L[k].biomass_t - L[k - 12].biomass_t) : null;
+    const fcr = grown && grown > 0 ? f12 / grown : null;
+    return `<tr><td class="name"><b>${nm}</b></td><td>${fdMon(L[k].m)}</td><td>${Math.round(f12 / 1000).toLocaleString('en-US')}</td><td>${f12p ? sg(pct(f12, f12p)).replace(/delta-(bad|good)/, '') : '—'}</td>` +
+      `<td>${L[k].biomass_t ? Math.round(L[k].biomass_t / 1000).toLocaleString('en-US') : '—'}</td><td>${fcr && fcr < 3 ? fcr.toFixed(2) : '—'}</td></tr>`; };
+  $f('fdUseTab').innerHTML = basins.length ? `<thead><tr><th class="name">Country</th><th>Last<br>month</th><th>Feed, 12 months<br>(kt)</th><th>vs year<br>before</th><th>Biomass at sea<br>(kt, live)</th><th>Feed<br>conversion</th></tr></thead><tbody>` +
+    basins.map(rowU).join('') + `</tbody>` : '';
+  // fabricants
+  const BM = ((QR || {}).reports || []).filter(r => r.company === 'BioMar').sort((x, y) => x.quarter < y.quarter ? 1 : -1);
+  $f('fdMakersSub').innerHTML = `Four groups make most of the world's salmon feed: Skretting (Nutreco, private), Cargill (private), BioMar (Schouw & Co, listed) and Mowi Feed (inside Mowi). ` +
+    `Only BioMar publishes its salmon-feed volumes each quarter; its comments are a good read of the whole market.`;
+  $f('fdMakers').innerHTML = BM.length ? BM.slice(0, 2).map(r => { const g = r.segments || [], grp = g.find(x => x.segment === 'Group') || {}, sal = g.find(x => x.segment === 'Salmon') || {};
+    const pts = [...(sal.market || []), ...(sal.biology || []), ...(grp.market || [])].slice(0, 7);
+    return `<div class="pr-card" style="cursor:default;margin-bottom:8px"><div class="nm">BioMar · ${e(r.quarter)}</div>` +
+      `<div class="ln">Group EBIT DKK ${e(grp.ebit_m)} m (${e(grp.ebit_m_ly)} m a year earlier)${sal.ebit_m ? ` · salmon feed EBIT DKK ${e(sal.ebit_m)} m` : ''}</div>` +
+      (grp.guidance_reason ? `<div class="ln">${e(grp.guidance_reason)}</div>` : '') +
+      `<ul class="sig-sub" style="margin:6px 0 0;padding-left:18px">${pts.map(x => `<li>${e(x)}</li>`).join('')}</ul></div>`; }).join('') : '<div class="sig-sub">Loading quarterly reports…</div>';
+  // marche mondial
+  const W0 = (FD.manual || {}).world_feed || {};
+  if (W0.by_species) {
+    const sp = W0.by_species.slice().sort((x, y) => y.mt - x.mt), mx = sp[0].mt;
+    $f('fdWorldSub').innerHTML = `World compound feed, ${W0.year}: <b>${Math.round(W0.total_mt).toLocaleString('en-US')} million tonnes</b> (${W0.total_change_pct > 0 ? '+' : ''}${W0.total_change_pct} % on a year). ` +
+      `Aquaculture takes about ${(100 * sp.find(x => /aqua/i.test(x.species)).mt / W0.total_mt).toFixed(0)} % of it, but competes with poultry and pigs for the same soy and grain: a bad soy harvest in Brazil or Argentina reaches the salmon feed price. ` +
+      `<a href="${e(W0.url)}" target="_blank" rel="noopener">${e(W0.source)}</a>.`;
+    $f('fdSpecies').innerHTML = sp.map(x => `<div style="display:grid;grid-template-columns:110px 1fr 110px;gap:8px;align-items:center;font-size:12px;margin:3px 0">` +
+      `<span style="${/aqua/i.test(x.species) ? 'color:#4fc3f7;font-weight:bold' : ''}">${e(x.species)}</span><span style="height:10px;border-radius:3px;background:rgba(128,128,128,.18)"><span style="display:block;height:10px;border-radius:3px;width:${(100 * x.mt / mx).toFixed(1)}%;background:${/aqua/i.test(x.species) ? '#4fc3f7' : '#5b7385'}"></span></span>` +
+      `<span style="text-align:right">${x.mt.toFixed(0)} Mt <span style="color:var(--muted)">${x.change_pct > 0 ? '+' : ''}${x.change_pct} %</span></span></div>`).join('');
+    $f('fdCountries').innerHTML = `<thead><tr><th class="name">Largest feed producers</th><th>Million t</th><th>On a year</th></tr></thead><tbody>` +
+      (W0.top_countries || []).map(c => `<tr><td class="name">${e(c.country)}</td><td>${c.mt.toFixed(1)}</td><td>${c.change_pct > 0 ? '+' : ''}${c.change_pct} %</td></tr>`).join('') + `</tbody>`;
+  }
+  // ingredients marins et Perou
+  const PA = (FD.manual || {}).peru_anchovy || {}, MI = (FD.manual || {}).marine_ingredients || [];
+  $f('fdMarineSub').innerHTML = e(PA.note || '');
+  $f('fdPeru').innerHTML = (PA.seasons || []).length ? `<thead><tr><th class="name">Season</th><th>Quota (t)</th><th class="name">Comment</th></tr></thead><tbody>` +
+    PA.seasons.slice().reverse().map(x => `<tr><td class="name"><a href="${e(x.url)}" target="_blank" rel="noopener">${e(x.season)}</a></td><td>${x.quota_t.toLocaleString('en-US')}</td><td class="name" style="white-space:normal">${e(x.comment)}</td></tr>`).join('') + `</tbody>` : '';
+  $f('fdMarine').innerHTML = MI.map(x => `<li>${e(x.date)} — ${e(x.what)} (<a href="${e(x.url)}" target="_blank" rel="noopener">${e(x.source)}</a>)</li>`).join('');
+  $f('fdNote').innerHTML = `<b>Sources.</b> Prices: <a href="${e(P.url)}" target="_blank" rel="noopener">World Bank Pink Sheet</a> (monthly averages, nominal USD; fish meal = Peru, 64-65 % protein; soybean meal = Argentina; rapeseed oil = Europe; wheat = US hard red winter). ` +
+    `Feed used: national farm registers. World market and Peru quotas: entered by hand in data/feed_manual.json, with the source of each line. Fish-oil prices are not public month by month and are left out.`;
+}
+
 function renderCoprod() {
   const $c = id => document.getElementById(id), D = cpData();
   $c('cpPeriod').closest('.chart-controls').style.display = D ? '' : 'none';
@@ -11196,7 +11344,7 @@ loadRemoteData().then(live => {
   const CATS = [['Front page', ['news', 'summary']],
     ['Norway — production', ['global', 'po', 'multi', 'outlook', 'generations', 'genmap', 'timeatsea', 'health', 'register']],
     ['Other basins', ['scotland', 'faroe', 'iceland', 'chile', 'canada', 'australia']],
-    ['Prices & products', ['prices', 'calibre', 'products', 'coprod']],
+    ['Prices & products', ['prices', 'calibre', 'products', 'coprod', 'feed']],
     ['Markets & trade', ['markets', 'producers', 'euflows', 'poland', 'usa', 'usaprices', 'china', 'world']]];
   const btn = v => document.querySelector(`#viewToggle button[data-v="${v}"]`);
   const nav = document.createElement('nav'); nav.id = 'sideNav'; nav.setAttribute('aria-label', 'Dashboard sections');
