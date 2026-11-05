@@ -143,8 +143,24 @@ def month(v):
     return f'{d.year}-{d.month:02d}'
 
 
+# MAST lists the operating company of each site; the same group appears under several names
+GROUP = [(r'(?i)^arnarlax', 'Arnarlax (Icelandic Salmon)'), (r'(?i)^(kaldv[ií]k|ice fish farm)', 'Kaldvík'), (r'(?i)^arctic', 'Arctic Fish'),
+         (r'(?i)^h[áa]afell', 'Háafell'), (r'(?i)^laxar', 'Laxar')]
+
+
+def group(co):
+    for rx, g in GROUP:
+        if re.match(rx, co or ''):
+            return g
+    return co
+
+
+MIN_CYCLE = 8      # months: shorter runs are fish moved between sites or emptied early (ISA in 2021-22), not full cycles
+
+
 def cycles(site_rows):
     """Production cycles from monthly fish counts of each site: first month with fish after >= 2 empty months -> last month with fish."""
+    last_all = max(r['m'] for r in site_rows)
     by_site = {}
     for r in site_rows:
         by_site.setdefault(r['site'], []).append(r)
@@ -173,13 +189,15 @@ def cycles(site_rows):
                     done.append({'site': site, 'co': co, 'fjord': L[-1]['fjord'], 'start': start, 'end': end, 'months': months_between(start, end) + 1})
                     start = None
                 empty += 1
-        if start is not None:
+        if start is not None and allm[-1] == last_all:
             active.append({'site': site, 'co': L[-1]['co'], 'fjord': L[-1]['fjord'], 'start': start, 'age': months_between(start, allm[-1]) + 1,
                            'fish': fish.get(allm[-1], 0)})
     # a cycle that started before the first month of data is cut: its length is unknown
     first = min(r['m'] for r in site_rows)
     done = [c for c in done if c['start'] > first]
-    return done, active
+    short = [c for c in done if c['months'] < MIN_CYCLE]
+    done = [c for c in done if c['months'] >= MIN_CYCLE]
+    return done, active, short
 
 
 def month_range(a, b):
@@ -242,7 +260,7 @@ def main():
             o['biomass_t'] += num(x.get('BiomassKg_Closing')) / 1000
             o['feed_t'] += num(x.get('FeedUseKg_InPeriod')) / 1000
             o['mortality_t'] += num(x.get('MortalityBiomass_InPeriod')) / 1000
-            o['harvest_t'] += num(x.get('Slátrað: Lífmassi (g)')) / 1e6
+            o['harvest_t'] += num(x.get('Slátrað: Lífmassi (g)')) / 1000   # labelled grams, but the values are kilograms
             o['discard_t'] += num(x.get('Fargað: Lífmassi (kg)')) / 1000
         out['national'] = [{k: (round(v) if isinstance(v, float) else v) for k, v in o.items()} for _, o in sorted(nat.items())]
         out['meta']['species_seen'] = species
@@ -269,19 +287,21 @@ def main():
                 continue
             m = month(x['Lok tímabils'])
             k = (x['Svæði'], m)
-            o = S.setdefault(k, {'site': x['Svæði'], 'm': m, 'co': x['Fyrirtæki'], 'fjord': fj.get(x['Svæði']), 'fish': 0, 'in': 0, 'out': 0, 'dead': 0, 'bio_t': 0})
+            o = S.setdefault(k, {'site': x['Svæði'], 'm': m, 'co': group(x['Fyrirtæki']), 'fjord': fj.get(x['Svæði']), 'fish': 0, 'in': 0, 'out': 0, 'dead': 0, 'bio_t': 0})
             o['fish'] += num(x.get('Count_Closing'))
             o['in'] += num(x.get('InputCount_InPeriod'))
             o['out'] += num(x.get('HarvestCountDiscards_InPeriod'))
             o['dead'] += num(x.get('MortalityCount_InPeriod'))
             o['bio_t'] += num(x.get('BiomassKg_Closing')) / 1000
         site_rows = sorted(S.values(), key=lambda o: (o['site'], o['m']))
-        done, active = cycles(site_rows)
+        done, active, short = cycles(site_rows)
         last = max(o['m'] for o in site_rows)
         out['sites_last_month'] = last
         out['sites'] = [{**o, 'bio_t': round(o['bio_t']), 'fish': round(o['fish']), 'in': round(o['in']), 'out': round(o['out']), 'dead': round(o['dead'])}
                         for o in site_rows if o['m'] >= add_months(last, -36)]
-        out['cycles'] = {'done': done, 'active': active, 'note': 'a cycle runs from the first month with fish after at least two empty months to the last month with fish'}
+        out['cycles'] = {'done': done, 'active': active, 'short_runs': len(short), 'min_months': MIN_CYCLE,
+                         'note': f'a cycle runs from the first month with fish after at least two empty months to the last month with fish; '
+                                 f'runs shorter than {MIN_CYCLE} months (fish moved between sites, early emptying) are left out'}
         L = [c['months'] for c in done]
         out['cycles']['iceland'] = summary(L)
         out['cycles']['by_company'] = {co: summary([c['months'] for c in done if c['co'] == co]) for co in sorted({c['co'] for c in done})}
