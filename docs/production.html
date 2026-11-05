@@ -470,6 +470,8 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
       <button data-v="coprod">Co-products</button>
       <button data-v="producers">Producers</button>
       <button data-v="euflows">EU markets</button>
+      <button data-v="poland">Poland</button>
+      <button data-v="prices">Prices</button>
       <button data-v="usa">USA focus</button>
       <button data-v="china">China focus</button>
       <button data-v="world">World imports</button>
@@ -981,12 +983,11 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
 <div class="gm-panel" style="margin-top:14px"><div class="gm-t">Forecast archive — what was forecast each month, and what happened</div>
   <div class="gm-s" id="gm_arcSub">Loading the archive…</div><div id="gm_arcChart"></div><div class="gm-tw"><table class="gm-mini" id="gm_arcTab" style="max-width:900px"></table></div>
   <div class="gm-sec" id="gm_arcZoneT"></div><div class="gm-s" id="gm_arcZoneSub"></div><div class="gm-tw"><table class="gm-mini" id="gm_arcZone"></table></div></div>
-<div class="gm-panel" style="margin-top:14px"><div class="gm-t">Who holds the big fish — next two months, by zone (estimate)</div>
+<div class="gm-panel" style="margin-top:14px"><div class="gm-t" id="gm_bfT">Big fish by farmer — the next two months (estimate)</div>
   <div class="gm-s" id="gm_bfSub">Loading…</div>
-  <div style="display:flex;gap:8px;align-items:center;margin:8px 0"><label style="font-size:12px;color:var(--muted)">Zone</label><select id="gm_bfZone"></select></div>
-  <div class="gm-tw"><table class="gm-mini" id="gm_bfCo" style="max-width:900px"></table></div>
-  <details style="margin-top:8px"><summary style="cursor:pointer;font-size:12.5px;color:var(--muted)">Sites most likely to harvest big fish in this zone</summary>
-  <div class="gm-tw"><table class="gm-mini" id="gm_bfSites" style="max-width:1000px"></table></div></details>
+  <div class="gm-tw"><table class="gm-mini" id="gm_bfCo" style="max-width:1100px"></table></div>
+  <div class="gm-sec" style="margin-top:12px">Norway — expected share of big fish in the harvest</div>
+  <div class="gm-tw"><table class="gm-mini" id="gm_bfNo" style="max-width:1000px"></table></div>
   <div class="gm-note" id="gm_bfNote" style="margin-top:8px"></div>
 </div>
 <div class="gm-panel" style="margin-top:14px"><div class="gm-t">How the projections are made, and how good they are</div><div class="gm-note" id="gm_method" style="margin-top:4px"></div>
@@ -1087,6 +1088,43 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="sig-sub">Entered by hand in data/news.json (key "calendar"); past dates drop off after a week.</div>
     <div style="overflow-x:auto"><table class="sig-table" id="nwCal"></table></div>
     <details style="margin-top:14px;font-size:11.5px;color:var(--muted)"><summary style="cursor:pointer">Sources and last collection</summary><div id="nwSrc" style="margin-top:6px;line-height:1.6"></div></details>
+  </div>
+
+  <div class="panel" id="prView" style="flex:1; min-width:0; max-width:1400px; display:none;">
+    <div class="sig-title">Prices</div>
+    <div class="nw-chips" id="prTabs" style="margin:6px 0 10px"><button type="button" class="on">Price history</button></div>
+    <div class="sig-sub" id="prSub"></div>
+    <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:8px 0">
+      <label style="font-size:12px;color:var(--muted)">Series</label><select id="prSer"></select>
+      <label style="font-size:12px;color:var(--muted)">Years in the chart</label><span id="prYears" style="display:inline-flex;flex-wrap:wrap;gap:6px"></span>
+    </div>
+    <div id="prChart"></div><div id="prLeg"></div>
+    <div class="sig-title" style="margin-top:14px;font-size:15px" id="prTabT">Week by week</div>
+    <div class="sig-sub" id="prTabSub"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="prTab" style="font-size:12px"></table></div>
+    <div class="sig-title" style="margin-top:14px;font-size:15px">SSB export price against the spot index, week by week</div>
+    <div class="sig-sub" id="prCmpSub"></div>
+    <div style="display:flex;gap:8px;align-items:center;margin:6px 0"><label style="font-size:12px;color:var(--muted)">Year</label><select id="prCmpY"></select></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="prCmp" style="font-size:12px"></table></div>
+    <div class="sig-sub" id="prNote" style="margin-top:12px"></div>
+  </div>
+
+  <div class="panel" id="plView" style="flex:1; min-width:0; max-width:1400px; display:none;">
+    <div class="sig-title">Poland — what Norway sends, what arrives, and what Poland exports</div>
+    <div class="sig-sub" id="plSub"></div>
+    <div class="sig-title" style="margin-top:14px;font-size:15px">Cross-check: Norway's declared exports against Poland's recorded arrivals</div>
+    <div style="overflow-x:auto"><table class="sig-table" id="plCheck" style="max-width:1000px"></table></div>
+    <div class="sig-sub" id="plCheckNote"></div>
+    <div class="sig-title" style="margin-top:14px;font-size:15px">Month by month</div>
+    <div style="overflow-x:auto"><table class="sig-table" id="plMonths"></table></div>
+    <div class="sig-title" style="margin-top:14px;font-size:15px">Poland's salmon balance (whole-fish equivalent)</div>
+    <div style="overflow-x:auto"><table class="sig-table" id="plBal" style="max-width:800px"></table></div>
+    <div class="sig-title" style="margin-top:14px;font-size:15px">Poland's exports by product</div>
+    <div style="overflow-x:auto"><table class="sig-table" id="plProd" style="max-width:1000px"></table></div>
+    <div class="sig-title" style="margin-top:14px;font-size:15px">Poland's exports by destination</div>
+    <div style="display:flex;gap:8px;align-items:center;margin:6px 0"><label style="font-size:12px;color:var(--muted)">Product</label><select id="plDestP"></select></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="plDest" style="max-width:1000px"></table></div>
+    <div class="sig-sub" id="plNote" style="margin-top:12px"></div>
   </div>
 
   <div class="panel" id="tasView" style="flex:1; min-width:0; max-width:1400px; display:none;">
@@ -3093,6 +3131,139 @@ let CLD = null, CLS = null, CLT = null, CL_LOADING = false, CL_MAP = null, CL_LA
 let BF = null, BF_LOADING = false;
 // ===================== Temps en mer (data/big_fish.json, partie cycles <- scripts/build_big_fish.py) =====================
 let TAS_OPEN = {};
+// ===================== Prix : historique hebdomadaire (SSB 03024 ; indice spot des rapports Akvafakta) =====================
+let PR_YEARS = null;
+function renderPrices() {
+  const D = DATA_RAW || {}, SR = ((D.ssb_weekly || {}).rows) || [], AK = D.weekly || [];
+  const sub = document.getElementById('prSub'); if (!SR.length) { sub.innerHTML = 'No weekly price data yet.'; return; }
+  const e = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  // series : prix SSB (frais, congele) ; indice spot (moyenne et par calibre) des rapports hebdomadaires Akvafakta
+  const S = { ssb0: {}, ssb1: {}, vol0: {} };
+  SR.forEach(([yw, p, kg, pr]) => { if (pr) S['ssb' + p][yw] = pr; if (p === 0) S.vol0[yw] = kg; });
+  const SIZES = ['avg', '1-2', '2-3', '3-4', '4-5', '5-6', '6-7', '7-8', '8-9', '9+'];
+  SIZES.forEach(z => S['spot_' + z] = {});
+  AK.forEach(r => { const w = r.price_week; if (!w) return; const y = w > r.report_week + 10 ? r.report_year - 1 : r.report_week > w + 40 ? r.report_year + 1 : r.report_year;
+    SIZES.forEach(z => { const v = r['p_' + z]; if (v) S['spot_' + z][y * 100 + w] = v; }); });
+  const LAB = { ssb0: 'SSB export price, fresh salmon', ssb1: 'SSB export price, frozen salmon', vol0: 'SSB export volume, fresh salmon (tonnes)' };
+  SIZES.forEach(z => LAB['spot_' + z] = `Spot index, ${z === 'avg' ? 'all sizes (average)' : z + ' kg'} (Akvafakta weekly report)`);
+  const sel = document.getElementById('prSer');
+  if (!sel.options.length) { sel.innerHTML = Object.keys(LAB).filter(k => Object.keys(S[k]).length).map(k => `<option value="${k}">${e(LAB[k])}</option>`).join(''); sel.onchange = renderPrices; }
+  const key = sel.value || 'ssb0', X = S[key], isVol = key === 'vol0', unit = isVol ? 't' : 'NOK/kg';
+  const yrs = [...new Set(Object.keys(X).map(k => Math.floor(k / 100)))].sort();
+  const lastK = Math.max(...Object.keys(X).map(Number)), curY = Math.floor(lastK / 100), curW = lastK % 100;
+  if (!PR_YEARS) PR_YEARS = new Set(yrs.slice(-5));
+  const COL = ['#5d7685', '#90a4ae', '#ce93d8', '#81c784', '#ffb74d', '#4fc3f7', '#ff8a65', '#ffd54f', '#e7eef2'];
+  const colY = y => y === curY ? '#ffd54f' : COL[(yrs.length - 1 - yrs.indexOf(y)) % COL.length === 0 ? 8 : (yrs.indexOf(y)) % 7];
+  document.getElementById('prYears').innerHTML = yrs.map(y => `<label style="display:inline-flex;gap:4px;align-items:center;font-size:12px"><input type="checkbox" data-y="${y}"${PR_YEARS.has(y) ? ' checked' : ''}>${y}</label>`).join('');
+  document.querySelectorAll('#prYears input').forEach(c => c.onchange = () => { const y = +c.dataset.y; c.checked ? PR_YEARS.add(y) : PR_YEARS.delete(y); renderPrices(); });
+  const W = [...Array(52).keys()].map(i => i + 1);
+  const avgY = yrs.filter(y => y < curY), avg = W.map(w => { const v = avgY.map(y => X[y * 100 + w]).filter(Boolean); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; });
+  const ser = [...PR_YEARS].sort().map(y => ({ lab: String(y), col: y === curY ? '#ffd54f' : COL[yrs.indexOf(y) % 7], pts: W.map(w => X[y * 100 + w] ?? null), w: y === curY ? 3 : 1.8 }))
+    .concat(avgY.length ? [{ lab: `Average ${avgY[0]}–${avgY[avgY.length - 1]}`, col: '#e7eef2', pts: avg, dash: '5 4', w: 1.6 }] : []);
+  sub.innerHTML = `Weekly salmon prices since ${yrs[0]}, week by week, each year on the same calendar weeks. Latest: <b>week ${curW} ${curY}</b>, ${X[lastK].toLocaleString('en-US', { maximumFractionDigits: isVol ? 0 : 2 })} ${unit}` +
+    (X[lastK - 100] ? ` (${(100 * (X[lastK] / X[lastK - 100] - 1)).toFixed(1)} % on week ${curW} ${curY - 1})` : '') + (avg[curW - 1] ? `, against an average of ${avg[curW - 1].toFixed(isVol ? 0 : 1)} for that week.` : '.');
+  document.getElementById('prChart').innerHTML = vzLines(W, ser, { axis: unit, unit, zero: false, H: 300, digits: isVol ? 0 : 1, xfmt: (k, i, long) => long ? `week ${k}` : (k === 1 || k % 4 === 0 ? 'w' + k : '') });
+  document.getElementById('prLeg').innerHTML = vzLegend(ser.map(x => [x.lab, x.col, !!x.dash, true]));
+  // tableau semaine par semaine : annees en lignes, semaines en colonnes, variation sur la semaine precedente en couleur
+  document.getElementById('prTabSub').innerHTML = `${e(LAB[key])}. Colour = change on the week before (green up, red down). The last columns give the year's average, low and high; the bottom rows the average of past years and ${curY} against it.`;
+  const cell = (y, w) => { const v = X[y * 100 + w], pv = w > 1 ? X[y * 100 + w - 1] : X[(y - 1) * 100 + 52];
+    if (v === undefined) return `<td style="color:var(--muted)">·</td>`; const ch = pv ? 100 * (v / pv - 1) : 0;
+    const bg = isVol ? '' : `background:${ch > 0.5 ? `rgba(126,217,143,${Math.min(0.45, ch / 12)})` : ch < -0.5 ? `rgba(255,138,101,${Math.min(0.45, -ch / 12)})` : 'transparent'}`;
+    return `<td style="${bg}${y === curY && w === curW ? ';outline:1px solid #ffd54f' : ''}" title="week ${w} ${y}: ${v} ${unit} (${ch >= 0 ? '+' : ''}${ch.toFixed(1)} % on the week before)">${isVol ? Math.round(v / 100) / 10 : v.toFixed(1)}</td>`; };
+  const stats = y => { const v = W.map(w => X[y * 100 + w]).filter(x => x !== undefined); return v.length ? [v.reduce((a, b) => a + b, 0) / v.length, Math.min(...v), Math.max(...v)] : [null, null, null]; };
+  document.getElementById('prTab').innerHTML = `<thead><tr><th class="name">Year</th>${W.map(w => `<th${w === curW ? ' style="color:#ffd54f"' : ''}>${w}</th>`).join('')}<th>Avg</th><th>Low</th><th>High</th></tr></thead><tbody>` +
+    yrs.slice().reverse().map(y => { const [a, l, h] = stats(y); return `<tr><td class="name"><b>${y}</b></td>${W.map(w => cell(y, w)).join('')}<td><b>${a ? (isVol ? Math.round(a / 100) / 10 : a.toFixed(1)) : '—'}</b></td><td>${l ? (isVol ? Math.round(l / 100) / 10 : l.toFixed(1)) : '—'}</td><td>${h ? (isVol ? Math.round(h / 100) / 10 : h.toFixed(1)) : '—'}</td></tr>`; }).join('') +
+    (avg.some(Boolean) ? `<tr style="border-top:2px solid var(--border)"><td class="name">Average ${avgY[0]}–${avgY[avgY.length - 1]}</td>${avg.map(v => `<td>${v ? (isVol ? Math.round(v / 100) / 10 : v.toFixed(1)) : '·'}</td>`).join('')}<td colspan="3"></td></tr>` +
+      `<tr><td class="name">${curY} vs average</td>${W.map((w, i) => { const v = X[curY * 100 + w]; if (v === undefined || !avg[i]) return '<td style="color:var(--muted)">·</td>'; const d = 100 * (v / avg[i] - 1);
+        return `<td class="${d >= 0 ? 'delta-good' : 'delta-bad'}">${d >= 0 ? '+' : '−'}${Math.abs(d).toFixed(0)}%</td>`; }).join('')}<td colspan="3"></td></tr>` : '') + `</tbody>`;
+  if (isVol) document.getElementById('prTabSub').innerHTML += ' Volumes in thousand tonnes.';
+  // SSB contre spot
+  const cy = document.getElementById('prCmpY'), yc = yrs.filter(y => Object.keys(S.spot_avg).some(k => Math.floor(k / 100) === y));
+  if (!cy.options.length) { cy.innerHTML = yc.slice().reverse().map(y => `<option value="${y}">${y}</option>`).join(''); cy.onchange = renderPrices; }
+  const Yc = +cy.value || yc[yc.length - 1];
+  document.getElementById('prCmpSub').innerHTML = `SSB's export price is the average customs value of all fresh salmon exported in the week, all sizes and contracts included; the spot index is the weekly price of superior salmon traded on the spot market, as given in the Akvafakta weekly report. ` +
+    `The gap tells how far contract and lower-grade sales pull the export average away from the spot market.`;
+  const rowsC = W.map(w => ({ w, a: S.ssb0[Yc * 100 + w], b: S.spot_avg[Yc * 100 + w], c: S['spot_4-5'][Yc * 100 + w] })).filter(r => r.a || r.b);
+  document.getElementById('prCmp').innerHTML = `<thead><tr><th class="name">Week</th><th>SSB fresh (NOK/kg)</th><th>Spot, all sizes</th><th>Spot 4–5 kg</th><th>SSB minus spot</th><th>Gap</th></tr></thead><tbody>` +
+    rowsC.map(r => { const g = r.a && r.b ? r.a - r.b : null; return `<tr><td class="name">${r.w}</td><td><b>${r.a ? r.a.toFixed(2) : '—'}</b></td><td>${r.b ? r.b.toFixed(2) : '—'}</td><td>${r.c ? r.c.toFixed(2) : '—'}</td>` +
+      `<td>${g === null ? '—' : (g >= 0 ? '+' : '−') + Math.abs(g).toFixed(2)}</td><td>${g === null ? '—' : `<span class="${g >= 0 ? 'delta-good' : 'delta-bad'}">${(100 * g / r.b).toFixed(1)} %</span>`}</td></tr>`; }).join('') + `</tbody>`;
+  document.getElementById('prNote').innerHTML = `<b>Sources.</b> SSB table 03024 (weekly export volume and price of farmed salmon, customs declarations, NOK per kg, published the following week). Spot index by size: the weekly Akvafakta report (index from NASDAQ, later Sitagri), matched to the week the price refers to. More price views will be added here.`;
+}
+// ===================== Pologne (data.json : ssb_exports ; eurostat.json : flux de l'UE) =====================
+let PL_EU = null, PL_LOADING = false;
+function renderPoland() {
+  const sub = document.getElementById('plSub');
+  if (!PL_EU) { if (!PL_LOADING) { PL_LOADING = true; fetch(DATA_URL.replace('data.json', 'eurostat.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
+      .then(j => { PL_EU = j || { rows: [], meta: {} }; PL_LOADING = false; if (currentView === 'poland') renderPoland(); }); }
+    sub.innerHTML = 'Loading…'; return; }
+  const R = PL_EU.rows || [], Pn = (PL_EU.meta || {}).products || [], SSB = ((DATA_RAW || {}).ssb_exports || {}).rows || [];
+  if (!R.length || !SSB.length) { sub.innerHTML = 'Eurostat or SSB data not available yet.'; return; }
+  const WFE = [1, 1, 1.75, 1.75, 1.5, 2.1, 2.0], e = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const t0 = v => Math.round(v).toLocaleString('en-US'), pc = (a, b) => b ? 100 * (a / b - 1) : null;
+  const chg = (v, inv) => v === null || !isFinite(v) ? '—' : `<span class="${(inv ? v < 0 : v >= 0) ? 'delta-good' : 'delta-bad'}">${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(1)} %</span>`;
+  // dernier mois complet : Pologne presente dans les deux sens et au moins 90 % des pays declarants du mois le plus complet
+  const rep = {}; R.forEach(r => { (rep[r[0]] = rep[r[0]] || new Set()).add(r[1]); });
+  const maxRep = Math.max(...Object.values(rep).map(x => x.size));
+  const plM = new Set(R.filter(r => r[1] === 'PL').map(r => r[0]));
+  const months = Object.keys(rep).map(Number).filter(m => rep[m].size >= 0.9 * maxRep && plM.has(m)).sort((a, b) => a - b);
+  const L = months[months.length - 1], Y = Math.floor(L / 100), mL = L % 100, inYTD = (ym, y) => Math.floor(ym / 100) === y && ym % 100 <= mL;
+  const partial = Object.keys(rep).map(Number).filter(m => m > L).sort();
+  sub.innerHTML = `Poland is Norway's biggest salmon customer and Europe's main processing hub (smoking, filleting). This tab sets Norway's declared exports (SSB) against what Poland itself records (Eurostat), and follows what Poland sells on. ` +
+    `Year to date = January to <b>${tmMl(L)}</b>, the last month for which Eurostat is complete${partial.length ? ` (${partial.map(tmMl).join(', ')} still partial, left out)` : ''}; compared with the same months a year earlier.`;
+  // ---- controle croise ----
+  const ssb = (y, iso, form) => SSB.reduce((a, r) => a + (inYTD(r[0], y) && r[2] === iso && (form === undefined || r[1] === form) ? r[3] : 0), 0) / 1000;
+  const eu = (y, f) => R.reduce((a, r) => a + (inYTD(r[0], y) && f(r) ? r[5] : 0), 0);
+  const rows = [
+    ['Norway → Poland, all forms (SSB, declared by Norway)', ssb(Y - 1, 'PL'), ssb(Y, 'PL')],
+    ['Norway → Poland, fresh whole (SSB)', ssb(Y - 1, 'PL', 0), ssb(Y, 'PL', 0)],
+    ['Norway → Denmark, fresh whole (SSB)', ssb(Y - 1, 'DK', 0), ssb(Y, 'DK', 0)],
+    ['Poland\'s arrivals of fresh whole salmon, all origins (Eurostat, declared by Poland)', eu(Y - 1, r => r[1] === 'PL' && r[4] === 1 && r[3] === 0), eu(Y, r => r[1] === 'PL' && r[4] === 1 && r[3] === 0)],
+    ['… of which recorded as coming from Norway directly', eu(Y - 1, r => r[1] === 'PL' && r[4] === 1 && r[3] === 0 && r[2] === 'NO'), eu(Y, r => r[1] === 'PL' && r[4] === 1 && r[3] === 0 && r[2] === 'NO')],
+    ['… from Sweden (Norwegian fish cleared at the Swedish border)', eu(Y - 1, r => r[1] === 'PL' && r[4] === 1 && r[3] === 0 && r[2] === 'SE'), eu(Y, r => r[1] === 'PL' && r[4] === 1 && r[3] === 0 && r[2] === 'SE')],
+    ['… from Germany', eu(Y - 1, r => r[1] === 'PL' && r[4] === 1 && r[3] === 0 && r[2] === 'DE'), eu(Y, r => r[1] === 'PL' && r[4] === 1 && r[3] === 0 && r[2] === 'DE')]];
+  document.getElementById('plCheck').innerHTML = `<thead><tr><th class="name">Flow (tonnes of product)</th><th>${Y - 1}</th><th>${Y}</th><th>Change</th></tr></thead><tbody>` +
+    rows.map(([lab, a, b]) => `<tr><td class="name">${lab}</td><td>${t0(a)}</td><td><b>${t0(b)}</b></td><td>${chg(pc(b, a))}</td></tr>`).join('') + `</tbody>`;
+  const gap = (rows[1][2] - rows[1][1]) - (rows[3][2] - rows[3][1]), dk = rows[2][1] - rows[2][2];
+  document.getElementById('plCheckNote').innerHTML = `Norway declares ${t0(rows[1][2] - rows[1][1])} t more fresh whole salmon for Poland than a year earlier; Poland records ${t0(rows[3][2] - rows[3][1])} t more arrivals of it. ` +
+    `Of the ${t0(gap)} t gap, about ${t0(Math.min(gap, dk))} t can be the shift away from Denmark (Norway's declared exports there fell by ${t0(dk)} t). The rest is timing, unreported intra-EU trade or stock.`;
+  // ---- mois par mois ----
+  const ms = months.filter(m => m >= (Y - 1) * 100 + 1);
+  const mon = m => ({ ssb: SSB.reduce((a, r) => a + (r[0] === m && r[2] === 'PL' ? r[3] : 0), 0) / 1000,
+    arr: R.reduce((a, r) => a + (r[0] === m && r[1] === 'PL' && r[4] === 1 && r[3] === 0 ? r[5] : 0), 0),
+    imp: R.reduce((a, r) => a + (r[0] === m && r[1] === 'PL' && r[4] === 1 ? r[5] * WFE[r[3]] : 0), 0),
+    exp: R.reduce((a, r) => a + (r[0] === m && r[1] === 'PL' && r[4] === 2 ? r[5] * WFE[r[3]] : 0), 0),
+    pnok: (() => { let k = 0, v = 0; SSB.forEach(r => { if (r[0] === m && r[2] === 'PL' && r[1] === 0) { k += r[3]; v += r[4]; } }); return k ? v / k : null; })() });
+  const lastSsb = Math.max(...SSB.filter(r => r[2] === 'PL').map(r => r[0])), mlist = [...new Set([...ms, ...SSB.filter(r => r[2] === 'PL' && r[0] > L && r[0] <= lastSsb).map(r => r[0])])].sort((a, b) => b - a).slice(0, 14);
+  document.getElementById('plMonths').innerHTML = `<thead><tr><th class="name">Month</th><th>Norway → Poland, all forms (t)</th><th>vs a year earlier</th><th>Price fresh whole (NOK/kg)</th><th>Poland's arrivals, fresh whole (t)</th><th>Poland's imports, whole-fish eq. (t)</th><th>Poland's exports, whole-fish eq. (t)</th><th>Exports vs a year earlier</th></tr></thead><tbody>` +
+    mlist.map(m => { const a = mon(m), b = mon(m - 100), ok = m <= L;
+      return `<tr><td class="name">${tmMl(m)}</td><td><b>${t0(a.ssb)}</b></td><td>${chg(pc(a.ssb, b.ssb))}</td><td>${a.pnok ? a.pnok.toFixed(1) : '—'}</td>` +
+        (ok ? `<td>${t0(a.arr)}</td><td>${t0(a.imp)}</td><td>${t0(a.exp)}</td><td>${chg(pc(a.exp, b.exp))}</td>` : `<td colspan="4" style="color:var(--muted)">Eurostat not complete yet</td>`) + `</tr>`; }).join('') + `</tbody>`;
+  // ---- bilan ----
+  const bal = y => ({ imp: eu(y, r => r[1] === 'PL' && r[4] === 1) && R.reduce((a, r) => a + (inYTD(r[0], y) && r[1] === 'PL' && r[4] === 1 ? r[5] * WFE[r[3]] : 0), 0),
+    exp: R.reduce((a, r) => a + (inYTD(r[0], y) && r[1] === 'PL' && r[4] === 2 ? r[5] * WFE[r[3]] : 0), 0) });
+  const b0 = bal(Y - 1), b1 = bal(Y);
+  document.getElementById('plBal').innerHTML = `<thead><tr><th class="name">January–${tmMl(L)}</th><th>${Y - 1}</th><th>${Y}</th><th>Change</th></tr></thead><tbody>` +
+    [['Imports, all products', b0.imp, b1.imp], ['Exports, all products', b0.exp, b1.exp], ['Kept in Poland (home market, losses, stock)', b0.imp - b0.exp, b1.imp - b1.exp]]
+      .map(([l, a, b]) => `<tr><td class="name">${l}</td><td>${t0(a)}</td><td><b>${t0(b)}</b></td><td>${chg(pc(b, a))}</td></tr>`).join('') + `</tbody>`;
+  // ---- exportations par produit ----
+  const ex = (y, f) => { let t = 0, v = 0; R.forEach(r => { if (inYTD(r[0], y) && r[1] === 'PL' && r[4] === 2 && f(r)) { t += r[5]; v += r[6]; } }); return { t, v }; };
+  const tot0 = ex(Y - 1, () => true), tot1 = ex(Y, () => true);
+  document.getElementById('plProd').innerHTML = `<thead><tr><th class="name">Product</th><th>${Y - 1} (t)</th><th>${Y} (t)</th><th>Volume</th><th>€/kg ${Y - 1}</th><th>€/kg ${Y}</th><th>Price</th><th>Value ${Y} (€ m)</th><th>Value</th></tr></thead><tbody>` +
+    Pn.map((n, p) => ({ n, a: ex(Y - 1, r => r[3] === p), b: ex(Y, r => r[3] === p) })).filter(x => x.b.t >= 100).sort((x, y) => y.b.v - x.b.v)
+      .concat([{ n: 'All products', a: tot0, b: tot1, all: true }])
+      .map(x => `<tr${x.all ? ' style="font-weight:600"' : ''}><td class="name">${e(x.n)}</td><td>${t0(x.a.t)}</td><td><b>${t0(x.b.t)}</b></td><td>${chg(pc(x.b.t, x.a.t))}</td><td>${x.a.t ? (x.a.v / x.a.t).toFixed(2) : '—'}</td><td>${(x.b.v / x.b.t).toFixed(2)}</td><td>${chg(pc(x.b.v / x.b.t, x.a.v / x.a.t))}</td><td>${(x.b.v / 1000).toFixed(0)}</td><td>${chg(pc(x.b.v, x.a.v))}</td></tr>`).join('') + `</tbody>`;
+  // ---- exportations par destination ----
+  const sel = document.getElementById('plDestP');
+  if (!sel.options.length) { sel.innerHTML = `<option value="-1">All products</option>` + Pn.map((n, p) => `<option value="${p}">${e(n)}</option>`).join(''); sel.onchange = renderPoland; }
+  const pp = +sel.value, fp = r => pp < 0 || r[3] === pp, dests = {};
+  R.forEach(r => { if (r[1] === 'PL' && r[4] === 2 && fp(r)) { for (const y of [Y - 1, Y]) if (inYTD(r[0], y)) { const x = (dests[r[2]] = dests[r[2]] || { [Y - 1]: { t: 0, v: 0 }, [Y]: { t: 0, v: 0 } })[y]; x.t += r[5]; x.v += r[6]; } } });
+  const TV = Object.values(dests).reduce((a, x) => a + x[Y].v, 0);
+  document.getElementById('plDest').innerHTML = `<thead><tr><th class="name">Destination</th><th>${Y - 1} (t)</th><th>${Y} (t)</th><th>Volume</th><th>€/kg ${Y}</th><th>Price</th><th>Share of value</th></tr></thead><tbody>` +
+    Object.entries(dests).sort((a, b) => b[1][Y].v - a[1][Y].v).slice(0, 15).map(([k, x]) => `<tr><td class="name">${k === 'ZZ' ? 'Small partners (grouped)' : e(k)}</td><td>${t0(x[Y - 1].t)}</td><td><b>${t0(x[Y].t)}</b></td><td>${chg(pc(x[Y].t, x[Y - 1].t))}</td>` +
+      `<td>${x[Y].t ? (x[Y].v / x[Y].t).toFixed(2) : '—'}</td><td>${x[Y - 1].t && x[Y].t ? chg(pc(x[Y].v / x[Y].t, x[Y - 1].v / x[Y - 1].t)) : '—'}</td><td>${TV ? (100 * x[Y].v / TV).toFixed(1) + ' %' : '—'}</td></tr>`).join('') + `</tbody>`;
+  document.getElementById('plNote').innerHTML = `<b>Sources and reading.</b> SSB: Norway's exports by declared destination (tonnes of product, NOK). Eurostat Comext: what each EU country records, in tonnes of product and euros; trade inside the EU is reported by companies and often under-reported. ` +
+    `Whole-fish equivalents use rough yields (fillets ×1.75, smoked ×2.1, prepared ×2.0, other meat ×1.5). Months that Eurostat has not completed are left out of every comparison, so that a half-filled month is never read as a collapse.`;
+}
 function renderTimeAtSea() {
   const sub = document.getElementById('tasSub');
   if (!BF) { if (!BF_LOADING) { BF_LOADING = true; fetch(DATA_URL.replace('data.json', 'big_fish.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
@@ -3180,28 +3351,55 @@ function renderTimeAtSea() {
     `Only completed cycles since ${e(CY.since).slice(0, 4)} count, and farmers need at least ${CY.min_cycles}. Research, broodstock and public licences are left out. ` +
     `Average harvest weight by farmer is not public in Norway: it is shown when the farmer's quarterly report states it (read automatically), otherwise "—".`;
 }
+let BF_OPEN = {};
 function renderBigFish() {
   const sub = document.getElementById('gm_bfSub'); if (!sub) return;
   if (!BF) { if (!BF_LOADING) { BF_LOADING = true; fetch(DATA_URL.replace('data.json', 'big_fish.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
       .then(j => { BF = j || { zones: [] }; BF_LOADING = false; if (currentView === 'genmap') renderBigFish(); }); } return; }
-  const Z = BF.zones || [], M = BF.meta || {}, sel = document.getElementById('gm_bfZone');
-  const e = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
-  if (!Z.length) { sub.innerHTML = 'No estimate yet: data/big_fish.json is built at each update run.'; ['gm_bfCo', 'gm_bfSites', 'gm_bfNote'].forEach(id => document.getElementById(id).innerHTML = ''); return; }
-  if (!sel.options.length) { sel.innerHTML = Z.map(z => `<option value="${z.po}">Zone ${z.po} · ${(PO_NAMES[z.po] || '').slice(0, 28)} — ${z.zone_share6} % of Norway's potential</option>`).join(''); sel.onchange = renderBigFish; }
-  const z = Z.find(x => String(x.po) === sel.value) || Z[0];
-  sub.innerHTML = `Which companies should have fish of 5–6 kg and 6 kg+ (gutted) to harvest in the next two months, zone by zone, from the week of ${e(M.week)}. ` +
-    `Zones are ranked by their share of Norway's big-fish potential; the shares below divide each zone between its farmers. Shares, not tonnes: the stock of each site is not public.`;
-  document.getElementById('gm_bfCo').innerHTML = `<thead><tr><th class="name">Company</th><th>Share of the zone's 6 kg+ potential</th><th>Share of its 5–6 kg potential</th><th>Growth pace vs zone</th><th>Sites counted</th><th>Their capacity (MTB t)</th></tr></thead><tbody>` +
-    z.companies.filter(c => c.share6 + c.share56 >= 0.5).map(c => `<tr><td class="name"><b>${e(c.co)}</b></td><td><b>${c.share6.toFixed(0)} %</b></td><td>${c.share56.toFixed(0)} %</td><td>${c.pace && c.pace !== 1 ? `<span class="${c.pace > 1 ? 'delta-good' : 'delta-bad'}">×${c.pace.toFixed(2)}</span>` : '—'}</td><td>${c.sites}</td><td>${Math.round(c.cap).toLocaleString('en-US')}</td></tr>`).join('') + `</tbody>`;
-  document.getElementById('gm_bfSites').innerHTML = `<thead><tr><th class="name">Site</th><th>Company</th><th>Stocked</th><th>Months at sea</th><th>Pace</th><th>Est. weight in 2 months (kg gutted)</th><th>Chance of harvest within ~2 months</th><th>6 kg+ share at that weight</th></tr></thead><tbody>` +
-    z.sites.map(x => `<tr><td class="name">${e(x.name)}</td><td>${e(x.co)}</td><td>${e(x.stocked)}</td><td>${x.age.toFixed(0)}</td><td>${x.pace && x.pace !== 1 ? '×' + x.pace.toFixed(2) : '—'}</td><td>${x.g2 ? x.g2.toFixed(1) : '—'}</td><td>${Math.round(100 * x.p_harvest)} %</td><td>${Math.round(100 * x.p6)} %</td></tr>`).join('') + `</tbody>`;
-  const bt = M.backtest || {}, bk = Object.keys(bt).map(Number).filter(a => a >= 10 && a <= 20).sort((a, b) => a - b);
-  document.getElementById('gm_bfNote').innerHTML = `<b>How it is estimated.</b> (1) The stocking date of each site comes from its weekly status in BarentsWatch: the end of its last fallow period. ` +
-    `(2) The weight of its fish is its zone's growth curve (biomass register, generations 2019–2025) at the site's age, one and two months ahead. ` +
-    `(3) The chance that a site is harvested within about two months is measured on the history itself: of the sites of the same age since 2021, ${bk.map(a => `${bt[a]} % of those ${a}–${a + 2} months at sea`).join(', ')} were emptied within 9 weeks. ` +
-    `(4) Growth pace: a farmer whose completed cycles in the zone since 2023 are shorter than the zone's (median ${z.cycle_months || '?'} months here) grows its fish faster — bigger smolts, better growth — so its sites are aged accordingly (×1.37 = it reaches a given weight in about 27 % less time). ` +
-    `(5) A company's share = capacity × harvest chance × share of big fish at the estimated weight, over the zone. ` +
-    `<b>Limits:</b> a site may be half full; a farmer with bigger smolts or faster growth than the zone average has heavier fish than shown; transfers between sites blur the dates. Research, broodstock and public licences are left out.`;
+  const RK = BF.ranking, e = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  if (!RK) { sub.innerHTML = 'No estimate yet: data/big_fish.json is built at each update run.'; ['gm_bfCo', 'gm_bfNo', 'gm_bfNote'].forEach(id => document.getElementById(id).innerHTML = ''); return; }
+  const ML = k => tmMl(k), t0 = v => Math.round(v).toLocaleString('en-US'), per = `${ML(RK.months[0])} – ${ML(RK.months[1])}`;
+  // volumes cales sur la prevision Supply outlook (poids vif, toutes licences) -> poids vide, zones 1 a 13 ; les calibres restent ceux du classement
+  if (!window.OUTLOOK_PROJ) { try { if (getSelectedPoFilter().length >= ALL_PO.length) renderOutlook(); } catch (err) { /* pas de projection disponible */ } }
+  const OP = window.OUTLOOK_PROJ || {}, cal = RK.months.map(m => OP[m] ? OP[m] * (RK.gut || 0.888) * (RK.zone_share || 1) : null);
+  const calOK = cal.every(v => v), N = RK.norway.map((x, i) => calOK ? { ...x, f: cal[i] / x.harvest_t } : { ...x, f: 1 });
+  const F2 = calOK ? (cal[0] + cal[1]) / (RK.norway[0].harvest_t + RK.norway[1].harvest_t) : 1;
+  document.getElementById('gm_bfT').textContent = `Big fish by farmer — ${per} (estimate)`;
+  sub.innerHTML = `Farmers ranked by the tonnes of 5–6 kg and 6 kg+ fish (gutted) they should harvest in ${per}, and what that is of their own expected harvest. ` +
+    `Built from the register up to ${ML(RK.register_month)} and each site's status in BarentsWatch up to the week of ${e((BF.meta || {}).week)}. Click a farmer to see its zones.`;
+  const dis = c => [c.pd_sites ? `<span style="color:#ffb74d">PD ${c.pd_sites}</span>` : '', c.ila_sites ? `<span style="color:#e57373">ILA ${c.ila_sites}</span>` : ''].filter(Boolean).join(' ') || '<span style="color:var(--muted)">—</span>';
+  const row = (c, z) => `<tr ${z ? 'style="font-size:12px;color:var(--muted)"' : `data-co="${e(c.co)}" style="cursor:pointer"`}>` +
+    `<td class="name">${z ? `&nbsp;&nbsp;Zone ${c.po} · ${e((PO_NAMES[c.po] || '').slice(0, 24))}` : `<b>${e(c.co)}</b> <span style="color:var(--muted);font-size:11px">${BF_OPEN[c.co] ? '▾' : '▸'}</span>`}</td>` +
+    `<td><b>${t0(c.t6 * F2)}</b></td><td>${c.share6.toFixed(0)} %</td><td><b>${t0(c.t56 * F2)}</b></td><td>${c.share56.toFixed(0)} %</td><td>${t0((c.t56 + c.t6) * F2)}</td><td>${t0(c.harvest_t * F2)}</td>` +
+    `<td>${c.sites}</td><td>${dis(c)}</td>${z ? '<td></td>' : `<td>${c.pace && c.pace !== 1 ? `<span class="${c.pace > 1 ? 'delta-good' : 'delta-bad'}">×${c.pace.toFixed(2)}</span>` : '—'}</td>`}</tr>`;
+  document.getElementById('gm_bfCo').innerHTML = `<thead><tr><th class="name">Farmer</th><th>6 kg+ (t gutted)</th><th>% of its harvest</th><th>5–6 kg (t gutted)</th><th>% of its harvest</th><th>5 kg+ (t gutted)</th><th>Expected harvest (t gutted)</th><th>Sites harvesting</th><th>Disease now</th><th>Growth pace</th></tr></thead><tbody>` +
+    RK.farmers.slice(0, 25).map(c => row(c) + (BF_OPEN[c.co] ? c.zones.map(z => row(z, true)).join('') : '')).join('') + `</tbody>`;
+  document.querySelectorAll('#gm_bfCo tr[data-co]').forEach(tr => tr.onclick = () => { BF_OPEN[tr.dataset.co] = !BF_OPEN[tr.dataset.co]; renderBigFish(); });
+  const Y = RK.ytd, pts = v => `<span class="${v >= 0 ? 'delta-good' : 'delta-bad'}">${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(1)} pt</span>`;
+  const tot = N.reduce((a, x) => ({ h: a.h + x.harvest_t * x.f, t56: a.t56 + x.t56 * x.f, t6: a.t6 + x.t6 * x.f, l56: a.l56 + x.ly_t56, l6: a.l6 + x.ly_t6, lh: a.lh + (x.ly_harvest_t || 0) }), { h: 0, t56: 0, t6: 0, l56: 0, l6: 0, lh: 0 });
+  const line = (lab, h, t56, t6, ly56, ly6, b) => { const s56 = 100 * t56 / h, s6 = 100 * t6 / h;
+    return `<tr${b ? ' style="font-weight:600"' : ''}><td class="name">${lab}</td><td>${t0(h)}</td><td>${s56.toFixed(1)} %</td><td>${t0(t56)}</td><td>${pts(s56 - Y.share56)}</td><td>${pts(s56 - ly56)}</td>` +
+      `<td>${s6.toFixed(1)} %</td><td>${t0(t6)}</td><td>${pts(s6 - Y.share6)}</td><td>${pts(s6 - ly6)}</td></tr>`; };
+  document.getElementById('gm_bfNo').innerHTML = `<thead><tr><th class="name">Month</th><th>Harvest (t gutted)</th><th>5–6 kg</th><th>tonnes</th><th>vs ${ML(Y.from)}–${ML(Y.to)}</th><th>vs a year earlier</th><th>6 kg+</th><th>tonnes</th><th>vs ${ML(Y.from)}–${ML(Y.to)}</th><th>vs a year earlier</th></tr></thead><tbody>` +
+    N.map(x => line(ML(x.month), x.harvest_t * x.f, x.t56 * x.f, x.t6 * x.f, x.ly_share56, x.ly_share6)).join('') +
+    line('Both months', tot.h, tot.t56, tot.t6, tot.lh ? 100 * tot.l56 / tot.lh : 0, tot.lh ? 100 * tot.l6 / tot.lh : 0, true) + `</tbody>`;
+  const CK = (RK.checks || []).slice(-4), TS = RK.test_sizes || {}, TF = RK.test_farmers || {};
+  const tsRow = (k, lab) => TS[k] ? `<tr${k === 'G' ? ' style="font-weight:600"' : ''}><td class="name">${lab}</td><td>${TS[k].nat6} pt</td><td>${TS[k].nat56} pt</td><td>${TS[k].z6} pt</td><td>${TS[k].z56} pt</td><td>${TS[k].bias6 > 0 ? '+' : ''}${TS[k].bias6} pt</td></tr>` : '';
+  const testHtml = TS.G ? `<div class="gm-sec" style="margin-top:12px">How good is it — tested on the last 24 months, 1 and 2 months ahead</div>` +
+    `<div class="gm-tw"><table class="gm-mini" style="max-width:900px"><thead><tr><th class="name">Size-mix method (average gap with the register)</th><th>Norway 6 kg+</th><th>Norway 5–6 kg</th><th>Zone 6 kg+</th><th>Zone 5–6 kg</th><th>Bias 6 kg+</th></tr></thead><tbody>` +
+    tsRow('G', 'Used here: half last month, half last month + last year\'s seasonal change') + tsRow('D', 'Last month as it is') + tsRow('A', 'Same months last year at this year\'s weights (earlier version)') + `</tbody></table></div>` +
+    (TF.mae_model ? `<div class="gm-s" style="margin-top:6px">Farmers (${TF.zone_months} zone-months over ${TF.origins} months): the share of each farmer in the site capacity actually emptied within 9 weeks is missed by ${TF.mae_model} points on average (${TF.mae_capacity} with capacity alone), and the zone's leading harvester is found ${TF.top_model} % of the time (${TF.top_capacity} % with capacity alone). ` +
+      `Each farmer's share is then corrected by how much it actually emptied against the forecast over those two years (${Object.entries(TF.corrections || {}).slice(0, 8).map(([c, v]) => `${e(c)} ×${v.toFixed(2)}`).join(', ')}). Tonnes of big fish by farmer cannot be checked: no farmer's size mix is public.</div>` : '') : '';
+  document.getElementById('gm_bfNo').insertAdjacentHTML('afterend', '');
+  const tb = document.getElementById('gm_bfTest') || (() => { const x = document.createElement('div'); x.id = 'gm_bfTest'; document.getElementById('gm_bfNote').before(x); return x; })();
+  tb.innerHTML = testHtml;
+  document.getElementById('gm_bfNote').innerHTML = (calOK ? `<b>Volumes</b> are those of the Supply outlook forecast (${RK.months.map((m, i) => `${ML(m)} ${t0(OP[m])} t live`).join(', ')}), converted to gutted weight (×${(RK.gut || 0.888).toFixed(3)}) and to zones 1–13 (${(100 * (RK.zone_share || 1)).toFixed(1)} % of the harvest; licences without a zone are left out). ` :
+      `<b>Volumes</b>: open the Supply outlook tab once (Norway, all zones) to align them on its forecast; until then they come from this section's own estimate. `) +
+    (CK.length ? `<b>Past forecasts against the register</b> (share of 6 kg+ / 5–6 kg in tonnes): ${CK.map(c => `${ML(c.month)}, forecast from ${ML(c.made_from)}: ${c.forecast_share6} % / ${c.forecast_share56} %, actual ${c.actual_share6} % / ${c.actual_share56} %`).join(' · ')}. ` : '') +
+    `<b>Size mix</b> (tonnes of gutted fish): half the last month reported to the register, half that month plus last year's change between the same months — the method that came closest in the test below; zones are scaled so that they add up to Norway. ` +
+    `Farmers: each zone's harvest is shared between its sites by capacity × chance of being harvested in the period (measured on site histories since 2021 by time at sea, at each farmer's own growth pace), and each site's size mix follows its estimated weight. ` +
+    `Diseases: a site with ILA now is assumed harvested about 1.1 months earlier with zone-average fish, a site with PD about 1.1 months later with slower growth — the gaps measured on cycles since 2023 (see Time at sea). ` +
+    `<b>Limits:</b> the stock of each site is not public, so a farmer's tonnes rest on capacity and timing; weights follow the zone curve adjusted for each farmer's pace. Read the ranking and the order of magnitude, not the last hundred tonnes.`;
 }
 // ===================== Importations mondiales (data/world_imports.json <- scripts/update_world_imports.py) =====================
 let WI = null, WI_LOADING = false, WI_SEL = null;
@@ -4923,16 +5121,18 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     document.getElementById('faroeView').style.display = currentView === 'faroe' ? 'block' : 'none';
     document.getElementById('worldView').style.display = currentView === 'world' ? 'block' : 'none';
     document.getElementById('tasView').style.display = currentView === 'timeatsea' ? 'block' : 'none';
+    document.getElementById('plView').style.display = currentView === 'poland' ? 'block' : 'none';
+    document.getElementById('prView').style.display = currentView === 'prices' ? 'block' : 'none';
     document.getElementById('newsView').style.display = currentView === 'news' ? 'block' : 'none';
     document.getElementById('coprodView').style.display = currentView === 'coprod' ? 'block' : 'none';
     document.getElementById('generationsView').style.display = currentView === 'generations' ? 'block' : 'none';
     document.getElementById('genmapView').style.display = currentView === 'genmap' ? 'block' : 'none';
     // The year / period selectors do not apply to the weekly fish-health view.
-    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'news' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
+    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'news' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
     // La carte des zones ne sert qu'aux vues qui raisonnent par PO. Les onglets
     // Markets et Calibre sont nationaux, elle n'y afficherait rien d'utile.
     const mw = document.querySelector('.panel.mapwrap');
-    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'news' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
+    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'news' || currentView === 'coprod' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
     document.getElementById('poFilterField').style.display = (currentView === 'global' || currentView === 'multi' || currentView === 'outlook') ? 'flex' : 'none';
     document.getElementById('yearField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'none' : 'flex';
     document.getElementById('yearRangeField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'flex' : 'none';
@@ -4960,6 +5160,8 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     else if (currentView === 'faroe') { renderFaroe(); }
     else if (currentView === 'world') { renderWorld(); }
     else if (currentView === 'timeatsea') { renderTimeAtSea(); }
+    else if (currentView === 'poland') { renderPoland(); }
+    else if (currentView === 'prices') { renderPrices(); }
     else if (currentView === 'news') { renderNews(); }
     else if (currentView === 'coprod') { renderCoprod(); }
     else if (currentView === 'generations') { renderGenerations(); }
@@ -7526,6 +7728,7 @@ function renderOutlook() {
       projW = (f.intercept + f.slope * xi) * hwNorm[mIdx+1] / 100;
     }
     if (projVol !== null && projW) projStk = projVol * 1000 / projW;
+    if (projVol !== null && poFilter.length >= ALL_PO.length) { window.OUTLOOK_PROJ = window.OUTLOOK_PROJ || {}; window.OUTLOOK_PROJ[yLbl * 100 + mIdx + 1] = projVol; }
     addRow(`${MONTHS_FR[mIdx]} ${yLbl} <span class="ol-tag ol-proj">projected</span>`, 'projected',
       projVol, volTxt, projStk, projW,
       byKey[(yLbl-1)*100 + (mIdx+1)], k === 1 ? 'sep-row' : '');
