@@ -168,6 +168,13 @@ jobs:
         timeout-minutes: 5
         run: python3 scripts/build_big_fish.py
 
+      - name: Islande - acces aux donnees de MAST (serveur cartographique, tableau de bord de l'aquaculture)
+        # Teste et lit ce que publie MAST : couches des sites d'elevage et des licences, tableau de bord mensuel. Gratuit.
+        id: iceland
+        continue-on-error: true
+        timeout-minutes: 10
+        run: python3 scripts/build_iceland.py
+
       - name: Comptes annuels des eleveurs prives (registres de Brønnøysund, API publique gratuite)
         # Nordlaks, Nova Sea, Lingalaks, Kvarøy, Cermaq Norway... : chiffre d'affaires, resultat d'exploitation et net, par titulaire de licences.
         id: accounts
@@ -357,6 +364,7 @@ jobs:
           STEP_BW_SITES: ${{ steps.bw_sites.outcome }}
           STEP_BIGFISH: ${{ steps.bigfish.outcome }}
           STEP_ACCOUNTS: ${{ steps.accounts.outcome }}
+          STEP_ICELAND: ${{ steps.iceland.outcome }}
           STEP_ESTAB: ${{ steps.estab.outcome }}
           STEP_CHINA: ${{ steps.china.outcome }}
           STEP_EUROSTAT: ${{ steps.eurostat.outcome }}
@@ -428,6 +436,7 @@ jobs:
           [ "${{ steps.bw_sites.outcome }}" = "failure" ] && FAILED="$FAILED BarentsWatch-registre"
           [ "${{ steps.bigfish.outcome }}" = "failure" ] && FAILED="$FAILED Gros-poissons"
           [ "${{ steps.accounts.outcome }}" = "failure" ] && FAILED="$FAILED Comptes-prives"
+          [ "${{ steps.iceland.outcome }}" = "failure" ] && FAILED="$FAILED Islande"
           [ "${{ steps.estab.outcome }}" = "failure" ] && FAILED="$FAILED Mattilsynet"
           [ "${{ steps.eurostat.outcome }}" = "failure" ] && FAILED="$FAILED Eurostat"
           [ "${{ steps.national.outcome }}" = "failure" ] && FAILED="$FAILED Statistiques-nationales"
