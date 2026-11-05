@@ -7951,6 +7951,17 @@ function nationalMonthlySeries(poFilter) {
 function mean(a) { return a.reduce((s,v) => s+v, 0) / a.length; }
 function stdev(a) { const m = mean(a); return Math.sqrt(mean(a.map(v => (v-m)*(v-m)))); }
 
+// exportations hebdomadaires de saumon entier (SSB 03024, frais + congele, tonnes) reparties par mois au prorata des jours
+let VOL_EXM = null;
+function volExportsByMonth() {
+  if (VOL_EXM) return VOL_EXM; const t = {}, days = {};
+  const R = (typeof DATA_RAW !== 'undefined' && DATA_RAW && DATA_RAW.ssb_weekly && DATA_RAW.ssb_weekly.rows) || [], W = {};
+  R.forEach(([yw, , w]) => { W[yw] = (W[yw] || 0) + (w || 0); });
+  Object.entries(W).forEach(([yw, v]) => { const y = Math.floor(yw / 100), wk = yw % 100, j4 = new Date(Date.UTC(y, 0, 4));
+    const mon = j4.getTime() - ((j4.getUTCDay() + 6) % 7) * 864e5 + (wk - 1) * 7 * 864e5;
+    for (let d = 0; d < 7; d++) { const dt = new Date(mon + d * 864e5), k = dt.getUTCFullYear() * 100 + dt.getUTCMonth() + 1; t[k] = (t[k] || 0) + v / 7; days[k] = (days[k] || 0) + 1; } });
+  const out = { t, days }; if (R.length) VOL_EXM = out; return out;
+}
 // Projection des volumes recoltes (1 a 12 mois) : utilisee par National view / Supply outlook et par Generations map.
 function makeVolumeProjector(s, poFilter) {
   const drift12 = (i) => {
@@ -8068,6 +8079,17 @@ function makeVolumeProjector(s, poFilter) {
     const t = i + h, v = prodOf(t - 12) * Math.pow(rp, Math.max(0, 1 - h / 12)) - (Bf(t) - Bf(t - 1)) - mortOf(t - 12) * rb;
     return v > 0 ? v : null; };
   const mbWeight = h => h <= 3 ? 0.5 : h <= 6 ? 0.33 : 0.2;
+  // ---- Export nowcast (Nov 2026). The register for month M comes out about five weeks after M; by then SSB's weekly
+  //  exports of whole salmon (table 03024) already cover all of M+1. Harvest (live) / whole-fish exports is stable
+  //  (1.41-1.53 over the last year), so next month's harvest is read from its exports x that ratio (recent months weigh
+  //  more), and blended 60/40 with the model. Tested 2021-2026: 1-month error 3.1 % (4.4 % without), 1.8 % on 2025-2026.
+  //  National only: exports do not say which zone the fish came from.
+  const EXM = volExportsByMonth();
+  const expFull = k => EXM.days[k] >= new Date(Date.UTC(Math.floor(k / 100), k % 100, 0)).getUTCDate();
+  const nowcast = i => {
+    if (zSel) return null; const kt = kOf(i) % 100 === 12 ? kOf(i) + 89 : kOf(i) + 1; if (!expFull(kt)) return null;
+    const R = []; for (let j = Math.max(0, i - 24); j <= i; j++) { const k = kOf(j); if (EXM.t[k] > 0 && expFull(k) && s[j].vol > 0) R.push(s[j].vol / EXM.t[k]); }
+    return R.length >= 6 ? EXM.t[kt] * ew(R, 0.7) : null; };
   // final projection: average of the methods available at that date. Tested 2021-2026 walk-forward: equal or better than the
   //  three older methods alone at every horizon, and 1-1.6 points better on 2025-2026 at 1-7 months; beyond 7 months the
   //  weight-analogue adds nothing, so the three older methods are kept alone there.
@@ -8079,7 +8101,9 @@ function makeVolumeProjector(s, poFilter) {
     const base = w.length ? w.reduce((a, b) => a + b, 0) / w.length : null;
     const mb = massBal(i, h);
     if (!base || !mb) return base || mb || null;
-    const a = mbWeight(h); return Math.exp(a * Math.log(mb) + (1 - a) * Math.log(base));   // moyenne geometrique ponderee
+    const a = mbWeight(h), m = Math.exp(a * Math.log(mb) + (1 - a) * Math.log(base));   // moyenne geometrique ponderee
+    const nc = h === 1 ? nowcast(i) : null;
+    return nc ? Math.exp(0.6 * Math.log(nc) + 0.4 * Math.log(m)) : m;
   };
   return { projectOld, cwCorr, rotEst, rot12, projectVol, massBal };
 }
@@ -8408,6 +8432,7 @@ function renderOutlook() {
     `Tested 2021–2026: never worse than without it, and 1–1.6 points more accurate on 2025–2026. ` +
     `<b>Mass balance</b> (added November 2026, weighted ½ at 1–3 months, ⅓ at 4–6, ⅕ beyond): harvest = what grew − what stays at sea − what died. Monthly production (change in biomass + harvest + deaths) is projected from the same month last year × the production growth of the last two months, fading over 12 months. ` +
     `Faster-growing generations show up in production before they are harvested, so this is the one method that was not biased in 2025–2026; with it, the 1–3 month error fell from 5.3–6.1 % to 3.9–5.5 % on 2025–2026 (4.4–5.1 % over 2021–2026). ` +
+    `<b>Next month, from exports</b> (added November 2026): when the register for a month comes out, SSB's weekly exports already cover the whole following month. Harvest ÷ whole-fish exports is stable (about 1.45), so that month is read from its exports and blended 60/40 with the models: 1-month error 3.1 % over 2021–2026, 1.7 % on 2025–2026 (national view only, exports are not split by zone). ` +
     `<b>Rotation:</b> same month last year × the change in standing biomass × half the change in 12-month stock rotation (harvest ÷ average biomass). ` +
     `<b>1 · Headcount:</b> fish in the sea × the share of the stock usually harvested that many months later in that calendar month, × an average harvest ` +
     `weight (same month last year, scaled by the change in average stock weight), with its own past bias removed walk-forward. ` +
