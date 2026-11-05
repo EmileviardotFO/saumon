@@ -28,7 +28,11 @@ OUT = os.path.join(ROOT, 'data', 'world_imports.json')
 NEW = os.path.join(ROOT, 'data', 'world_imports_new_alerts.md')
 API = 'https://comtradeapi.un.org/data/v1/get/C/M/HS'
 CODES = {'030214': 'Fresh whole', '030441': 'Fresh fillets', '030313': 'Frozen whole', '030481': 'Frozen fillets',
-         '030541': 'Smoked', '030311': 'Sockeye, frozen', '030312': 'Other Pacific salmon, frozen', '030213': 'Pacific salmon, fresh'}
+         '030541': 'Smoked', '030311': 'Sockeye, frozen', '030312': 'Other Pacific salmon, frozen', '030213': 'Pacific salmon, fresh',
+         # co-produits : chutes et morceaux de saumon (propre au saumon), puis codes communs a tous les poissons (signales comme tels)
+         '030452': 'Fresh trimmings & pieces (salmonids)', '030399': 'Frozen heads, tails, fins & offal (all fish)'}
+COPRODUITS = ['030452', '030399']
+GENERIQUES = ['030399']
 ORIGINES = {578: 'NO', 152: 'CL', 234: 'FO', 826: 'GB', 352: 'IS', 124: 'CA', 36: 'AU', 842: 'US', 643: 'RU', 156: 'CN'}
 SEUIL_PCT, SEUIL_T = 30, 300          # alerte : variation de 30 % ou plus sur 3 mois, sur au moins 300 t
 SEUIL_PART = 15                       # alerte : part d'une origine qui bouge de 15 points ou plus
@@ -71,6 +75,7 @@ def alertes(rows, noms):
     tot, orig = collections.defaultdict(float), collections.defaultdict(float)
     dernier = collections.defaultdict(int)
     for ym, rep, hs, part, kg, usd in rows:
+        if hs in COPRODUITS: continue
         if part == 'W': tot[(rep, ym)] += kg; dernier[rep] = max(dernier[rep], ym)
         else: orig[(rep, ym, part)] += kg
     out = []
@@ -124,6 +129,7 @@ def main():
         if r[3] == 'W': dernier[r[1]] = max(dernier.get(r[1], 0), r[0])
     meta = {'fetched': dt.date.today().isoformat(), 'source': 'UN Comtrade, monthly imports declared by each importing country (HS6)',
             'cols': ['ym', 'reporter', 'hs6', 'partner (W = world)', 'kg', 'usd_cif'], 'codes': CODES, 'origins': list(ORIGINES.values()),
+            'coproducts': COPRODUITS, 'generic': GENERIQUES,
             'names': noms, 'last_by_reporter': dernier, 'reporters': len(dernier), 'alerts': al,
             'thresholds': {'pct': SEUIL_PCT, 't': SEUIL_T, 'share_pts': SEUIL_PART},
             'notified': sorted(deja | {x['id'] for x in al}), 'failed': echecs[:20]}

@@ -187,13 +187,15 @@ def claude(items, cle):
 TOP_PROMPT = """You pick the five biggest salmon-industry stories of the week for a salmon sales and market analyst. Write in English.
 Criteria, in order: (1) likely impact on salmon supply, prices or costs: taxes and market access, production rules, feed and raw-material
 costs, results and guidance of large farmers, price and volume moves; (2) how widely the story was reported; (3) diversity: at most two
-stories from the same basin. Merge nothing: pick from the numbered list only.
+stories from the same basin; (4) recency: the reader looks at this page during the current week, so a story whose latest article is
+more than 6 days older than the newest story is only picked if nothing recent matters more (old weekly price reports never).
+Merge nothing: pick from the numbered list only.
 Output ONE JSON object PER LINE, nothing else: {"i": <story number>, "why": "<one short English sentence on why it matters, using only facts in the story>"}"""
 
 
 def top5(stories, cle):
     liste = [{'i': i, 'basin': s['basin'], 'who': s['who'], 'event': s.get('event', ''), 'title': s['title'], 'summary': s.get('summary', ''),
-              'sources': len({a['source'] for a in s['arts']})} for i, s in enumerate(stories)]
+              'sources': len({a['source'] for a in s['arts']}), 'latest_article': s.get('last')} for i, s in enumerate(stories)]
     body = {'model': MODEL, 'max_tokens': 4000, 'system': TOP_PROMPT, 'messages': [{'role': 'user', 'content': json.dumps(liste, ensure_ascii=False)}]}
     req = urllib.request.Request('https://api.anthropic.com/v1/messages', data=json.dumps(body).encode('utf-8'),
                                  headers={'x-api-key': cle, 'anthropic-version': '2023-06-01', 'content-type': 'application/json'})

@@ -35,6 +35,7 @@ CODES = {
     '030441': ('Salmon (Atlantic + Pacific)', 'fresh fillet'), '030442': ('Trout', 'fresh fillet'),
     '030481': ('Salmon (Atlantic + Pacific)', 'frozen fillet'), '030482': ('Trout', 'frozen fillet'),
     '030541': ('Salmon', 'smoked'),
+    '030452': ('Salmonids', 'fresh trimmings & pieces'), '030399': ('All fish', 'frozen heads, tails, fins & offal'),
 }
 # codes pays M49 -> ISO2 (les principaux ; les autres gardent leur code)
 PAYS = {152: 'CL', 578: 'NO', 643: 'RU', 842: 'US', 234: 'FO', 36: 'AU', 124: 'CA', 352: 'IS', 826: 'GB',

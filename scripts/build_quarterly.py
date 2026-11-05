@@ -34,7 +34,7 @@ SANS_TEXTE = ('intrafish', 'undercurrent', 'fiskeribladet', 'finansavisen', 'sea
 
 # Amorce : chiffres publies le 3 novembre 2026 (communique SalMar, presentation du 3e trimestre), verifies a la main.
 AMORCE = [
-    {'company': 'SalMar', 'quarter': '2026-Q3', 'published': '2026-11-03', 'source': 'SalMar Q3 2026 release (GlobeNewswire) and presentation',
+    {'company': 'SalMar', 'quarter': '2026-Q3', 'published': '2026-11-03', 'seed': True, 'source': 'SalMar Q3 2026 release (GlobeNewswire) and presentation',
      'url': 'https://www.globenewswire.com/news-release/2026/11/03/3393880/0/en/salmar-record-high-harvest-volume-and-significant-improvement-in-results.html',
      'segments': [
         {'segment': 'Group', 'basin': 'NO', 'currency': 'NOK', 'harvest_t': 105100, 'harvest_t_ly': 93200, 'ebit_per_kg': 15.3, 'ebit_per_kg_ly': 7.6,
@@ -288,7 +288,8 @@ def main():
                        next((a['url'] for a in s['arts'] if any(o in a['url'] for o in OFFICIEL)), s['arts'][0]['url'])))
     vus = set()
     for who, q, lire, source, url in a_lire:
-        if (who, q) in vus or (who, q) in reps or not cle: continue
+        # un rapport deja lu n'est jamais relu ; une amorce saisie a la main, si (elle sera completee par le rapport complet)
+        if (who, q) in vus or ((who, q) in reps and not reps[(who, q)].get('seed')) or not cle: continue
         vus.add((who, q))
         if appels >= MAX_PASSAGE or compteur.get(mois, 0) >= MAX_MOIS:
             notes.append(f'{who} {q}: postponed (call limit reached)'); continue
@@ -299,6 +300,13 @@ def main():
             if not r or not r.get('segments'): notes.append(f'{who} {q}: nothing extracted'); continue
             r = verifie(r, texte)
             r.update({'company': who, 'quarter': q, 'source': source, 'url': url})
+            amorce = reps.get((who, q))
+            if amorce and amorce.get('seed'):                       # garder les segments et chiffres de l'amorce que le rapport ne donne pas
+                par_nom = {g['segment']: g for g in r.get('segments', [])}
+                for g in amorce.get('segments', []):
+                    if g['segment'] in par_nom: par_nom[g['segment']] = {**g, **par_nom[g['segment']]}
+                    else: par_nom[g['segment']] = g
+                r['segments'] = list(par_nom.values())
             reps[(who, q)] = r; faits += 1
         except Exception as e:  # noqa: BLE001
             notes.append(f'{who} {q}: {str(e)[:100]}')
