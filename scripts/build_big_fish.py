@@ -183,7 +183,7 @@ def main():
         maladie[str(x[0])].append((x[3], x[4], x[2]))
     tous = []
     yw = lambda k: weeks[k].isocalendar()[0] * 100 + weeks[k].isocalendar()[1]
-    det = collections.defaultdict(lambda: {'len': [], 'len_ok': [], 'len_dis': [], 'fallow': [], 'by_year': collections.defaultdict(list), 'disease': 0})
+    det = collections.defaultdict(lambda: {'len': [], 'len_ok': [], 'len_dis': [], 'fallow': [], 'by_year': collections.defaultdict(list), 'disease': 0, 'ends': []})
     for site, s in st['sites'].items():
         po = R['site_po'].get(site); co = R['site_org'].get(site)
         if not po or not commercial(site): continue
@@ -194,9 +194,9 @@ def main():
                 if j is not None and weeks[k] >= dt.date(2023, 1, 1) and (weeks[k] - weeks[j]).days > 120:
                     m = (weeks[k] - weeks[j]).days / 30.44
                     types = sorted({t for a, b, t in maladie.get(site, []) if a <= yw(k) and b >= yw(j)})
-                    tous.append({'po': po, 'co': co, 'len': m, 'dis': types})
+                    tous.append({'po': po, 'co': co, 'len': m, 'dis': types, 'end': weeks[k]})
                     for key in ((po, co), (0, co), (po, '*')):
-                        x = det[key]; x['len'].append(m); x['by_year'][weeks[k].year].append(m)
+                        x = det[key]; x['len'].append(m); x['by_year'][weeks[k].year].append(m); x['ends'].append((weeks[k], m))
                         (x['len_dis'] if types else x['len_ok']).append(m)
                         if types: x['disease'] += 1
                     # jachere qui suit : semaines jusqu'a la prochaine mise en mer
@@ -210,6 +210,25 @@ def main():
         return L[a] + (L[b] - L[a]) * (i - a)
     actifs = collections.defaultdict(list)
     for x in sites: actifs[(x['po'], x['co'])].append(x['age']); actifs[(0, x['co'])].append(x['age'])
+    # duree attendue d'un cycle (mediane de l'eleveur dans la zone, sinon de la zone) : sites a moins de ~2 mois de leur vidage theorique
+    def attendu(po, co):
+        L = det[(po, co)]['len'] if len(det.get((po, co), {}).get('len', [])) >= 3 else det.get((po, '*'), {}).get('len', [])
+        return statistics.median(L) if L else None
+    proches = collections.defaultdict(int)
+    for x in sites:
+        e = attendu(x['po'], x['co'])
+        if e is not None and e - 2.5 <= x['age'] <= e:
+            for key in ((x['po'], x['co']), (0, x['co']), (x['po'], '*'), (0, '*')): proches[key] += 1
+    # tendance : mediane glissante sur 12 mois des cycles termines, calculee il y a 9, 6, 3 mois et aujourd'hui
+    # (12 mois pour gommer la saison). "Acceleration" = baisse a chaque pas et d'au moins 0,4 mois au total.
+    def tendance(ends):
+        T = []
+        for i in (9, 6, 3, 0):
+            b = now - dt.timedelta(days=30.44 * i); a = b - dt.timedelta(days=365)
+            L = [m for e, m in ends if a < e <= b]
+            T.append(round(statistics.median(L), 1) if len(L) >= 5 else None)
+        acc = None not in T and T[0] > T[1] > T[2] > T[3] and T[0] - T[3] >= 0.4
+        return T, acc
     cyc = []
     for (po, co), x in det.items():
         if co == '*' or len(x['len']) < 3: continue
@@ -222,7 +241,8 @@ def main():
                     'disease_share': round(100 * x['disease'] / len(x['len'])),
                     'median_ok': round(statistics.median(x['len_ok']), 1) if len(x['len_ok']) >= 3 else None,
                     'median_dis': round(statistics.median(x['len_dis']), 1) if len(x['len_dis']) >= 3 else None,
-                    'active_sites': len(actifs.get((po, co), [])), 'active_age': round(statistics.median(actifs[(po, co)]), 1) if actifs.get((po, co)) else None})
+                    'active_sites': len(actifs.get((po, co), [])), 'active_age': round(statistics.median(actifs[(po, co)]), 1) if actifs.get((po, co)) else None,
+                    'due_2m': proches.get((po, co), 0), 'trend': tendance(x['ends'])[0], 'accel': tendance(x['ends'])[1]})
     # rythme national d'un eleveur : moyenne de ses rythmes de zone ponderee par ses cycles (les zones du nord ont des cycles plus longs :
     # comparer a la mediane nationale penaliserait les eleveurs du nord)
     for c in cyc:
@@ -255,6 +275,7 @@ def main():
                   'median_ok': round(statistics.median(x['len_ok']), 1) if len(x['len_ok']) >= 3 else None,
                   'median_dis': round(statistics.median(x['len_dis']), 1) if len(x['len_dis']) >= 3 else None,
                   'disease_share': round(100 * x['disease'] / len(x['len'])), 'active_sites': sum(1 for y in sites if y['po'] == po),
+                  'due_2m': proches.get((po, '*'), 0), 'trend': tendance(x['ends'])[0], 'accel': tendance(x['ends'])[1],
                   'active_age': round(statistics.median([y['age'] for y in sites if y['po'] == po]), 1) if any(y['po'] == po for y in sites) else None,
                   **poids_zone.get(po, {}),
                   'fallow_weeks': round(statistics.median(x['fallow'])) if x['fallow'] else None,
@@ -433,7 +454,10 @@ def main():
                       'norway': {'cycles': len(tous), 'median': round(statistics.median([c['len'] for c in tous]), 1) if tous else None,
                                  'median_ok': round(statistics.median([c['len'] for c in tous_sains]), 1) if tous_sains else None,
                                  'disease_share': round(100 * (len(tous) - len(tous_sains)) / len(tous)) if tous else None,
-                                 'harvest_months': [der[0], der[-1]]}}}
+                                 'harvest_months': [der[0], der[-1]],
+                                 'due_2m': proches.get((0, '*'), 0), 'active_sites': len(sites),
+                                 'trend': tendance([(e, c['len']) for c in tous for e in [c['end']]])[0],
+                                 'accel': tendance([(e, c['len']) for c in tous for e in [c['end']]])[1]}}}
     io.open(OUT, 'w', encoding='utf-8').write(json.dumps(out, ensure_ascii=False, separators=(',', ':')))
     print(f"data/big_fish.json : {len(sites)} commercial sites with fish, week of {now}, {len(zones)} zones")
 

@@ -12,7 +12,7 @@ Seuls le titre, la source, la date et le lien sont publies : pas de texte d'arti
 La cle "calendar" (echeances a venir) est saisie a la main et n'est jamais ecrasee.
 Une source qui ne repond pas est notee dans meta.status, le reste continue.
 """
-import json, re, time, hashlib, urllib.parse, datetime as dt
+import os, json, re, time, hashlib, urllib.parse, datetime as dt
 from update_events import fetch, parse_feed, to_date, RC, RM, RF, RB, BASINS
 
 OUT = 'data/news.json'
@@ -142,7 +142,7 @@ def curate(items, excl):
         for n in mem:
             if n is lead:
                 n.update(score=round(score, 1), nsrc=len(srcs), cl=lead['id'], themes=themes if themes != ['other'] or len(themes) == 1 else themes, basins=basins,
-                         more=[{'t': m['title'], 'u': m['url'], 's': m['source'], 'd': m['date']} for m in sorted(mem, key=lambda m: m['date']) if m is not lead][:20])
+                         more=[{'t': m['title'], 'u': m['url'], 's': m['source'], 'd': m['date'], 'g': m.get('lang', '')} for m in sorted(mem, key=lambda m: m['date']) if m is not lead][:20])
             else:
                 n.update(cl=lead['id'])
                 n.pop('score', None); n.pop('more', None); n.pop('nsrc', None)
@@ -290,6 +290,17 @@ def main():
     items = []
     for w in sorted(weeks, reverse=True):
         items += sorted(weeks[w], key=lambda n: (len(n['srcs']), n['date']), reverse=True)[:MAX_PER_WEEK]
+    # liens Google News -> adresse de l'article d'origine (champ "link" ; "l" dans les reprises groupees)
+    try:
+        from gnews_decode import resolve_all
+        urls = [n['url'] for n in items] + [m['u'] for n in items for m in n.get('more', [])]
+        links = resolve_all(urls, os.path.join(os.path.dirname(OUT), 'news_links.json'))
+        for n in items:
+            if n['url'] in links: n['link'] = links[n['url']]
+            for m in n.get('more', []):
+                if m['u'] in links: m['l'] = links[m['u']]
+    except Exception as e:                       # jamais bloquant : les liens Google News restent en place
+        print(f'link resolution skipped ({type(e).__name__}: {e})', flush=True)
     out = {'meta': {'generated': today.isoformat(), 'status': status, 'fresh_days': FRESH_DAYS, 'keep_weeks': KEEP_WEEKS,
                     'dropped': dict(dropped, off_topic=len([n for n in by_id.values() if n['date'] >= cut]) - len(keep)),
                     'themes': THEME_ORDER + ['other'], 'basins': ['NO', 'CL', 'GB', 'FO', 'IS', 'CA', 'IE', 'AU', 'NZ', 'US', 'global'],

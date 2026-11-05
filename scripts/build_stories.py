@@ -256,11 +256,11 @@ def main():
     for n in items:
         c = company(n['title'])
         if c: cles[c] += 1
-    cand = [n for n in items if access(n['source']) == 'free' and 'news.google.com' not in n['url']]
+    cand = [n for n in items if access(n['source']) == 'free' and 'news.google.com' not in (n.get('link') or n['url'])]
     cand.sort(key=lambda n: -cles.get(company(n['title']) or '', 0))
     if os.environ.get('STORIES_HORS_LIGNE') != '1':
         for n in cand[:80]:
-            n['desc'] = og_description(n['url'])
+            n['desc'] = og_description(n.get('link') or n['url'])
     method, note, stories = 'rules', '', []
     cle = os.environ.get('ANTHROPIC_API_KEY')
     if cle and items:
@@ -281,6 +281,7 @@ def main():
     out = []
     for s in stories:
         arts = [{'date': by_id[i]['date'], 'source': by_id[i]['source'], 'title': by_id[i]['title'], 'url': by_id[i]['url'],
+                 **({'link': by_id[i]['link']} if by_id[i].get('link') else {}),
                  'lang': by_id[i].get('lang', ''), 'access': access(by_id[i]['source'])} for i in s['ids']]
         arts.sort(key=lambda x: ({'free': 0, '?': 1, 'metered': 2, 'pay': 3}[x['access']], x['date']), reverse=False)
         out.append({k: v for k, v in s.items() if k != 'ids'} | {'arts': arts, 'last': max(x['date'] for x in arts)})

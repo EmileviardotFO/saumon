@@ -54,6 +54,20 @@ def main():
         f"Poissons en mer : {n['poissons'] / 1e6:.1f} M{variation(n['poissons'], n1.get('poissons'))}"
     )
 
+    # durees de cycle (data/big_fish.json, reconstruit dans le meme passage) : sites proches du vidage, eleveurs qui accelerent
+    try:
+        C = json.load(open("data/big_fish.json", encoding="utf-8"))["cycles"]
+        no = C.get("norway", {})
+        if no.get("due_2m") is not None:
+            corps += f"\nSites a ~2 mois du vidage : {no['due_2m']} sur {no['active_sites']}"
+        acc = [c for c in C["farmers"] if c["po"] == 0 and c.get("accel")]
+        acc.sort(key=lambda c: -c["cycles"])
+        if acc:
+            corps += "\nCycles qui raccourcissent : " + ", ".join(
+                f"{c['co'].title() if c['co'].isupper() else c['co']} ({c['trend'][0]}->{c['trend'][-1]} mois)" for c in acc[:5])
+    except Exception as e:
+        print(f"Cycles non lus : {e}")
+
     req = urllib.request.Request(
         f"https://ntfy.sh/{topic}",
         data=corps.encode("utf-8"),

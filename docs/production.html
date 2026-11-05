@@ -2952,6 +2952,15 @@ const NW_BASIN = { NO: 'Norway', CL: 'Chile', GB: 'Scotland', FO: 'Faroes', IS: 
 const NW_OTHER = ['CA', 'IE', 'AU', 'NZ', 'US'];
 const nwEsc = v => String(v == null ? '' : v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const nwUrl = u => /^https?:\/\//i.test(u || '') ? nwEsc(u) : '#';
+// lien d'un titre : l'article d'origine (et non le lien Google News, qui retombe sur la page d'accueil de Google News),
+// passe par la traduction automatique de Google en anglais quand le titre n'est pas en anglais
+const nwHref = (url, link, lang) => { const u = /^https?:\/\//i.test(link || '') ? link : url;
+  if (!/^https?:\/\//i.test(u || '')) return '#';
+  if (lang && lang !== 'en' && !/news\.google\./i.test(u)) return nwEsc('https://translate.google.com/translate?sl=auto&tl=en&u=' + encodeURIComponent(u));
+  return nwEsc(u); };
+const nwOrig = (url, link, lang) => { const u = /^https?:\/\//i.test(link || '') ? link : url;
+  return lang && lang !== 'en' && /^https?:\/\//i.test(u || '') && !/news\.google\./i.test(u)
+    ? ` <a href="${nwEsc(u)}" target="_blank" rel="noopener" style="color:var(--muted);font-size:.85em">(original)</a>` : ''; };
 const nwDay = iso => { const d = new Date(iso + 'T00:00:00Z'); return `${d.getUTCDate()} ${MONTHS_FR[d.getUTCMonth()].slice(0, 3)}`; };
 function nwMonday(wk) {   // '2026-W44' -> lundi de la semaine ISO (UTC)
   const [y, w] = wk.split('-W').map(Number), j4 = new Date(Date.UTC(y, 0, 4)), dow = j4.getUTCDay() || 7;
@@ -2997,9 +3006,9 @@ function nwFigures() {
 function nwRow(n, t, bOf, rank) {   // un sujet : titre de tete, source, nombre de sources, reprises depliables
   const more = n.more || [], ns = n.nsrc || (n.srcs || []).length, o = ns - 1, oth = (n.themes || []).filter(x => x !== t && NW_THEME[x] && (t || x !== 'other'));
   const rel = more.length ? `<details class="nw-rel"><summary>${ns > 1 ? ns + ' sources' : more.length + 1 + ' headlines'} ▾</summary><ul>` +
-      more.map(m => `<li><a href="${nwUrl(m.u)}" target="_blank" rel="noopener">${nwEsc(m.t)}</a> <span style="color:var(--muted)">· ${nwEsc(m.s)}, ${nwDay(m.d)}</span></li>`).join('') + `</ul></details>`
+      more.map(m => `<li><a href="${nwHref(m.u, m.l, m.g)}" target="_blank" rel="noopener">${nwEsc(m.t)}</a>${nwOrig(m.u, m.l, m.g)} <span style="color:var(--muted)">· ${nwEsc(m.s)}, ${nwDay(m.d)}</span></li>`).join('') + `</ul></details>`
     : o > 0 ? `<span title="${nwEsc((n.srcs || []).slice(1).join(', '))}">+${o} other${o > 1 ? 's' : ''}</span>` : '';
-  return `<div class="nw-it">${rank ? `<span class="nw-rank">${rank}</span>` : ''}<a href="${nwUrl(n.url)}" target="_blank" rel="noopener">${nwEsc(n.title)}</a>` +
+  return `<div class="nw-it">${rank ? `<span class="nw-rank">${rank}</span>` : ''}<a href="${nwHref(n.url, n.link, n.lang)}" target="_blank" rel="noopener">${nwEsc(n.title)}</a>${nwOrig(n.url, n.link, n.lang)}` +
     `<div class="nw-meta">${nwDay(n.date)} · ${nwEsc(n.source)} ${rel}` +
     `${n.lang && n.lang !== 'en' ? `<span class="nw-tag">${nwEsc(n.lang.toUpperCase())}</span>` : ''}` +
     `${bOf(n).filter((b, i, a) => b !== 'global' && a.indexOf(b) === i).map(b => `<span class="nw-tag">${NW_BASIN[b]}</span>`).join('')}` +
@@ -3154,7 +3163,7 @@ function renderNews() {
       `<details style="border-top:1px solid var(--border);padding-top:6px"><summary style="cursor:pointer;font-size:12.5px;color:var(--muted);min-height:28px;display:flex;align-items:center">${arts.length} source${arts.length > 1 ? 's' : ''} — ${parts}</summary>` +
       `<ul style="list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:5px">` +
       arts.map(a => `<li style="display:grid;grid-template-columns:18px 50px minmax(0,1fr);gap:8px;font-size:12.5px;align-items:start"><span style="margin-top:1px">${ST_ICON[a.access] || ST_ICON['?']}</span>` +
-        `<span style="color:var(--muted)">${nwDay(a.date)}</span><span><a href="${nwUrl(a.url)}" target="_blank" rel="noopener">${nwEsc(a.title)}</a> <span style="color:var(--muted)">· ${nwEsc(a.source)}${a.lang && a.lang !== 'en' ? ' · ' + nwEsc(a.lang.toUpperCase()) : ''}</span></span></li>`).join('') +
+        `<span style="color:var(--muted)">${nwDay(a.date)}</span><span><a href="${nwHref(a.url, a.link, a.lang)}" target="_blank" rel="noopener">${nwEsc(a.title)}</a>${nwOrig(a.url, a.link, a.lang)} <span style="color:var(--muted)">· ${nwEsc(a.source)}${a.lang && a.lang !== 'en' ? ' · ' + nwEsc(a.lang.toUpperCase()) : ''}</span></span></li>`).join('') +
       `</ul></details></article>`; };
   const shown = order.filter(b => ST_B === 'all' || b === ST_B);
   // recence : un sujet dont le dernier article a plus de 6 jours passe apres les sujets recents
@@ -3560,16 +3569,28 @@ function renderTimeAtSea() {
   const rep = co => { const k = co.toLowerCase().split(/\s/)[0], R = ((QR || {}).reports || []).filter(r => r.company.toLowerCase().split(/\s/)[0] === k);
     for (const r of R) for (const g of r.segments || []) if (g.avg_harvest_weight_kg && (g.basin === 'NO' || g.segment === 'Group' || /norway/i.test(g.segment))) return { w: g.avg_harvest_weight_kg, q: r.quarter };
     return null; };
-  const row = (c, sub) => { const r = sub ? null : rep(c.co);
-    return `<tr style="${sub ? 'font-size:12px;color:var(--muted)' : 'cursor:pointer'}" ${sub ? '' : `data-co="${e(c.co)}"`}>` +
-      `<td class="name">${sub ? `&nbsp;&nbsp;Zone ${c.po}` : `<b>${e(c.co)}</b> <span style="color:var(--muted);font-size:11px">${TAS_OPEN[c.co] ? '▾' : '▸'}</span>`}</td>` +
+  const tr = c => { const T = c.trend || []; const v = T.filter(x => x !== null && x !== undefined);
+    if (v.length < 2) return '—'; const d = v[v.length - 1] - v[0];
+    return `<span class="tas-long">${f1(v[0])}→</span>${f1(v[v.length - 1])}` + (c.accel ? ` <span class="delta-bad" title="Shorter at each step over the last 9 months">▼<span class="tas-long"> faster</span></span>` :
+      ` <span style="color:var(--muted)">${d > 0.05 ? '▲' : d < -0.05 ? '▼' : '='}</span>`); };
+  // noms du registre en capitales ("NORDSJØ FJORDBRUK AS") : casse normale, sans la forme juridique, pour tenir sur un telephone
+  const nm = n => { let t = String(n || '').replace(/\s+(AS|ASA|A\/S|A\.S\.|SA)$/i, '');
+    if (t === t.toUpperCase()) t = t.toLowerCase().replace(/(^|[\s\-&])(\p{L})/gu, (m, a, b) => a + b.toUpperCase()).replace(/\b(Og|And)\b/g, w => w.toLowerCase());
+    return t; };
+  const row = (c, sub) => `<tr style="${sub ? 'font-size:12px;color:var(--muted)' : 'cursor:pointer'}" ${sub ? '' : `data-co="${e(c.co)}"`}>` +
+      `<td class="name">${sub ? `&nbsp;&nbsp;Zone ${c.po}` : `<b title="${e(c.co)}">${e(nm(c.co))}</b> <span style="color:var(--muted);font-size:11px">${TAS_OPEN[c.co] ? '▾' : '▸'}</span>`}</td>` +
       `<td>${c.cycles}</td><td><b>${f1(c.median)}</b></td><td>${f1(c.p25)}–${f1(c.p75)}</td>` +
       `<td>${c.pace ? `<span class="${c.pace >= 1.08 ? 'delta-good' : c.pace <= 0.92 ? 'delta-bad' : ''}">×${c.pace.toFixed(2)}</span>` : '—'}</td>` +
-      `<td>${f1(c.median_ok)}</td><td>${c.median_dis ? f1(c.median_dis) : '—'}</td><td>${c.disease_share} %</td>` +
-      `<td>${c.active_sites || 0}${c.active_age !== null && c.active_age !== undefined ? ` · ${f1(c.active_age)} mo` : ''}</td>` +
-      `<td>${r ? `${(+r.w).toFixed(2)} kg <span style="color:var(--muted);font-size:11px">${e(r.q)}</span>` : (sub ? '' : '—')}</td></tr>`; };
-  document.getElementById('tasCoSub').innerHTML = `Click a farmer to open its zones. Pace above ×1 = shorter cycles than its zones (fish reach harvest size sooner, or are harvested smaller); in Norway, the average of its zone paces weighted by cycles.`;
-  document.getElementById('tasCo').innerHTML = `<thead><tr><th class="name">Farmer</th><th>Cycles</th><th>Median months</th><th>Middle half</th><th>Pace vs zone</th><th>Without disease</th><th>With disease</th><th>Cycles with disease</th><th>Sites with fish now · age</th><th>Avg harvest weight (reports)</th></tr></thead><tbody>` +
+      `<td>${tr(c)}</td><td>${c.disease_share} %</td>` +
+      `<td>${c.active_sites || 0}${c.active_age !== null && c.active_age !== undefined ? ` · ${f1(c.active_age)}` : ''}</td>` +
+      `<td><b>${c.due_2m || 0}</b></td></tr>`;
+  const acc = NAT.filter(c => c.accel).map(c => e(nm(c.co)));
+  document.getElementById('tasCoSub').innerHTML = `Click a farmer to open its zones. <b>Pace</b> above ×1 = shorter cycles than its zones. ` +
+    `<b>12-month trend</b>: median length of the cycles completed over 12 months, nine months ago → today; "▼ faster" when it shortened at each quarterly step (at least 0.4 month in all). ` +
+    `<b>Due ≤ 2 months</b>: sites with fish whose age is within 2.5 months of the farmer's usual cycle length in that zone.` +
+    (NO.due_2m !== undefined ? ` Norway: <b>${NO.due_2m}</b> of ${NO.active_sites} sites with fish are due; national trend ${tr(NO)}.` : '') +
+    (acc.length ? ` Shortening cycles now: <b>${acc.join(', ')}</b>.` : '');
+  document.getElementById('tasCo').innerHTML = `<thead><tr><th class="name">Farmer</th><th>Cycles</th><th>Median<br>(mo)</th><th>Middle<br>half</th><th>Pace<br>vs zone</th><th>Trend<br>12 mo</th><th>Cycles with<br>disease</th><th>Sites<br>· age</th><th>Due<br>≤ 2 mo</th></tr></thead><tbody>` +
     NAT.map(c => row(c) + (TAS_OPEN[c.co] ? CY.farmers.filter(x => x.co === c.co && x.po).sort((a, b) => a.po - b.po).map(x => row(x, true)).join('') : '')).join('') + `</tbody>`;
   document.querySelectorAll('#tasCo tr[data-co]').forEach(tr => tr.onclick = () => { const k = tr.dataset.co; TAS_OPEN[k] = !TAS_OPEN[k]; renderTimeAtSea(); });
   // ---- fermes au large ----
@@ -11151,12 +11172,23 @@ loadRemoteData().then(live => {
   #sideNav .sn-item:hover{background:rgba(79,195,247,.08)}
   #sideNav .sn-item.on{background:rgba(79,195,247,.16);color:#fff;font-weight:600;box-shadow:inset 3px 0 0 #4fc3f7}
   #sideNav .sn-group.closed .sn-item{display:none}
+  #tasCo th,#tasCo td{text-align:center;padding:5px 7px;white-space:nowrap}
+  #tasCo th{line-height:1.25;vertical-align:bottom}
+  #tasCo td.name,#tasCo th.name{text-align:left}
+  @media (max-width:700px){ #tasCo th,#tasCo td{padding:4px 3px;font-size:11.5px} #tasCo td.name{white-space:normal;min-width:84px;max-width:104px}
+    /* sur telephone : on garde l'essentiel (la fourchette et la part de cycles malades restent sur grand ecran) */
+    #tasCo .tas-long{display:none}
+    #tasCo th:nth-child(2),#tasCo td:nth-child(2),#tasCo th:nth-child(4),#tasCo td:nth-child(4),#tasCo th:nth-child(7),#tasCo td:nth-child(7){display:none} }
   #snBurger{display:none;position:fixed;left:10px;top:calc(10px + env(safe-area-inset-top,0px));z-index:950;padding:7px 12px;border-radius:8px;border:1px solid #2a4352;background:#0d1a24;color:#e7eef2;font-size:18px;cursor:pointer}
   #snShade{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:880}
   #viewToggle{display:none!important}
   @media (min-width:901px){ body{padding-left:244px} }
   @media (max-width:900px){ #sideNav{transform:translateX(-102%);width:min(82vw,300px);box-shadow:8px 0 30px rgba(0,0,0,.5)} body.sn-open #sideNav{transform:none}
-    body.sn-open #snShade{display:block} #snBurger{display:block} }
+    body.sn-open #snShade{display:block} #snBurger{display:block}
+    /* le bouton menu reste au-dessus : le contenu du menu commence en dessous */
+    #sideNav{padding-top:calc(58px + env(safe-area-inset-top,0px))} }
+  /* pas de retour arriere du navigateur par glissement horizontal */
+  html,body{overscroll-behavior-x:none}
 </style>
 <script>
 // Menu lateral : les cinq rubriques, construit a partir des boutons existants (qui restent la mecanique d'affichage des onglets)
@@ -11175,18 +11207,42 @@ loadRemoteData().then(live => {
   document.body.prepend(nav);
   const burger = document.createElement('button'); burger.id = 'snBurger'; burger.type = 'button'; burger.setAttribute('aria-label', 'Open the menu'); burger.textContent = '☰'; document.body.prepend(burger);
   const shade = document.createElement('div'); shade.id = 'snShade'; document.body.prepend(shade);
-  const close = () => document.body.classList.remove('sn-open');
-  burger.onclick = () => document.body.classList.toggle('sn-open'); shade.onclick = close;
+  const setOpen = o => { document.body.classList.toggle('sn-open', o); burger.textContent = o ? '✕' : '☰';
+    burger.setAttribute('aria-label', o ? 'Close the menu' : 'Open the menu'); };
+  const close = () => setOpen(false);
+  burger.onclick = () => setOpen(!document.body.classList.contains('sn-open')); shade.onclick = close;
+  // mobile : glisser de gauche a droite ouvre le menu, de droite a gauche le ferme ; jamais de retour arriere
+  const mobile = () => window.matchMedia('(max-width:900px)').matches;
+  const horizScroll = el => { for (; el && el.nodeType === 1 && el !== document.body; el = el.parentElement) {
+      if (/^(CANVAS|INPUT|SELECT|TEXTAREA)$/.test(el.tagName) || el.classList.contains('leaflet-container')) return true;
+      const ox = getComputedStyle(el).overflowX; if ((ox === 'auto' || ox === 'scroll') && el.scrollWidth > el.clientWidth + 2) return true; }
+    return false; };
+  let tx = null, ty = 0, tt = 0, tSkip = false;
+  document.addEventListener('touchstart', e => { if (!mobile() || e.touches.length !== 1) { tx = null; return; }
+    const t = e.touches[0]; tx = t.clientX; ty = t.clientY; tt = Date.now();
+    tSkip = !document.body.classList.contains('sn-open') && horizScroll(e.target); }, { passive: true });
+  document.addEventListener('touchend', e => { if (tx === null || tSkip) return; const t = e.changedTouches[0];
+    const dx = t.clientX - tx, dy = Math.abs(t.clientY - ty); tx = null;
+    if (Date.now() - tt > 700 || dy > Math.abs(dx) * 0.6 || Math.abs(dx) < 60) return;
+    const open = document.body.classList.contains('sn-open');
+    if (dx > 0 && !open) setOpen(true); else if (dx < 0 && open) close(); }, { passive: true });
+  // le geste "retour" du telephone (bord de l'ecran, bouton Android) ouvre le menu au lieu de quitter l'onglet
+  if (mobile()) { try { history.replaceState({ snBase: 1 }, ''); history.pushState({ snGuard: 1 }, ''); } catch (e) { /* rien */ } }
   nav.querySelectorAll('.sn-cat').forEach(c => c.onclick = () => { const g = c.parentNode, i = g.dataset.g; g.classList.toggle('closed');
     closed[i] = g.classList.contains('closed'); c.querySelector('span').textContent = closed[i] ? '▸' : '▾'; c.setAttribute('aria-expanded', !closed[i]);
     try { localStorage.setItem('snClosed', JSON.stringify(closed)); } catch (e) { /* pas de stockage */ } });
   const mark = v => nav.querySelectorAll('.sn-item').forEach(x => x.classList.toggle('on', x.dataset.v === v));
-  const go = (v, push) => { const b = btn(v); if (!b) return; b.click(); mark(v); close(); window.scrollTo(0, 0);
-    if (push && location.hash.slice(1) !== v) history.pushState(null, '', '#' + v); };
+  let curV = location.hash.slice(1);
+  const go = (v, push) => { const b = btn(v); if (!b) return; b.click(); mark(v); close(); window.scrollTo(0, 0); curV = v;
+    if (push && location.hash.slice(1) !== v) {
+      if (mobile()) history.replaceState({ snGuard: 1 }, '', '#' + v); else history.pushState(null, '', '#' + v); } };
   nav.querySelectorAll('.sn-item').forEach(x => x.onclick = () => go(x.dataset.v, true));
   // l'onglet ouvert par d'autres moyens (liens internes) reste surligne
   document.querySelectorAll('#viewToggle button[data-v]').forEach(b => b.addEventListener('click', () => mark(b.dataset.v)));
-  window.addEventListener('popstate', () => { const v = location.hash.slice(1); go(btn(v) ? v : 'news', false); });
+  window.addEventListener('popstate', ev => {
+    if (mobile()) { history.pushState({ snGuard: 1 }, '', curV ? '#' + curV : location.pathname);
+      setOpen(!document.body.classList.contains('sn-open')); return; }
+    const v = location.hash.slice(1); go(btn(v) ? v : 'news', false); });
   // ouverture directe d'un onglet par son adresse (#prices...), une fois les donnees chargees
   let n = 0; const t = setInterval(() => { n++; if (typeof DATA_RAW !== 'undefined' && DATA_RAW || n > 60) { clearInterval(t);
     const v = location.hash.slice(1); if (btn(v) && v !== 'news') go(v, false); else mark('news');
