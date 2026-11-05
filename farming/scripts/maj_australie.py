@@ -123,6 +123,20 @@ def _par_tableau(brut):
     return res
 
 
+class EnAttente(Exception):
+    """Rien de lu, mais aucune nouvelle publication n'est encore attendue : information, pas une erreur."""
+
+
+def epa_attendu(dernier):
+    """Publication EPA attendue : fin du trimestre suivant le dernier mois lu + 21 jours ('AAAA-MM' -> 'AAAA-MM-JJ')."""
+    import calendar
+    an, m = int(dernier[:4]), int(dernier[5:7])
+    q_end = ((m - 1) // 3 + 1) * 3
+    cible = q_end + 3 if m == q_end else q_end
+    an2, m2 = (an, cible) if cible <= 12 else (an + 1, cible - 12)
+    return (dt.date(an2, m2, calendar.monthrange(an2, m2)[1]) + dt.timedelta(days=21)).isoformat()
+
+
 def page_rendue(url):
     """Page apres execution du JavaScript (navigateur sans ecran installe par le workflow) ; '' si indisponible."""
     try:
@@ -282,16 +296,31 @@ def main():
     try:
         brut = open(a.epa_fichier, encoding='utf-8').read() if a.epa_fichier else telecharger(EPA_URL)
         mensuel, anom = lire_epa(brut)
+        rendu = ''
         if not mensuel and not a.epa_fichier:
             rendu = page_rendue(EPA_URL)                    # mise en page construite en JavaScript : on fait executer la page
             if rendu:
                 m2, an2 = lire_epa(rendu)
                 if m2: mensuel, anom = m2, an2
-        alertes += [f'EPA : {x}' for x in anom]
         base = charger_csv(os.path.join(a.sortie, 'au_mensuel.csv'), ['mois'])
         if not mensuel:
-            # page modifiee, incomplete ou inaccessible : on NE reecrit PAS le fichier (sinon les mois deja lus seraient effaces)
-            raise RuntimeError(f'aucun mois lu sur la page EPA ({len(brut)} caractères reçus) — les {len(base)} mois déjà enregistrés sont conservés')
+            # page modifiee, incomplete ou inaccessible : on NE reecrit PAS le fichier (sinon les mois deja lus seraient effaces).
+            # La page recue est gardee pour diagnostic (farming/donnees_au/epa_page_recue.html), avec son titre dans le journal.
+            rendu_ok = bool(not a.epa_fichier and rendu)
+            recu = rendu if rendu_ok else brut
+            try:
+                with open(os.path.join(a.sortie, 'epa_page_recue.html'), 'w', encoding='utf-8') as fh: fh.write(recu[:400000])
+            except Exception:  # noqa: BLE001
+                pass
+            m_t = re.search(r'(?is)<title>(.*?)</title>', recu or '')
+            msg = (f"aucun mois lu sur la page EPA ({len(brut)} caractères reçus, titre « {(m_t.group(1).strip()[:80] if m_t else '?')} », "
+                   f"rendu navigateur {'oui' if rendu_ok else 'non'}) — les {len(base)} mois déjà enregistrés sont conservés ; page gardée dans epa_page_recue.html")
+            # pas d'alerte tant que la prochaine publication trimestrielle n'est pas attendue : la page n'a rien de neuf a donner
+            dernier = max(k[0] for k in base) if base else None
+            if dernier and dt.date.today().isoformat() < epa_attendu(dernier):
+                raise EnAttente(msg + f' ; prochaine publication attendue vers le {epa_attendu(dernier)}')
+            raise RuntimeError(msg)
+        alertes += [f'EPA : {x}' for x in anom]                  # anomalies de lecture : seulement quand des mois ont ete lus
         nouveaux, revisions = [], []
         for (an, m), v in sorted(mensuel.items()):
             k = (f'{an}-{m:02d}',)
@@ -315,6 +344,8 @@ def main():
             attendu = fin_trimestre_suivant(dernier) + dt.timedelta(days=DELAI_EPA)
             if aujourdhui > attendu + dt.timedelta(days=TOLERANCE):
                 alertes.append(f'EPA : publication attendue le {attendu} dépassée, dernier mois lu {dernier[0]}-{dernier[1]:02d}')
+    except EnAttente as e:
+        journal(a.sortie, 'EPA', 'ATTENTE', str(e)); print('EPA :', e)
     except Exception as e:                                         # noqa: BLE001
         mensuel = {}
         journal(a.sortie, 'EPA', 'ERREUR', str(e)); alertes.append(f'EPA : {e}')
