@@ -1,0 +1,37 @@
+name: Sonde ponctuelle (mise au point d'un script, sans rien publier)
+
+# Lancement manuel : execute un script de scripts/sondes/ et garde ce qu'il ecrit
+# dans sonde_out/ comme artefact telechargeable pendant 7 jours. Rien n'est
+# commite : sert a tester une nouvelle source avant de l'ajouter aux mises a jour.
+on:
+  workflow_dispatch:
+    inputs:
+      script:
+        description: "Script a lancer (dans scripts/sondes/)"
+        required: true
+        default: probe_feed.py
+
+permissions:
+  contents: read
+
+jobs:
+  sonde:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Dependances
+        run: pip install pandas openpyxl xlrd requests
+      - name: Lancer la sonde
+        run: |
+          mkdir -p sonde_out
+          python3 "scripts/sondes/${{ inputs.script }}" 2>&1 | tee sonde_out/log.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sonde-out
+          path: sonde_out/
+          retention-days: 7
