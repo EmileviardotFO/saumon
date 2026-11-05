@@ -10231,7 +10231,7 @@ const GUT = 0.888, MON_GM = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Se
 const ml = k => `${MON_GM[k % 100 - 1]} ${Math.floor(k / 100)}`;
 const sh = (k, n) => { let y = Math.floor(k / 100), m = k % 100 - 1 + n; y += Math.floor(m / 12); m = ((m % 12) + 12) % 12; return y * 100 + m + 1; };
 const avg = a => a.reduce((x, y) => x + y, 0) / a.length;
-const f1 = v => isFinite(v) ? v.toFixed(1) : '—', f2 = v => isFinite(v) ? v.toFixed(2) : '—', f0 = v => isFinite(v) ? Math.round(v).toLocaleString('en-US') : '—';
+const f1 = v => Number.isFinite(v) ? v.toFixed(1) : '—', f2 = v => Number.isFinite(v) ? v.toFixed(2) : '—', f0 = v => Number.isFinite(v) ? Math.round(v).toLocaleString('en-US') : '—';   // isFinite(null) vaut true
 const sg = (v, d = 1) => !isFinite(v) ? '—' : (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(d);
 const mix = (t, a, b) => `rgb(${a.map((x, i) => Math.round(x + (b[i] - x) * Math.max(0, Math.min(1, t))))})`;
 const $ = id => document.getElementById(id);
