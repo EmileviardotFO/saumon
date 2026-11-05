@@ -70,7 +70,7 @@ def main():
         if 0 <= a <= 30: cur[c['po']][a].append(c['weight_kg'])
     curve = {po: {a: statistics.median(v) for a, v in A.items() if len(v) >= 2} for po, A in cur.items()}
 
-    def poids(po, age):
+    def poids_stock(po, age):
         A = curve.get(po) or {}
         if not A: return None
         ks = sorted(A); a = age
@@ -99,6 +99,79 @@ def main():
         return False
 
     commercial = lambda site: not PAS_COMMERCIAL.search(R['site_org'].get(site) or '')
+    # Poids des poissons d'un site : la moyenne des poissons encore en mer a un age donne est biaisee vers le bas (les sites qui
+    # poussent le plus vite sont abattus les premiers). On apprend donc, zone par zone, le poids reellement abattu au moment ou les
+    # sites se vident : pour chaque vidage depuis 2021, le poids moyen abattu de sa generation dans sa zone ce mois-la, selon le
+    # temps passe en mer. Teste sur 2025-2026 avec une courbe apprise sur 2021-2024 : 0,49 kg d'erreur moyenne, contre 1,15 kg
+    # (et 1,1 kg de sous-estimation) pour l'ancienne courbe.
+    HW = {(c['po'], c['cohort'], c['year'] * 100 + c['month']): c['harv_kg'] / c['harv_stk']
+          for c in C if c['po'] and c['harv_stk'] and c['harv_kg'] and c['harv_stk'] > 20000}
+    ev = collections.defaultdict(lambda: collections.defaultdict(list))
+    for site, s_ in st['sites'].items():
+        po = R['site_po'].get(site)
+        if not po: continue
+        for k in range(1, last + 1):
+            if s_[k] in 'f-' and s_[k - 1] == 'a' and s_[k:k + 3].count('a') == 0 and weeks[k] >= dt.date(2021, 1, 1):
+                j = debut(s_, k - 1)
+                if j is None: continue
+                age = (weeks[k] - weeks[j]).days / 30.44
+                hm = weeks[k - 1]; w = HW.get((po, weeks[j].year, hm.year * 100 + hm.month))
+                if w and age >= 6:
+                    ev[po][int(age)].append(w); ev[0][int(age)].append(w)
+    def lisse(A):
+        A = {a: statistics.median(v) for a, v in A.items() if len(v) >= 4}
+        return {a: statistics.mean([A[b] for b in (a - 1, a, a + 1) if b in A]) for a in A}
+    courbe_recolte = {po: lisse(A) for po, A in ev.items()}
+
+    # Temperature : chaque site declare chaque semaine la temperature de son eau (BarentsWatch, gardee par update_barentswatch.py).
+    # Un site plus chaud que sa zone a cumule plus de degres-jours et ses poissons sont plus lourds que la courbe de la zone, et
+    # inversement. Ecart traduit en poids avec le modele de croissance thermique (W^(1/3) croit de TGC/1000 par degre-jour, W en g),
+    # le TGC de chaque zone etant cale pour retrouver le poids abattu a 16 mois avec la temperature moyenne de la zone.
+    ZT = {(r['y'], r['w'], r['po']): r['t'] for r in (d.get('bw_weekly') or {}).get('rows', []) if r.get('t') is not None}
+    LIF = os.path.join(ROOT, 'data', 'bw_site_lice.json')
+    SL = json.load(io.open(LIF, encoding='utf-8')) if os.path.exists(LIF) else {}
+    TW = {tuple(map(int, k.split('-'))): i for i, k in enumerate(SL.get('weeks', []))}
+    ST_T = SL.get('temp', {})
+    TGC, TEMP_AMORTI = {}, 0.5
+    for po in range(1, 14):
+        tz = [t for (y_, w_, p_), t in ZT.items() if p_ == po and y_ >= 2023]
+        H = courbe_recolte.get(po) if len(courbe_recolte.get(po) or {}) >= 6 else courbe_recolte.get(0) or {}
+        w16 = H.get(16) or H.get(15) or H.get(17)
+        if tz and w16:
+            dd16 = statistics.mean(tz) * 16 * 30.44
+            TGC[po] = 1000 * ((w16 * 1000) ** (1 / 3) - 100 ** (1 / 3)) / dd16
+    def ajuste_temp(site, po, j, w):
+        """-> (poids ajuste, ecart de degres-jours avec la zone, nombre de semaines avec une temperature du site)."""
+        if not w or po not in TGC or site not in ST_T: return w, 0.0, 0
+        serie, dd, nw = ST_T[site], 0.0, 0
+        for k in range(j, last + 1):
+            iy, iw = weeks[k].isocalendar()[:2]
+            i = TW.get((iy, iw)); tz = ZT.get((iy, iw, po))
+            if i is None or tz is None or i >= len(serie) or serie[i] is None: continue
+            dd += (serie[i] - tz) * 7; nw += 1
+        # effet amorti de moitie et borne a +/-15 % tant qu'il n'est pas valide sur les poids abattus (les temperatures declarees
+        # varient selon la profondeur de mesure) ; a recaler quand quelques mois de temperatures par site seront archives
+        r = (w * 1000) ** (1 / 3) + TEMP_AMORTI * TGC[po] / 1000 * dd
+        w2_ = max(0.85 * w, min(1.15 * w, r ** 3 / 1000)) if r > 0 else w
+        return w2_, dd, nw
+
+    def poids(po, age):
+        """Poids vif moyen attendu sur un site a ce temps en mer : courbe des poids a la recolte a partir de 12 mois, courbe du stock
+        avant 8 mois, raccord progressif entre les deux."""
+        H = courbe_recolte.get(po) if len(courbe_recolte.get(po) or {}) >= 6 else courbe_recolte.get(0) or {}
+        def h(a):
+            ks = sorted(H)
+            if not ks: return None
+            if a <= ks[0]: return H[ks[0]]
+            if a >= ks[-1]: return H[ks[-1]]
+            lo = max(k for k in ks if k <= a); hi = min(k for k in ks if k >= a)
+            return H[lo] if hi == lo else H[lo] + (H[hi] - H[lo]) * (a - lo) / (hi - lo)
+        ws, wh = poids_stock(po, age), h(age)
+        if not wh: return ws
+        if age >= 12: return wh                                   # phase de recolte : poids reellement abattus
+        if age <= 8 or not ws: return ws                          # jeunes poissons : courbe du stock
+        t = (age - 8) / 4; return (1 - t) * ws + t * wh           # raccord progressif entre 8 et 12 mois
+
     # probabilite d'etre vide sous 9 semaines selon l'age, mesuree sur l'historique (origines mensuelles depuis 2021)
     i0 = next(i for i, w in enumerate(weeks) if w >= dt.date(2021, 1, 1))
     hist = collections.defaultdict(lambda: [0, 0])
@@ -153,6 +226,8 @@ def main():
         age_h = age_eq + (1.1 if 'ILA' in mal else 0) - (1.1 if 'PD' in mal else 0)
         age_w = (age if 'ILA' in mal else age_eq) - (1.1 if 'PD' in mal else 0)
         w1, w2 = poids(po, age_w + f), poids(po, age_w + 2 * f)
+        w1, _, _ = ajuste_temp(site, po, j, w1)
+        w2, ddg, nwt = ajuste_temp(site, po, j, w2)
         big = max(p_big(w1), p_big(w2))
         s5 = max(p_big(w1, 5) - p_big(w1), p_big(w2, 5) - p_big(w2))
         score = (R['site_cap'].get(site) or 0) * pv(age_h) * big
@@ -161,6 +236,7 @@ def main():
         sites.append({'id': site, 'name': R['site_name'].get(site), 'co': R['site_org'].get(site), 'po': po, 'cap': R['site_cap'].get(site) or 0,
                       'stocked': weeks[j].isoformat(), 'age': round(age, 1), 'g2': round(w2 * GUT, 2) if w2 else None,
                       'pace': round(f, 2), 'p_harvest': round(pv(age_h), 3), 'note': SITES_LARGE.get(site, ''), 'disease': sorted(mal),
+                      'dd_vs_zone': round(ddg), 'temp_weeks': nwt,
                       'q56': part_t(wm, 5, 6), 'q6': part_t(wm, 6), 'p6': round(big, 3), 'p56': round(s5, 3), 'score': score, 'score56': score56})
     zones = []
     for po in sorted({x['po'] for x in sites}):

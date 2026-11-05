@@ -189,8 +189,9 @@ def num(x):
 STATUS = {}
 # Poux par site (femelles adultes, moyenne declaree) : {(annee, semaine): {site: valeur}}, garde sur LICE_WEEKS semaines
 SITE_LICE = {}
+SITE_TEMP = {}            # temperature de l'eau declaree par chaque site : {(annee, semaine): {site: degres}}
 LICE_FILE = os.path.join(ROOT, 'data', 'bw_site_lice.json')
-LICE_WEEKS = 60
+LICE_WEEKS = 90           # environ 21 mois : couvre la plupart des cycles en cours, pour la croissance site par site
 
 
 def aggregate_week(api, y, w, loc_po):
@@ -252,6 +253,7 @@ def aggregate_week(api, y, w, loc_po):
                 a['ov'] += 1
         temp = num(rep.get('seaTemperature'))
         if temp is not None and -3 < temp < 30:
+            SITE_TEMP.setdefault((y, w), {})[key] = round(temp, 1)
             a['ts'] += temp
             a['nt'] += 1
     rows = []
@@ -424,6 +426,9 @@ def fetch_status(api, y, w, loc_po):
             lice = num((rep.get('adultFemaleLice') or {}).get('average'))
             if lice is not None:
                 SITE_LICE.setdefault((y, w), {})[str(no)] = round(lice, 3)
+            temp = num(rep.get('seaTemperature'))
+            if temp is not None and -3 < temp < 30:
+                SITE_TEMP.setdefault((y, w), {})[str(no)] = round(temp, 1)
     return True
 
 
@@ -599,17 +604,22 @@ def main():
         except RuntimeError as e:
             print(f'  poux {y}-S{w:02d} : {e}')
     keys = ['%d-%02d' % wk for wk in lw]
-    sites = {}
-    for i, wk in enumerate(lw):
-        vals = SITE_LICE.get(wk)
-        if vals is None and '%d-%02d' % wk in old.get('weeks', []):          # semaine deja connue et pas relue cette fois
-            j = old['weeks'].index('%d-%02d' % wk)
-            vals = {k: v[j] for k, v in old['sites'].items() if j < len(v) and v[j] is not None}
-        for no, v in (vals or {}).items():
-            sites.setdefault(no, [None] * len(lw))[i] = v
+    def serie(cur_, old_map):
+        out = {}
+        for i, wk in enumerate(lw):
+            vals = cur_.get(wk)
+            k = '%d-%02d' % wk
+            if vals is None and k in old.get('weeks', []):                 # semaine deja connue et pas relue cette fois
+                j = old['weeks'].index(k)
+                vals = {s_: v[j] for s_, v in old_map.items() if j < len(v) and v[j] is not None}
+            for no, v in (vals or {}).items():
+                out.setdefault(no, [None] * len(lw))[i] = v
+        return out
+    sites = serie(SITE_LICE, old.get('sites', {}))
+    temps = serie(SITE_TEMP, old.get('temp', {}))
     known = [k for i, k in enumerate(keys) if lw[i] in SITE_LICE or k in old.get('weeks', [])]
-    io.open(LICE_FILE, 'w', encoding='utf-8').write(json.dumps({'weeks': keys, 'known': known, 'sites': sites}, separators=(',', ':')))
-    print(f'Poux par site : {len(sites)} sites, {len(known)}/{len(keys)} semaines.')
+    io.open(LICE_FILE, 'w', encoding='utf-8').write(json.dumps({'weeks': keys, 'known': known, 'sites': sites, 'temp': temps}, separators=(',', ':')))
+    print(f'Poux et temperature par site : {len(sites)} sites, {len(known)}/{len(keys)} semaines.')
     print(f'Statuts de site : {nb} semaines d\'historique rattrapees, '
           f'{len(stat["have"])}/{len(all_weeks)} semaines connues.')
 
