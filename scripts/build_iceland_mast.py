@@ -127,6 +127,13 @@ def decode_dsr(res, ncol):
     return rows, token
 
 
+def num(v):
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return 0.0
+
+
 def month(v):
     """Power BI dates come back as epoch milliseconds (or ISO text)."""
     if isinstance(v, (int, float)):
@@ -232,11 +239,11 @@ def main():
                 continue
             m = month(x['Lok tímabils'])
             o = nat.setdefault(m, {'m': m, 'biomass_t': 0, 'feed_t': 0, 'mortality_t': 0, 'harvest_t': 0, 'discard_t': 0})
-            o['biomass_t'] += (x.get('BiomassKg_Closing') or 0) / 1000
-            o['feed_t'] += (x.get('FeedUseKg_InPeriod') or 0) / 1000
-            o['mortality_t'] += (x.get('MortalityBiomass_InPeriod') or 0) / 1000
-            o['harvest_t'] += (x.get('Slátrað: Lífmassi (g)') or 0) / 1e6
-            o['discard_t'] += (x.get('Fargað: Lífmassi (kg)') or 0) / 1000
+            o['biomass_t'] += num(x.get('BiomassKg_Closing')) / 1000
+            o['feed_t'] += num(x.get('FeedUseKg_InPeriod')) / 1000
+            o['mortality_t'] += num(x.get('MortalityBiomass_InPeriod')) / 1000
+            o['harvest_t'] += num(x.get('Slátrað: Lífmassi (g)')) / 1e6
+            o['discard_t'] += num(x.get('Fargað: Lífmassi (kg)')) / 1000
         out['national'] = [{k: (round(v) if isinstance(v, float) else v) for k, v in o.items()} for _, o in sorted(nat.items())]
         out['meta']['species_seen'] = species
 
@@ -263,11 +270,11 @@ def main():
             m = month(x['Lok tímabils'])
             k = (x['Svæði'], m)
             o = S.setdefault(k, {'site': x['Svæði'], 'm': m, 'co': x['Fyrirtæki'], 'fjord': fj.get(x['Svæði']), 'fish': 0, 'in': 0, 'out': 0, 'dead': 0, 'bio_t': 0})
-            o['fish'] += x.get('Count_Closing') or 0
-            o['in'] += x.get('InputCount_InPeriod') or 0
-            o['out'] += x.get('HarvestCountDiscards_InPeriod') or 0
-            o['dead'] += x.get('MortalityCount_InPeriod') or 0
-            o['bio_t'] += (x.get('BiomassKg_Closing') or 0) / 1000
+            o['fish'] += num(x.get('Count_Closing'))
+            o['in'] += num(x.get('InputCount_InPeriod'))
+            o['out'] += num(x.get('HarvestCountDiscards_InPeriod'))
+            o['dead'] += num(x.get('MortalityCount_InPeriod'))
+            o['bio_t'] += num(x.get('BiomassKg_Closing')) / 1000
         site_rows = sorted(S.values(), key=lambda o: (o['site'], o['m']))
         done, active = cycles(site_rows)
         last = max(o['m'] for o in site_rows)
