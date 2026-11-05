@@ -10357,12 +10357,56 @@ function harvBias(origin, band, h) {   // erreur moyenne des previsions verifiab
 // poids abattu prevu retenu : moyenne (geometrique) du modele et du poids abattu ce mois-ci quand la generation est deja abattue.
 // Teste 2021-2026 : meilleur que chacun des deux seul dans presque toutes les tranches de poids
 // (erreur a 1 / 2 / 3 mois : moins de 3 kg 8 / 11 / 14 %, 3-4 kg 6 / 8 / 10 %, 4-5 kg 6 / 8 / 11 %, 5 kg+ 5 / 10 / 13 %).
+// ---- courbe des poids ABATTUS selon le temps en mer de la generation (novembre 2026, meme idee que l'estimation par site de
+// build_big_fish.py) : pour chaque zone, poids moyen reellement abattu a chaque age (mediane lissee sur +/- 1 mois), appris sur les
+// seuls mois deja connus a la date de la prevision. La courbe du stock (poids moyen des poissons restants) est biaisee vers le bas
+// pour les generations avancees (on abat les plus grosses cages d'abord) ; la courbe des abattages ne l'est pas.
+function harvCurve(origin) {
+  G.hc = G.hc || {}; if (G.hc[origin]) return G.hc[origin];
+  const A = {}, med = v => { v = v.slice().sort((x, y) => x - y); return v[Math.floor(v.length / 2)]; };
+  Object.entries(G.COH).forEach(([po, gens]) => { if (+po === NOR) return; Object.values(gens).forEach(ser => Object.entries(ser).forEach(([k, c]) => {
+    if (+k > origin || !(c.harv_stk > 20000) || !c.harv_kg || !c.age_months) return; const a = Math.round(c.age_months), w = c.harv_kg / c.harv_stk;
+    ((A[po] = A[po] || {})[a] = A[po][a] || []).push(w); ((A[0] = A[0] || {})[a] = A[0][a] || []).push(w); })); });
+  const out = {}; Object.entries(A).forEach(([po, B]) => { const m = {}; Object.entries(B).forEach(([a, v]) => { if (v.length >= 4) m[a] = med(v); });
+    const sm = {}; Object.keys(m).forEach(a => { const xs = [+a - 1, +a, +a + 1].filter(x => m[x] !== undefined).map(x => m[x]); sm[a] = xs.reduce((p, q) => p + q, 0) / xs.length; });
+    out[po] = sm; });
+  return (G.hc[origin] = out);
+}
+function hCurve(po, origin, age) {
+  const C = harvCurve(origin); let H = C[+po === NOR ? 0 : po]; if (!H || Object.keys(H).length < 6) H = C[0]; if (!H || age === null || age === undefined) return null;
+  const ks = Object.keys(H).map(Number).sort((a, b) => a - b); if (!ks.length) return null;
+  if (age <= ks[0]) return H[ks[0]]; if (age >= ks[ks.length - 1]) return H[ks[ks.length - 1]];
+  const lo = Math.max(...ks.filter(k => k <= age)), hi = Math.min(...ks.filter(k => k >= age)); return lo === hi ? H[lo] : H[lo] + (H[hi] - H[lo]) * (age - lo) / (hi - lo);
+}
+// age (mois en mer) d'une generation ; pour la Norvege entiere, moyenne des zones ponderee par le nombre de poissons
+function genAge(po, gen, k) {
+  if (+po !== NOR) { const c = ((G.COH[po] || {})[gen] || {})[k]; return c ? c.age_months : null; }
+  let s = 0, n = 0; Object.entries(G.COH).forEach(([p, gs]) => { if (+p === NOR) return; const c = (gs[gen] || {})[k]; if (c && c.age_months && c.stock) { s += c.age_months * c.stock; n += c.stock; } });
+  return n ? s / n : null;
+}
+// poids abattu prevu retenu (novembre 2026) : modele de croissance (A), courbe des abattages selon l'age (B), et courbe ramenee au
+// niveau propre de la generation quand elle est deja abattue (C). Teste 2021-2026 en marche avant, erreur moyenne a 1 / 2 / 3 mois :
+//   moins de 3 kg : 11 / 12 / 12 % (avant 12 / 15 / 17 %)     3-4 kg : 7 / 8 / 9 % (avant 7 / 9 / 10 %)
+//   4-5 kg :         6 / 7 / 9 %  (avant 6 / 8 / 11 %)      5 kg+ : 5 / 10 / 16 % (avant 5 / 11 / 17 %)
+// et le biais (sous-estimation des generations avancees) baisse d'environ un tiers.
 function harvForeMix(po, gen, origin) {
   const ser = ((G.COH[po] || {})[gen]) || {}, c = ser[origin]; if (!c || !c.weight_kg) return null;
   const wh = c.harv_stk > 0.01 * c.stock && c.harv_kg ? c.harv_kg / c.harv_stk : null, f = harvFore(po, gen, origin, 3);
-  if (f && wh) return { v: f.map(v => Math.sqrt(v * wh)), how: 'mix' };
-  if (f) return { v: f, how: 'model' };
-  return wh ? { v: [wh, wh, wh], how: 'copy' } : null;
+  const a0 = genAge(po, gen, origin), h0 = a0 ? hCurve(po, origin, a0) : null, w = c.weight_kg, L = Math.log, mix = (x, y) => (x + y) / 2;
+  if (!h0) {                                                 // pas d'age connu : methode precedente
+    if (f && wh) return { v: f.map(v => Math.sqrt(v * wh)), how: 'mix' };
+    if (f) return { v: f, how: 'model' };
+    return wh ? { v: [wh, wh, wh], how: 'copy' } : null; }
+  const v = [1, 2, 3].map(h => { const hT = hCurve(po, origin, a0 + h); if (!hT) return null;
+    const pA = f ? L(f[h - 1]) : null, pB = L(hT), pC = wh ? L(wh * hT / h0) : L(w * hT / Math.max(h0, w));
+    let p;
+    if (h === 1 && w >= 4) p = pA !== null ? mix(pA, pC) : pC;
+    else if (w < 3) p = pB;
+    else if (w < 5) p = pA !== null ? mix(pA, pB) : pB;
+    else p = pA !== null ? mix(pA, pC) : pC;
+    if (h === 1 && w < 4 && wh) p = mix(p, L(wh));           // a un mois, le poids abattu du mois reste le meilleur appui des jeunes generations
+    return Math.exp(p); });
+  return v.every(x => x) ? { v, how: 'curve' } : (f ? { v: wh ? f.map(x => Math.sqrt(x * wh)) : f, how: wh ? 'mix' : 'model' } : null);
 }
 function wholeGrowth(ser, k0, h) {
   const c0 = ser[k0]; if (!c0 || !c0.weight_kg) return null; let lw = Math.log(c0.weight_kg);
@@ -10661,7 +10705,8 @@ function renderHarv(po, k) {
   const kk = [1, 2, 3].map(i => sh(k, i));
   $('gm_zHarvSub').innerHTML = `Average weight (gutted) of the fish that will be <b>harvested</b> — not of those left in the sea, since farms take the biggest cages first — and, under each weight, the <b>share of those fish weighing 6 kg or more</b>. ` +
     `Forecast = the growth model (growth of the whole generation × the usual gap between harvested fish and the generation's average at that stage of its harvest, corrected by the model's error over the last 12 months), ` +
-    `averaged with the weight harvested this month when the generation is already being harvested: tested 2021–2026, this mix beats each of the two alone (off by about 6–8 % at 1 month, 8–11 % at 2, 10–14 % at 3).`;
+    `combined with the <b>weight actually harvested at the same time at sea</b> in this zone (learnt from every generation harvested since 2019) and, when the generation is already being harvested, with this month's harvested weight. ` +
+    `Tested 2021–2026: off by about 5–11 % at 1 month, 7–12 % at 2, 9–16 % at 3, and the old under-estimate of advanced generations is about a third smaller.`;
   $('gm_zHarv').innerHTML = `<tr><th style="text-align:left">Gener&shy;ation</th><th>Fish left</th><th>Harvested so far</th><th>Average now</th><th>Harvested ${MON_GM[k % 100 - 1]}</th>${kk.map(x => `<th>Forecast ${ml(x)}</th>`).join('')}</tr>` +
     gens.map(([g, ser]) => { const c = ser[k], cf = cumFrac(ser, k), wh = c.harv_stk > 0.01 * c.stock ? c.harv_kg / c.harv_stk : null, F = harvForeMix(po, +g, k);
       const cell = v => v ? `${f2(v * GUT)} kg<small>6 kg+: ${Math.round(100 * above(v, 6))} %</small>` : '<span class="gm-mut">—</span>';
