@@ -398,6 +398,9 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
 .sc-op b { flex: 1; color: var(--ink); font-weight: 600; }
 .sc-op span { color: var(--muted); font-size: 11.5px; white-space: nowrap; text-align: right; line-height: 1.35; }
 .leaflet-popup-content { font-size: 12px; line-height: 1.45; }
+.leaflet-tooltip.is-lab { background: rgba(13,26,36,.88); border: 1px solid #2a4352; color: #e7eef2; font-size: 11px; padding: 1px 6px; box-shadow: none; }
+.leaflet-tooltip.is-lab::before { display: none; }
+#isMap.is-far .leaflet-tooltip.is-lab { display: none; }
 .pseg { display: inline-flex; border: 1px solid var(--border); border-radius: 7px; overflow: hidden; vertical-align: middle; flex-wrap: wrap; }
 .pseg button { background: transparent; color: var(--muted); border: 0; border-right: 1px solid var(--border); padding: 6px 13px; font: inherit; font-size: 12.5px; cursor: pointer; white-space: nowrap; }
 .pseg button:last-child { border-right: 0; }
@@ -1114,6 +1117,10 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
   <div class="panel" id="isView" style="flex:1; min-width:0; max-width:1400px; display:none;">
     <div class="sig-title">Iceland — licences, farmers, exports and news</div>
     <div class="sig-sub" id="isSub"></div>
+    <div class="sig-title" style="margin-top:14px;font-size:15px">Map — farming fjords, licences and limits</div>
+    <div class="sig-sub" id="isMapSub"></div>
+    <div class="nw-chips" id="isMapZ" style="margin:6px 0"><button type="button" data-z="w" class="on">Westfjords</button><button type="button" data-z="e">East fjords</button><button type="button" data-z="a">All Iceland</button></div>
+    <div id="isMap" style="height:440px;border-radius:10px;border:1px solid var(--border);margin:6px 0 4px"></div>
     <div class="sig-title" style="margin-top:14px;font-size:15px">Licences (maximum allowed biomass) by farmer</div>
     <div style="overflow-x:auto"><table class="sig-table" id="isLic" style="max-width:1100px"></table></div>
     <div class="sig-sub" id="isLicNote"></div>
@@ -3262,6 +3269,48 @@ const IS_LIC = [
   { co: 'Kaldvík (Fiskeldi Austfjarða)', fj: 'Berufjörður', t: 7500, kind: 'fertile', src: 'MAST, licence file' },
   { co: 'Kaldvík (Fiskeldi Austfjarða)', fj: 'Stöðvarfjörður (new)', t: 7000, kind: 'fertile', src: 'licence awarded 2026' },
   { co: 'Kaldvík (Fiskeldi Austfjarða)', fj: 'Seyðisfjörður (application)', t: 10000, kind: 'pending', src: 'company, 2026' }];
+// carte de l'Islande : fjords d'elevage (centre approximatif), licences par eleveur, plafonds ; sites de MAST quand le serveur cartographique est lu
+let IS_MAP = null, IS_LAYER = null;
+const IS_FJ = [
+  { fj: 'Patreksfjörður & Tálknafjörður', lat: 65.62, lon: -23.92, reg: 'Westfjords', lic: [['Arnarlax', 12200, 'fertile'], ['Arctic Fish', null, 'part of 29,800 t']] },
+  { fj: 'Arnarfjörður', lat: 65.75, lon: -23.50, reg: 'Westfjords', lic: [['Arnarlax', 11500, 'fertile'], ['Arnarlax', 4500, 'applied for'], ['Arctic Fish', 4000, 'new site']] },
+  { fj: 'Dýrafjörður', lat: 65.90, lon: -23.45, reg: 'Westfjords', lic: [['Arctic Fish', null, 'part of 29,800 t']] },
+  { fj: 'Önundarfjörður', lat: 66.03, lon: -23.55, reg: 'Westfjords', lic: [['Arctic Fish / others', null, '—']] },
+  { fj: 'Ísafjarðardjúp', lat: 66.06, lon: -22.85, reg: 'Westfjords', lic: [['Arnarlax', 10000, 'sterile'], ['Arctic Fish', 8000, 'salmon and trout, of which 5,200 t salmon'], ['Háafell', null, '—']],
+    cap: 'carrying capacity 30,000 t; genetic-risk cap 12,000 t of fertile salmon' },
+  { fj: 'Reyðarfjörður & Fáskrúðsfjörður', lat: 64.98, lon: -13.95, reg: 'East fjords', lic: [['Kaldvík', null, 'rest of 27,800 t']] },
+  { fj: 'Stöðvarfjörður', lat: 64.83, lon: -13.86, reg: 'East fjords', lic: [['Kaldvík', 7000, 'new licence']] },
+  { fj: 'Berufjörður', lat: 64.76, lon: -14.35, reg: 'East fjords', lic: [['Kaldvík', 7500, 'fertile']] },
+  { fj: 'Seyðisfjörður', lat: 65.26, lon: -13.95, reg: 'East fjords', lic: [['Kaldvík', 10000, 'applied for']] }];
+const IS_COL = { Arnarlax: '#4fc3f7', 'Arctic Fish': '#ff8a65', Kaldvík: '#81c784', Háafell: '#ce93d8' };
+function isMap() {
+  const e = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), feats = IS_PROBE && IS_PROBE.features ? Object.entries(IS_PROBE.features) : [];
+  const nSites = feats.reduce((a, [, F]) => a + F.filter(f => f.lat).length, 0);
+  document.getElementById('isMapSub').innerHTML = `Farming fjords with their licences by company (circle size = maximum allowed biomass granted; dashed = applications) and the limits set by the authorities where known. ` +
+    (nSites ? `Small dots: the ${nSites} sea sites published by MAST on its map server. ` : `Fjord positions are approximate centres; exact sea sites will be drawn from MAST's map server once the update run has read it. `) +
+    Object.entries(IS_COL).map(([k, c]) => `<span style="display:inline-flex;gap:4px;align-items:center;margin-left:8px"><span style="width:10px;height:10px;border-radius:50%;background:${c}"></span>${k}</span>`).join('');
+  scLeaflet(() => {
+    const VIEWS = { w: [[65.5, -24.3], [66.25, -22.4]], e: [[64.6, -14.8], [65.35, -13.5]], a: [[63.3, -24.6], [66.6, -13.3]] };
+    if (!IS_MAP) { IS_MAP = L.map('isMap', { scrollWheelZoom: false }); IS_MAP.fitBounds(VIEWS.w);
+      // noms des fjords seulement quand on est assez pres (sinon ils se chevauchent)
+      const lab = () => document.getElementById('isMap').classList.toggle('is-far', IS_MAP.getZoom() < 8); IS_MAP.on('zoomend', lab); lab();
+      document.querySelectorAll('#isMapZ button').forEach(b => b.onclick = () => { document.querySelectorAll('#isMapZ button').forEach(x => x.classList.toggle('on', x === b)); IS_MAP.fitBounds(VIEWS[b.dataset.z]); });
+      const esri = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', { attribution: 'Tiles &copy; Esri — Esri, HERE, Garmin, &copy; OpenStreetMap contributors · licences: companies, MAST', maxZoom: 13 }).addTo(IS_MAP);
+      let fails = 0; esri.on('tileerror', () => { if (++fails === 4) { IS_MAP.removeLayer(esri); L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors', maxZoom: 13 }).addTo(IS_MAP); } }); }
+    if (IS_LAYER) IS_LAYER.remove(); IS_LAYER = L.layerGroup().addTo(IS_MAP);
+    IS_FJ.forEach(x => { const granted = x.lic.filter(l => l[1] && !/applied/.test(l[2])), tot = granted.reduce((a, l) => a + l[1], 0);
+      // un cercle par entreprise, decale legerement pour rester lisible
+      x.lic.forEach((l, i) => { const c = IS_COL[l[0].split(' /')[0]] || '#90a4ae', app = /applied/.test(l[2]), r = l[1] ? 6 + 16 * Math.sqrt(l[1] / 12000) : 6;
+        L.circleMarker([x.lat + (i - (x.lic.length - 1) / 2) * 0.06, x.lon + (i - (x.lic.length - 1) / 2) * 0.12], { radius: r, color: c, weight: 2, dashArray: app ? '4 3' : null, fillColor: c, fillOpacity: app ? 0.05 : l[1] ? 0.45 : 0.15 })
+          .addTo(IS_LAYER).bindTooltip(`<b>${e(x.fj)}</b> · ${e(l[0])}<br>${l[1] ? l[1].toLocaleString('en-US') + ' t MAB' : 'size not published'} · ${e(l[2])}`, { direction: 'top' }); });
+      L.circleMarker([x.lat, x.lon], { radius: 1, opacity: 0 }).addTo(IS_LAYER).bindPopup(`<b>${e(x.fj)}</b> (${x.reg})<br>` + x.lic.map(l => `${e(l[0])}: ${l[1] ? l[1].toLocaleString('en-US') + ' t' : '—'} (${e(l[2])})`).join('<br>') +
+        (tot ? `<br><b>Granted: ${tot.toLocaleString('en-US')} t</b>` : '') + (x.cap ? `<br><span style="color:#ffb74d">${e(x.cap)}</span>` : ''));
+      L.tooltip({ permanent: true, direction: x.lon < -20 ? 'left' : 'right', className: 'is-lab', offset: [x.lon < -20 ? -14 : 14, 0] }).setLatLng([x.lat, x.lon]).setContent(e(x.fj)).addTo(IS_LAYER); });
+    feats.forEach(([layer, F]) => F.forEach(f => { if (!f.lat) return; const pr = f.props || {};
+      L.circleMarker([f.lat, f.lon], { radius: 3, color: '#ffd54f', weight: 1, fillColor: '#ffd54f', fillOpacity: .8 }).addTo(IS_LAYER)
+        .bindPopup(`<b>${e(layer)}</b><br>` + Object.entries(pr).slice(0, 10).map(([k, v]) => `${e(k)}: ${e(v)}`).join('<br>')); }));
+    setTimeout(() => IS_MAP.invalidateSize(), 50); });
+}
 function renderIceland() {
   const sub = document.getElementById('isSub'), e = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), t0 = v => Math.round(v).toLocaleString('en-US');
   if (!IS_NT && !IS_LOADING) { IS_LOADING = true; const g = f => fetch(DATA_URL.replace('data.json', f), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
@@ -3272,6 +3321,7 @@ function renderIceland() {
   if (!IS_NT) return;
   sub.innerHTML = `Iceland farms salmon in open pens in the Westfjords and the East fjords, under licences set by maximum allowed biomass (MAB) per fjord, capped by each fjord's carrying capacity and by a genetic-risk assessment for wild salmon; part of the newer licences are for sterile salmon. ` +
     `Four companies hold the sea licences: Arnarlax (Icelandic Salmon, owned by SalMar), Arctic Fish (Mowi), Kaldvík (Fiskeldi Austfjarða) and Háafell.`;
+  isMap();
   // ---- licences ----
   const cos = [...new Set(IS_LIC.map(x => x.co))];
   document.getElementById('isLic').innerHTML = `<thead><tr><th class="name">Farmer</th><th class="name">Fjord / site</th><th>MAB (t)</th><th class="name">Type</th><th class="name">Source</th></tr></thead><tbody>` +
