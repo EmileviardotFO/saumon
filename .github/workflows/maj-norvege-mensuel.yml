@@ -64,6 +64,11 @@ jobs:
       continue-on-error: true
       timeout-minutes: 5
       run: python3 scripts/build_big_fish.py
+    - name: Bulletin du registre de la biomasse (page News, 7 jours apres chaque nouveau mois)
+      id: brief
+      continue-on-error: true
+      timeout-minutes: 5
+      run: python3 scripts/build_register_brief.py
     - name: Islande, tableau de bord MAST (biomasse, aliment, recolte ; poissons site par site et durees de cycle)
       id: iceland_mast
       continue-on-error: true
@@ -84,6 +89,7 @@ jobs:
         STEP_ARCHIVE: ${{ steps.archive.outcome }}
         WORKFLOW_GROUP: maj-norvege-mensuel
         STEP_BIGFISH: ${{ steps.bigfish.outcome }}
+        STEP_BRIEF: ${{ steps.brief.outcome }}
       run: 'python3 scripts/write_status.py
 
         rm -f data/smoke.json

@@ -869,6 +869,13 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <svg id="hlChart" viewBox="0 0 860 300" preserveAspectRatio="xMidYMid meet" style="display:block;width:100%;height:auto;"></svg>
     <div class="legend-row" id="hlLegend"></div>
     <div class="note" id="hlNote" style="margin-top:16px; text-align:left; max-width:none;"></div>
+    <div class="sig-title" style="margin-top:20px">Sea lice by farmer — each farmer's sites against its zone</div>
+    <div class="sig-sub" id="lfSub"></div>
+    <div style="display:flex;gap:10px;align-items:center;margin:8px 0;flex-wrap:wrap"><label style="font-size:12px;color:var(--muted)">Zone</label><select id="lfZone"></select>
+      <label style="font-size:12px;color:var(--muted)">Farmer</label><select id="lfCo"></select></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="lfTab" style="max-width:1100px"></table></div>
+    <div class="sig-sub" id="lfSitesT" style="margin-top:10px"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="lfSites" style="font-size:12px"></table></div>
     </div>
   </div>
 
@@ -3121,7 +3128,7 @@ function renderNewsLegacy() {
 
 
 // ===================== This week, version par bassin et entreprise (data/stories.json <- scripts/build_stories.py) =====================
-let ST = null, ST_LOADING = false, ST_B = 'all', ST_FREE = true, ST_HIDEPAY = false, QR = null;
+let ST = null, ST_LOADING = false, ST_B = 'all', ST_FREE = true, ST_HIDEPAY = false, QR = null, RB = undefined;
 // ---- resultats trimestriels (data/quarterly.json <- scripts/build_quarterly.py) ----
 function qrLoad(cb) { if (QR) return cb(); fetch(DATA_URL.replace('data.json', 'quarterly.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
   .then(j => { QR = j || { reports: [] }; cb(); }); }
@@ -3167,6 +3174,8 @@ function renderNews() {
     document.getElementById('nwSub').innerHTML = 'Loading…'; return; }
   if (!(ST.stories || []).length) return renderNewsLegacy();         // pas encore de sujets : ancienne page
   if (!QR) { qrLoad(() => { if (currentView === 'news') renderNews(); }); }
+  if (RB === undefined) { RB = null; fetch(DATA_URL.replace('data.json', 'register_brief.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
+    .then(j => { RB = j || false; if (currentView === 'news') renderNews(); }); }
   if (!NW) { if (!NW_LOADING) { NW_LOADING = true; fetch(DATA_URL.replace('data.json', 'news.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
       .then(j => { NW = j || { items: [], calendar: [], meta: {} }; NW_LOADING = false; if (currentView === 'news') renderNews(); }); } }
   const M = ST.meta || {}, B = M.basins || {}, S = ST.stories;
@@ -3226,7 +3235,14 @@ function renderNews() {
       `<div style="font-size:14.5px;font-weight:600;line-height:1.4"><a href="#st-${t.i}" style="color:inherit">${nwEsc(t.s.title)}</a> <span style="font-size:11.5px;font-weight:400;color:var(--muted);white-space:nowrap">${stDates(t.s)}</span></div>` +
       (t.why ? `<div style="font-size:13px;color:var(--muted);line-height:1.45">${nwEsc(t.why)}</div>` : '') + qrStrip(qrFind(t.s.who, t.s.event, t.s.title)) + `</div></div>`).join('') +
     `<div style="font-size:11.5px;color:var(--muted);border-top:1px solid var(--border);padding-top:8px;margin-top:12px">Picked for likely impact on salmon supply, prices and costs, then by how widely reported; at most two per basin.</div></section>` : '';
-  document.getElementById('nwStories').innerHTML = topBox + shown.map(b => { const L = S.filter(s => s.basin === b).sort((x, y) => recent(x) - recent(y) || prio(x) - prio(y) || (x.last < y.last ? 1 : x.last > y.last ? -1 : 0) || nSrc(y) - nSrc(x));
+  // bulletin du registre de la biomasse : une semaine apres chaque nouveau mois publie par le Fiskeridirektoratet
+  const today = new Date().toISOString().slice(0, 10);
+  const rbBox = RB && RB.valid_until >= today && ST_B === 'all' ? `<section style="margin:6px 0 14px;padding:14px 16px;border:1px solid #4fc3f7;border-radius:10px;background:rgba(79,195,247,.06)">` +
+    `<div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline"><span style="font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:#4fc3f7;font-weight:700">Update · Fiskeridirektoratet</span>` +
+    `<span style="font-size:11.5px;color:var(--muted)">published ${nwDay(RB.published)} · <a href="#genmap" style="color:inherit">details in Generations map</a></span></div>` +
+    `<h2 style="margin:6px 0 8px;font-size:16.5px;line-height:1.35">${nwEsc(RB.title)}</h2><ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:13.5px">` +
+    (RB.lines || []).map(l => `<li>${nwEsc(l)}</li>`).join('') + `</ul></section>` : '';
+  document.getElementById('nwStories').innerHTML = rbBox + topBox + shown.map(b => { const L = S.filter(s => s.basin === b).sort((x, y) => recent(x) - recent(y) || prio(x) - prio(y) || (x.last < y.last ? 1 : x.last > y.last ? -1 : 0) || nSrc(y) - nSrc(x));
     const lim = ST_B === 'all' ? 6 : 999, vis = L.slice(0, lim);
     return `<section style="margin:16px 0 4px"><div style="display:flex;gap:10px;align-items:baseline;border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:10px">` +
       `<h2 style="margin:0;font-size:18px">${nwEsc(B[b] || b)}</h2><span style="color:var(--muted);font-size:12.5px">${L.length} stor${L.length > 1 ? 'ies' : 'y'} · ${tally[b]} sources</span>` +
@@ -3252,6 +3268,48 @@ let CLD = null, CLS = null, CLT = null, CL_LOADING = false, CL_MAP = null, CL_LA
 let BF = null, BF_LOADING = false;
 // ===================== Temps en mer (data/big_fish.json, partie cycles <- scripts/build_big_fish.py) =====================
 let TAS_OPEN = {};
+// ===================== Poux par eleveur (data/bw_site_lice.json <- update_barentswatch.py) =====================
+let LF = null, LF_LOADING = false;
+function renderLiceFarmers() {
+  const sub = document.getElementById('lfSub'); if (!sub) return;
+  if (!LF) { if (!LF_LOADING) { LF_LOADING = true; fetch(DATA_URL.replace('data.json', 'bw_site_lice.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
+      .then(j => { LF = j || { weeks: [], sites: {} }; LF_LOADING = false; if (currentView === 'health') renderLiceFarmers(); }); } sub.innerHTML = 'Loading…'; return; }
+  const R = (DATA_RAW || {}).bw_register || {}, PO = R.site_po || {}, NM = R.site_name || {}, e = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const GRP = { 'ocean farming as': 'SalMar', 'mariculture as': 'SalMar' }, ORG = {}; Object.entries(R.site_org || {}).forEach(([k, v]) => ORG[k] = GRP[(v || '').toLowerCase()] || v);
+  const W = LF.weeks || [], n = W.length; if (!n || !Object.keys(LF.sites || {}).length) { sub.innerHTML = 'Site-by-site lice counts are kept from the next BarentsWatch update run onwards (weekly, 60 weeks).'; return; }
+  const lim = (po, wk) => { const w = +wk.split('-')[1]; return (po <= 7 ? w >= 16 && w <= 21 : w >= 21 && w <= 26) ? 0.2 : 0.5; };
+  const last = n - 1, wl = W[last];
+  // par zone et par eleveur : moyenne des sites qui comptent, sites au-dessus du seuil, tendance sur 4 semaines, meme semaine un an avant
+  const agg = {};
+  Object.entries(LF.sites).forEach(([site, v]) => { const po = PO[site]; if (!po) return; const co = ORG[site] || '?';
+    for (const k of ['ALL', co]) { const a = ((agg[po] = agg[po] || {})[k] = agg[po][k] || { cur: [], m4: [], ly: [], ov: 0, sites: [] });
+      if (v[last] !== null && v[last] !== undefined) { a.cur.push(v[last]); if (v[last] > lim(po, wl)) a.ov++; }
+      if (last >= 4 && v[last - 4] !== null && v[last - 4] !== undefined) a.m4.push(v[last - 4]);
+      if (last >= 52 && v[last - 52] !== null && v[last - 52] !== undefined) a.ly.push(v[last - 52]);
+      if (k !== 'ALL') a.sites.push(site); } });
+  const mean = L => L.length ? L.reduce((x, y) => x + y, 0) / L.length : null, f2 = v => v === null ? '—' : v.toFixed(2);
+  const zSel = document.getElementById('lfZone'), cSel = document.getElementById('lfCo');
+  if (!zSel.options.length) { zSel.innerHTML = `<option value="0">All zones</option>` + Object.keys(agg).sort((a, b) => a - b).map(po => `<option value="${po}">Zone ${po} · ${(PO_NAMES[po] || '').slice(0, 26)}</option>`).join(''); zSel.onchange = () => { cSel.innerHTML = ''; renderLiceFarmers(); }; cSel.onchange = renderLiceFarmers; }
+  const zs = +zSel.value, zones = zs ? [zs] : Object.keys(agg).map(Number).sort((a, b) => a - b);
+  const rows = []; zones.forEach(po => { const Z = agg[po], zm = mean(Z.ALL.cur);
+    Object.entries(Z).filter(([k]) => k !== 'ALL').forEach(([co, a]) => { if (!a.cur.length) return; const m = mean(a.cur), m4 = mean(a.m4), ly = mean(a.ly);
+      const flag = m !== null && zm && m > 1.5 * zm && m >= 0.2 && a.cur.length >= 2; rows.push({ po, co, m, m4, ly, zm, n: a.cur.length, ov: a.ov, flag }); }); });
+  rows.sort((a, b) => b.flag - a.flag || (b.m || 0) - (a.m || 0));
+  sub.innerHTML = `Average adult female lice per fish on each farmer's sites in week ${wl.split('-')[1]} ${wl.split('-')[0]} (sites that counted), against the average of all sites in the same zone, four weeks earlier and a year earlier. ` +
+    `<span style="color:#ffb74d">Flagged</span>: a farmer at 1.5 times its zone or more, with at least 0.2 lice and two sites. Limit: 0.5 (0.2 in the spring weeks when wild smolts migrate). From the counts farmers report weekly to BarentsWatch.`;
+  document.getElementById('lfTab').innerHTML = `<thead><tr><th class="name">Farmer</th><th>Zone</th><th>Sites counted</th><th>Lice now</th><th>Zone average</th><th>vs zone</th><th>4 weeks earlier</th><th>A year earlier</th><th>Sites over the limit</th></tr></thead><tbody>` +
+    rows.slice(0, 40).map(r => `<tr style="cursor:pointer${r.flag ? ';color:#ffb74d' : ''}" data-co="${e(r.co)}" data-po="${r.po}"><td class="name"><b>${e(r.co)}</b>${r.flag ? ' ⚠' : ''}</td><td>${r.po}</td><td>${r.n}</td><td><b>${f2(r.m)}</b></td><td>${f2(r.zm)}</td>` +
+      `<td>${r.zm ? `<span class="${r.m > r.zm ? 'delta-bad' : 'delta-good'}">×${(r.m / r.zm).toFixed(1)}</span>` : '—'}</td><td>${f2(r.m4)}</td><td>${f2(r.ly)}</td><td>${r.ov}</td></tr>`).join('') + `</tbody>`;
+  document.querySelectorAll('#lfTab tr[data-co]').forEach(tr => tr.onclick = () => { zSel.value = tr.dataset.po; cSel.innerHTML = ''; cSel.dataset.want = tr.dataset.co; renderLiceFarmers(); });
+  // detail site par site de l'eleveur choisi, 12 dernieres semaines
+  if (zs) { const cos = Object.keys(agg[zs] || {}).filter(k => k !== 'ALL').sort();
+    if (!cSel.options.length) { cSel.innerHTML = cos.map(c => `<option>${e(c)}</option>`).join(''); if (cSel.dataset.want && cos.includes(cSel.dataset.want)) cSel.value = cSel.dataset.want; }
+    const co = cSel.value, A = (agg[zs] || {})[co], ks = W.slice(-12);
+    document.getElementById('lfSitesT').innerHTML = A ? `<b>${e(co)}, zone ${zs}</b> — lice per site, last 12 weeks (cell colour: over the limit in orange):` : '';
+    document.getElementById('lfSites').innerHTML = A ? `<thead><tr><th class="name">Site</th>${ks.map(k => `<th>${k.split('-')[1]}</th>`).join('')}</tr></thead><tbody>` +
+      A.sites.map(site => { const v = LF.sites[site].slice(-12); return `<tr><td class="name">${e(NM[site] || site)}</td>${v.map((x, i) => `<td style="${x !== null && x > lim(zs, ks[i]) ? 'background:rgba(255,138,101,.35)' : ''}">${x === null ? '<span style="color:var(--muted)">·</span>' : x.toFixed(2)}</td>`).join('')}</tr>`; }).join('') + `</tbody>` : '';
+  } else { document.getElementById('lfSitesT').innerHTML = 'Pick a zone (or click a farmer) to see its sites week by week.'; document.getElementById('lfSites').innerHTML = ''; cSel.innerHTML = ''; }
+}
 // ===================== Prix USA contre Europe (SSB, statistiques nationales, douanes americaines, Eurostat, Akvafakta) =====================
 let UP = null, UP_LOADING = false;
 function renderUsaPrices() {
@@ -5541,7 +5599,7 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     else if (currentView === 'multi') { renderMulti(); }
     else if (currentView === 'outlook') { renderOutlook(); }
     else if (currentView === 'calibre') { renderCalibreView(); }
-    else if (currentView === 'health') { renderHealth(); }
+    else if (currentView === 'health') { renderHealth(); renderLiceFarmers(); }
     else if (currentView === 'register') { renderRegister(); }
     else if (currentView === 'euflows') { renderEuFlows(); }
     else if (currentView === 'producers') { renderProducers(); }

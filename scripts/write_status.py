@@ -37,6 +37,7 @@ STEPS = [
     ('BIGFISH', 'Big fish by farmer and zone (estimate)'),
     ('ACCOUNTS', 'Private farmers — annual accounts (Brønnøysund)'),
     ('ICELAND', 'Iceland — MAST data access (map server, dashboard)'),
+    ('BRIEF', 'Biomass register brief (News page)'),
     ('ESTAB', 'Mattilsynet — establishments'),
     ('CHINA', 'GACC — establishments registered for China'),
     ('EUROSTAT', 'Eurostat — EU salmon flows'),

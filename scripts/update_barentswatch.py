@@ -187,6 +187,10 @@ def num(x):
 # Statut de chaque site par semaine releve pendant cette execution :
 # {(annee, semaine): {site: 'a' (poisson, poux declares) ou 'f' (jachere)}}
 STATUS = {}
+# Poux par site (femelles adultes, moyenne declaree) : {(annee, semaine): {site: valeur}}, garde sur LICE_WEEKS semaines
+SITE_LICE = {}
+LICE_FILE = os.path.join(ROOT, 'data', 'bw_site_lice.json')
+LICE_WEEKS = 60
 
 
 def aggregate_week(api, y, w, loc_po):
@@ -241,6 +245,7 @@ def aggregate_week(api, y, w, loc_po):
         STATUS.setdefault((y, w), {})[key] = 'a'
         lice = num((rep.get('adultFemaleLice') or {}).get('average'))
         if lice is not None:
+            SITE_LICE.setdefault((y, w), {})[key] = round(lice, 3)
             a['ls'] += lice
             a['nl'] += 1
             if lice > LIMIT(po, w):
@@ -416,6 +421,9 @@ def fetch_status(api, y, w, loc_po):
             st[str(no)] = 'f'
         elif rep.get('hasReported'):
             st[str(no)] = 'a'
+            lice = num((rep.get('adultFemaleLice') or {}).get('average'))
+            if lice is not None:
+                SITE_LICE.setdefault((y, w), {})[str(no)] = round(lice, 3)
     return True
 
 
@@ -578,6 +586,30 @@ def main():
             print(f'  statuts {y}-S{w:02d} : {e}')
     stat = merge_status(stat, all_weeks)
     io.open(STAT_FILE, 'w').write(json.dumps(stat, separators=(',', ':'), sort_keys=True))
+
+    # Poux par site sur les LICE_WEEKS dernieres semaines : les semaines manquantes sont relues (une requete par semaine)
+    lw = all_weeks[-LICE_WEEKS:]
+    old = json.load(io.open(LICE_FILE, encoding='utf-8')) if os.path.exists(LICE_FILE) else {'weeks': [], 'sites': {}}
+    have_l = {tuple(map(int, k.split('-'))) for k in old.get('weeks', [])}
+    for (y, w) in [wk for wk in lw[::-1] if wk not in have_l and wk not in SITE_LICE][:LICE_WEEKS]:
+        if time.time() - T_START > STATUS_UNTIL + 300:
+            break
+        try:
+            fetch_status(api, y, w, loc_po)
+        except RuntimeError as e:
+            print(f'  poux {y}-S{w:02d} : {e}')
+    keys = ['%d-%02d' % wk for wk in lw]
+    sites = {}
+    for i, wk in enumerate(lw):
+        vals = SITE_LICE.get(wk)
+        if vals is None and '%d-%02d' % wk in old.get('weeks', []):          # semaine deja connue et pas relue cette fois
+            j = old['weeks'].index('%d-%02d' % wk)
+            vals = {k: v[j] for k, v in old['sites'].items() if j < len(v) and v[j] is not None}
+        for no, v in (vals or {}).items():
+            sites.setdefault(no, [None] * len(lw))[i] = v
+    known = [k for i, k in enumerate(keys) if lw[i] in SITE_LICE or k in old.get('weeks', [])]
+    io.open(LICE_FILE, 'w', encoding='utf-8').write(json.dumps({'weeks': keys, 'known': known, 'sites': sites}, separators=(',', ':')))
+    print(f'Poux par site : {len(sites)} sites, {len(known)}/{len(keys)} semaines.')
     print(f'Statuts de site : {nb} semaines d\'historique rattrapees, '
           f'{len(stat["have"])}/{len(all_weeks)} semaines connues.')
 
