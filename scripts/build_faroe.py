@@ -25,7 +25,8 @@ from html.parser import HTMLParser
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, 'farming', 'donnees_fo')
 OUT = os.path.join(ROOT, 'data', 'faroe.json')
-BAKKA_URL = 'https://www.bakkafrost.com/en/about-us/sustainability/data/'
+BAKKA_URL = 'https://www.bakkafrost.com/en/sustainability/data'
+BAKKA_URLS = [BAKKA_URL, 'https://www.bakkafrost.com/en/sustainability/data/', 'https://www.bakkafrost.com/en/about-us/sustainability/data/']
 LANDSVERK_URL = 'https://www.landsverk.fo/fo-fo/borgari/kervi%C3%B0/aling'
 
 # Registre Landsverk (releve du 03/11/2026) : titulaire, fjord, zones. Luna P/f = Hiddenfjord.
@@ -197,25 +198,97 @@ class Tables(HTMLParser):
         if self.h is not None: self.h += d
 
 
+MOIS_EN = {m: i + 1 for i, m in enumerate(['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'])}
+
+
+def date_cellule(c):
+    """'30/09/2026', '30.09.2026', '2026-09-30', '30 September 2026', 'Sep 2026', 'September 2026' -> 'AAAA-MM-JJ' (fin de mois si pas de jour)."""
+    c = (c or '').replace('*', '').strip()
+    m = re.search(r'\b(\d{1,2})[/.](\d{1,2})[/.](\d{4})\b', c)
+    if m: return f'{m.group(3)}-{int(m.group(2)):02d}-{int(m.group(1)):02d}'
+    m = re.search(r'\b(\d{4})-(\d{2})-(\d{2})\b', c)
+    if m: return m.group(0)
+    m = re.search(r'\b(?:(\d{1,2})\.?\s+)?([A-Za-z]{3})[a-z]*\.?\s+(\d{4})\b', c)
+    if m and m.group(2).lower() in MOIS_EN:
+        an, mo = int(m.group(3)), MOIS_EN[m.group(2).lower()]
+        jour = int(m.group(1)) if m.group(1) else (dt.date(an + (mo == 12), mo % 12 + 1, 1) - dt.timedelta(days=1)).day
+        return f'{an}-{mo:02d}-{jour:02d}'
+    return None
+
+
+def nom_ferme(c):
+    """'A04 - Lambavík', 'A04 Lambavík', 'A-04 Lambavík' -> 'A04 - Lambavík' (cle stable de l'archive)."""
+    m = re.match(r'\s*A-?\s?(\d{1,2})\b\s*[-–:]?\s*(.*)$', c or '')
+    return f'A{int(m.group(1)):02d} - {m.group(2).strip()}'.rstrip(' -') if m else None
+
+
+def nombre_cellule(v):
+    v = (v or '').strip()
+    if re.fullmatch(r'[-–—]?|n/?a|nil', v, re.I): return 0
+    n = re.sub(r'[^\d]', '', v)
+    return int(n) if n else None
+
+
 def lire_bakkafrost(html):
-    """-> ({date: {ferme: poissons}}, indicateurs annuels lus)"""
+    """-> ({date: {ferme: poissons}}, {}). Cherche le tableau des fermes quelle que soit la mise en page : fermes en lignes et dates
+    en colonnes, ou l'inverse ; tableaux HTML, puis a defaut le texte de la page (mise en page en blocs, page rendue en JavaScript)."""
     p = Tables(); p.feed(html)
-    fermes, annuel = {}, {}
+    fermes = {}
     for t in p.out:
-        rows = t['rows']
-        if not rows: continue
+        rows = [r for r in t['rows'] if r]
+        if len(rows) < 2: continue
         tete = rows[0]
-        dates = [re.match(r'(\d{2})/(\d{2})/(\d{4})', c.replace('*', '').strip()) for c in tete[1:]]
-        codes_fo = sum(1 for r in rows[1:] if r and re.match(r'A\d{2}\s*-', r[0].strip()))   # numeros de zones feroiens : A04 - ...
-        if any(dates) and (codes_fo >= 3 or ('FAROE' in t['titre'].upper() and 'BIOMASS' in t['titre'].upper())):
+        # 1) fermes en lignes, dates en colonnes
+        dates = [date_cellule(c) for c in tete[1:]]
+        sites = [r for r in rows[1:] if nom_ferme(r[0])]
+        if any(dates) and len(sites) >= 3:
+            for r in sites:
+                for d, v in zip(dates, r[1:]):
+                    n = nombre_cellule(v)
+                    if d and n is not None: fermes.setdefault(d, {})[nom_ferme(r[0])] = n
+            continue
+        # 2) dates en lignes, fermes en colonnes
+        noms = [nom_ferme(c) for c in tete[1:]]
+        if sum(1 for x in noms if x) >= 3:
             for r in rows[1:]:
-                if not r or r[0].lower().startswith('total') or not re.match(r'A\d', r[0]): continue
-                for m, v in zip(dates, r[1:]):
-                    if not m: continue
-                    d = f'{m.group(3)}-{m.group(2)}-{m.group(1)}'
-                    n = re.sub(r'[^\d]', '', v)
-                    fermes.setdefault(d, {})[r[0].strip()] = int(n) if n else 0
-    return fermes, annuel
+                d = date_cellule(r[0])
+                if not d: continue
+                for nm, v in zip(noms, r[1:]):
+                    n = nombre_cellule(v)
+                    if nm and n is not None: fermes.setdefault(d, {})[nm] = n
+    if fermes: return fermes, {}
+    # 3) texte : une ligne d'en-tete avec au moins deux dates, puis des lignes « A04 - Nom  229,813  612,004 »
+    txt = re.sub(r'(?is)<(script|style)[^>]*>.*?</\1>', ' ', html)
+    txt = re.sub(r'(?i)<br\s*/?>|</(p|div|tr|li|h\d)>', '\n', txt)
+    txt = re.sub(r'<[^>]+>', ' ', txt).replace('\xa0', ' ')
+    lignes = [re.sub(r'[ \t]+', ' ', l).strip() for l in txt.split('\n') if l.strip()]
+    entete = []
+    for l in lignes:
+        ds = [date_cellule(x) for x in re.findall(r'\d{1,2}[/.]\d{1,2}[/.]\d{4}|\d{4}-\d{2}-\d{2}|(?:\d{1,2}\s+)?[A-Z][a-z]{2,8}\.?\s+\d{4}', l)]
+        ds = [x for x in ds if x]
+        if len(ds) >= 2: entete = ds; continue
+        m = re.match(r'(A-?\s?\d{1,2}\b[^\d]*?)\s+((?:[\d.,]+|[-–])(?:\s+(?:[\d.,]+|[-–]))*)\s*$', l)
+        if m and entete:
+            vals = m.group(2).split()
+            for d, v in zip(entete, vals):
+                n = nombre_cellule(v)
+                if n is not None and nom_ferme(m.group(1)): fermes.setdefault(d, {})[nom_ferme(m.group(1))] = n
+    return fermes, {}
+
+
+def page_rendue(url):
+    """Page apres execution du JavaScript (navigateur sans ecran), pour les sites qui construisent leurs tableaux dans le navigateur."""
+    try:
+        from playwright.sync_api import sync_playwright
+    except Exception:  # noqa: BLE001
+        return ''
+    try:
+        with sync_playwright() as pw:
+            b = pw.chromium.launch(args=['--no-sandbox']); pg = b.new_page()
+            pg.goto(url, wait_until='networkidle', timeout=90000); pg.wait_for_timeout(3000)
+            h = pg.content(); b.close(); return h
+    except Exception:  # noqa: BLE001
+        return ''
 
 
 def archive(lu):
@@ -237,16 +310,22 @@ def archive(lu):
 def main():
     lu, note = {}, ''
     if os.environ.get('FO_HORS_LIGNE') != '1':
-        try:
-            html = urllib.request.urlopen(urllib.request.Request(BAKKA_URL, headers={'User-Agent': 'suivi-salmonicole/1.0'}), timeout=60).read().decode('utf-8', 'replace')
+        essais = []
+        for url in BAKKA_URLS:
+            try:
+                html = urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (suivi-salmonicole)'}), timeout=60).read().decode('utf-8', 'replace')
+            except Exception as e:  # noqa: BLE001
+                essais.append(f'{url}: {e}'); continue
             lu, _ = lire_bakkafrost(html)
-            if not lu:
-                p = Tables(); p.feed(html)
-                apercu = ' | '.join(' / '.join(t['rows'][0][:4]) for t in p.out[:6] if t['rows'])
-                note = (f'tableau des fermes introuvable sur la page Bakkafrost ({len(html)} caractères, {len(p.out)} tableaux'
-                        + (f' : {apercu[:300]}' if apercu else ' : aucun tableau HTML, page peut-être construite en JavaScript') + ')')
-        except Exception as e:  # noqa: BLE001
-            note = f'page Bakkafrost inaccessible : {e}'
+            if lu: break
+            rendu = page_rendue(url)                                   # page construite en JavaScript : on la fait executer
+            if rendu:
+                lu, _ = lire_bakkafrost(rendu)
+                if lu: break
+            p = Tables(); p.feed(rendu or html)
+            essais.append(f'{url}: {len(html)} caractères, {len(p.out)} tableaux, rendu {"oui" if rendu else "non"}')
+        if not lu:
+            note = 'tableau des fermes introuvable sur la page Bakkafrost (' + ' ; '.join(essais)[:400] + ')'
     base = AMORCE.copy(); base.update(lu)
     data = archive(base)
     dates = sorted(data)

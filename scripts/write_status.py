@@ -36,6 +36,7 @@ STEPS = [
     ('BW_SITES', 'BarentsWatch — site register'),
     ('BIGFISH', 'Big fish by farmer and zone (estimate)'),
     ('ACCOUNTS', 'Private farmers — annual accounts (Brønnøysund)'),
+    ('ICELAND', 'Iceland — MAST data access (map server, dashboard)'),
     ('ESTAB', 'Mattilsynet — establishments'),
     ('CHINA', 'GACC — establishments registered for China'),
     ('EUROSTAT', 'Eurostat — EU salmon flows'),

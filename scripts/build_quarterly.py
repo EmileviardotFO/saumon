@@ -45,6 +45,54 @@ AMORCE = [
         {'segment': 'Icelandic Salmon', 'basin': 'IS', 'currency': 'NOK', 'ebit_m': 15, 'ebit_m_ly': -110, 'guidance_year': 2026, 'guidance_t': 20000,
          'guidance_prev_t': 21000, 'guidance_reason': '18,000 t expected in 2027', 'notes': []}]},
 ]
+# Mises a jour d'activite trimestrielles de Bakkafrost (« Trading Update », debut du mois suivant le trimestre) : recolte par mois
+# et par region, poids moyen, smolts relaches, mortalites exceptionnelles. Lues sans appel payant (format fixe), amorcees a la main.
+TU_AMORCE = [
+    {'company': 'Bakkafrost', 'quarter': '2026-Q3', 'published': '2026-10-05', 'url': 'https://mfn.se/cis/a/bakkafrost/bakkafrost-q3-2026-trading-update-1f5efddf',
+     'regions': {'Scotland': {'harvest_kt': 4.5, 'avg_kg': 3.0, 'ytd_kt': 13.9, 'months': [['Jul', 1.2, 2.9], ['Aug', 1.3, 3.1], ['Sep', 1.9, 3.0]],
+                              'smolt_m': 2.9, 'smolt_ytd_m': 7.8, 'exc_mort_mdkk': 42.0, 'exc_note': '33.5 mDKK related to farming sites harvested out in the quarter'},
+                 'Faroe Islands': {'harvest_kt': 23.1, 'avg_kg': 5.0, 'ytd_kt': 75.0, 'months': [['Jul', 8.3, 5.0], ['Aug', 7.1, 5.0], ['Sep', 7.7, 4.9]],
+                                   'smolt_m': 4.5, 'smolt_ytd_m': 14.0, 'exc_mort_mdkk': 0.0}}},
+    {'company': 'Bakkafrost', 'quarter': '2026-Q2', 'published': '2026-07-02', 'url': 'https://news.cision.com/bakkafrost/r/q2-2026-trading-update,c4370593',
+     'regions': {'Scotland': {'harvest_kt': 3.2, 'ytd_kt': 9.4, 'smolt_m': 3.9, 'smolt_ytd_m': 4.9, 'exc_mort_mdkk': 32.0},
+                 'Faroe Islands': {'harvest_kt': 26.7, 'ytd_kt': 51.9, 'smolt_m': 5.6, 'smolt_ytd_m': 9.5, 'exc_mort_mdkk': 0.0}}},
+    {'company': 'Bakkafrost', 'quarter': '2025-Q4', 'published': '2026-01', 'url': '',
+     'regions': {'Scotland': {'harvest_kt': 4.579, 'avg_kg': 4.1, 'ytd_kt': 23.2, 'smolt_m': 2.2},
+                 'Faroe Islands': {'harvest_kt': 23.312, 'smolt_m': 5.3, 'smolt_ytd_m': 18.7}}},
+    {'company': 'Bakkafrost', 'quarter': '2025-Q2', 'published': '2025-07', 'url': '',
+     'regions': {'Scotland': {'harvest_kt': 7.034}, 'Faroe Islands': {'harvest_kt': 16.020}}},
+]
+MOIS_TU = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+
+
+def lire_trading_update(texte):
+    """Texte d'une « Trading Update » Bakkafrost -> {region: {...}}. Lecture par motifs, sans appel a Claude."""
+    t = re.sub(r'[│┃|─┬┼┴━]+', ' ', texte); t = re.sub(r'\s+', ' ', t)
+    out = {}
+    for reg in ('Faroe Islands', 'Scotland'):
+        i = t.find(reg + ' ')
+        if i < 0: continue
+        fins = [k for k in (t.find('Scotland ', i + 5) if reg != 'Scotland' else -1, t.find('Based on', i), t.find('FRESHWATER', i)) if k > i]
+        seg = t[i: min(fins + [i + 400])]
+        if not seg: continue
+        R = out.setdefault(reg, {})
+        ms = re.findall(r'(' + '|'.join(MOIS_TU) + r')\s+(\d+[.,]\d)\s+(\d+[.,]\d)', seg)
+        if ms: R['months'] = [[m[:3], float(a.replace(',', '.')), float(b.replace(',', '.'))] for m, a, b in ms]
+        q = re.search(r'Q[1-4] total\s+(\d+[.,]\d)\s+(\d+[.,]\d)', seg)
+        if q: R['harvest_kt'], R['avg_kg'] = float(q.group(1).replace(',', '.')), float(q.group(2).replace(',', '.'))
+        y = re.search(r'(?:' + '|'.join(MOIS_TU) + r')\s+\d+[.,]\d\s+\d+[.,]\d\s+(\d+[.,]\d)', seg)
+        if y: R['ytd_kt'] = float(y.group(1).replace(',', '.'))
+    sm = t[t.lower().find('smolt release'):][:400] if 'smolt release' in t.lower() else ''
+    for reg in ('Faroe Islands', 'Scotland'):
+        m = re.search(reg + r'\s+(\d+[.,]\d)\s+(\d+[.,]\d)', sm)
+        if m: out.setdefault(reg, {}).update({'smolt_m': float(m.group(1).replace(',', '.')), 'smolt_ytd_m': float(m.group(2).replace(',', '.'))})
+    fa = t[t.find('exceptional mortality costs in Farming'):][:400] if 'exceptional mortality costs in Farming' in t else ''
+    for reg in ('Faroe Islands', 'Scotland'):
+        m = re.search(reg + r':\s*(\d+[.,]?\d*)\s*mDKK', fa)
+        if m: out.setdefault(reg, {})['exc_mort_mdkk'] = float(m.group(1).replace(',', '.'))
+    return {k: v for k, v in out.items() if v}
+
+
 SCHEMA = """{"company": "...", "quarter": "YYYY-Qn", "published": "YYYY-MM-DD", "segments": [
  {"segment": "Group | Norway | Scotland | Faroe Islands | Iceland | Chile | Canada | Ireland | a named subsidiary such as Scottish Sea Farms",
   "basin": "NO | GB | FO | IS | CL | CA | IE | AU | US", "currency": "NOK | DKK | EUR | GBP | USD | JPY | CLP",
@@ -159,6 +207,28 @@ def cherche(o, cle):
             yield from cherche(v, cle)
     elif isinstance(o, list):
         for x in o: yield from cherche(x, cle)
+
+
+def trading_updates(jours=10):
+    """Trading updates de Bakkafrost publiees ces derniers jours sur NewsWeb -> liste d'entrees (sans appel a Claude)."""
+    fin = dt.date.today(); debut = fin - dt.timedelta(days=jours); out = []
+    try:
+        j = json.loads(http(f'{NEWSWEB}/list?issuer=BAKKA&fromDate={debut}&toDate={fin}'))
+    except Exception:  # noqa: BLE001
+        return out
+    for lst in cherche(j, 'messages'):
+        for x in lst if isinstance(lst, list) else []:
+            titre = x.get('title') or ''
+            m = re.search(r'Q([1-4])\s*(20\d\d)\s*Trading Update', titre, re.I)
+            if not m: continue
+            try:
+                corps = ' '.join(texte_html(str(b)) for b in cherche(json.loads(http(f"{NEWSWEB}/message?messageId={x.get('messageId')}")), 'body'))
+            except Exception:  # noqa: BLE001
+                continue
+            reg = lire_trading_update(corps)
+            if reg: out.append({'company': 'Bakkafrost', 'quarter': f'{m.group(2)}-Q{m.group(1)}', 'published': (x.get('publishedTime') or '')[:10],
+                                'url': f"https://newsweb.oslobors.no/message/{x.get('messageId')}", 'regions': reg})
+    return out
 
 
 def newsweb(jours=4):
@@ -310,7 +380,11 @@ def main():
             reps[(who, q)] = r; faits += 1
         except Exception as e:  # noqa: BLE001
             notes.append(f'{who} {q}: {str(e)[:100]}')
-    out = {'meta': {'generated': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'), 'model': MODEL if cle else None,
+    tu = {(x['company'], x['quarter']): x for x in TU_AMORCE}
+    tu.update({(x['company'], x['quarter']): x for x in ancien.get('trading_updates', [])})
+    for x in trading_updates(): tu[(x['company'], x['quarter'])] = x
+    out = {'trading_updates': sorted(tu.values(), key=lambda x: x['quarter'], reverse=True),
+           'meta': {'generated': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'), 'model': MODEL if cle else None,
                     'new': faits, 'claude_calls_this_run': appels, 'calls': compteur, 'limits': {'per_run': MAX_PASSAGE, 'per_month': MAX_MOIS},
                     'notes': notes[:20]},
            'reports': sorted(reps.values(), key=lambda r: (r['quarter'], r['company']), reverse=True)}
