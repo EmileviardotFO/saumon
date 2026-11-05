@@ -8086,10 +8086,19 @@ function makeVolumeProjector(s, poFilter) {
   //  National only: exports do not say which zone the fish came from.
   const EXM = volExportsByMonth();
   const expFull = k => EXM.days[k] >= new Date(Date.UTC(Math.floor(k / 100), k % 100, 0)).getUTCDate();
-  const nowcast = i => {
-    if (zSel) return null; const kt = kOf(i) % 100 === 12 ? kOf(i) + 89 : kOf(i) + 1; if (!expFull(kt)) return null;
+  //  A month only partly covered by exports (the dashboard updates every day, the register once a month) is read too, from
+  //  its exports so far scaled to the whole month, with less weight: 7-13 days 0.3, 14-20 days 0.4, 21+ days 0.5
+  //  (tested on the second month: 4.6 % -> 4.5 / 4.1 / 4.0 %, and 3.2 % once the month is complete).
+  //  In a backtest only the months complete at the date of the register are used, as in real life.
+  const mdays = k => new Date(Date.UTC(Math.floor(k / 100), k % 100, 0)).getUTCDate();
+  const nowcast = (i, h) => {
+    if (zSel) return null; let kt = kOf(i); for (let n = 0; n < h; n++) kt = kt % 100 === 12 ? kt + 89 : kt + 1;
+    const cov = EXM.days[kt] || 0, full = cov >= mdays(kt), live = i === s.length - 1;
+    if (!full && !(live && cov >= 7)) return null;
+    if (!live && h > 1) return null;
     const R = []; for (let j = Math.max(0, i - 24); j <= i; j++) { const k = kOf(j); if (EXM.t[k] > 0 && expFull(k) && s[j].vol > 0) R.push(s[j].vol / EXM.t[k]); }
-    return R.length >= 6 ? EXM.t[kt] * ew(R, 0.7) : null; };
+    if (R.length < 6) return null;
+    return { v: EXM.t[kt] * mdays(kt) / Math.min(cov, mdays(kt)) * ew(R, 0.7), w: full ? (h === 1 ? 0.6 : 0.5) : cov >= 21 ? 0.5 : cov >= 14 ? 0.4 : 0.3, days: Math.min(cov, mdays(kt)) }; };
   // final projection: average of the methods available at that date. Tested 2021-2026 walk-forward: equal or better than the
   //  three older methods alone at every horizon, and 1-1.6 points better on 2025-2026 at 1-7 months; beyond 7 months the
   //  weight-analogue adds nothing, so the three older methods are kept alone there.
@@ -8102,8 +8111,8 @@ function makeVolumeProjector(s, poFilter) {
     const mb = massBal(i, h);
     if (!base || !mb) return base || mb || null;
     const a = mbWeight(h), m = Math.exp(a * Math.log(mb) + (1 - a) * Math.log(base));   // moyenne geometrique ponderee
-    const nc = h === 1 ? nowcast(i) : null;
-    return nc ? Math.exp(0.6 * Math.log(nc) + 0.4 * Math.log(m)) : m;
+    const nc = h <= 3 ? nowcast(i, h) : null;
+    return nc ? Math.exp(nc.w * Math.log(nc.v) + (1 - nc.w) * Math.log(m)) : m;
   };
   return { projectOld, cwCorr, rotEst, rot12, projectVol, massBal };
 }

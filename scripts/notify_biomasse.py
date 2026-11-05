@@ -36,6 +36,43 @@ def fmt(x):
     return f"{x:,.0f}".replace(",", " ")
 
 
+def nowcast_next(year, month):
+    """Recolte (t vives) du mois suivant le dernier mois du registre, d'apres les exportations de saumon entier (SSB 03024)."""
+    import calendar
+    import datetime as dt
+    d = json.load(open("data/data.json", encoding="utf-8"))
+    rows = (d.get("ssb_weekly") or {}).get("rows") or []
+    W = {}
+    for yw, _p, w, *_ in rows:
+        W[yw] = W.get(yw, 0) + (w or 0)
+    ex, days = {}, {}
+    for yw, t in W.items():
+        try:
+            mon = dt.date.fromisocalendar(yw // 100, yw % 100, 1)
+        except ValueError:
+            continue
+        for i in range(7):
+            x = mon + dt.timedelta(days=i); k = x.year * 100 + x.month
+            ex[k] = ex.get(k, 0) + t / 7; days[k] = days.get(k, 0) + 1
+    full = lambda k: days.get(k, 0) >= calendar.monthrange(k // 100, k % 100)[1]
+    H = {}
+    for r in d["records"]:
+        k = r["year"] * 100 + r["month"]; H[k] = H.get(k, 0) + (r.get("uttak_kg") or 0) / 1000
+    ks = sorted(H)
+    last = year * 100 + month
+    nxt = last + 1 if month < 12 else (year + 1) * 100 + 1
+    if not full(nxt):
+        return None
+    R = [H[k] / ex[k] for k in ks if k <= last and ex.get(k) and full(k)][-25:]
+    if len(R) < 6:
+        return None
+    ws = sum(0.7 ** (len(R) - 1 - i) for i in range(len(R)))
+    r = sum(0.7 ** (len(R) - 1 - i) * x for i, x in enumerate(R)) / ws
+    t = ex[nxt] * r
+    ly = H.get(nxt - 100)
+    return {"m": nxt % 100, "t": t, "yoy": 100 * (t / ly - 1) if ly else 0}
+
+
 def main():
     topic = os.environ.get("NTFY_TOPIC", "").strip()
     if not topic:
@@ -53,6 +90,14 @@ def main():
         f"Biomasse en mer : {fmt(n['biomasse_t'])} t{variation(n['biomasse_t'], n1.get('biomasse_t'))}\n"
         f"Poissons en mer : {n['poissons'] / 1e6:.1f} M{variation(n['poissons'], n1.get('poissons'))}"
     )
+
+    # mois suivant estime d'apres les exportations hebdomadaires SSB (meme methode que Supply outlook)
+    try:
+        nc = nowcast_next(year, month)
+        if nc:
+            corps += f"\nRecolte {MOIS[nc['m'] - 1]} estimee (exportations) : {fmt(nc['t'])} t ({nc['yoy']:+.0f} % sur un an)"
+    except Exception as e:
+        print(f"Estimation par les exportations impossible : {e}")
 
     # durees de cycle (data/big_fish.json, reconstruit dans le meme passage) : sites proches du vidage, eleveurs qui accelerent
     try:
