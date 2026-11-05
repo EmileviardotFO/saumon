@@ -7938,7 +7938,8 @@ function nationalMonthlySeries(poFilter) {
   RECORDS.forEach(r => {
     if (poFilter && !poFilter.includes(r.po)) return;
     const k = r.year * 100 + r.month;
-    if (!agg[k]) agg[k] = { year: r.year, month: r.month, bio: 0, vol: 0, stk: 0, stock: 0 };
+    if (!agg[k]) agg[k] = { year: r.year, month: r.month, bio: 0, vol: 0, stk: 0, stock: 0, dead: 0 };
+    agg[k].dead += r.dodfisk_stk || 0;
     agg[k].bio += r.biomasse_kg || 0;
     agg[k].vol += r.uttak_kg || 0;
     agg[k].stk += r.uttak_stk || 0;
@@ -7950,25 +7951,8 @@ function nationalMonthlySeries(poFilter) {
 function mean(a) { return a.reduce((s,v) => s+v, 0) / a.length; }
 function stdev(a) { const m = mean(a); return Math.sqrt(mean(a.map(v => (v-m)*(v-m)))); }
 
-function renderOutlook() {
-  const poFilter = getSelectedPoFilter();
-  updateMapSelectionHighlight(poFilter);
-  renderStructuralSignals(poFilter);
-  const s = nationalMonthlySeries(poFilter);
-  const last = s[s.length - 1];
-
-  // ==========================================================================
-  //  Projection, horizons 1 to 9 months.
-  //  Two estimators, blended by horizon:
-  //    A. standing biomass x an exponentially-weighted historical ratio for the
-  //       target calendar month (recent years count far more than 2018).
-  //    B. the same calendar month one year ago, rescaled by the trailing
-  //       12-month volume drift.
-  //  A dominates at 1-3 months, where standing biomass is nearly sufficient.
-  //  It fades out by 6 months, where B is both more accurate and unbiased.
-  //  Blend weight is capped at 0.6 so B always corrects A's downward bias.
-  //  Everything below is refitted live from RECORDS and backtested in place.
-  // ==========================================================================
+// Projection des volumes recoltes (1 a 12 mois) : utilisee par National view / Supply outlook et par Generations map.
+function makeVolumeProjector(s, poFilter) {
   const drift12 = (i) => {
     let a = 0, b = 0;
     for (let j = 0; j < 12; j++) {
@@ -8069,6 +8053,21 @@ function renderOutlook() {
     if (p) { const past = []; for (let j = Math.max(0, i - 60); j <= i - h; j++) { const pj = genA(j, h); if (pj && s[j + h].vol > 0) past.push(s[j + h].vol / pj); }
       if (past.length >= 6) out = p * ew(past, 0.7); }
     return (genAMemo[key] = out); };
+  // ---- Mass balance (Nov 2026). What is harvested = what grew - what stays at sea - what died. Monthly production
+  //  (change in biomass + harvest + deaths x half the average weight) is projected as the same month last year x the
+  //  production growth of the last two months (that ratio fading out over 12 months); standing biomass as the same month
+  //  last year x today's biomass ratio (fading over 24 months). Unbiased in 2025-2026, when the other methods, anchored on
+  //  past years, under-estimated: generations growing faster show up first as production, before they are harvested.
+  const prodOf = i => { if (i < 1) return null; const a = s[i], b = s[i - 1]; const w = a.stock ? a.bio / a.stock : 0; return a.bio - b.bio + a.vol + a.dead * w * 0.5; };
+  const mortOf = i => { const a = s[i]; return a.stock ? a.dead * a.bio / a.stock * 0.5 : 0; };
+  const massBal = (i, h) => {
+    if (i < 15 || i + h - 12 < 1) return null;
+    const pa = prodOf(i) + prodOf(i - 1), pb = prodOf(i - 12) + prodOf(i - 13); if (!(pa > 0 && pb > 0)) return null;
+    const rp = pa / pb, rb = s[i].bio / s[i - 12].bio;
+    const Bf = t => t <= i ? s[t].bio : s[t - 12].bio * Math.pow(rb, Math.max(0, 1 - (t - i) / 24));
+    const t = i + h, v = prodOf(t - 12) * Math.pow(rp, Math.max(0, 1 - h / 12)) - (Bf(t) - Bf(t - 1)) - mortOf(t - 12) * rb;
+    return v > 0 ? v : null; };
+  const mbWeight = h => h <= 3 ? 0.5 : h <= 6 ? 0.33 : 0.2;
   // final projection: average of the methods available at that date. Tested 2021-2026 walk-forward: equal or better than the
   //  three older methods alone at every horizon, and 1-1.6 points better on 2025-2026 at 1-7 months; beyond 7 months the
   //  weight-analogue adds nothing, so the three older methods are kept alone there.
@@ -8077,8 +8076,34 @@ function renderOutlook() {
     if (h <= 7) v.push(genAC(i, h));
     if (h === 1) v.push(genW(i, h));
     const w = v.filter(x => x !== null && x !== undefined && isFinite(x));
-    return w.length ? w.reduce((a, b) => a + b, 0) / w.length : null;
+    const base = w.length ? w.reduce((a, b) => a + b, 0) / w.length : null;
+    const mb = massBal(i, h);
+    if (!base || !mb) return base || mb || null;
+    const a = mbWeight(h); return Math.exp(a * Math.log(mb) + (1 - a) * Math.log(base));   // moyenne geometrique ponderee
   };
+  return { projectOld, cwCorr, rotEst, rot12, projectVol, massBal };
+}
+
+function renderOutlook() {
+  const poFilter = getSelectedPoFilter();
+  updateMapSelectionHighlight(poFilter);
+  renderStructuralSignals(poFilter);
+  const s = nationalMonthlySeries(poFilter);
+  const last = s[s.length - 1];
+
+  // ==========================================================================
+  //  Projection, horizons 1 to 9 months.
+  //  Two estimators, blended by horizon:
+  //    A. standing biomass x an exponentially-weighted historical ratio for the
+  //       target calendar month (recent years count far more than 2018).
+  //    B. the same calendar month one year ago, rescaled by the trailing
+  //       12-month volume drift.
+  //  A dominates at 1-3 months, where standing biomass is nearly sufficient.
+  //  It fades out by 6 months, where B is both more accurate and unbiased.
+  //  Blend weight is capped at 0.6 so B always corrects A's downward bias.
+  //  Everything below is refitted live from RECORDS and backtested in place.
+  // ==========================================================================
+  const { projectOld, cwCorr, rotEst, rot12, projectVol } = makeVolumeProjector(s, poFilter);
 
   // empirical error band: walk the projection forward over the whole history
   const bandOf = {};
@@ -8381,6 +8406,8 @@ function renderOutlook() {
     `<b>Weight analogue</b> (1–7 months, added November 2026): generations 2025 and 2026 grew ahead of the previous ones, and copying past generations' calendar under-estimated 2025–2026 by about 4 %. ` +
     `Each generation is matched, zone by zone, to the month when last years' generation had the same average weight, and takes what that generation harvested afterwards; at 1 month, a harvest rate by weight band is added. ` +
     `Tested 2021–2026: never worse than without it, and 1–1.6 points more accurate on 2025–2026. ` +
+    `<b>Mass balance</b> (added November 2026, weighted ½ at 1–3 months, ⅓ at 4–6, ⅕ beyond): harvest = what grew − what stays at sea − what died. Monthly production (change in biomass + harvest + deaths) is projected from the same month last year × the production growth of the last two months, fading over 12 months. ` +
+    `Faster-growing generations show up in production before they are harvested, so this is the one method that was not biased in 2025–2026; with it, the 1–3 month error fell from 5.3–6.1 % to 3.9–5.5 % on 2025–2026 (4.4–5.1 % over 2021–2026). ` +
     `<b>Rotation:</b> same month last year × the change in standing biomass × half the change in 12-month stock rotation (harvest ÷ average biomass). ` +
     `<b>1 · Headcount:</b> fish in the sea × the share of the stock usually harvested that many months later in that calendar month, × an average harvest ` +
     `weight (same month last year, scaled by the change in average stock weight), with its own past bias removed walk-forward. ` +
@@ -10485,8 +10512,8 @@ function genHarvestA(k, h, zones) {
     tot += c.stock * q * w; }
   return (G.ga[key] = ok ? tot : null);
 }
-window.gmGenHarvestA = (k, h, zones) => { if (!G && typeof DATA_RAW !== 'undefined' && DATA_RAW) G = prepare(DATA_RAW); return genHarvestA(k, h, zones); };
-window.gmGenHarvestW = (k, h, zones) => { if (!G && typeof DATA_RAW !== 'undefined' && DATA_RAW) G = prepare(DATA_RAW); return genHarvestW(k, h, zones); };
+if (typeof window !== 'undefined') window.gmGenHarvestA = (k, h, zones) => { if (!G && typeof DATA_RAW !== 'undefined' && DATA_RAW) G = prepare(DATA_RAW); return genHarvestA(k, h, zones); };
+if (typeof window !== 'undefined') window.gmGenHarvestW = (k, h, zones) => { if (!G && typeof DATA_RAW !== 'undefined' && DATA_RAW) G = prepare(DATA_RAW); return genHarvestW(k, h, zones); };
 function wholeGrowth(ser, k0, h) {
   const c0 = ser[k0]; if (!c0 || !c0.weight_kg) return null; let lw = Math.log(c0.weight_kg);
   for (let i = 1; i <= h; i++) { const k = sh(k0, i), c = ser[k], p = ser[sh(k, -1)]; if (!c || !p || !c.weight_kg || !p.weight_kg) return null;
@@ -11101,7 +11128,7 @@ function gmStart() {
   renderMethod(); renderStrategy(); renderBrief();
   return true;
 }
-window.renderGenMap = function () { if (!G && !gmStart()) return; renderAll(); };
+window.renderGenMap = function () { if ((!G || !S.k) && !gmStart()) return; renderAll(); };   // G peut deja exister (projection de volumes) sans que l'onglet soit initialise
 
 })();
 
