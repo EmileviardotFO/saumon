@@ -84,6 +84,12 @@ jobs:
       run: "git config user.name  \"github-actions\"\ngit config user.email \"actions@github.com\"\n# data/ entier : data.json et les caches BarentsWatch ; farming/ : Australie et Canada.\ngit add data/\
         \ pdf/ xlsx/biomasse/ farming/\nif git diff --staged --quiet; then\n  echo \"Aucun changement.\"\nelse\n  git commit -m \"Norvege, donnees mensuelles ($(date -u +%Y-%m-%d))\"\n  # un fichier envoye\
         \ a la main pendant l'execution ne doit pas faire echouer la publication\n  git pull --rebase\n  git push\nfi\n"
+    - name: Prevenir les collegues (ntfy) quand de nouveaux chiffres biomasse sont publies
+      if: env.dest != '' && steps.biomasse_build.outcome == 'success'
+      continue-on-error: true
+      env:
+        NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+      run: python3 scripts/notify_biomasse.py
     - name: Signaler les problemes (e-mail de GitHub)
       if: always()
       run: "FAILED=\"\"\n[ \"${{ steps.bigfish.outcome }}\" = \"failure\" ] && FAILED=\"$FAILED Gros-poissons\"\n[ \"${{ steps.biomasse_fetch.outcome }}\" = \"failure\" ] && FAILED=\"$FAILED Biomasse-telechargement\"\
