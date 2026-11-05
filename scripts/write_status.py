@@ -118,13 +118,25 @@ def _farming_sans_risque():
 
 def main():
     data = json.load(io.open(DATA, encoding='utf-8'))
-    steps = [{'id': k, 'name': n, 'outcome': os.environ.get('STEP_' + k, '') or 'unknown'} for k, n in STEPS]
-    smoke = None
+    # Trois workflows (actualite, hebdomadaire, mensuel) : chacun ne met a jour que ses propres etapes ;
+    # les autres gardent le resultat et la date de leur dernier passage.
+    now = dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds')
+    avant = {s.get('id'): s for s in ((data.get('status') or {}).get('steps') or [])}
+    groupe = os.environ.get('WORKFLOW_GROUP', '')
+    steps = []
+    for k, n in STEPS:
+        v = os.environ.get('STEP_' + k)
+        if v is not None:
+            steps.append({'id': k, 'name': n, 'outcome': v or 'unknown', 'at': now, 'group': groupe})
+        else:
+            p = avant.get(k) or {}
+            steps.append({'id': k, 'name': n, 'outcome': p.get('outcome', 'unknown'), 'at': p.get('at'), 'group': p.get('group')})
+    smoke = (data.get('status') or {}).get('smoke')
     if os.path.exists(SMOKE):
         try:
             smoke = json.load(io.open(SMOKE, encoding='utf-8'))
         except ValueError:
-            smoke = None
+            pass
     server, repo, run = (os.environ.get('GITHUB_SERVER_URL', ''), os.environ.get('GITHUB_REPOSITORY', ''),
                          os.environ.get('GITHUB_RUN_ID', ''))
     eu = None
@@ -148,13 +160,13 @@ def main():
         'eurostat': eu,
         'national': nat,
         'farming': _farming_sans_risque(),
-        'run_utc': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'),
+        'run_utc': now, 'run_group': groupe,
         'run_url': f'{server}/{repo}/actions/runs/{run}' if server and repo and run else None,
         'steps': steps,
         'smoke': smoke,
     }
     io.open(DATA, 'w', encoding='utf-8').write(json.dumps(data, ensure_ascii=False, separators=(',', ':')))
-    bad = [s['name'] for s in steps if s['outcome'] == 'failure']
+    bad = [s['name'] for s in steps if s['outcome'] == 'failure' and (not groupe or s.get('group') == groupe)]
     print('Etat enregistre.', ('Etapes en echec : ' + ', '.join(bad)) if bad else 'Aucune etape en echec.')
 
 

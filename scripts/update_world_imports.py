@@ -39,8 +39,9 @@ SEUIL_PART = 15                       # alerte : part d'une origine qui bouge de
 
 
 def appel(cle, code, periodes, partenaires):
-    q = {'cmdCode': code, 'flowCode': 'M', 'period': ','.join(periodes), 'partnerCode': partenaires,
+    q = {'cmdCode': code, 'flowCode': 'M', 'period': ','.join(periodes),
          'motCode': 0, 'customsCode': 'C00', 'partner2Code': 0, 'includeDesc': 'true'}
+    if partenaires: q['partnerCode'] = partenaires
     url = API + '?' + urllib.parse.urlencode(q)
     req = urllib.request.Request(url, headers={'Ocp-Apim-Subscription-Key': cle, 'User-Agent': 'suivi-salmonicole/1.0'})
     for essai in range(4):
@@ -107,7 +108,7 @@ def main():
     a_tirer = [y for y in range(a.depuis, an + 1) if y >= an - 1 or not any(r[0] // 100 == y for r in ancien['rows'])]
     garde = [r for r in ancien['rows'] if r[0] // 100 not in a_tirer]
     neuves, noms, echecs = [], dict(ancien['meta'].get('names', {})), []
-    partenaires = '0,' + ','.join(str(c) for c in ORIGINES)
+    partenaires = None                      # tous les pays partenaires : les pays de transit (Suede, Danemark...) sont nommes, rien ne tombe en « autres »
     for y in a_tirer:
         periodes = [f'{y}{m:02d}' for m in range(1, 13) if dt.date(y, m, 1) <= dt.date.today()]
         for code in CODES:
