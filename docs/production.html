@@ -7962,6 +7962,12 @@ function volExportsByMonth() {
     for (let d = 0; d < 7; d++) { const dt = new Date(mon + d * 864e5), k = dt.getUTCFullYear() * 100 + dt.getUTCMonth() + 1; t[k] = (t[k] || 0) + v / 7; days[k] = (days[k] || 0) + 1; } });
   const out = { t, days }; if (R.length) VOL_EXM = out; return out;
 }
+// Annees ecartees de ce que les methodes apprennent (novembre 2026) : 2021 (sortie du Covid, beaucoup de poisson en mer) et
+// 2022 (nombreux poissons de qualite production, abattages forces ou precoces). Teste sur 2024-2026 : erreur egale ou plus
+// faible a tous les horizons (2 mois 4,5 -> 4,4 %, 3 mois 5,4 -> 5,3 %, 8-9 mois 9,0 -> 8,7-8,8 %).
+const SKIP_LEARN = y => y === 2021 || y === 2022;
+// Periode sur laquelle la fourchette d'erreur affichee est mesuree : les mois recents, representatifs du marche actuel.
+const BAND_FROM = 202401;
 // Projection des volumes recoltes (1 a 12 mois) : utilisee par National view / Supply outlook et par Generations map.
 function makeVolumeProjector(s, poFilter) {
   const drift12 = (i) => {
@@ -7983,11 +7989,12 @@ function makeVolumeProjector(s, poFilter) {
       const j2 = j + h;
       if (j2 >= s.length || j2 > i) break;
       if (s[j2].month !== tgtMonth || s[j].bio <= 0 || s[j2].vol <= 0) continue;
-      hist.push({ ratio: s[j2].vol / s[j].bio, vol: s[j2].vol });
+      hist.push({ ratio: s[j2].vol / s[j].bio, vol: s[j2].vol, skip: SKIP_LEARN(s[j2].year) });
     }
-    if (hist.length < 3 || s[i].bio <= 0) return null;
+    const hl = hist.filter(x => !x.skip);
+    if (hl.length < 3 || s[i].bio <= 0) return null;
     let ws = 0, rw = 0;
-    hist.forEach((hh, a) => { const w = Math.pow(0.6, hist.length - 1 - a); ws += w; rw += w * hh.ratio; });
+    hl.forEach((hh, a) => { const w = Math.pow(0.6, hl.length - 1 - a); ws += w; rw += w * hh.ratio; });
     rw /= ws;
     const estA = s[i].bio * rw;
     const d = drift12(i);
@@ -8013,7 +8020,7 @@ function makeVolumeProjector(s, poFilter) {
     for (let j = 0; j < i; j++) {
       const j2 = j + h;
       if (j2 > i) break;
-      if (s[j2].month !== tgtMonth || s[j].stock <= 0 || s[j2].stk <= 0) continue;
+      if (s[j2].month !== tgtMonth || s[j].stock <= 0 || s[j2].stk <= 0 || SKIP_LEARN(s[j2].year)) continue;
       hist.push(s[j2].stk / s[j].stock);
     }
     const ly = i + h - 12;
@@ -8029,7 +8036,7 @@ function makeVolumeProjector(s, poFilter) {
     const past = [];
     for (let j = Math.max(0, i - 60); j <= i - h; j++) {
       const pj = cwRaw(j, h);
-      if (pj && s[j + h].vol > 0) past.push(s[j + h].vol / pj);
+      if (pj && s[j + h].vol > 0 && !SKIP_LEARN(s[j + h].year)) past.push(s[j + h].vol / pj);
     }
     return past.length >= 6 ? p * ew(past, 0.7) : p;
   };
@@ -8061,7 +8068,7 @@ function makeVolumeProjector(s, poFilter) {
   const genAMemo = {};
   const genAC = (i, h) => { const key = i * 100 + h; if (key in genAMemo) return genAMemo[key];
     const p = genA(i, h); let out = null;
-    if (p) { const past = []; for (let j = Math.max(0, i - 60); j <= i - h; j++) { const pj = genA(j, h); if (pj && s[j + h].vol > 0) past.push(s[j + h].vol / pj); }
+    if (p) { const past = []; for (let j = Math.max(0, i - 60); j <= i - h; j++) { const pj = genA(j, h); if (pj && s[j + h].vol > 0 && !SKIP_LEARN(s[j + h].year)) past.push(s[j + h].vol / pj); }
       if (past.length >= 6) out = p * ew(past, 0.7); }
     return (genAMemo[key] = out); };
   // ---- Mass balance (Nov 2026). What is harvested = what grew - what stays at sea - what died. Monthly production
@@ -8138,11 +8145,12 @@ function renderOutlook() {
   // ==========================================================================
   const { projectOld, cwCorr, rotEst, rot12, projectVol } = makeVolumeProjector(s, poFilter);
 
-  // empirical error band: walk the projection forward over the whole history
+  // empirical error band: walk the projection forward over the recent months (targets from BAND_FROM on)
   const bandOf = {};
   for (let h = 1; h <= OUTLOOK_HORIZON; h++) {
     const e = [];
     for (let i = 24; i + h < s.length; i++) {
+      if (s[i + h].year * 100 + s[i + h].month < BAND_FROM) continue;
       const p = projectVol(i, h), act = s[i + h].vol;
       if (p === null || !act || act <= 0) continue;
       e.push(Math.abs(p - act) / act * 100);
@@ -8440,8 +8448,9 @@ function renderOutlook() {
     `Each generation is matched, zone by zone, to the month when last years' generation had the same average weight, and takes what that generation harvested afterwards; at 1 month, a harvest rate by weight band is added. ` +
     `Tested 2021–2026: never worse than without it, and 1–1.6 points more accurate on 2025–2026. ` +
     `<b>Mass balance</b> (added November 2026, weighted ½ at 1–3 months, ⅓ at 4–6, ⅕ beyond): harvest = what grew − what stays at sea − what died. Monthly production (change in biomass + harvest + deaths) is projected from the same month last year × the production growth of the last two months, fading over 12 months. ` +
-    `Faster-growing generations show up in production before they are harvested, so this is the one method that was not biased in 2025–2026; with it, the 1–3 month error fell from 5.3–6.1 % to 3.9–5.5 % on 2025–2026 (4.4–5.1 % over 2021–2026). ` +
-    `<b>Next month, from exports</b> (added November 2026): when the register for a month comes out, SSB's weekly exports already cover the whole following month. Harvest ÷ whole-fish exports is stable (about 1.45), so that month is read from its exports and blended 60/40 with the models: 1-month error 3.1 % over 2021–2026, 1.7 % on 2025–2026 (national view only, exports are not split by zone). ` +
+    `Faster-growing generations show up in production before they are harvested, so this is the one method that was not biased in 2025–2026; with it, on 2024–2026 the 1–3 month error falls from 3.0 / 5.5 / 6.3 % without it to 2.8 / 4.4 / 5.3 % with it. ` +
+    `<b>Next month, from exports</b> (added November 2026): when the register for a month comes out, SSB's weekly exports already cover the whole following month. Harvest ÷ whole-fish exports moves slowly with the share of fish processed in Norway (1.46 in 2021, 1.58 in 2024 with many production-grade fish, 1.46 again in 2026), so the ratio is taken from the last months only (most of the weight on the last six), and that month is read from its exports and blended 60/40 with the models: 1-month error 2.8 % on 2024–2026 (national view only, exports are not split by zone). ` +
+    `<b>Learning period.</b> 2021 (after Covid, much fish at sea) and 2022 (many production-grade fish, forced or early harvests) are left out of what the methods learn; the ± range shown is the error measured on 2024–2026 only. ` +
     `<b>Rotation:</b> same month last year × the change in standing biomass × half the change in 12-month stock rotation (harvest ÷ average biomass). ` +
     `<b>1 · Headcount:</b> fish in the sea × the share of the stock usually harvested that many months later in that calendar month, × an average harvest ` +
     `weight (same month last year, scaled by the change in average stock weight), with its own past bias removed walk-forward. ` +
