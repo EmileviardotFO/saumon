@@ -1060,5 +1060,131 @@
    "isa_2025": "aucun cas de la variante virulente (« Otros HPR ») pour la deuxième année consécutive",
    "srs_2025": "Los Lagos : 6,5 % des centres en alerte par semaine (en baisse) ; Aysén : 9,0 % (légère hausse)"
   }
+ },
+ "salmon_outlook": {
+  "_note": "Salmon Outlook (Salmonexpert + Skills), monthly report sold by subscription (contacto@salmonexpert.cl); figures copied from the free articles Salmonexpert publishes now and then. Harvest-weight tonnes. Entered by hand.",
+  "points": [
+   {
+    "k": 202407,
+    "centres": 322,
+    "total_t": 493000,
+    "species": {
+     "salar": {
+      "t": 380000,
+      "fish_m": 157
+     },
+     "coho": {
+      "t": 69000,
+      "fish_m": 14
+     },
+     "trucha": {
+      "t": 44000,
+      "fish_m": 13
+     }
+    },
+    "companies": {
+     "AquaChile": {
+      "t": 112732,
+      "salar": 83512,
+      "coho": 29221
+     },
+     "Cermaq Chile": {
+      "t": 58639,
+      "salar": 56316,
+      "coho": 2323
+     },
+     "Multi X": {
+      "t": 44605,
+      "salar": 44605
+     }
+    },
+    "url": "https://www.salmonexpert.cl/biomasa-outlook-comercial-produccion/el-ranking-de-productores-de-salmon-chileno-con-mayor-cantidad-de-biomasa/1812676",
+    "published": "2024-08-26"
+   },
+   {
+    "k": 202408,
+    "centres": 315,
+    "total_t": 586000,
+    "species": {
+     "salar": {
+      "t": 453000,
+      "fish_m": 176
+     },
+     "coho": {
+      "t": 88000,
+      "fish_m": 59
+     },
+     "trucha": {
+      "t": 45000,
+      "fish_m": 14
+     }
+    },
+    "companies": {
+     "AquaChile": {
+      "t": 136033,
+      "salar": 96615,
+      "coho": 39418
+     },
+     "Cermaq Chile": {
+      "t": 66792,
+      "salar": 64505,
+      "coho": 2257
+     },
+     "Multi X": {
+      "t": 53332,
+      "salar": 53332
+     }
+    },
+    "url": "https://www.salmonexpert.cl/biomasa-salmon-outlook-skills/informan-en-detalle-productores-de-salmon-chileno-con-mayor-cantidad-de-biomasa/1833970",
+    "published": "2024-10-09"
+   },
+   {
+    "k": 202604,
+    "centres": 308,
+    "total_t": 458000,
+    "species": {
+     "salar": {
+      "t": 386000,
+      "fish_m": null,
+      "fish_m_as_published": 50
+     },
+     "coho": {
+      "t": 49000,
+      "fish_m": 52
+     },
+     "trucha": {
+      "t": 23000,
+      "fish_m": 3
+     }
+    },
+    "companies": {
+     "AquaChile": {
+      "t": 78000,
+      "salar": 67000,
+      "coho": 11000
+     },
+     "Mowi Chile": {
+      "t": 54000,
+      "salar": 54000
+     },
+     "Multi X": {
+      "t": 50000,
+      "salar": 50000
+     },
+     "Cermaq Chile": {
+      "t": 47000,
+      "salar": 42000,
+      "coho": 5000
+     },
+     "Salmones Camanchaca": {
+      "t": 29000,
+      "salar": 29000
+     }
+    },
+    "note": "the article gives 50 M Atlantic salmon and 52 M coho, which cannot match 386 kt and 49 kt (7.7 kg and 0.9 kg a fish): fish numbers look swapped or mistyped, left out",
+    "url": "https://www.salmonexpert.cl/aquachile-biomasa-cosechas/el-reporte-con-los-productores-de-salmon-chileno-con-mas-biomasa/2147477",
+    "published": "2026-07-02"
+   }
+  ]
  }
 }
