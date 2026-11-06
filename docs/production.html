@@ -12747,5 +12747,195 @@ loadRemoteData().then(live => {
   window.addEventListener('hashchange', later); later();
 })();
 </script>
+<style>
+  #gsBox{margin:8px 12px 10px;position:relative}
+  #gsQ{width:100%;box-sizing:border-box;background:#0b1620;border:1px solid #2a4352;border-radius:8px;color:#e7eef2;padding:8px 10px 8px 30px;font-size:13px;outline:none}
+  #gsQ:focus{border-color:#4fc3f7}
+  #gsBox:before{content:"⌕";position:absolute;left:10px;top:5px;color:#8fa4b0;font-size:17px}
+  #gsPanel{display:none;position:fixed;top:0;right:0;bottom:0;left:244px;z-index:870;background:#08141c;overflow-y:auto;padding:22px 28px 60px}
+  @media (max-width:900px){#gsPanel{left:0;padding:60px 14px 60px}}
+  #gsPanel .gs-h{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+  #gsPanel .gs-h input{flex:1;background:#0d1a24;border:1px solid #4fc3f7;border-radius:8px;color:#e7eef2;padding:10px 12px;font-size:15px;outline:none}
+  #gsPanel .gs-x{background:none;border:1px solid #2a4352;color:#cfdde4;border-radius:8px;padding:8px 12px;cursor:pointer}
+  #gsPanel .gs-hint{font-size:12px;color:#8fa4b0;margin-bottom:14px}
+  #gsPanel .gs-sec{font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#4fc3f7;margin:18px 0 8px}
+  #gsPanel .gs-card{background:#10202c;border:1px solid #223642;border-radius:10px;padding:12px 14px;margin-bottom:10px;max-width:1100px}
+  #gsPanel .gs-card h4{margin:0 0 6px;font-size:14px;color:#e7eef2}
+  #gsPanel .gs-card .s{font-size:12.5px;color:#a9bfcc;line-height:1.5}
+  #gsPanel .gs-card table{border-collapse:collapse;font-size:12px;margin-top:6px}
+  #gsPanel .gs-card td,#gsPanel .gs-card th{padding:3px 10px 3px 0;text-align:left;color:#cfdde4;white-space:nowrap}
+  #gsPanel .gs-card th{color:#8fa4b0;font-weight:600}
+  #gsPanel .gs-n{padding:7px 0;border-bottom:1px solid #1d3240;font-size:13px;max-width:1100px}
+  #gsPanel .gs-n a{color:#e7eef2;text-decoration:none} #gsPanel .gs-n a:hover{color:#4fc3f7}
+  #gsPanel .gs-n small{color:#8fa4b0;margin-left:6px}
+  #gsPanel .gs-go{color:#4fc3f7;cursor:pointer;font-size:13px;padding:5px 0;max-width:1100px}
+  #gsPanel .gs-go small{color:#8fa4b0;margin-left:6px}
+  #gsPanel mark{background:rgba(79,195,247,.25);color:inherit;border-radius:2px}
+  #gsPanel .bad{color:#ff8a65} #gsPanel .good{color:#81c784}
+</style>
+<script>
+// ===================== Recherche dans tout le tableau de bord =====================
+// Une societe (Lerøy, Mowi...) et/ou un sujet (poux, mortalite, maladie, gros poissons, recolte, Chine...) :
+// fiches calculees sur les donnees (poux site par site, maladies en cours, gros poissons a venir, resultats trimestriels,
+// evenements de mortalite, usines), puis les articles de presse, puis les sections du tableau de bord.
+(function () {
+  const COS = [['Lerøy', /ler[øo]y|leroy/], ['Mowi', /mowi|marine harvest/], ['SalMar', /salmar|ocean farming|mariculture/], ['Cermaq', /cermaq|mainstream/],
+    ['Grieg Seafood', /grieg/], ['Nova Sea', /nova ?sea/], ['Nordlaks', /nordlaks/], ['Bakkafrost', /bakkafrost/], ['Måsøval', /m[åa]s[øo]val/],
+    ['Kaldvík', /kaldv[ií]k/], ['Arnarlax', /arnarlax|icelandic salmon/], ['Arctic Fish', /arctic fish/], ['AquaChile', /aqua ?chile|agrosuper/],
+    ['Multi X', /multi ?x|multiexport/], ['Blumar', /blumar/], ['Camanchaca', /camanchaca/], ['Australis', /australis/], ['Salmones Austral', /salmones austral/],
+    ['Cooke', /cooke/], ['Scottish Sea Farms', /scottish sea farms/], ['Huon', /huon/], ['Tassal', /tassal/], ['Salmon Evolution', /salmon evolution/],
+    ['Eide Fjordbruk', /eide fjordbruk/], ['Sinkaberg-Hansen', /sinkaberg/], ['Seashore', /seashore/], ['Hiddenfjord', /hiddenfjord|luna/], ['Kvarøy', /kvar[øo]y/]];
+  const TOP = { lice: /\b(lice|louse|lus|lakselus|poux|pou|piojo|caligus|sea ?lice)\b/, mort: /mortal|death|dead|d[øo]d|deces|décès|muert|morts?\b/,
+    dis: /disease|ila\b|isa\b|\bpd\b|pancrea|sykdom|maladie|enferm/, big: /6\+|6 ?kg|big fish|gros|calib|size|store fisk|stor fisk|weight|poids/,
+    harv: /harvest|slakt|r[ée]colte|cosecha|volume|guidance|production/, china: /china|kina|chine|chinese|chinois/, plant: /plant|slakteri|usine|abattoir|processing|transform/,
+    price: /pri[cx]|prix|precio|nok\b/ };
+  const TOP_WORDS = { lice: 'lice lus lakselus poux caligus', mort: 'mortality death dead dødelighet mortalité', dis: 'disease ILA PD sykdom', big: '6+ big fish storfisk',
+    harv: 'harvest slakt guidance', china: 'China Kina', plant: 'plant slakteri processing', price: 'price pris' };
+  const norm = s => String(s || '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/ø/g, 'o').replace(/æ/g, 'ae').replace(/å/g, 'a');
+  const esc = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const D = {}; let loading = null;
+  const get = f => fetch(DATA_URL.replace('data.json', f), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
+  function load() {
+    if (loading) return loading;
+    loading = Promise.all(['bw_site_lice.json', 'events.json', 'news.json', 'news_archive.json', 'big_fish.json', 'quarterly.json', 'plants.json']
+      .map(f => get(f).then(j => D[f] = j)));
+    return loading;
+  }
+  // ---- UI
+  const nav = document.getElementById('sideNav');
+  const box = document.createElement('div'); box.id = 'gsBox'; box.innerHTML = '<input id="gsQ" type="search" placeholder="Search: Lerøy lice, Mowi 6+, China…" autocomplete="off">';
+  if (nav) { const sub = nav.querySelector('#snSub'); (sub ? sub.after(box) : nav.prepend(box)); }
+  const P = document.createElement('div'); P.id = 'gsPanel';
+  P.innerHTML = '<div class="gs-h"><input id="gsQ2" type="search" autocomplete="off"><button class="gs-x" type="button">Close ✕</button></div><div class="gs-hint">A company and/or a subject, in English, French or Norwegian: <i>Lerøy lice</i>, <i>Mowi mortalité</i>, <i>SalMar 6+</i>, <i>Chine export</i>, <i>Kaldvík</i>. Enter to search, Esc to close.</div><div id="gsOut"></div>';
+  document.body.appendChild(P);
+  const q1 = document.getElementById('gsQ'), q2 = document.getElementById('gsQ2'), out = document.getElementById('gsOut');
+  const open = v => { P.style.display = 'block'; q2.value = v; run(v); setTimeout(() => q2.focus(), 30); };
+  const close = () => { P.style.display = 'none'; };
+  P.querySelector('.gs-x').onclick = close;
+  q1.addEventListener('keydown', e => { if (e.key === 'Enter' && q1.value.trim()) { open(q1.value.trim()); q1.value = ''; } });
+  let tm = null; q2.addEventListener('input', () => { clearTimeout(tm); tm = setTimeout(() => run(q2.value), 350); });
+  q2.addEventListener('keydown', e => { if (e.key === 'Enter') run(q2.value); if (e.key === 'Escape') close(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && P.style.display === 'block') close();
+    if (e.key === '/' && !/INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || '')) { e.preventDefault(); open(''); } });
+  const goTab = (v, title) => { close(); const b = document.querySelector(`#sideNav .sn-item[data-v="${v}"]`) || document.querySelector(`#viewToggle button[data-v="${v}"]`); if (b) b.click();
+    if (title) setTimeout(() => { const t = [...document.querySelectorAll('#' + v + 'View .sig-title, #' + v + 'View .gm-t, #' + v + 'View .gm-h1')].find(x => x.textContent.trim() === title); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 900); };
+  window.gsGoTab = goTab;
+  // ---- fiches calculees
+  const R = () => (typeof DATA_RAW !== 'undefined' && DATA_RAW ? DATA_RAW : {}).bw_register || {};
+  const orgOf = () => { const G = { 'ocean farming as': 'SalMar', 'mariculture as': 'SalMar' }, o = {}; Object.entries(R().site_org || {}).forEach(([k, v]) => o[k] = G[(v || '').toLowerCase()] || v); return o; };
+  const lim = (po, wk) => { const w = +wk.split('-')[1]; return (po <= 7 ? w >= 16 && w <= 21 : w >= 21 && w <= 26) ? 0.2 : 0.5; };
+  const mean = L => L.length ? L.reduce((a, b) => a + b, 0) / L.length : null;
+  function liceCard(co) {
+    if (!Object.values(orgOf()).includes(co)) return '';
+    const L = D['bw_site_lice.json']; if (!L || !(L.weeks || []).length) return `<div class="gs-card"><h4>Sea lice · ${esc(co)}</h4><div class="s">Site-by-site lice counts are not in the data yet (they arrive with the next BarentsWatch update). Zone averages are in the Fish health tab.</div></div>`;
+    const O = orgOf(), PO = R().site_po || {}, NM = R().site_name || {}, W = L.weeks, n = W.length;
+    const mine = Object.entries(L.sites).filter(([s]) => O[s] === co); if (!mine.length) return '';
+    const rows = []; for (let i = Math.max(0, n - 12); i < n; i++) {
+      const v = mine.map(([s, a]) => [s, a[i]]).filter(x => x[1] !== null && x[1] !== undefined), all = Object.values(L.sites).map(a => a[i]).filter(x => x !== null && x !== undefined);
+      rows.push({ wk: W[i], n: v.length, m: mean(v.map(x => x[1])), all: mean(all), ov: v.filter(([s, x]) => x > lim(PO[s] || 9, W[i])) }); }
+    const last = rows[rows.length - 1], lastY = (() => { const i = n - 53; if (i < 0) return null; const v = mine.map(([, a]) => a[i]).filter(x => x !== null && x !== undefined); return mean(v); })();
+    const top = mine.map(([s, a]) => [s, a[n - 1]]).filter(x => x[1] !== null && x[1] !== undefined).sort((a, b) => b[1] - a[1]).slice(0, 6);
+    const f = v => v === null ? '—' : v.toFixed(2), cls = (a, b) => a !== null && b !== null && a > b * 1.2 ? 'bad' : a !== null && b !== null && a < b * 0.8 ? 'good' : '';
+    const verdict = last.m === null ? '' : last.m > last.all * 1.5 ? `<b class="bad">clearly above the national average</b>` : last.m > last.all * 1.15 ? `<b class="bad">above the national average</b>` : last.m < last.all * 0.85 ? `<b class="good">below the national average</b>` : 'close to the national average';
+    return `<div class="gs-card"><h4>Sea lice · ${esc(co)} — week ${esc(last.wk)}</h4><div class="s">Adult female lice per fish, average of ${esc(co)}'s ${last.n} sites that counted: <b>${f(last.m)}</b>, ${verdict} (${f(last.all)}).` +
+      (lastY !== null ? ` Same week a year ago: ${f(lastY)}.` : '') + ` Sites above the limit this week: <b class="${last.ov.length ? 'bad' : ''}">${last.ov.length}</b>${last.ov.length ? ' (' + last.ov.map(([s, x]) => `${esc(NM[s] || s)} ${x.toFixed(2)}, zone ${PO[s] || '?'}`).join('; ') + ')' : ''}.</div>` +
+      `<table><tr><th>Week</th>${rows.map(r => `<th>${r.wk.slice(5)}</th>`).join('')}</tr><tr><td>${esc(co)}</td>${rows.map(r => `<td class="${cls(r.m, r.all)}">${f(r.m)}</td>`).join('')}</tr>` +
+      `<tr><td>All Norway</td>${rows.map(r => `<td>${f(r.all)}</td>`).join('')}</tr><tr><td>Sites above limit</td>${rows.map(r => `<td class="${r.ov.length ? 'bad' : ''}">${r.ov.length}</td>`).join('')}</tr></table>` +
+      `<div class="s" style="margin-top:6px">Highest this week: ${top.map(([s, x]) => `${esc(NM[s] || s)} (zone ${PO[s] || '?'}) ${x.toFixed(2)}`).join(' · ')}. Limit 0.5, 0.2 during the spring smolt migration. <span class="gs-go" onclick="gsGoTab('health')">→ Fish health tab, sea lice by farmer</span></div></div>`;
+  }
+  function disCard(co) {
+    const B = (typeof DATA_RAW !== 'undefined' && DATA_RAW ? DATA_RAW : {}).bw_weekly || {}, SD = B.site_dis || [], O = orgOf(), NM = R().site_name || {}, M = B.meta || {};
+    const lw = M.last ? M.last[0] * 100 + M.last[1] : 0; if (!lw || !Object.values(O).includes(co)) return '';
+    const act = SD.filter(r => O[r[0]] === co && r[4] >= lw - 2);
+    const recent = SD.filter(r => O[r[0]] === co && r[3] >= lw - 26);
+    if (!act.length && !recent.length) return `<div class="gs-card"><h4>Fish disease · ${esc(co)}</h4><div class="s">No ILA or PD registered on ${esc(co)}'s sites in the last six months (BarentsWatch).</div></div>`;
+    const by = {}; act.forEach(r => (by[r[2]] = by[r[2]] || []).push(`${NM[r[0]] || r[0]} (zone ${r[1]}, since week ${String(r[3]).slice(4)} ${String(r[3]).slice(0, 4)})`));
+    return `<div class="gs-card"><h4>Fish disease · ${esc(co)}</h4><div class="s">${act.length ? `Sites with an open case now: ` + Object.entries(by).map(([k, v]) => `<b class="bad">${esc(k)}</b> on ${v.length} site${v.length > 1 ? 's' : ''}: ${v.map(esc).join('; ')}`).join('. ') + '.' : 'No open case this week.'} ` +
+      `New cases in the last six months: ${recent.length}. <span class="gs-go" onclick="gsGoTab('health')">→ Fish health tab</span></div></div>`;
+  }
+  function bigCard(co) {
+    const B = D['big_fish.json']; if (!B || !B.ranking) return ''; const r = (B.ranking.farmers || []).find(x => x.co === co); if (!r) return '';
+    const ms = (B.ranking.months || []).map(k => `${MONTHS_FR[k % 100 - 1].slice(0, 3)} ${Math.floor(k / 100)}`).join('–');
+    return `<div class="gs-card"><h4>Big fish to harvest · ${esc(co)} — ${esc(ms)}</h4><div class="s">Projected from the farmer's sites (register of ${esc(String(B.ranking.register_month))}): <b>${Math.round(r.harvest_t).toLocaleString('en-US')} t</b> to harvest, of which <b>${Math.round(r.t6).toLocaleString('en-US')} t of 6 kg+</b> (${r.share6} % of Norway's 6+) and ${Math.round(r.t56).toLocaleString('en-US')} t of 5–6 kg (${r.share56} %), on ${r.sites} sites; ` +
+      `growth pace ${r.pace} × the zone norm; PD on ${r.pd_sites} site(s), ILA on ${r.ila_sites}. ` +
+      (r.zones ? `By zone: ${r.zones.slice(0, 5).map(z => `zone ${z.po} ${Math.round(z.t6).toLocaleString('en-US')} t 6+`).join(', ')}. ` : '') + `<span class="gs-go" onclick="gsGoTab('generations')">→ Generations / big fish</span></div></div>`;
+  }
+  function qCard(co) {
+    const Q = D['quarterly.json']; if (!Q) return ''; const L = (Q.reports || []).filter(r => norm(r.company).includes(norm(co).split(' ')[0]) && !/mismatch/i.test(JSON.stringify(r))).sort((a, b) => a.quarter < b.quarter ? 1 : -1);
+    if (!L.length) return ''; const r = L[0];
+    return `<div class="gs-card"><h4>Latest quarterly report · ${esc(r.company)} ${esc(r.quarter)} (published ${esc(r.published)})</h4><div class="s">` +
+      r.segments.map(s => `<b>${esc(s.segment)}</b>: harvest ${s.harvest_t ? Math.round(s.harvest_t).toLocaleString('en-US') + ' t' : '—'}${s.harvest_t_ly ? ` (${s.harvest_t >= s.harvest_t_ly ? '+' : ''}${Math.round(100 * (s.harvest_t / s.harvest_t_ly - 1))} % on a year)` : ''}` +
+        `${s.ebit_per_kg !== undefined ? `, EBIT ${s.ebit_per_kg} ${esc(s.currency)}/kg` : ''}${s.guidance_t ? `, guidance ${s.guidance_year} ${Math.round(s.guidance_t).toLocaleString('en-US')} t` : ''}${s.next_year_guidance_t ? `, ${s.guidance_year + 1}: ${Math.round(s.next_year_guidance_t).toLocaleString('en-US')} t` : ''}` +
+        `${(s.biology || []).length ? `. Biology: ${s.biology.map(esc).join(' ')}` : ''}${(s.notes || []).length ? ` <i>${s.notes.map(esc).join(' ')}</i>` : ''}`).join('<br>') + `</div></div>`;
+  }
+  function evCard(co, words) {
+    const E = D['events.json']; if (!E) return '';
+    const L = [...(E.manual || []), ...(E.auto || [])].filter(e => (!co || norm(e.company + ' ' + e.note).includes(norm(co).split(' ')[0])) && (!words.length || words.every(w => norm(JSON.stringify(e)).includes(w)) || co))
+      .sort((a, b) => a.date < b.date ? 1 : -1).slice(0, 6);
+    if (!L.length) return '';
+    return `<div class="gs-card"><h4>Recorded mortality events${co ? ' · ' + esc(co) : ''}</h4><div class="s">` + L.map(e => `<b>${esc(e.date)}</b> ${esc(e.basin)} ${esc(e.region)} — ${esc(e.cause)}${e.fish_m ? `, ${e.fish_m} M fish` : ''}${e.tonnes ? `, ${Math.round(e.tonnes).toLocaleString('en-US')} t` : ''}: ${esc(String(e.note || '').slice(0, 220))}`).join('<br>') +
+      ` <span class="gs-go" onclick="gsGoTab('health')">→ Fish health, recorded events</span></div></div>`;
+  }
+  function plantCard(co) {
+    const PL = D['plants.json']; if (!PL) return ''; const k = norm(co).split(' ')[0];
+    const no = (PL.no || []).filter(x => norm(x.group + ' ' + x.name).includes(k)), cl = (PL.cl || []).filter(x => norm(x.plant + ' ' + x.farmers).includes(k));
+    if (!no.length && !cl.length) return '';
+    return `<div class="gs-card"><h4>Slaughterhouses and processing plants · ${esc(co)}</h4><div class="s">` +
+      (no.length ? `Norway: ${no.map(x => `${esc(x.city)} (${x.slaughter ? 'slaughter' : 'processing'})`).join(', ')}. <span class="gs-go" onclick="gsGoTab('register')">→ Farm register, map</span><br>` : '') +
+      (cl.length ? `Chile: ${cl.map(x => `${esc(x.plant)}, ${esc(x.town)}${x.slaughter ? ' (slaughter)' : ''}`).join('; ')}. <span class="gs-go" onclick="gsGoTab('chile')">→ Chile tab</span>` : '') + `</div></div>`;
+  }
+  // ---- presse
+  function news(co, topics, words) {
+    const N = D['news.json'] || {}, A = D['news_archive.json'] || {}, seen = new Set(), out = [];
+    const add = (d, t, u, src, extra) => { const k = norm(t).slice(0, 80); if (seen.has(k)) return; seen.add(k); out.push({ d: d || '', t, u, src, extra }); };
+    (N.items || []).forEach(i => add(i.date, i.title, i.url, i.source, i.summary || ''));
+    (A.headlines || []).forEach(h => add(h.d, h.t, h.u, h.s, ''));
+    (A.stories || []).forEach(s => add(s.last || s.d || '', s.t, (s.arts && s.arts[0] && s.arts[0].url) || '', 'summary', s.m || ''));
+    const coRx = co ? COS.find(c => c[0] === co)[1] : null;
+    const topRx = topics.map(t => TOP[t]);
+    return out.filter(x => { const t = norm(x.t + ' ' + x.extra);
+        if (coRx && !coRx.test(t)) return false;
+        if (topRx.length && !topRx.some(r => r.test(t))) return false;
+        if (!co && !topics.length) return words.every(w => t.includes(w));
+        return true; })
+      .sort((a, b) => a.d < b.d ? 1 : -1);
+  }
+  function sections(words, co) {
+    const out = []; const terms = [...words, ...(co ? [norm(co).split(' ')[0]] : [])]; if (!terms.length) return out;
+    document.querySelectorAll('.panel[id$="View"]').forEach(P => { const v = P.id.replace(/View$/, '');
+      P.querySelectorAll('.sig-title, .gm-t, .gm-h1').forEach(t => { const T = t.textContent.trim(); if (!T) return;
+        const sub = t.nextElementSibling && /sig-sub|gm-s|gm-sub/.test(t.nextElementSibling.className) ? t.nextElementSibling.textContent : '';
+        const hay = norm(T + ' ' + sub), has = (h, w) => new RegExp('(^|[^a-z0-9])' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '([^a-z0-9]|$)').test(h);
+        const sc = terms.filter(w => has(hay, w)).length;
+        if (sc && (!co || has(hay, terms[terms.length - 1]) || sc >= 2)) out.push({ v, T, sc: sc + (terms.some(w => has(norm(T), w)) ? 1 : 0) }); }); });
+    return out.sort((a, b) => b.sc - a.sc).slice(0, 10);
+  }
+  const hl = (t, words) => { let s = esc(t); words.filter(w => w.length > 2).forEach(w => { s = s.replace(new RegExp('(' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'ig'), '<mark>$1</mark>'); }); return s; };
+  async function run(q) {
+    q = String(q || '').trim(); if (!q) { out.innerHTML = ''; return; }
+    out.innerHTML = '<div class="gs-hint">Searching…</div>'; await load();
+    const nq = norm(q), co = (COS.find(([, rx]) => rx.test(nq)) || [])[0];
+    const topics = Object.keys(TOP).filter(k => TOP[k].test(nq));
+    let rest = nq; if (co) rest = rest.replace(COS.find(c => c[0] === co)[1], ' '); topics.forEach(k => rest = rest.replace(new RegExp(TOP[k].source, 'g'), ' '));
+    const words = rest.split(/\s+/).filter(w => w.length > 1);
+    let html = '';
+    if (co) {
+      const want = t => !topics.length || topics.includes(t);
+      const cards = [want('lice') || want('dis') ? liceCard(co) : '', want('dis') || want('lice') || want('mort') ? disCard(co) : '', want('big') || want('china') || want('harv') ? bigCard(co) : '',
+        want('harv') || want('price') || !topics.length || want('big') ? qCard(co) : '', want('mort') || !topics.length ? evCard(co, []) : '', want('plant') || !topics.length ? plantCard(co) : ''].filter(Boolean);
+      if (cards.length) html += `<div class="gs-sec">From the dashboard's data · ${esc(co)}${topics.length ? ' · ' + topics.map(t => TOP_WORDS[t].split(' ')[0]).join(', ') : ''}</div>` + cards.join('');
+    } else if (topics.includes('mort')) html += evCard(null, words);
+    let N = news(co, topics, words), fb = '';
+    if (!N.length && co && topics.length) { N = news(co, [], []); if (N.length) fb = ` — none about ${topics.map(t => TOP_WORDS[t].split(' ')[0]).join(', ')}; latest about ${co}`; }
+    const hw = [...words, ...(co ? [norm(co).split(' ')[0]] : []), ...topics.flatMap(t => TOP_WORDS[t].split(' ').map(norm))];
+    html += `<div class="gs-sec">Press · ${N.length} article${N.length === 1 ? '' : 's'}${N.length > 25 ? ', latest 25' : ''}${esc(fb)}</div>` +
+      (N.length ? N.slice(0, 25).map(x => `<div class="gs-n">${x.u ? `<a href="${esc(typeof nwUrl === 'function' ? nwUrl(x.u) : x.u)}" target="_blank" rel="noopener">${hl(x.t, hw)}</a>` : hl(x.t, hw)}<small>${esc(x.d)} · ${esc(x.src || '')}</small>` +
+        (x.extra ? `<div style="font-size:12px;color:#8fa4b0">${hl(String(x.extra).slice(0, 260), hw)}</div>` : '') + `</div>`).join('') : '<div class="gs-hint">No article in the last 400 days matches.</div>');
+    const S = sections(words.concat(topics.flatMap(t => TOP_WORDS[t].split(' ').slice(0, 1).map(norm))), co);
+    if (S.length) html += `<div class="gs-sec">In the dashboard</div>` + S.map(s => `<div class="gs-go" onclick="gsGoTab('${s.v}', ${JSON.stringify(s.T).replace(/"/g, '&quot;')})">${esc(s.T)}<small>${esc((document.querySelector(`#sideNav .sn-item[data-v="${s.v}"]`) || {}).textContent || s.v)}</small></div>`).join('');
+    out.innerHTML = html || '<div class="gs-hint">Nothing found.</div>';
+  }
+})();
+</script>
 </body>
 </html>
