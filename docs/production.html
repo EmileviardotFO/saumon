@@ -12799,7 +12799,7 @@ loadRemoteData().then(live => {
   const get = f => fetch(DATA_URL.replace('data.json', f), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
   function load() {
     if (loading) return loading;
-    loading = Promise.all(['eurostat.json', 'national_trade.json', 'bw_site_lice.json', 'events.json', 'news.json', 'news_archive.json', 'big_fish.json', 'quarterly.json', 'plants.json']
+    loading = Promise.all(['search_index.json', 'eurostat.json', 'national_trade.json', 'bw_site_lice.json', 'events.json', 'news.json', 'news_archive.json', 'big_fish.json', 'quarterly.json', 'plants.json']
       .map(f => get(f).then(j => D[f] = j)));
     return loading;
   }
@@ -13055,6 +13055,59 @@ loadRemoteData().then(live => {
       `<tr><td>${cur}/kg</td>${ks.map(k => { const x = sum(k); return `<td>${pr(x[0], x[1])}</td>`; }).join('')}</tr></table>` +
       `<div class="s" style="margin-top:6px"><span class="gs-go" onclick="gsGoTab('${{ FO: 'faroe', IS: 'iceland', GB: 'scotland', CL: 'chile', CA: 'canada', AU: 'australia', NO: 'markets' }[org]}')">→ ${esc(name)} tab</span> · <span class="gs-go" onclick="gsGoTab('world')">→ World trade</span></div></div>`;
   }
+
+  // ---- index de tous les tableaux du tableau de bord (data/search_index.json, scripts/build_search_index.py)
+  const STOP = new Set(['the', 'de', 'la', 'le', 'les', 'des', 'du', 'of', 'in', 'for', 'to', 'and', 'et', 'en', 'par', 'by', 'a', 'an', 'per', 'og', 'i', 'pa', 'sur', 'au', 'aux', 'with', 'avec', 'what', 'quel', 'quelle', 'how', 'is', 'est']);
+  const SYNG = [['lice', 'lus', 'lakselus', 'poux', 'louse', 'caligus'], ['mortality', 'mortalite', 'dead', 'deaths', 'dodelighet', 'died', 'losses'], ['harvest', 'recolte', 'slakt', 'cosecha', 'harvested'],
+    ['price', 'prix', 'pris', 'precio', 'nok/kg', '€/kg'], ['weight', 'poids', 'vekt', 'kg'], ['fresh', 'frais', 'fersk', 'chilled'], ['fillet', 'fillets', 'filet', 'filets', 'file'], ['frozen', 'congele', 'frossen', 'frys'],
+    ['export', 'exports', 'exportations', 'eksport', 'exported'], ['import', 'imports', 'importations', 'imported'], ['biomass', 'biomasse', 'stock', 'standing'], ['feed', 'aliment', 'fôr', 'for'],
+    ['smolt', 'smolts', 'stocking', 'released', 'mise', 'sembrar'], ['growth', 'croissance', 'vekst'], ['disease', 'maladie', 'sykdom', 'pd', 'ila'], ['zone', 'po', 'area', 'omrade'], ['company', 'societe', 'farmer', 'eleveur', 'selskap'],
+    ['temperature', 'temp', 'sea temperature'], ['volume', 'volumes', 'tonnes', 'tons', 't'], ['smoked', 'fume', 'rokt'], ['china', 'chine', 'kina'], ['norway', 'norvege', 'norge'], ['scotland', 'ecosse'], ['iceland', 'islande'], ['faroe', 'feroe', 'faroes', 'faroese'], ['chile', 'chili'], ['poland', 'pologne'],
+    ['germany', 'allemagne'], ['spain', 'espagne'], ['france', 'frankrike'], ['italy', 'italie'], ['japan', 'japon'], ['united states', 'usa', 'us', 'etats-unis'], ['guidance', 'prevision', 'outlook', 'forecast'], ['quarter', 'trimestre', 'kvartal', 'q1', 'q2', 'q3', 'q4'],
+    ['fcr', 'efcr', 'feed conversion', 'conversion'], ['ebit', 'ebit/kg', 'ebit per kg', 'margin', 'marge'], ['premium', 'prime', 'premie'], ['calibre', 'size', 'taille', 'storrelse', 'weight class'],
+    ['generation', 'generations', 'generasjon', 'cohort', 'year class'], ['licence', 'licences', 'license', 'mtb', 'tillatelse', 'concession'], ['cost', 'cout', 'kostnad', 'costs'], ['treatment', 'traitement', 'behandling', 'treatments']];
+  const SYN = {}; SYNG.forEach(g => g.forEach(w => SYN[norm(w)] = g.map(norm)));
+  const wre = w => new RegExp('(?<![a-z0-9])' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+  const nd = t => norm(t).replace(/[\u2010-\u2015]/g, '-');
+  function indexHits(q) {
+    const I = D['search_index.json']; if (!I) return { tables: [], notes: [] };
+    const toks = nd(q).replace(/[,;:!?()]/g, ' ').split(/\s+/).filter(w => w && !STOP.has(w) && (w.length > 1 || /\d/.test(w)));
+    if (!toks.length) return { tables: [], notes: [] };
+    const alts = toks.map(w => (SYN[w] || [w]).concat(w.length >= 5 ? [w.slice(0, -1)] : []).map(wre));
+    const ok = (txt, need) => alts.filter(a => a.some(rx => rx.test(txt))).length >= need;
+    const need = toks.length;
+    const tables = [], notes = [];
+    I.tabs.forEach(T => {
+      T.tables.forEach(tb => { const ctx = nd(T.label + ' ' + tb.sec + ' ' + tb.h.join(' '));
+        const head = nd(tb.sec + ' ' + tb.h.join(' ')), whole = need >= 2 && ok(head + ' ' + nd(T.label), need) && ok(head, Math.max(1, need - 1));
+        const hits = whole ? tb.r : tb.r.filter(r => { const rt = nd(r.join(' ')); const all = ctx + ' ' + rt;
+          return ok(all, need) && alts.some(a => a.some(rx => rx.test(rt))); });
+        if (hits.length) tables.push({ v: T.panel, label: T.label, sec: tb.sec, h: tb.h, hits, score: hits.length <= 8 ? 2 : 1, ctxHit: ok(ctx, need) }); });
+      T.notes.forEach(n => { const t = nd(n.t + ' ' + n.sec); if (ok(t, need)) notes.push({ v: T.panel, label: T.label, sec: n.sec, t: n.t }); });
+    });
+    tables.sort((a, b) => (b.score - a.score) || (a.hits.length - b.hits.length));
+    const all = [...new Set(toks.flatMap(w => (SYN[w] || [w])))].sort((a, b) => b.length - a.length).map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    return { tables, notes, toks: alts.flat(), one: new RegExp('(?<![\\p{L}\\d])(' + all.join('|') + ')', 'giu') };
+  }
+  // surlignage en une passe : comparaison sans accents, balises inserees dans le texte d'origine
+  function hl1(t, rx) { t = String(t || ''); const n = nd(t); let out = '', i = 0; rx.lastIndex = 0; let m;
+    while ((m = rx.exec(n))) { if (!m[0].length) { rx.lastIndex++; continue; } out += esc(t.slice(i, m.index)) + '<mark>' + esc(t.slice(m.index, m.index + m[0].length)) + '</mark>'; i = m.index + m[0].length; }
+    return out + esc(t.slice(i)); }
+  function indexHtml(q) {
+    const H = indexHits(q); let html = '';
+    if (H.tables.length) {
+      html += `<div class="gs-sec">In the dashboard's tables · ${H.tables.length} table${H.tables.length > 1 ? 's' : ''}</div>` + H.tables.slice(0, 12).map(t => {
+        const rows = t.hits.slice(0, 8), more = t.hits.length - rows.length;
+        return `<div class="gs-card"><h4>${esc(t.sec || t.label)} <span class="gs-go" style="font-size:12px;font-weight:400" onclick="gsGoTab('${t.v}', ${JSON.stringify(t.sec).replace(/"/g, '&quot;')})">→ ${esc(t.label)}</span></h4>` +
+          `<div style="overflow-x:auto"><table>${t.h.length ? `<tr>${t.h.map(x => `<th>${esc(x)}</th>`).join('')}</tr>` : ''}` +
+          rows.map(r => `<tr>${r.map(c => `<td>${hl1(c, H.one)}</td>`).join('')}</tr>`).join('') + `</table></div>${more > 0 ? `<div class="s">… and ${more} more line${more > 1 ? 's' : ''} in this table.</div>` : ''}</div>`; }).join('');
+    }
+    if (H.notes.length) html += `<div class="gs-sec">Explanations and methods</div>` + H.notes.slice(0, 5).map(n => {
+      const t = n.t, i = Math.max(0, ...H.toks.map(rx => { const m = norm(t).search(rx); return m; }).filter(x => x >= 0).slice(0, 1).concat([0]));
+      const snip = (i > 120 ? '…' : '') + t.slice(Math.max(0, i - 120), i + 380) + (t.length > i + 380 ? '…' : '');
+      return `<div class="gs-n"><span class="gs-go" onclick="gsGoTab('${n.v}', ${JSON.stringify(n.sec).replace(/"/g, '&quot;')})">${esc(n.sec || n.label)}</span><small>${esc(n.label)}</small><div style="font-size:12.5px;color:#a9bfcc;margin-top:3px">${hl1(snip, H.one)}</div></div>`; }).join('');
+    return html;
+  }
   // ---- presse
   function news(co, topics, words, bas, mk, prods) {
     const N = D['news.json'] || {}, A = D['news_archive.json'] || {}, seen = new Set(), out = [];
@@ -13119,6 +13172,7 @@ loadRemoteData().then(live => {
         want('harv') || want('price') || !topics.length || want('big') ? qCard(co) : '', want('mort') || !topics.length ? evCard(co, []) : '', want('plant') || !topics.length ? plantCard(co) : ''].filter(Boolean);
       if (cards.length) html += `<div class="gs-sec">From the dashboard's data · ${esc(co)}${topics.length ? ' · ' + topics.map(t => TOP_WORDS[t].split(' ')[0]).join(', ') : ''}</div>` + cards.join('');
     } else if (topics.includes('mort') && !po) html += evCard(null, [], bas);
+    const ih = indexHtml(q); html += ih;
     const nw = po ? [] : words;
     let N = news(co, topics, nw, bas, mk, prods), fb = bas ? ` · ${BAS_NAME[bas]} only` : '';
     if (!N.length && mk && prods.length) { N = news(co, topics, nw, bas, mk, []); if (N.length) fb += ` — none about ${prods.join(', ')}`; }
@@ -13127,7 +13181,7 @@ loadRemoteData().then(live => {
     html += `<div class="gs-sec">Press · ${N.length} article${N.length === 1 ? '' : 's'}${N.length > 25 ? ', latest 25' : ''}${esc(fb)}</div>` +
       (N.length ? N.slice(0, 25).map(x => `<div class="gs-n">${x.u ? `<a href="${esc(typeof nwUrl === 'function' ? nwUrl(x.u) : x.u)}" target="_blank" rel="noopener">${hl(x.t, hw)}</a>` : hl(x.t, hw)}<small>${esc(x.d)} · ${esc(x.src || '')}</small>` +
         (x.extra ? `<div style="font-size:12px;color:#8fa4b0">${hl(String(x.extra).slice(0, 260), hw)}</div>` : '') + `</div>`).join('') : '<div class="gs-hint">No article in the last 400 days matches.</div>');
-    const S = sections(nw.concat(topics.map(t => norm(TOP_WORDS[t]))).concat(po ? ['zone'] : []), co, bas);
+    const S = ih ? [] : sections(nw.concat(topics.map(t => norm(TOP_WORDS[t]))).concat(po ? ['zone'] : []), co, bas);
     if (S.length) html += `<div class="gs-sec">In the dashboard</div>` + S.map(s => `<div class="gs-go" onclick="gsGoTab('${s.v}', ${JSON.stringify(s.T).replace(/"/g, '&quot;')})">${esc(s.T)}<small>${esc((document.querySelector(`#sideNav .sn-item[data-v="${PANEL_TAB[s.v] || s.v}"]`) || {}).textContent || s.v)}</small></div>`).join('');
     out.innerHTML = html || '<div class="gs-hint">Nothing found.</div>';
   }

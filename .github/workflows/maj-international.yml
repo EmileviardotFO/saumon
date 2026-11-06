@@ -140,6 +140,14 @@ jobs:
       continue-on-error: true
       timeout-minutes: 5
       run: python3 scripts/build_faroe.py
+    - name: Index de recherche (toutes les lignes de tous les tableaux)
+      id: search_index
+      continue-on-error: true
+      timeout-minutes: 20
+      run: |
+        pip install -q playwright
+        python3 -m playwright install --with-deps chromium > /dev/null
+        python3 scripts/build_search_index.py
     - name: Enregistrer l'etat des sources dans data.json
       if: always()
       env:
