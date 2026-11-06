@@ -1224,6 +1224,16 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="sig-title" style="margin-top:16px;font-size:15px">Smolts put to sea, month by month — 2024, 2025, 2026 (MAST)</div>
     <div class="sig-sub" id="isSmoltSub"></div>
     <div id="isSmolt"></div>
+    <div class="sig-title" style="margin-top:16px;font-size:15px">Harvest outlook — fish ready soon, next 3 and 6 months, next year by quarter (MAST)</div>
+    <div class="sig-sub" id="isOutSub"></div>
+    <div id="isOutCards" class="pr-cards"></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:14px;align-items:start">
+      <div style="overflow-x:auto"><table class="sig-table" id="isOutStruct" style="font-size:12.5px"></table></div>
+      <div style="overflow-x:auto"><table class="sig-table" id="isOutYear" style="font-size:12.5px"></table></div>
+    </div>
+    <div class="sig-sub" id="isOutNote"></div>
+    <div class="sig-sub" style="margin-top:10px"><b>Sea temperature at the farms</b> — average of the sites' lice reports to MAST, °C</div>
+    <div id="isTemp"></div>
     <div class="sig-title" style="margin-top:16px;font-size:15px">Fish at sea, site by site (MAST)</div>
     <div class="sig-sub" id="isSiteSub"></div>
     <div style="overflow-x:auto"><table class="sig-table" id="isSites" style="font-size:12.5px"></table></div>
@@ -3613,6 +3623,43 @@ function renderIceland() {
           `<tr><td class="name">At sea</td>${yrs.slice(-6).map(y => `<td>${t0(tot('Sjókvíaeldi', y))}</td>`).join('')}</tr>` +
           `<tr><td class="name">Land share</td>${yrs.slice(-6).map(y => `<td>${(100 * tot('Landeldi', y) / (tot('Landeldi', y) + tot('Sjókvíaeldi', y))).toFixed(1)} %</td>`).join('')}</tr></tbody>`;
       } else ['isLandSub', 'isLandChart', 'isLandLeg', 'isLand'].forEach(id => $i(id).innerHTML = ''); }
+    // ---- perspectives de recolte (data/iceland_outlook.json <- scripts/build_iceland_outlook.py) ----
+    if (window.IS_OUT === undefined) { window.IS_OUT = null; fetch(DATA_URL.replace('data.json', 'iceland_outlook.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
+      .then(j => { window.IS_OUT = j || false; if (currentView === 'iceland') renderIceland(); }); }
+    const O = window.IS_OUT;
+    if (O && O.near) { const card = (t, big, ln) => `<div class="pr-card" style="cursor:default"><div class="nm">${t}</div><div class="big">${big}</div><div class="ln">${ln}</div></div>`;
+      const n = O.near, ml2 = k => fdMon(k), mlL = k => mo(k), qY = O.year.year, sc = O.year.scenarios, act = O.year.actual_quarters;
+      const ktx = v => v === null || v === undefined ? '—' : (v / 1000).toFixed(1) + ' kt';
+      $i('isOutSub').innerHTML = `Everything here comes from the farms' monthly reports to MAST, site by site, to ${mlL(O.meta.last)}. Fish over 4 kg are the ones harvested in the next months; ` +
+        `their biomass at the end of ${mlL(O.meta.last)} is <b>${ktx(n.b4)}</b> against ${ktx(n.b4_ly)} a year earlier (${ch(n.b4, n.b4_ly)}); over 3 kg ${ktx(n.b3)} against ${ktx(n.b3_ly)} (${ch(n.b3, n.b3_ly)}).`;
+      $i('isOutCards').innerHTML = card(`Next 3 months · ${ml2(n.span3.slice(0, 7))}–${ml2(n.span3.slice(-7))}`, ktx(n.h3), `${ch(n.h3, n.ly3)} on the same months a year earlier (${ktx(n.ly3)})<br><span style="color:var(--muted)">fish over 4 kg × ${n.r3.toFixed(2)}, the usual ratio of the last 12 months; average error ±${n.err3.toFixed(0)} %</span>`) +
+        card(`Next 6 months · ${ml2(n.span6.slice(0, 7))}–${ml2(n.span6.slice(-7))}`, ktx(n.h6), `${ch(n.h6, n.ly6)} on a year earlier (${ktx(n.ly6)})<br><span style="color:var(--muted)">fish over 3 kg × ${n.r6.toFixed(2)}; average error ±${n.err6.toFixed(0)} %</span>`) +
+        (() => { const y = k => ['fades', 'central', 'kept'].map(x => Object.entries(sc[x]).filter(([q]) => q.startsWith(String(k))).reduce((a, [, v]) => a + v, 0));
+          const cur = [1, 2, 3, 4].map(q => act[`${qY - 1}-Q${q}`] !== undefined ? act[`${qY - 1}-Q${q}`] : sc.central[`${qY - 1}-Q${q}`] || 0).reduce((a, b) => a + b, 0), nx = y(qY);
+          return card(`Harvest ${qY} (simulation)`, `${(nx[1] / 1000).toFixed(0)} kt`, `${ch(nx[1], cur)} on ${qY - 1} (${(cur / 1000).toFixed(0)} kt, actual to ${mlL(O.meta.last)} + projection)<br>range ${(Math.min(...nx) / 1000).toFixed(0)}–${(Math.max(...nx) / 1000).toFixed(0)} kt`); })();
+      const ST = O.structure, cl = Object.keys(ST.now);
+      $i('isOutStruct').innerHTML = `<thead><tr><th class="name">Fish at sea by size</th><th>${mlL(ST.k)}<br>(t)</th><th>${mlL(ST.k_ly)}<br>(t)</th><th>Change</th><th>Fish (M)<br>now / then</th></tr></thead><tbody>` +
+        cl.slice().reverse().map(c => `<tr><td class="name">${c}</td><td><b>${t0(ST.now[c].t)}</b></td><td>${t0(ST.year_before[c].t)}</td><td>${ch(ST.now[c].t, ST.year_before[c].t)}</td><td>${(ST.now[c].fish / 1e6).toFixed(2)} / ${(ST.year_before[c].fish / 1e6).toFixed(2)}</td></tr>`).join('') + `</tbody>`;
+      const qs = [1, 2, 3, 4];
+      $i('isOutYear').innerHTML = `<thead><tr><th class="name">Harvest (t)</th>${qs.map(q => `<th>Q${q}</th>`).join('')}<th>Year</th></tr></thead><tbody>` +
+        [[`${qY - 2} actual`, q => act[`${qY - 2}-Q${q}`]], [`${qY - 1} actual / projected`, q => act[`${qY - 1}-Q${q}`] !== undefined ? act[`${qY - 1}-Q${q}`] : sc.central[`${qY - 1}-Q${q}`]],
+         [`${qY} central`, q => sc.central[`${qY}-Q${q}`]], [`${qY} advance fades`, q => sc.fades[`${qY}-Q${q}`]], [`${qY} advance kept`, q => sc.kept[`${qY}-Q${q}`]]]
+          .map(([lab, f], i) => { const v = qs.map(f); return `<tr${i === 2 ? ' style="font-weight:700"' : ''}><td class="name">${lab}</td>${v.map((x, j) => `<td${i === 1 && act[`${qY - 1}-Q${j + 1}`] === undefined ? ' style="font-style:italic"' : ''}>${x ? t0(x) : '—'}</td>`).join('')}<td>${t0(v.reduce((a, b) => a + (b || 0), 0))}</td></tr>`; }).join('') + `</tbody>`;
+      const bt = (O.year.backtest || []).filter(b => b.from >= '2025-04'), mae = bt.length ? bt.reduce((a, b) => a + Math.abs(b.err_pct), 0) / bt.length : null;
+      $i('isOutNote').innerHTML = `<b>How the year is simulated.</b> Each site is followed month by month from its fish and average weight: growth along Iceland's weight-by-months-at-sea curve (median of every site cycle since 2023: about 4 kg after 18 months, 5 kg after 22–24), each site keeping part of its advance or delay (scenarios: fades fast, central, kept)` +
+        (O.year.temperature_used ? ', corrected by its sea temperature against its own normal' : '') + `; harvest = the share of the stock usually taken at that weight, higher once a site has started harvesting; mortality = Iceland's monthly average. ` +
+        `Everything harvested in ${qY} is already at sea. Tested from earlier months over the following 12: ` + (mae !== null ? `average error ${mae.toFixed(0)} % since spring 2025 (${bt.map(b => `${b.err_pct > 0 ? '+' : ''}${b.err_pct.toFixed(0)}`).join(', ')} %); ` : '') +
+        `from 2024 the error was much larger (+40 to +95 %) because the site history then covered barely a year. Quarters are less reliable than the year. Projected quarters of ${qY - 1} are in italics.`;
+    }
+    // ---- temperature de la mer (moyenne des sites, rapports de poux a MAST), 3 annees
+    { const TT = {}; (MS.temp || []).forEach(t => { if (!(t.t > 0)) return; const x = (TT[t.m] = TT[t.m] || [0, 0]); x[0] += t.t; x[1]++; });
+      const ks = Object.keys(TT).sort(), L = ks[ks.length - 1];
+      if (L) { const LY = +L.slice(0, 4), MN = MONTHS_FR.map(m => m.slice(0, 3)), v = (y, m) => { const x = TT[`${y}-${String(m).padStart(2, '0')}`]; return x && x[1] >= 5 ? x[0] / x[1] : null; };
+        const ser = [[LY - 2, '#8fa4b0', '2 4', 1.2], [LY - 1, '#4fc3f7', '5 4', 1.6], [LY, '#ff8a65', null, 2.4]].map(([y, col, dash, w]) => ({ label: String(y), col, dash, w, values: MN.map((_, i) => v(y, i + 1)) }));
+        const lm = +L.slice(5, 7), d = v(LY, lm) !== null && v(LY - 1, lm) !== null ? v(LY, lm) - v(LY - 1, lm) : null;
+        $i('isTemp').innerHTML = fdLines(MN, ser, { h: 190, fmt: x => x.toFixed(0) }) + `<div class="sig-sub">${fdLeg(ser)}` +
+          (d !== null ? ` — ${MONTHS_FR[lm - 1]} ${LY}: ${v(LY, lm).toFixed(1)} °C, ${d >= 0 ? '+' : '−'}${Math.abs(d).toFixed(1)} °C on a year earlier.` : '') +
+          ` In winter Iceland's farms sit in water several degrees colder than Norway's, which is why its cycles are longer.</div>`; } }
     // ---- smolts mis a l'eau chaque mois (somme des "fish in" des sites), 3 dernieres annees en batons groupes ----
     { const IN = {}; (MS.sites || []).forEach(x => { if (x.in) IN[x.m] = (IN[x.m] || 0) + x.in; });
       const lm = MS.sites_last_month, LY = +lm.slice(0, 4), LM = +lm.slice(5, 7), YS = [LY - 2, LY - 1, LY], COL = ['#8fa4b0', '#4fc3f7', '#ffb74d'];
@@ -3632,7 +3679,8 @@ function renderIceland() {
         YS.map((y, j) => `<span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><i style="display:inline-block;width:11px;height:11px;border-radius:2px;background:${COL[j]}"></i>${y}</span>`).join('') + `</div>`;
       $i('isSmoltSub').innerHTML = `Fish put into the sea cages each month, summed over all sites, from the farms' monthly reports to MAST (smolts and the occasional transfer between sites). ` +
         `January–${MONTHS_FR[LM - 1]}: <b>${ytd(LY).toFixed(1)} M</b> in ${LY}, against ${ytd(LY - 1).toFixed(1)} M in ${LY - 1} (${ch(ytd(LY), ytd(LY - 1))}) and ${ytd(LY - 2).toFixed(1)} M in ${LY - 2}. ` +
-        `Whole years: ${full(LY - 2).toFixed(1)} M in ${LY - 2}, ${full(LY - 1).toFixed(1)} M in ${LY - 1}. Stocking runs from spring to autumn.`; }
+        `Whole years: ${full(LY - 2).toFixed(1)} M in ${LY - 2}, ${full(LY - 1).toFixed(1)} M in ${LY - 1}. Stocking runs from spring to autumn.` +
+        (window.IS_OUT && window.IS_OUT.smolt_weight ? ` Average weight in the first month at sea (biomass ÷ fish of the newly stocked sites): ${Object.entries(window.IS_OUT.smolt_weight).filter(([y]) => +y >= LY - 2).map(([y, v]) => `${y} ${Math.round(v.kg * 1000)} g (${v.sites} sites)`).join(', ')}.` : ''); }
     // ---- site par site, dernier mois ----
     { const lm = MS.sites_last_month, pm = (() => { const [y, m] = lm.split('-').map(Number); return m === 1 ? `${y - 1}-12` : `${y}-${String(m - 1).padStart(2, '0')}`; })();
       const prev = {}; (MS.sites || []).filter(x => x.m === pm).forEach(x => prev[x.site] = x);

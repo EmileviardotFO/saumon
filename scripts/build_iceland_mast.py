@@ -335,7 +335,7 @@ def main():
                 if x['Lok tímabils'] is None or not x['Svæði'] or v is None:
                     continue
                 v = num(v)
-                if not (-2 < v < 20):
+                if not (0 < v < 20):          # 0 = pas de mesure
                     continue
                 T.setdefault((x['Svæði'], month(x['Lok tímabils'])), []).append(v)
             out['temp'] = [{'site': s_, 'm': m_, 't': round(sum(v) / len(v), 2)} for (s_, m_), v in sorted(T.items())]
