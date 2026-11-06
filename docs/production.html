@@ -12785,12 +12785,14 @@ loadRemoteData().then(live => {
     ['Multi X', /multi ?x|multiexport/], ['Blumar', /blumar/], ['Camanchaca', /camanchaca/], ['Australis', /australis/], ['Salmones Austral', /salmones austral/],
     ['Cooke', /cooke/], ['Scottish Sea Farms', /scottish sea farms/], ['Huon', /huon/], ['Tassal', /tassal/], ['Salmon Evolution', /salmon evolution/],
     ['Eide Fjordbruk', /eide fjordbruk/], ['Sinkaberg-Hansen', /sinkaberg/], ['Seashore', /seashore/], ['Hiddenfjord', /hiddenfjord|luna/], ['Kvarøy', /kvar[øo]y/]];
-  const TOP = { lice: /\b(lice|louse|lus|lakselus|poux|pou|piojo|caligus|sea ?lice)\b/, mort: /mortal|death|dead|d[øo]d|deces|décès|muert|morts?\b/,
-    dis: /disease|ila\b|isa\b|\bpd\b|pancrea|sykdom|maladie|enferm/, big: /6\+|6 ?kg|big fish|gros|calib|size|store fisk|stor fisk|weight|poids/,
-    harv: /harvest|slakt|r[ée]colte|cosecha|volume|guidance|production/, china: /china|kina|chine|chinese|chinois/, plant: /plant|slakteri|usine|abattoir|processing|transform/,
-    price: /pri[cx]|prix|precio|nok\b/ };
-  const TOP_WORDS = { lice: 'lice lus lakselus poux caligus', mort: 'mortality death dead dødelighet mortalité', dis: 'disease ILA PD sykdom', big: '6+ big fish storfisk',
-    harv: 'harvest slakt guidance', china: 'China Kina', plant: 'plant slakteri processing', price: 'price pris' };
+  const TOP = { lice: /\b(lice|louse|lus|lakselus|poux|pou|piojos?|caligus)\b/, mort: /\b(mortal\w*|deaths?|dead|dod\w*|deces|muert\w*|mortes?|tap)\b/,
+    dis: /\b(diseases?|ila|isa|pd|pancrea\w*|sykdom\w*|maladies?|enfermedad\w*|smitte\w*)\b/, big: /(6\+|\b6 ?kg\b|\bbig fish\b|\bgros poissons?\b|\bcalib\w*|\bstor ?fisk\b)/,
+    harv: /\b(harvest\w*|slakt\w*|recoltes?|cosecha\w*|guidance)\b/, china: /\b(china|kina|chine|chinese|chinois\w*)\b/, plant: /\b(plants?|slakteri\w*|usines?|abattoirs?|processing)\b/,
+    price: /\b(prices?|pris|prix|precios?)\b/ };
+  const TOP_WORDS = { lice: 'lice', mort: 'mortality', dis: 'disease', big: '6+', harv: 'harvest', china: 'China', plant: 'plants', price: 'price' };
+  const BAS = [['NO', /\b(norway|norvege|norge|norsk|norwegian|norvegien\w*)\b/], ['CL', /\b(chile|chili|chilean|chilien\w*)\b/], ['IS', /\b(iceland|islande|island|islandais)\b/],
+    ['FO', /\b(faroe\w*|feroe|feroes|foroyar)\b/], ['GB', /\b(scotland|ecosse|scottish|ecossais\w*)\b/], ['CA', /\b(canada|canadian|canadien\w*)\b/], ['AU', /\b(tasmania\w*|australi\w*)\b/]];
+  const BAS_NAME = { NO: 'Norway', CL: 'Chile', IS: 'Iceland', FO: 'Faroe Islands', GB: 'Scotland', CA: 'Canada', AU: 'Tasmania' };
   const norm = s => String(s || '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/ø/g, 'o').replace(/æ/g, 'ae').replace(/å/g, 'a');
   const esc = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
   const D = {}; let loading = null;
@@ -12817,8 +12819,8 @@ loadRemoteData().then(live => {
   q2.addEventListener('keydown', e => { if (e.key === 'Enter') run(q2.value); if (e.key === 'Escape') close(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && P.style.display === 'block') close();
     if (e.key === '/' && !/INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || '')) { e.preventDefault(); open(''); } });
-  const goTab = (v, title) => { close(); const b = document.querySelector(`#sideNav .sn-item[data-v="${v}"]`) || document.querySelector(`#viewToggle button[data-v="${v}"]`); if (b) b.click();
-    if (title) setTimeout(() => { const t = [...document.querySelectorAll('#' + v + 'View .sig-title, #' + v + 'View .gm-t, #' + v + 'View .gm-h1')].find(x => x.textContent.trim() === title); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 900); };
+  const goTab = (v, title) => { close(); if (v === 'is') v = 'iceland'; const b = document.querySelector(`#sideNav .sn-item[data-v="${v}"]`) || document.querySelector(`#viewToggle button[data-v="${v}"]`); if (b) b.click();
+    if (title) setTimeout(() => { const pid = v === 'iceland' && !document.getElementById('icelandView') ? 'is' : v; const t = [...document.querySelectorAll('#' + pid + 'View .sig-title, #' + v + 'View .gm-t, #' + v + 'View .gm-h1')].find(x => x.textContent.trim() === title); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 900); };
   window.gsGoTab = goTab;
   // ---- fiches calculees
   const R = () => (typeof DATA_RAW !== 'undefined' && DATA_RAW ? DATA_RAW : {}).bw_register || {};
@@ -12868,12 +12870,12 @@ loadRemoteData().then(live => {
         `${s.ebit_per_kg !== undefined ? `, EBIT ${s.ebit_per_kg} ${esc(s.currency)}/kg` : ''}${s.guidance_t ? `, guidance ${s.guidance_year} ${Math.round(s.guidance_t).toLocaleString('en-US')} t` : ''}${s.next_year_guidance_t ? `, ${s.guidance_year + 1}: ${Math.round(s.next_year_guidance_t).toLocaleString('en-US')} t` : ''}` +
         `${(s.biology || []).length ? `. Biology: ${s.biology.map(esc).join(' ')}` : ''}${(s.notes || []).length ? ` <i>${s.notes.map(esc).join(' ')}</i>` : ''}`).join('<br>') + `</div></div>`;
   }
-  function evCard(co, words) {
+  function evCard(co, words, bas) {
     const E = D['events.json']; if (!E) return '';
-    const L = [...(E.manual || []), ...(E.auto || [])].filter(e => (!co || norm(e.company + ' ' + e.note).includes(norm(co).split(' ')[0])) && (!words.length || words.every(w => norm(JSON.stringify(e)).includes(w)) || co))
+    const L = [...(E.manual || []), ...(E.auto || [])].filter(e => (!bas || e.basin === bas) && (!co || norm(e.company + ' ' + e.note).includes(norm(co).split(' ')[0])) && (!words.length || words.every(w => norm(JSON.stringify(e)).includes(w)) || co))
       .sort((a, b) => a.date < b.date ? 1 : -1).slice(0, 6);
     if (!L.length) return '';
-    return `<div class="gs-card"><h4>Recorded mortality events${co ? ' · ' + esc(co) : ''}</h4><div class="s">` + L.map(e => `<b>${esc(e.date)}</b> ${esc(e.basin)} ${esc(e.region)} — ${esc(e.cause)}${e.fish_m ? `, ${e.fish_m} M fish` : ''}${e.tonnes ? `, ${Math.round(e.tonnes).toLocaleString('en-US')} t` : ''}: ${esc(String(e.note || '').slice(0, 220))}`).join('<br>') +
+    return `<div class="gs-card"><h4>Recorded mortality events${co ? ' · ' + esc(co) : ''}${bas ? ' · ' + BAS_NAME[bas] : ''}</h4><div class="s">` + L.map(e => `<b>${esc(e.date)}</b> ${esc(e.basin)} ${esc(e.region)} — ${esc(e.cause)}${e.fish_m ? `, ${e.fish_m} M fish` : ''}${e.tonnes ? `, ${Math.round(e.tonnes).toLocaleString('en-US')} t` : ''}: ${esc(String(e.note || '').slice(0, 220))}`).join('<br>') +
       ` <span class="gs-go" onclick="gsGoTab('health')">→ Fish health, recorded events</span></div></div>`;
   }
   function plantCard(co) {
@@ -12884,25 +12886,76 @@ loadRemoteData().then(live => {
       (no.length ? `Norway: ${no.map(x => `${esc(x.city)} (${x.slaughter ? 'slaughter' : 'processing'})`).join(', ')}. <span class="gs-go" onclick="gsGoTab('register')">→ Farm register, map</span><br>` : '') +
       (cl.length ? `Chile: ${cl.map(x => `${esc(x.plant)}, ${esc(x.town)}${x.slaughter ? ' (slaughter)' : ''}`).join('; ')}. <span class="gs-go" onclick="gsGoTab('chile')">→ Chile tab</span>` : '') + `</div></div>`;
   }
+
+  // ---- zone de production norvegienne (PO 1-13)
+  const recs = () => ((typeof DATA_RAW !== 'undefined' && DATA_RAW ? DATA_RAW : {}).records || []);
+  function zoneMort(po) {
+    const R0 = recs(), Z = R0.filter(r => r.po === po), N0 = R0.filter(r => r.po === 0); if (!Z.length) return '';
+    const k = r => r.year * 100 + r.month, by = {}, nb = {}; Z.forEach(r => by[k(r)] = r); N0.forEach(r => nb[k(r)] = r);
+    const L = Math.max(...Z.map(k)), ks = []; for (let i = 11; i >= 0; i--) { let y = Math.floor(L / 100), m = L % 100 - i; while (m < 1) { m += 12; y--; } ks.push(y * 100 + m); }
+    const f = v => v === null || v === undefined ? '—' : v.toFixed(2), ml = x => `${MONTHS_FR[x % 100 - 1].slice(0, 3)} ${String(Math.floor(x / 100)).slice(2)}`;
+    const dead = (map, list) => list.reduce((a, x) => a + ((map[x] || {}).dodfisk_stk || 0), 0), prev = ks.map(x => x - 100);
+    const d12 = dead(by, ks), d12p = dead(by, prev), cur = by[L], ly = by[L - 100];
+    const hist = [1, 2, 3, 4, 5].map(i => by[L - 100 * i]).filter(Boolean).map(r => r.mortality_pct), avg5 = hist.length ? hist.reduce((a, b) => a + b, 0) / hist.length : null;
+    return `<div class="gs-card"><h4>Mortality · zone ${po} ${esc(PO_NAMES[po] || '')} — ${ml(L)}</h4><div class="s">Dead fish in the month: <b>${(cur.dodfisk_stk / 1e6).toFixed(2)} M</b>, <b class="${avg5 && cur.mortality_pct > avg5 * 1.3 ? 'bad' : avg5 && cur.mortality_pct < avg5 * 0.8 ? 'good' : ''}">${f(cur.mortality_pct)} %</b> of the fish at sea` +
+      (ly ? ` (${f(ly.mortality_pct)} % a year earlier` : ' (') + (avg5 ? `, ${f(avg5)} % on average for the month over the previous ${hist.length} years)` : ')') +
+      `. Last 12 months: ${(d12 / 1e6).toFixed(1)} M dead fish against ${(d12p / 1e6).toFixed(1)} M the 12 months before (${d12p ? (d12 >= d12p ? '+' : '−') + Math.abs(Math.round(100 * (d12 / d12p - 1))) + ' %' : '—'}). Source: Fiskeridirektoratet biomass register, monthly.</div>` +
+      `<table><tr><th>Month</th>${ks.map(x => `<th>${ml(x)}</th>`).join('')}</tr><tr><td>Zone ${po}, % dead</td>${ks.map(x => `<td class="${by[x] && by[x - 100] && by[x].mortality_pct > by[x - 100].mortality_pct * 1.3 ? 'bad' : ''}"${by[x] && by[x].mortality_pct > 50 ? ' title="Above 50 %: reporting error in the register (deaths declared late or fish moved), see the data-quality note in the National view"' : ''}>${by[x] && by[x].mortality_pct > 50 ? '<i>' + f(by[x].mortality_pct) + '?</i>' : f((by[x] || {}).mortality_pct)}</td>`).join('')}</tr>` +
+      `<tr><td>a year earlier</td>${ks.map(x => `<td>${f((by[x - 100] || {}).mortality_pct)}</td>`).join('')}</tr><tr><td>All Norway</td>${ks.map(x => `<td>${f((nb[x] || {}).mortality_pct)}</td>`).join('')}</tr>` +
+      `<tr><td>Dead fish (M)</td>${ks.map(x => `<td>${by[x] ? (by[x].dodfisk_stk / 1e6).toFixed(2) : '—'}</td>`).join('')}</tr></table>` +
+      `<div class="s" style="margin-top:6px"><span class="gs-go" onclick="gsGoTab('po')">→ By zone (PO)</span> · <span class="gs-go" onclick="gsGoTab('health')">→ Fish health, recorded events</span></div></div>`;
+  }
+  function zoneLice(po) {
+    const B = (typeof DATA_RAW !== 'undefined' && DATA_RAW ? DATA_RAW : {}).bw_weekly || {}, rows = (B.rows || []).filter(r => r.po === po); if (!rows.length) return '';
+    const by = {}; rows.forEach(r => by[r.y * 100 + r.w] = r); const ks = Object.keys(by).map(Number).sort((a, b) => a - b).slice(-12);
+    const cur = by[ks[ks.length - 1]], ly = by[ks[ks.length - 1] - 100], f = v => v === null || v === undefined ? '—' : v.toFixed(2);
+    // eleveurs de la zone, derniere semaine (poux site par site)
+    let farm = ''; const L = D['bw_site_lice.json'];
+    if (L && (L.weeks || []).length) { const O = orgOf(), PO = R().site_po || {}, n = L.weeks.length, g = {};
+      Object.entries(L.sites).forEach(([s, a]) => { if (PO[s] !== po || a[n - 1] === null || a[n - 1] === undefined) return; (g[O[s] || '?'] = g[O[s] || '?'] || []).push(a[n - 1]); });
+      const t = Object.entries(g).filter(([, v]) => v.length >= 2).map(([c, v]) => [c, mean(v), v.length, v.filter(x => x > lim(po, L.weeks[n - 1])).length]).sort((a, b) => b[1] - a[1]).slice(0, 8);
+      if (t.length) farm = `<div class="s" style="margin-top:6px">By farmer, week ${esc(L.weeks[n - 1])}: ${t.map(([c, m, k, o]) => `${esc(c)} <b class="${m > cur.lice * 1.5 ? 'bad' : ''}">${m.toFixed(2)}</b> (${k} sites${o ? `, <span class="bad">${o} above limit</span>` : ''})`).join(' · ')}</div>`; }
+    return `<div class="gs-card"><h4>Sea lice · zone ${po} — week ${cur.w} ${cur.y}</h4><div class="s">Average adult female lice per fish: <b>${f(cur.lice)}</b> on ${cur.nl} sites${ly ? ` (${f(ly.lice)} a year earlier)` : ''}; <b class="${cur.ov ? 'bad' : ''}">${cur.ov}</b> site(s) above the limit of ${cur.lim}.</div>` +
+      `<table><tr><th>Week</th>${ks.map(k => `<th>${k % 100}</th>`).join('')}</tr><tr><td>Lice per fish</td>${ks.map(k => `<td>${f(by[k].lice)}</td>`).join('')}</tr><tr><td>a year earlier</td>${ks.map(k => `<td>${f((by[k - 100] || {}).lice)}</td>`).join('')}</tr>` +
+      `<tr><td>Sites above limit</td>${ks.map(k => `<td class="${by[k].ov ? 'bad' : ''}">${by[k].ov}</td>`).join('')}</tr></table>${farm}</div>`;
+  }
+  function zoneDis(po) {
+    const B = (typeof DATA_RAW !== 'undefined' && DATA_RAW ? DATA_RAW : {}).bw_weekly || {}, M = B.meta || {}, lw = M.last ? M.last[0] * 100 + M.last[1] : 0, O = orgOf(), NM = R().site_name || {};
+    const act = (B.site_dis || []).filter(r => r[1] === po && r[4] >= lw - 2); if (!lw) return '';
+    const by = {}; act.forEach(r => (by[r[2]] = by[r[2]] || []).push(`${NM[r[0]] || r[0]} (${O[r[0]] || '?'})`));
+    return `<div class="gs-card"><h4>Fish disease · zone ${po}</h4><div class="s">${act.length ? 'Open cases this week: ' + Object.entries(by).map(([k, v]) => `<b class="bad">${esc(k)}</b> on ${v.length} site${v.length > 1 ? 's' : ''}: ${v.map(esc).join('; ')}`).join('. ') + '.' : 'No open ILA or PD case this week.'}</div></div>`;
+  }
+  function zoneEv(po) {
+    const E = D['events.json']; if (!E) return '';
+    const L = [...(E.manual || []), ...(E.auto || [])].filter(e => e.basin === 'NO' && new RegExp('\\bPO ?' + po + '\\b|zone ' + po + '\\b', 'i').test(e.region + ' ' + e.note)).sort((a, b) => a.date < b.date ? 1 : -1).slice(0, 6);
+    return L.length ? `<div class="gs-card"><h4>Recorded mortality events · zone ${po}</h4><div class="s">${L.map(e => `<b>${esc(e.date)}</b> — ${esc(e.cause)}: ${esc(String(e.note || '').slice(0, 200))}`).join('<br>')}</div></div>` : '';
+  }
+  function zoneBig(po) {
+    const B = D['big_fish.json']; const z = B && (B.zones || []).find(x => x.po === po); if (!z) return '';
+    return `<div class="gs-card"><h4>Big fish to harvest · zone ${po}</h4><div class="s">Farmers' shares of the zone's projected 6 kg+ harvest: ${(z.companies || []).slice(0, 6).map(c => `${esc(c.co)} ${c.share6} %`).join(' · ')}. <span class="gs-go" onclick="gsGoTab('generations')">→ Generations / big fish</span></div></div>`;
+  }
   // ---- presse
-  function news(co, topics, words) {
+  function news(co, topics, words, bas) {
     const N = D['news.json'] || {}, A = D['news_archive.json'] || {}, seen = new Set(), out = [];
-    const add = (d, t, u, src, extra) => { const k = norm(t).slice(0, 80); if (seen.has(k)) return; seen.add(k); out.push({ d: d || '', t, u, src, extra }); };
-    (N.items || []).forEach(i => add(i.date, i.title, i.url, i.source, i.summary || ''));
-    (A.headlines || []).forEach(h => add(h.d, h.t, h.u, h.s, ''));
-    (A.stories || []).forEach(s => add(s.last || s.d || '', s.t, (s.arts && s.arts[0] && s.arts[0].url) || '', 'summary', s.m || ''));
+    const add = (d, t, u, src, extra, b) => { const k = norm(t).slice(0, 80); if (seen.has(k)) return; seen.add(k); out.push({ d: d || '', t, u, src, extra, b: [].concat(b || []) }); };
+    (N.items || []).forEach(i => add(i.date, i.title, i.url, i.source, i.summary || '', i.basins));
+    (A.headlines || []).forEach(h => add(h.d, h.t, h.u, h.s, '', h.b));
+    (A.stories || []).forEach(s => add(s.last || s.d || '', s.t, (s.arts && s.arts[0] && s.arts[0].url) || '', 'summary', s.m || '', s.b));
     const coRx = co ? COS.find(c => c[0] === co)[1] : null;
     const topRx = topics.map(t => TOP[t]);
     return out.filter(x => { const t = norm(x.t + ' ' + x.extra);
+        if (bas && !x.b.includes(bas)) return false;
         if (coRx && !coRx.test(t)) return false;
         if (topRx.length && !topRx.some(r => r.test(t))) return false;
-        if (!co && !topics.length) return words.every(w => t.includes(w));
+        if (topics.includes('mort') && topics.length === 1 && /laboral|workplace|worker|trabajador|accident|diver|buzo/.test(t)) return false;
+        if (!co && !topics.length) return words.every(w => new RegExp('\\b' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).test(t));
         return true; })
       .sort((a, b) => a.d < b.d ? 1 : -1);
   }
-  function sections(words, co) {
+  const BAS_VIEWS = { NO: ['global', 'po', 'multi', 'outlook', 'generations', 'genmap', 'genyoy', 'timeatsea', 'health', 'register'], CL: ['chile'], IS: ['is', 'iceland'], FO: ['faroe'], GB: ['scotland'], CA: ['canada'], AU: ['australia'] };
+  function sections(words, co, bas) {
     const out = []; const terms = [...words, ...(co ? [norm(co).split(' ')[0]] : [])]; if (!terms.length) return out;
-    document.querySelectorAll('.panel[id$="View"]').forEach(P => { const v = P.id.replace(/View$/, '');
+    document.querySelectorAll('.panel[id$="View"]').forEach(P => { const v = P.id.replace(/View$/, ''); if (bas && !BAS_VIEWS[bas].includes(v)) return;
       P.querySelectorAll('.sig-title, .gm-t, .gm-h1').forEach(t => { const T = t.textContent.trim(); if (!T) return;
         const sub = t.nextElementSibling && /sig-sub|gm-s|gm-sub/.test(t.nextElementSibling.className) ? t.nextElementSibling.textContent : '';
         const hay = norm(T + ' ' + sub), has = (h, w) => new RegExp('(^|[^a-z0-9])' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '([^a-z0-9]|$)').test(h);
@@ -12910,28 +12963,38 @@ loadRemoteData().then(live => {
         if (sc && (!co || has(hay, terms[terms.length - 1]) || sc >= 2)) out.push({ v, T, sc: sc + (terms.some(w => has(norm(T), w)) ? 1 : 0) }); }); });
     return out.sort((a, b) => b.sc - a.sc).slice(0, 10);
   }
-  const hl = (t, words) => { let s = esc(t); words.filter(w => w.length > 2).forEach(w => { s = s.replace(new RegExp('(' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'ig'), '<mark>$1</mark>'); }); return s; };
+  const hl = (t, rxs) => { let s = esc(t); rxs.forEach(rx => { try { s = s.replace(new RegExp(rx.source.replace(/\\b/g, '(?<![\\p{L}\\d])'), 'giu'), m => `<mark>${m}</mark>`); } catch (e) { } }); return s; };
   async function run(q) {
     q = String(q || '').trim(); if (!q) { out.innerHTML = ''; return; }
     out.innerHTML = '<div class="gs-hint">Searching…</div>'; await load();
     const nq = norm(q), co = (COS.find(([, rx]) => rx.test(nq)) || [])[0];
     const topics = Object.keys(TOP).filter(k => TOP[k].test(nq));
     let rest = nq; if (co) rest = rest.replace(COS.find(c => c[0] === co)[1], ' '); topics.forEach(k => rest = rest.replace(new RegExp(TOP[k].source, 'g'), ' '));
+    let po = null; const zm = rest.match(/\b(?:zone|po|omrade|produksjonsomrade|area|zona)\s*(\d{1,2})\b/);
+    if (zm && +zm[1] >= 1 && +zm[1] <= 13) { po = +zm[1]; rest = rest.replace(zm[0], ' '); }
+    else { const pn = Object.entries(PO_NAMES).find(([k, v]) => +k > 0 && v.split(/ til | og | med /).some(p => p.length > 4 && rest.includes(norm(p)))); if (pn) po = +pn[0]; }
+    let bas = po ? 'NO' : ((BAS.find(([, rx]) => rx.test(rest)) || [])[0] || null); if (bas && !po) rest = rest.replace(BAS.find(b => b[0] === bas)[1], ' ');
     const words = rest.split(/\s+/).filter(w => w.length > 1);
     let html = '';
+    if (po) {
+      const want = t => !topics.length || topics.includes(t);
+      const cards = [want('mort') ? zoneMort(po) : '', want('mort') ? zoneEv(po) : '', want('lice') || want('dis') ? zoneLice(po) : '', want('dis') || want('mort') || want('lice') ? zoneDis(po) : '', want('big') || want('harv') ? zoneBig(po) : ''].filter(Boolean);
+      if (cards.length) html += `<div class="gs-sec">From the dashboard's data · zone ${po} ${esc(PO_NAMES[po] || '')}</div>` + cards.join('');
+    }
     if (co) {
       const want = t => !topics.length || topics.includes(t);
       const cards = [want('lice') || want('dis') ? liceCard(co) : '', want('dis') || want('lice') || want('mort') ? disCard(co) : '', want('big') || want('china') || want('harv') ? bigCard(co) : '',
         want('harv') || want('price') || !topics.length || want('big') ? qCard(co) : '', want('mort') || !topics.length ? evCard(co, []) : '', want('plant') || !topics.length ? plantCard(co) : ''].filter(Boolean);
       if (cards.length) html += `<div class="gs-sec">From the dashboard's data · ${esc(co)}${topics.length ? ' · ' + topics.map(t => TOP_WORDS[t].split(' ')[0]).join(', ') : ''}</div>` + cards.join('');
-    } else if (topics.includes('mort')) html += evCard(null, words);
-    let N = news(co, topics, words), fb = '';
-    if (!N.length && co && topics.length) { N = news(co, [], []); if (N.length) fb = ` — none about ${topics.map(t => TOP_WORDS[t].split(' ')[0]).join(', ')}; latest about ${co}`; }
-    const hw = [...words, ...(co ? [norm(co).split(' ')[0]] : []), ...topics.flatMap(t => TOP_WORDS[t].split(' ').map(norm))];
+    } else if (topics.includes('mort') && !po) html += evCard(null, [], bas);
+    const nw = po ? [] : words;
+    let N = news(co, topics, nw, bas), fb = bas ? ` · ${BAS_NAME[bas]} only` : '';
+    if (!N.length && co && topics.length) { N = news(co, [], [], bas); if (N.length) fb += ` — none about ${topics.map(t => TOP_WORDS[t]).join(', ')}; latest about ${co}`; }
+    const hw = [...topics.map(t => TOP[t]), ...(co ? [COS.find(c => c[0] === co)[1]] : []), ...nw.filter(w => w.length > 2).map(w => new RegExp('\\b' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))];
     html += `<div class="gs-sec">Press · ${N.length} article${N.length === 1 ? '' : 's'}${N.length > 25 ? ', latest 25' : ''}${esc(fb)}</div>` +
       (N.length ? N.slice(0, 25).map(x => `<div class="gs-n">${x.u ? `<a href="${esc(typeof nwUrl === 'function' ? nwUrl(x.u) : x.u)}" target="_blank" rel="noopener">${hl(x.t, hw)}</a>` : hl(x.t, hw)}<small>${esc(x.d)} · ${esc(x.src || '')}</small>` +
         (x.extra ? `<div style="font-size:12px;color:#8fa4b0">${hl(String(x.extra).slice(0, 260), hw)}</div>` : '') + `</div>`).join('') : '<div class="gs-hint">No article in the last 400 days matches.</div>');
-    const S = sections(words.concat(topics.flatMap(t => TOP_WORDS[t].split(' ').slice(0, 1).map(norm))), co);
+    const S = sections(nw.concat(topics.map(t => norm(TOP_WORDS[t]))).concat(po ? ['zone'] : []), co, bas);
     if (S.length) html += `<div class="gs-sec">In the dashboard</div>` + S.map(s => `<div class="gs-go" onclick="gsGoTab('${s.v}', ${JSON.stringify(s.T).replace(/"/g, '&quot;')})">${esc(s.T)}<small>${esc((document.querySelector(`#sideNav .sn-item[data-v="${s.v}"]`) || {}).textContent || s.v)}</small></div>`).join('');
     out.innerHTML = html || '<div class="gs-hint">Nothing found.</div>';
   }
