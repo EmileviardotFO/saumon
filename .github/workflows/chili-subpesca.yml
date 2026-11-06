@@ -40,7 +40,7 @@ jobs:
       - name: Dependances
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq tesseract-ocr tesseract-ocr-spa poppler-utils
-          pip install requests pdfplumber
+          pip install requests pdfplumber opencv-python-headless
       - name: Lire les nouveaux documents
         env:
           BACKFILL_FROM: ${{ inputs.depuis }}

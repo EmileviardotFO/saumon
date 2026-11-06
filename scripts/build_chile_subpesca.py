@@ -24,6 +24,8 @@ import io
 import json
 import os
 import re
+import csv
+import subprocess
 import sys
 import time
 
@@ -86,18 +88,101 @@ def es_date(text):
 
 
 # ------------------------------------------------------------------ 1. resolutions
-def ocr_pages(content, max_pages=40, dpi=300):
-    """texte de chaque page lu par OCR (tesseract, espagnol) : pour les resolutions dont le tableau est une image scannee."""
-    import subprocess, tempfile, glob
+
+def ocr_clean_lines(png_in, png_out):
+    """efface les traits du tableau (sinon tesseract confond cellules fusionnees et bordures)"""
+    import cv2
+    img = cv2.imread(png_in, 0)
+    th = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
+    k = max(40, img.shape[1] // 40)
+    h = cv2.morphologyEx(th, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_RECT, (k, 1)))
+    v = cv2.morphologyEx(th, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_RECT, (1, k)))
+    cv2.imwrite(png_out, 255 - cv2.bitwise_and(th, cv2.bitwise_not(cv2.bitwise_or(h, v))))
+
+def ocr_words(png):
+    r = subprocess.run(['tesseract', png, 'stdout', '-l', 'spa', '--psm', '11', 'tsv'], capture_output=True, text=True, timeout=300)
     out = []
+    for row in csv.DictReader(io.StringIO(r.stdout), delimiter='\t', quoting=csv.QUOTE_NONE):
+        t = (row.get('text') or '').strip()
+        if t and row.get('conf') not in (None, '-1'):
+            x, y, w, h = (int(row[k]) for k in ('left', 'top', 'width', 'height'))
+            out.append({'t': t, 'x': x + w / 2, 'y': y + h / 2, 'x0': x, 'x1': x + w, 'h': h})
+    return out
+
+OCR_FISH = re.compile(r'^\d{1,3}(?:[.,]\d{3})+$|^\d{4,7}$')
+
+def ocr_code_fix(t):
+    d = re.sub(r'\D', '', t)
+    if len(d) == 5 and re.match(r'[0-2]\d{4}$', d): d = '1' + d
+    if len(d) == 7 and re.match(r'1[0-2]', d): d = d[:2] + d[3:] if re.match(r'1[0-2]\d{4}$', d[:2] + d[3:]) else d
+    return d if re.fullmatch(r'1[0-2]\d{4}', d) else None
+
+def ocr_page_rows(W, cols):
+    """cols : x des colonnes acs, code, species, fish (du dernier en-tete vu)"""
+    low = [w['t'].lower() for w in W]
+    hx = {}
+    for w in W:
+        t = w['t'].lower()
+        if t.startswith('código') or t.startswith('codigo'): hx.setdefault('code', w['x'])
+        if t.startswith('especie'): hx.setdefault('sp', w['x'])
+        if t.startswith('peces'): hx.setdefault('fish', w['x'])
+        if t == 'acs': hx.setdefault('acs', w['x'])
+    if 'code' in hx and 'fish' in hx: cols = dict(cols or {}, **hx)
+    if not cols or 'code' not in cols or 'fish' not in cols: return [], cols
+    gap = abs(cols['fish'] - cols['code'])
+    near = (lambda w, c, tol: abs(w['x'] - cols[c]) < tol)
+    codes = [(ocr_code_fix(w['t']), w) for w in W if near(w, 'code', gap * 0.45)]
+    codes = [(c, w) for c, w in codes if c]
+    fishes = [(int(re.sub(r'\D', '', w['t'])), w) for w in W if OCR_FISH.match(w['t']) and near(w, 'fish', gap * 0.45)]
+    fishes = [(f, w) for f, w in fishes if 3000 <= f <= 6_000_000]
+    spw = [w for w in W if re.search(r'(?i)coho|atl|trucha|arco|salar', w['t'])]
+    rows = []
+    for c, cw in codes:
+        # poissons rattaches au centre le plus proche verticalement
+        mine = [(f, w) for f, w in fishes if min(codes, key=lambda z: abs(z[1]['y'] - w['y']))[1] is cw]
+        if not mine: continue
+        f, fw = min(mine, key=lambda z: z[1]['y'])          # premiere option (cellule du haut)
+        sw = [w for w in spw if abs(w['y'] - cw['y']) < 4 * cw['h'] and min(codes, key=lambda z: abs(z[1]['y'] - w['y']))[1] is cw]
+        st = ' '.join(w['t'] for w in sw).lower()
+        sp = 'trucha' if re.search('trucha|arco', st) else 'coho' if 'coho' in st else 'salar' if re.search('atl|salar', st) else None
+        aw = [w for w in W if w['x'] < cw['x0'] and abs(w['y'] - cw['y']) < 1.2 * cw['h'] and re.fullmatch(r'\d{1,2}[A-Z]?(-\d)?', w['t'])]
+        rows.append({'centre': c, 'acs': aw[-1]['t'] if aw else '', 'sp': sp, 'fish': f, 'ocr': True})
+    return rows, cols
+
+
+def ocr_pages(content, max_pages=40, dpi=300):
+    """resolution scannee : chaque page en image, traits du tableau effaces, puis tesseract (espagnol).
+    Renvoie (textes des pages, lignes du tableau des mises a l'eau lues par position des colonnes)."""
+    import subprocess, tempfile, glob
+    texts, rows, cols, seen = [], [], None, set()
     with tempfile.TemporaryDirectory() as d:
         pdf = os.path.join(d, 'doc.pdf'); open(pdf, 'wb').write(content)
         subprocess.run(['pdftoppm', '-r', str(dpi), '-l', str(max_pages), '-png', pdf, os.path.join(d, 'p')], check=True, capture_output=True, timeout=600)
         for img in sorted(glob.glob(os.path.join(d, 'p-*.png'))):
-            r = subprocess.run(['tesseract', img, 'stdout', '-l', 'spa', '--psm', '6'], capture_output=True, timeout=300,
-                               env=dict(os.environ, OMP_THREAD_LIMIT='1'))
-            out.append(r.stdout.decode('utf-8', 'replace'))
-    return out
+            cimg = img.replace('.png', '_c.png')
+            try:
+                ocr_clean_lines(img, cimg)
+            except Exception:
+                cimg = img
+            env = dict(os.environ, OMP_THREAD_LIMIT='1')
+            t = subprocess.run(['tesseract', cimg, 'stdout', '-l', 'spa', '--psm', '6'], capture_output=True, timeout=300, env=env).stdout.decode('utf-8', 'replace')
+            texts.append(t)
+            lo = t.lower()
+            if 'sembrar' not in lo and re.search(r'cosecha|p[ée]rdida|mortalidad', lo):
+                cols = None                          # tableau du rapport technique (recoltes, pertes) : pas des mises a l'eau
+                continue
+            if 'sembrar' not in lo and cols is None:
+                continue
+            W = ocr_words(cimg)
+            rr, cols = ocr_page_rows(W, cols)
+            for r in rr:
+                if r['centre'] not in seen:
+                    seen.add(r['centre']); rows.append(r)
+    known = {r['sp'] for r in rows if r['sp']}
+    if len(known) == 1:
+        for r in rows:
+            if not r['sp']: r['sp'] = next(iter(known)); r['sp_guess'] = True
+    return texts, rows
 
 
 OCR_NUM = r'(?<![\d.,/-])(\d{1,3}(?:[.,]\d{3})+)(?![\d.,/-])'   # milliers separes : jamais une annee ni une date
@@ -188,8 +273,9 @@ def parse_resolution(aid, title, content):
     ocr = False
     if not rows and os.environ.get('OCR', '1') != '0' and not re.search(r'(?i)agrupaci', title):
         try:
-            otexts = ocr_pages(content)
-            rows = ocr_rows(otexts)
+            otexts, rows = ocr_pages(content)
+            if not rows:
+                rows = ocr_rows(otexts)          # repli : lecture ligne a ligne
             if rows or len(full.strip()) < 500:
                 full = full + '\n' + '\n'.join(otexts); ocr = True
         except Exception as ex:  # noqa: BLE001  (pas d'OCR disponible : on reste sur "unread")
