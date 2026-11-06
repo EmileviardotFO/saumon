@@ -16,6 +16,10 @@ on:
         description: "Nombre maximal d'identifiants lus"
         required: false
         default: '600'
+      relire:
+        description: "Relire avec OCR les resolutions restees illisibles (oui/vide)"
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -34,12 +38,15 @@ jobs:
         with:
           python-version: '3.11'
       - name: Dependances
-        run: pip install requests pdfplumber
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq tesseract-ocr tesseract-ocr-spa poppler-utils
+          pip install requests pdfplumber
       - name: Lire les nouveaux documents
         env:
           BACKFILL_FROM: ${{ inputs.depuis }}
           MAX_IDS: ${{ inputs.max || '600' }}
-          THREADS: ${{ inputs.depuis && '6' || '3' }}
+          THREADS: ${{ (inputs.depuis || inputs.relire) && '4' || '3' }}
+          REREAD_UNREAD: ${{ inputs.relire }}
         run: python3 scripts/build_chile_subpesca.py
       - name: Enregistrer
         run: |

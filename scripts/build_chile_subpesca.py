@@ -86,6 +86,47 @@ def es_date(text):
 
 
 # ------------------------------------------------------------------ 1. resolutions
+def ocr_pages(content, max_pages=40, dpi=300):
+    """texte de chaque page lu par OCR (tesseract, espagnol) : pour les resolutions dont le tableau est une image scannee."""
+    import subprocess, tempfile, glob
+    out = []
+    with tempfile.TemporaryDirectory() as d:
+        pdf = os.path.join(d, 'doc.pdf'); open(pdf, 'wb').write(content)
+        subprocess.run(['pdftoppm', '-r', str(dpi), '-l', str(max_pages), '-png', pdf, os.path.join(d, 'p')], check=True, capture_output=True, timeout=600)
+        for img in sorted(glob.glob(os.path.join(d, 'p-*.png'))):
+            r = subprocess.run(['tesseract', img, 'stdout', '-l', 'spa', '--psm', '6'], capture_output=True, timeout=300,
+                               env=dict(os.environ, OMP_THREAD_LIMIT='1'))
+            out.append(r.stdout.decode('utf-8', 'replace'))
+    return out
+
+
+OCR_NUM = r'(\d{1,3}(?:[.,]\d{3})+|\d{4,7})'
+
+
+def ocr_rows(texts):
+    """lignes du tableau "N° de peces a sembrar" dans un texte d'OCR : ACS, code du centre (6 chiffres, 10/11/12...),
+    puis le premier nombre (milliers separes par . ou ,) = poissons a mettre a l'eau. L'espece est cherchee sur la ligne
+    et ses voisines ("Salmón / del / atlántico" est souvent coupe sur trois lignes)."""
+    rows, seen = [], set()
+    for t in texts:
+        L = t.splitlines()
+        for i, ln in enumerate(L):
+            m = re.match(r'^\W*(\d{1,2}[A-Z]?(?:-\d)?)\W+(1[0-2]\d{4})\b(.*)$', ln.strip())
+            if not m:
+                continue
+            nm = re.search(OCR_NUM, m.group(3))
+            if not nm:
+                continue
+            fish = int(re.sub(r'\D', '', nm.group(1)))
+            if not 1000 <= fish <= 6_000_000 or m.group(2) in seen:
+                continue
+            w = ' '.join(L[max(0, i - 1):i + 2]).lower()
+            sp = 'trucha' if 'trucha' in w else 'coho' if re.search(r'coho|pac[ií]f', w) else 'salar' if re.search(r'atl[aá]nt|salm', w) else None
+            seen.add(m.group(2))
+            rows.append({'centre': m.group(2), 'acs': m.group(1), 'sp': sp, 'fish': fish, 'ocr': True})
+    return rows
+
+
 def parse_resolution(aid, title, content):
     import pdfplumber
     rows, seen, cols, harv = [], set(), None, {}
@@ -132,6 +173,16 @@ def parse_resolution(aid, title, content):
     if not rows:
         for m in re.finditer(r'(?m)^\s*(\d{1,2}[A-Z]?(?:-\d)?)\s+(1[0-2]\d{4})\s+(?:\S+\s+){0,3}?(\d{1,3}(?:\.\d{3})+)\s', full):
             rows.append({'centre': m.group(2), 'acs': m.group(1), 'sp': None, 'fish': num(m.group(3))})
+    # repli 2 : tableau scanne -> OCR (si tesseract est installe)
+    ocr = False
+    if not rows and os.environ.get('OCR', '1') != '0' and not re.search(r'(?i)agrupaci', title):
+        try:
+            otexts = ocr_pages(content)
+            rows = ocr_rows(otexts)
+            if rows or len(full.strip()) < 500:
+                full = full + '\n' + '\n'.join(otexts); ocr = True
+        except Exception as ex:  # noqa: BLE001  (pas d'OCR disponible : on reste sur "unread")
+            print(f'  OCR {aid} : {type(ex).__name__}: {ex}'[:200])
     head = full[:2500]
     # region : le code de centre commence par le numero de region (10 Los Lagos, 11 Aysen, 12 Magallanes)
     RG = {'10': 'Los Lagos', '11': 'Aysén', '12': 'Magallanes'}
@@ -148,7 +199,7 @@ def parse_resolution(aid, title, content):
             'fallow': [f'{fallow.group(2)}-{MONTHS[fallow.group(1).lower()]:02d}', f'{fallow.group(4)}-{MONTHS[fallow.group(3).lower()]:02d}'] if fallow else None,
             'rows': rows, 'cycle': {k: list(v.values()) and {'farms': len(v), 'fish': sum(x['fish'] for x in v.values()),
                                                    't': round(sum(x['fish'] * (x['w'] or 0) for x in v.values()) / 1000)} for k, v in harv.items()},
-            'kind': 'prs' if rows else ('density' if re.search(r'(?i)agrupaci', title) else 'unread')}
+            'kind': 'prs' if rows else ('density' if re.search(r'(?i)agrupaci', title) else 'unread'), **({'ocr': True} if ocr and rows else {})}
 
 
 # ------------------------------------------------------------------ 2. monthly sector report
@@ -239,6 +290,18 @@ def main():
     P = {x['id']: x for x in st.get('reports', []) if x}
     last_found, errors, aid, seen = M.get('last_id', start - 1), [], start, 0
     t0 = time.time()
+    if os.environ.get('REREAD_UNREAD'):
+        # relecture (avec OCR) des resolutions restees illisibles et des identifiants en erreur au dernier passage
+        ids = sorted({x['id'] for x in R.values() if x.get('kind') == 'unread' or x.get('error')} | set(M.get('errors_last_run') or []))
+        print(f'relecture de {len(ids)} documents')
+        with cf.ThreadPoolExecutor(threads) as ex:
+            for i, kind, val in ex.map(look, ids):
+                if kind == 'res' and val:
+                    R[i] = val
+                    print(f'  {i} : {val.get("kind")} {len(val.get("rows") or [])} lignes{" (OCR)" if val.get("ocr") else ""}', flush=True)
+                elif kind == 'err':
+                    errors.append(i)
+        seen = limit
     with cf.ThreadPoolExecutor(threads) as ex:
         while seen < limit:
             batch = list(range(aid, aid + threads * 4))
