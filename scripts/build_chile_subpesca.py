@@ -88,19 +88,27 @@ def es_date(text):
 # ------------------------------------------------------------------ 1. resolutions
 def parse_resolution(aid, title, content):
     import pdfplumber
-    rows, seen, cols = [], set(), None
+    rows, seen, cols, harv = [], set(), None, {}
     with pdfplumber.open(io.BytesIO(content)) as pdf:
         texts = []
         for i, p in enumerate(pdf.pages):
             t = p.extract_text() or ''
             texts.append(t)
-            # la resolution s'arrete a son "Informe Tecnico" annexe (tableaux de proposition, a ne pas compter)
-            if i > 0 and re.search(r'(?m)^\s*INFORME T[ÉE]CNICO', t):
-                break
+            # (dans les resolutions anciennes, le tableau de la resolution est une image : on le retrouve en texte dans
+            #  l'informe technique joint, avec le meme en-tete ; le premier chiffre lu pour un centre est garde)
             for tb in p.extract_tables() or []:
                 if not tb or not tb[0]:
                     continue
                 head = [re.sub(r'\s+', ' ', str(h or '')).lower() for h in tb[0]]
+                # recoltes et pertes du cycle qui se termine (effectives et projetees), centre par centre
+                if head and 'digo' in head[0] and len(head) >= 4 and re.search(r'cosecha|p[ée]rdida', head[1]):
+                    kind = ('harv' if 'cosecha' in head[1] else 'loss') + ('_proj' if 'proyect' in head[1] else '')
+                    for r in tb[1:]:
+                        code = re.sub(r'\D', '', str(r[0] or ''))
+                        if len(code) == 6 and num(r[1]) is not None:
+                            w = str(r[2] or '').replace('.', '').replace(',', '.')
+                            harv.setdefault(kind, {})[code] = {'fish': num(r[1]), 'w': float(w) if re.fullmatch(r'[\d.]+', w) else None}
+                    continue
                 ci = next((j for j, h in enumerate(head) if 'peces' in h and 'sembrar' in h), None)
                 cc = next((j for j, h in enumerate(head) if 'digo' in h or 'centro' in h), None)
                 cs = next((j for j, h in enumerate(head) if 'especie' in h), None)
@@ -138,37 +146,39 @@ def parse_resolution(aid, title, content):
     return {'id': aid, 'title': title, 'date': es_date(head) or es_date(full), 'region': reg,
             'company': (comp.group(1).strip().rstrip('.').strip() if comp else ''), 'modifies': bool(re.match(r'(?i)\s*res\.?\s*ex\.?.{0,25}modifica', title)),
             'fallow': [f'{fallow.group(2)}-{MONTHS[fallow.group(1).lower()]:02d}', f'{fallow.group(4)}-{MONTHS[fallow.group(3).lower()]:02d}'] if fallow else None,
-            'rows': rows}
+            'rows': rows, 'cycle': {k: list(v.values()) and {'farms': len(v), 'fish': sum(x['fish'] for x in v.values()),
+                                                   't': round(sum(x['fish'] * (x['w'] or 0) for x in v.values()) / 1000)} for k, v in harv.items()},
+            'kind': 'prs' if rows else ('density' if re.search(r'(?i)agrupaci', title) else 'unread')}
 
 
 # ------------------------------------------------------------------ 2. monthly sector report
 def parse_report(aid, texts):
+    """mois du rapport et cumul depuis janvier de chaque espece. Les titres des especes sont des images dans les rapports
+    recents : les trois puces qui suivent le total des poissons sont, dans l'ordre, saumon atlantique, saumon du
+    Pacifique (coho) et truite arc-en-ciel."""
     full = '\n'.join(texts)
-    m = re.search(r'cosechas de acuicultura acumulad\w* al mes de (' + '|'.join(MONTHS) + r') de (\d{4})', full, re.I) or \
-        re.search(r'cosecha acumulada a (' + '|'.join(MONTHS) + r') (?:de )?(\d{4})', full, re.I)
-    if not m:
+    M = '|'.join(MONTHS)
+    t = re.search(r'cosecha total de peces acumulada (?:a|al mes de) (' + M + r')(?: de)? (\d{4})(.{0,6000})', full, re.I | re.S)
+    if not t:
         return None
-    k = int(m.group(2)) * 100 + MONTHS[m.group(1).lower()]
+    k = int(t.group(2)) * 100 + MONTHS[t.group(1).lower()]
+    rest = t.group(3).split('ovas')[0]
     out = {'id': aid, 'k': k, 'species': {}}
-    for key, rx in (('salar', r'SALM[ÓO]N DEL ATL[ÁA]NTICO'), ('coho', r'SALM[ÓO]N DEL PAC[ÍI]FICO'), ('trucha', r'TRUCHA ARCO[ÍI]RIS')):
-        sec = re.search(rx + r'\s*\n?\s*(La cosecha (?:total )?acumulada.{0,600})', full, re.S)
-        if not sec:
-            continue
-        t = re.split(r'▫|▪|SALM[ÓO]N DEL|TRUCHA ARCO|CHORITO|MOLUSCOS', sec.group(1))[0]
-        c = re.search(r'fue de\s+([\d.,]+)\s*mil\s*t', t)
-        v = re.search(r'cifra\s+([\d,]+)\s*%\s*(mayor|menor)', t)
+    P = list(re.finditer(r'La cosecha acumulada (?:a|al mes de) (?:' + M + r')(?: de)?(?: \d{4})? fue de\s+([\d.,]+)\s*mil\s*t,?\s*(?:cifra|lo que es|lo que representa)?\s*(?:un\s+)?([\d,]+)\s*%\s*(mayor|menor)', rest, re.I | re.S))
+    for key, m in zip(('salar', 'coho', 'trucha'), P[:3]):
+        seg = rest[m.end():m.end() + 500]
         regs = {}
-        rm = re.search(r'Regiones? de (.+?),?\s+con\s+([\d,]+)\s*mil\s*t[^)]*\)\s*y\s+([\d,]+)\s*mil\s*t', t, re.S)
-        if rm:
-            names = re.split(r'\s+y\s+', re.sub(r'\s+', ' ', rm.group(1)))
-            vals = [float(rm.group(2).replace(',', '.')), float(rm.group(3).replace(',', '.'))]
-            for n, x in zip(names[-2:], vals):
-                n = 'Aysén' if 'Ays' in n else 'Los Lagos' if 'Lagos' in n else 'Magallanes' if 'Magall' in n else n.strip()
-                regs[n] = x
-        if c:
-            out['species'][key] = {'cum_kt': float(c.group(1).replace('.', '').replace(',', '.')),
-                                   'var_pct': (float(v.group(1).replace(',', '.')) * (1 if v.group(2) == 'mayor' else -1)) if v else None, 'regions_kt': regs}
-    o = re.search(r'([\d.,]+)\s*millones de ovas[^.]{0,80}?([\d,]+)\s*%', full)
+        for rm in re.finditer(r'(Ays[ée]n|Los Lagos|Magallanes)[^\d]{0,80}?con\s+([\d,]+)\s*mil\s*t', seg):
+            regs.setdefault('Aysén' if 'Ays' in rm.group(1) else rm.group(1), float(rm.group(2).replace(',', '.')))
+        rr = re.search(r'Regiones de (.{3,90}?)\s+y\s+(.{3,40}?),\s*con\s+([\d,]+)\s*mil\s*t[^)]*\)\s*y\s+([\d,]+)\s*mil\s*t', seg, re.S)
+        if rr:
+            regs = {}
+            for nm, v in ((rr.group(1), rr.group(3)), (rr.group(2), rr.group(4))):
+                nm = 'Aysén' if 'Ays' in nm else 'Los Lagos' if 'Lagos' in nm else 'Magallanes' if 'Magall' in nm else nm.strip()
+                regs[nm] = float(v.replace(',', '.'))
+        out['species'][key] = {'cum_kt': float(m.group(1).replace('.', '').replace(',', '.')),
+                               'var_pct': float(m.group(2).replace(',', '.')) * (1 if m.group(3).lower() == 'mayor' else -1), 'regions_kt': regs}
+    o = re.search(r'producci[óo]n acumulada de ovas[^.]{0,60}?fue de\s+([\d.,]+)\s*millones', full, re.I)
     if o:
         out['eggs_m'] = float(o.group(1).replace('.', '').replace(',', '.'))
     return out if out['species'] else None
@@ -207,7 +217,7 @@ def look(aid):
                 if 'Informe Sectorial de Pesca y Acuicultura' not in ' '.join(texts):
                     return aid, 'other', None
                 texts, _ = pdf_text(p.content)
-                return aid, 'rep', parse_report(aid, texts)
+                return aid, 'rep', parse_report(aid, texts) or {'id': aid, 'k': None, 'species': {}, 'unread': True}
             except Exception:
                 return aid, 'other', None
         if h.status_code == 200:
@@ -249,7 +259,7 @@ def main():
               'url': 'https://www.subpesca.cl/portal/615/w3-channel.html', 'errors_last_run': errors[:50],
               'note': 'fish to stock = the number authorised in each density resolution for the next cycle of each farm, after the ACS fallow; a later resolution modifying a farm replaces its figure'})
     st['resolutions'] = sorted(R.values(), key=lambda x: x['id'])
-    st['reports'] = sorted(P.values(), key=lambda x: x['k'])
+    st['reports'] = sorted(P.values(), key=lambda x: (x['k'] or 0, x['id']))
     st['stocking'] = summarise(st['resolutions'])
     io.open(OUT, 'w', encoding='utf-8').write(json.dumps(st, ensure_ascii=False, separators=(',', ':')))
     print(f'chile subpesca: ids {start}..{aid - 1} in {time.time() - t0:.0f}s, last document {last_found}, {len(R)} resolutions '
