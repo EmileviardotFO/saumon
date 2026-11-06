@@ -1575,7 +1575,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
       <div class="sig-title" style="margin-top:26px;">3b · Slaughterhouses and processing plants — map</div>
       <div class="sig-sub" id="plNoSub"></div>
       <div class="sc-mapgrid">
-        <div id="plNoList"></div>
+        <div><div id="plNoCtl"></div><div id="plNoList"></div></div>
         <div id="plNoMap" style="height:640px;border:1px solid var(--border);border-radius:8px;background:#0d1a24"></div>
       </div>
       <div style="overflow-x:auto;margin-top:10px"><table class="sig-table" id="plNoTab"></table></div>
@@ -5688,7 +5688,7 @@ function rgZoneDetail(po, bio, fishM, mlab, mtbAll) {
 }
 
 // ---- abattoirs et ateliers de transformation (data/plants.json, scripts/build_plants.py) : Norvege (registre) et Chili
-let PLANTS, PL_NO_MAP = null, PL_NO_LAYER = null, PL_NO_OP = null, PL_CL_LAYER = null, PL_CL_ON = true;
+let PLANTS, PL_NO_MAP = null, PL_NO_LAYER = null, PL_NO_OP = null, PL_NO_Q = '', PL_NO_MK = {}, PL_NO_FOCUS = null, PL_CL_LAYER = null, PL_CL_ON = true, PL_CL_MK = {};
 const PL_VESSEL = /fart[øo]y|rederi|\bvolt\b|volt (harvest|collector)|taupo|taupiri|napier|charvest|thermo service|stun\b|collector|seistar|\bfsv\b|s[øo]lvtrans|ode processing/i;
 function plLoad(cb) {
   if (PLANTS !== undefined) return PLANTS ? cb(PLANTS) : null;
@@ -5707,32 +5707,66 @@ function plNorway() {
     const groups = Object.entries(by).sort((a, b) => (b[1].s + b[1].p) - (a[1].s + a[1].p) || a[0].localeCompare(b[0]));
     const top = groups.filter(([, v]) => v.s + v.p >= 2).map(([g]) => g).slice(0, 12), col = g => top.includes(g) ? SC_COL[top.indexOf(g) % SC_COL.length] : '#8fa4b0';
     const cages = (BWR && BWR.slaughter_cages) || [];
+    // menu deroulant de tous les operateurs + recherche propre a la carte (nom, operateur, ville, code postal, numero d'agrement)
+    if (!$p('plNoQ')) {
+      $p('plNoCtl').innerHTML = `<select id="plNoSel" style="width:100%;margin-bottom:6px;padding:7px;background:#0d1a24;color:var(--ink);border:1px solid var(--border);border-radius:7px;font-size:12.5px"></select>` +
+        `<input id="plNoQ" type="search" autocomplete="off" placeholder="Search the map: plant, operator, town, approval no." style="width:100%;box-sizing:border-box;margin-bottom:6px;padding:7px 9px;background:#0d1a24;color:var(--ink);border:1px solid var(--border);border-radius:7px;font-size:12.5px">` +
+        `<div id="plNoHits"></div>`;
+      $p('plNoSel').onchange = ev => { PL_NO_OP = ev.target.value || null; PL_NO_FOCUS = null; plNorway(); };
+      let t = null; $p('plNoQ').oninput = ev => { clearTimeout(t); t = setTimeout(() => { PL_NO_Q = ev.target.value; PL_NO_FOCUS = null; plNorway(); }, 150); };
+    }
+    $p('plNoSel').innerHTML = `<option value="">All operators (${groups.length}) — choose one…</option>` +
+      [...groups].sort((a, b) => a[0].localeCompare(b[0], 'nb')).map(([g, v]) => `<option value="${e(g)}"${PL_NO_OP === g ? ' selected' : ''}>${e(g)} — ${v.s ? v.s + ' slaughter' : ''}${v.s && v.p ? ' · ' : ''}${v.p ? v.p + ' processing' : ''}</option>`).join('');
     $p('plNoList').innerHTML = `<div class="sc-op${PL_NO_OP ? '' : ' on'}" data-g=""><i style="width:10px;height:10px;border-radius:50%;background:#fff;display:inline-block"></i><b>All operators</b><span style="margin-left:auto;color:var(--muted)">${land.filter(x => x.slaughter).length} slaughterhouses</span></div>` +
-      groups.filter(([g]) => top.includes(g)).map(([g, v]) => `<div class="sc-op${PL_NO_OP === g ? ' on' : ''}" data-g="${e(g)}"><i style="width:10px;height:10px;border-radius:50%;background:${col(g)};display:inline-block"></i>${e(g)}<span style="margin-left:auto;color:var(--muted);font-size:11.5px">${v.s} slaughter${v.p ? ` · ${v.p} processing` : ''}</span></div>`).join('') +
-      `<div class="sc-op${PL_NO_OP === '__other' ? ' on' : ''}" data-g="__other"><i style="width:10px;height:10px;border-radius:50%;background:#8fa4b0;display:inline-block"></i>Other operators<span style="margin-left:auto;color:var(--muted);font-size:11.5px">${groups.filter(([g]) => !top.includes(g)).reduce((a, [, v]) => a + v.s + v.p, 0)}</span></div>`;
-    $p('plNoList').querySelectorAll('.sc-op').forEach(el => el.onclick = () => { PL_NO_OP = el.dataset.g || null; plNorway(); });
-    const show = x => !PL_NO_OP || (PL_NO_OP === '__other' ? !top.includes(x.group) : x.group === PL_NO_OP);
+      groups.filter(([g]) => top.includes(g)).map(([g, v]) => `<div class="sc-op${PL_NO_OP === g ? ' on' : ''}" data-g="${e(g)}"><i style="width:10px;height:10px;border-radius:50%;background:${col(g)};display:inline-block"></i>${e(g)}<span style="margin-left:auto;color:var(--muted);font-size:11.5px">${v.s} slaughter${v.p ? ` · ${v.p} processing` : ''}</span></div>`).join('');
+    $p('plNoList').querySelectorAll('.sc-op').forEach(el => el.onclick = () => { PL_NO_OP = el.dataset.g || null; PL_NO_FOCUS = null; plNorway(); });
+    const nq = t => String(t || '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/ø/g, 'o').replace(/æ/g, 'ae').replace(/å/g, 'a');
+    const Q = nq(PL_NO_Q).trim().split(/\s+/).filter(Boolean);
+    const hit = x => !Q.length || Q.every(w => nq([x.name, x.group, x.city, x.address, x.postcode, x.id, x.orgno].join(' ')).replace(/[\s.-]/g, ' ').includes(w) || nq(x.id).replace(/\W/g, '').includes(w.replace(/\W/g, '')));
+    const show = x => (!PL_NO_OP || x.group === PL_NO_OP) && hit(x);
+    const hits = Q.length ? all.filter(show) : [];
+    $p('plNoHits').innerHTML = Q.length ? (hits.length ? hits.slice(0, 15).map(x => `<div class="sc-op" data-id="${e(x.id)}" style="display:block;font-size:12px${x.lat ? '' : ';cursor:default;opacity:.7'}"><b>${e(x.name)}</b><br><span style="color:var(--muted)">${e(x.group)} · ${e(x.city)} · approval <b style="color:var(--ink)">${e(x.id)}</b>${x.vessel ? ' · vessel, not mapped' : ''}</span></div>`).join('') +
+      (hits.length > 15 ? `<div style="color:var(--muted);font-size:11.5px;margin-bottom:6px">${hits.length - 15} more on the map</div>` : '') : `<div style="color:var(--muted);font-size:12px;margin-bottom:6px">No plant matches.</div>`) : '';
+    $p('plNoHits').querySelectorAll('[data-id]').forEach(el => el.onclick = () => plNoFocus(el.dataset.id, true));
     scLeaflet(() => {
       if (!PL_NO_MAP) { PL_NO_MAP = L.map('plNoMap', { scrollWheelZoom: false }).setView([65, 13], 5);
         const esri = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', { attribution: 'Tiles &copy; Esri · establishments: Mattilsynet · holding cages: Fiskeridirektoratet', maxZoom: 13 }).addTo(PL_NO_MAP);
         let fails = 0; esri.on('tileerror', () => { if (++fails === 4) { PL_NO_MAP.removeLayer(esri); L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors', maxZoom: 13 }).addTo(PL_NO_MAP); } }); }
       if (PL_NO_LAYER) PL_NO_LAYER.remove(); PL_NO_LAYER = L.layerGroup().addTo(PL_NO_MAP); const pts = [];
-      cages.forEach(c => { if (!c.lat || (PL_NO_OP && PL_NO_OP !== '__other' && !String(c.org || '').toLowerCase().includes(PL_NO_OP.toLowerCase().split(' ')[0]))) return;
+      PL_NO_MK = {};
+      cages.forEach(c => { if (!c.lat || Q.length || (PL_NO_OP && !String(c.org || '').toLowerCase().includes(PL_NO_OP.toLowerCase().split(' ')[0]))) return;
         L.circleMarker([c.lat, c.lon], { radius: 4 + Math.sqrt(c.cap || 0) / 8, color: '#8fa4b0', weight: 1, dashArray: '2 2', fillOpacity: 0 }).addTo(PL_NO_LAYER)
           .bindPopup(`<b>Slaughter holding cages</b> · ${e(c.name)}<br>${e(c.org)} · ${e(c.mun)}<br>Capacity ${Math.round(c.cap || 0).toLocaleString('en-US')} t`); });
-      land.filter(show).forEach(x => { L.marker([x.lat, x.lon], { icon: plIcon(col(x.group), !x.slaughter) }).addTo(PL_NO_LAYER)
+      land.filter(show).forEach(x => { PL_NO_MK[x.id] = L.marker([x.lat, x.lon], { icon: plIcon(col(x.group), !x.slaughter) }).addTo(PL_NO_LAYER)
         .bindPopup(`<b>${e(x.name)}</b><br>Operator: <b>${e(x.group)}</b><br>${e(x.address)}, ${e(x.postcode)} ${e(x.city)}<br>` +
           `${x.slaughter ? 'Slaughterhouse' : ''}${x.slaughter && x.processing ? ' + ' : ''}${x.processing ? 'processing (filleting…)' : ''}<br><span style="color:#8fa4b0">Approval ${e(x.id)} · codes ${x.codes.join(', ')}${x.geo === 'postcode' ? ' · placed at its postcode' : ''}</span>`);
         pts.push([x.lat, x.lon]); });
-      if (pts.length) PL_NO_MAP.fitBounds(pts, { padding: [24, 24], maxZoom: 9 }); setTimeout(() => PL_NO_MAP.invalidateSize(), 60);
+      setTimeout(() => PL_NO_MAP.invalidateSize(), 60);
+      if (PL_NO_FOCUS && PL_NO_MK[PL_NO_FOCUS]) { const mk = PL_NO_MK[PL_NO_FOCUS]; PL_NO_MAP.setView(mk.getLatLng(), 11); setTimeout(() => mk.openPopup(), 120); }
+      else if (pts.length) PL_NO_MAP.fitBounds(pts, { padding: [24, 24], maxZoom: Q.length ? 11 : 9 });
     });
     $p('plNoTab').innerHTML = `<thead><tr><th class="name">Operator</th><th>Slaughterhouses</th><th>Processing only</th><th style="text-align:left">Towns</th></tr></thead><tbody>` +
       groups.map(([g, v]) => `<tr><td class="name">${e(g)}</td><td>${v.s || '—'}</td><td>${v.p || '—'}</td><td style="text-align:left;white-space:normal">${[...v.towns].sort().map(e).join(', ')}</td></tr>`).join('') + `</tbody>`;
     $p('plNoSub').innerHTML = `Every establishment Mattilsynet has approved to <b>slaughter farmed fish</b> (activity code FFPP-SA, round markers), plus the <b>processing plants</b> (filleting, FFPP-P) of salmon groups (diamonds). ` +
       `Dashed rings are the slaughter holding cages (ventemerder) of section 3, sized by their capacity: they sit next to the slaughterhouses they feed. ` +
       `${land.filter(x => x.slaughter).length} slaughterhouses on land, ${land.filter(x => !x.slaughter).length} processing plants; ${ves.length} slaughter or harvest vessels are also approved (${ves.slice(0, 6).map(x => e(x.name)).join(', ')}${ves.length > 6 ? '…' : ''}) and are not mapped. ` +
-      `Operator = the company named in the approval; jointly owned plants (Kråkøy, for instance) keep their own name. Positions come from the approval address (Kartverket); no throughput is published. List read ${e(P.meta && P.meta.built)}. Click an operator to keep only its plants.`;
+      `Operator = the company named in the approval; jointly owned plants (Kråkøy, for instance) keep their own name. Positions come from the approval address (Kartverket); no throughput is published. List read ${e(P.meta && P.meta.built)}. Click an operator, or pick any of them in the drop-down menu, to keep only its plants; the search box finds a plant by name, operator, town or approval number.`;
   });
+}
+function plNoFocus(id, local) {
+  // centre la carte des usines norvegiennes sur un agrement ; ouvre l'onglet registre si besoin
+  const go = () => { const x = PLANTS && (PLANTS.no || []).find(y => y.id === id); if (!x) return;
+    if (!local) { PL_NO_Q = ''; const q = document.getElementById('plNoQ'); if (q) q.value = ''; PL_NO_OP = x.group; }
+    PL_NO_FOCUS = id; plNorway();
+    setTimeout(() => { const m = document.getElementById('plNoMap'); if (m) m.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, local ? 0 : 400); };
+  if (local) return go();
+  if (window.gsGoTab) window.gsGoTab('register'); setTimeout(() => plLoad(go), 700);
+}
+function plClFocus(code) {
+  if (window.gsGoTab) window.gsGoTab('chile'); PL_CL_ON = true;
+  let n = 0; const t = setInterval(() => { const mk = PL_CL_MK[code];
+    if (mk && typeof CL_MAP !== 'undefined' && CL_MAP) { clearInterval(t); document.getElementById(CL_MAP.getContainer().id).scrollIntoView({ behavior: 'smooth', block: 'center' }); CL_MAP.setView(mk.getLatLng(), 11); setTimeout(() => mk.openPopup(), 300); }
+    else if (++n > 30) clearInterval(t); }, 300);
 }
 function plChile() {
   const $p = id => document.getElementById(id); if (!$p('plClTab')) return;
@@ -5757,8 +5791,9 @@ function plChileLayer(n) {
   if (!PLANTS) return; if (typeof CL_MAP === 'undefined' || !CL_MAP) { if ((n || 0) < 40) setTimeout(() => plChileLayer((n || 0) + 1), 400); return; }
   if (PL_CL_LAYER) PL_CL_LAYER.remove(); if (!PL_CL_ON) return; PL_CL_LAYER = L.layerGroup().addTo(CL_MAP);
   const e = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  PL_CL_MK = {};
   (PLANTS.cl || []).forEach(x => { if (!x.lat) return;
-    L.marker([x.lat, x.lon], { icon: L.divIcon({ className: '', iconSize: [11, 11], iconAnchor: [5, 5], html: `<div style="width:10px;height:10px;background:${x.slaughter ? '#ffb74d' : '#cfdde4'};border:1.5px solid #fff;border-radius:2px;box-shadow:0 0 0 1px rgba(0,0,0,.5)"></div>` }), zIndexOffset: 500 })
+    PL_CL_MK[x.code] = L.marker([x.lat, x.lon], { icon: L.divIcon({ className: '', iconSize: [11, 11], iconAnchor: [5, 5], html: `<div style="width:10px;height:10px;background:${x.slaughter ? '#ffb74d' : '#cfdde4'};border:1.5px solid #fff;border-radius:2px;box-shadow:0 0 0 1px rgba(0,0,0,.5)"></div>` }), zIndexOffset: 500 })
       .addTo(PL_CL_LAYER).bindPopup(`<b>${e(x.plant)}</b> (plant ${e(x.code)})<br>${e(x.town)}, ${e(x.region)}<br>Farming companies: ${e(x.farmers) || '—'}<br>${x.slaughter ? '<b>Slaughters</b> and processes' : 'Processing (no slaughter)'}<br>${x.geo === 'exact' ? `${e(x.address)}<br><span style="color:#8fa4b0">Position declared by the plant to the environment ministry (RETC: ${e(x.site)})</span>` : '<span style="color:#8fa4b0">Placed at its town: no exact position found</span>'}`); });
 }
 function renderRegister() {
@@ -12788,8 +12823,8 @@ loadRemoteData().then(live => {
   const TOP = { lice: /\b(lice|louse|lus|lakselus|poux|pou|piojos?|caligus)\b/, mort: /\b(mortal\w*|deaths?|dead|dod\w*|deces|muert\w*|mortes?|tap)\b/,
     dis: /\b(diseases?|ila|isa|pd|pancrea\w*|sykdom\w*|maladies?|enfermedad\w*|smitte\w*)\b/, big: /(6\+|\b6 ?kg\b|\bbig fish\b|\bgros poissons?\b|\bcalib\w*|\bstor ?fisk\b)/,
     harv: /\b(harvest\w*|slakt\w*|recoltes?|cosecha\w*|guidance)\b/, china: /\b(china|kina|chine|chinese|chinois\w*)\b/, plant: /\b(plants?|slakteri\w*|usines?|abattoirs?|processing)\b/,
-    price: /\b(prices?|pris|prix|precios?)\b/ };
-  const TOP_WORDS = { lice: 'lice', mort: 'mortality', dis: 'disease', big: '6+', harv: 'harvest', china: 'China', plant: 'plants', price: 'price' };
+    price: /\b(prices?|pris|prix|precios?)\b/, tas: /\b(growth|croissance|vekst|time at sea|months? at sea|temps en mer|duree en mer|tid i sjo\w*|cycles?|cycle length|duree de cycle)\b/ };
+  const TOP_WORDS = { lice: 'lice', mort: 'mortality', dis: 'disease', big: '6+', harv: 'harvest', china: 'China', plant: 'plants', price: 'price', tas: 'time at sea' };
   const BAS = [['NO', /\b(norway|norvege|norge|norsk|norwegian|norvegien\w*)\b/], ['CL', /\b(chile|chili|chilean|chilien\w*)\b/], ['IS', /\b(iceland|islande|island|islandais)\b/],
     ['FO', /\b(faroe\w*|feroe|feroes|foroyar)\b/], ['GB', /\b(scotland|ecosse|scottish|ecossais\w*)\b/], ['CA', /\b(canada|canadian|canadien\w*)\b/], ['AU', /\b(tasmania\w*|australi\w*)\b/]];
   const BAS_NAME = { NO: 'Norway', CL: 'Chile', IS: 'Iceland', FO: 'Faroe Islands', GB: 'Scotland', CA: 'Canada', AU: 'Tasmania' };
@@ -12886,9 +12921,43 @@ loadRemoteData().then(live => {
     const PL = D['plants.json']; if (!PL) return ''; const k = norm(co).split(' ')[0];
     const no = (PL.no || []).filter(x => norm(x.group + ' ' + x.name).includes(k)), cl = (PL.cl || []).filter(x => norm(x.plant + ' ' + x.farmers).includes(k));
     if (!no.length && !cl.length) return '';
-    return `<div class="gs-card"><h4>Slaughterhouses and processing plants · ${esc(co)}</h4><div class="s">` +
-      (no.length ? `Norway: ${no.map(x => `${esc(x.city)} (${x.slaughter ? 'slaughter' : 'processing'})`).join(', ')}. <span class="gs-go" onclick="gsGoTab('register')">→ Farm register, map</span><br>` : '') +
-      (cl.length ? `Chile: ${cl.map(x => `${esc(x.plant)}, ${esc(x.town)}${x.slaughter ? ' (slaughter)' : ''}`).join('; ')}. <span class="gs-go" onclick="gsGoTab('chile')">→ Chile tab</span>` : '') + `</div></div>`;
+    const ves = x => PL_VESSEL.test(x.name);
+    const rowNo = x => `<tr><td>${esc(x.name)}</td><td>${esc(x.city)}</td><td>${x.slaughter ? 'slaughter' : ''}${x.slaughter && x.processing ? ' + ' : ''}${x.processing ? 'processing' : ''}${ves(x) ? ' (vessel)' : ''}</td>` +
+      `<td>${x.lat && !ves(x) ? `<span class="gs-go" title="Show it on the map" onclick="plNoFocus('${esc(x.id)}')">${esc(x.id)} ↗</span>` : esc(x.id)}</td></tr>`;
+    const rowCl = x => `<tr><td>${esc(x.plant)}</td><td>${esc(x.town)}</td><td>${x.slaughter ? 'slaughter + processing' : 'processing'}</td>` +
+      `<td>${x.lat ? `<span class="gs-go" title="Show it on the map" onclick="plClFocus('${esc(x.code)}')">${esc(x.code)} ↗</span>` : esc(x.code)}</td></tr>`;
+    return `<div class="gs-card"><h4>Slaughterhouses and processing plants · ${esc(co)}</h4>` +
+      (no.length ? `<div class="s">Norway — Mattilsynet approval numbers; click one to see the plant on the map.</div><table class="gs-t"><tr><th>Establishment</th><th>Town</th><th>Activity</th><th>Approval no.</th></tr>${no.map(rowNo).join('')}</table>` : '') +
+      (cl.length ? `<div class="s" style="margin-top:8px">Chile — Sernapesca plant codes; click one to see the plant on the map.</div><table class="gs-t"><tr><th>Plant</th><th>Town</th><th>Activity</th><th>Sernapesca code</th></tr>${cl.map(rowCl).join('')}</table>` : '') + `</div>`;
+  }
+  // ---- duree en mer (cycles complets, data/big_fish.json -> cycles)
+  function tasRows(L, lab) {
+    const f1 = v => v === null || v === undefined ? '—' : (+v).toFixed(1);
+    const yrs = [...new Set(L.flatMap(c => Object.keys(c.by_year || {})))].sort().slice(-4);
+    return `<table class="gs-t"><tr><th></th><th>Cycles</th><th>Median (months)</th><th>Middle half</th><th>Pace vs zone</th>${yrs.map(y => `<th>${y}</th>`).join('')}<th>Fallow (wk)</th><th>Sites with fish · age</th><th>Due ≤ 2 mo</th></tr>` +
+      L.map(c => `<tr><td>${lab(c)}</td><td>${c.cycles}</td><td><b>${f1(c.median)}</b></td><td>${c.p25 != null ? f1(c.p25) + '–' + f1(c.p75) : '—'}</td><td>${c.pace ? '×' + c.pace.toFixed(2) : '—'}</td>${yrs.map(y => `<td>${f1((c.by_year || {})[y])}</td>`).join('')}` +
+        `<td>${c.fallow_weeks ?? '—'}</td><td>${c.active_sites ?? '—'}${c.active_age !== null && c.active_age !== undefined ? ' · ' + f1(c.active_age) : ''}</td><td>${c.due_2m ?? '—'}</td></tr>`).join('') + `</table>`;
+  }
+  function tasCard(co) {
+    const CY = (D['big_fish.json'] || {}).cycles; if (!CY) return ''; const k = norm(co).split(' ')[0];
+    const F = (CY.farmers || []).filter(c => norm(c.co).split(' ')[0] === k || norm(c.co).includes(norm(co))); const n = F.find(c => c.po === 0); if (!n) return '';
+    const NO = CY.norway || {}, f1 = v => (+v).toFixed(1);
+    return `<div class="gs-card"><h4>Time at sea · ${esc(co)} — completed cycles since ${esc(String(CY.since).slice(0, 4))}</h4><div class="s">Months from stocking to emptying of each site, read from BarentsWatch's weekly site status: <b>${f1(n.median)} months</b> median over ${n.cycles} cycles (Norway ${f1(NO.median)}). ` +
+      `Pace ×${(n.pace || 1).toFixed(2)} against its zones${n.pace >= 1.08 ? ' — <b style="color:#7ed98f">shorter cycles than its neighbours</b>' : n.pace <= 0.92 ? ' — <b style="color:#ff8a65">longer cycles than its neighbours</b>' : ''}. ` +
+      `12-month trend ${(n.trend || []).filter(v => v !== null).map(f1).join(' → ')}${n.accel ? ' (shortening)' : ''}. ${n.active_sites || 0} sites have fish now, ${f1(n.active_age || 0)} months old on average; ${n.due_2m || 0} due within 2 months.</div>` +
+      tasRows(F.sort((a, b) => a.po - b.po), c => c.po ? 'Zone ' + c.po : '<b>All zones</b>') + `<div class="s"><span class="gs-go" onclick="gsGoTab('timeatsea')">→ Time at sea tab</span></div></div>`;
+  }
+  function zoneTas(po) {
+    const CY = (D['big_fish.json'] || {}).cycles; if (!CY) return ''; const z = (CY.zones || []).find(x => x.po === po); if (!z) return '';
+    const F = (CY.farmers || []).filter(c => c.po === po).sort((a, b) => b.cycles - a.cycles).slice(0, 12), f1 = v => (+v).toFixed(1);
+    return `<div class="gs-card"><h4>Time at sea · zone ${po}</h4><div class="s">Median <b>${f1(z.median)} months</b> over ${z.cycles} completed cycles (${f1(z.median_ok || z.median)} without disease), fallow ${z.fallow_weeks ?? '—'} weeks; harvest weight ${z.harvest_kg ? f1(z.harvest_kg) + ' kg' : '—'} gutted. By farmer:</div>` +
+      tasRows([{ ...z, po: 0 }, ...F], c => c.co ? esc(c.co) : '<b>Zone</b>') + `<div class="s"><span class="gs-go" onclick="gsGoTab('timeatsea')">→ Time at sea tab</span></div></div>`;
+  }
+  function tasNorway() {
+    const CY = (D['big_fish.json'] || {}).cycles; if (!CY) return ''; const NO = CY.norway || {}, f1 = v => (+v).toFixed(1);
+    const F = (CY.farmers || []).filter(c => c.po === 0).sort((a, b) => b.cycles - a.cycles).slice(0, 15);
+    return `<div class="gs-card"><h4>Time at sea · Norway</h4><div class="s">Median <b>${f1(NO.median)} months</b> over ${NO.cycles} completed cycles since ${esc(String(CY.since).slice(0, 4))}. Largest farmers:</div>` +
+      tasRows(F, c => esc(c.co)) + `<div class="s"><span class="gs-go" onclick="gsGoTab('timeatsea')">→ Time at sea tab</span></div></div>`;
   }
 
   // ---- zone de production norvegienne (PO 1-13)
@@ -13067,7 +13136,7 @@ loadRemoteData().then(live => {
   const SYNG = [['lice', 'lus', 'lakselus', 'poux', 'louse', 'caligus'], ['mortality', 'mortalite', 'dead', 'deaths', 'dodelighet', 'died', 'losses'], ['harvest', 'recolte', 'slakt', 'cosecha', 'harvested'],
     ['price', 'prix', 'pris', 'precio', 'nok/kg', '€/kg'], ['weight', 'poids', 'vekt', 'kg'], ['fresh', 'frais', 'fersk', 'chilled'], ['fillet', 'fillets', 'filet', 'filets', 'file'], ['frozen', 'congele', 'frossen', 'frys'],
     ['export', 'exports', 'exportations', 'eksport', 'exported'], ['import', 'imports', 'importations', 'imported'], ['biomass', 'biomasse', 'stock', 'standing'], ['feed', 'aliment', 'fôr', 'for'],
-    ['smolt', 'smolts', 'stocking', 'released', 'mise', 'sembrar'], ['growth', 'croissance', 'vekst'], ['disease', 'maladie', 'sykdom', 'pd', 'ila'], ['zone', 'po', 'area', 'omrade'], ['company', 'societe', 'farmer', 'eleveur', 'selskap'],
+    ['smolt', 'smolts', 'stocking', 'released', 'mise', 'sembrar'], ['growth', 'croissance', 'vekst', 'time at sea', 'months at sea', 'cycle', 'cycles'], ['disease', 'maladie', 'sykdom', 'pd', 'ila'], ['zone', 'po', 'area', 'omrade'], ['company', 'societe', 'farmer', 'eleveur', 'selskap'],
     ['temperature', 'temp', 'sea temperature'], ['volume', 'volumes', 'tonnes', 'tons', 't'], ['smoked', 'fume', 'rokt'], ['china', 'chine', 'kina'], ['norway', 'norvege', 'norge'], ['scotland', 'ecosse'], ['iceland', 'islande'], ['faroe', 'feroe', 'faroes', 'faroese'], ['chile', 'chili'], ['poland', 'pologne'],
     ['germany', 'allemagne'], ['spain', 'espagne'], ['france', 'frankrike'], ['italy', 'italie'], ['japan', 'japon'], ['united states', 'usa', 'us', 'etats-unis'], ['guidance', 'prevision', 'outlook', 'forecast'], ['quarter', 'trimestre', 'kvartal', 'q1', 'q2', 'q3', 'q4'],
     ['fcr', 'efcr', 'feed conversion', 'conversion'], ['ebit', 'ebit/kg', 'ebit per kg', 'margin', 'marge'], ['premium', 'prime', 'premie'], ['calibre', 'size', 'taille', 'storrelse', 'weight class'],
@@ -13201,15 +13270,16 @@ loadRemoteData().then(live => {
         (eu ? `<details class="gs-card"><summary style="cursor:pointer;color:#a9bfcc;font-size:13px">Norway's own figures: Norwegian exports to ${esc(mk.name)} (Statistics Norway, usually one month fresher)</summary>${marketCard(mk, prods).replace(/^<div class="gs-card">|<\/div>$/g, '')}</details>` : marketCard(mk, prods)); }
     if (po) {
       const want = t => !topics.length || topics.includes(t);
-      const cards = [want('mort') ? zoneMort(po) : '', want('mort') ? zoneEv(po) : '', want('lice') || want('dis') ? zoneLice(po) : '', want('dis') || want('mort') || want('lice') ? zoneDis(po) : '', want('big') || want('harv') ? zoneBig(po) : ''].filter(Boolean);
+      const cards = [want('mort') ? zoneMort(po) : '', want('mort') ? zoneEv(po) : '', want('lice') || want('dis') ? zoneLice(po) : '', want('dis') || want('mort') || want('lice') ? zoneDis(po) : '', want('big') || want('harv') ? zoneBig(po) : '', want('tas') ? zoneTas(po) : ''].filter(Boolean);
       if (cards.length) html += `<div class="gs-sec">From the dashboard's data · zone ${po} ${esc(PO_NAMES[po] || '')}</div>` + cards.join('');
     }
     if (co) {
       const want = t => !topics.length || topics.includes(t);
-      const cards = [want('lice') || want('dis') ? liceCard(co) : '', want('dis') || want('lice') || want('mort') ? disCard(co) : '', want('big') || want('china') || want('harv') ? bigCard(co) : '',
+      const cards = [want('tas') ? tasCard(co) : '', want('lice') || want('dis') ? liceCard(co) : '', want('dis') || want('lice') || want('mort') ? disCard(co) : '', want('big') || want('china') || want('harv') ? bigCard(co) : '',
         want('harv') || want('price') || !topics.length || want('big') ? qCard(co) : '', want('mort') || !topics.length ? evCard(co, []) : '', want('plant') || !topics.length ? plantCard(co) : ''].filter(Boolean);
-      if (cards.length) html += `<div class="gs-sec">From the dashboard's data · ${esc(co)}${topics.length ? ' · ' + topics.map(t => TOP_WORDS[t].split(' ')[0]).join(', ') : ''}</div>` + cards.join('');
+      if (cards.length) html += `<div class="gs-sec">From the dashboard's data · ${esc(co)}${topics.length ? ' · ' + topics.map(t => TOP_WORDS[t]).join(', ') : ''}</div>` + cards.join('');
     } else if (topics.includes('mort') && !po) html += evCard(null, [], bas);
+    if (!co && !po && topics.includes('tas') && (!bas || bas === 'NO')) { const c = tasNorway(); if (c) html += `<div class="gs-sec">From the dashboard's data · time at sea</div>` + c; }
     const ih = indexHtml(q); html += ih;
     const nw = po ? [] : words;
     let N = news(co, topics, nw, bas, mk, prods), fb = bas ? ` · ${BAS_NAME[bas]} only` : '';
