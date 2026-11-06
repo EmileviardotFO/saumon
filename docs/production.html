@@ -995,6 +995,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
 
   <div class="panel" id="genyoyView" style="flex:1; min-width:0; max-width:1400px; display:none;">
     <div class="sig-title">Generations vs last year — what is left of each generation, against the year before at the same stage</div>
+    <section id="gyOutlook" style="display:none;margin:8px 0 14px;padding:14px 16px;border:1px solid #4fc3f7;border-radius:10px;background:rgba(79,195,247,.06)"></section>
     <div class="chart-controls" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0">
       <label class="sig-sub" style="margin:0">Area <select id="gyZone"></select></label>
       <label class="sig-sub" style="margin:0">End of <select id="gyMonth"></select></label>
@@ -10359,7 +10360,27 @@ function gyGrowthRender(Z, k, H, Nn) {
     `G${Nn}: growth ${dd(avg3(R.N, 'a', 'gr'), avg3(R.N, 'b', 'gr'), true)}, TGC ${dd(avg3(R.N, 'a', 'tgc'), avg3(R.N, 'b', 'tgc'), true)}. Dead and lost fish, G${H}: ${f2(avg3(R.H, 'a', 'mort'))} % a month against ${f2(avg3(R.H, 'b', 'mort'))} %.` +
     (tNew.length ? ` Since then (BarentsWatch): ${tNew.map(m => `${gyMon(m)} ${f1(gyTemp(Z, m))} °C vs ${f1(gyTemp(Z, gySh(m, -12)))}`).join(', ')}.` : '');
 }
+// ---- encart ecrit (data/gen_outlook.json, reconstruit apres chaque registre par scripts/build_gen_outlook.py)
+let GO = undefined;
+function gyOutlook() {
+  const el = document.getElementById('gyOutlook'); if (!el) return;
+  if (GO === undefined) { GO = null; fetch(DATA_URL.replace('data.json', 'gen_outlook.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
+    .then(j => { GO = j || false; if (currentView === 'genyoy') gyOutlook(); }); return; }
+  if (!GO || !GO.paragraphs) { el.style.display = 'none'; return; }
+  const k = GO.meta.last, S = GO.scenarios, keys = ['fade', 'central', 'fast'], f = v => { if (v === null || v === undefined) return '—'; v = Math.round(v); return v === 0 ? '0 %' : `<span class="${v > 0 ? 'delta-good' : 'delta-bad'}">${v > 0 ? '+' : '−'}${Math.abs(v)} %</span>`; };
+  const per = Object.keys(S.central.periods);
+  const tab = `<div style="overflow-x:auto;margin:8px 0 4px"><table class="sig-table gy-tab" style="font-size:12.5px"><thead><tr><th class="name">Against a year earlier, Norway</th>` +
+    keys.map(x => `<th colspan="3">${S[x].label}</th>`).join('') + `</tr><tr><th class="name"></th>` + keys.map(() => `<th>All sizes</th><th>5 kg+</th><th>6 kg+</th>`).join('') + `</tr></thead><tbody>` +
+    per.map(p => `<tr><td class="name">${S.central.periods[p].span}${p.startsWith('Apr-Jul') ? ' <b>(transition)</b>' : ''}</td>` + keys.map(x => { const v = S[x].periods[p]; return `<td>${f(v.tot)}</td><td>${f(v['5'])}</td><td>${f(v['6'])}</td>`; }).join('') + `</tr>`).join('') +
+    `</tbody></table></div>`;
+  el.innerHTML = `<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline"><b style="font-size:15.5px">Where the generations stand — and the outlook for the big fish</b>` +
+    `<span style="font-size:11.5px;color:var(--muted)">Norway · register to ${gyMonL(k)} · rebuilt ${GO.meta.generated}</span></div>` +
+    `<div style="display:flex;flex-direction:column;gap:7px;margin-top:8px;font-size:13.5px;line-height:1.5">` +
+    GO.paragraphs.map((p, i) => `<p style="margin:0">${p}</p>` + (i === 2 ? tab : '')).join('') + `</div>`;
+  el.style.display = 'block';
+}
 function renderGenYoy() {
+  gyOutlook();
   const $g = id => document.getElementById(id), e = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
   if (!COHORT || !COHORT.length) { $g('gySub').innerHTML = 'Loading…'; return; }
   const { months } = gyPrep(), last = months[months.length - 1];

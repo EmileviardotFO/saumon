@@ -64,6 +64,11 @@ jobs:
       continue-on-error: true
       timeout-minutes: 5
       run: python3 scripts/build_big_fish.py
+    - name: Encart ecrit de l'onglet Generations vs last year (etat des lieux, transition entre generations, 2 mois a venir)
+      id: genoutlook
+      continue-on-error: true
+      timeout-minutes: 5
+      run: python3 scripts/build_gen_outlook.py
     - name: Bulletin du registre de la biomasse (page News, 7 jours apres chaque nouveau mois)
       id: brief
       continue-on-error: true
