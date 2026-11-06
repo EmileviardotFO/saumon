@@ -6,7 +6,9 @@ Trois sources, fusionnees dans data/events.json :
      + recherches Google News par bassin et par langue (norvegien, espagnol, islandais, anglais, danois/feroien) ;
      chaque article est garde s'il contient un mot de mortalite ET un mot d'elevage, puis classe par cause et par bassin ;
   2. Ecosse : tableur mensuel du Fish Health Inspectorate (mortalites declarees par site, avec la cause) ;
-  3. evenements saisis a la main (cle "manual"), jamais ecrases par le script.
+  3. evenements saisis a la main (cle "manual"), jamais ecrases par le script ;
+  4. evenements detectes automatiquement (cle "auto") : mois inhabituels dans les donnees de chaque bassin (registre norvegien,
+     MAST, SEPA, EPA Tasmanie) et, ailleurs, sujets de mortalite repris par la presse, avec les chiffres cites dans les titres.
 
 Rien ne bloque la mise a jour : une source qui ne repond pas est notee dans meta.status et le reste continue.
 """
@@ -62,7 +64,7 @@ BASINS = {
            r'skagerrak', r'sørlandet', r'vestlandet', r'mattilsynet', r'fiskeridirektoratet', r'barentswatch'],
     'CL': [r'chile', r'chilen', r'los lagos', r'ays[eé]n', r'magallanes', r'chilo[eé]', r'puerto montt', r'sernapesca', r'subpesca', r'\bACS\b', r'agrupaci[oó]n de concesiones',
            r'aquachile', r'multiexport', r'camanchaca', r'blumar', r'australis', r'ventisqueros', r'yadran', r'cermaq chile', r'mowi chile', r'cooke chile', r'salmones austral',
-           r'quell[oó]n', r'calbuco', r'comau', r'reloncav'],
+           r'quell[oó]n', r'calbuco', r'comau', r'reloncav', r'multi ?x\b', r'invermar', r'salmones\b', r'salmonicultura', r'salmonera', r'caleta bay'],
     'IS': [r'iceland', r'ísland', r'island(sk|ic)', r'westfjord', r'vestfir', r'austfir', r'eastfjord', r'arnarlax', r'arctic fish', r'kaldvík', r'ice fish farm', r'háafell',
            r'mast\b', r'matvælastofnun', r'tálknaf', r'patreksf', r'dýraf', r'berufj', r'berufir', r'reyðarf', r'fáskrúðsf', r'stöðvarf', r'ísafjarðardj', r'arnarf', r'önundarf', r'eyjaf'],
     'GB': [r'scotland', r'scottish', r'shetland', r'orkney', r'hebrides', r'skye', r'loch ', r'argyll', r'highland', r'sepa\b', r'fish health inspectorate', r'mowi scotland',
@@ -245,6 +247,127 @@ def scotland_fhi(status):
         status['gov.scot FHI'] = f'error: {type(e).__name__}: {str(e)[:120]}'; return None
 
 # ------------------------------------------------------------------ fusion
+
+# ------------------------------------------------------------------ evenements automatiques (tous bassins)
+def _med(v):
+    v = sorted(x for x in v if x is not None)
+    return (v[(len(v) - 1) // 2] + v[len(v) // 2]) / 2 if v else None
+
+
+def _load(p):
+    try: return json.load(open(p, encoding='utf-8'))
+    except Exception: return None
+
+
+NUM = r'(\d{1,3}(?:[ ., ]\d{3})+|\d+(?:[.,]\d+)?)'
+def _num(t):
+    t = t.replace(' ', ' ').strip()
+    if re.fullmatch(r'\d{1,3}(?:[ .,]\d{3})+', t): return float(re.sub(r'[ .,]', '', t))
+    return float(t.replace(',', '.'))
+
+
+def press_figures(title):
+    """tonnes et nombre de poissons cites dans un titre ('1,600 tonnes', '1 million fish', '600.000 peces'...)"""
+    t, f = None, None
+    m = re.search(NUM + r'\s*(tonnes|tons|toneladas|tonn|tonnes?|t)\b', title, re.I)
+    if m:
+        try: t = _num(m.group(1))
+        except Exception: pass
+    m = re.search(NUM + r'\s*(million|millones|millioner|millj[oó]n\w*|mill\.?|m)?\s*(farmed |de )?(fish|peces|fisk|laks|salmon|salmones|salmónidos|ejemplares|laxa|fiskar)', title, re.I)
+    if m:
+        try:
+            v = _num(m.group(1)); f = v * 1e6 if m.group(2) else v
+            if not m.group(2) and v < 1000: f = None
+        except Exception: pass
+    return t, f
+
+
+def auto_events(news, manual):
+    out = []
+    have = {(e.get('basin'), (e.get('date') or '')[:7]) for e in manual}
+    # Norvege : registre de la biomasse, zone par zone (morts du mois / poissons du mois precedent)
+    d = _load('data/data.json')
+    if d:
+        R = {}
+        for r in d.get('records', []):
+            if r.get('po'): R[(r['po'], r['year'] * 100 + r['month'])] = r
+        ks = sorted({k for _, k in R})
+        for po in range(1, 14):
+            rates = []
+            for i, k in enumerate(ks):
+                a, b = R.get((po, ks[i - 1])) if i else None, R.get((po, k))
+                if not a or not b or not a.get('behfisk_stk'): rates.append(None); continue
+                dead = (b.get('dodfisk_stk') or 0); rt = dead / a['behfisk_stk']
+                m = _med(rates[-24:])
+                if m and rt >= 2 * m and dead >= 400000 and k >= 201901:
+                    mo = f'{k // 100}-{k % 100:02d}'
+                    if ('NO', mo) not in have or True:
+                        out.append({'date': mo, 'basin': 'NO', 'region': f'PO{po}', 'cause': 'unspecified', 'agent': 'register (automatic)',
+                                    'fish_m': round(dead / 1e6, 2), 'tonnes': None, 'company': '',
+                                    'note': f'{dead / 1e6:.2f} M dead fish in the month, {100 * rt:.1f} % of the fish present, against a usual {100 * m:.1f} %',
+                                    'url': 'https://www.fiskeridir.no/Akvakultur/Tall-og-analyse/Biomassestatistikk', 'src': 'Fiskeridirektoratet, biomass register', 'auto': 'data'})
+                rates.append(rt)
+    # Islande : tableau de bord MAST
+    m_ = _load('data/iceland_mast.json')
+    if m_ and m_.get('national'):
+        N = m_['national']
+        for i, x in enumerate(N):
+            if i < 12: continue
+            med = _med([y['mortality_t'] for y in N[i - 12:i]])
+            if not (x['mortality_t'] >= 600 and med and x['mortality_t'] >= 2 * med): continue
+            S = sorted([y for y in m_.get('sites', []) if y['m'] == x['m']], key=lambda y: -y['dead'])
+            out.append({'date': x['m'], 'basin': 'IS', 'region': ', '.join(dict.fromkeys(y['fjord'] for y in S[:3] if y.get('fjord'))), 'cause': 'unspecified', 'agent': 'MAST (automatic)',
+                        'fish_m': round(sum(y['dead'] for y in S) / 1e6, 2) if S else None, 'tonnes': x['mortality_t'], 'company': '',
+                        'note': f"national deaths {round(x['mortality_t'])} t against a usual {round(med)} t" + (('; most at ' + ', '.join(f"{y['site']} ({y['co']}, {round(y['dead'] / 1000)}k fish)" for y in S[:3])) if S else ''),
+                        'url': (m_.get('meta') or {}).get('url'), 'src': 'MAST dashboard', 'auto': 'data'})
+    # Ecosse : rapports SEPA par region (environ six mois de retard)
+    sc = _load('data/scotland.json')
+    if sc and sc.get('regions'):
+        for rg, ser in sc['regions'].items():
+            ks = sorted(ser)
+            for i, k in enumerate(ks):
+                if i < 12 or int(k) < 201901: continue
+                v = ser[k][1]; med = _med([ser[j][1] for j in ks[i - 12:i]])
+                if v and med and v >= 200 and v >= 2.5 * med:
+                    out.append({'date': f'{k[:4]}-{k[4:]}', 'basin': 'GB', 'region': rg, 'cause': 'unspecified', 'agent': 'SEPA reports (automatic)', 'fish_m': None, 'tonnes': round(v),
+                                'company': '', 'note': f'{round(v)} t of dead fish declared in the month against a usual {round(med)} t (sites\' reports to SEPA, about six months late)',
+                                'url': (sc.get('meta') or {}).get('url'), 'src': 'SEPA', 'auto': 'data'})
+    # Tasmanie : dechets de mortalite declares a l'EPA
+    au = _load('data/australia.json')
+    if au and au.get('mortality'):
+        M = au['mortality']
+        for i, x in enumerate(M):
+            if i < 12: continue
+            med = _med([y.get('total') for y in M[i - 12:i]])
+            if x.get('total') and med and x['total'] >= 1500 and x['total'] >= 2 * med:
+                out.append({'date': f"{str(x['m'])[:4]}-{str(x['m'])[4:]}", 'basin': 'AU', 'region': 'Tasmania', 'cause': 'unspecified', 'agent': 'EPA (automatic)', 'fish_m': None,
+                            'tonnes': round(x['total']), 'company': '', 'note': f"{round(x['total'])} t of mortality waste declared against a usual {round(med)} t",
+                            'url': None, 'src': 'EPA Tasmania', 'auto': 'data'})
+    # presse : sujets de mortalite par bassin, cause et mois, quand ni une saisie ni les donnees ne couvrent deja ce mois
+    covered = have | {(e['basin'], e['date']) for e in out}
+    DEATH = re.compile(r'\b(died|dead|deaths?|die-?off|mortalit\w*|mortalidad\w*|murieron|muert\w+|d[øo]de?|d[øo]delighet|d[øo]dfisk|tap(et|te)?\b|lost|losses|perd\w+|killed|kills?|drápust|dauð\w*|dráp\w*)', re.I)
+    G = {}
+    for n in news:
+        bs = [k for k, r in RB.items() if r.search(n['title'])] or n.get('basins', [])
+        if len(bs) != 1 or not DEATH.search(n['title']): continue
+        n = dict(n, basins=bs)
+        cs = [c for c in n.get('causes', []) if c != 'unspecified']
+        for b in n.get('basins', []):
+            for c in cs or ['unspecified']:
+                G.setdefault((b, n['date'][:7], c), []).append(n)
+    for (b, mo, c), L in G.items():
+        if (b, mo) in covered or b in ('other',): continue
+        figs = [press_figures(n['title']) for n in L]
+        t = max((f[0] for f in figs if f[0]), default=None); fm = max((f[1] for f in figs if f[1]), default=None)
+        if len(L) < 2 and not t and not fm: continue
+        if c == 'unspecified' and not (t or fm): continue
+        # meme chiffre deja connu ce mois-la (un evenement d'un autre bassin repris par une presse etrangere) : on ne le duplique pas
+        if t and any((e.get('date') or '')[:7] == mo and e.get('tonnes') and abs(e['tonnes'] - t) <= 2 for e in list(manual) + out): continue
+        L = sorted(L, key=lambda n: n['date'])
+        out.append({'date': mo, 'basin': b, 'region': '', 'cause': c, 'agent': 'press (automatic)', 'fish_m': round(fm / 1e6, 2) if fm else None, 'tonnes': t, 'company': '',
+                    'note': f'{len(L)} article{"s" if len(L) > 1 else ""}: ' + ' · '.join(n['title'] for n in L[:3]), 'url': L[0].get('url'), 'src': L[0].get('source'), 'auto': 'press'})
+    return sorted(out, key=lambda e: e['date'], reverse=True)
+
 def main():
     try: old = json.load(open(OUT, encoding='utf-8'))
     except Exception: old = {}
@@ -261,8 +384,12 @@ def main():
                     'note': 'news = articles kept by keyword (a mortality word + a farming word), classified by cause and basin; manual = events entered by hand with their losses; scotland_fhi = mortalities reported to the Scottish Fish Health Inspectorate',
                     'causes': list(CAUSES.keys()), 'basins': list(BASINS.keys())},
            'manual': old.get('manual', []), 'news': newsl, 'scotland_fhi': sco}
+    try:
+        out['auto'] = auto_events(newsl, out['manual'])
+    except Exception as ex:  # noqa: BLE001
+        out['auto'] = old.get('auto', []); status['auto'] = f'{type(ex).__name__}: {ex}'
     json.dump(out, open(OUT, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
-    print(f'events: {len(newsl)} articles ({len(news)} this run), {len(out["manual"])} manual events')
+    print(f'events: {len(newsl)} articles ({len(news)} this run), {len(out["manual"])} manual events, {len(out.get("auto", []))} automatic')
     for k, v in status.items(): print(f'  {k}: {v}')
 
 if __name__ == '__main__':

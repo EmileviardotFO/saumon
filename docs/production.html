@@ -848,7 +848,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
       <div class="gm-tw" style="overflow-x:auto"><table class="sig-table" id="mevRegTable"></table></div>
       <div id="mevRegMore" style="margin-top:6px;"></div>
       <div class="sig-title" style="margin-top:20px;font-size:14px;">Recorded events with losses</div>
-      <div class="sig-sub">Entered by hand from official statements and the press (file data/events.json, key "manual"): the losses that matter for supply.</div>
+      <div class="sig-sub">Every basin, filled automatically at each news run: months with unusual deaths in each country's official data (Norway's biomass register by zone, MAST for Iceland, SEPA reports for Scotland — about six months late —, EPA mortality waste for Tasmania) and, where no data covers the month (Chile, Faroe Islands, Canada…), mortality stories taken up by the press, with the figures quoted in their titles. Events entered by hand from official statements come first and carry the cause. "Unusual" = at least twice the usual level of the zone.</div>
       <div style="overflow-x:auto"><table class="sig-table" id="mevManTable"></table></div>
       <div class="sig-title" style="margin-top:20px;font-size:14px;">Press watch</div>
       <div class="sig-sub" id="mevNewsSub"></div>
@@ -3000,24 +3000,19 @@ function renderMortEvents() {
   const rb = document.getElementById('mevRegBtn'); if (rb) rb.onclick = () => { MEV_ALL = !MEV_ALL; renderMortEvents(); };
   if (!MEV) { ['mevManTable', 'mevNewsTable'].forEach(id => document.getElementById(id).innerHTML = '<tbody><tr><td>Loading…</td></tr></tbody>'); return; }
   // evenements saisis
-  // + mois inhabituels de l'Islande lus automatiquement dans le tableau de bord MAST (mortalite nationale du mois au moins
-  //   deux fois la mediane des 12 mois precedents et 600 t ou plus), quand aucun evenement n'est saisi pour ce mois
-  let ism = null; try { ism = IS_MAST; } catch (e) {}
-  if (!ism && !window.__mevIs) { window.__mevIs = 1; fetch(DATA_URL.replace('data.json', 'iceland_mast.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
-    .then(j => { if (j) { try { if (!IS_MAST) IS_MAST = j; } catch (e) {} window.__mevIsD = j; if (currentView === 'health') renderMortEvents(); } }); }
-  ism = ism || window.__mevIsD;
-  const auto = [];
-  if (ism && ism.national) { const N = ism.national;
-    N.forEach((x, i) => { if (i < 12) return; const prev = N.slice(i - 12, i).map(y => y.mortality_t).sort((p, q) => p - q), med = (prev[5] + prev[6]) / 2;
-      if (!(x.mortality_t >= 600 && x.mortality_t >= 2 * med) || (MEV.manual || []).some(e => e.basin === 'IS' && e.date === x.m)) return;
-      const S = (ism.sites || []).filter(y => y.m === x.m).sort((p, q) => q.dead - p.dead).slice(0, 3), fish = (ism.sites || []).filter(y => y.m === x.m).reduce((p, y) => p + y.dead, 0);
-      auto.push({ date: x.m, basin: 'IS', region: [...new Set(S.map(y => y.fjord).filter(Boolean))].join(', '), cause: 'unspecified', agent: 'automatic, from MAST', fish_m: Math.round(fish / 1e5) / 10, tonnes: x.mortality_t,
-        company: '', note: `national deaths ${Math.round(x.mortality_t)} t against a usual ${Math.round(med)} t` + (S.length ? `; most at ${S.map(y => `${y.site} (${y.co}, ${Math.round(y.dead / 1000)}k fish)`).join(', ')}` : ''), url: ism.meta && ism.meta.url, src: 'MAST dashboard' }); }); }
-  const man = (MEV.manual || []).concat(auto).slice().sort((a, b) => b.date.localeCompare(a.date));
+  // saisies a la main + evenements detectes automatiquement par scripts/update_events.py (donnees de chaque bassin, sinon presse)
+  const dup = e => (MEV.manual || []).some(m => m.basin === e.basin && (m.date || '').slice(0, 7) === e.date && (e.auto === 'press' || !e.region || !m.region || ['IS', 'AU'].includes(e.basin) || m.region.includes(e.region)));
+  const all = (MEV.manual || []).concat((MEV.auto || []).filter(e => !dup(e))).sort((a, b) => b.date.localeCompare(a.date) || (a.auto ? 1 : 0) - (b.auto ? 1 : 0));
+  const lim = new Date(); lim.setMonth(lim.getMonth() - 18); const limS = lim.toISOString().slice(0, 7);
+  const man = window.__mevAll ? all : all.filter(e => !e.auto || e.date >= limS);
   document.getElementById('mevManTable').innerHTML = `<thead><tr><th class="name">Month</th><th style="text-align:left">Basin, region</th><th style="text-align:left">Cause</th><th>Fish lost</th><th>Tonnes</th><th style="text-align:left">Detail</th></tr></thead><tbody>` +
     (man.map(e => `<tr><td class="name">${mevMonth(+e.date.slice(0, 4) * 100 + +e.date.slice(5, 7))}</td><td style="text-align:left">${MEV_BASIN[e.basin] || e.basin}${e.region ? ', ' + e.region : ''}</td>` +
       `<td style="text-align:left">${mevChip(e.cause)} ${e.agent || ''}</td><td>${e.fish_m ? e.fish_m.toLocaleString('en-US') + ' M' : '—'}</td><td>${e.tonnes ? Math.round(e.tonnes).toLocaleString('en-US') + ' t' : '—'}</td>` +
-      `<td style="text-align:left;white-space:normal;min-width:260px">${e.company ? `<b>${e.company}</b> · ` : ''}${e.note || ''} ${e.url ? `<a href="${e.url}" target="_blank" rel="noopener" style="color:#4fc3f7">${e.src || 'source'}</a>` : `<span style="color:var(--muted)">${e.src || ''}</span>`}</td></tr>`).join('') || '<tr><td colspan="6">None yet.</td></tr>') + '</tbody>';
+      `<td style="text-align:left;white-space:normal;min-width:260px">${e.auto ? `<span style="font-size:10.5px;padding:0 6px;border-radius:8px;border:1px solid var(--border);color:var(--muted);margin-right:4px">automatic · ${e.auto === 'press' ? 'press' : 'official data'}</span>` : ''}${e.company ? `<b>${e.company}</b> · ` : ''}${e.note || ''} ${e.url ? `<a href="${e.url}" target="_blank" rel="noopener" style="color:#4fc3f7">${e.src || 'source'}</a>` : `<span style="color:var(--muted)">${e.src || ''}</span>`}</td></tr>`).join('') || '<tr><td colspan="6">None yet.</td></tr>') + '</tbody>';
+  { const t = document.getElementById('mevManTable'); let btn = document.getElementById('mevManMore');
+    if (!btn) { btn = document.createElement('div'); btn.id = 'mevManMore'; btn.style.marginTop = '6px'; t.parentElement.after(btn); }
+    btn.innerHTML = all.length > man.length || window.__mevAll ? `<button class="ctrl" id="mevManBtn">${window.__mevAll ? 'Show the last 18 months' : `Show all ${all.length} events (since ${mevMonth(+all[all.length - 1].date.slice(0, 4) * 100 + +all[all.length - 1].date.slice(5, 7))})`}</button>` : '';
+    const b = document.getElementById('mevManBtn'); if (b) b.onclick = () => { window.__mevAll = !window.__mevAll; renderMortEvents(); }; }
   // veille presse
   const N = MEV.news || [], st = (MEV.meta || {}).status || {}, okN = Object.values(st).filter(v => /^ok/.test(v)).length, nS = Object.keys(st).length;
   const cntB = {}, cntC = {}; N.forEach(a => { (a.basins || []).forEach(b => cntB[b] = (cntB[b] || 0) + 1); (a.causes || []).forEach(c => cntC[c] = (cntC[c] || 0) + 1); });
