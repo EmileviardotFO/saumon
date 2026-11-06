@@ -1298,6 +1298,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="sig-title">Time at sea — how long each farmer keeps its fish at sea, zone by zone, and what diseases do to it</div>
     <div class="sig-sub" id="tasSub"></div>
     <div style="max-width:1100px;margin:0 auto"><div id="tasMap"></div><div class="sig-sub" id="tasMapLeg" style="margin-top:4px"></div></div>
+    <div id="tasZone" style="margin-top:12px"></div>
     <div class="sig-title" style="font-size:15px;margin-top:18px">By farmer</div><div class="sig-sub" id="tasCoSub"></div>
     <div style="overflow-x:auto"><table class="sig-table" id="tasCo"></table></div>
     <div class="sig-sub" id="tasOff" style="margin-top:8px"></div>
@@ -3908,6 +3909,46 @@ function renderPoland() {
   document.getElementById('plNote').innerHTML = `<b>Source.</b> Eurostat Comext, as recorded by each hub: arrivals from any country, including Norwegian fish cleared in Sweden, and dispatches to every market. Months that Eurostat has not completed are left out, so a half-filled month is never read as a collapse. Trade inside the EU is reported by companies and often under-reported.`;
 }
 
+// ---- panneau d'une zone : cycles, eleveurs, generations contre l'an dernier, croissance / temperature / mortalite, recolte ----
+function tasZonePanel(Z, CY) {
+  const el = document.getElementById('tasZone'), po = window.TAS_PO;
+  if (!po || !Z[po]) { el.innerHTML = `<div class="sig-sub" style="text-align:center">Click a zone on the map (or its card) to open its details.</div>`; return; }
+  const z = Z[po], e = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), f1 = v => v === null || v === undefined || !isFinite(v) ? '—' : (+v).toFixed(1), f2 = v => v === null || v === undefined || !isFinite(v) ? '—' : (+v).toFixed(2);
+  const pc = (a, b, good = true) => a === null || b === null || a === undefined || b === undefined || !b ? '—' : (v => `<span class="${(v >= 0) === good ? 'delta-good' : 'delta-bad'}">${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(0)} %</span>`)(100 * (a / b - 1));
+  const nm = c => c.replace(/\s+(AS|ASA)$/i, '').replace(/\b\w+/g, w => w.length > 3 ? w[0] + w.slice(1).toLowerCase() : w);
+  const card = (t, big, ln) => `<div class="pr-card" style="cursor:default"><div class="nm">${t}</div><div class="big">${big}</div><div class="ln">${ln}</div></div>`;
+  // generations de la zone contre l'an dernier, et croissance des 3 derniers mois
+  let gen = '', grow = '', k = null;
+  try { const G = gyPrep(); k = G.months[G.months.length - 1]; const Y = Math.floor(k / 100), m = k % 100, H = m >= 5 ? Y - 1 : Y - 2, N = H + 1, k1 = gySh(k, -12);
+    const row = (g) => { const a = gyGen([po], g, k), b = gyGen([po], g - 1, k1); if (!a.fish && !b.fish) return '';
+      return `<tr><td class="name"><b>G${g}</b> vs G${g - 1}</td><td>${(a.fish / 1e6).toFixed(1)} / ${(b.fish / 1e6).toFixed(1)}</td><td>${pc(a.fish, b.fish)}</td><td>${f2(a.w)} / ${f2(b.w)}</td><td>${(a.bio / 1e6).toFixed(1)} / ${(b.bio / 1e6).toFixed(1)}</td><td>${pc(a.bio, b.bio)}</td><td>${(a.b5 / 1e6).toFixed(1)} / ${(b.b5 / 1e6).toFixed(1)}</td></tr>`; };
+    gen = `<div class="sig-sub" style="margin:10px 0 4px"><b>Generations in the zone</b>, end of ${gyMonL(k)} against the year before at the same date (Directorate of Fisheries' biomass register)</div>` +
+      `<div style="overflow-x:auto"><table class="sig-table" style="font-size:12.5px"><thead><tr><th class="name">Generation</th><th>Fish (M)<br>now / then</th><th>Change</th><th>Weight (kg)<br>now / then</th><th>Biomass (kt)<br>now / then</th><th>Change</th><th>Over 5 kg gutted<br>(kt) now / then</th></tr></thead><tbody>` +
+      [H - 1, H, N].map(row).join('') + `</tbody></table></div>`;
+    const ms = [gySh(k, -2), gySh(k, -1), k], A = g => ms.map(x => gyGrowth([po], g, x)).filter(Boolean), av = (L, f) => { const v = L.map(x => x[f]).filter(x => x !== null && isFinite(x)); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; };
+    const grRow = g => { const a = A(g), b = ms.map(x => gyGrowth([po], g - 1, gySh(x, -12))).filter(Boolean); if (!a.length || !b.length) return '';
+      return `<tr><td class="name"><b>G${g}</b> vs G${g - 1}</td><td>${f2(av(a, 'gr'))} / ${f2(av(b, 'gr'))}</td><td>${pc(av(a, 'gr'), av(b, 'gr'))}</td><td>${f1(av(a, 'T'))} / ${f1(av(b, 'T'))}</td><td>${f2(av(a, 'tgc'))} / ${f2(av(b, 'tgc'))}</td><td>${pc(av(a, 'tgc'), av(b, 'tgc'))}</td><td>${f2(av(a, 'mort'))} / ${f2(av(b, 'mort'))}</td><td>${pc(av(a, 'mort'), av(b, 'mort'), false)}</td></tr>`; };
+    grow = `<div class="sig-sub" style="margin:10px 0 4px"><b>Growth, temperature and mortality</b>, ${gyMonL(ms[0])}–${gyMonL(k)} against the same stage a year earlier (monthly averages)</div>` +
+      `<div style="overflow-x:auto"><table class="sig-table" style="font-size:12.5px"><thead><tr><th class="name">Generation</th><th>Growth per fish<br>kg/month now / then</th><th>Δ</th><th>Sea temp.<br>°C</th><th>TGC<br>now / then</th><th>Δ</th><th>Dead + lost<br>% a month</th><th>Δ</th></tr></thead><tbody>` +
+      [H, N].map(grRow).join('') + `</tbody></table></div>`;
+  } catch (ex) { gen = ''; }
+  // eleveurs de la zone
+  const F = CY.farmers.filter(c => c.po === +po).sort((a, b) => (b.active_sites || 0) - (a.active_sites || 0) || b.cycles - a.cycles);
+  const far = `<div class="sig-sub" style="margin:10px 0 4px"><b>Farmers in the zone</b> — cycles since 2023, pace against the zone (above ×1 = shorter cycles), sites with fish now and due within 2 months</div>` +
+    `<div style="overflow-x:auto"><table class="sig-table" style="font-size:12.5px"><thead><tr><th class="name">Farmer</th><th>Cycles</th><th>Median<br>(months)</th><th>Pace</th><th>Last 12 m<br>(months)</th><th>Disease<br>share</th><th>Fallow<br>(weeks)</th><th>Sites<br>with fish</th><th>Average age<br>(months)</th><th>Due<br>≤ 2 months</th></tr></thead><tbody>` +
+    F.map(c => { const t = (c.trend || []).filter(x => x !== null && x !== undefined);
+      return `<tr><td class="name"><b title="${e(c.co)}">${e(nm(c.co))}</b></td><td>${c.cycles}</td><td>${f1(c.median)}</td><td><span class="${c.pace > 1.03 ? 'delta-good' : c.pace < 0.97 ? 'delta-bad' : ''}">×${f2(c.pace)}</span></td><td>${t.length ? f1(t[t.length - 1]) : '—'}</td>` +
+        `<td>${c.disease_share !== undefined ? c.disease_share + ' %' : '—'}</td><td>${c.fallow_weeks || '—'}</td><td>${c.active_sites || 0}</td><td>${f1(c.active_age)}</td><td>${c.due_2m ? `<b>${c.due_2m}</b>` : '0'}</td></tr>`; }).join('') + `</tbody></table></div>`;
+  el.innerHTML = `<div style="border:1px solid #4fc3f7;border-radius:10px;padding:12px 14px;background:rgba(79,195,247,.05)">` +
+    `<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><b style="font-size:16px">Zone ${po} · ${e(PO_NAMES[po] || '')}</b><button class="ctrl" id="tasZoneX" type="button">Close ✕</button></div>` +
+    `<div class="pr-cards" style="margin-top:8px">` +
+    card('Months at sea', `${f1(z.median)}`, `median of ${z.cycles} cycles · disease-free ${f1(z.median_ok)}${z.median_dis ? ` · with disease ${f1(z.median_dis)}` : ''}<br>last 12 months: ${f1((z.trend || []).filter(x => x !== null).slice(-1)[0])}`) +
+    card('Fallow', `${z.fallow_weeks || '—'} weeks`, `between emptying and restocking (median)<br>${z.disease_share} % of cycles crossed a disease`) +
+    card('Sites with fish', `${z.active_sites || 0}`, `average age ${f1(z.active_age)} months<br><b>${z.due_2m || 0}</b> due within 2 months${z.accel ? ' · <span class="delta-good">cycles getting shorter</span>' : ''}`) +
+    card('Harvest, last 12 months', `${f1(z.harvest_kt)} kt`, `${pc(z.harvest_kt, z.harvest_kt_prev)} on the 12 months before<br>average ${f2(z.harvest_kg)} kg gutted (${f2(z.harvest_kg_prev)} before)`) +
+    `</div>` + gen + grow + far + `</div>`;
+  document.getElementById('tasZoneX').onclick = () => { window.TAS_PO = null; renderTimeAtSea(); };
+}
 function renderTimeAtSea() {
   const sub = document.getElementById('tasSub');
   if (!BF) { if (!BF_LOADING) { BF_LOADING = true; fetch(DATA_URL.replace('data.json', 'big_fish.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
@@ -3940,6 +3981,13 @@ function renderTimeAtSea() {
       `<tspan fill="${z.disease_share >= 25 ? '#ff8a65' : '#8fa4b0'}"> · disease ${z.disease_share} %</tspan></text>`; }
   m += `<text x="236" y="112" font-size="10" fill="#8fa4b0" font-weight="bold">NORTH</text><text x="-246" y="112" font-size="10" fill="#8fa4b0" font-weight="bold">SOUTH & MID</text>`;
   document.getElementById('tasMap').innerHTML = `<svg viewBox="-250 8 684 512" style="display:block;width:100%;height:auto">${m}</svg>`;
+  // zones cliquables (carte et cartes) -> panneau de la zone sous la carte
+  { const svg = document.querySelector('#tasMap svg'), polys = [...svg.querySelectorAll('polygon')], pk = Object.keys(ZONE_POLYGONS).filter(po => Z[po]);
+    polys.forEach((pg, i) => { if (!pk[i]) return; pg.style.cursor = 'pointer'; pg.dataset.po = pk[i]; if (+pk[i] === window.TAS_PO) { pg.setAttribute('stroke', '#ffffff'); pg.setAttribute('stroke-width', '2.2'); } });
+    svg.querySelectorAll('rect').forEach(r => { const t = r.nextElementSibling && r.nextElementSibling.textContent || '', mm = /^(\d{1,2}) ·/.exec(t); if (mm) { r.style.cursor = 'pointer'; r.dataset.po = mm[1]; if (+mm[1] === window.TAS_PO) r.setAttribute('stroke', '#4fc3f7'); } });
+    svg.querySelectorAll('[data-po]').forEach(el => el.addEventListener('click', () => { window.TAS_PO = window.TAS_PO === +el.dataset.po ? null : +el.dataset.po; renderTimeAtSea();
+      if (window.TAS_PO) setTimeout(() => document.getElementById('tasZone').scrollIntoView({ behavior: 'smooth', block: 'start' }), 60); }));
+    tasZonePanel(Z, CY); }
   document.getElementById('tasMapLeg').innerHTML = `Zone colour: median months at sea of disease-free cycles, from ${f1(lo)} (green) to ${f1(hi)} (amber). Each card: median of all cycles, fallow between cycles, average harvest weight over the last 12 months (gutted) and its change on the 12 months before, share of cycles that crossed a disease.`;
   // ---- par eleveur, avec detail par zone ----
   const NAT = CY.farmers.filter(c => c.po === 0).sort((a, b) => b.cycles - a.cycles);
