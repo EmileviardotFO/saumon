@@ -10291,12 +10291,17 @@ function gyTemp(zones, k, weights) {          // weights : {po: poids} (poissons
   return n ? s / n : null;
 }
 const gyDays = k => new Date(Date.UTC(Math.floor(k / 100), k % 100, 0)).getUTCDate();
+const GY_SMOLT = 0.15; let GY_MOVED = 0;
 function gyGrowth(zones, g, k) {
   const { IX } = gyPrep(); let N0 = 0, N1 = 0, B0 = 0, B1 = 0, H = 0, D = 0, Dn = 0, A = 0, Wt = {};
   zones.forEach(po => { const ser = (IX[po] || {})[g]; if (!ser) return; const a = ser[gySh(k, -1)], b = ser[k];
     if (!a || !b || !(a.stock > 2e5) || !(b.stock > 0) || !a.weight_kg || !b.weight_kg) return;
     N0 += a.stock; N1 += b.stock; B0 += a.stock * a.weight_kg; B1 += b.stock * b.weight_kg; H += b.harv_kg || 0;
-    const d = (b.dead_stk || 0) + (b.loss_stk || 0); D += d * (a.weight_kg + b.weight_kg) / 4; Dn += d; A += (b.sea || 0) * b.stock; Wt[po] = a.stock; });
+    const d = (b.dead_stk || 0) + (b.loss_stk || 0); D += d * (a.weight_kg + b.weight_kg) / 4; Dn += d; A += (b.sea || 0) * b.stock; Wt[po] = a.stock;
+    // poissons qui apparaissent ou disparaissent sans etre declares (smolts mis a l'eau, transferts, corrections de comptage) :
+    // les nouveaux entrent a GY_SMOLT kg, les disparus sortent au poids moyen -- sinon ils passent pour de la croissance ou de la perte
+    const gap = b.stock - a.stock + (b.harv_stk || 0) + d;
+    if (gap > 0) D -= gap * GY_SMOLT; else { D -= gap * (a.weight_kg + b.weight_kg) / 2; GY_MOVED += -gap; } });
   if (!(N0 > 2e5)) return null;
   const w0 = B0 / N0, gr = (B1 - B0 + H + D) / ((N0 + N1) / 2), T = gyTemp(zones, k, Wt);
   const tgc = T && T > 1 && w0 + gr > 0 ? (Math.cbrt((w0 + gr) * 1000) - Math.cbrt(w0 * 1000)) * 1000 / (T * gyDays(k)) : null;
@@ -10436,7 +10441,7 @@ function renderGenYoy() {
     [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].map(z => zrow('Zone ' + z, [z])).join('') +
     ['S', 'M', 'N', 'NO'].map(x => zrow(GY_SETS[x][0], GY_SETS[x][1])).join('') + `</tbody>`;
   gyGrowthRender(Z, k, H, N);
-  $g('gyNote').innerHTML = `<b>How to read it.</b> Growth per fish = what the generation produced in the month (change in biomass + harvested kilos + dead fish at half weight) ÷ its average number of fish, so harvesting the biggest cages first does not lower it. TGC = (end weight^⅓ − start weight^⅓, in grams) × 1000 ÷ degree-days. Months at sea are worked out here, the same way for every generation, from the fish that arrive month by month (the register only gives the year the smolts went to sea), so they are close but not exact.`;
+  $g('gyNote').innerHTML = `<b>How to read it.</b> Growth per fish = what the generation produced in the month (change in biomass + harvested kilos + dead fish at half weight) ÷ its average number of fish, so harvesting the biggest cages first does not lower it. Fish that appear or vanish without being declared (smolts put to sea, moves between registrations, count corrections) are taken in at 0.15 kg or out at the average weight, so they do not pass for growth or loss — in September 2026, 4.8 M G2025 fish vanished this way in zone 9 and 1.5 M in zone 12. TGC = (end weight^⅓ − start weight^⅓, in grams) × 1000 ÷ degree-days. Months at sea are worked out here, the same way for every generation, from the fish that arrive month by month (the register only gives the year the smolts went to sea), so they are close but not exact.`;
   $g('gyNote').innerHTML += ` `;
   $g('gyNote').innerHTML += `<br><b>Other definitions.</b> Every figure compares the end of ${gyMonL(k)} with the end of ${gyMonL(k1)}. "Stocked" = fish at sea + fish already harvested + dead + lost since the generation went to sea (smolt numbers are not published by generation). ` +
     `Survival so far = 1 − (dead + lost) ÷ stocked. 5 kg+ / 6 kg+ = gutted weight classes estimated from each zone's average weight per generation. The month selector lets you replay any month of the last years; the tab updates by itself when the register publishes a new month (about five weeks after the month).`;
