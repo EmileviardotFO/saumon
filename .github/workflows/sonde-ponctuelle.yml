@@ -26,6 +26,8 @@ jobs:
       - name: Dependances
         run: pip install pandas openpyxl xlrd requests pdfplumber
       - name: Lancer la sonde
+        env:
+          CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
         run: |
           mkdir -p sonde_out
           python3 "scripts/sondes/${{ inputs.script }}" 2>&1 | tee sonde_out/log.txt
