@@ -1,0 +1,636 @@
+{
+"source": "Mattilsynet, transportenheter godkjent for transport av levende akvakulturdyr",
+"read": "2026-11-06",
+"vessels": {
+"LFTF": {
+"name": "Kristoffer Tronds",
+"owner": "ALSAKER LFC SERVICE AS",
+"town": "Onarheim",
+"county": "Vestland",
+"valid_to": "2031-10-30"
+},
+"LEFZ": {
+"name": "Aqua Viking",
+"owner": "AQUASHIP SALMON STAR AS",
+"town": "Kristiansund N",
+"county": "Møre og Romsdal",
+"valid_to": "2027-03-01"
+},
+"LG7388": {
+"name": "Arina",
+"owner": "ARVE BJØRSVIK",
+"town": "Flatanger",
+"county": "Trøndelag",
+"valid_to": "2028-09-04"
+},
+"LHGV": {
+"name": "Havørn",
+"owner": "ASPØY AS",
+"town": "Ålesund",
+"county": "Møre og Romsdal",
+"valid_to": "2026-11-30"
+},
+"LK3952": {
+"name": "Neptun",
+"owner": "AUSTEVOLL SJØTJENESTER AS",
+"town": "Torangsvåg",
+"county": "Vestland",
+"valid_to": "2026-11-28"
+},
+"LF6469": {
+"name": "Rognkjeksa LF6469",
+"owner": "AUSTEVOLL SJØTJENESTER AS",
+"town": "Torangsvåg",
+"county": "Vestland",
+"valid_to": "2029-09-19"
+},
+"LNAM": {
+"name": "Sveholm",
+"owner": "AUSTEVOLL SJØTJENESTER AS",
+"town": "Torangsvåg",
+"county": "Vestland",
+"valid_to": "2030-11-14"
+},
+"LAOG": {
+"name": "Navøy",
+"owner": "AUSTEVOLL SJØTJENESTER AS",
+"town": "Torangsvåg",
+"county": "Vestland",
+"valid_to": "2028-10-23"
+},
+"LGWF": {
+"name": "Caspian",
+"owner": "BRØNNBÅT NORD AS",
+"town": "Engenes",
+"county": "Troms",
+"valid_to": "2030-06-19"
+},
+"3YWB": {
+"name": "Inter Nordic",
+"owner": "INTERSHIP AS",
+"town": "Hareid",
+"county": "Møre og Romsdal",
+"valid_to": "2030-10-06"
+},
+"LGGX": {
+"name": "Skrova",
+"owner": "BRØNNBÅT NORD LOFOTEN AS",
+"town": "Engenes",
+"county": "Troms",
+"valid_to": "2027-10-06"
+},
+"LNEV": {
+"name": "Smøla Våg",
+"owner": "EINES AS",
+"town": "Smøla",
+"county": "Møre og Romsdal",
+"valid_to": "2027-06-13"
+},
+"LLFC": {
+"name": "Korsholmen",
+"owner": "ELI STAR AS",
+"town": "Averøy",
+"county": "Møre og Romsdal",
+"valid_to": "2029-12-06"
+},
+"LDZR": {
+"name": "Gåsø Jarl",
+"owner": "FRØY REDERI AS",
+"town": "Sistranda",
+"county": "Trøndelag",
+"valid_to": "2030-02-28"
+},
+"LDZS": {
+"name": "Freyja",
+"owner": "FRØY REDERI AS",
+"town": "Sistranda",
+"county": "Trøndelag",
+"valid_to": "2028-09-20"
+},
+"LGUY": {
+"name": "Gåsø Viking",
+"owner": "FRØY REDERI AS",
+"town": "Sistranda",
+"county": "Trøndelag",
+"valid_to": "2027-06-01"
+},
+"LFQF": {
+"name": "Horda Pioneer",
+"owner": "HORDA PIONEER AS",
+"town": "Storebø",
+"county": "Vestland",
+"valid_to": ""
+},
+"LFRS": {
+"name": "Hordagut",
+"owner": "HORDALAKS AS",
+"town": "Storebø",
+"county": "Vestland",
+"valid_to": "2026-12-12"
+},
+"3YGJ": {
+"name": "Inter Fjord",
+"owner": "INTERSHIP AS",
+"town": "Hareid",
+"county": "Møre og Romsdal",
+"valid_to": ""
+},
+"LFMS": {
+"name": "Bjørg Pauline",
+"owner": "INTERSHIP AS",
+"town": "Hareid",
+"county": "Møre og Romsdal",
+"valid_to": "2027-01-27"
+},
+"JWUO": {
+"name": "Aquafisk Sr",
+"owner": "KENFISH II AS (\"FAY\")",
+"town": "Averøy",
+"county": "Møre og Romsdal",
+"valid_to": "2027-01-15"
+},
+"LG9839": {
+"name": "Scallop Fighter brønnbåt",
+"owner": "KVITSØY SJØTJENESTER AS",
+"town": "Kvitsøy",
+"county": "Rogaland",
+"valid_to": "2027-11-22"
+},
+"LK4831": {
+"name": "EDDI ALPHA",
+"owner": "MOSTERØY SJØTJENESTER AS",
+"town": "Mosterøy",
+"county": "Rogaland",
+"valid_to": "2028-05-28"
+},
+"LHOI": {
+"name": "Mowi Star",
+"owner": "MOWI STAR AS",
+"town": "Torangsvåg",
+"county": "Vestland",
+"valid_to": "2030-05-12"
+},
+"LCUL": {
+"name": "Dønnland",
+"owner": "MS DØNNLAND AS",
+"town": "Rørvik",
+"county": "Trøndelag",
+"valid_to": "2029-03-22"
+},
+"LFAL": {
+"name": "Havtrans",
+"owner": "MS HAVTRANS AS",
+"town": "Rørvik",
+"county": "Trøndelag",
+"valid_to": "2029-03-22"
+},
+"3YYZ": {
+"name": "Namsos",
+"owner": "MS NAMSOS AS",
+"town": "Rørvik",
+"county": "Trøndelag",
+"valid_to": "2028-09-27"
+},
+"3YMR": {
+"name": "Viknatrans",
+"owner": "MS VIKNATRANS AS",
+"town": "Rørvik",
+"county": "Trøndelag",
+"valid_to": "2028-10-02"
+},
+"LK6628": {
+"name": "Nordic Sea",
+"owner": "NORDIC HALIBUT AS AVD EIDE",
+"town": "Lyngstad",
+"county": "Møre og Romsdal",
+"valid_to": "2030-01-31"
+},
+"LGAD": {
+"name": "Harald Martin",
+"owner": "NORDLAKS TRANSPORT AS",
+"town": "Stokmarknes",
+"county": "Nordland",
+"valid_to": "2027-05-16"
+},
+"LAFM": {
+"name": "Viktoria Lady",
+"owner": "NORSK FISKETRANSPORT AS",
+"town": "Dønna",
+"county": "Nordland",
+"valid_to": ""
+},
+"LGLZ": {
+"name": "Gåsø Odin",
+"owner": "NORSK FISKETRANSPORT AS",
+"town": "Dønna",
+"county": "Nordland",
+"valid_to": "2028-11-13"
+},
+"LFRT": {
+"name": "Reisa",
+"owner": "NORSK FISKETRANSPORT AS",
+"town": "Dønna",
+"county": "Nordland",
+"valid_to": "2026-11-27"
+},
+"LFZB": {
+"name": "Kristiansund",
+"owner": "NORSK FISKETRANSPORT AS",
+"town": "Dønna",
+"county": "Nordland",
+"valid_to": "2027-07-04"
+},
+"3YDL": {
+"name": "Novatrans",
+"owner": "NORSK FISKETRANSPORT AS",
+"town": "Dønna",
+"county": "Nordland",
+"valid_to": "2027-04-12"
+},
+"LFZC": {
+"name": "Åsværfjord",
+"owner": "NORSK FISKETRANSPORT AS",
+"town": "Dønna",
+"county": "Nordland",
+"valid_to": "2028-11-06"
+},
+"LEEF": {
+"name": "Steigen",
+"owner": "NORSK FISKETRANSPORT AS",
+"town": "Dønna",
+"county": "Nordland",
+"valid_to": "2029-04-26"
+},
+"LJXX": {
+"name": "RoBris",
+"owner": "ROSTEIN AS",
+"town": "Harøy",
+"county": "Møre og Romsdal",
+"valid_to": "2028-01-21"
+},
+"LFBZ": {
+"name": "Ro Fortune",
+"owner": "ROSTEIN AS",
+"town": "Harøy",
+"county": "Møre og Romsdal",
+"valid_to": "2028-06-01"
+},
+"LLUZ": {
+"name": "Rohav",
+"owner": "ROSTEIN AS",
+"town": "Harøy",
+"county": "Møre og Romsdal",
+"valid_to": "2028-04-21"
+},
+"LBUF": {
+"name": "Ro Senja",
+"owner": "ROSTEIN AS",
+"town": "Harøy",
+"county": "Møre og Romsdal",
+"valid_to": "2028-09-18"
+},
+"LDRC": {
+"name": "Ro Server, kjennesignal LDRC",
+"owner": "ROSTEIN AS",
+"town": "Harøy",
+"county": "Møre og Romsdal",
+"valid_to": "2029-04-08"
+},
+"LLPM": {
+"name": "Langsund kjenningssignal LLPM",
+"owner": "ROSTEIN AS",
+"town": "Harøy",
+"county": "Møre og Romsdal",
+"valid_to": "2029-06-03"
+},
+"LGJF": {
+"name": "Ro Sailor",
+"owner": "ROSTEIN AS",
+"town": "Harøy",
+"county": "Møre og Romsdal",
+"valid_to": "2027-06-03"
+},
+"LEAH": {
+"name": "Ro North",
+"owner": "ROSTEIN AS",
+"town": "Harøy",
+"county": "Møre og Romsdal",
+"valid_to": "2027-05-09"
+},
+"LEAJ": {
+"name": "ROWEST",
+"owner": "ROSTEIN AS",
+"town": "Harøy",
+"county": "Møre og Romsdal",
+"valid_to": "2027-04-21"
+},
+"LFEI": {
+"name": "Ro Fjord",
+"owner": "ROSTEIN AS",
+"town": "Harøy",
+"county": "Møre og Romsdal",
+"valid_to": "2027-02-21"
+},
+"3YFN": {
+"name": "Ro Vanguard",
+"owner": "ROSTEIN AS",
+"town": "Harøy",
+"county": "Møre og Romsdal",
+"valid_to": "2027-03-24"
+},
+"LIQI": {
+"name": "Robas",
+"owner": "ROSTEIN AS",
+"town": "Harøy",
+"county": "Møre og Romsdal",
+"valid_to": "2030-10-23"
+},
+"3YGF": {
+"name": "Ro Sunrise",
+"owner": "ROSTEIN AS",
+"town": "Harøy",
+"county": "Møre og Romsdal",
+"valid_to": "2030-10-30"
+},
+"LAKU": {
+"name": "Ro Master",
+"owner": "ROSTEIN AS",
+"town": "Harøy",
+"county": "Møre og Romsdal",
+"valid_to": "2030-09-19"
+},
+"JWMD": {
+"name": "Ro Spirit",
+"owner": "ROSTEIN AS",
+"town": "Harøy",
+"county": "Møre og Romsdal",
+"valid_to": "2029-11-02"
+},
+"LCTO": {
+"name": "Ro Fjell",
+"owner": "ROSTEIN AS",
+"town": "Harøy",
+"county": "Møre og Romsdal",
+"valid_to": "2029-11-09"
+},
+"LKBO": {
+"name": "Ro Arctic",
+"owner": "ROSTEIN AS",
+"town": "Harøy",
+"county": "Møre og Romsdal",
+"valid_to": "2030-02-05"
+},
+"LLVU": {
+"name": "Ro Chief",
+"owner": "ROSTEIN AS",
+"town": "Harøy",
+"county": "Møre og Romsdal",
+"valid_to": "2030-04-24"
+},
+"LLHI": {
+"name": "Rostein",
+"owner": "ROSTEIN AS",
+"town": "Harøy",
+"county": "Møre og Romsdal",
+"valid_to": "2030-05-07"
+},
+"LFYF": {
+"name": "Ro Venture",
+"owner": "ROSTEIN AS",
+"town": "Harøy",
+"county": "Møre og Romsdal",
+"valid_to": "2030-08-30"
+},
+"LFTG": {
+"name": "Ro Vision",
+"owner": "ROSTEIN AS",
+"town": "Harøy",
+"county": "Møre og Romsdal",
+"valid_to": "2030-10-17"
+},
+"LGRC": {
+"name": "Seifjell",
+"owner": "SEIFJELL AS",
+"town": "Torangsvåg",
+"county": "Vestland",
+"valid_to": "2030-04-25"
+},
+"LGRG": {
+"name": "Seigrunn",
+"owner": "SEIGRUNN AS",
+"town": "Torangsvåg",
+"county": "Vestland",
+"valid_to": "2030-10-20"
+},
+"LDRX": {
+"name": "Seihav",
+"owner": "Seistar Holding AS",
+"town": "Torangsvåg",
+"county": "Vestland",
+"valid_to": "2027-01-31"
+},
+"LGEY": {
+"name": "Færøysund",
+"owner": "SJØTRANS AS",
+"town": "Herøy",
+"county": "Nordland",
+"valid_to": "2027-10-06"
+},
+"LDZY": {
+"name": "Steinar Olaisen",
+"owner": "SJØTRANS AS",
+"town": "Herøy",
+"county": "Nordland",
+"valid_to": "2028-01-11"
+},
+"LHCM": {
+"name": "Ronja Vita",
+"owner": "SØLVTRANS REDERI AS",
+"town": "Ålesund",
+"county": "Møre og Romsdal",
+"valid_to": "2030-04-10"
+},
+"LGQN": {
+"name": "Ronja Mistral (LGQN)",
+"owner": "SØLVTRANS REDERI AS",
+"town": "Ålesund",
+"county": "Møre og Romsdal",
+"valid_to": "2029-07-12"
+},
+"LGSL": {
+"name": "Ronja Silver",
+"owner": "SØLVTRANS REDERI AS",
+"town": "Ålesund",
+"county": "Møre og Romsdal",
+"valid_to": "2029-05-01"
+},
+"LGBD": {
+"name": "Ronja Sund",
+"owner": "SØLVTRANS REDERI AS",
+"town": "Ålesund",
+"county": "Møre og Romsdal",
+"valid_to": "2029-03-01"
+},
+"LGIT": {
+"name": "Ronja Azul",
+"owner": "SØLVTRANS REDERI AS",
+"town": "Ålesund",
+"county": "Møre og Romsdal",
+"valid_to": "2029-01-04"
+},
+"LGQM": {
+"name": "Ronja Aurora",
+"owner": "SØLVTRANS REDERI AS",
+"town": "Ålesund",
+"county": "Møre og Romsdal",
+"valid_to": "2028-09-27"
+},
+"LJGH": {
+"name": "Ronja Nærøysund",
+"owner": "SØLVTRANS REDERI AS",
+"town": "Ålesund",
+"county": "Møre og Romsdal",
+"valid_to": "2028-10-13"
+},
+"LGIV": {
+"name": "Ronja Queen",
+"owner": "SØLVTRANS REDERI AS",
+"town": "Ålesund",
+"county": "Møre og Romsdal",
+"valid_to": "2028-06-26"
+},
+"LGIQ": {
+"name": "Ronja Princess",
+"owner": "SØLVTRANS REDERI AS",
+"town": "Ålesund",
+"county": "Møre og Romsdal",
+"valid_to": "2028-03-26"
+},
+"LGNL": {
+"name": "Ronja Star",
+"owner": "SØLVTRANS REDERI AS",
+"town": "Ålesund",
+"county": "Møre og Romsdal",
+"valid_to": ""
+},
+"LDWZ": {
+"name": "Ronja Ocean",
+"owner": "SØLVTRANS REDERI AS",
+"town": "Ålesund",
+"county": "Møre og Romsdal",
+"valid_to": "2027-03-16"
+},
+"LFZK": {
+"name": "Ronja Vest",
+"owner": "SØLVTRANS REDERI AS",
+"town": "Ålesund",
+"county": "Møre og Romsdal",
+"valid_to": "2027-02-10"
+},
+"LDQO": {
+"name": "Ronja Strand",
+"owner": "SØLVTRANS REDERI AS",
+"town": "Ålesund",
+"county": "Møre og Romsdal",
+"valid_to": "2027-01-06"
+},
+"3YDN": {
+"name": "Ronja Viking",
+"owner": "SØLVTRANS REDERI AS",
+"town": "Ålesund",
+"county": "Møre og Romsdal",
+"valid_to": "2027-01-08"
+},
+"LFHP": {
+"name": "Ronja Explorer",
+"owner": "SØLVTRANS REDERI AS",
+"town": "Ålesund",
+"county": "Møre og Romsdal",
+"valid_to": "2031-06-19"
+},
+"LALB": {
+"name": "Ronja Superior",
+"owner": "SØLVTRANS REDERI AS",
+"town": "Ålesund",
+"county": "Møre og Romsdal",
+"valid_to": "2026-12-16"
+},
+"LFWK": {
+"name": "Ronja Homborøy",
+"owner": "SØLVTRANS REDERI III AS",
+"town": "Ålesund",
+"county": "Møre og Romsdal",
+"valid_to": "2027-05-31"
+},
+"LFRG": {
+"name": "Ronja Skilsøy",
+"owner": "SØLVTRANS REDERI III AS",
+"town": "Ålesund",
+"county": "Møre og Romsdal",
+"valid_to": "2031-09-08"
+},
+"LFRH": {
+"name": "Ronja Havsøy",
+"owner": "SØLVTRANS REDERI III AS",
+"town": "Ålesund",
+"county": "Møre og Romsdal",
+"valid_to": "2031-09-27"
+},
+"LGOE": {
+"name": "Ronja Borøy",
+"owner": "SØLVTRANS REDERI III AS",
+"town": "Ålesund",
+"county": "Møre og Romsdal",
+"valid_to": "2030-03-05"
+},
+"LLUS": {
+"name": "Ronja Ode",
+"owner": "SØLVTRANS REDERI III AS",
+"town": "Ålesund",
+"county": "Møre og Romsdal",
+"valid_to": ""
+},
+"LGOC": {
+"name": "Ronja Herøy",
+"owner": "SØLVTRANS REDERI III AS",
+"town": "Ålesund",
+"county": "Møre og Romsdal",
+"valid_to": "2029-09-30"
+},
+"LHCC": {
+"name": "Ronja Evolution",
+"owner": "SØLVTRANS REDERI III AS",
+"town": "Ålesund",
+"county": "Møre og Romsdal",
+"valid_to": "2030-01-14"
+},
+"LERK": {
+"name": "Vikabas",
+"owner": "VIKAHAV AS",
+"town": "Roan",
+"county": "Trøndelag",
+"valid_to": "2029-03-19"
+},
+"LJMX": {
+"name": "Sea Trout, kjenningssignal LJMX",
+"owner": "VILLA SEA AS",
+"town": "Averøy",
+"county": "Møre og Romsdal",
+"valid_to": "2029-07-01"
+},
+"3YCU": {
+"name": "Leander",
+"owner": "ØKSNES KYSTFISKE AS",
+"town": "Myre",
+"county": "Nordland",
+"valid_to": ""
+},
+"LG8334": {
+"name": "R-3-FD Transport av villfanget rensefisk",
+"owner": "ÅS FISK",
+"town": "Forsand",
+"county": "Rogaland",
+"valid_to": ""
+}
+}
+}
