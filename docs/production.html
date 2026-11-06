@@ -12799,7 +12799,7 @@ loadRemoteData().then(live => {
   const get = f => fetch(DATA_URL.replace('data.json', f), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
   function load() {
     if (loading) return loading;
-    loading = Promise.all(['bw_site_lice.json', 'events.json', 'news.json', 'news_archive.json', 'big_fish.json', 'quarterly.json', 'plants.json']
+    loading = Promise.all(['eurostat.json', 'national_trade.json', 'bw_site_lice.json', 'events.json', 'news.json', 'news_archive.json', 'big_fish.json', 'quarterly.json', 'plants.json']
       .map(f => get(f).then(j => D[f] = j)));
     return loading;
   }
@@ -12938,7 +12938,7 @@ loadRemoteData().then(live => {
 
   // ---- marches : exportations norvegiennes par pays et par produit (SSB, mensuel)
   const FR_C = { PL: 'pologne polska', DE: 'allemagne tyskland', ES: 'espagne espana spania', IT: 'italie italia', NL: 'pays-bas paysbas hollande nederland', DK: 'danemark danmark', GB: 'royaume-uni uk angleterre', US: 'etats-unis usa amerique', CN: 'chine kina', JP: 'japon', KR: 'coree', CH: 'suisse sveits', BE: 'belgique belgia', SE: 'suede sverige', FR: 'frankrike', LT: 'lituanie', LV: 'lettonie', VN: 'vietnam', TH: 'thailande', PT: 'portugal', GR: 'grece', CZ: 'tchequie', AT: 'autriche', IL: 'israel', HK: 'hongkong' };
-  const PROD = { fillet: /\b(fill?ets?|filets?|file|filler)\b/, fresh: /\b(fresh|frais|fraiche|fersk|fresco|chilled)\b/, frozen: /\b(frozen|congel\w*|frys\w*|surgel\w*)\b/, whole: /\b(whole|entiers?|hel|head on|hoso|ho)\b/ };
+  const PROD = { smoked: /\b(smoked|fum[eé]s?|r[øo]kt|ahumado)\b/, fillet: /\b(fill?ets?|filets?|file|filler)\b/, fresh: /\b(fresh|frais|fraiche|fersk|fresco|chilled)\b/, frozen: /\b(frozen|congel\w*|frys\w*|surgel\w*)\b/, whole: /\b(whole|entiers?|hel|head on|hoso|ho)\b/ };
   function findMarket(rest) {
     const C = (((typeof DATA_RAW !== 'undefined' && DATA_RAW ? DATA_RAW : {}).ssb_exports || {}).meta || {}).countries || {};
     const words = rest.split(/\s+/).filter(w => w.length >= 4);
@@ -12974,6 +12974,86 @@ loadRemoteData().then(live => {
     if (!blocks) return `<div class="gs-card"><h4>Norwegian salmon exports to ${esc(mk.name)}</h4><div class="s">No export of these products to ${esc(mk.name)} in the last 24 months (SSB).</div></div>`;
     return `<div class="gs-card"><h4>Norwegian salmon exports to ${esc(mk.name)} — to ${ml(last)}</h4><div class="s">Statistics Norway, monthly customs exports (export value FOB, NOK). Green / red price: above / below the average of all markets that month.</div>${blocks}` +
       `<div class="s" style="margin-top:6px"><span class="gs-go" onclick="gsGoTab('markets')">→ Markets, exports by market</span>${mk.iso === 'PL' || mk.iso === 'NL' || mk.iso === 'DK' ? ` · <span class="gs-go" onclick="gsGoTab('poland')">→ EU processing hubs</span>` : ''}</div></div>`;
+  }
+
+  // ---- marche de l'UE : importations par origine et exportations par destination (Eurostat Comext, mensuel)
+  let EUS = null;
+  const EU_EXTRA = { ZZ: 'Others (small partners)', NO: 'Norway', SE: 'Sweden', FO: 'Faroe Islands', IS: 'Iceland', CL: 'Chile', GB: 'United Kingdom', DK: 'Denmark', DE: 'Germany', NL: 'Netherlands', PL: 'Poland', FR: 'France', IT: 'Italy', ES: 'Spain', US: 'United States', CN: 'China', VN: 'Vietnam', AU: 'Australia', CH: 'Switzerland', CZ: 'Czechia', LT: 'Lithuania', BE: 'Belgium', AT: 'Austria', TR: 'Türkiye', CA: 'Canada', UA: 'Ukraine', PE: 'Peru', BR: 'Brazil', MX: 'Mexico', AR: 'Argentina', CO: 'Colombia', UY: 'Uruguay', RU: 'Russia', JP: 'Japan', KR: 'South Korea', IL: 'Israel', TH: 'Thailand', TW: 'Taiwan', SG: 'Singapore', HK: 'Hong Kong', AE: 'United Arab Emirates', EC: 'Ecuador', CR: 'Costa Rica', DO: 'Dominican Republic', PA: 'Panama', BO: 'Bolivia', PY: 'Paraguay', MY: 'Malaysia', PH: 'Philippines', ID: 'Indonesia' };
+  function euCard(mk, prods) {
+    const E = D['eurostat.json']; if (!E || !(E.meta.reporters_up || []).includes(mk.iso)) return '';
+    const P = E.meta.products; // 0 Fresh whole, 1 Frozen whole, 2 Fresh fillets, 3 Frozen fillets, 4 Other fresh meat, 5 Smoked, 6 Prepared
+    let idx = [0, 1, 2, 3, 4, 5, 6];
+    if (prods.includes('smoked')) idx = [5];
+    if (prods.includes('fillet')) idx = idx.filter(i => i === 2 || i === 3);
+    if (prods.includes('whole')) idx = idx.filter(i => i === 0 || i === 1);
+    if (prods.includes('fresh')) idx = idx.filter(i => i === 0 || i === 2 || i === 4);
+    if (prods.includes('frozen')) idx = idx.filter(i => i === 1 || i === 3);
+    if (!idx.length) idx = [0, 1, 2, 3, 4, 5, 6];
+    const C = (((typeof DATA_RAW !== 'undefined' && DATA_RAW ? DATA_RAW : {}).ssb_exports || {}).meta || {}).countries || {};
+    const nm = c => EU_EXTRA[c] || (C[c] || {}).name || c;
+    const R0 = E.rows.filter(r => r[1] === mk.iso && idx.includes(r[3])), last = E.meta.last_period;
+    const ks = []; for (let i = 11; i >= 0; i--) { let y = Math.floor(last / 100), m = last % 100 - i; while (m < 1) { m += 12; y--; } ks.push(y * 100 + m); }
+    const K = new Set(ks), Kp = new Set(ks.map(k => k - 100)), ml = x => `${MONTHS_FR[x % 100 - 1].slice(0, 3)} ${String(Math.floor(x / 100)).slice(2)}`;
+    const t0 = v => v ? Math.round(v).toLocaleString('en-US') : '—', ep = (kg, eur) => kg ? (eur / kg).toFixed(2) : '—';
+    const chg = (a, b) => a && b ? `<span class="${a >= b ? 'good' : 'bad'}">${a >= b ? '+' : '−'}${Math.abs(Math.round(100 * (a / b - 1)))} %</span>` : '—';
+    const block = (flow, lab) => {
+      const by = {}, mon = {}, monP = {};
+      R0.filter(r => r[4] === flow).forEach(r => { const b = by[r[2]] = by[r[2]] || [0, 0, 0, 0]; if (K.has(r[0])) { b[0] += r[5]; b[1] += r[6]; (mon[r[0]] = mon[r[0]] || [0, 0]); mon[r[0]][0] += r[5]; mon[r[0]][1] += r[6]; }
+        if (Kp.has(r[0])) { b[2] += r[5]; b[3] += r[6]; (monP[r[0] + 100] = monP[r[0] + 100] || [0, 0]); monP[r[0] + 100][0] += r[5]; } });
+      const L = Object.entries(by).filter(([, b]) => b[0] || b[2]).sort((a, b) => b[1][0] - a[1][0]); if (!L.length) return '';
+      const T = L.reduce((a, [, b]) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]], [0, 0, 0]);
+      return `<div class="s" style="margin-top:10px"><b>${lab}</b> — last 12 months: <b>${t0(T[0])} t</b> (${chg(T[0], T[2])} on a year), average <b>${ep(T[0], T[1])} €/kg</b>.</div>` +
+        `<table><tr><th>${flow === 1 ? 'Origin' : 'Destination'}</th><th>Tonnes, 12 months</th><th>Share</th><th>vs a year</th><th>€/kg</th></tr>` +
+        L.slice(0, 10).map(([c, b]) => `<tr><td>${esc(nm(c))}</td><td>${t0(b[0])}</td><td>${T[0] ? (100 * b[0] / T[0]).toFixed(0) + ' %' : ''}</td><td>${chg(b[0], b[2])}</td><td>${ep(b[0], b[1])}</td></tr>`).join('') + `</table>` +
+        `<table style="margin-top:4px"><tr><th>Month</th>${ks.map(k => `<th>${ml(k)}</th>`).join('')}</tr><tr><td>Tonnes</td>${ks.map(k => `<td>${t0((mon[k] || [])[0])}</td>`).join('')}</tr>` +
+        `<tr><td>a year earlier</td>${ks.map(k => `<td>${t0((monP[k] || [])[0])}</td>`).join('')}</tr>${(() => { const lv = (mon[ks[11]] || [0])[0], av = ks.slice(0, 11).reduce((a, k) => a + ((mon[k] || [0])[0]), 0) / 11; return lv < av * 0.4 ? `<tr><td colspan="13" style="color:#ffb74d;white-space:normal">${ml(ks[11])} looks incomplete (Eurostat often revises the latest month upward).</td></tr>` : ''; })()}<tr><td>€/kg</td>${ks.map(k => `<td>${mon[k] ? ep(mon[k][0], mon[k][1]) : '—'}</td>`).join('')}</tr></table>`; };
+    const pl = idx.map(i => P[i].toLowerCase()).join(', ');
+    return `<div class="gs-card"><h4>${esc(mk.name)} — salmon trade (${esc(pl)}) to ${ml(last)}</h4><div class="s">Eurostat Comext, monthly, every origin and destination. Customs values: imports CIF, exports FOB, in € per kg of product.` +
+      (mk.iso === 'PL' || mk.iso === 'DK' ? ' Imports "from Sweden" or "from Denmark" are mostly Norwegian salmon trucked through those countries.' : '') + `</div>` +
+      block(2, `Exports from ${mk.name}, by destination`) + block(1, `Imports into ${mk.name}, by origin`) +
+      `<div class="s" style="margin-top:6px"><span class="gs-go" onclick="gsGoTab('poland')">→ EU processing hubs</span> · <span class="gs-go" onclick="gsGoTab('euflows')">→ EU flows</span></div></div>`;
+  }
+
+  // ---- pays producteur : exportations par destination (statistiques nationales ; Norvege = SSB)
+  const MONTH_W = [/\b(january|janvier|januar|enero|jan)\b/, /\b(february|fevrier|februar|febrero|feb)\b/, /\b(march|mars|marzo|mar)\b/, /\b(april|avril|abril|apr)\b/, /\b(may|mai|mayo)\b/, /\b(june|juin|juni|junio|jun)\b/,
+    /\b(july|juillet|juli|julio|jul)\b/, /\b(august|aout|agosto|aug)\b/, /\b(september|septembre|septiembre|sept?)\b/, /\b(october|octobre|oktober|octubre|oct|okt)\b/, /\b(november|novembre|noviembre|nov)\b/, /\b(december|decembre|desember|diciembre|dec|des)\b/];
+  function producerCard(org, prods, mon) {
+    let rows, cur, P;
+    const forms = { 0: 'Fresh whole', 1: 'Frozen whole', 2: 'Fresh fillets', 3: 'Frozen fillets', 5: 'Smoked', 6: 'Prepared / preserved' };
+    if (org === 'NO') { const S = (typeof DATA_RAW !== 'undefined' && DATA_RAW ? DATA_RAW : {}).ssb_exports; if (!S) return ''; const map = [0, 2, 3, 1];
+      rows = S.rows.map(r => [r[0], r[2], map[r[1]], r[3] / 1000, r[4] / 1000]); cur = 'NOK'; }
+    else { const T = D['national_trade.json']; if (!T) return ''; rows = T.rows.filter(r => r[1] === org).map(r => [r[0], r[2], r[3], r[4], r[6]]); cur = '€'; }
+    if (!rows.length) return '';
+    let F = Object.keys(forms).map(Number);
+    if (prods.includes('smoked')) F = [5];
+    if (prods.includes('fillet')) F = F.filter(i => i === 2 || i === 3);
+    if (prods.includes('whole')) F = F.filter(i => i === 0 || i === 1);
+    if (prods.includes('fresh')) F = F.filter(i => i === 0 || i === 2);
+    if (prods.includes('frozen')) F = F.filter(i => i === 1 || i === 3);
+    const R0 = rows.filter(r => F.includes(r[2])), last = Math.max(...rows.map(r => r[0]));
+    if (!R0.length) return `<div class="gs-card"><h4>Exports from ${esc({ NO: 'Norway', FO: 'Faroe Islands', IS: 'Iceland', GB: 'United Kingdom', CL: 'Chile', CA: 'Canada', AU: 'Australia' }[org] || org)}</h4><div class="s">This product is not in the monthly export data of this country${org === 'NO' ? ' (SSB monthly data here: fresh and frozen whole fish and fillets only)' : ''}.</div></div>`;
+    let ref = last, note = '';
+    if (mon) { const c = [...new Set(rows.map(r => r[0]))].filter(k => k % 100 === mon).sort((a, b) => b - a);
+      if (c.length && Math.floor(c[0] / 100) === Math.floor(last / 100)) ref = c[0];
+      else { note = `${MONTHS_FR[mon - 1]} ${Math.floor(last / 100)} is not published yet (latest: ${MONTHS_FR[last % 100 - 1]} ${Math.floor(last / 100)}). `; ref = c.length ? c[0] : last; } }
+    const ml = x => `${MONTHS_FR[x % 100 - 1]} ${Math.floor(x / 100)}`, t0 = v => v ? Math.round(v).toLocaleString('en-US') : '—', pr = (t, v) => t ? (v / t).toFixed(2) : '—';
+    const chg = (a, b) => a && b ? `<span class="${a >= b ? 'good' : 'bad'}">${a >= b ? '+' : '−'}${Math.abs(Math.round(100 * (a / b - 1)))} %</span>` : '—';
+    const C = (((typeof DATA_RAW !== 'undefined' && DATA_RAW ? DATA_RAW : {}).ssb_exports || {}).meta || {}).countries || {}, nm = c => EU_EXTRA[c] || (C[c] || {}).name || c;
+    const sum = (k, filt) => R0.filter(r => r[0] === k && (!filt || filt(r))).reduce((a, r) => [a[0] + r[3], a[1] + r[4]], [0, 0]);
+    const A = sum(ref), B = sum(ref - 100), by = {};
+    R0.filter(r => r[0] === ref || r[0] === ref - 100).forEach(r => { const b = by[r[1]] = by[r[1]] || [0, 0, 0, 0]; if (r[0] === ref) { b[0] += r[3]; b[1] += r[4]; } else { b[2] += r[3]; b[3] += r[4]; } });
+    const L = Object.entries(by).filter(([, b]) => b[0] || b[2]).sort((a, b) => b[1][0] - a[1][0]);
+    const ks = []; for (let i = 11; i >= 0; i--) { let y = Math.floor(last / 100), m = last % 100 - i; while (m < 1) { m += 12; y--; } ks.push(y * 100 + m); }
+    const name = { NO: 'Norway', FO: 'Faroe Islands', IS: 'Iceland', GB: 'United Kingdom (Scotland)', CL: 'Chile', CA: 'Canada', AU: 'Australia' }[org] || org;
+    return `<div class="gs-card"><h4>Exports from ${esc(name)} — ${esc(F.map(f => forms[f].toLowerCase()).join(', '))} — ${ml(ref)}</h4><div class="s">${note}` +
+      `${ml(ref)}: <b>${t0(A[0])} t</b> (${chg(A[0], B[0])} on ${ml(ref - 100)}), average <b>${pr(A[0], A[1])} ${cur}/kg</b> (${pr(B[0], B[1])} a year earlier). ` +
+      `Source: ${org === 'NO' ? 'Statistics Norway (SSB), FOB in NOK' : 'national statistics office, export value in € (converted at the month\'s rate)'}.</div>` +
+      `<table><tr><th>Destination, ${ml(ref)}</th><th>Tonnes</th><th>vs a year</th><th>${cur}/kg</th><th>a year earlier</th></tr>` +
+      L.slice(0, 12).map(([c, b]) => `<tr><td>${esc(nm(c))}</td><td>${t0(b[0])}</td><td>${chg(b[0], b[2])}</td><td>${pr(b[0], b[1])}</td><td>${pr(b[2], b[3])}</td></tr>`).join('') + `</table>` +
+      `<table style="margin-top:4px"><tr><th>Month</th>${ks.map(k => `<th>${MONTHS_FR[k % 100 - 1].slice(0, 3)} ${String(Math.floor(k / 100)).slice(2)}</th>`).join('')}</tr>` +
+      `<tr><td>Tonnes</td>${ks.map(k => `<td>${t0(sum(k)[0])}</td>`).join('')}</tr><tr><td>a year earlier</td>${ks.map(k => `<td>${t0(sum(k - 100)[0])}</td>`).join('')}</tr>` +
+      `<tr><td>${cur}/kg</td>${ks.map(k => { const x = sum(k); return `<td>${pr(x[0], x[1])}</td>`; }).join('')}</tr></table>` +
+      `<div class="s" style="margin-top:6px"><span class="gs-go" onclick="gsGoTab('${{ FO: 'faroe', IS: 'iceland', GB: 'scotland', CL: 'chile', CA: 'canada', AU: 'australia', NO: 'markets' }[org]}')">→ ${esc(name)} tab</span> · <span class="gs-go" onclick="gsGoTab('world')">→ World trade</span></div></div>`;
   }
   // ---- presse
   function news(co, topics, words, bas, mk, prods) {
@@ -13018,11 +13098,16 @@ loadRemoteData().then(live => {
     else { const pn = Object.entries(PO_NAMES).find(([k, v]) => +k > 0 && v.split(/ til | og | med /).some(p => p.length > 4 && rest.includes(norm(p)))); if (pn) po = +pn[0]; }
     let bas = po ? 'NO' : ((BAS.find(([, rx]) => rx.test(rest)) || [])[0] || null); if (bas && !po) rest = rest.replace(BAS.find(b => b[0] === bas)[1], ' ');
     const prods = Object.keys(PROD).filter(k => PROD[k].test(rest)); prods.forEach(k => rest = rest.replace(new RegExp(PROD[k].source, 'g'), ' '));
-    rest = rest.replace(/\b(exports?|exportations?|eksport|imports?|market|marche|marked)\b/g, ' ');
+    const wantTrade = /\b(exports?|exportations?|eksport|exportacion\w*|imports?|trade|commerce)\b/.test(rest) || prods.length > 0;
+    rest = rest.replace(/\b(exports?|exportations?|eksport|exportacion\w*|imports?|market|marche|marked|trade|commerce)\b/g, ' ');
+    let mon = null; MONTH_W.forEach((rx, i) => { if (mon === null && rx.test(rest)) { mon = i + 1; rest = rest.replace(rx, ' '); } });
     const mk = (!bas || bas === 'NO') ? findMarket(rest) : null; if (mk) rest = rest.replace(mk.word, ' ');
     const words = rest.split(/\s+/).filter(w => w.length > 1);
     let html = '';
-    if (mk) html += `<div class="gs-sec">From the dashboard's data · ${esc(mk.name)}${prods.length ? ' · ' + prods.join(', ') : ''}</div>` + marketCard(mk, prods);
+    if (bas && wantTrade && !po) { const pcd = producerCard(bas, prods, mon); if (pcd) html += `<div class="gs-sec">From the dashboard's data · exports from ${BAS_NAME[bas]}</div>` + pcd; }
+    if (mk) { const eu = euCard(mk, prods);
+      html += `<div class="gs-sec">From the dashboard's data · ${esc(mk.name)}${prods.length ? ' · ' + prods.join(', ') : ''}</div>` + eu +
+        (eu ? `<details class="gs-card"><summary style="cursor:pointer;color:#a9bfcc;font-size:13px">Norwegian exports to ${esc(mk.name)} only (Statistics Norway, faster than Eurostat)</summary>${marketCard(mk, prods).replace(/^<div class="gs-card">|<\/div>$/g, '')}</details>` : marketCard(mk, prods)); }
     if (po) {
       const want = t => !topics.length || topics.includes(t);
       const cards = [want('mort') ? zoneMort(po) : '', want('mort') ? zoneEv(po) : '', want('lice') || want('dis') ? zoneLice(po) : '', want('dis') || want('mort') || want('lice') ? zoneDis(po) : '', want('big') || want('harv') ? zoneBig(po) : ''].filter(Boolean);
