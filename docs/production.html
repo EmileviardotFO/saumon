@@ -5745,13 +5745,23 @@ function plNorway() {
       if (PL_NO_FOCUS && PL_NO_MK[PL_NO_FOCUS]) { const mk = PL_NO_MK[PL_NO_FOCUS]; PL_NO_MAP.setView(mk.getLatLng(), 11); setTimeout(() => mk.openPopup(), 120); }
       else if (pts.length) PL_NO_MAP.fitBounds(pts, { padding: [24, 24], maxZoom: Q.length ? 11 : 9 });
     });
-    $p('plNoTab').innerHTML = `<thead><tr><th class="name">Operator</th><th>Slaughterhouses</th><th>Processing only</th><th style="text-align:left">Towns</th></tr></thead><tbody>` +
-      groups.map(([g, v]) => `<tr><td class="name">${e(g)}</td><td>${v.s || '—'}</td><td>${v.p || '—'}</td><td style="text-align:left;white-space:normal">${[...v.towns].sort().map(e).join(', ')}</td></tr>`).join('') + `</tbody>`;
+    const PLR = [...land, ...ves].sort((a, b) => a.group.localeCompare(b.group, 'nb') || (b.slaughter - a.slaughter) || a.city.localeCompare(b.city, 'nb'));
+    $p('plNoTab').innerHTML = `<thead><tr><th class="name">Operator</th><th style="text-align:left">Establishment</th><th style="text-align:left">Town</th><th style="text-align:left">Activity</th><th>Approval no.</th><th>Holding cages ≤ 12 km (t)</th></tr></thead><tbody>` +
+      PLR.map(x => { const hc = plCages(x, cages); return `<tr><td class="name">${e(x.group)}</td><td style="text-align:left;white-space:normal">${e(x.name)}</td><td style="text-align:left">${e(x.city)}</td>` +
+        `<td style="text-align:left">${x.vessel ? 'vessel' : (x.slaughter ? 'slaughter' : '') + (x.slaughter && x.processing ? ' + ' : '') + (x.processing ? 'processing' : '')}</td>` +
+        `<td>${x.lat && !x.vessel ? `<a href="#" onclick="plNoFocus('${e(x.id)}', true);return false" style="color:#4fc3f7">${e(x.id)}</a>` : e(x.id)}</td>` +
+        `<td>${hc ? `<span title="${e(hc.names.join(', '))}">${Math.round(hc.cap).toLocaleString('en-US')}${hc.n > 1 ? ` <span style="color:var(--muted)">(${hc.n})</span>` : ''}</span>` : '—'}</td></tr>`; }).join('') + `</tbody>`;
     $p('plNoSub').innerHTML = `Every establishment Mattilsynet has approved to <b>slaughter farmed fish</b> (activity code FFPP-SA, round markers), plus the <b>processing plants</b> (filleting, FFPP-P) of salmon groups (diamonds). ` +
       `Dashed rings are the slaughter holding cages (ventemerder) of section 3, sized by their capacity: they sit next to the slaughterhouses they feed. ` +
       `${land.filter(x => x.slaughter).length} slaughterhouses on land, ${land.filter(x => !x.slaughter).length} processing plants; ${ves.length} slaughter or harvest vessels are also approved (${ves.slice(0, 6).map(x => e(x.name)).join(', ')}${ves.length > 6 ? '…' : ''}) and are not mapped. ` +
-      `Operator = the company named in the approval; jointly owned plants (Kråkøy, for instance) keep their own name. Positions come from the approval address (Kartverket); no throughput is published. List read ${e(P.meta && P.meta.built)}. Click an operator, or pick any of them in the drop-down menu, to keep only its plants; the search box finds a plant by name, operator, town or approval number.`;
+      `Operator = the company named in the approval; jointly owned plants (Kråkøy, for instance) keep their own name. Positions come from the approval address (Kartverket). <b>No daily slaughter capacity is published</b> by Mattilsynet or the Directorate; the closest public figure is the capacity of the slaughter holding cages within 12 km of each plant (tonnes of fish that can wait there, last column). Click an approval number to see the plant on the map. List read ${e(P.meta && P.meta.built)}. Click an operator, or pick any of them in the drop-down menu, to keep only its plants; the search box finds a plant by name, operator, town or approval number.`;
   });
+}
+function plCages(x, cages) {
+  // ventemerder (cages d'attente avant abattage) a moins de 12 km : la seule capacite publiee pres d'un abattoir
+  if (!x || !x.lat) return null; const k = Math.PI / 180;
+  const C = (cages || []).filter(c => c.lat && 6371 * Math.acos(Math.min(1, Math.sin(x.lat * k) * Math.sin(c.lat * k) + Math.cos(x.lat * k) * Math.cos(c.lat * k) * Math.cos((c.lon - x.lon) * k))) < 12);
+  return C.length ? { n: C.length, cap: C.reduce((a, c) => a + (c.cap || 0), 0), names: C.map(c => c.name) } : null;
 }
 function plNoFocus(id, local) {
   // centre la carte des usines norvegiennes sur un agrement ; ouvre l'onglet registre si besoin
@@ -12921,13 +12931,14 @@ loadRemoteData().then(live => {
     const PL = D['plants.json']; if (!PL) return ''; const k = norm(co).split(' ')[0];
     const no = (PL.no || []).filter(x => norm(x.group + ' ' + x.name).includes(k)), cl = (PL.cl || []).filter(x => norm(x.plant + ' ' + x.farmers).includes(k));
     if (!no.length && !cl.length) return '';
-    const ves = x => PL_VESSEL.test(x.name);
+    const ves = x => PL_VESSEL.test(x.name), CG = R().slaughter_cages || [];
     const rowNo = x => `<tr><td>${esc(x.name)}</td><td>${esc(x.city)}</td><td>${x.slaughter ? 'slaughter' : ''}${x.slaughter && x.processing ? ' + ' : ''}${x.processing ? 'processing' : ''}${ves(x) ? ' (vessel)' : ''}</td>` +
-      `<td>${x.lat && !ves(x) ? `<span class="gs-go" title="Show it on the map" onclick="plNoFocus('${esc(x.id)}')">${esc(x.id)} ↗</span>` : esc(x.id)}</td></tr>`;
+      `<td>${x.lat && !ves(x) ? `<span class="gs-go" title="Show it on the map" onclick="plNoFocus('${esc(x.id)}')">${esc(x.id)} ↗</span>` : esc(x.id)}</td>` +
+      `<td>${(h => h ? Math.round(h.cap).toLocaleString('en-US') + (h.n > 1 ? ` (${h.n} sites)` : '') : '—')(ves(x) ? null : plCages(x, CG))}</td></tr>`;
     const rowCl = x => `<tr><td>${esc(x.plant)}</td><td>${esc(x.town)}</td><td>${x.slaughter ? 'slaughter + processing' : 'processing'}</td>` +
       `<td>${x.lat ? `<span class="gs-go" title="Show it on the map" onclick="plClFocus('${esc(x.code)}')">${esc(x.code)} ↗</span>` : esc(x.code)}</td></tr>`;
     return `<div class="gs-card"><h4>Slaughterhouses and processing plants · ${esc(co)}</h4>` +
-      (no.length ? `<div class="s">Norway — Mattilsynet approval numbers; click one to see the plant on the map.</div><table class="gs-t"><tr><th>Establishment</th><th>Town</th><th>Activity</th><th>Approval no.</th></tr>${no.map(rowNo).join('')}</table>` : '') +
+      (no.length ? `<div class="s">Norway — Mattilsynet approval numbers; click one to see the plant on the map. No daily slaughter capacity is published; the last column is the capacity of the slaughter holding cages next to the plant (tonnes of fish waiting), the nearest public proxy.</div><table class="gs-t"><tr><th>Establishment</th><th>Town</th><th>Activity</th><th>Approval no.</th><th>Holding cages ≤ 12 km (t)</th></tr>${no.map(rowNo).join('')}</table>` : '') +
       (cl.length ? `<div class="s" style="margin-top:8px">Chile — Sernapesca plant codes; click one to see the plant on the map.</div><table class="gs-t"><tr><th>Plant</th><th>Town</th><th>Activity</th><th>Sernapesca code</th></tr>${cl.map(rowCl).join('')}</table>` : '') + `</div>`;
   }
   // ---- duree en mer (cycles complets, data/big_fish.json -> cycles)
