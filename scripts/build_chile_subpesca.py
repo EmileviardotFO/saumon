@@ -88,13 +88,14 @@ def es_date(text):
 # ------------------------------------------------------------------ 1. resolutions
 def parse_resolution(aid, title, content):
     import pdfplumber
-    rows = []
+    rows, seen, cols = [], set(), None
     with pdfplumber.open(io.BytesIO(content)) as pdf:
         texts = []
         for i, p in enumerate(pdf.pages):
             t = p.extract_text() or ''
             texts.append(t)
-            if i > 40:
+            # la resolution s'arrete a son "Informe Tecnico" annexe (tableaux de proposition, a ne pas compter)
+            if i > 0 and re.search(r'(?m)^\s*INFORME T[ÉE]CNICO', t):
                 break
             for tb in p.extract_tables() or []:
                 if not tb or not tb[0]:
@@ -104,12 +105,19 @@ def parse_resolution(aid, title, content):
                 cc = next((j for j, h in enumerate(head) if 'digo' in h or 'centro' in h), None)
                 cs = next((j for j, h in enumerate(head) if 'especie' in h), None)
                 ca = next((j for j, h in enumerate(head) if h.strip() == 'acs' or h.startswith('acs')), None)
-                if ci is None or cc is None:
+                body = tb[1:]
+                if ci is not None and cc is not None:
+                    cols = (ci, cc, cs, ca, len(tb[0]))
+                elif cols and len(tb[0]) == cols[4]:
+                    ci, cc, cs, ca, _ = cols          # suite du tableau sur la page suivante, sans en-tete
+                    body = tb
+                else:
                     continue
-                for r in tb[1:]:
+                for r in body:
                     code = re.sub(r'\D', '', str(r[cc] or ''))
                     n = num(r[ci])
-                    if len(code) == 6 and n is not None:
+                    if len(code) == 6 and n is not None and code not in seen:
+                        seen.add(code)
                         rows.append({'centre': code, 'acs': (str(r[ca]).strip() if ca is not None and r[ca] else ''), 'sp': species(r[cs] if cs is not None else ''), 'fish': n})
     full = '\n'.join(texts)
     # repli : lignes de texte "25A 110227 del 500.000 ..." quand pdfplumber ne voit pas le tableau
@@ -117,12 +125,18 @@ def parse_resolution(aid, title, content):
         for m in re.finditer(r'(?m)^\s*(\d{1,2}[A-Z]?(?:-\d)?)\s+(1[0-2]\d{4})\s+(?:\S+\s+){0,3}?(\d{1,3}(?:\.\d{3})+)\s', full):
             rows.append({'centre': m.group(2), 'acs': m.group(1), 'sp': None, 'fish': num(m.group(3))})
     head = full[:2500]
-    reg = next((r for r in ('Magallanes', 'Aysén', 'Los Lagos') if re.search(r'(?m)^\s*' + r, head)), None) or \
-        next((r for r in ('Magallanes', 'Aysén', 'Los Lagos') if r.lower() in head.lower()), None)
+    # region : le code de centre commence par le numero de region (10 Los Lagos, 11 Aysen, 12 Magallanes)
+    RG = {'10': 'Los Lagos', '11': 'Aysén', '12': 'Magallanes'}
+    for row in rows:
+        row['region'] = RG.get(row['centre'][:2])
+    regs = sorted({row['region'] for row in rows if row['region']})
+    reg = ', '.join(regs) if regs else next((r for r in ('Magallanes', 'Aysén', 'Los Lagos') if r.lower() in head.lower()), None)
     fallow = re.search(r'descanso sanitario coordinado entre:?\s*(' + '|'.join(MONTHS) + r')\s+de\s+(\d{4})\s+a\s+(' + '|'.join(MONTHS) + r')\s+de\s+(\d{4})', full, re.I)
-    comp = re.search(r'(?i)titularidad\s+de\s+(.+?)(?:,\s*como grupo|\.\s*\(|\.\s*$|\s+\(Publicado|$)', title)
+    comp = re.search(r'(?i)titularidad\s+de\s+(.+?)(?:,?\s*como grupo|\.?\s*aprueba|\.\s*\(|\s*\(Publicado|\.\s*$|$)', title)
+    if not comp:
+        comp = re.search(r'(?m)^ACUI/\s*PRS\s+(?:GRUPO\s+)?(.+)$', head)
     return {'id': aid, 'title': title, 'date': es_date(head) or es_date(full), 'region': reg,
-            'company': (comp.group(1).strip() if comp else ''), 'modifies': bool(re.match(r'(?i)\s*res\.?\s*ex\.?.{0,25}modifica', title)),
+            'company': (comp.group(1).strip().rstrip('.').strip() if comp else ''), 'modifies': bool(re.match(r'(?i)\s*res\.?\s*ex\.?.{0,25}modifica', title)),
             'fallow': [f'{fallow.group(2)}-{MONTHS[fallow.group(1).lower()]:02d}', f'{fallow.group(4)}-{MONTHS[fallow.group(3).lower()]:02d}'] if fallow else None,
             'rows': rows}
 
@@ -137,7 +151,7 @@ def parse_report(aid, texts):
     k = int(m.group(2)) * 100 + MONTHS[m.group(1).lower()]
     out = {'id': aid, 'k': k, 'species': {}}
     for key, rx in (('salar', r'SALM[ÓO]N DEL ATL[ÁA]NTICO'), ('coho', r'SALM[ÓO]N DEL PAC[ÍI]FICO'), ('trucha', r'TRUCHA ARCO[ÍI]RIS')):
-        sec = re.search(rx + r'(.{0,900})', full, re.S)
+        sec = re.search(r'▫\s*' + rx + r'(.{0,900})', full, re.S) or re.search(rx + r'\s*\n\s*La cosecha(.{0,900})', full, re.S)
         if not sec:
             continue
         t = sec.group(1)
@@ -248,7 +262,7 @@ def summarise(res):
     species and stocking half-year (from the resolution date, or the end of the ACS fallow when stated)."""
     farm = {}
     for r in sorted(res, key=lambda x: (x.get('date') or '', x['id'])):
-        when = (r.get('fallow') or [None, None])[1] or (r.get('date') or '')[:7]
+        when = (r.get('date') or '')[:7] or (r.get('fallow') or [None, None])[1]
         for row in r.get('rows', []):
             k = row['centre']
             prev = farm.get(k)
@@ -257,7 +271,7 @@ def summarise(res):
                 continue
             key = f"{k}|{when[:4]}"
             farm[key if prev and prev['when'][:4] != when[:4] else k] = {'centre': k, 'acs': row['acs'], 'sp': row['sp'], 'fish': row['fish'], 'when': when,
-                                                                        'company': r.get('company'), 'region': r.get('region'), 'id': r['id']}
+                                                                        'company': r.get('company'), 'region': row.get('region') or r.get('region'), 'id': r['id']}
     agg = {}
     for f in farm.values():
         if not f['when']:
