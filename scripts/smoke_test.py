@@ -48,7 +48,8 @@ def main():
     with sync_playwright() as pw:
         browser = pw.chromium.launch()
         page = browser.new_page(viewport={'width': 1440, 'height': 1000})
-        page.on('pageerror', lambda e: errors.append(str(e)))
+        # l'enregistrement du service worker (application installable) echoue toujours en file:// : ce n'est pas une erreur de la page
+        page.on('pageerror', lambda e: None if 'ServiceWorker' in str(e) else errors.append(str(e)))
         page.route('**/data.json', lambda route: route.fulfill(path=DATA, content_type='application/json'))
         EUF = os.path.join(ROOT, 'data', 'eurostat.json')
         page.route('**/eurostat.json', lambda route: route.fulfill(path=EUF, content_type='application/json')

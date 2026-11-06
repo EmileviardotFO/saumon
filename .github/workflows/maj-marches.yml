@@ -32,6 +32,8 @@ jobs:
         python-version: '3.11'
     - name: Installer les dependances Python
       run: pip install pandas openpyxl playwright pycountry
+    - name: Installer pdftotext (lecture des rapports Akvafakta)
+      run: sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils
     - name: Telecharger les derniers rapports Akvafakta (hebdo + mensuel)
       id: akva_fetch
       continue-on-error: true
