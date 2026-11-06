@@ -1,0 +1,20 @@
+name: Test - notification du registre de la biomasse
+
+# Envoie a la main la notification du dernier mois publie, marquee [TEST], sur le canal ntfy du secret NTFY_TOPIC.
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Envoyer la notification de test
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          NTFY_TEST: '1'
+        run: python3 scripts/notify_biomasse.py

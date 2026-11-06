@@ -11,6 +11,7 @@ import sys
 import urllib.request
 
 PAGE = "https://emileviardotfo.github.io/saumon/docs/production.html"
+MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 MOIS = ["janvier", "fevrier", "mars", "avril", "mai", "juin", "juillet",
         "aout", "septembre", "octobre", "novembre", "decembre"]
 
@@ -29,7 +30,7 @@ def totaux(records, year, month):
 def variation(n, n1):
     if not n1:
         return ""
-    return f" ({(n / n1 - 1) * 100:+.1f} % sur un an)"
+    return f" ({(n / n1 - 1) * 100:+.1f} % on a year)"
 
 
 def fmt(x):
@@ -57,9 +58,9 @@ def gen_vs_last_year(year, month):
     if not (a["start"] and b["start"] and b["fish"]):
         return ""
     p = lambda x, y: f"{100 * (x / y - 1):+.0f} %"
-    return (f"\nG{H} vs G{H - 1} au meme stade : poissons restants {p(a['fish'], b['fish'])}, "
-            f"deja abattus {100 * a['h'] / a['start']:.0f} % vs {100 * b['h'] / b['start']:.0f} %, "
-            f"survivants {p(a['start'] - a['dead'], b['start'] - b['dead'])}, kilos produits {p(a['hkg'] + a['bio'], b['hkg'] + b['bio'])}")
+    return (f"\nG{H} vs G{H - 1} at the same stage: fish left {p(a['fish'], b['fish'])}, "
+            f"already harvested {100 * a['h'] / a['start']:.0f} % vs {100 * b['h'] / b['start']:.0f} %, "
+            f"survivors {p(a['start'] - a['dead'], b['start'] - b['dead'])}, kilos produced {p(a['hkg'] + a['bio'], b['hkg'] + b['bio'])}")
 
 
 def nowcast_next(year, month):
@@ -110,18 +111,20 @@ def main():
     n = totaux(records, year, month)
     n1 = totaux(records, year - 1, month) or {}
 
-    titre = f"Biomasse Norvege : chiffres de {MOIS[month - 1]} {year} publies"
+    titre = f"Norway biomass register: {MONTHS[month - 1]} {year} figures out"
+    if os.environ.get("NTFY_TEST"):
+        titre = "[TEST] " + titre
     corps = (
-        f"Recolte : {fmt(n['recolte_t'])} t{variation(n['recolte_t'], n1.get('recolte_t'))}\n"
-        f"Biomasse en mer : {fmt(n['biomasse_t'])} t{variation(n['biomasse_t'], n1.get('biomasse_t'))}\n"
-        f"Poissons en mer : {n['poissons'] / 1e6:.1f} M{variation(n['poissons'], n1.get('poissons'))}"
+        f"Harvest: {fmt(n['recolte_t'])} t{variation(n['recolte_t'], n1.get('recolte_t'))}\n"
+        f"Biomass at sea: {fmt(n['biomasse_t'])} t{variation(n['biomasse_t'], n1.get('biomasse_t'))}\n"
+        f"Fish at sea: {n['poissons'] / 1e6:.1f} M{variation(n['poissons'], n1.get('poissons'))}"
     )
 
     # mois suivant estime d'apres les exportations hebdomadaires SSB (meme methode que Supply outlook)
     try:
         nc = nowcast_next(year, month)
         if nc:
-            corps += f"\nRecolte {MOIS[nc['m'] - 1]} estimee (exportations) : {fmt(nc['t'])} t ({nc['yoy']:+.0f} % sur un an)"
+            corps += f"\n{MONTHS[nc['m'] - 1]} harvest estimated from exports: {fmt(nc['t'])} t ({nc['yoy']:+.0f} % on a year)"
     except Exception as e:
         print(f"Estimation par les exportations impossible : {e}")
 
@@ -136,12 +139,12 @@ def main():
         C = json.load(open("data/big_fish.json", encoding="utf-8"))["cycles"]
         no = C.get("norway", {})
         if no.get("due_2m") is not None:
-            corps += f"\nSites a ~2 mois du vidage : {no['due_2m']} sur {no['active_sites']}"
+            corps += f"\nSites about 2 months from emptying: {no['due_2m']} of {no['active_sites']}"
         acc = [c for c in C["farmers"] if c["po"] == 0 and c.get("accel")]
         acc.sort(key=lambda c: -c["cycles"])
         if acc:
-            corps += "\nCycles qui raccourcissent : " + ", ".join(
-                f"{c['co'].title() if c['co'].isupper() else c['co']} ({c['trend'][0]}->{c['trend'][-1]} mois)" for c in acc[:5])
+            corps += "\nCycles getting shorter: " + ", ".join(
+                f"{c['co'].title() if c['co'].isupper() else c['co']} ({c['trend'][0]}->{c['trend'][-1]} months)" for c in acc[:5])
     except Exception as e:
         print(f"Cycles non lus : {e}")
 
@@ -152,7 +155,7 @@ def main():
             "Title": titre,
             "Tags": "fish",
             "Click": PAGE,
-            "Actions": f"view, Ouvrir le tableau de bord, {PAGE}",
+            "Actions": f"view, Open the dashboard, {PAGE}",
         },
         method="POST",
     )
