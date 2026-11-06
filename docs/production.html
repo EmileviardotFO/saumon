@@ -398,6 +398,10 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
 .sc-op b { flex: 1; color: var(--ink); font-weight: 600; }
 .sc-op span { color: var(--muted); font-size: 11.5px; white-space: nowrap; text-align: right; line-height: 1.35; }
 .leaflet-popup-content { font-size: 12px; line-height: 1.45; }
+@media (min-width: 761px) { #isView .pr-cards { display: flex; flex-wrap: wrap; justify-content: center; } #isView .pr-cards .pr-card { flex: 0 1 175px; } #isView .pr-cards .pr-card:first-child { flex-basis: 270px; } }
+#isView table.sig-table { margin-left: auto; margin-right: auto; }
+#isView #isMapZ { justify-content: center; }
+.leaflet-tooltip.is-co { background: #0d1a24; border: 1px solid #4fc3f7; color: #e7eef2; font-size: 12px; padding: 4px 8px; }
 .leaflet-tooltip.is-lab { background: rgba(13,26,36,.88); border: 1px solid #2a4352; color: #e7eef2; font-size: 11px; padding: 1px 6px; box-shadow: none; }
 .leaflet-tooltip.is-lab::before { display: none; }
 #isMap.is-far .leaflet-tooltip.is-lab { display: none; }
@@ -1217,6 +1221,10 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="sig-title" style="margin-top:16px;font-size:15px">Fish at sea, harvest, feed and mortality (MAST)</div>
     <div class="sig-sub" id="isMast"></div>
     <div id="isMastChart"></div><div class="sig-sub" id="isMastLeg"></div>
+    <div class="sig-title" style="margin-top:16px;font-size:15px">Fish at sea, site by site (MAST)</div>
+    <div class="sig-sub" id="isSiteSub"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="isSites" style="font-size:12.5px"></table></div>
+    <div id="isLand"></div>
     <div class="sig-title" style="margin-top:16px;font-size:15px">Cycle length — months at sea, site by site</div>
     <div class="sig-sub" id="isCycSub"></div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:14px;align-items:start">
@@ -1272,11 +1280,9 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
   <div class="panel" id="tasView" style="flex:1; min-width:0; max-width:1400px; display:none;">
     <div class="sig-title">Time at sea — how long each farmer keeps its fish at sea, zone by zone, and what diseases do to it</div>
     <div class="sig-sub" id="tasSub"></div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,560px),1fr));gap:14px;align-items:start">
-      <div><div id="tasMap"></div><div class="sig-sub" id="tasMapLeg" style="margin-top:4px"></div></div>
-      <div><div class="sig-title" style="font-size:15px">By farmer</div><div class="sig-sub" id="tasCoSub"></div>
-        <div style="overflow-x:auto"><table class="sig-table" id="tasCo"></table></div></div>
-    </div>
+    <div style="max-width:1100px;margin:0 auto"><div id="tasMap"></div><div class="sig-sub" id="tasMapLeg" style="margin-top:4px"></div></div>
+    <div class="sig-title" style="font-size:15px;margin-top:18px">By farmer</div><div class="sig-sub" id="tasCoSub"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="tasCo"></table></div>
     <div class="sig-sub" id="tasOff" style="margin-top:8px"></div>
     <div class="sig-title" style="margin-top:18px;font-size:15px">Private farmers — annual accounts</div>
     <div class="sig-sub" id="tasAccSub"></div>
@@ -2991,7 +2997,20 @@ function renderMortEvents() {
   const rb = document.getElementById('mevRegBtn'); if (rb) rb.onclick = () => { MEV_ALL = !MEV_ALL; renderMortEvents(); };
   if (!MEV) { ['mevManTable', 'mevNewsTable'].forEach(id => document.getElementById(id).innerHTML = '<tbody><tr><td>Loading…</td></tr></tbody>'); return; }
   // evenements saisis
-  const man = (MEV.manual || []).slice().sort((a, b) => b.date.localeCompare(a.date));
+  // + mois inhabituels de l'Islande lus automatiquement dans le tableau de bord MAST (mortalite nationale du mois au moins
+  //   deux fois la mediane des 12 mois precedents et 600 t ou plus), quand aucun evenement n'est saisi pour ce mois
+  let ism = null; try { ism = IS_MAST; } catch (e) {}
+  if (!ism && !window.__mevIs) { window.__mevIs = 1; fetch(DATA_URL.replace('data.json', 'iceland_mast.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
+    .then(j => { if (j) { try { if (!IS_MAST) IS_MAST = j; } catch (e) {} window.__mevIsD = j; if (currentView === 'health') renderMortEvents(); } }); }
+  ism = ism || window.__mevIsD;
+  const auto = [];
+  if (ism && ism.national) { const N = ism.national;
+    N.forEach((x, i) => { if (i < 12) return; const prev = N.slice(i - 12, i).map(y => y.mortality_t).sort((p, q) => p - q), med = (prev[5] + prev[6]) / 2;
+      if (!(x.mortality_t >= 600 && x.mortality_t >= 2 * med) || (MEV.manual || []).some(e => e.basin === 'IS' && e.date === x.m)) return;
+      const S = (ism.sites || []).filter(y => y.m === x.m).sort((p, q) => q.dead - p.dead).slice(0, 3), fish = (ism.sites || []).filter(y => y.m === x.m).reduce((p, y) => p + y.dead, 0);
+      auto.push({ date: x.m, basin: 'IS', region: [...new Set(S.map(y => y.fjord).filter(Boolean))].join(', '), cause: 'unspecified', agent: 'automatic, from MAST', fish_m: Math.round(fish / 1e5) / 10, tonnes: x.mortality_t,
+        company: '', note: `national deaths ${Math.round(x.mortality_t)} t against a usual ${Math.round(med)} t` + (S.length ? `; most at ${S.map(y => `${y.site} (${y.co}, ${Math.round(y.dead / 1000)}k fish)`).join(', ')}` : ''), url: ism.meta && ism.meta.url, src: 'MAST dashboard' }); }); }
+  const man = (MEV.manual || []).concat(auto).slice().sort((a, b) => b.date.localeCompare(a.date));
   document.getElementById('mevManTable').innerHTML = `<thead><tr><th class="name">Month</th><th style="text-align:left">Basin, region</th><th style="text-align:left">Cause</th><th>Fish lost</th><th>Tonnes</th><th style="text-align:left">Detail</th></tr></thead><tbody>` +
     (man.map(e => `<tr><td class="name">${mevMonth(+e.date.slice(0, 4) * 100 + +e.date.slice(5, 7))}</td><td style="text-align:left">${MEV_BASIN[e.basin] || e.basin}${e.region ? ', ' + e.region : ''}</td>` +
       `<td style="text-align:left">${mevChip(e.cause)} ${e.agent || ''}</td><td>${e.fish_m ? e.fish_m.toLocaleString('en-US') + ' M' : '—'}</td><td>${e.tonnes ? Math.round(e.tonnes).toLocaleString('en-US') + ' t' : '—'}</td>` +
@@ -3160,6 +3179,8 @@ function renderNewsLegacy() {
 
 
 // ===================== This week, version par bassin et entreprise (data/stories.json <- scripts/build_stories.py) =====================
+let ST_Q = '', NA = undefined;
+const stNorm = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 let ST = null, ST_LOADING = false, ST_B = 'all', ST_FREE = true, ST_HIDEPAY = false, QR = null, RB = undefined;
 // ---- resultats trimestriels (data/quarterly.json <- scripts/build_quarterly.py) ----
 function qrLoad(cb) { if (QR) return cb(); fetch(DATA_URL.replace('data.json', 'quarterly.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
@@ -3200,6 +3221,7 @@ function stDates(s) {
   const d = [...new Set((s.arts || []).map(a => a.date))].sort(); if (!d.length) return '';
   return d.length === 1 ? nwDay(d[0]) : `${nwDay(d[0])} – ${nwDay(d[d.length - 1])}`;
 }
+function stBest(s) { const r = { free: 0, '?': 1, metered: 2, pay: 3 }; return (s.arts || []).slice().sort((a, b) => (r[a.access] ?? 1) - (r[b.access] ?? 1) || (a.date < b.date ? 1 : -1))[0]; }
 function renderNews() {
   if (!ST) { if (!ST_LOADING) { ST_LOADING = true; fetch(DATA_URL.replace('data.json', 'stories.json'), { cache: 'no-store' })
       .then(r => r.ok ? r.json() : null).catch(() => null).then(j => { ST = j || { stories: [] }; ST_LOADING = false; if (currentView === 'news') renderNews(); }); }
@@ -3222,10 +3244,16 @@ function renderNews() {
   document.getElementById('nwBar').innerHTML = `<div class="nw-chips">${['all'].concat(order).map(b => `<button type="button" data-b="${b}" class="${ST_B === b ? 'on' : ''}">${b === 'all' ? 'All basins' : nwEsc(B[b] || b)} <span style="opacity:.6">${b === 'all' ? '' : tally[b]}</span></button>`).join('')}</div>` +
     `<label style="display:inline-flex;gap:6px;align-items:center;margin-left:12px"><input type="checkbox" id="stFree"${ST_FREE ? ' checked' : ''}> Free sources first</label>` +
     `<label style="display:inline-flex;gap:6px;align-items:center;margin-left:12px"><input type="checkbox" id="stPay"${ST_HIDEPAY ? ' checked' : ''}> Hide subscription sources</label>` +
-    `<span style="margin-left:14px;font-size:12px;color:var(--muted);display:inline-flex;gap:12px;align-items:center">${ST_ICON.free} free ${ST_ICON.metered} a few free a month ${ST_ICON.pay} subscription ${ST_ICON['?']} not checked</span>`;
+    `<span style="margin-left:14px;font-size:12px;color:var(--muted);display:inline-flex;gap:12px;align-items:center">${ST_ICON.free} free ${ST_ICON.metered} a few free a month ${ST_ICON.pay} subscription ${ST_ICON['?']} not checked</span>` +
+    `<div style="margin-top:10px;display:flex;gap:8px;align-items:center"><input type="search" id="stQ" value="${nwEsc(ST_Q)}" placeholder="Search all news — company, place, topic (e.g. Agrosuper Blumar)" autocomplete="off" ` +
+    `style="flex:1;max-width:560px;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--ink);font-size:14px"></div>`;
   document.querySelectorAll('#nwBar .nw-chips button').forEach(el => el.onclick = () => { ST_B = el.dataset.b; renderNews(); });
   document.getElementById('stFree').onchange = e => { ST_FREE = e.target.checked; renderNews(); };
   document.getElementById('stPay').onchange = e => { ST_HIDEPAY = e.target.checked; renderNews(); };
+  { const q = document.getElementById('stQ'); let tm = null;
+    q.oninput = () => { clearTimeout(tm); tm = setTimeout(() => { ST_Q = q.value; const pos = q.selectionStart; renderNews(); const q2 = document.getElementById('stQ'); if (q2) { q2.focus(); try { q2.setSelectionRange(pos, pos); } catch (e) {} } }, 250); }; }
+  if (ST_Q.trim().length >= 2 && NA === undefined) { NA = null; fetch(DATA_URL.replace('data.json', 'news_archive.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
+    .then(j => { NA = j || false; if (currentView === 'news' && ST_Q.trim().length >= 2) renderNews(); }); }
   const rank = { free: 0, '?': 1, metered: 2, pay: 3 };
   const chart = c => { if (!c || !(c.bars || []).length) return ''; const mx = Math.max(...c.bars.map(b => Math.abs(+b.value) || 0)) || 1;
     return `<figure style="margin:0;flex:1 1 200px;max-width:260px;padding:9px 11px;border:1px solid var(--border);border-radius:8px">` +
@@ -3264,7 +3292,8 @@ function renderNews() {
     `<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2 style="margin:0;font-size:17px">This week in five</h2><span style="font-size:12px;color:var(--muted)">${nwDay(M.from || '')} – ${nwDay(M.to || '')}</span></div>` +
     TOP.map((t, n) => `<div style="display:grid;grid-template-columns:22px minmax(0,1fr);gap:0 8px;margin-top:12px"><span style="font-size:15px;font-weight:600;color:var(--muted)">${n + 1}</span><div>` +
       `<div style="font-size:12px;color:var(--muted)">${nwEsc(B[t.s.basin] || t.s.basin)} · ${nwEsc(t.s.who)}${t.s.event ? ' · ' + nwEsc(t.s.event) : ''}</div>` +
-      `<div style="font-size:14.5px;font-weight:600;line-height:1.4"><a href="#st-${t.i}" style="color:inherit">${nwEsc(t.s.title)}</a> <span style="font-size:11.5px;font-weight:400;color:var(--muted);white-space:nowrap">${stDates(t.s)}</span></div>` +
+      `<div style="font-size:14.5px;font-weight:600;line-height:1.4">${(a => a ? `<a href="${nwHref(a.url, a.link, a.lang)}" target="_blank" rel="noopener" style="color:inherit">${nwEsc(t.s.title)}</a>` : nwEsc(t.s.title))(stBest(t.s))} ` +
+      `<span style="font-size:11.5px;font-weight:400;color:var(--muted);white-space:nowrap">${stDates(t.s)}</span> <button type="button" class="st-jump" data-st="${t.i}" style="font-size:11.5px;padding:1px 8px;border-radius:999px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer">summary and all sources ↓</button></div>` +
       (t.why ? `<div style="font-size:13px;color:var(--muted);line-height:1.45">${nwEsc(t.why)}</div>` : '') + qrStrip(qrFind(t.s.who, t.s.event, t.s.title)) + `</div></div>`).join('') +
     `<div style="font-size:11.5px;color:var(--muted);border-top:1px solid var(--border);padding-top:8px;margin-top:12px">Picked for likely impact on salmon supply, prices and costs, then by how widely reported; at most two per basin.</div></section>` : '';
   // bulletin du registre de la biomasse : une semaine apres chaque nouveau mois publie par le Fiskeridirektoratet
@@ -3274,6 +3303,29 @@ function renderNews() {
     `<span style="font-size:11.5px;color:var(--muted)">published ${nwDay(RB.published)} · <a href="#genmap" style="color:inherit">details in Generations map</a></span></div>` +
     `<h2 style="margin:6px 0 8px;font-size:16.5px;line-height:1.35">${nwEsc(RB.title)}</h2><ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:13.5px">` +
     (RB.lines || []).map(l => `<li>${nwEsc(l)}</li>`).join('') + `</ul></section>` : '';
+  if (ST_Q.trim().length >= 2) {
+    const words = stNorm(ST_Q).split(/\s+/).filter(Boolean), hit = txt => { const x = stNorm(txt); return words.every(w => x.includes(w)); };
+    const cur = S.filter(st => hit([st.title, st.summary, st.who, st.event, (st.arts || []).map(a => a.title + ' ' + a.source).join(' ')].join(' ')));
+    const seen = new Set(cur.map(st => stNorm(st.title)));
+    const old = NA ? (NA.stories || []).filter(x => !seen.has(stNorm(x.t)) && hit([x.t, x.m, x.w, x.e, (x.a || []).map(a => a.t).join(' ')].join(' '))) : [];
+    old.forEach(x => seen.add(stNorm(x.t)));
+    const urls = new Set([...cur.flatMap(st => (st.arts || []).map(a => a.url)), ...old.flatMap(x => (x.a || []).map(a => a.u))]);
+    const heads = NA ? (NA.headlines || []).filter(h => !urls.has(h.u) && hit(h.t + ' ' + (h.s || ''))).slice(0, 80) : [];
+    const oldCard = x => `<article style="display:flex;flex-direction:column;gap:7px;padding:12px 14px;border:1px solid var(--border);border-radius:10px">` +
+      `<span style="font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)">${nwEsc(B[x.b] || x.b || '')} · ${nwEsc(x.w)}${x.e ? ' · ' + nwEsc(x.e) : ''} · ${nwDay(x.f)}${x.z && x.z !== x.f ? ' – ' + nwDay(x.z) : ''} ${(x.z || '').slice(0, 4)}</span>` +
+      `<h3 style="margin:0;font-size:15px;font-weight:600;line-height:1.35">${nwEsc(x.t)}</h3>${x.m ? `<p style="margin:0;opacity:.9">${nwEsc(x.m)}</p>` : ''}` +
+      `<ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:12.5px">` + (x.a || []).map(a => `<li>${ST_ICON[a.x] || ST_ICON['?']} <span style="color:var(--muted)">${nwDay(a.d)}</span> <a href="${nwHref(a.u, a.l, a.g)}" target="_blank" rel="noopener">${nwEsc(a.t)}</a> <span style="color:var(--muted)">· ${nwEsc(a.s)}</span></li>`).join('') + `</ul></article>`;
+    document.getElementById('nwStories').innerHTML = `<section style="margin:12px 0"><div style="font-size:13px;color:var(--muted);margin-bottom:10px">` +
+      `${cur.length + old.length} stor${cur.length + old.length === 1 ? 'y' : 'ies'} and ${heads.length} other headline${heads.length === 1 ? '' : 's'} for “${nwEsc(ST_Q.trim())}”${NA === null ? ' — loading the archive…' : NA ? ` (archive since ${nwDay((NA.headlines || []).slice(-1)[0]?.d || '')} ${((NA.headlines || []).slice(-1)[0]?.d || '').slice(0, 4)})` : ''}. ` +
+      `<button type="button" id="stQclear" style="font-size:12px;padding:2px 10px;border-radius:999px;border:1px solid var(--border);background:none;color:var(--ink);cursor:pointer">Clear search</button></div>` +
+      `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,480px),1fr));gap:12px">${cur.map(card).join('')}${old.map(oldCard).join('')}</div>` +
+      (heads.length ? `<h4 style="margin:16px 0 6px">Other headlines</h4><ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px;font-size:13px">` +
+        heads.map(h => `<li><span style="color:var(--muted)">${nwDay(h.d)} ${(h.d || '').slice(0, 4)}</span> · <a href="${nwHref(h.u, h.l, h.g)}" target="_blank" rel="noopener">${nwEsc(h.t)}</a> <span style="color:var(--muted)">· ${nwEsc(h.s || '')}</span></li>`).join('') + `</ul>` : '') +
+      `</section>`;
+    document.getElementById('stQclear').onclick = () => { ST_Q = ''; renderNews(); };
+    document.getElementById('nwTop').innerHTML = ''; document.getElementById('nwThemes').innerHTML = '';
+    return;
+  }
   document.getElementById('nwStories').innerHTML = rbBox + topBox + shown.map(b => { const L = S.filter(s => s.basin === b).sort((x, y) => recent(x) - recent(y) || prio(x) - prio(y) || (x.last < y.last ? 1 : x.last > y.last ? -1 : 0) || nSrc(y) - nSrc(x));
     const lim = ST_B === 'all' ? 6 : 999, vis = L.slice(0, lim);
     return `<section style="margin:16px 0 4px"><div style="display:flex;gap:10px;align-items:baseline;border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:10px">` +
@@ -3281,6 +3333,9 @@ function renderNews() {
       (L.length > lim ? `<button type="button" class="nw-more" data-b="${b}" style="margin-left:auto">All ${L.length} stories</button>` : '') + `</div>` +
       `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,480px),1fr));gap:12px">${vis.map(card).join('')}</div></section>`; }).join('');
   document.querySelectorAll('#nwStories .nw-more').forEach(el => el.onclick = () => { ST_B = el.dataset.b; renderNews(); window.scrollTo(0, 0); });
+  document.querySelectorAll('#nwStories .st-jump').forEach(el => el.onclick = () => { const i = +el.dataset.st, go = () => { const a = document.getElementById('st-' + i);
+      if (a) { a.scrollIntoView({ behavior: 'smooth', block: 'start' }); a.style.outline = '2px solid #4fc3f7'; setTimeout(() => a.style.outline = '', 2500); return true; } return false; };
+    if (!go()) { ST_B = S[i].basin; renderNews(); setTimeout(go, 50); } });
   document.getElementById('nwTop').innerHTML = ''; document.getElementById('nwThemes').innerHTML = '';
   // echeances et etat des sources : comme avant, depuis news.json
   if (NW) { const gen = (NW.meta || {}).generated || new Date().toISOString().slice(0, 10), lastWk = new Date(new Date(gen + 'T00:00:00Z').getTime() - 7 * 864e5).toISOString().slice(0, 10), today = new Date().toISOString().slice(0, 10);
@@ -3434,6 +3489,14 @@ const IS_FJ = [
   { fj: 'Berufjörður', lat: 64.76, lon: -14.35, reg: 'East fjords', lic: [['Kaldvík', 7500, 'fertile']] },
   { fj: 'Seyðisfjörður', lat: 65.26, lon: -13.95, reg: 'East fjords', lic: [['Kaldvík', 10000, 'applied for']] }];
 const IS_COL = { Arnarlax: '#4fc3f7', 'Arctic Fish': '#ff8a65', Kaldvík: '#81c784', Háafell: '#ce93d8' };
+// infobulle d'un cercle : licence + poissons en mer de l'entreprise dans ce fjord (dernier mois MAST)
+function isTip(x, l) {
+  const e = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), co = l[0].split(' /')[0];
+  const S = IS_MAST && IS_MAST.sites ? IS_MAST.sites.filter(y => y.m === IS_MAST.sites_last_month && y.fish > 0 && y.fjord && x.fj.split(/[ ,&]+/).some(w => w.length > 4 && y.fjord.includes(w.slice(0, 6))) && (y.co || '').toLowerCase().startsWith(co.toLowerCase().slice(0, 5))) : [];
+  const fish = S.reduce((a, y) => a + y.fish, 0), bio = S.reduce((a, y) => a + (y.bio_t || 0), 0);
+  return `<b>${e(x.fj)}</b> · ${e(l[0])}<br>${l[1] ? l[1].toLocaleString('en-US') + ' t MAB' : 'size not published'} · ${e(l[2])}` +
+    (S.length ? `<br>${S.length} site${S.length > 1 ? 's' : ''} with fish: ${(fish / 1e6).toFixed(2)} M fish${bio > 0 ? ` · ${Math.round(bio).toLocaleString('en-US')} t · ${(bio * 1000 / fish).toFixed(1)} kg` : ''} (${fdMon(IS_MAST.sites_last_month)})` : '');
+}
 function isMap() {
   const e = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), feats = IS_PROBE && IS_PROBE.features ? Object.entries(IS_PROBE.features) : [];
   const nSites = feats.reduce((a, [, F]) => a + F.filter(f => f.lat).length, 0);
@@ -3453,7 +3516,7 @@ function isMap() {
       // un cercle par entreprise, decale legerement pour rester lisible
       x.lic.forEach((l, i) => { const c = IS_COL[l[0].split(' /')[0]] || '#90a4ae', app = /applied/.test(l[2]), r = l[1] ? 6 + 16 * Math.sqrt(l[1] / 12000) : 6;
         L.circleMarker([x.lat + (i - (x.lic.length - 1) / 2) * 0.06, x.lon + (i - (x.lic.length - 1) / 2) * 0.12], { radius: r, color: c, weight: 2, dashArray: app ? '4 3' : null, fillColor: c, fillOpacity: app ? 0.05 : l[1] ? 0.45 : 0.15 })
-          .addTo(IS_LAYER).bindTooltip(`<b>${e(x.fj)}</b> · ${e(l[0])}<br>${l[1] ? l[1].toLocaleString('en-US') + ' t MAB' : 'size not published'} · ${e(l[2])}`, { direction: 'top' }); });
+          .addTo(IS_LAYER).bindTooltip(isTip(x, l), { direction: 'top', sticky: true, className: 'is-co' }).bindPopup(isTip(x, l)); });
       L.circleMarker([x.lat, x.lon], { radius: 1, opacity: 0 }).addTo(IS_LAYER).bindPopup(`<b>${e(x.fj)}</b> (${x.reg})<br>` + x.lic.map(l => `${e(l[0])}: ${l[1] ? l[1].toLocaleString('en-US') + ' t' : '—'} (${e(l[2])})`).join('<br>') +
         (tot ? `<br><b>Granted: ${tot.toLocaleString('en-US')} t</b>` : '') + (x.cap ? `<br><span style="color:#ffb74d">${e(x.cap)}</span>` : ''));
       L.tooltip({ permanent: true, direction: x.lon < -20 ? 'left' : 'right', className: 'is-lab', offset: [x.lon < -20 ? -14 : 14, 0] }).setLatLng([x.lat, x.lon]).setContent(e(x.fj)).addTo(IS_LAYER); });
@@ -3519,12 +3582,29 @@ function renderIceland() {
     const chm = (a, b) => b ? `<span class="${a <= b ? 'delta-good' : 'delta-bad'}">${a >= b ? '+' : '−'}${Math.abs(100 * (a / b - 1)).toFixed(0)} %</span>` : '';
     const kt = v => (v / 1000).toLocaleString('en-US', { maximumFractionDigits: 1 }) + ' kt', mo = m => fdMon(m);
     const B = N[k], B12 = N[k - 12] || {}, fish = (MS.sites || []).filter(x => x.m === MS.sites_last_month).reduce((a, x) => a + (x.fish || 0), 0);
+    const m12 = (B12.m || ''), fish12 = (MS.sites || []).filter(x => x.m === m12).reduce((a, x) => a + (x.fish || 0), 0);
+    // ---- site par site, dernier mois ----
+    { const lm = MS.sites_last_month, pm = (() => { const [y, m] = lm.split('-').map(Number); return m === 1 ? `${y - 1}-12` : `${y}-${String(m - 1).padStart(2, '0')}`; })();
+      const prev = {}; (MS.sites || []).filter(x => x.m === pm).forEach(x => prev[x.site] = x);
+      const SS = (MS.sites || []).filter(x => x.m === lm && (x.fish > 0 || x.out > 0)).sort((a, b) => b.fish - a.fish);
+      const hasW = SS.some(x => x.bio_t > 0), act = {}; ((MS.cycles || {}).active || []).forEach(c => act[c.site] = c);
+      const pf = v => v === null || v === undefined ? '—' : (v / 1e6).toFixed(2);
+      $i('isSiteSub').innerHTML = `Every sea site that held salmon at the end of ${mo(lm)} (${SS.filter(x => x.fish > 0).length} sites, ${(fish / 1e6).toFixed(1)} M fish), from the monthly reports to MAST. ` +
+        (hasW ? 'Average weight = site biomass ÷ fish (live).' : `<span class="warn">MAST's dashboard gives fish numbers by site but not their biomass, so the average weight by site is not available</span>; for the whole country: ${(B.biomass_t * 1000 / fish).toFixed(2)} kg a fish.`) +
+        ` Months at sea: from the first month with fish in the site.`;
+      $i('isSites').innerHTML = `<thead><tr><th class="name">Site</th><th class="name">Company</th><th class="name">Fjord</th><th>Fish<br>(M)</th><th>A month<br>before</th>${hasW ? '<th>Biomass<br>(t)</th><th>Average<br>weight (kg)</th>' : ''}<th>Put to sea<br>in the month</th><th>Harvested<br>in the month</th><th>Dead in<br>the month</th><th>Dead<br>% of fish</th><th>Months<br>at sea</th></tr></thead><tbody>` +
+        SS.map(x => { const p = prev[x.site], d = p && p.fish ? 100 * x.dead / p.fish : null, c = act[x.site];
+          return `<tr><td class="name"><b>${e(x.site)}</b></td><td class="name">${e(x.co)}</td><td class="name">${e(x.fjord || '—')}</td><td><b>${pf(x.fish)}</b></td><td>${p ? pf(p.fish) : '—'}</td>` +
+            (hasW ? `<td>${x.bio_t ? t0(x.bio_t) : '—'}</td><td>${x.bio_t && x.fish ? (x.bio_t * 1000 / x.fish).toFixed(2) : '—'}</td>` : '') +
+            `<td>${x.in ? pf(x.in) : '—'}</td><td>${x.out ? pf(x.out) : '—'}</td><td>${x.dead ? t0(x.dead) : '—'}</td><td>${d === null ? '—' : `<span class="${d > 3 ? 'delta-bad' : ''}">${d.toFixed(1)} %</span>`}</td><td>${c && c.age !== undefined ? c.age : '—'}</td></tr>`; }).join('') + `</tbody>`; }
     const grown = sm(L12, 'harvest_t') + (B.biomass_t - (B12.biomass_t || B.biomass_t));
     const card = (t, big, ln) => `<div class="pr-card" style="cursor:default"><div class="nm">${t}</div><div class="big">${big}</div><div class="ln">${ln}</div></div>`;
     $i('isMast').innerHTML = `Atlantic salmon in sea cages, all companies, from the monthly reports each farm sends to MAST (live weight). Last month: <b>${mo(B.m)}</b>. ` +
       `<a href="${(MS.meta || {}).url || '#'}" target="_blank" rel="noopener">MAST, Mælaborð fiskeldis</a>.`;
     $i('isMastCards').innerHTML =
-      card('Biomass at sea', kt(B.biomass_t), `${ch(B.biomass_t, B12.biomass_t)} on a year · ${fish ? (fish / 1e6).toFixed(1) + ' M fish' : ''}`) +
+      card(`Standing biomass · ${mo(B.m)}`, kt(B.biomass_t), `${ch(B.biomass_t, B12.biomass_t)} on ${mo(B12.m || '')}` +
+        (fish ? ` · ${(fish / 1e6).toFixed(1)} M fish (${ch(fish, fish12)})<br>average <b>${(B.biomass_t * 1000 / fish).toFixed(2)} kg</b> a fish` + (fish12 && B12.biomass_t ? ` (${ch(B.biomass_t / fish, B12.biomass_t / fish12)}, ${(B12.biomass_t * 1000 / fish12).toFixed(2)} kg a year earlier)` : '') : '') +
+        `<br><span style="color:var(--muted)">MAST, updated ${(MS.meta || {}).generated || ''}</span>`) +
       card('Harvest, 12 months', kt(sm(L12, 'harvest_t')), `${ch(sm(L12, 'harvest_t'), sm(P12, 'harvest_t'))} on the 12 months before`) +
       card('Feed, 12 months', kt(sm(L12, 'feed_t')), `${ch(sm(L12, 'feed_t'), sm(P12, 'feed_t'))} · conversion ${grown > 0 ? (sm(L12, 'feed_t') / grown).toFixed(2) : '—'}`) +
       card('Dead fish, 12 months', kt(sm(L12, 'mortality_t')), `${chm(sm(L12, 'mortality_t'), sm(P12, 'mortality_t'))} · last month ${Math.round(B.mortality_t).toLocaleString('en-US')} t`) +
@@ -12093,6 +12173,49 @@ loadRemoteData().then(live => {
     notes.forEach(x => frag.appendChild(x));
     P.innerHTML = ''; P.appendChild(frag);
   });
+})();
+</script>
+<script>
+// Sommaire de chaque onglet : les titres des parties de l'onglet affiche, en pastilles cliquables, dans le cadre du haut
+// (celui des anciens boutons d'onglets, vide depuis le menu lateral). Le titre de la page suit l'onglet.
+(function () {
+  const H1 = document.querySelector('body > h1'), SUB = document.querySelector('body > .subtitle'), H1_0 = H1 ? H1.textContent : '';
+  const boxes = [...document.querySelectorAll('body > .top-controls')], frame = boxes.find(b => b.querySelector('#viewToggle'));
+  if (!frame) return;
+  const st = document.createElement('style');
+  st.textContent = `#tabIndex{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;width:100%}
+    #tabIndex button{font:inherit;font-size:12.5px;padding:5px 11px;border-radius:999px;border:1px solid var(--border);background:none;color:var(--ink);cursor:pointer;white-space:nowrap}
+    #tabIndex button:hover{border-color:#4fc3f7;color:#4fc3f7}
+    #tabIndex .ti-n{color:#4fc3f7;font-weight:700;margin-right:4px}
+    @media (max-width:760px){#tabIndex{flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;padding-bottom:4px}}
+    .bs-nav{display:none !important}`;
+  document.head.appendChild(st);
+  const idx = document.createElement('div'); idx.id = 'tabIndex'; frame.appendChild(idx);
+  const vis = el => el && el.offsetParent !== null && getComputedStyle(el).display !== 'none';
+  const label = t => { t = t.replace(/\s+/g, ' ').trim().replace(/^\d+\s*·\s*/, ''); const c = t.split(/ — | – |: /)[0]; return c.length > 46 ? c.slice(0, 44) + '…' : c; };
+  let tm = null;
+  const build = () => {
+    const P = [...document.querySelectorAll('.panel')].find(p => p.style.display === 'block' || (p.style.display === '' && vis(p) && p.closest('body')));
+    const active = document.querySelector('#sideNav .sn-item.on') || document.querySelector('#viewToggle button.active');
+    if (H1) H1.textContent = active && active.textContent.trim() ? active.textContent.trim() : H1_0;
+    const yearBox = boxes.find(b => b.querySelector('#yearSel'));
+    if (SUB) SUB.style.display = yearBox && vis(yearBox) ? '' : 'none';
+    let items = [];
+    if (P) {
+      const slots = [...P.querySelectorAll('.bs-slot')].filter(vis);
+      if (slots.length) items = slots.map(x => [x, x.textContent]);
+      else { const T = [...P.querySelectorAll('.sig-title')].filter(vis);
+        items = T.slice(1).filter(x => x.textContent.trim().length > 2 && !x.closest('table, details:not([open]), .gm-tw')).map(x => [x, x.textContent]); }
+    }
+    const seen = new Set(); items = items.filter(([, t]) => { const k = label(t); if (seen.has(k)) return false; seen.add(k); return true; });
+    frame.style.display = items.length >= 2 ? '' : 'none';
+    idx.innerHTML = items.map(([, t], n) => `<button type="button" data-n="${n}"><span class="ti-n">${n + 1}</span>${label(t).replace(/&/g, '&amp;').replace(/</g, '&lt;')}</button>`).join('');
+    idx.querySelectorAll('button').forEach(b => b.onclick = () => { const el = items[+b.dataset.n][0]; const y = el.getBoundingClientRect().top + window.scrollY - 70; window.scrollTo({ top: y, behavior: 'smooth' }); });
+  };
+  const later = () => { clearTimeout(tm); tm = setTimeout(build, 350); };
+  new MutationObserver(muts => { if (muts.some(m => !idx.contains(m.target) && m.target !== H1)) later(); })
+    .observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['style', 'class'] });
+  window.addEventListener('hashchange', later); later();
 })();
 </script>
 </body>

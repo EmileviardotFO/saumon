@@ -49,6 +49,11 @@ jobs:
       env:
         ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       run: python3 scripts/build_stories.py
+    - name: Archive des titres et sujets (recherche de l'onglet News)
+      id: newsarchive
+      continue-on-error: true
+      timeout-minutes: 5
+      run: python3 scripts/build_news_archive.py
     - name: Rapports trimestriels - cout par kg, EBIT, guidance par entreprise et region (pour This week et Scotland)
       id: quarterly
       continue-on-error: true
