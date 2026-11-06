@@ -1,0 +1,33 @@
+name: Index de recherche (toutes les lignes de tous les tableaux)
+# Chaque jour apres les mises a jour : la page est ouverte dans un navigateur sans ecran, chaque onglet est
+# affiche et ses tableaux sont lus dans data/search_index.json (recherche du tableau de bord).
+on:
+  schedule:
+    - cron: '41 9 * * *'
+  workflow_dispatch: {}
+permissions:
+  contents: write
+concurrency:
+  group: maj-donnees
+  cancel-in-progress: false
+jobs:
+  index:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Navigateur
+        run: |
+          pip install -q playwright
+          python3 -m playwright install --with-deps chromium > /dev/null
+      - name: Construire l'index
+        run: python3 scripts/build_search_index.py
+      - name: Enregistrer
+        run: |
+          git config user.name "github-actions"; git config user.email "actions@github.com"
+          git add data/search_index.json
+          if git diff --staged --quiet; then echo "Aucun changement."; else
+            git commit -m "Index de recherche ($(date -u +%Y-%m-%d))"; git pull --rebase; git push; fi
