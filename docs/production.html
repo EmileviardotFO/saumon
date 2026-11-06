@@ -1448,6 +1448,9 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
       <div id="clMap" style="height:620px;border:1px solid var(--border);border-radius:8px;background:#0d1a24"></div>
     </div>
     <div id="clSel" style="margin-top:14px"></div>
+    <div class="sig-title" style="margin-top:18px">Processing plants — slaughter and processing of salmonids (Sernapesca)</div>
+    <div class="sig-sub" id="plClSub"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="plClTab"></table></div>
     <div class="sig-title" style="margin-top:18px">Biomass at sea, farms in use, fish in freshwater</div>
     <div class="sig-sub" id="clBioSub"></div>
     <div id="clBio"></div>
@@ -1569,6 +1572,13 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
         <thead><tr><th class="name">Zone</th><th style="text-align:left">Site</th><th style="text-align:left">Municipality</th><th style="text-align:left">Operator</th><th>Capacity (t)</th></tr></thead>
         <tbody id="tbodyRgCage"></tbody>
       </table>
+      <div class="sig-title" style="margin-top:26px;">3b · Slaughterhouses and processing plants — map</div>
+      <div class="sig-sub" id="plNoSub"></div>
+      <div class="sc-mapgrid">
+        <div id="plNoList"></div>
+        <div id="plNoMap" style="height:640px;border:1px solid var(--border);border-radius:8px;background:#0d1a24"></div>
+      </div>
+      <div style="overflow-x:auto;margin-top:10px"><table class="sig-table" id="plNoTab"></table></div>
       </div>
       <div class="sig-title" style="margin-top:26px;">4 · Approved fishery establishments (Mattilsynet)</div>
       <div class="sig-sub" id="esSub"></div>
@@ -4846,6 +4856,7 @@ function clSubpesca() {
   $c('clStkChart').innerHTML = typeof vzStack === 'function' ? vzStack(qs, st, { axis: 'Million fish (quarter of the resolution)', unit: 'M fish', H: 210 }) + vzLegend(st.map(x => [x.lab, x.col, false, true])) : '';
 }
 function renderChile() {
+  setTimeout(plChile, 100);
   if (!CLD) { if (!CL_LOADING) { CL_LOADING = true; const g = n => fetch(DATA_URL.replace('data.json', n), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
       Promise.all([g('chili.json'), g('chile_sites.json'), g('national_trade.json')]).then(([a, b, c]) => { CLD = a || {}; CLS = b; CLT = c; CL_LOADING = false; if (currentView === 'chile') renderChile(); }); }
     document.getElementById('clSub').innerHTML = 'Loading…'; return; }
@@ -5676,7 +5687,81 @@ function rgZoneDetail(po, bio, fishM, mlab, mtbAll) {
     `<td class="sep-left">${f0(bio)}</td><td>100%</td><td>${isFinite(fishM) ? fishM.toFixed(1) : '—'}</td></tr></tfoot></table></div>`;
 }
 
+// ---- abattoirs et ateliers de transformation (data/plants.json, scripts/build_plants.py) : Norvege (registre) et Chili
+let PLANTS, PL_NO_MAP = null, PL_NO_LAYER = null, PL_NO_OP = null, PL_CL_LAYER = null, PL_CL_ON = true;
+const PL_VESSEL = /fart[øo]y|rederi|\bvolt\b|volt (harvest|collector)|taupo|taupiri|napier|charvest|thermo service|stun\b|collector|seistar|\bfsv\b|s[øo]lvtrans|ode processing/i;
+function plLoad(cb) {
+  if (PLANTS !== undefined) return PLANTS ? cb(PLANTS) : null;
+  PLANTS = null; fetch(DATA_URL.replace('data.json', 'plants.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
+    .then(j => { PLANTS = j || false; if (j) cb(j); });
+}
+function plIcon(col, sq) { return L.divIcon({ className: '', iconSize: [12, 12], iconAnchor: [6, 6],
+  html: `<div style="width:11px;height:11px;background:${col};border:1.5px solid #fff;${sq ? 'border-radius:2px;transform:rotate(45deg)' : 'border-radius:50%'};box-shadow:0 0 0 1px rgba(0,0,0,.4)"></div>` }); }
+function plNorway() {
+  const $p = id => document.getElementById(id); if (!$p('plNoMap')) return;
+  plLoad(P => {
+    const e = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    const all = (P.no || []).map(x => ({ ...x, vessel: PL_VESSEL.test(x.name) }));
+    const land = all.filter(x => !x.vessel && x.lat), ves = all.filter(x => x.vessel);
+    const by = {}; land.forEach(x => { const g = by[x.group] = by[x.group] || { s: 0, p: 0, towns: new Set() }; if (x.slaughter) g.s++; else g.p++; g.towns.add(x.city); });
+    const groups = Object.entries(by).sort((a, b) => (b[1].s + b[1].p) - (a[1].s + a[1].p) || a[0].localeCompare(b[0]));
+    const top = groups.filter(([, v]) => v.s + v.p >= 2).map(([g]) => g).slice(0, 12), col = g => top.includes(g) ? SC_COL[top.indexOf(g) % SC_COL.length] : '#8fa4b0';
+    const cages = (BWR && BWR.slaughter_cages) || [];
+    $p('plNoList').innerHTML = `<div class="sc-op${PL_NO_OP ? '' : ' on'}" data-g=""><i style="width:10px;height:10px;border-radius:50%;background:#fff;display:inline-block"></i><b>All operators</b><span style="margin-left:auto;color:var(--muted)">${land.filter(x => x.slaughter).length} slaughterhouses</span></div>` +
+      groups.filter(([g]) => top.includes(g)).map(([g, v]) => `<div class="sc-op${PL_NO_OP === g ? ' on' : ''}" data-g="${e(g)}"><i style="width:10px;height:10px;border-radius:50%;background:${col(g)};display:inline-block"></i>${e(g)}<span style="margin-left:auto;color:var(--muted);font-size:11.5px">${v.s} slaughter${v.p ? ` · ${v.p} processing` : ''}</span></div>`).join('') +
+      `<div class="sc-op${PL_NO_OP === '__other' ? ' on' : ''}" data-g="__other"><i style="width:10px;height:10px;border-radius:50%;background:#8fa4b0;display:inline-block"></i>Other operators<span style="margin-left:auto;color:var(--muted);font-size:11.5px">${groups.filter(([g]) => !top.includes(g)).reduce((a, [, v]) => a + v.s + v.p, 0)}</span></div>`;
+    $p('plNoList').querySelectorAll('.sc-op').forEach(el => el.onclick = () => { PL_NO_OP = el.dataset.g || null; plNorway(); });
+    const show = x => !PL_NO_OP || (PL_NO_OP === '__other' ? !top.includes(x.group) : x.group === PL_NO_OP);
+    scLeaflet(() => {
+      if (!PL_NO_MAP) { PL_NO_MAP = L.map('plNoMap', { scrollWheelZoom: false }).setView([65, 13], 5);
+        const esri = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', { attribution: 'Tiles &copy; Esri · establishments: Mattilsynet · holding cages: Fiskeridirektoratet', maxZoom: 13 }).addTo(PL_NO_MAP);
+        let fails = 0; esri.on('tileerror', () => { if (++fails === 4) { PL_NO_MAP.removeLayer(esri); L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors', maxZoom: 13 }).addTo(PL_NO_MAP); } }); }
+      if (PL_NO_LAYER) PL_NO_LAYER.remove(); PL_NO_LAYER = L.layerGroup().addTo(PL_NO_MAP); const pts = [];
+      cages.forEach(c => { if (!c.lat || (PL_NO_OP && PL_NO_OP !== '__other' && !String(c.org || '').toLowerCase().includes(PL_NO_OP.toLowerCase().split(' ')[0]))) return;
+        L.circleMarker([c.lat, c.lon], { radius: 4 + Math.sqrt(c.cap || 0) / 8, color: '#8fa4b0', weight: 1, dashArray: '2 2', fillOpacity: 0 }).addTo(PL_NO_LAYER)
+          .bindPopup(`<b>Slaughter holding cages</b> · ${e(c.name)}<br>${e(c.org)} · ${e(c.mun)}<br>Capacity ${Math.round(c.cap || 0).toLocaleString('en-US')} t`); });
+      land.filter(show).forEach(x => { L.marker([x.lat, x.lon], { icon: plIcon(col(x.group), !x.slaughter) }).addTo(PL_NO_LAYER)
+        .bindPopup(`<b>${e(x.name)}</b><br>Operator: <b>${e(x.group)}</b><br>${e(x.address)}, ${e(x.postcode)} ${e(x.city)}<br>` +
+          `${x.slaughter ? 'Slaughterhouse' : ''}${x.slaughter && x.processing ? ' + ' : ''}${x.processing ? 'processing (filleting…)' : ''}<br><span style="color:#8fa4b0">Approval ${e(x.id)} · codes ${x.codes.join(', ')}${x.geo === 'postcode' ? ' · placed at its postcode' : ''}</span>`);
+        pts.push([x.lat, x.lon]); });
+      if (pts.length) PL_NO_MAP.fitBounds(pts, { padding: [24, 24], maxZoom: 9 }); setTimeout(() => PL_NO_MAP.invalidateSize(), 60);
+    });
+    $p('plNoTab').innerHTML = `<thead><tr><th class="name">Operator</th><th>Slaughterhouses</th><th>Processing only</th><th style="text-align:left">Towns</th></tr></thead><tbody>` +
+      groups.map(([g, v]) => `<tr><td class="name">${e(g)}</td><td>${v.s || '—'}</td><td>${v.p || '—'}</td><td style="text-align:left;white-space:normal">${[...v.towns].sort().map(e).join(', ')}</td></tr>`).join('') + `</tbody>`;
+    $p('plNoSub').innerHTML = `Every establishment Mattilsynet has approved to <b>slaughter farmed fish</b> (activity code FFPP-SA, round markers), plus the <b>processing plants</b> (filleting, FFPP-P) of salmon groups (diamonds). ` +
+      `Dashed rings are the slaughter holding cages (ventemerder) of section 3, sized by their capacity: they sit next to the slaughterhouses they feed. ` +
+      `${land.filter(x => x.slaughter).length} slaughterhouses on land, ${land.filter(x => !x.slaughter).length} processing plants; ${ves.length} slaughter or harvest vessels are also approved (${ves.slice(0, 6).map(x => e(x.name)).join(', ')}${ves.length > 6 ? '…' : ''}) and are not mapped. ` +
+      `Operator = the company named in the approval; jointly owned plants (Kråkøy, for instance) keep their own name. Positions come from the approval address (Kartverket); no throughput is published. List read ${e(P.meta && P.meta.built)}. Click an operator to keep only its plants.`;
+  });
+}
+function plChile() {
+  const $p = id => document.getElementById(id); if (!$p('plClTab')) return;
+  plLoad(P => {
+    const e = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), C = P.cl || [];
+    const reg = ['Los Lagos', 'Aysén', 'Magallanes', 'Biobío', 'Araucanía'];
+    C.sort((a, b) => (reg.indexOf(a.region) + 1 || 9) - (reg.indexOf(b.region) + 1 || 9) || (b.slaughter - a.slaughter) || a.town.localeCompare(b.town));
+    $p('plClTab').innerHTML = `<thead><tr><th class="name">Plant</th><th style="text-align:left">Town</th><th style="text-align:left">Region</th><th style="text-align:left">Farming companies served</th><th>Slaughter</th><th>Sernapesca code</th></tr></thead><tbody>` +
+      C.map(x => `<tr><td class="name">${e(x.plant)}</td><td style="text-align:left">${e(x.town)}</td><td style="text-align:left">${e(x.region)}</td><td style="text-align:left;white-space:normal">${e(x.farmers) || '—'}</td>` +
+        `<td>${x.slaughter ? '<b style="color:#ffb74d">yes</b>' : 'no'}</td><td>${e(x.code)}</td></tr>`).join('') + `</tbody>`;
+    const n = r => C.filter(x => x.region === r).length;
+    $p('plClSub').innerHTML = `Sernapesca's list of plants authorised to slaughter and/or process salmonids (${e(P.meta.cl_edition || '')}): <b>${C.length} plants</b>, ${C.filter(x => x.slaughter).length} of them slaughtering — ` +
+      `${n('Los Lagos')} in Los Lagos (Puerto Montt, Calbuco, Chiloé), ${n('Aysén')} in Aysén, ${n('Magallanes')} in Magallanes, ${n('Biobío')} in Biobío (frozen and value-added plants far from the farms). ` +
+      `Most fish farmed in Aysén is slaughtered or processed in Los Lagos. On the map above they are the white-edged squares (yellow = slaughters), placed at their town. ` +
+      `<label style="cursor:pointer;margin-left:6px"><input type="checkbox" id="plClOn"${PL_CL_ON ? ' checked' : ''}> show plants on the map</label>`;
+    $p('plClOn').onchange = ev => { PL_CL_ON = ev.target.checked; plChileLayer(); };
+    plChileLayer();
+  });
+}
+function plChileLayer(n) {
+  if (!PLANTS) return; if (typeof CL_MAP === 'undefined' || !CL_MAP) { if ((n || 0) < 40) setTimeout(() => plChileLayer((n || 0) + 1), 400); return; }
+  if (PL_CL_LAYER) PL_CL_LAYER.remove(); if (!PL_CL_ON) return; PL_CL_LAYER = L.layerGroup().addTo(CL_MAP);
+  const e = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  (PLANTS.cl || []).forEach(x => { if (!x.lat) return;
+    L.marker([x.lat, x.lon], { icon: L.divIcon({ className: '', iconSize: [11, 11], iconAnchor: [5, 5], html: `<div style="width:10px;height:10px;background:${x.slaughter ? '#ffb74d' : '#cfdde4'};border:1.5px solid #fff;border-radius:2px;box-shadow:0 0 0 1px rgba(0,0,0,.5)"></div>` }), zIndexOffset: 500 })
+      .addTo(PL_CL_LAYER).bindPopup(`<b>${e(x.plant)}</b> (plant ${e(x.code)})<br>${e(x.town)}, ${e(x.region)}<br>Farming companies: ${e(x.farmers) || '—'}<br>${x.slaughter ? '<b>Slaughters</b> and processes' : 'Processing (no slaughter)'}<br><span style="color:#8fa4b0">Placed at its town (Sernapesca gives no address)</span>`); });
+}
 function renderRegister() {
+  setTimeout(plNorway, 50);
   const empty = document.getElementById('rgEmpty'), body = document.getElementById('rgBody');
   document.getElementById('dataQualityBanner').style.display = 'none';
   renderEstablishments();

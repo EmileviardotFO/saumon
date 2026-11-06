@@ -123,6 +123,11 @@ jobs:
         exit $rc
 
         '
+    - name: Abattoirs et ateliers de transformation (Mattilsynet, Sernapesca)
+      id: plants
+      continue-on-error: true
+      timeout-minutes: 15
+      run: python3 scripts/build_plants.py
     - name: Canada - volumes par cote (postes US), cycles et mortalite BC, temperature de la mer
       id: canada_extra
       continue-on-error: true

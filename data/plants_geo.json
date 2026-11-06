@@ -1,0 +1,577 @@
+{
+"NO|Kurillvegen 11|2060|Gardermoen": [
+60.17509,
+11.13557,
+"address"
+],
+"NO|Tonstadveien 9|4440|Tonstad": [
+58.66731,
+6.71603,
+"address"
+],
+"NO|Abelnes 60|4404|Flekkefjord": [
+58.23877,
+6.65521,
+"address"
+],
+"NO|Havneveien 36|9610|Rypefjord": [
+70.63403,
+23.66678,
+"address"
+],
+"NO|Kvenvikveien 99|9541|Alta": [
+69.94689,
+23.09563,
+"address"
+],
+"NO|Timberveien 85|9911|Jarfjord": [
+69.73242,
+30.10772,
+"address"
+],
+"NO|Ropelv|9900|Kirkenes": [
+69.7247,
+30.03328,
+"postcode"
+],
+"NO|Sundsvegen 119|5450|Sunde I Sunnhordland": [
+59.83491,
+5.7108,
+"address"
+],
+"NO|Skaganeset|5382|Skogsvåg": [
+60.26857,
+5.10504,
+"address"
+],
+"NO|Christian Michelsens Gate 6b|5012|Bergen": [
+60.3931,
+5.32197,
+"address"
+],
+"NO|Naustbakken 3|5770|Tyssedal": [
+60.11914,
+6.55606,
+"address"
+],
+"NO|Børnes 20|5463|Uskedalen": [
+59.93287,
+5.83404,
+"address"
+],
+"NO||5281|Valestrandsfossen": [
+60.55537,
+5.42226,
+"address"
+],
+"NO|Porsvika 57a|5381|Glesvær": [
+60.21138,
+5.05263,
+"address"
+],
+"NO|Bjånesøyvegen 13|5392|Storebø": [
+60.09196,
+5.2248,
+"address"
+],
+"NO|Hovlandsvegen 18|5443|Bømlo": [
+59.60206,
+5.21073,
+"address"
+],
+"NO|Alfabygget|5392|Storebø": [
+60.09333,
+5.22331,
+"address"
+],
+"NO|Austevollshellevegen 67|5384|Torangsvåg": [
+60.10606,
+5.17567,
+"address"
+],
+"NO|Øklandsvegen 90|5430|Bremnes": [
+59.80029,
+5.13236,
+"address"
+],
+"NO|Fylkesnesvegen 164|5430|Bremnes": [
+59.76234,
+5.17456,
+"address"
+],
+"NO|Hendnesveien 99|6533|Averøy": [
+63.05756,
+7.51357,
+"address"
+],
+"NO|Rindarøyvegen 383|6480|Aukra": [
+62.84552,
+6.77526,
+"address"
+],
+"NO|Havnegata 11|6005|Ålesund": [
+62.47003,
+6.1233,
+"address"
+],
+"NO|Eggesbøvegen 40|6092|Fosnavåg": [
+62.32387,
+5.65433,
+"address"
+],
+"NO|Myrane 26|6094|Leinøy": [
+62.37079,
+5.67029,
+"address"
+],
+"NO|Skansekaia 4b|6002|Ålesund": [
+62.47517,
+6.15138,
+"address"
+],
+"NO|Grøthaugvegen 12|6037|Eidsnes": [
+62.42897,
+6.30161,
+"address"
+],
+"NO|Øvre Veg 24|6415|Molde": [
+62.73852,
+7.1666,
+"address"
+],
+"NO|Fjordgata 52|6005|Ålesund": [
+62.4717,
+6.1319,
+"address"
+],
+"NO|Eggesbønes|6092|Fosnavåg": [
+62.32398,
+5.66986,
+"postcode"
+],
+"NO|Hamnevegen 85|6170|Vartdal": [
+62.30658,
+6.09366,
+"address"
+],
+"NO|Syvdefjordvegen 432|6140|Syvde": [
+62.08703,
+5.72572,
+"address"
+],
+"NO|Naustholmveien|8764|Lovund": [
+66.36787,
+12.36776,
+"address"
+],
+"NO|Sæterstad|8695|Hattfjelldal": [
+65.62186,
+13.99134,
+"postcode"
+],
+"NO|Øksningsveien 43|8850|Herøy": [
+65.99989,
+12.26943,
+"address"
+],
+"NO|Hongsetveien 106|8960|Velfjord": [
+65.33978,
+12.51103,
+"address"
+],
+"NO|Anna Eriksens Vei 8|8432|Alsvåg": [
+68.90197,
+15.28445,
+"address"
+],
+"NO|Sigerfjordveien 425|8406|Sortland": [
+68.64209,
+15.52843,
+"address"
+],
+"NO|Industriveien 14|8450|Stokmarknes": [
+68.57374,
+14.9542,
+"address"
+],
+"NO|Inndyr 455|8140|Inndyr": [
+67.03576,
+14.01966,
+"address"
+],
+"NO|Bogøyveien 153|8288|Bogøy": [
+67.90108,
+15.18702,
+"address"
+],
+"NO|Dreyfushammarn 30|8012|Bodø": [
+67.29508,
+14.40307,
+"address"
+],
+"NO|Jennskarveien 52|8475|Straumsjøen": [
+68.78503,
+14.63961,
+"address"
+],
+"NO|Sommarøy|8430|Myre": [
+68.90767,
+15.07308,
+"address"
+],
+"NO|Nymo Gård|8647|Bleikvasslia": [
+65.88984,
+13.81419,
+"postcode"
+],
+"NO|Gleaveien 11a|8064|Røst": [
+67.50588,
+12.06974,
+"address"
+],
+"NO|Naustholmveien 8|8764|Lovund": [
+66.36603,
+12.37125,
+"address"
+],
+"NO|Mortsundveien 379|8370|Leknes": [
+68.08624,
+13.63513,
+"address"
+],
+"NO|Lilandveien 10|8407|Sortland": [
+68.73353,
+15.51873,
+"address"
+],
+"NO|Været 2|8320|Skrova": [
+68.16667,
+14.66119,
+"address"
+],
+"NO|Arnøyveien 1|8135|Sørarnøy": [
+67.13751,
+13.97953,
+"address"
+],
+"NO|Marøyvegen 110|7900|Rørvik": [
+64.85402,
+11.2472,
+"address"
+],
+"NO|Stanseveien 33|0976|Oslo": [
+59.95035,
+10.88412,
+"address"
+],
+"NO|Kilavågen|4233|Erfjord": [
+59.33353,
+6.15239,
+"postcode"
+],
+"NO|Hundsnesvegen 151|4130|Hjelmeland": [
+59.22051,
+6.1211,
+"address"
+],
+"NO|Sjernarøyvegen 22|4170|Sjernarøy": [
+59.22698,
+5.85181,
+"address"
+],
+"NO|Hundsnesveien 151|4130|Hjelmeland": [
+59.28483,
+6.50583,
+"postcode"
+],
+"NO|Kaien 11|4250|Kopervik": [
+59.28439,
+5.3123,
+"address"
+],
+"NO|Hamregt 1|6900|Florø": [
+61.60072,
+5.04958,
+"postcode"
+],
+"NO|Hellersøyvegen 88|6987|Bulandet": [
+61.28498,
+4.63427,
+"address"
+],
+"NO|Kalvøyna 75|5970|Byrknesøy": [
+60.89351,
+4.83779,
+"address"
+],
+"NO|Sognefjordvegen 47|5961|Brekke": [
+60.98699,
+5.48322,
+"address"
+],
+"NO|Kalvøyna 8|6729|Kalvåg": [
+61.76492,
+4.87833,
+"address"
+],
+"NO|Kråkøyveien 59|7180|Roan": [
+64.14833,
+10.15767,
+"address"
+],
+"NO|Hestvikveien 263|7247|Hestvika": [
+63.56756,
+9.19949,
+"address"
+],
+"NO|Industriparkveien 31|7246|Sandstad": [
+63.51118,
+9.08147,
+"address"
+],
+"NO|Industriparkveien 41|7246|Sandstad": [
+63.50901,
+9.07219,
+"address"
+],
+"NO|Industriveien 51|7266|Kverva": [
+63.71083,
+8.55975,
+"address"
+],
+"NO|Lauksundveien 139|9194|Lauksletta": [
+70.08964,
+20.75789,
+"address"
+],
+"NO|Strandveien 4|9180|Skjervøy": [
+70.03602,
+20.99065,
+"address"
+],
+"NO|Værnesveien 105|9381|Torsken": [
+69.33655,
+17.09308,
+"address"
+],
+"NO||9395|Kaldfarnes": [
+69.28045,
+17.08239,
+"address"
+],
+"NO|Lavangsnesveien 793|9350|Sjøvegan": [
+68.89376,
+17.69139,
+"address"
+],
+"NO|Breivollveien 12|9450|Hamnvik": [
+68.7594,
+17.15095,
+"address"
+],
+"NO|Kystkulturveien 1747|9470|Gratangen": [
+68.71234,
+17.42741,
+"address"
+],
+"NO|Njordveien 6|9550|Øksfjord": [
+70.237,
+22.35068,
+"address"
+],
+"NO|Vikaveien 419|9303|Silsand": [
+69.27628,
+17.92229,
+"address"
+],
+"NO|Svaddeveien 129|3660|Rjukan": [
+59.87827,
+8.7835,
+"postcode"
+],
+"NO|Jule Industriområde|7884|Sørli": [
+64.17431,
+13.83385,
+"postcode"
+],
+"NO|Nordfrøyveien 213|7260|Sistranda": [
+63.71397,
+8.84201,
+"address"
+],
+"NO|Roan Havn 37|7180|Roan": [
+64.17698,
+10.21407,
+"address"
+],
+"NO|Ulvøyveien 177|7242|Knarrlagsund": [
+63.67208,
+9.0354,
+"address"
+],
+"NO|Myrahaugen 19|7180|Roan": [
+64.17713,
+10.21926,
+"address"
+],
+"NO|Torvuttaket 78|1540|Vestby": [
+59.58045,
+10.74544,
+"address"
+],
+"NO|Industrivegen 82|2072|Dal": [
+60.25047,
+11.19279,
+"address"
+],
+"NO|Eidsnesvegen 22|5455|Halsnøy Kloster": [
+59.79355,
+5.67964,
+"address"
+],
+"NO|Økland 12|5384|Torangsvåg": [
+60.1179,
+5.14486,
+"address"
+],
+"NO|Grimevegen 234|5970|Byrknesøy": [
+60.91452,
+4.82827,
+"address"
+],
+"NO|C/O Morten Lysvold Nilsen|5397|Bekkjarvik": [
+60.00819,
+5.19929,
+"postcode"
+],
+"NO|Hovlandsvegen 270|5443|Bømlo": [
+59.61232,
+5.24544,
+"address"
+],
+"NO|Leiro 33|5640|Eikelandsosen": [
+60.23991,
+5.74881,
+"address"
+],
+"NO|Brandasundvegen 359|5423|Brandasund": [
+59.89525,
+5.10207,
+"address"
+],
+"CL|Arica|Arica y Parinacota": [
+-18.47853,
+-70.32114,
+"town"
+],
+"CL|Talcahuano|Biobío": [
+-36.71449,
+-73.11411,
+"town"
+],
+"CL|Coronel|Biobío": [
+-37.01647,
+-73.1562,
+"town"
+],
+"CL|Lota|Biobío": [
+-37.09445,
+-73.1564,
+"town"
+],
+"CL|Tomé|Biobío": [
+-36.61708,
+-72.9575,
+"town"
+],
+"CL|San Vicente - Talcahuano|Biobío": [
+-36.72433,
+-73.12181,
+"town"
+],
+"CL|Pitrufquen|Araucanía": [
+-38.98629,
+-72.63725,
+"town"
+],
+"CL|Villarrica|Araucanía": [
+-39.27809,
+-72.22744,
+"town"
+],
+"CL|Puerto Montt|Los Lagos": [
+-41.4718,
+-72.93959,
+"town"
+],
+"CL|Calbuco|Los Lagos": [
+-41.77121,
+-73.12754,
+"town"
+],
+"CL|Castro|Los Lagos": [
+-42.48237,
+-73.76429,
+"town"
+],
+"CL|Quellón|Los Lagos": [
+-43.12003,
+-73.6203,
+"town"
+],
+"CL|Quemchi|Los Lagos": [
+-42.14453,
+-73.47356,
+"town"
+],
+"CL|Chonchi|Los Lagos": [
+-42.62398,
+-73.77244,
+"town"
+],
+"CL|Puerto Varas|Los Lagos": [
+-41.3178,
+-72.98291,
+"town"
+],
+"CL|Dalcahue|Los Lagos": [
+-42.37955,
+-73.6473,
+"town"
+],
+"CL|Ancud|Los Lagos": [
+-41.86822,
+-73.82872,
+"town"
+],
+"CL|Pargua|Los Lagos": [
+-41.7915,
+-73.46034,
+"town"
+],
+"CL|Pto. Chacabuco|Aysén": [
+-45.46277,
+-72.81824,
+"town"
+],
+"CL|Puerto Chacabuco|Aysén": [
+-45.46277,
+-72.81824,
+"town"
+],
+"CL|Punta Arenas|Magallanes": [
+-53.16257,
+-70.90782,
+"town"
+],
+"CL|Puerto Natales|Magallanes": [
+-51.7262,
+-72.506,
+"town"
+],
+"CL|Porvenir|Magallanes": [
+-53.29567,
+-70.36874,
+"town"
+]
+}
