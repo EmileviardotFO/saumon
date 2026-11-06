@@ -293,6 +293,21 @@ def main():
             o['out'] += num(x.get('HarvestCountDiscards_InPeriod'))
             o['dead'] += num(x.get('MortalityCount_InPeriod'))
             o['bio_t'] += num(x.get('BiomassKg_Closing')) / 1000
+        # biomass by site: the "fish numbers" report has no biomass column; another report's cage_report has it
+        rb = next((x for x in reports if 'BiomassKg_Closing' in x.tables.get('cage_report', [])), None)
+        if rb and 'BiomassKg_Closing' not in cols:
+            try:
+                nb = 0
+                for x in rb.query('cage_report', ['Lok tímabils', 'Svæði', 'Tegund'], ['BiomassKg_Closing']):
+                    if not is_salmon(x['Tegund']) or x['Lok tímabils'] is None or not x['Svæði']:
+                        continue
+                    o = S.get((x['Svæði'], month(x['Lok tímabils'])))
+                    if o is not None:
+                        o['bio_t'] += num(x.get('BiomassKg_Closing')) / 1000
+                        nb += 1
+                print('site biomass:', nb, 'site-months')
+            except Exception as ex:
+                print('site biomass not read:', ex)
         site_rows = sorted(S.values(), key=lambda o: (o['site'], o['m']))
         done, active, short = cycles(site_rows)
         last = max(o['m'] for o in site_rows)
@@ -308,6 +323,17 @@ def main():
         out['cycles']['by_fjord'] = {f: summary([c['months'] for c in done if c['fjord'] == f]) for f in sorted({c['fjord'] for c in done if c['fjord']})}
         print('cycles:', out['cycles']['iceland'], 'by company:', out['cycles']['by_company'])
         print('active sites:', len(active))
+
+    # ---- annual production by species, farming type (sea / land) and region, from MAST's yearly reports ----
+    r = find('aquaculture_from_old_reports')
+    if r:
+        try:
+            rows = r.query('aquaculture_from_old_reports', ['Species', 'Eldi', 'Region', 'Year'], ['Amount'])
+            out['annual'] = [{'species': x['Species'], 'type': x['Eldi'], 'region': x['Region'], 'year': int(num(x['Year'])) if x['Year'] is not None else None,
+                              't': round(num(x.get('Amount')))} for x in rows if x.get('Year') is not None]
+            print('annual production:', len(out['annual']), 'rows; types', sorted({str(x['type']) for x in out['annual']}), 'species', sorted({str(x['species']) for x in out['annual']}))
+        except Exception as ex:
+            print('annual production not read:', ex)
 
     if len(out) == 1:
         print('Nothing read from MAST: previous file kept.'); return 1
