@@ -100,15 +100,21 @@ def ocr_pages(content, max_pages=40, dpi=300):
     return out
 
 
-OCR_NUM = r'(\d{1,3}(?:[.,]\d{3})+|\d{4,7})'
+OCR_NUM = r'(?<![\d.,/-])(\d{1,3}(?:[.,]\d{3})+)(?![\d.,/-])'   # milliers separes : jamais une annee ni une date
 
 
 def ocr_rows(texts):
     """lignes du tableau "N° de peces a sembrar" dans un texte d'OCR : ACS, code du centre (6 chiffres, 10/11/12...),
     puis le premier nombre (milliers separes par . ou ,) = poissons a mettre a l'eau. L'espece est cherchee sur la ligne
     et ses voisines ("Salmón / del / atlántico" est souvent coupe sur trois lignes)."""
-    rows, seen = [], set()
+    rows, seen, active = [], set(), False
     for t in texts:
+        lo = t.lower()
+        # seules les pages du tableau "peces a sembrar" (et leurs suites) : pas les tableaux de recolte du rapport technique
+        if 'sembrar' in lo: active = True
+        elif re.search(r'cosecha|p[ée]rdida|mortalidad', lo): active = False
+        if not active:
+            continue
         L = t.splitlines()
         for i, ln in enumerate(L):
             m = re.match(r'^\W*(\d{1,2}[A-Z]?(?:-\d)?)\W+(1[0-2]\d{4})\b(.*)$', ln.strip())
@@ -118,12 +124,17 @@ def ocr_rows(texts):
             if not nm:
                 continue
             fish = int(re.sub(r'\D', '', nm.group(1)))
-            if not 1000 <= fish <= 6_000_000 or m.group(2) in seen:
+            if not 3000 <= fish <= 6_000_000 or m.group(2) in seen:
                 continue
-            w = ' '.join(L[max(0, i - 1):i + 2]).lower()
+            w = ' '.join(L[max(0, i - 2):i + 3]).lower()
             sp = 'trucha' if 'trucha' in w else 'coho' if re.search(r'coho|pac[ií]f', w) else 'salar' if re.search(r'atl[aá]nt|salm', w) else None
             seen.add(m.group(2))
             rows.append({'centre': m.group(2), 'acs': m.group(1), 'sp': sp, 'fish': fish, 'ocr': True})
+    # espece manquante : celle des autres lignes du document quand elles ont toutes la meme
+    known = {r['sp'] for r in rows if r['sp']}
+    if len(known) == 1:
+        for r in rows:
+            if not r['sp']: r['sp'] = next(iter(known)); r['sp_guess'] = True
     return rows
 
 
@@ -292,7 +303,7 @@ def main():
     t0 = time.time()
     if os.environ.get('REREAD_UNREAD'):
         # relecture (avec OCR) des resolutions restees illisibles et des identifiants en erreur au dernier passage
-        ids = sorted({x['id'] for x in R.values() if x.get('kind') == 'unread' or x.get('error')} | set(M.get('errors_last_run') or []))
+        ids = sorted({x['id'] for x in R.values() if x.get('kind') == 'unread' or x.get('error') or x.get('ocr')} | set(M.get('errors_last_run') or []))
         print(f'relecture de {len(ids)} documents')
         with cf.ThreadPoolExecutor(threads) as ex:
             for i, kind, val in ex.map(look, ids):
