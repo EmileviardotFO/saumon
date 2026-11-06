@@ -154,6 +154,13 @@ def chile(cache):
             x['lat'], x['lon'] = round(g[0] + rad * __import__('math').sin(ang), 5), round(g[1] + rad * 1.4 * __import__('math').cos(ang), 5)
         else:
             x['lat'] = x['lon'] = None
+    # positions exactes relevees a la main (registre RETC du ministere de l'environnement) : data/plants_cl_exact.json
+    EX = load(os.path.join(ROOT, 'data', 'plants_cl_exact.json'), {}).get('plants', {})
+    for x in rows:
+        e = EX.get(x['code']) or EX.get(f"{x['code']}|{x['plant']}")
+        x['geo'] = 'town'
+        if e:
+            x['lat'], x['lon'], x['address'], x['site'], x['geo'] = e[0], e[1], e[2], e[3], 'exact'
     print(f'  Chili : {len(rows)} plantes ({sum(x["slaughter"] for x in rows)} avec abattage), {sum(1 for x in rows if x["lat"])} geocodees')
     return rows, url, edition
 

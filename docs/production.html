@@ -5740,13 +5740,14 @@ function plChile() {
     const e = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), C = P.cl || [];
     const reg = ['Los Lagos', 'Aysén', 'Magallanes', 'Biobío', 'Araucanía'];
     C.sort((a, b) => (reg.indexOf(a.region) + 1 || 9) - (reg.indexOf(b.region) + 1 || 9) || (b.slaughter - a.slaughter) || a.town.localeCompare(b.town));
-    $p('plClTab').innerHTML = `<thead><tr><th class="name">Plant</th><th style="text-align:left">Town</th><th style="text-align:left">Region</th><th style="text-align:left">Farming companies served</th><th>Slaughter</th><th>Sernapesca code</th></tr></thead><tbody>` +
+    $p('plClTab').innerHTML = `<thead><tr><th class="name">Plant</th><th style="text-align:left">Town</th><th style="text-align:left">Region</th><th style="text-align:left">Farming companies served</th><th>Slaughter</th><th>Sernapesca code</th><th style="text-align:left">Position</th></tr></thead><tbody>` +
       C.map(x => `<tr><td class="name">${e(x.plant)}</td><td style="text-align:left">${e(x.town)}</td><td style="text-align:left">${e(x.region)}</td><td style="text-align:left;white-space:normal">${e(x.farmers) || '—'}</td>` +
-        `<td>${x.slaughter ? '<b style="color:#ffb74d">yes</b>' : 'no'}</td><td>${e(x.code)}</td></tr>`).join('') + `</tbody>`;
+        `<td>${x.slaughter ? '<b style="color:#ffb74d">yes</b>' : 'no'}</td><td>${e(x.code)}</td><td style="text-align:left;white-space:normal">${x.geo === 'exact' ? e(x.address) : '<span style="color:var(--muted)">town only</span>'}</td></tr>`).join('') + `</tbody>`;
     const n = r => C.filter(x => x.region === r).length;
     $p('plClSub').innerHTML = `Sernapesca's list of plants authorised to slaughter and/or process salmonids (${e(P.meta.cl_edition || '')}): <b>${C.length} plants</b>, ${C.filter(x => x.slaughter).length} of them slaughtering — ` +
       `${n('Los Lagos')} in Los Lagos (Puerto Montt, Calbuco, Chiloé), ${n('Aysén')} in Aysén, ${n('Magallanes')} in Magallanes, ${n('Biobío')} in Biobío (frozen and value-added plants far from the farms). ` +
-      `Most fish farmed in Aysén is slaughtered or processed in Los Lagos. On the map above they are the white-edged squares (yellow = slaughters), placed at their town. ` +
+      `Most fish farmed in Aysén is slaughtered or processed in Los Lagos. On the map above they are the white-edged squares (yellow = slaughters). ` +
+      `<b>${C.filter(x => x.geo === 'exact').length}</b> of them — all the large salmon plants we could identify — are at their exact position, taken from the environment ministry's register of industrial establishments (RETC) and matched by hand to Sernapesca's code; the others are placed at their town (Sernapesca gives only the town). ` +
       `<label style="cursor:pointer;margin-left:6px"><input type="checkbox" id="plClOn"${PL_CL_ON ? ' checked' : ''}> show plants on the map</label>`;
     $p('plClOn').onchange = ev => { PL_CL_ON = ev.target.checked; plChileLayer(); };
     plChileLayer();
@@ -5758,7 +5759,7 @@ function plChileLayer(n) {
   const e = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
   (PLANTS.cl || []).forEach(x => { if (!x.lat) return;
     L.marker([x.lat, x.lon], { icon: L.divIcon({ className: '', iconSize: [11, 11], iconAnchor: [5, 5], html: `<div style="width:10px;height:10px;background:${x.slaughter ? '#ffb74d' : '#cfdde4'};border:1.5px solid #fff;border-radius:2px;box-shadow:0 0 0 1px rgba(0,0,0,.5)"></div>` }), zIndexOffset: 500 })
-      .addTo(PL_CL_LAYER).bindPopup(`<b>${e(x.plant)}</b> (plant ${e(x.code)})<br>${e(x.town)}, ${e(x.region)}<br>Farming companies: ${e(x.farmers) || '—'}<br>${x.slaughter ? '<b>Slaughters</b> and processes' : 'Processing (no slaughter)'}<br><span style="color:#8fa4b0">Placed at its town (Sernapesca gives no address)</span>`); });
+      .addTo(PL_CL_LAYER).bindPopup(`<b>${e(x.plant)}</b> (plant ${e(x.code)})<br>${e(x.town)}, ${e(x.region)}<br>Farming companies: ${e(x.farmers) || '—'}<br>${x.slaughter ? '<b>Slaughters</b> and processes' : 'Processing (no slaughter)'}<br>${x.geo === 'exact' ? `${e(x.address)}<br><span style="color:#8fa4b0">Position declared by the plant to the environment ministry (RETC: ${e(x.site)})</span>` : '<span style="color:#8fa4b0">Placed at its town: no exact position found</span>'}`); });
 }
 function renderRegister() {
   setTimeout(plNorway, 50);

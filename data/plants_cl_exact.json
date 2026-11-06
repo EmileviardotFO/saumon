@@ -1,0 +1,187 @@
+{
+ "meta": {
+  "source": "RETC (Ministerio del Medio Ambiente), registro de establecimientos industriales: coordenadas declaradas por cada establecimiento; emparejado a mano con el código Sernapesca (2026-11-06)"
+ },
+ "plants": {
+  "10863": [
+   -41.8,
+   -73.1667,
+   "Caicaén s/n, Calbuco",
+   "Mowi (Marine Harvest Chile) · Planta Caicaén"
+  ],
+  "10778": [
+   -41.7846,
+   -73.1916,
+   "Sector San José, Isla Quihua, Calbuco",
+   "Salmones Camanchaca · Procesos primarios San José"
+  ],
+  "10160": [
+   -41.7845,
+   -73.1386,
+   "Camino a Caicaén, Calbuco",
+   "Procesadora Aguas Claras · Planta Aguas Claras"
+  ],
+  "500163": [
+   -41.7978,
+   -73.3944,
+   "Punta Tique, sector Chayahué, Calbuco",
+   "Sealand Aquaculture"
+  ],
+  "10664": [
+   -42.1502,
+   -73.4887,
+   "Sector Puerto Fernández, Quemchi",
+   "Mainstream Chile (Cermaq) · Planta Quemchi Prosal"
+  ],
+  "10256": [
+   -43.1205,
+   -73.6066,
+   "Costanera Pedro Montt, Quellón",
+   "Salmones Cailín (AquaChile) · Planta proceso Cailín"
+  ],
+  "10681": [
+   -43.119,
+   -73.5827,
+   "Camino San Antonio, Quellón",
+   "Salmones Pacific Star · Planta de proceso"
+  ],
+  "10751": [
+   -43.1153,
+   -73.5784,
+   "Ruta W-881, Quellón",
+   "Granja Marina Tornagaleones · Planta de procesos"
+  ],
+  "10673": [
+   -43.1153,
+   -73.5705,
+   "Ruta W-881, Quellón",
+   "Exportadora Los Fiordos · Planta de proceso Quellón"
+  ],
+  "10788": [
+   -43.1187,
+   -73.5476,
+   "Camino San Antonio, Quellón",
+   "Surproceso S.A."
+  ],
+  "500095": [
+   -42.8689,
+   -73.7142,
+   "Panamericana Sur, Compu",
+   "Invermar · Centro de acopio y faenamiento Compu"
+  ],
+  "10678": [
+   -42.6323,
+   -73.7614,
+   "Ruta W-853, Chonchi",
+   "Antarfood · Planta proceso"
+  ],
+  "10708 - 500032": [
+   -42.6258,
+   -73.7648,
+   "Janequeo, Chonchi",
+   "Salmoprocesos S.A."
+  ],
+  "10748": [
+   -42.3816,
+   -73.6647,
+   "Ruta W-55, Dalcahue",
+   "Procesadora Hueñocoihue · Planta proceso"
+  ],
+  "10636": [
+   -41.459,
+   -72.9802,
+   "Circunvalación / Cardonal, Puerto Montt",
+   "Empresas AquaChile · Planta proceso Cardonal"
+  ],
+  "10823": [
+   -41.4673,
+   -72.9746,
+   "Cardonal, Puerto Montt",
+   "Salmones Multiexport · Planta de proceso"
+  ],
+  "10655": [
+   -41.4614,
+   -72.982,
+   "Circunvalación, Puerto Montt",
+   "Salmones Aysén · Planta"
+  ],
+  "10135": [
+   -41.4295,
+   -73.0564,
+   "Ruta 226 km 8, El Tepual, Puerto Montt",
+   "Cooke Aquaculture Chile · Planta El Tepual"
+  ],
+  "10810": [
+   -41.5187,
+   -73.0419,
+   "Camino a Chinquihue, Puerto Montt",
+   "Productos del Mar Ventisqueros · Planta de procesos"
+  ],
+  "10933": [
+   -41.4925,
+   -73.0319,
+   "Panamericana Sur, Trapén, Puerto Montt",
+   "Planta de procesos Trapén (Ventisqueros)"
+  ],
+  "11012": [
+   -45.4622,
+   -72.8216,
+   "Ruta 240, Puerto Chacabuco",
+   "Mowi (Marine Harvest Chile) · Planta Puerto Chacabuco"
+  ],
+  "500142": [
+   -45.4708,
+   -72.8175,
+   "Recinto Emporcha, Puerto Chacabuco",
+   "Mowi (Marine Harvest Chile) · Planta de cosecha"
+  ],
+  "12079": [
+   -53.3017,
+   -70.3645,
+   "Ruta Y-71, Porvenir",
+   "Nova Austral S.A."
+  ],
+  "N/A|Frigorífico Simunovic S.A.": [
+   -53.0523,
+   -70.8531,
+   "Km 13,7 norte, Punta Arenas",
+   "Industria Frigorífica Simunovic"
+  ],
+  "8384": [
+   -36.6233,
+   -72.94,
+   "Ruta 126, Tomé",
+   "Salmones Camanchaca · Planta de proceso Tomé"
+  ],
+  "8396": [
+   -36.7246,
+   -73.1305,
+   "Pedro Montt, San Vicente, Talcahuano",
+   "Blumar · Planta congelados San Vicente"
+  ],
+  "8163 - 8288": [
+   -36.7327,
+   -73.1084,
+   "Colón, Talcahuano",
+   "Salmones Blumar · Planta congelados Colón"
+  ],
+  "8130 - 8148": [
+   -36.7372,
+   -73.1137,
+   "Gran Bretaña, Talcahuano",
+   "Camanchaca Pesca Sur · Planta congelados"
+  ],
+  "8323": [
+   -36.7256,
+   -73.1294,
+   "La Marina, Talcahuano",
+   "Congelados Pacífico"
+  ],
+  "8340": [
+   -37.0958,
+   -73.1573,
+   "Matta, Lota",
+   "Industrias Isla Quihua"
+  ]
+ }
+}
