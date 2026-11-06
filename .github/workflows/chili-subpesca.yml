@@ -1,0 +1,49 @@
+name: Chili - Subpesca (mises a l'eau prevues par centre, recoltes mensuelles)
+
+# Chaque jour : lit les nouveaux documents publies par Subpesca (resolutions de densidad de cultivo = nombre de poissons
+# a mettre a l'eau par centre pour le prochain cycle ; informe sectorial mensuel = recoltes par espece et region).
+# Lancement manuel avec "depuis" pour relire tout l'historique (premiere fois : 120000, environ janvier 2024).
+on:
+  schedule:
+    - cron: '23 7 * * *'
+  workflow_dispatch:
+    inputs:
+      depuis:
+        description: "Relire depuis cet identifiant de document (vide = suite normale)"
+        required: false
+        default: ''
+      max:
+        description: "Nombre maximal d'identifiants lus"
+        required: false
+        default: '600'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: chili-subpesca
+  cancel-in-progress: false
+
+jobs:
+  subpesca:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Dependances
+        run: pip install requests pdfplumber
+      - name: Lire les nouveaux documents
+        env:
+          BACKFILL_FROM: ${{ inputs.depuis }}
+          MAX_IDS: ${{ inputs.max || '600' }}
+          THREADS: ${{ inputs.depuis && '6' || '3' }}
+        run: python3 scripts/build_chile_subpesca.py
+      - name: Enregistrer
+        run: |
+          git config user.name "github-actions"; git config user.email "actions@github.com"
+          git add data/chile_subpesca.json
+          if git diff --staged --quiet; then echo "Aucun changement."; else
+            git commit -m "Chili Subpesca ($(date -u +%Y-%m-%d))"; git pull --rebase; git push; fi

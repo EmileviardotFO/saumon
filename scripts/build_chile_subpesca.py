@@ -151,10 +151,10 @@ def parse_report(aid, texts):
     k = int(m.group(2)) * 100 + MONTHS[m.group(1).lower()]
     out = {'id': aid, 'k': k, 'species': {}}
     for key, rx in (('salar', r'SALM[ÓO]N DEL ATL[ÁA]NTICO'), ('coho', r'SALM[ÓO]N DEL PAC[ÍI]FICO'), ('trucha', r'TRUCHA ARCO[ÍI]RIS')):
-        sec = re.search(r'▫\s*' + rx + r'(.{0,900})', full, re.S) or re.search(rx + r'\s*\n\s*La cosecha(.{0,900})', full, re.S)
+        sec = re.search(rx + r'\s*\n?\s*(La cosecha (?:total )?acumulada.{0,600})', full, re.S)
         if not sec:
             continue
-        t = sec.group(1)
+        t = re.split(r'▫|▪|SALM[ÓO]N DEL|TRUCHA ARCO|CHORITO|MOLUSCOS', sec.group(1))[0]
         c = re.search(r'fue de\s+([\d.,]+)\s*mil\s*t', t)
         v = re.search(r'cifra\s+([\d,]+)\s*%\s*(mayor|menor)', t)
         regs = {}
