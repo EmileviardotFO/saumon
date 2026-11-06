@@ -24,7 +24,7 @@ jobs:
         with:
           python-version: '3.11'
       - name: Dependances
-        run: pip install pandas openpyxl xlrd requests
+        run: pip install pandas openpyxl xlrd requests pdfplumber
       - name: Lancer la sonde
         run: |
           mkdir -p sonde_out
