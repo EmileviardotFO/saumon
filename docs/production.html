@@ -12783,7 +12783,7 @@ loadRemoteData().then(live => {
     ['Grieg Seafood', /grieg/], ['Nova Sea', /nova ?sea/], ['Nordlaks', /nordlaks/], ['Bakkafrost', /bakkafrost/], ['Måsøval', /m[åa]s[øo]val/],
     ['Kaldvík', /kaldv[ií]k/], ['Arnarlax', /arnarlax|icelandic salmon/], ['Arctic Fish', /arctic fish/], ['AquaChile', /aqua ?chile|agrosuper/],
     ['Multi X', /multi ?x|multiexport/], ['Blumar', /blumar/], ['Camanchaca', /camanchaca/], ['Australis', /australis/], ['Salmones Austral', /salmones austral/],
-    ['Cooke', /cooke/], ['Scottish Sea Farms', /scottish sea farms/], ['Huon', /huon/], ['Tassal', /tassal/], ['Salmon Evolution', /salmon evolution/],
+    ['Cooke', /cooke/], ['Scottish Sea Farms', /scottish sea farms?|\bssf\b/], ['Huon', /huon/], ['Tassal', /tassal/], ['Salmon Evolution', /salmon evolution/],
     ['Eide Fjordbruk', /eide fjordbruk/], ['Sinkaberg-Hansen', /sinkaberg/], ['Seashore', /seashore/], ['Hiddenfjord', /hiddenfjord|luna/], ['Kvarøy', /kvar[øo]y/]];
   const TOP = { lice: /\b(lice|louse|lus|lakselus|poux|pou|piojos?|caligus)\b/, mort: /\b(mortal\w*|deaths?|dead|dod\w*|deces|muert\w*|mortes?|tap)\b/,
     dis: /\b(diseases?|ila|isa|pd|pancrea\w*|sykdom\w*|maladies?|enfermedad\w*|smitte\w*)\b/, big: /(6\+|\b6 ?kg\b|\bbig fish\b|\bgros poissons?\b|\bcalib\w*|\bstor ?fisk\b)/,
@@ -12873,7 +12873,7 @@ loadRemoteData().then(live => {
   }
   function evCard(co, words, bas) {
     const E = D['events.json']; if (!E) return '';
-    const L = [...(E.manual || []), ...(E.auto || [])].filter(e => (!bas || e.basin === bas) && (!co || norm(e.company + ' ' + e.note).includes(norm(co).split(' ')[0])) && (!words.length || words.every(w => norm(JSON.stringify(e)).includes(w)) || co))
+    const L = [...(E.manual || []), ...(E.auto || [])].filter(e => (!bas || e.basin === bas) && (!co || norm(e.company + ' ' + e.note).includes(/ /.test(co) && co.length > 10 ? norm(co).replace(/s$/, '') : norm(co).split(' ')[0])) && (!words.length || words.every(w => norm(JSON.stringify(e)).includes(w)) || co))
       .sort((a, b) => a.date < b.date ? 1 : -1).slice(0, 6);
     if (!L.length) return '';
     return `<div class="gs-card"><h4>Recorded mortality events${co ? ' · ' + esc(co) : ''}${bas ? ' · ' + BAS_NAME[bas] : ''}</h4><div class="s">` + L.map(e => `<b>${esc(e.date)}</b> ${esc(e.basin)} ${esc(e.region)} — ${esc(e.cause)}${e.fish_m ? `, ${e.fish_m} M fish` : ''}${e.tonnes ? `, ${Math.round(e.tonnes).toLocaleString('en-US')} t` : ''}: ${esc(String(e.note || '').slice(0, 220))}`).join('<br>') +
@@ -13145,7 +13145,8 @@ loadRemoteData().then(live => {
     const add = (d, t, u, src, extra, b) => { const k = norm(t).slice(0, 80); if (seen.has(k)) return; seen.add(k); out.push({ d: d || '', t, u, src, extra, b: [].concat(b || []) }); };
     (N.items || []).forEach(i => add(i.date, i.title, i.url, i.source, i.summary || '', i.basins));
     (A.headlines || []).forEach(h => add(h.d, h.t, h.u, h.s, '', h.b));
-    (A.stories || []).forEach(s => add(s.last || s.d || '', s.t, (s.arts && s.arts[0] && s.arts[0].url) || '', 'summary', s.m || '', s.b));
+    (A.stories || []).forEach(s => { const a = s.a || s.arts || [], best = a.find(x => x.x === 'free') || a[0] || {};
+      add(s.z || s.f || s.last || s.d || '', s.t, best.u || best.url || '', `summary of ${a.length} article${a.length > 1 ? 's' : ''}${best.s ? ' · read on ' + best.s : ''}`, s.m || '', s.b); });
     const coRx = co ? COS.find(c => c[0] === co)[1] : null;
     const topRx = topics.map(t => TOP[t]);
     return out.filter(x => { const t = norm(x.t + ' ' + x.extra);
