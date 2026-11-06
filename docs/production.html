@@ -1282,6 +1282,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
   <div class="panel" id="plView" style="flex:1; min-width:0; max-width:1400px; display:none;">
     <div class="sig-title">EU processing hubs — Poland, the Netherlands, Denmark</div>
     <div id="hbFlags" style="display:flex;flex-wrap:wrap;gap:10px;margin:8px 0 12px"></div>
+    <div class="chart-controls" id="hbPer" style="margin:0 0 8px"></div>
     <div class="sig-sub" id="plSub"></div>
     <div class="sig-title" style="margin-top:12px;font-size:15px">Imports by producing origin, month by month</div>
     <div class="sig-sub" id="hbOrSub"></div>
@@ -3820,10 +3821,23 @@ function renderPoland() {
   const rep = {}; R.forEach(r => { (rep[r[0]] = rep[r[0]] || new Set()).add(r[1]); });
   const maxRep = Math.max(...Object.values(rep).map(x => x.size));
   const months = Object.keys(rep).map(Number).filter(m => rep[m].size >= 0.9 * maxRep && ['PL', 'NL', 'DK'].every(h => rep[m].has(h))).sort((a, b) => a - b);
-  const L = months[months.length - 1], Y = Math.floor(L / 100), mL = L % 100;
-  const MS = [...Array(mL).keys()].map(i => Y * 100 + i + 1);
+  const L = months[months.length - 1];
+  // periode : par defaut janvier -> dernier mois complet ; sinon celle choisie (mois de debut et de fin)
+  if (!window.HB_PER || window.HB_PER.b > L) window.HB_PER = window.HB_PER && window.HB_PER.custom ? { ...window.HB_PER, b: Math.min(window.HB_PER.b, L) } : { a: Math.floor(L / 100) * 100 + 1, b: L, custom: false };
+  if (!window.HB_PER.custom) window.HB_PER = { a: Math.floor(L / 100) * 100 + 1, b: L, custom: false };
+  const PA = Math.min(window.HB_PER.a, window.HB_PER.b), PB = Math.max(window.HB_PER.a, window.HB_PER.b);
+  const MS = []; for (let k = PA; k <= PB; k = k % 100 === 12 ? k + 89 : k + 1) MS.push(k);
+  const Y = Math.floor(PB / 100), mL = PB % 100, perLab = PA === PB ? tmMl(PA) : `${tmMl(PA)} – ${tmMl(PB)}`;
+  { const opts = months.filter(m => m >= 202201).slice().reverse().map(m => `<option value="${m}">${tmMl(m)}</option>`).join('');
+    document.getElementById('hbPer').innerHTML = `<span class="cc-label">Period</span>` +
+      `<button type="button" class="ctrl" id="hbPerYtd" style="${!window.HB_PER.custom ? 'border-color:#4fc3f7;color:#4fc3f7' : ''}">Year to date · Jan–${tmMl(L)}</button>` +
+      `<span class="cc-label">or from</span><select class="ctrl" id="hbPerA">${opts}</select><span class="cc-label">to</span><select class="ctrl" id="hbPerB">${opts}</select>` +
+      `<span class="cc-label" style="color:var(--muted)">compared with the same months a year earlier</span>`;
+    const a = document.getElementById('hbPerA'), b = document.getElementById('hbPerB'); a.value = String(PA); b.value = String(PB);
+    a.onchange = b.onchange = () => { window.HB_PER = { a: +a.value, b: +b.value, custom: true }; renderPoland(); };
+    document.getElementById('hbPerYtd').onclick = () => { window.HB_PER = null; renderPoland(); }; }
   const hubs = HB_SEL === 'ALL' ? ['PL', 'NL', 'DK'] : [HB_SEL], isHub = r => hubs.includes(r[1]);
-  const inY = (ym, y) => Math.floor(ym / 100) === y && ym % 100 <= mL;
+  const inY = (ym, y) => { const d = (Y - y) * 100; return ym + d >= PA && ym + d <= PB; };     // periode choisie, decalee d'un an pour y = Y - 1
   const agg = (f, y, ms) => { let t = 0, v = 0; R.forEach(r => { if (isHub(r) && f(r) && (ms ? ms.includes(r[0]) : inY(r[0], y))) { t += r[5]; v += r[6]; } }); return { t, v }; };
   // ---- drapeaux des hubs ----
   const tot = (h, y) => { let t = 0; R.forEach(r => { if ((h === 'ALL' ? ['PL', 'NL', 'DK'].includes(r[1]) : r[1] === h) && r[4] === 1 && inY(r[0], y)) t += r[5]; }); return t; };
@@ -3832,7 +3846,7 @@ function renderPoland() {
       (k === 'ALL' ? `<span style="display:inline-flex">${flagImg('PL', 22)}<span style="margin-left:-6px">${flagImg('NL', 22)}</span><span style="margin-left:-6px">${flagImg('DK', 22)}</span></span>` : flagImg(k, 26)) +
       `<span style="text-align:left"><b>${n}</b><br><span style="font-size:12px;color:var(--muted)">imports ${t0(a)} t ${chg(pc(a, b))}</span></span></button>`; }).join('');
   document.querySelectorAll('#hbFlags button').forEach(b => b.onclick = () => { HB_SEL = b.dataset.h; renderPoland(); });
-  sub.innerHTML = `<b>${e(HB[HB_SEL])}</b> — salmon imports and exports recorded by ${HB_SEL === 'ALL' ? 'the three countries (trade between them included)' : 'the country'} (Eurostat), January to <b>${tmMl(L)}</b>, the last complete month, against the same months of ${Y - 1}. Tonnes of product; prices in €/kg.`;
+  sub.innerHTML = `<b>${e(HB[HB_SEL])}</b> — salmon imports and exports recorded by ${HB_SEL === 'ALL' ? 'the three countries (trade between them included)' : 'the country'} (Eurostat), <b>${perLab}</b> (Eurostat's last complete month: ${tmMl(L)}), against the same months a year earlier. Tonnes of product; prices in €/kg.`;
   // ---- graphique : importations par bassin producteur, d'apres les pays producteurs (destination declaree) ----
   const ORIG = [['NO', 'Norway', '#4fc3f7'], ['FO', 'Faroe Islands', '#81c784'], ['IS', 'Iceland', '#ffd54f'], ['GB', 'United Kingdom (Scotland)', '#ce93d8'], ['CL', 'Chile', '#ff8a65']];
   const SSBr = ((DATA_RAW || {}).ssb_exports || {}).rows || [], NTr = (HB_NT || {}).rows || [];
@@ -3844,14 +3858,30 @@ function renderPoland() {
   const lastO = Math.max(...Object.values(OL)), firstO = (Math.floor(lastO / 100) - 1) * 100 + 1, KO = [];
   for (let k = firstO; k <= lastO; k = k % 100 === 12 ? k + 89 : k + 1) KO.push(k);
   const stacks = ORIG.map(([o, n, c]) => ({ lab: n, col: c, vals: KO.map(k => k <= (OL[o] || 0) ? ((OV[o] || {})[k] || 0) : 0) })).filter(x => x.vals.some(v => v > 0));
-  const common = Math.min(...ORIG.filter(([o]) => OV[o]).map(([o]) => OL[o] || 0)), ytd = (o, y) => Object.entries(OV[o] || {}).reduce((a, [k, v]) => a + (Math.floor(k / 100) === y && k % 100 <= common % 100 ? v : 0), 0);
-  const yC = Math.floor(common / 100);
+  const common = Math.min(...ORIG.filter(([o]) => OV[o]).map(([o]) => OL[o] || 0)), PM = MS.filter(k => k <= common), ytd = (o, y) => PM.reduce((a, k) => a + ((OV[o] || {})[k - (Y - y) * 100] || 0), 0);
+  const yC = Y;
   document.getElementById('hbOrSub').innerHTML = `Where the salmon of ${HB_SEL === 'ALL' ? 'the three hubs' : e(HB[HB_SEL])} comes from, as declared by the producing countries (destination of their exports), so that Norwegian fish cleared in Sweden still counts as Norwegian. ` +
     `Whole-fish equivalent (fillets ×1.75, smoked ×2.1). Each origin is shown up to its own latest month (${ORIG.filter(([o]) => OL[o]).map(([o, n]) => `${n.split(' ')[0]} ${tmMl(OL[o])}`).join(', ')}).`;
-  document.getElementById('hbOrChart').innerHTML = KO.length && stacks.length ? vzStack(KO, stacks, { axis: 'Tonnes', unit: 't', H: 240 }) : '';
+  { const YS = [Math.floor(lastO / 100) - 2, Math.floor(lastO / 100) - 1, Math.floor(lastO / 100)], OP = [0.45, 0.72, 1], MN = MONTHS_FR.map(m => m.slice(0, 3));
+    const val = (o, y, m) => { const k = y * 100 + m; return k <= (OL[o] || 0) ? ((OV[o] || {})[k] || 0) : 0; };
+    const totM = (y, m) => ORIG.reduce((a, [o]) => a + val(o, y, m), 0);
+    const W = 1080, H = 270, mL2 = 64, mR = 12, mT = 14, mB = 30, pw = W - mL2 - mR, ph = H - mT - mB;
+    const mx = Math.max(1, ...YS.flatMap(y => MN.map((_, i) => totM(y, i + 1)))), sc = vzScale(0, mx * 1.05, 4), Yp = v => mT + ph - v / sc.hi * ph, gw = pw / 12, bw = gw * 0.27;
+    let g = `<text transform="translate(14,${mT + ph / 2}) rotate(-90)" text-anchor="middle" fill="#cfdde4" font-size="12" font-weight="bold">Tonnes WFE</text>`;
+    for (let t = 0; t <= sc.hi + 1e-9; t += sc.step) g += `<line x1="${mL2}" x2="${W - mR}" y1="${Yp(t)}" y2="${Yp(t)}" stroke="#223642"/><text x="${mL2 - 6}" y="${Yp(t) + 4}" text-anchor="end" fill="#8fa4b0" font-size="11">${vzFmt(t)}</text>`;
+    for (let m = 1; m <= 12; m++) {
+      g += `<text x="${mL2 + gw * (m - 0.5)}" y="${H - 10}" text-anchor="middle" fill="#8fa4b0" font-size="11">${MN[m - 1]}</text>`;
+      YS.forEach((y, j) => { let base = 0; const x0 = mL2 + gw * (m - 1) + gw * 0.095 + j * bw, T = totM(y, m); if (!T) return;
+        ORIG.forEach(([o, n, c]) => { const v = val(o, y, m); if (!v) return;
+          g += `<rect x="${x0.toFixed(1)}" y="${Yp(base + v).toFixed(1)}" width="${(bw - 2).toFixed(1)}" height="${(Yp(base) - Yp(base + v)).toFixed(1)}" fill="${c}" fill-opacity="${OP[j]}"><title>${MONTHS_FR[m - 1]} ${y} — ${n}: ${t0(v)} t (total ${t0(T)} t)</title></rect>`; base += v; });
+        if (m === 1 || T === Math.max(...MN.map((_, i) => totM(y, i + 1)))) g += ''; }); }
+    const yl = YS.map((y, j) => `<span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><i style="display:inline-block;width:12px;height:12px;border-radius:2px;background:#4fc3f7;opacity:${OP[j]}"></i>${y}${y === YS[2] ? ` (to ${tmMl(lastO)})` : ''}</span>`).join('');
+    const yr = y => MN.reduce((a, _, i) => a + (i + 1 <= common % 100 ? totM(y, i + 1) : 0), 0);
+    document.getElementById('hbOrChart').innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">${g}</svg>` +
+      `<div class="sig-sub">Three bars a month — ${yl} — each split by producing country (colours below). January–${tmMl(common).split(' ')[0]}, all origins: ${YS.map(y => `${y} ${t0(yr(y))} t`).join(' · ')}.</div>`; }
   document.getElementById('hbOrLeg').innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px;margin-top:4px">` + ORIG.filter(([o]) => OV[o]).map(([o, n, c]) => { const a = ytd(o, yC), b = ytd(o, yC - 1);
     return `<span style="display:inline-flex;gap:6px;align-items:center"><span style="width:10px;height:10px;border-radius:2px;background:${c}"></span>${flagImg(o === 'GB' ? 'GB' : o, 14)} <b>${n}</b> ${t0(a)} t ${chg(pc(a, b))}</span>`; }).join('') +
-    `<span style="color:var(--muted)">(January–${tmMl(common)}, against the same months of ${yC - 1})</span></div>`;
+    `<span style="color:var(--muted)">(${PM.length ? (PM.length === 1 ? tmMl(PM[0]) : `${tmMl(PM[0])} – ${tmMl(PM[PM.length - 1])}`) : 'no month of the period published by all origins yet'}, against the same months a year earlier)</span></div>`;
   // ---- tableau 1 : imports et exports, total puis mois ----
   const line = (lab, f, bold) => { const a = agg(f, Y), b = agg(f, Y - 1); if (a.t < 1 && b.t < 1) return '';
     const pa = a.t ? a.v / a.t : null, pb = b.t ? b.v / b.t : null;
