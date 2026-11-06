@@ -1,0 +1,274 @@
+#!/usr/bin/env python3
+"""
+Chile: what Subpesca (Subsecretaría de Pesca y Acuicultura) publishes that tells where the salmon supply is going.
+
+    python3 scripts/build_chile_subpesca.py                 -> data/chile_subpesca.json (new documents since last run)
+    BACKFILL_FROM=120000 THREADS=6 python3 scripts/...      -> first run: scans every document id from there
+
+1. "Fija densidad de cultivo" resolutions. Before each production cycle, every company's farms in a group of concessions
+   (ACS, "barrio") get a resolution that sets, farm by farm, the number of fish they may put to sea ("N° de peces a
+   sembrar"), with the species, after the coordinated fallow of that ACS. Summed by company, species and stocking
+   window, it is the closest public figure to Chile's generations: how many smolts each company plans to stock, cycle
+   after cycle. "Modifica" resolutions replace the table of an earlier one; the latest figure of each farm is kept.
+2. "Informe sectorial de pesca y acuicultura" (monthly): harvest of Atlantic salmon, Pacific salmon (coho) and rainbow
+   trout accumulated since January, by region, from Sernapesca's preliminary figures (about one month late), and the
+   eggs produced. A month on its own = difference of two consecutive reports.
+
+Subpesca has no list of these documents: each one is a numbered page (w3-article-<id>.html, title = the resolution)
+with its PDF (articles-<id>_documento.pdf). The script reads the ids it has not seen yet and keeps a state in the
+output file. Nothing is interpolated.
+"""
+import concurrent.futures as cf
+import datetime as dt
+import io
+import json
+import os
+import re
+import sys
+import time
+
+import requests
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+OUT = os.path.join(ROOT, 'data', 'chile_subpesca.json')
+UA = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36'}
+BASE = 'https://www.subpesca.cl/portal'
+MONTHS = {m: i + 1 for i, m in enumerate(['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'])}
+S = requests.Session()
+S.headers.update(UA)
+
+
+def get(url, timeout=40, tries=3):
+    for t in range(tries):
+        try:
+            r = S.get(url, timeout=timeout)
+            if r.status_code in (200, 404):
+                return r
+        except Exception:
+            pass
+        time.sleep(2 + 3 * t)
+    return None
+
+
+def pdf_text(content, pages=None):
+    import pdfplumber
+    out = []
+    with pdfplumber.open(io.BytesIO(content)) as pdf:
+        P = pdf.pages if pages is None else pdf.pages[:pages]
+        for p in P:
+            out.append((p.extract_text() or '', p))
+        return [t for t, _ in out], pdf
+
+
+def num(s):
+    s = str(s or '').strip().replace(' ', '')
+    if re.fullmatch(r'\d{1,3}(\.\d{3})+', s):
+        return int(s.replace('.', ''))
+    if re.fullmatch(r'\d+', s):
+        return int(s)
+    return None
+
+
+def species(s):
+    s = (s or '').lower()
+    if 'coho' in s or 'plateado' in s or 'pac' in s:
+        return 'coho'
+    if 'trucha' in s:
+        return 'trucha'
+    if 'atl' in s or 'salar' in s:
+        return 'salar'
+    return None
+
+
+def es_date(text):
+    m = re.search(r'(\d{1,2})\s+de\s+(' + '|'.join(MONTHS) + r')\s+de\s+(\d{4})', text, re.I)
+    return f'{m.group(3)}-{MONTHS[m.group(2).lower()]:02d}-{int(m.group(1)):02d}' if m else None
+
+
+# ------------------------------------------------------------------ 1. resolutions
+def parse_resolution(aid, title, content):
+    import pdfplumber
+    rows = []
+    with pdfplumber.open(io.BytesIO(content)) as pdf:
+        texts = []
+        for i, p in enumerate(pdf.pages):
+            t = p.extract_text() or ''
+            texts.append(t)
+            if i > 40:
+                break
+            for tb in p.extract_tables() or []:
+                if not tb or not tb[0]:
+                    continue
+                head = [re.sub(r'\s+', ' ', str(h or '')).lower() for h in tb[0]]
+                ci = next((j for j, h in enumerate(head) if 'peces' in h and 'sembrar' in h), None)
+                cc = next((j for j, h in enumerate(head) if 'digo' in h or 'centro' in h), None)
+                cs = next((j for j, h in enumerate(head) if 'especie' in h), None)
+                ca = next((j for j, h in enumerate(head) if h.strip() == 'acs' or h.startswith('acs')), None)
+                if ci is None or cc is None:
+                    continue
+                for r in tb[1:]:
+                    code = re.sub(r'\D', '', str(r[cc] or ''))
+                    n = num(r[ci])
+                    if len(code) == 6 and n is not None:
+                        rows.append({'centre': code, 'acs': (str(r[ca]).strip() if ca is not None and r[ca] else ''), 'sp': species(r[cs] if cs is not None else ''), 'fish': n})
+    full = '\n'.join(texts)
+    # repli : lignes de texte "25A 110227 del 500.000 ..." quand pdfplumber ne voit pas le tableau
+    if not rows:
+        for m in re.finditer(r'(?m)^\s*(\d{1,2}[A-Z]?(?:-\d)?)\s+(1[0-2]\d{4})\s+(?:\S+\s+){0,3}?(\d{1,3}(?:\.\d{3})+)\s', full):
+            rows.append({'centre': m.group(2), 'acs': m.group(1), 'sp': None, 'fish': num(m.group(3))})
+    head = full[:2500]
+    reg = next((r for r in ('Magallanes', 'Aysén', 'Los Lagos') if re.search(r'(?m)^\s*' + r, head)), None) or \
+        next((r for r in ('Magallanes', 'Aysén', 'Los Lagos') if r.lower() in head.lower()), None)
+    fallow = re.search(r'descanso sanitario coordinado entre:?\s*(' + '|'.join(MONTHS) + r')\s+de\s+(\d{4})\s+a\s+(' + '|'.join(MONTHS) + r')\s+de\s+(\d{4})', full, re.I)
+    comp = re.search(r'(?i)titularidad\s+de\s+(.+?)(?:,\s*como grupo|\.\s*\(|\.\s*$|\s+\(Publicado|$)', title)
+    return {'id': aid, 'title': title, 'date': es_date(head) or es_date(full), 'region': reg,
+            'company': (comp.group(1).strip() if comp else ''), 'modifies': bool(re.match(r'(?i)\s*res\.?\s*ex\.?.{0,25}modifica', title)),
+            'fallow': [f'{fallow.group(2)}-{MONTHS[fallow.group(1).lower()]:02d}', f'{fallow.group(4)}-{MONTHS[fallow.group(3).lower()]:02d}'] if fallow else None,
+            'rows': rows}
+
+
+# ------------------------------------------------------------------ 2. monthly sector report
+def parse_report(aid, texts):
+    full = '\n'.join(texts)
+    m = re.search(r'cosechas de acuicultura acumulad\w* al mes de (' + '|'.join(MONTHS) + r') de (\d{4})', full, re.I) or \
+        re.search(r'cosecha acumulada a (' + '|'.join(MONTHS) + r') (?:de )?(\d{4})', full, re.I)
+    if not m:
+        return None
+    k = int(m.group(2)) * 100 + MONTHS[m.group(1).lower()]
+    out = {'id': aid, 'k': k, 'species': {}}
+    for key, rx in (('salar', r'SALM[ÓO]N DEL ATL[ÁA]NTICO'), ('coho', r'SALM[ÓO]N DEL PAC[ÍI]FICO'), ('trucha', r'TRUCHA ARCO[ÍI]RIS')):
+        sec = re.search(rx + r'(.{0,900})', full, re.S)
+        if not sec:
+            continue
+        t = sec.group(1)
+        c = re.search(r'fue de\s+([\d.,]+)\s*mil\s*t', t)
+        v = re.search(r'cifra\s+([\d,]+)\s*%\s*(mayor|menor)', t)
+        regs = {}
+        rm = re.search(r'Regiones? de (.+?),?\s+con\s+([\d,]+)\s*mil\s*t[^)]*\)\s*y\s+([\d,]+)\s*mil\s*t', t, re.S)
+        if rm:
+            names = re.split(r'\s+y\s+', re.sub(r'\s+', ' ', rm.group(1)))
+            vals = [float(rm.group(2).replace(',', '.')), float(rm.group(3).replace(',', '.'))]
+            for n, x in zip(names[-2:], vals):
+                n = 'Aysén' if 'Ays' in n else 'Los Lagos' if 'Lagos' in n else 'Magallanes' if 'Magall' in n else n.strip()
+                regs[n] = x
+        if c:
+            out['species'][key] = {'cum_kt': float(c.group(1).replace('.', '').replace(',', '.')),
+                                   'var_pct': (float(v.group(1).replace(',', '.')) * (1 if v.group(2) == 'mayor' else -1)) if v else None, 'regions_kt': regs}
+    o = re.search(r'([\d.,]+)\s*millones de ovas[^.]{0,80}?([\d,]+)\s*%', full)
+    if o:
+        out['eggs_m'] = float(o.group(1).replace('.', '').replace(',', '.'))
+    return out if out['species'] else None
+
+
+# ------------------------------------------------------------------ scan
+def look(aid):
+    """one document id -> ('res', dict) | ('rep', dict) | ('other', None) | ('none', None) | ('err', None)"""
+    r = get(f'{BASE}/615/w3-article-{aid}.html', 30)
+    if r is None:
+        return aid, 'err', None
+    if r.status_code == 200:
+        t = re.search(r'<title>(.*?)</title>', r.text, re.S)
+        title = re.sub(r'\s+', ' ', t.group(1)).replace(' - SUBPESCA Normativa', '').strip() if t else ''
+        if re.search(r'(?i)densidad de cultivo', title) and re.search(r'(?i)\b(fija|modifica)', title):
+            p = get(f'{BASE}/615/articles-{aid}_documento.pdf', 90)
+            if p is None or p.status_code != 200:
+                return aid, 'err', None
+            try:
+                return aid, 'res', parse_resolution(aid, title, p.content)
+            except Exception as ex:  # noqa: BLE001
+                return aid, 'res', {'id': aid, 'title': title, 'error': f'{type(ex).__name__}: {ex}'[:200], 'rows': []}
+        return aid, 'other', None
+    # pas de page dans "Normativa" : peut-etre une publication (portail 616), dont l'informe sectorial mensuel
+    for host in ('https://source.subpesca.cl/portal', BASE):
+        try:
+            h = S.head(f'{host}/616/articles-{aid}_documento.pdf', timeout=30, allow_redirects=True)
+        except Exception:
+            continue
+        if h.status_code == 200 and 300_000 < int(h.headers.get('content-length', 0) or 0) < 15_000_000:
+            p = get(f'{host}/616/articles-{aid}_documento.pdf', 120)
+            if p is None or p.status_code != 200:
+                return aid, 'err', None
+            try:
+                texts, _ = pdf_text(p.content, 3)
+                if 'Informe Sectorial de Pesca y Acuicultura' not in ' '.join(texts):
+                    return aid, 'other', None
+                texts, _ = pdf_text(p.content)
+                return aid, 'rep', parse_report(aid, texts)
+            except Exception:
+                return aid, 'other', None
+        if h.status_code == 200:
+            return aid, 'other', None
+    return aid, 'none', None
+
+
+def main():
+    try:
+        st = json.load(io.open(OUT, encoding='utf-8'))
+    except Exception:
+        st = {'meta': {}, 'resolutions': [], 'reports': []}
+    M = st.setdefault('meta', {})
+    start = int(os.environ.get('BACKFILL_FROM') or 0) or (M.get('last_id', 130600) + 1)
+    threads = int(os.environ.get('THREADS') or 3)
+    limit = int(os.environ.get('MAX_IDS') or 600)
+    stop_after = 250                       # ids vides d'affilee au-dela du dernier document : fin
+    R = {x['id']: x for x in st.get('resolutions', [])}
+    P = {x['id']: x for x in st.get('reports', []) if x}
+    last_found, errors, aid, seen = M.get('last_id', start - 1), [], start, 0
+    t0 = time.time()
+    with cf.ThreadPoolExecutor(threads) as ex:
+        while seen < limit:
+            batch = list(range(aid, aid + threads * 4))
+            aid += len(batch)
+            seen += len(batch)
+            for i, kind, val in ex.map(look, batch):
+                if kind == 'err':
+                    errors.append(i)
+                if kind in ('res', 'rep', 'other'):
+                    last_found = max(last_found, i)
+                if kind == 'res' and val:
+                    R[i] = val
+                if kind == 'rep' and val:
+                    P[i] = val
+            if aid - last_found > stop_after:
+                break
+    M.update({'last_id': last_found, 'generated': dt.date.today().isoformat(), 'source': 'Subpesca: resoluciones de densidad de cultivo (N° de peces a sembrar por centro) e informes sectoriales mensuales',
+              'url': 'https://www.subpesca.cl/portal/615/w3-channel.html', 'errors_last_run': errors[:50],
+              'note': 'fish to stock = the number authorised in each density resolution for the next cycle of each farm, after the ACS fallow; a later resolution modifying a farm replaces its figure'})
+    st['resolutions'] = sorted(R.values(), key=lambda x: x['id'])
+    st['reports'] = sorted(P.values(), key=lambda x: x['k'])
+    st['stocking'] = summarise(st['resolutions'])
+    io.open(OUT, 'w', encoding='utf-8').write(json.dumps(st, ensure_ascii=False, separators=(',', ':')))
+    print(f'chile subpesca: ids {start}..{aid - 1} in {time.time() - t0:.0f}s, last document {last_found}, {len(R)} resolutions '
+          f'({sum(len(x.get("rows", [])) for x in R.values())} farm rows), {len(P)} monthly reports, {len(errors)} errors')
+    return 0
+
+
+def summarise(res):
+    """latest figure per farm (a later resolution replaces an earlier one within 15 months), then totals by company,
+    species and stocking half-year (from the resolution date, or the end of the ACS fallow when stated)."""
+    farm = {}
+    for r in sorted(res, key=lambda x: (x.get('date') or '', x['id'])):
+        when = (r.get('fallow') or [None, None])[1] or (r.get('date') or '')[:7]
+        for row in r.get('rows', []):
+            k = row['centre']
+            prev = farm.get(k)
+            if prev and prev['when'] and when and (int(when[:4]) * 12 + int(when[5:7])) - (int(prev['when'][:4]) * 12 + int(prev['when'][5:7])) <= 15 and r.get('modifies'):
+                farm[k] = dict(prev, fish=row['fish'], sp=row['sp'] or prev['sp'], id=r['id'])
+                continue
+            key = f"{k}|{when[:4]}"
+            farm[key if prev and prev['when'][:4] != when[:4] else k] = {'centre': k, 'acs': row['acs'], 'sp': row['sp'], 'fish': row['fish'], 'when': when,
+                                                                        'company': r.get('company'), 'region': r.get('region'), 'id': r['id']}
+    agg = {}
+    for f in farm.values():
+        if not f['when']:
+            continue
+        y, m = int(f['when'][:4]), int(f['when'][5:7])
+        half = f'{y}-H{1 if m <= 6 else 2}'
+        o = agg.setdefault((half, f['company'] or '?', f['sp'] or '?', f['region'] or '?'), {'fish': 0, 'farms': 0})
+        o['fish'] += f['fish']
+        o['farms'] += 1
+    return [{'half': h, 'company': c, 'sp': s, 'region': rg, **v} for (h, c, s, rg), v in sorted(agg.items())]
+
+
+if __name__ == '__main__':
+    sys.exit(main())
