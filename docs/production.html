@@ -1011,7 +1011,14 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="sig-title" style="margin-top:16px;font-size:15px">4 · Harvest month by month, against the same month a year earlier</div>
     <div id="gyHarvChart"></div>
     <div style="overflow-x:auto"><table class="sig-table gy-tab" id="gyHarv"></table></div>
-    <div class="sig-title" style="margin-top:16px;font-size:15px">5 · By zone</div>
+    <div class="sig-title" style="margin-top:16px;font-size:15px">5 · Growth, temperature and mortality, month by month</div>
+    <div class="sig-sub" id="gyGrowSub" style="font-size:13.5px"></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:14px;align-items:start">
+      <div><div class="sig-sub" style="margin:4px 0"><b>Temperature-corrected growth (TGC)</b> — the higher, the faster the fish grow for the same warmth (from 0.3 kg; smolts in their first weeks are off the scale)</div><div id="gyTgc"></div></div>
+      <div><div class="sig-sub" style="margin:4px 0"><b>Sea temperature</b>, average of the zone's sites</div><div id="gyTemp"></div></div>
+    </div>
+    <div style="overflow-x:auto"><table class="sig-table gy-tab" id="gyGrowTab"></table></div>
+    <div class="sig-title" style="margin-top:16px;font-size:15px">6 · By zone</div>
     <div style="overflow-x:auto"><table class="sig-table gy-tab" id="gyZones"></table></div>
     <div class="sig-sub" id="gyNote" style="margin-top:12px"></div>
   </div>
@@ -10232,6 +10239,12 @@ function gyPhi(z) { const t = 1 / (1 + 0.3275911 * Math.abs(z / Math.SQRT2)), y 
 function gyPrep() {
   if (GY) return GY; const IX = {}, KS = new Set();
   (COHORT || []).forEach(r => { if (!r.po) return; const k = r.year * 100 + r.month; ((IX[r.po] = IX[r.po] || {})[r.cohort] = IX[r.po][r.cohort] || {})[k] = r; KS.add(k); });
+  // temps en mer recalcule de la meme facon pour toutes les generations : chaque mois, les poissons qui arrivent
+  // (hausse du stock + sorties du mois) entrent a 0,5 mois, ceux deja la vieillissent d'un mois ; moyenne ponderee.
+  Object.values(IX).forEach(G => Object.values(G).forEach(ser => { let A = 0, N = 0;
+    Object.keys(ser).map(Number).sort((a, b) => a - b).forEach(k => { const c = ser[k], out = (c.harv_stk || 0) + (c.dead_stk || 0) + (c.loss_stk || 0);
+      const inn = Math.max(0, (c.stock || 0) - N + out), stay = Math.max(0, (c.stock || 0) - inn);
+      A = c.stock > 0 ? (stay * (A + 1) + inn * 0.5) / c.stock : 0; N = c.stock || 0; c.sea = A; }); }));
   return (GY = { IX, months: [...KS].sort((a, b) => a - b) });
 }
 // une generation (sur un ensemble de zones) a la fin du mois k ; cumuls depuis sa mise en mer jusqu'a k inclus
@@ -10249,12 +10262,78 @@ function gyGen(zones, gen, k) {
   o.w = o.fish ? o.bio / o.fish : null; o.start = o.fish + o.cumH + o.cumD + o.cumL;
   return o;
 }
+function gyAge(zones, g, k) { const { IX } = gyPrep(); let a = 0, n = 0; zones.forEach(po => { const c = ((IX[po] || {})[g] || {})[k]; if (c && c.stock > 0) { a += (c.sea || 0) * c.stock; n += c.stock; } }); return n ? a / n : null; }
 // recolte et morts de toutes les generations sur les mois [a..b], depuis le registre (memes chiffres que les autres onglets)
 function gyFlow(zones, a, b) {
   const Zs = new Set(zones); if (zones.length === 13) Zs.add(0);   // Norvege entiere : avec les sites sans zone (po 0), comme les autres onglets
   let hk = 0, hn = 0, d = 0;
   (RECORDS || []).forEach(r => { if (!Zs.has(r.po)) return; const kk = r.year * 100 + r.month; if (kk < a || kk > b) return; hk += r.uttak_kg || 0; hn += r.uttak_stk || 0; d += r.dodfisk_stk || 0; });
   return { hk, hn, d, w: hn ? hk / hn : null };
+}
+// ---- croissance, temperature, mortalite par generation (novembre 2026) ----
+// Temperature : moyenne des temperatures de mer declarees chaque semaine par les sites (BarentsWatch), semaines rattachees au
+// mois de leur jeudi, ponderee par le nombre de sites. Croissance : production du mois par poisson = variation de biomasse +
+// poissons abattus (kg) + morts et pertes (a mi-poids), divisee par le nombre moyen de poissons ; elle ne depend donc pas de
+// quelles cages ont ete abattues. TGC (coefficient de croissance thermique) = (W1^1/3 - W0^1/3) x 1000 / degres-jours, W en g :
+// la croissance ramenee a la temperature ; un TGC plus haut a meme stade = des poissons qui poussent mieux a temperature egale.
+let GY_T = null;
+function gyTempPrep() {
+  if (GY_T) return GY_T; const T = {}, L = {};
+  ((DATA_RAW && DATA_RAW.bw_weekly && DATA_RAW.bw_weekly.rows) || []).forEach(r => { if (r.t === null || r.t === undefined || !r.nt) return;
+    const j4 = Date.UTC(r.y, 0, 4), mon = j4 - ((new Date(j4).getUTCDay() + 6) % 7) * 864e5 + (r.w - 1) * 7 * 864e5, th = new Date(mon + 3 * 864e5);
+    const k = th.getUTCFullYear() * 100 + th.getUTCMonth() + 1, key = r.po + '_' + k, x = (T[key] = T[key] || [0, 0, 0]);
+    x[0] += r.t * r.nt; x[1] += r.nt; x[2]++; L[k] = Math.max(L[k] || 0, r.w); });
+  return (GY_T = { T, months: Object.keys(L).map(Number).sort((a, b) => a - b) });
+}
+function gyTemp(zones, k, weights) {          // weights : {po: poids} (poissons) ; sinon nombre de sites
+  const { T } = gyTempPrep(); let s = 0, n = 0;
+  zones.forEach(po => { const x = T[po + '_' + k]; if (!x || !x[1]) return; const w = weights ? (weights[po] || 0) : x[1]; s += x[0] / x[1] * w; n += w; });
+  return n ? s / n : null;
+}
+const gyDays = k => new Date(Date.UTC(Math.floor(k / 100), k % 100, 0)).getUTCDate();
+function gyGrowth(zones, g, k) {
+  const { IX } = gyPrep(); let N0 = 0, N1 = 0, B0 = 0, B1 = 0, H = 0, D = 0, Dn = 0, A = 0, Wt = {};
+  zones.forEach(po => { const ser = (IX[po] || {})[g]; if (!ser) return; const a = ser[gySh(k, -1)], b = ser[k];
+    if (!a || !b || !(a.stock > 2e5) || !(b.stock > 0) || !a.weight_kg || !b.weight_kg) return;
+    N0 += a.stock; N1 += b.stock; B0 += a.stock * a.weight_kg; B1 += b.stock * b.weight_kg; H += b.harv_kg || 0;
+    const d = (b.dead_stk || 0) + (b.loss_stk || 0); D += d * (a.weight_kg + b.weight_kg) / 4; Dn += d; A += (b.sea || 0) * b.stock; Wt[po] = a.stock; });
+  if (!(N0 > 2e5)) return null;
+  const w0 = B0 / N0, gr = (B1 - B0 + H + D) / ((N0 + N1) / 2), T = gyTemp(zones, k, Wt);
+  const tgc = T && T > 1 && w0 + gr > 0 ? (Math.cbrt((w0 + gr) * 1000) - Math.cbrt(w0 * 1000)) * 1000 / (T * gyDays(k)) : null;
+  return { w0, gr, T, tgc, mort: 100 * Dn / N0, age: N1 ? A / N1 : null, N0 };
+}
+function gyGrowthRender(Z, k, H, Nn) {
+  const $g = id => document.getElementById(id), last = gyPrep().months.slice(-1)[0];
+  const f2 = v => v === null || v === undefined || !isFinite(v) ? '—' : v.toFixed(2), f1 = v => v === null || v === undefined || !isFinite(v) ? '—' : v.toFixed(1);
+  const dd = (a, b, good) => { if (a === null || b === null || !isFinite(a) || !isFinite(b) || !b) return '—'; const v = 100 * (a / b - 1); return `<span class="${(v >= 0) === good ? 'delta-good' : 'delta-bad'}">${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(0)} %</span>`; };
+  const ms = []; for (let m = gySh(k, -11); m <= k; m = gySh(m, 1)) ms.push(m);
+  // generation "principale" a chaque mois : la plus ancienne qui a encore beaucoup de poissons
+  const rowsFor = g => ms.map(m => ({ m, a: gyGrowth(Z, g, m), b: gyGrowth(Z, g - 1, gySh(m, -12)) }));
+  const R = { H: rowsFor(H), N: rowsFor(Nn) };
+  const tr = (lab, x) => x.a && x.b ? `<tr><td class="name">${gyMonL(x.m)}</td><td>${lab}</td><td>${f1(Math.max(0, x.a.age))} / ${f1(Math.max(0, x.b.age))}</td>` +
+    `<td>${f2(x.a.w0)} / ${f2(x.b.w0)}</td><td>${f2(x.a.gr)} / ${f2(x.b.gr)}</td><td>${dd(x.a.gr, x.b.gr, true)}</td>` +
+    `<td>${f1(x.a.T)} / ${f1(x.b.T)}</td><td>${f2(x.a.tgc)} / ${f2(x.b.tgc)}</td><td>${dd(x.a.tgc, x.b.tgc, true)}</td>` +
+    `<td>${f2(x.a.mort)} / ${f2(x.b.mort)}</td><td>${dd(x.a.mort, x.b.mort, false)}</td></tr>` : '';
+  $g('gyGrowTab').innerHTML = `<thead><tr><th class="name">Month</th><th>Generation<br>(now vs then)</th><th>Months at sea<br>now / then</th><th>Weight at start<br>of month (kg)</th>` +
+    `<th>Growth per fish<br>in the month (kg)</th><th>Δ</th><th>Sea temperature<br>(°C)</th><th>TGC<br>now / then</th><th>Δ</th><th>Dead + lost<br>% of fish</th><th>Δ</th></tr></thead><tbody>` +
+    ms.slice().reverse().map((m, j) => { const i = ms.length - 1 - j; return tr(`G${H} vs G${H - 1}`, R.H[i]) + tr(`G${Nn} vs G${Nn - 1}`, R.N[i]); }).join('') + `</tbody>`;
+  const X = ms.map(gyMon), ok = r => r && r.w0 >= 0.3, v = (A, f) => A.map(x => ok(x.a) ? x.a[f] : null), u = (A, f) => A.map(x => ok(x.b) ? x.b[f] : null);
+  const S1 = [{ label: `TGC G${H}`, col: '#4fc3f7', values: v(R.H, 'tgc') }, { label: `G${H - 1} a year earlier`, col: '#4fc3f7', dash: '5 4', w: 1.5, values: u(R.H, 'tgc') },
+    { label: `TGC G${Nn}`, col: '#ffb74d', values: v(R.N, 'tgc') }, { label: `G${Nn - 1} a year earlier`, col: '#ffb74d', dash: '5 4', w: 1.5, values: u(R.N, 'tgc') }];
+  $g('gyTgc').innerHTML = fdLines(X, S1, { h: 210, fmt: v => v.toFixed(1) }) + `<div class="sig-sub">${fdLeg(S1)}</div>`;
+  // temperature : mois du registre et mois plus recents deja couverts par BarentsWatch
+  const TM = gyTempPrep().months.filter(m => m >= gySh(k, -11) && m <= gySh(last, 3)), w1 = {};
+  Z.forEach(po => w1[po] = 1);
+  const S2 = [{ label: 'Sea temperature this year (°C)', col: '#ff8a65', values: TM.map(m => gyTemp(Z, m)) }, { label: 'A year earlier', col: '#ff8a65', dash: '5 4', w: 1.5, values: TM.map(m => gyTemp(Z, gySh(m, -12))) },
+    { label: 'Two years earlier', col: '#8fa4b0', dash: '2 4', w: 1.2, values: TM.map(m => gyTemp(Z, gySh(m, -24))) }];
+  $g('gyTemp').innerHTML = fdLines(TM.map(gyMon), S2, { h: 190, fmt: v => v.toFixed(0) }) + `<div class="sig-sub">${fdLeg(S2)} — weekly BarentsWatch reports, available up to ${gyMonL(TM[TM.length - 1])} (ahead of the register).</div>`;
+  // resume des 3 derniers mois
+  const avg3 = (A, side, f) => { const x = A.slice(-3).map(r => r[side] && r[side][f]).filter(z => z !== null && z !== undefined && isFinite(z)); return x.length ? x.reduce((p, q) => p + q, 0) / x.length : null; };
+  const tNew = TM.filter(m => m > k);
+  $g('gyGrowSub').innerHTML = `Last three months (${gyMon(ms[ms.length - 3])} – ${gyMon(k)}): G${H} grew ${f2(avg3(R.H, 'a', 'gr'))} kg per fish a month against ${f2(avg3(R.H, 'b', 'gr'))} for G${H - 1} at the same stage (${dd(avg3(R.H, 'a', 'gr'), avg3(R.H, 'b', 'gr'), true)}), ` +
+    `in water at ${f1(avg3(R.H, 'a', 'T'))} °C against ${f1(avg3(R.H, 'b', 'T'))} °C; temperature-corrected (TGC) ${dd(avg3(R.H, 'a', 'tgc'), avg3(R.H, 'b', 'tgc'), true)}. ` +
+    `G${Nn}: growth ${dd(avg3(R.N, 'a', 'gr'), avg3(R.N, 'b', 'gr'), true)}, TGC ${dd(avg3(R.N, 'a', 'tgc'), avg3(R.N, 'b', 'tgc'), true)}. Dead and lost fish, G${H}: ${f2(avg3(R.H, 'a', 'mort'))} % a month against ${f2(avg3(R.H, 'b', 'mort'))} %.` +
+    (tNew.length ? ` Since then (BarentsWatch): ${tNew.map(m => `${gyMon(m)} ${f1(gyTemp(Z, m))} °C vs ${f1(gyTemp(Z, gySh(m, -12)))}`).join(', ')}.` : '');
 }
 function renderGenYoy() {
   const $g = id => document.getElementById(id), e = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
@@ -10282,6 +10361,7 @@ function renderGenYoy() {
   // ---- cartes
   const card = (t, big, ln) => `<div class="pr-card" style="cursor:default"><div class="nm">${t}</div><div class="big">${big}</div><div class="ln">${ln}</div></div>`;
   $g('gyCards').innerHTML =
+    card(`G${H} · time at sea`, `${(gyAge(Z, H, k) ?? 0).toFixed(1)} months`, `G${H - 1} a year ago: ${(gyAge(Z, H - 1, k1) ?? 0).toFixed(1)} · G${N}: ${Math.max(0, gyAge(Z, N, k) ?? 0).toFixed(1)} vs ${Math.max(0, gyAge(Z, N - 1, k1) ?? 0).toFixed(1)}`) +
     card(`G${H} · fish left`, `${M(now.H.fish)} M`, `${dl(now.H.fish, ly.H.fish, true)} vs G${H - 1} (${M(ly.H.fish)} M)`) +
     card(`G${H} · biomass`, `${KT(now.H.bio)} kt`, `${dl(now.H.bio, ly.H.bio, true)} · ${KG(now.H.w)} kg vs ${KG(ly.H.w)}`) +
     card(`G${H} · fish 5 kg+ gutted`, `${M(now.H.n5)} M`, `${dl(now.H.n5, ly.H.n5, true, 5e4)} · ${KT(now.H.b5)} kt`) +
@@ -10297,8 +10377,9 @@ function renderGenYoy() {
     (early > 2 && Math.abs(pct(sv(a0), sv(b0)) || 0) < Math.abs(pct(a0.fish, b0.fish) || 0) / 2 ? `<b>The gap in fish left comes mostly from an earlier harvest, not from fewer fish produced.</b>` : '') : '';
   // ---- tableau par generation
   const row = (lab, a, b) => { if (!a.any && !b.any && !a.cumH) return '';
+    a.age = a.age ?? null; b.age = b.age ?? null;
     const surv = x => x.start ? 100 * (1 - (x.cumD + x.cumL) / x.start) : null, hs = x => x.start ? 100 * x.cumH / x.start : null;
-    return `<tr><td class="name"><b>${lab}</b></td>` +
+    return `<tr><td class="name"><b>${lab}</b></td><td>${a.age !== null ? Math.max(0, a.age).toFixed(1) : '—'} / ${b.age !== null ? Math.max(0, b.age).toFixed(1) : '—'}</td>` +
       `<td>${M(a.fish)}</td><td>${M(b.fish)}</td><td>${dl(a.fish, b.fish, true, 2e5)}</td>` +
       `<td>${KT(a.bio)}</td><td>${KT(b.bio)}</td><td>${dl(a.bio, b.bio, true, 1e6)}</td>` +
       `<td>${KG(a.w)}</td><td>${KG(b.w)}</td>` +
@@ -10308,9 +10389,9 @@ function renderGenYoy() {
       `<td>${KT(a.cumHkg + a.bio)}</td><td>${dl(a.cumHkg + a.bio, b.cumHkg + b.bio, true, 1e6)}</td>` +
       `<td>${PC(hs(a))}</td><td>${PC(hs(b))}</td>` +
       `<td>${PC(surv(a))}</td><td>${PC(surv(b))}</td></tr>`; };
-  $g('gyTab').innerHTML = `<thead><tr><th class="name">Generation<br>(now vs<br>a year ago)</th><th>Fish<br>now (M)</th><th>Fish<br>then (M)</th><th>Δ</th><th>Biomass<br>now (kt)</th><th>Biomass<br>then (kt)</th><th>Δ</th>` +
+  $g('gyTab').innerHTML = `<thead><tr><th class="name">Generation<br>(now vs<br>a year ago)</th><th>Months<br>at sea<br>now / then</th><th>Fish<br>now (M)</th><th>Fish<br>then (M)</th><th>Δ</th><th>Biomass<br>now (kt)</th><th>Biomass<br>then (kt)</th><th>Δ</th>` +
     `<th>Weight<br>now (kg)</th><th>Weight<br>then</th><th>5 kg+<br>now (M)</th><th>Δ</th><th>Stocked<br>(M, est.)</th><th>Δ</th><th>Survived<br>(harvested +<br>at sea, M)</th><th>Δ</th><th>Produced<br>(harvested +<br>at sea, kt)</th><th>Δ</th><th>Already<br>harvested<br>now</th><th>…then</th><th>Survival<br>so far</th><th>…then</th></tr></thead><tbody>` +
-    row(`G${O} vs G${O - 1}`, now.O, ly.O) + row(`G${H} vs G${H - 1}`, now.H, ly.H) + row(`G${N} vs G${N - 1}`, now.N, ly.N) + `</tbody>`;
+    [[O, 'O'], [H, 'H'], [N, 'N']].map(([g, key]) => { now[key].age = gyAge(Z, g, k); ly[key].age = gyAge(Z, g - 1, k1); return row(`G${g} vs G${g - 1}`, now[key], ly[key]); }).join('') + `</tbody>`;
   // ---- suivi mensuel : rapport cette annee / an dernier au meme stade, sur la vie de G(H), et le meme rapport un an plus tot
   const start = H * 100 + 10, xs = [];   // avant l'automne, les mises en mer de printemps et d'automne rendent l'ecart instable
   for (let m = start; m <= gySh(k, 12) && m <= gySh(last, 12); m = gySh(m, 1)) xs.push(m);
@@ -10354,7 +10435,10 @@ function renderGenYoy() {
   $g('gyZones').innerHTML = `<thead><tr><th class="name">Zone</th><th>G${H}<br>fish</th><th>G${H}<br>biomass</th><th>G${H} weight<br>now / then</th><th>G${N}<br>fish</th><th>G${N}<br>biomass</th><th>All gen.<br>biomass</th><th>5 kg+<br>now (M)</th><th>5 kg+<br>Δ</th><th>Harvest<br>12 months</th><th>Dead fish<br>12 months</th></tr></thead><tbody>` +
     [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].map(z => zrow('Zone ' + z, [z])).join('') +
     ['S', 'M', 'N', 'NO'].map(x => zrow(GY_SETS[x][0], GY_SETS[x][1])).join('') + `</tbody>`;
-  $g('gyNote').innerHTML = `<b>How to read it.</b> Every figure compares the end of ${gyMonL(k)} with the end of ${gyMonL(k1)}. "Stocked" = fish at sea + fish already harvested + dead + lost since the generation went to sea (smolt numbers are not published by generation). ` +
+  gyGrowthRender(Z, k, H, N);
+  $g('gyNote').innerHTML = `<b>How to read it.</b> Growth per fish = what the generation produced in the month (change in biomass + harvested kilos + dead fish at half weight) ÷ its average number of fish, so harvesting the biggest cages first does not lower it. TGC = (end weight^⅓ − start weight^⅓, in grams) × 1000 ÷ degree-days. Months at sea are worked out here, the same way for every generation, from the fish that arrive month by month (the register only gives the year the smolts went to sea), so they are close but not exact.`;
+  $g('gyNote').innerHTML += ` `;
+  $g('gyNote').innerHTML += `<br><b>Other definitions.</b> Every figure compares the end of ${gyMonL(k)} with the end of ${gyMonL(k1)}. "Stocked" = fish at sea + fish already harvested + dead + lost since the generation went to sea (smolt numbers are not published by generation). ` +
     `Survival so far = 1 − (dead + lost) ÷ stocked. 5 kg+ / 6 kg+ = gutted weight classes estimated from each zone's average weight per generation. The month selector lets you replay any month of the last years; the tab updates by itself when the register publishes a new month (about five weeks after the month).`;
 }
 
