@@ -1224,7 +1224,10 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="sig-title" style="margin-top:16px;font-size:15px">Fish at sea, site by site (MAST)</div>
     <div class="sig-sub" id="isSiteSub"></div>
     <div style="overflow-x:auto"><table class="sig-table" id="isSites" style="font-size:12.5px"></table></div>
-    <div id="isLand"></div>
+    <div class="sig-title" style="margin-top:16px;font-size:15px">Land-based farming — yearly production, sea against land (MAST)</div>
+    <div class="sig-sub" id="isLandSub"></div>
+    <div id="isLandChart"></div><div class="sig-sub" id="isLandLeg"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="isLand" style="font-size:12.5px"></table></div>
     <div class="sig-title" style="margin-top:16px;font-size:15px">Cycle length — months at sea, site by site</div>
     <div class="sig-sub" id="isCycSub"></div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:14px;align-items:start">
@@ -3583,6 +3586,25 @@ function renderIceland() {
     const kt = v => (v / 1000).toLocaleString('en-US', { maximumFractionDigits: 1 }) + ' kt', mo = m => fdMon(m);
     const B = N[k], B12 = N[k - 12] || {}, fish = (MS.sites || []).filter(x => x.m === MS.sites_last_month).reduce((a, x) => a + (x.fish || 0), 0);
     const m12 = (B12.m || ''), fish12 = (MS.sites || []).filter(x => x.m === m12).reduce((a, x) => a + (x.fish || 0), 0);
+    // ---- elevage a terre : production annuelle par type d'elevage et region (rapports annuels MAST) ----
+    { const A = MS.annual || [], RG = { 'Austfirðir': 'East fjords', 'Vestfirðir': 'Westfjords', 'Suðurland': 'South', 'Reykjanes': 'Reykjanes', 'Vesturland': 'West', 'Norðurland': 'North' };
+      const sal = A.filter(x => x.species === 'Lax'), yrs = [...new Set(sal.map(x => x.year))].sort().filter(y => y >= 2014);
+      if (yrs.length) {
+        const tot = (ty, y, rg) => sal.filter(x => x.type === ty && x.year === y && (!rg || x.region === rg)).reduce((a, x) => a + x.t, 0);
+        const lr = [...new Set(sal.filter(x => x.type === 'Landeldi' && x.year >= yrs[yrs.length - 6] && x.t > 0).map(x => x.region))].sort((a, b) => tot('Landeldi', yrs[yrs.length - 1], b) - tot('Landeldi', yrs[yrs.length - 1], a));
+        const Y = yrs[yrs.length - 1], l = tot('Landeldi', Y), l1 = tot('Landeldi', Y - 1), sea = tot('Sjókvíaeldi', Y);
+        const char = A.filter(x => x.species === 'Bleikja' && x.year === Y).reduce((a, x) => a + x.t, 0);
+        $i('isLandSub').innerHTML = `Atlantic salmon produced on land in ${Y}: <b>${t0(l)} t</b> (${ch(l, l1)} on ${Y - 1}), ${(100 * l / (l + sea)).toFixed(1)} % of Iceland's salmon (sea ${t0(sea)} t). ` +
+          `MAST publishes land farms only in its yearly figures (by region, not by company); the monthly dashboard covers sea cages only. Most of today's land-based salmon comes from the North; the large new projects (Landeldi and First Water at Þorlákshöfn, Laxey in the Westman Islands, Samherji's Eldisgarður at Reykjanes) are in the South and at Reykjanes and are still ramping up. ` +
+          (char ? `Iceland also farms ${t0(char)} t of Arctic char on land.` : '');
+        const ser = [{ label: 'Salmon at sea (kt)', col: '#4fc3f7', values: yrs.map(y => tot('Sjókvíaeldi', y) / 1000) }, { label: 'Salmon on land (kt)', col: '#ffb74d', values: yrs.map(y => tot('Landeldi', y) / 1000) }];
+        $i('isLandChart').innerHTML = fdLines(yrs.map(String), ser, { h: 180, zero: true, fmt: v => v.toFixed(0) }); $i('isLandLeg').innerHTML = fdLeg(ser);
+        $i('isLand').innerHTML = `<thead><tr><th class="name">Salmon (t)</th>${yrs.slice(-6).map(y => `<th>${y}</th>`).join('')}</tr></thead><tbody>` +
+          `<tr><td class="name"><b>On land</b></td>${yrs.slice(-6).map(y => `<td><b>${t0(tot('Landeldi', y))}</b></td>`).join('')}</tr>` +
+          lr.map(rg => `<tr><td class="name">&nbsp;&nbsp;${e(RG[rg] || rg)}</td>${yrs.slice(-6).map(y => `<td>${tot('Landeldi', y, rg) ? t0(tot('Landeldi', y, rg)) : '—'}</td>`).join('')}</tr>`).join('') +
+          `<tr><td class="name">At sea</td>${yrs.slice(-6).map(y => `<td>${t0(tot('Sjókvíaeldi', y))}</td>`).join('')}</tr>` +
+          `<tr><td class="name">Land share</td>${yrs.slice(-6).map(y => `<td>${(100 * tot('Landeldi', y) / (tot('Landeldi', y) + tot('Sjókvíaeldi', y))).toFixed(1)} %</td>`).join('')}</tr></tbody>`;
+      } else ['isLandSub', 'isLandChart', 'isLandLeg', 'isLand'].forEach(id => $i(id).innerHTML = ''); }
     // ---- site par site, dernier mois ----
     { const lm = MS.sites_last_month, pm = (() => { const [y, m] = lm.split('-').map(Number); return m === 1 ? `${y - 1}-12` : `${y}-${String(m - 1).padStart(2, '0')}`; })();
       const prev = {}; (MS.sites || []).filter(x => x.m === pm).forEach(x => prev[x.site] = x);
