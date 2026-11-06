@@ -1221,6 +1221,9 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="sig-title" style="margin-top:16px;font-size:15px">Fish at sea, harvest, feed and mortality (MAST)</div>
     <div class="sig-sub" id="isMast"></div>
     <div id="isMastChart"></div><div class="sig-sub" id="isMastLeg"></div>
+    <div class="sig-title" style="margin-top:16px;font-size:15px">Smolts put to sea, month by month — 2024, 2025, 2026 (MAST)</div>
+    <div class="sig-sub" id="isSmoltSub"></div>
+    <div id="isSmolt"></div>
     <div class="sig-title" style="margin-top:16px;font-size:15px">Fish at sea, site by site (MAST)</div>
     <div class="sig-sub" id="isSiteSub"></div>
     <div style="overflow-x:auto"><table class="sig-table" id="isSites" style="font-size:12.5px"></table></div>
@@ -3610,6 +3613,26 @@ function renderIceland() {
           `<tr><td class="name">At sea</td>${yrs.slice(-6).map(y => `<td>${t0(tot('Sjókvíaeldi', y))}</td>`).join('')}</tr>` +
           `<tr><td class="name">Land share</td>${yrs.slice(-6).map(y => `<td>${(100 * tot('Landeldi', y) / (tot('Landeldi', y) + tot('Sjókvíaeldi', y))).toFixed(1)} %</td>`).join('')}</tr></tbody>`;
       } else ['isLandSub', 'isLandChart', 'isLandLeg', 'isLand'].forEach(id => $i(id).innerHTML = ''); }
+    // ---- smolts mis a l'eau chaque mois (somme des "fish in" des sites), 3 dernieres annees en batons groupes ----
+    { const IN = {}; (MS.sites || []).forEach(x => { if (x.in) IN[x.m] = (IN[x.m] || 0) + x.in; });
+      const lm = MS.sites_last_month, LY = +lm.slice(0, 4), LM = +lm.slice(5, 7), YS = [LY - 2, LY - 1, LY], COL = ['#8fa4b0', '#4fc3f7', '#ffb74d'];
+      const v = (y, m) => (y < LY || m <= LM) ? (IN[`${y}-${String(m).padStart(2, '0')}`] || 0) / 1e6 : null;
+      const W = 1080, H = 250, mL = 56, mR = 12, mT = 14, mB = 30, pw = W - mL - mR, ph = H - mT - mB;
+      const mx = Math.max(1, ...YS.flatMap(y => Array.from({ length: 12 }, (_, i) => v(y, i + 1) || 0))), top = Math.ceil(mx);
+      const Y = x => mT + ph - x / top * ph, gw = pw / 12, bw = gw * 0.26;
+      let g = '';
+      for (let t = 0; t <= top; t += top > 4 ? 1 : 0.5) g += `<line x1="${mL}" x2="${W - mR}" y1="${Y(t)}" y2="${Y(t)}" stroke="#223642"/><text x="${mL - 6}" y="${Y(t) + 4}" text-anchor="end" fill="#8fa4b0" font-size="11">${t}</text>`;
+      for (let m = 1; m <= 12; m++) {
+        g += `<text x="${mL + gw * (m - 0.5)}" y="${H - 10}" text-anchor="middle" fill="#8fa4b0" font-size="11">${MONTHS_FR[m - 1].slice(0, 3)}</text>`;
+        YS.forEach((y, j) => { const x = v(y, m); if (x === null || !x) return; const xx = mL + gw * (m - 1) + gw * 0.11 + j * bw;
+          g += `<rect x="${xx.toFixed(1)}" y="${Y(x).toFixed(1)}" width="${(bw - 2).toFixed(1)}" height="${(Y(0) - Y(x)).toFixed(1)}" fill="${COL[j]}" rx="2"><title>${MONTHS_FR[m - 1]} ${y}: ${x.toFixed(2)} M smolts</title></rect>`; }); }
+      g += `<text transform="translate(14,${mT + ph / 2}) rotate(-90)" text-anchor="middle" fill="#cfdde4" font-size="12" font-weight="bold">Million smolts</text>`;
+      const ytd = y => Array.from({ length: LM }, (_, i) => v(y, i + 1) || 0).reduce((a, b) => a + b, 0), full = y => Array.from({ length: 12 }, (_, i) => v(y, i + 1) || 0).reduce((a, b) => a + b, 0);
+      $i('isSmolt').innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">${g}</svg><div class="sig-sub">` +
+        YS.map((y, j) => `<span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><i style="display:inline-block;width:11px;height:11px;border-radius:2px;background:${COL[j]}"></i>${y}</span>`).join('') + `</div>`;
+      $i('isSmoltSub').innerHTML = `Fish put into the sea cages each month, summed over all sites, from the farms' monthly reports to MAST (smolts and the occasional transfer between sites). ` +
+        `January–${MONTHS_FR[LM - 1]}: <b>${ytd(LY).toFixed(1)} M</b> in ${LY}, against ${ytd(LY - 1).toFixed(1)} M in ${LY - 1} (${ch(ytd(LY), ytd(LY - 1))}) and ${ytd(LY - 2).toFixed(1)} M in ${LY - 2}. ` +
+        `Whole years: ${full(LY - 2).toFixed(1)} M in ${LY - 2}, ${full(LY - 1).toFixed(1)} M in ${LY - 1}. Stocking runs from spring to autumn.`; }
     // ---- site par site, dernier mois ----
     { const lm = MS.sites_last_month, pm = (() => { const [y, m] = lm.split('-').map(Number); return m === 1 ? `${y - 1}-12` : `${y}-${String(m - 1).padStart(2, '0')}`; })();
       const prev = {}; (MS.sites || []).filter(x => x.m === pm).forEach(x => prev[x.site] = x);
@@ -9194,19 +9217,21 @@ function periodSeg(sel, items) {
     seg.addEventListener('click', ev => { const b = ev.target.closest('button'); if (!b || sel.value === b.dataset.v) return; sel.value = b.dataset.v; sel.dispatchEvent(new Event('change', { bubbles: true })); }); }
   seg.innerHTML = items.map(([v, lab]) => `<button type="button" data-v="${v}" class="${sel.value === v ? 'on' : ''}">${lab}</button>`).join('');
 }
-function tmPeriodLabels(sel, pre, rerender, end) {
-  end = end || TM.common;
+function tmPeriodLabels(sel, pre, rerender, end, maxEnd) {
+  end = end || TM.common; maxEnd = Math.max(maxEnd || 0, end);
   const o = [...sel.options].find(x => x.value === 'last');
   if (o) o.textContent = `Last month available (${tmMl(end)})`;
   if (!['last', 'ytd', 'custom'].includes(sel.value)) sel.value = 'last';
   periodSeg(sel, [['last', `Last month available · ${tmMl(end)}`], ['ytd', `Year to date · Jan–${tmMl(end).split(' ')[0]}`], ['custom', 'Selected period']]);
   const box = document.getElementById(pre + 'Custom'), f = document.getElementById(pre + 'From'), t = document.getElementById(pre + 'To');
-  if (!f.options.length) {
-    const ms = []; for (let k = end; k >= 202201; k = tmBack(k, 1)) ms.push(k);
+  if (!f.options.length || +f.options[0].value < maxEnd) {
+    // liste des mois de la periode choisie : jusqu'au mois le plus recent publie par au moins un pays
+    const keepF = f.value, keepT = t.value, had = f.options.length;
+    const ms = []; for (let k = maxEnd; k >= 202201; k = tmBack(k, 1)) ms.push(k);
     const html = ms.map(k => `<option value="${k}">${tmMl(k)}</option>`).join('');
     f.innerHTML = html; t.innerHTML = html;
-    f.value = String(tmBack(end, 11)); t.value = String(end);
-    f.addEventListener('change', rerender); t.addEventListener('change', rerender);
+    f.value = had ? keepF : String(tmBack(end, 11)); t.value = had ? keepT : String(end);
+    if (!had) { f.addEventListener('change', rerender); t.addEventListener('change', rerender); }
   }
   box.style.display = sel.value === 'custom' ? 'inline-flex' : 'none';
 }
@@ -9412,7 +9437,7 @@ function renderProducers() {
     `<b>Last month available</b> = the latest month published by all of them: <b>${tmMl(END)}</b>. ` +
     (PRODUCERS.some(pr => SRC[pr].euOnly) ? `<span class="warn">${PRODUCERS.filter(pr => SRC[pr].euOnly).map(pr => PROD_LAB[pr]).join(', ')}: arrivals in the EU only (Eurostat, to ${tmMl(TM.last)}), their own statistics are not collected yet.</span> ` : '') +
     `Atlantic salmon only (Pacific salmon and trout are left out).`;
-  const perSel = document.getElementById('prPeriod'); tmPeriodLabels(perSel, 'pr', renderProducers, END);
+  const perSel = document.getElementById('prPeriod'); tmPeriodLabels(perSel, 'pr', renderProducers, END, Math.max(...PRODUCERS.map(pr => SRC[pr].last || 0)));
   if (!perSel.dataset.w) { perSel.dataset.w = 1; perSel.addEventListener('change', renderProducers); }
   const formsAll = FORMS_OK.filter(i => PRODUCERS.some(pr => SRC[pr].rows.some(r => r[2] === i)));
   document.getElementById('prForms').innerHTML = formsAll.map(i => `<label class="cc-check"><input type="checkbox" data-f="${i}" ${prForms.has(i) ? 'checked' : ''}> <i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${FORM_COL[i]}"></i> ${P[i]}</label>`).join('') +
