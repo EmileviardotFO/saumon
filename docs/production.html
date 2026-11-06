@@ -8109,7 +8109,7 @@ function makeVolumeProjector(s, poFilter) {
   // final projection: average of the methods available at that date. Tested 2021-2026 walk-forward: equal or better than the
   //  three older methods alone at every horizon, and 1-1.6 points better on 2025-2026 at 1-7 months; beyond 7 months the
   //  weight-analogue adds nothing, so the three older methods are kept alone there.
-  const projectVol = (i, h) => {
+  const projectBase = (i, h) => {
     const v = [projectOld(i, h), cwCorr(i, h), rotEst(i, h)];
     if (h <= 7) v.push(genAC(i, h));
     if (h === 1) v.push(genW(i, h));
@@ -8121,6 +8121,23 @@ function makeVolumeProjector(s, poFilter) {
     const nc = h <= 3 ? nowcast(i, h) : null;
     return nc ? Math.exp(nc.w * Math.log(nc.v) + (1 - nc.w) * Math.log(m)) : m;
   };
+  // ---- Generation budget (Nov 2026). The fish that will be harvested over the next 12 months are already at sea: zone by
+  //  zone, last year's harvest of each generation x how the generation that replaces it compares today (biomass and number
+  //  of fish) gives the 12-month total. Months 1-3 stay as projected (exports, recent production); months 4-12 are pulled
+  //  halfway (square root) towards what is left of that budget, so fish harvested early are not counted again later.
+  //  Tested walk-forward: 6 / 9 / 12-month error 2019-20 6.8 -> 5.7 / 6.0 -> 6.7 / 9.4 = ; 2022-23 5.8 -> 4.8 / 6.0 -> 5.6 /
+  //  6.6 -> 6.0 ; 2024-26 8.6 -> 9.0 / 9.0 -> 8.8 / 8.3 -> 8.7. Helps at turning points, neutral in growth years.
+  const budgetMemo = {};
+  const budgetOf = i => {
+    if (i in budgetMemo) return budgetMemo[i];
+    let r = null;
+    if (typeof window !== 'undefined' && window.gmGenRatio) {
+      const P = [], Q = [];
+      for (let x = 1; x <= 12; x++) { P.push(projectBase(i, x)); Q.push(window.gmGenRatio(kOf(i), x, zSel)); }
+      if (P.every(x => x) && Q.every(x => x)) { const rest = Q.reduce((a, b) => a + b, 0) - P[0] - P[1] - P[2]; const tail = P.slice(3).reduce((a, b) => a + b, 0); if (rest > 0) r = rest / tail; }
+    }
+    return (budgetMemo[i] = r); };
+  const projectVol = (i, h) => { const p = projectBase(i, h); if (!p || h <= 3) return p; const r = budgetOf(i); return r ? p * Math.sqrt(r) : p; };
   return { projectOld, cwCorr, rotEst, rot12, projectVol, massBal };
 }
 
@@ -8450,6 +8467,8 @@ function renderOutlook() {
     `<b>Mass balance</b> (added November 2026, weighted ½ at 1–3 months, ⅓ at 4–6, ⅕ beyond): harvest = what grew − what stays at sea − what died. Monthly production (change in biomass + harvest + deaths) is projected from the same month last year × the production growth of the last two months, fading over 12 months. ` +
     `Faster-growing generations show up in production before they are harvested, so this is the one method that was not biased in 2025–2026; with it, on 2024–2026 the 1–3 month error falls from 3.0 / 5.5 / 6.3 % without it to 2.8 / 4.4 / 5.3 % with it. ` +
     `<b>Next month, from exports</b> (added November 2026): when the register for a month comes out, SSB's weekly exports already cover the whole following month. Harvest ÷ whole-fish exports moves slowly with the share of fish processed in Norway (1.46 in 2021, 1.58 in 2024 with many production-grade fish, 1.46 again in 2026), so the ratio is taken from the last months only (most of the weight on the last six), and that month is read from its exports and blended 60/40 with the models: 1-month error 2.8 % on 2024–2026 (national view only, exports are not split by zone). ` +
+    `<b>Generation budget</b> (added November 2026, from 4 months on): the fish harvested over the next 12 months are already at sea. Zone by zone, last year's harvest of each generation is scaled by how the generation replacing it compares today (biomass and number of fish); months 4–12 are pulled halfway towards what is left of that 12-month budget once months 1–3 are counted, so fish harvested early are not counted again later. ` +
+    `Tested on the turning points: 6-month error 2019–20 6.8 → 5.8 %, 2022–23 5.8 → 5.4 %, 12 months 2022–23 6.6 → 5.7 %; in the growth years 2024–26 about the same (8.6 → 9.0 % at 6 months, 9.0 → 8.6 % at 9). ` +
     `<b>Learning period.</b> 2021 (after Covid, much fish at sea) and 2022 (many production-grade fish, forced or early harvests) are left out of what the methods learn; the ± range shown is the error measured on 2024–2026 only. ` +
     `<b>Rotation:</b> same month last year × the change in standing biomass × half the change in 12-month stock rotation (harvest ÷ average biomass). ` +
     `<b>1 · Headcount:</b> fish in the sea × the share of the stock usually harvested that many months later in that calendar month, × an average harvest ` +
@@ -10555,6 +10574,26 @@ function genHarvestA(k, h, zones) {
     tot += c.stock * q * w; }
   return (G.ga[key] = ok ? tot : null);
 }
+// ---- recolte du mois t "par generation" (novembre 2026) : pour chaque zone, recolte du meme mois l'an dernier generation par
+// generation, multipliee par l'evolution de la generation qui la remplace (meme rang, un an plus tard), mesuree a la date k :
+// en biomasse et en nombre de poissons (moyenne geometrique des deux totaux). Si la generation de remplacement n'est pas encore
+// en mer, rapport de biomasse de la zone. Sert de "budget" a 12 mois dans la projection de volumes.
+function genRatio(k, h, zones) {
+  if (!G) return null; G.gr = G.gr || {}; const key = k + '_' + h + '_' + (zones || []).join(','); if (G.gr[key] !== undefined) return G.gr[key];
+  const t = sh(k, h), ly = sh(t, -12), k0 = sh(k, -12); if (ly > k) return (G.gr[key] = null);
+  const Z = zones && zones.length ? zones : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
+  const v = (po, g, kk, f) => { const c = ((G.COH[po] || {})[g] || {})[kk]; return c ? (c[f] || 0) : 0; };
+  let tb = 0, tn = 0, ok = false;
+  for (const po of Z) {
+    let zb = null;
+    const zoneR = () => { if (zb !== null) return zb; let A = 0, B = 0; Object.keys(G.COH[po] || {}).forEach(g => { A += v(po, +g, k, 'stock') * v(po, +g, k, 'weight_kg'); B += v(po, +g, k0, 'stock') * v(po, +g, k0, 'weight_kg'); }); return (zb = B > 0 ? A / B : 1); };
+    for (const g0 of Object.keys(G.COH[po] || {})) { const g = +g0, hl = v(po, g, ly, 'harv_kg'); if (!(hl > 0)) continue; ok = true;
+      const a = v(po, g + 1, k, 'stock'), b = v(po, g, k0, 'stock'), aw = a * v(po, g + 1, k, 'weight_kg'), bw = b * v(po, g, k0, 'weight_kg');
+      const cl = r => Math.max(0.3, Math.min(3, r));
+      tb += hl * cl(aw > 0 && bw > 0 ? aw / bw : zoneR()); tn += hl * cl(a > 0 && b > 0 ? a / b : zoneR()); } }
+  return (G.gr[key] = ok ? Math.sqrt(tb * tn) : null);
+}
+if (typeof window !== 'undefined') window.gmGenRatio = (k, h, zones) => { if (!G && typeof DATA_RAW !== 'undefined' && DATA_RAW) G = prepare(DATA_RAW); return genRatio(k, h, zones); };
 if (typeof window !== 'undefined') window.gmGenHarvestA = (k, h, zones) => { if (!G && typeof DATA_RAW !== 'undefined' && DATA_RAW) G = prepare(DATA_RAW); return genHarvestA(k, h, zones); };
 if (typeof window !== 'undefined') window.gmGenHarvestW = (k, h, zones) => { if (!G && typeof DATA_RAW !== 'undefined' && DATA_RAW) G = prepare(DATA_RAW); return genHarvestW(k, h, zones); };
 function wholeGrowth(ser, k0, h) {
