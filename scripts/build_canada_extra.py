@@ -132,7 +132,7 @@ def fetch_sst():
                 for t, s in zip(h.get('time', []), h.get('sea_surface_temperature', [])):
                     if s is not None: m[t[:7]].append(s)
                 if m:
-                    got = {str(ym(k)): round(sum(v) / len(v), 2) for k, v in m.items() if len(v) >= 24 * 20}
+                    got = {str(ym(k)): round(sum(v) / len(v), 2) for k, v in m.items() if len(v) >= 24 * 10}
                     break
         out[zid] = got or {}
         print(f'  SST {zid} : {len(out[zid])} mois')
@@ -153,8 +153,17 @@ def port_group(code):
     return 'mid'                                                         # Grands Lacs, New York interieur, Dakota...
 
 
+def us_tonnes():
+    """Tonnes de saumon atlantique frais entier importees du Canada (US Census HTS10, deja lu par
+    update_national_trade.py dans data/us_imports.json, forme 0) : {yyyymm: [kg, USD, unite]}."""
+    p = os.path.join(ROOT, 'data', 'us_imports.json')
+    if not os.path.exists(p): return {}
+    d = json.load(open(p))
+    return {str(r[0]): [r[3] * 1000, r[4] * 1000, 'kg'] for r in d.get('rows', []) if r[1] == 'CA' and r[2] == 0}
+
+
 def build_ports(P):
-    ports, qty = P['ports'], P['qty']
+    ports, qty = P['ports'], us_tonnes() or P['qty']
     months = sorted(set(ports) | set(qty), key=int)
     rows, names, by_port = [], {}, defaultdict(float)
     for k in months:
@@ -226,20 +235,23 @@ def build_carcass(text):
         prev = None
         for r in rr:
             gap = mdiff(r['k'], prev) if prev else 99
-            if r['st'] == 'smolt' and (cyc is None or cyc['end'] is not None or gap > 2 or (cyc['harv0'] is not None)):
-                if cyc and cyc['end'] is None and cyc['harv0'] is not None: cyc['end'] = prev
-                cyc = {'id': sid, 'entry': r['k'], 'harv0': None, 'harv1': None, 'end': None, 'months': 0, 'mort': 0.0}
-                cycles.append(cyc)
-            elif cyc is not None and cyc['end'] is None and gap > 3:
-                cyc['end'] = prev
+            if cyc is not None and cyc['end'] is None and gap > 4:
+                cyc['end'] = prev                                   # jachere : le cycle est fini
+            if r['st'] == 'smolt':
+                open_ = cyc is not None and cyc['end'] is None
+                if not open_ or cyc['harv0'] is not None or mdiff(r['k'], cyc['entry']) >= 6:
+                    if open_: cyc['end'] = prev
+                    cyc = {'id': sid, 'entry': r['k'], 'harv0': None, 'harv1': None, 'end': None, 'months': 0, 'mort': 0.0, 'last': r['k']}
+                    cycles.append(cyc)
             if cyc is not None and cyc['end'] is None:
                 cyc['months'] += 1
                 cyc['mort'] += r['tot'] or 0
+                cyc['last'] = r['k']
                 if r['st'] == 'harvest':
                     if cyc['harv0'] is None: cyc['harv0'] = r['k']
                     cyc['harv1'] = r['k']
             prev = r['k']
-        if cyc and cyc['end'] is None and mdiff(last, prev) > 2: cyc['end'] = prev
+        if cyc and cyc['end'] is None and mdiff(last, prev) > 3: cyc['end'] = prev
         lr = rr[-1]
         cur = cycles[-1] if cycles and cycles[-1]['id'] == sid else None
         m12 = [r['tot'] for r in rr if r['k'] > mback(last, 12) and r['tot'] is not None]
@@ -262,7 +274,8 @@ def build_carcass(text):
     # mises a l'eau par mois (nombre de fermes qui commencent un cycle)
     entries = defaultdict(lambda: defaultdict(int))
     for c in cycles: entries[str(c['entry'])][next(s['co'] for s in sites if s['id'] == c['id'])] += 1
-    return {'last': last, 'first': months[0], 'causes': cause_names, 'months': mon, 'by_company': byco,
+    site_months = {sid: sorted({r['k'] for r in rr}) for sid, rr in bysite.items()}
+    return {'site_months': site_months, 'last': last, 'first': months[0], 'causes': cause_names, 'months': mon, 'by_company': byco,
             'sites': sorted(sites, key=lambda s: (s['st'] == 'none', s['co'], s['n'])), 'cycles': cycles, 'cycle_stats': stats,
             'entries': {k: dict(v) for k, v in sorted(entries.items())},
             'other_species_sites': len({r['id'] for r in recs if not r['atl'] and r['k'] == last})}
@@ -295,6 +308,7 @@ def outlook(car, ports):
     mon = {r['m']: r for r in car['months']}
     pac = {r['m']: r['pac_t'] for r in ports['rows'] if r.get('pac_t') is not None}
     cycles = car['cycles']
+    site_months = car.get('site_months') or {}
 
     def dist(asof):
         done = [c for c in cycles if c['harv0'] and c['end'] and c['end'] <= asof and c['entry'] >= mback(asof, 120)]
@@ -311,6 +325,9 @@ def outlook(car, ports):
             if c['entry'] > asof: continue
             end = c['end']
             if end is not None and end <= asof: continue
+            # derniere declaration connue a la date asof : la ferme doit avoir declare dans les 3 derniers mois
+            seen = [k for k in site_months.get(c['id'], ()) if k <= asof]
+            if not seen or mdiff(asof, max(seen)) > 3: continue
             started = c['harv0'] is not None and c['harv0'] <= asof
             live.append((c, started))
         fut = [mback(asof, -i) for i in range(1, 3 * nq + 1)]
@@ -332,6 +349,17 @@ def outlook(car, ports):
                     for i in range(int(b)):
                         k = mback(c['entry'], -(a + i))
                         if k in exp: exp[k] += w
+        # mises a l'eau a venir : autant que sur les 12 mois precedents, decalees d'un an
+        newx = {k: 0.0 for k in fut}
+        starts = defaultdict(int)
+        for c in cycles:
+            if mback(asof, 12) < c['entry'] <= asof: starts[c['entry']] += 1
+        for m0, n in starts.items():
+            e = mback(m0, -12)
+            for a, b in pairs:
+                for i in range(int(b)):
+                    k = mback(e, -(a + i))
+                    if k in newx: newx[k] += n / len(pairs)
         # tonnes par mois-ferme en recolte, 12 derniers mois connus
         hist = [k for k in sorted(mon) if k <= asof][-12:]
         hs = sum(mon[k]['harvest'] for k in hist)
@@ -341,10 +369,11 @@ def outlook(car, ports):
         q = []
         for i in range(nq):
             ks = fut[3 * i:3 * i + 3]
-            q.append({'q': f'{ks[0] // 100}Q{(ks[0] % 100 + 2) // 3}', 'months': ks, 'site_months': round(sum(exp[k] for k in ks), 1),
-                      't': round(sum(exp[k] for k in ks) * rate)})
+            sm, sn = sum(exp[k] for k in ks), sum(newx[k] for k in ks)
+            q.append({'q': f'{ks[0] // 100}Q{(ks[0] % 100 + 2) // 3}', 'months': ks, 'site_months': round(sm + sn, 1),
+                      't': round((sm + sn) * rate), 't_in_sea': round(sm * rate), 't_future_smolt': round(sn * rate)})
         return {'asof': asof, 'rate_t_per_site_month': round(rate, 1), 'live_cycles': len(live),
-                'started': sum(1 for _, s in live if s), 'quarters': q}
+                'started': sum(1 for _, s in live if s), 'new_entries_12m': sum(starts.values()), 'quarters': q}
 
     last = car['last']
     # on cale le point de depart sur une fin de trimestre
@@ -362,6 +391,12 @@ def outlook(car, ports):
                     bt.append({'asof': k, 'h': i + 1, 'q': qq['q'], 'pred': qq['t'], 'act': round(sum(act))})
         k = mback(k, -3)
     err = {}
+    # erreur sur la somme des 4 trimestres suivants (le chiffre annuel est plus fiable que chaque trimestre)
+    yr = defaultdict(lambda: [0, 0, 0])
+    for b in bt: yr[b['asof']][0] += b['pred']; yr[b['asof']][1] += b['act']; yr[b['asof']][2] += 1
+    ya = [(k, v[0] / v[1] - 1) for k, v in sorted(yr.items()) if v[2] == 4 and v[1] > 0 and k >= 202301]
+    if ya: err['year'] = {'mape': round(100 * statistics.mean(abs(e) for _, e in ya), 1), 'bias': round(100 * statistics.mean(e for _, e in ya), 1),
+                         'n': len(ya), 'points': [{'asof': k, 'err': round(100 * e, 1)} for k, e in ya]}
     for h in (1, 2, 3, 4):
         e = [abs(b['pred'] / b['act'] - 1) for b in bt if b['h'] == h and b['act'] > 0 and b['asof'] >= 202401]
         b_ = [b['pred'] / b['act'] - 1 for b in bt if b['h'] == h and b['act'] > 0 and b['asof'] >= 202401]
@@ -407,7 +442,8 @@ def main():
     if out['carcass'] and out['ports']:
         try: out['outlook'] = outlook(out['carcass'], out['ports'])
         except Exception as e: print('  ERREUR perspectives :', e); out['outlook'] = old.get('outlook')
-    if out['carcass']: out['carcass'].pop('cycles', None)
+    if out['carcass']:
+        out['carcass'].pop('cycles', None); out['carcass'].pop('site_months', None)
     json.dump(out, open(OUT, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
     print('ecrit', OUT, os.path.getsize(OUT), 'octets')
 

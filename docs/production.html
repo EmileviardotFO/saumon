@@ -502,7 +502,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
       <button data-v="scotland">Scotland</button>
       <button data-v="chile">Chile</button>
       <button data-v="australia">Australia</button>
-      <button data-v="canada">Canada (BC)</button>
+      <button data-v="canada">Canada</button>
       <button data-v="faroe">Faroe Islands</button>
       <button data-v="iceland">Iceland</button>
     </div></div>
@@ -1353,9 +1353,20 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
   </div>
 
   <div class="panel" id="canadaView" style="flex:1; min-width:0; max-width:1400px; display:none;">
-    <div class="sig-title">Canada, British Columbia — farms in use, sea lice, mortality events, smolt transfers (DFO public reporting)</div>
+    <div class="sig-title">Canada — volumes by coast, BC farm cycles, mortality, sea lice and sea temperature (DFO, US Census)</div>
     <div class="sig-sub" id="caSub"></div>
     <div id="caCards" class="pr-cards"></div>
+    <div id="caxCards" class="pr-cards"></div>
+    <div class="sig-title" style="margin-top:18px">Monthly volumes by coast — fresh whole salmon into the US</div>
+    <div class="sig-sub" id="caVolSub"></div>
+    <div id="caVolTog" style="margin:6px 0"></div>
+    <div id="caVol"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="caVolTab"></table></div>
+    <div class="sig-title" style="margin-top:18px">Harvest outlook — British Columbia, 2027 against 2026</div>
+    <div class="sig-sub" id="caOutSub"></div>
+    <div id="caOutCards" class="pr-cards"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="caOutTab"></table></div>
+    <div class="sig-sub" id="caOutNote"></div>
     <div class="sig-title" style="margin-top:18px">Canadian farmed salmon by province</div>
     <div class="sig-sub" id="caProvSub"></div>
     <div id="caProvChart"></div>
@@ -1369,6 +1380,21 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="sig-title" style="margin-top:18px">Farms in use each month</div>
     <div class="sig-sub" id="caFarmSub"></div>
     <div id="caFarms"></div>
+    <div class="sig-title" style="margin-top:18px">Smolt entries and harvesting farms — British Columbia</div>
+    <div class="sig-sub" id="caCycSub"></div>
+    <div id="caCyc"></div>
+    <div id="caHarv"></div>
+    <div class="sig-title" style="margin-top:18px">Monthly mortality — British Columbia, % of fish in the farm</div>
+    <div class="sig-sub" id="caMortSub"></div>
+    <div id="caMort"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="caMortTab"></table></div>
+    <div class="sig-title" style="margin-top:18px">Sea temperature at the farming areas</div>
+    <div class="sig-sub" id="caSstSub"></div>
+    <div id="caSst"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="caSstTab"></table></div>
+    <div class="sig-title" style="margin-top:18px">British Columbia farm by farm</div>
+    <div class="sig-sub" id="caSiteSub"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="caSites"></table></div>
     <div class="sig-title" style="margin-top:18px">Sea lice per farmed fish</div>
     <div class="sig-sub" id="caLiceSub"></div>
     <div id="caLice"></div>
@@ -4364,6 +4390,160 @@ function caMap(lastC) {
     if (pts.length) CA_MAP.fitBounds(pts, { padding: [24, 24], maxZoom: 10 }); setTimeout(() => CA_MAP.invalidateSize(), 50);
   });
 }
+// ---- Canada : volumes par cote, perspectives BC, cycles, mortalite, temperature, fermes (data/canada_extra.json)
+let CAX = null, CAX_LOADING = false, CAX_COAST = 'all';
+function caBars(vfn, years, o) {
+  const W = 1080, H = o.H || 250, mL = 58, mR = 12, mT = 14, mB = 30, pw = W - mL - mR, ph = H - mT - mB, COL = o.cols || ['#8fa4b0', '#4fc3f7', '#ffb74d'];
+  const vals = years.flatMap(y => Array.from({ length: 12 }, (_, i) => vfn(y, i + 1) || 0)), mx = Math.max(1e-9, ...vals);
+  const st = Math.pow(10, Math.floor(Math.log10(mx / 4))), step = [1, 2, 2.5, 5, 10].map(m => m * st).find(s => mx / s <= 5) || st * 10, top = Math.ceil(mx / step) * step;
+  const Y = x => mT + ph - x / top * ph, gw = pw / 12, bw = gw * 0.78 / years.length;
+  let g = '';
+  for (let t = 0; t <= top + 1e-9; t += step) g += `<line x1="${mL}" x2="${W - mR}" y1="${Y(t)}" y2="${Y(t)}" stroke="#223642"/><text x="${mL - 6}" y="${Y(t) + 4}" text-anchor="end" fill="#8fa4b0" font-size="11">${o.fmt ? o.fmt(t) : t}</text>`;
+  for (let m = 1; m <= 12; m++) {
+    g += `<text x="${mL + gw * (m - 0.5)}" y="${H - 10}" text-anchor="middle" fill="#8fa4b0" font-size="11">${MONTHS_FR[m - 1].slice(0, 3)}</text>`;
+    years.forEach((y, j) => { const x = vfn(y, m); if (x === null || x === undefined || !x) return; const xx = mL + gw * (m - 1) + gw * 0.11 + j * bw;
+      g += `<rect x="${xx.toFixed(1)}" y="${Y(x).toFixed(1)}" width="${Math.max(1, bw - 2).toFixed(1)}" height="${(Y(0) - Y(x)).toFixed(1)}" fill="${COL[j % COL.length]}" rx="2"><title>${MONTHS_FR[m - 1]} ${y}: ${o.tip ? o.tip(x) : x}</title></rect>`; }); }
+  g += `<text transform="translate(14,${mT + ph / 2}) rotate(-90)" text-anchor="middle" fill="#cfdde4" font-size="12" font-weight="bold">${o.axis || ''}</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">${g}</svg><div class="sig-sub">` +
+    years.map((y, j) => `<span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><i style="display:inline-block;width:11px;height:11px;border-radius:2px;background:${COL[j % COL.length]}"></i>${y}</span>`).join('') + `</div>`;
+}
+function canadaExtra() {
+  const $i = id => document.getElementById(id);
+  if (!CAX) { if (!CAX_LOADING) { CAX_LOADING = true; fetch(DATA_URL.replace('data.json', 'canada_extra.json'), { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : null).catch(() => null).then(j => { CAX = j || {}; CAX_LOADING = false; if (currentView === 'canada') canadaExtra(); }); }
+    $i('caVolSub').innerHTML = 'Loading…'; return; }
+  const f0 = v => v === null || v === undefined || !isFinite(v) ? '—' : Math.round(v).toLocaleString('en-US'), f1 = v => v === null || v === undefined || !isFinite(v) ? '—' : (+v).toFixed(1);
+  const ch = (a, b) => a && b ? (() => { const v = Math.round(100 * (a / b - 1)); return v === 0 ? '0%' : `<span class="${v > 0 ? 'delta-good' : 'delta-bad'}">${v > 0 ? '+' : '−'}${Math.abs(v)}%</span>`; })() : '—';
+  const esc = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const ml = k => k ? `${MONTHS_FR[k % 100 - 1]} ${Math.floor(k / 100)}` : '—', mb = (k, n) => { const t = Math.floor(k / 100) * 12 + k % 100 - 1 - n; return Math.floor(t / 12) * 100 + t % 12 + 1; };
+  const md = (a, b) => (Math.floor(a / 100) - Math.floor(b / 100)) * 12 + a % 100 - b % 100;
+  const card = (lab, big, sub, col) => `<div class="pr-card" style="cursor:default"><div class="nm"><i style="background:${col}"></i>${lab}</div><div class="big">${big}</div><div class="ln">${sub}</div></div>`;
+  const P = (CAX.ports || {}).rows || [], PB = {}; P.forEach(r => PB[r.m] = r);
+  const C = CAX.carcass || {}, CM = {}; (C.months || []).forEach(r => CM[r.m] = r);
+  const COAST = { all: ['All Canada', 't', '#ffb74d'], pac: ['British Columbia (Washington ports)', 'pac_t', '#4fc3f7'], atl: ['Atlantic Canada (Maine ports)', 'atl_t', '#81c784'], mid: ['Great Lakes / New York ports (coast unknown)', 'mid_t', '#b39ddb'] };
+  // ---- cartes
+  const lp = P.length ? P[P.length - 1].m : null, LY = lp ? Math.floor(lp / 100) : null, LM = lp ? lp % 100 : null;
+  const ytd = (y, key) => { let s = 0; for (let m = 1; m <= LM; m++) s += ((PB[y * 100 + m] || {})[key]) || 0; return s; };
+  const lc = C.last ? CM[C.last] : null, lcY = C.last ? CM[C.last - 100] : null;
+  $i('caxCards').innerHTML = (lp ? card(`BC → US · Jan–${MONTHS_FR[LM - 1].slice(0, 3)} ${LY}`, `${f0(ytd(LY, 'pac_t'))} t ${ch(ytd(LY, 'pac_t'), ytd(LY - 1, 'pac_t'))}`, `fresh whole salmon through Washington ports · ${LY - 1}: ${f0(ytd(LY - 1, 'pac_t'))} t`, '#4fc3f7') +
+      card(`Atlantic Canada → US · Jan–${MONTHS_FR[LM - 1].slice(0, 3)} ${LY}`, `${f0(ytd(LY, 'atl_t'))} t ${ch(ytd(LY, 'atl_t'), ytd(LY - 1, 'atl_t'))}`, `through Maine ports (Calais, Houlton) · ${LY - 1}: ${f0(ytd(LY - 1, 'atl_t'))} t`, '#81c784') : '') +
+    (lc ? card(`BC farms harvesting · ${ml(C.last)}`, `${lc.harvest} <span style="font-size:12px;color:var(--muted)">of ${lc.sites}</span>`, `${lc.smolt} receiving smolts, ${lc.grow} growing${lcY ? ` · a year earlier: ${lcY.harvest} harvesting of ${lcY.sites}` : ''}`, '#ffb74d') +
+      card(`BC mortality · ${ml(C.last)}`, `${f1(lc.mort_med)} % <span style="font-size:12px;color:var(--muted)">median farm</span>`, `average ${f1(lc.mort)} % of the fish in the farm died in the month${lcY ? ` · a year earlier: median ${f1(lcY.mort_med)} %, average ${f1(lcY.mort)} %` : ''}`, '#ff8a65') : '');
+  // ---- volumes par cote : batons groupes 3 annees
+  if (lp) {
+    const key = COAST[CAX_COAST][1], YS = [LY - 2, LY - 1, LY];
+    $i('caVolTog').innerHTML = Object.entries(COAST).map(([k, v]) => `<button data-co="${k}" style="margin:0 6px 6px 0;padding:5px 11px;border-radius:14px;cursor:pointer;font-size:12.5px;background:${k === CAX_COAST ? '#1c3a4a' : '#12222c'};color:${k === CAX_COAST ? '#fff' : '#cfdde4'};border:1px solid ${k === CAX_COAST ? '#4fc3f7' : '#223642'}">${v[0]}</button>`).join('');
+    $i('caVolTog').querySelectorAll('button').forEach(b => b.onclick = () => { CAX_COAST = b.dataset.co; canadaExtra(); });
+    $i('caVol').innerHTML = caBars((y, m) => (y < LY || m <= LM) ? ((PB[y * 100 + m] || {})[key] || null) : null, YS, { axis: 'Tonnes', fmt: x => f0(x), tip: x => `${f0(x)} t` });
+    const full = (y, k) => { let s = 0; for (let m = 1; m <= 12; m++) s += ((PB[y * 100 + m] || {})[k]) || 0; return s; };
+    const yrs = [...new Set(P.map(r => Math.floor(r.m / 100)))].sort();
+    $i('caVolTab').innerHTML = `<thead><tr><th class="name">Tonnes</th>${yrs.map(y => `<th>${y}${y === LY ? ` <span style="font-size:11px;color:var(--muted)">(Jan–${MONTHS_FR[LM - 1].slice(0, 3)})</span>` : ''}</th>`).join('')}<th>Jan–${MONTHS_FR[LM - 1].slice(0, 3)} ${LY} vs ${LY - 1}</th></tr></thead><tbody>` +
+      Object.entries(COAST).map(([k, [lab, kk]]) => `<tr${k === 'all' ? ' style="font-weight:bold"' : ''}><td class="name">${lab}</td>${yrs.map(y => `<td>${f0(full(y, kk))}</td>`).join('')}<td>${ch(ytd(LY, kk), ytd(LY - 1, kk))}</td></tr>`).join('') +
+      `<tr><td class="name">Average price, all Canada (USD/kg, customs value)</td>${yrs.map(y => { let v = 0, t = 0; for (let m = 1; m <= 12; m++) { const r = PB[y * 100 + m]; if (r && r.t) { v += r.usd; t += r.t; } } return `<td>${t ? (v / t / 1000).toFixed(2) : '—'}</td>`; }).join('')}<td></td></tr></tbody>`;
+    const pt = ((CAX.ports || {}).ports || []).slice(0, 6).map(x => `${x.name.replace(/, ([A-Z]{2})$/, ' ($1)')} ${x.share}%`).join(', ');
+    $i('caVolSub').innerHTML = `Canada sends almost all its fresh whole salmon to the United States by truck, and the US customs record the border post. ` +
+      `Fish entering through <b>Washington</b> (Blaine) comes from <b>British Columbia</b>; fish entering through <b>Maine</b> (Calais, Houlton) comes from <b>New Brunswick, Nova Scotia and Newfoundland</b>. ` +
+      `Posts on the Great Lakes and in New York (Detroit, Buffalo, Port Huron) cannot be tied to a coast and are kept apart. Share of value since 2018: ${pt}. ` +
+      `Road posts declare no weight: the tonnes of each coast are Canada's total tonnes (US Census, HTS 0302.14) shared out by the value through each post. ` +
+      `This is the best <b>monthly</b> measure of each coast's harvest that is public, but it misses fish sold in Canada and air freight to Asia: in 2024 the Washington posts took about half of BC's harvest (${f0(full(2024, 'pac_t'))} t against 53,816 t live weight).` +
+      ` Latest month: <b>${ml(lp)}</b> (US Census, about five weeks after the month).`;
+  }
+  // ---- perspectives BC
+  const O = CAX.outlook;
+  if (O && O.current) {
+    const cur = O.current, obs = O.observed || {}, Q = {}; cur.quarters.forEach(q => Q[q.q] = q);
+    const y1 = Math.floor(cur.asof / 100), y0 = y1 + 1;  // annee en cours, annee suivante
+    const val = q => obs[q] !== undefined ? [obs[q], 'obs'] : Q[q] ? [Q[q].t, 'proj'] : [null, ''];
+    const qs = y => [1, 2, 3, 4].map(i => `${y}Q${i}`);
+    const tot = y => qs(y).reduce((a, q) => a + (val(q)[0] || 0), 0), allKnown = y => qs(y).every(q => val(q)[0] !== null);
+    const E = (O.errors || {}).year;
+    if (allKnown(y1) && allKnown(y0)) {
+      const a = tot(y1), b = tot(y0), mape = E ? E.mape : null;
+      $i('caOutCards').innerHTML = card(`${y0} · central`, `${f0(b)} t ${ch(b, a)}`, `against ${f0(a)} t in ${y1} (${qs(y1).filter(q => val(q)[1] === 'obs').length} quarters observed)`, '#ffb74d') +
+        (mape ? card(`${y0} · range`, `${f0(b * (1 - mape / 100))}–${f0(b * (1 + mape / 100))} t`, `± the average error of the year-ahead test (${mape.toFixed(0)} %); the model has run high on average (${E.bias > 0 ? '+' : ''}${E.bias.toFixed(0)} %)`, '#8fa4b0') : '') +
+        card(`Farms with fish at sea · ${ml(cur.asof)}`, `${cur.live_cycles}`, `${cur.started} already harvesting · ${cur.new_entries_12m} smolt entries in the previous 12 months`, '#4fc3f7');
+      $i('caOutTab').innerHTML = `<thead><tr><th class="name">Tonnes into the US through Washington ports</th>${[1, 2, 3, 4].map(i => `<th>Q${i}</th>`).join('')}<th>Year</th></tr></thead><tbody>` +
+        [y1 - 1, y1, y0].map(y => `<tr><td class="name">${y}</td>${qs(y).map(q => { const [v, k] = val(q); return `<td${k === 'proj' ? ' style="font-style:italic;color:#ffb74d"' : ''}>${f0(v)}</td>`; }).join('')}<td><b>${f0(tot(y))}</b></td></tr>`).join('') +
+        `<tr><td class="name">${y0} vs ${y1}</td>${qs(y0).map((q, i) => `<td>${ch(val(q)[0], val(`${y1}Q${i + 1}`)[0])}</td>`).join('')}<td>${ch(tot(y0), tot(y1))}</td></tr>` +
+        `<tr><td class="name" style="color:var(--muted)">of which from smolts not yet at sea</td>${qs(y0).map(q => `<td style="color:var(--muted)">${Q[q] ? f0(Q[q].t_future_smolt) : ''}</td>`).join('')}<td style="color:var(--muted)">${f0(qs(y0).reduce((s, q) => s + (Q[q] ? Q[q].t_future_smolt : 0), 0))}</td></tr></tbody>`;
+      $i('caOutSub').innerHTML = `Harvest is projected from the cycle of each BC farm, since Canada publishes neither fish numbers nor weights. Every farm reports each month whether it is receiving smolts, growing or harvesting: ` +
+        `that gives the date its fish went to sea. Since 2015, a BC farm started harvesting a median <b>${(C.cycle_stats || {}).to_harvest_med} months</b> after its smolts went in (half between ${(C.cycle_stats || {}).to_harvest_p25} and ${(C.cycle_stats || {}).to_harvest_p75}) and harvested for a median <b>${(C.cycle_stats || {}).harvest_len_med} months</b>. ` +
+        `Applied to the ${cur.live_cycles} farms with fish at sea at ${ml(cur.asof)} (the last month DFO has published), this gives the farm-months of harvest expected each quarter; ` +
+        `they are turned into tonnes with the volume per harvesting farm-month of the last 12 months (${f0(cur.rate_t_per_site_month)} t, in US-import tonnes). Observed quarters are in plain type, projected ones in <i style="color:#ffb74d">orange italics</i>.`;
+      const coQ = (window.QUARTERLY_CA || '');
+      $i('caOutNote').innerHTML = `<b>Reliability.</b> The same projection was rerun from each quarter since 2023 with only the data known then: the next four quarters taken together were off by ${E ? E.mape.toFixed(0) : '—'} % on average (${E ? E.points.map(p => `${p.err > 0 ? '+' : ''}${p.err.toFixed(0)}`).join(', ') : ''} %). ` +
+        `Single quarters are much less reliable (±${O.errors['1'] ? O.errors['1'].mape.toFixed(0) : '—'} % one quarter ahead) because harvests are bunched. ` +
+        `The end of ${y0} depends on smolts that are not yet at sea: they are assumed to be stocked as in the previous 12 months. ` +
+        `What it does not see: the size of each farm, the weight of the fish, and a policy decision — open net-pen licences in BC expire on 30 June 2029, and companies have stopped restocking some farms. ` +
+        `Mowi's guidance for Canada West is 23,000 t in 2027. <b>Atlantic Canada</b> publishes no farm-level data, so no projection is made for it: its monthly volumes are in the chart above (Maine ports).`;
+    }
+  } else if ($i('caOutSub')) $i('caOutSub').innerHTML = 'Outlook not available yet.';
+  // ---- mises a l'eau et fermes en recolte (BC), 3 annees
+  if (C.months && C.months.length) {
+    const L = C.last, LYc = Math.floor(L / 100), LMc = L % 100, YS = [LYc - 2, LYc - 1, LYc];
+    const v = k => (y, m) => (y < LYc || m <= LMc) ? ((CM[y * 100 + m] || {})[k] || null) : null;
+    $i('caCyc').innerHTML = `<div class="sig-sub" style="margin:4px 0"><b>Farms receiving smolts</b> each month</div>` + caBars(v('smolt'), YS, { axis: 'Farms', H: 200, fmt: x => x, tip: x => `${x} farms` });
+    $i('caHarv').innerHTML = `<div class="sig-sub" style="margin:10px 0 4px"><b>Farms harvesting</b> each month</div>` + caBars(v('harvest'), YS, { axis: 'Farms', H: 200, fmt: x => x, tip: x => `${x} farms`, cols: ['#8fa4b0', '#81c784', '#ff8a65'] });
+    const sum = (k, y) => { let s = 0; for (let m = 1; m <= LMc; m++) s += ((CM[y * 100 + m] || {})[k]) || 0; return s; };
+    $i('caCycSub').innerHTML = `From DFO's monthly mortality reports: each BC Atlantic-salmon farm states whether it is receiving smolts ("smolt entry"), growing or harvesting that month. ` +
+      `A farm receives smolts over one to three months. January–${MONTHS_FR[LMc - 1]}: <b>${sum('smolt', LYc)}</b> farm-months of smolt entry in ${LYc} against ${sum('smolt', LYc - 1)} in ${LYc - 1}, and <b>${sum('harvest', LYc)}</b> farm-months of harvest against ${sum('harvest', LYc - 1)}. ` +
+      `Latest month published: ${ml(L)} (DFO publishes these reports a few months late).`;
+  }
+  // ---- mortalite mensuelle par cause
+  if (C.months && C.months.length) {
+    const L = C.last, keys = []; for (let i = 35; i >= 0; i--) keys.push(mb(L, i));
+    const CC = ['#ffb74d', '#ff8a65', '#e57373', '#4fc3f7', '#81c784', '#b39ddb', '#8fa4b0', '#f06292'];
+    const causes = (C.causes || []).filter(c => keys.some(k => CM[k] && CM[k].cause[c] > 0.005));
+    const stacks = causes.map((c, i) => ({ lab: c, col: CC[i % CC.length], vals: keys.map(k => CM[k] ? CM[k].cause[c] || 0 : 0) }));
+    $i('caMort').innerHTML = vzStack(keys, stacks, { axis: '% died in month', unit: '%', H: 260 }) + vzLegend(stacks.map(x => [x.lab, x.col, false, true]));
+    const yr = (y, f) => { const r = (C.months || []).filter(x => Math.floor(x.m / 100) === y && x[f] !== null); return r.length ? r.reduce((a, b) => a + b[f], 0) : null; };
+    const yrs = [...new Set((C.months || []).map(x => Math.floor(x.m / 100)))].sort().slice(-6);
+    const BC = C.by_company || {}, cos = Object.keys(BC).filter(c => BC[c][String(L)] || BC[c][String(L - 100)]);
+    const coSum = (c, a, b) => { let s = 0, n = 0; for (let k = a; k <= b; k = mb(k, -1)) { const x = BC[c][String(k)]; if (x && x[3] !== null) { s += x[3]; n++; } } return n ? s / n : null; };
+    $i('caMortTab').innerHTML = `<thead><tr><th class="name">Average farm, % per month</th>${yrs.map(y => `<th>${y}</th>`).join('')}</tr></thead><tbody>` +
+      `<tr><td class="name">Average of farms</td>${yrs.map(y => { const r = (C.months || []).filter(x => Math.floor(x.m / 100) === y && x.mort !== null); return `<td>${r.length ? (r.reduce((a, b) => a + b.mort, 0) / r.length).toFixed(2) : '—'}</td>`; }).join('')}</tr>` +
+      `<tr><td class="name">Median farm</td>${yrs.map(y => { const r = (C.months || []).filter(x => Math.floor(x.m / 100) === y && x.mort_med !== null); return `<td>${r.length ? (r.reduce((a, b) => a + b.mort_med, 0) / r.length).toFixed(2) : '—'}</td>`; }).join('')}</tr>` +
+      cos.map(c => `<tr><td class="name">${esc(c)}</td>${yrs.map(y => { const v = coSum(c, y * 100 + 1, y * 100 + 12); return `<td>${v === null ? '<span style="color:var(--muted)">·</span>' : v.toFixed(2)}</td>`; }).join('')}</tr>`).join('') + `</tbody>`;
+    const l12 = keys.slice(-12).map(k => CM[k]).filter(Boolean), p12 = keys.slice(-24, -12).map(k => CM[k]).filter(Boolean);
+    const s12 = a => a.reduce((x, r) => x + (r.mort_med || 0), 0);
+    $i('caMortSub').innerHTML = `Each BC farm reports every month the share of its fish that died, by cause (DFO "carcass classification"). The chart is the average over farms of each cause; ` +
+      `a single farm hit by algae can push the average up, so the median farm is also given. Summed over the last 12 months to ${ml(L)}, the median farm lost about <b>${s12(l12).toFixed(1)} %</b> of its fish, against ${s12(p12).toFixed(1)} % in the 12 months before. ` +
+      `Over a whole cycle since 2015, the median farm lost ${(C.cycle_stats || {}).cycle_mort_med} % of its fish. Late summer is the risky season in BC (plankton blooms, low oxygen). The table averages the months of each year (current year partial).`;
+  }
+  // ---- temperature de la mer
+  const S = CAX.sst || [];
+  if (S.length) {
+    const lastK = Math.max(...S.flatMap(z => Object.keys(z.m).map(Number))), keys = []; for (let i = 23; i >= 0; i--) keys.push(mb(lastK, i));
+    const grp = [['British Columbia (4 areas)', '#4fc3f7', S.filter(z => z.coast === 'BC')], ...S.filter(z => z.coast !== 'BC').map((z, i) => [z.lab, ['#81c784', '#ffb74d', '#ff8a65'][i % 3], [z]])];
+    const mean = (zs, k) => { const v = zs.map(z => z.m[String(k)]).filter(x => x !== undefined); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; };
+    const ser = grp.map(([lab, col, zs]) => ({ label: lab, col, w: 2, values: keys.map(k => mean(zs, k)) }));
+    $i('caSst').innerHTML = fdLines(keys.map(k => `${MONTHS_FR[k % 100 - 1].slice(0, 3)} ${String(Math.floor(k / 100)).slice(2)}`), ser, { h: 220, fmt: x => x.toFixed(0) }) + `<div class="sig-sub">${fdLeg(ser)}</div>`;
+    const lm = lastK % 100;
+    $i('caSstTab').innerHTML = `<thead><tr><th class="name">Area</th><th>${ml(lastK)}</th><th>Normal for the month</th><th>Difference</th><th>${ml(lastK - 100)}</th><th>Last 3 months vs normal</th></tr></thead><tbody>` +
+      S.map(z => { const v = z.m[String(lastK)], n = z.clim[String(lm)], p = z.m[String(lastK - 100)];
+        const a3 = [0, 1, 2].map(i => { const k = mb(lastK, i); const x = z.m[String(k)], c = z.clim[String(k % 100)]; return x !== undefined && c !== undefined ? x - c : null; }).filter(x => x !== null);
+        const d = v !== undefined && n !== undefined ? v - n : null, a = a3.length ? a3.reduce((x, y) => x + y, 0) / a3.length : null;
+        const sg = x => x === null ? '—' : `<span style="color:${x > 0.5 ? '#ff8a65' : x < -0.5 ? '#4fc3f7' : 'inherit'}">${x >= 0 ? '+' : '−'}${Math.abs(x).toFixed(1)} °C</span>`;
+        return `<tr><td class="name">${esc(z.lab)}</td><td>${v !== undefined ? v.toFixed(1) + ' °C' : '—'}</td><td>${n !== undefined ? n.toFixed(1) + ' °C' : '—'}</td><td>${sg(d)}</td><td>${p !== undefined ? p.toFixed(1) + ' °C' : '—'}</td><td>${sg(a)}</td></tr>`; }).join('') + `</tbody>`;
+    $i('caSstSub').innerHTML = `Monthly mean sea-surface temperature at a point at sea next to each farming area (Open-Meteo marine model, about 5 km grid; a model, not a farm sensor). ` +
+      `"Normal" is the average of the same month in ${S[0].clim_years} — the model's history is short, so the normal is only indicative. ` +
+      `BC water stays between about 8 and 13 °C all year, which is why its cycles are short; Newfoundland's south coast drops close to 0 °C in late winter, which limits growth and puts fish at risk of superchill.`;
+  }
+  // ---- fermes BC
+  const SI = C.sites || [];
+  if (SI.length) {
+    const L = C.last, act = SI.filter(x => x.st !== 'none'), ST = { smolt: ['Receiving smolts', '#4fc3f7'], grow: ['Growing', '#8fa4b0'], harvest: ['Harvesting', '#ffb74d'] };
+    act.sort((a, b) => (a.co + a.amu + a.n).localeCompare(b.co + b.amu + b.n));
+    $i('caSites').innerHTML = `<thead><tr><th class="name">Farm</th><th>Company</th><th>Area</th><th>${ml(L)}</th><th>Smolts in</th><th>Months at sea</th><th>Harvest since</th><th>Died in ${MONTHS_FR[L % 100 - 1].slice(0, 3)}</th><th>Died, last 12 months</th></tr></thead><tbody>` +
+      act.map(x => `<tr><td class="name">${esc(x.n)}</td><td>${esc(x.co)}</td><td>${esc(x.amu)}</td><td><span style="color:${(ST[x.st] || ['', '#ccc'])[1]}">${(ST[x.st] || [x.st])[0]}</span></td>` +
+        `<td>${x.entry ? ml(x.entry) : '<span style="color:var(--muted)">before 2013 or not reported</span>'}</td><td>${x.entry ? md(L, x.entry) + 1 : '—'}</td><td>${x.harv0 ? ml(x.harv0) : '—'}</td>` +
+        `<td>${x.mort_last !== null ? x.mort_last.toFixed(2) + ' %' : '—'}</td><td>${x.mort12 !== null ? `${x.mort12.toFixed(1)} %${x.n12 < 12 ? ` <span style="color:var(--muted);font-size:11px">(${x.n12} mo)</span>` : ''}` : '—'}</td></tr>`).join('') + `</tbody>`;
+    const recent = SI.filter(x => x.st === 'none' && md(L, x.last) <= 12).length;
+    $i('caSiteSub').innerHTML = `The ${act.length} Atlantic-salmon farms that reported to DFO in ${ml(L)}, with the month their current fish went to sea (first month of "smolt entry"), the month they started harvesting, and their deaths in % of the fish in the farm. ` +
+      `${recent} more farms reported in the previous 12 months and are now empty (harvested out or fallowed). ` +
+      `${C.other_species_sites ? `${C.other_species_sites} farms raising Chinook or coho salmon (Creative Salmon, Clayoquot Sound) are left out. ` : ''}DFO publishes no fish numbers or weights per farm.`;
+  }
+}
 function renderCanada() {
   if (!CAN) { if (!CAN_LOADING) { CAN_LOADING = true; fetch(DATA_URL.replace('data.json', 'canada.json'), { cache: 'no-store' })
       .then(r => r.ok ? r.json() : null).catch(() => null).then(j => { CAN = j || {}; CAN_LOADING = false; if (currentView === 'canada') renderCanada(); }); }
@@ -4466,8 +4646,10 @@ function renderCanada() {
     document.getElementById('caTrList').innerHTML = `<thead><tr><th class="name">Valid from</th><th>to</th><th>Company</th><th>From (hatchery)</th><th>To (sea farm)</th><th>Area</th></tr></thead><tbody>` +
       (TR.recent || []).slice(0, 12).map(t => `<tr><td class="name">${t.start}</td><td>${t.end}</td><td>${esc(t.co)}</td><td>${esc(t.from)}</td><td>${esc(t.to)}</td><td>${esc(t.amu)}</td></tr>`).join('') + `</tbody>`;
   }
+  canadaExtra();
   document.getElementById('caNote').innerHTML = `<b>Sources.</b> Fisheries and Oceans Canada, Pacific region, open data (open.canada.ca): industry sea lice counts at BC marine finfish sites (2011 onward), ` +
     `mortality events at BC marine finfish sites (2011 onward), fish transfer licences (2015 onward). Downloaded again only when DFO updates a dataset. ` +
+    `DFO carcass classification by farm (2013 onward: production status and monthly mortality by cause). US Census Bureau: imports by port of entry (porths, HS 030214) and by country (HTS 0302.14) for the volumes by coast. Open-Meteo marine model for sea temperature. ` +
     `Former company names are merged (Marine Harvest Canada into MOWI Canada West; Mainstream Canada and Cermaq British Columbia into Cermaq Canada).`;
 }
 
@@ -12383,7 +12565,7 @@ loadRemoteData().then(live => {
 (function () {
   const SLOTS = [['map', 'Farms, licences and companies'], ['stock', 'Fish at sea'], ['harvest', 'Harvest and production'], ['cycles', 'Cycles and time at sea'],
     ['bio', 'Mortality and fish health'], ['companies', 'Company results'], ['trade', 'Exports'], ['news', 'News']];
-  const RULES = [[/cycle length|time at sea/i, 'cycles'], [/^news$/i, 'news'], [/export/i, 'trade'], [/^fish at sea|smolt transfer/i, 'stock'],
+  const RULES = [[/cycle length|time at sea|smolt entries|sea temperature/i, 'cycles'], [/volumes by coast/i, 'harvest'], [/farm by farm/i, 'stock'], [/^news$/i, 'news'], [/export/i, 'trade'], [/^fish at sea|smolt transfer/i, 'stock'],
     [/^mortality/i, 'bio'], [/company results|year by year$|farmers' results|bakkafrost scotland/i, 'companies'],
     [/farms and|farming areas|farm leases|licences|^map/i, 'map'],
     [/mortal|death|dead fish|lice|disease|health/i, 'bio'], [/harvest|survey|by province|production/i, 'harvest'],
@@ -12401,7 +12583,7 @@ loadRemoteData().then(live => {
     fetch(DATA_URL.replace('data.json', 'stories.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null).then(j => { if (j && !ST) ST = j; draw(); }); };
   Object.keys(BS_CODE).forEach(vid => { const P = document.getElementById(vid); if (!P) return;
     new MutationObserver(() => { if (P.style.display === 'block') fillNews(vid); }).observe(P, { attributes: true, attributeFilter: ['style'] }); });
-  const NAMES = { scotlandView: 'Scotland', faroeView: 'the Faroe Islands', isView: 'Iceland', chileView: 'Chile', canadaView: 'British Columbia', australiaView: 'Tasmania' };
+  const NAMES = { scotlandView: 'Scotland', faroeView: 'the Faroe Islands', isView: 'Iceland', chileView: 'Chile', canadaView: 'Canada', australiaView: 'Tasmania' };
   Object.keys(NAMES).forEach(vid => {
     const P = document.getElementById(vid); if (!P || P.dataset.bs) return; P.dataset.bs = 1;
     const kids = [...P.children]; let i = 1;                       // en-tete : titre, sous-titre, chiffres cles

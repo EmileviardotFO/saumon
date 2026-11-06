@@ -123,6 +123,13 @@ jobs:
         exit $rc
 
         '
+    - name: Canada - volumes par cote (postes US), cycles et mortalite BC, temperature de la mer
+      id: canada_extra
+      continue-on-error: true
+      timeout-minutes: 10
+      env:
+        CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
+      run: python3 scripts/build_canada_extra.py
     - name: Feroe - poissons par ferme (Bakkafrost, mensuel), recolte et registre des zones
       id: faroe
       continue-on-error: true
