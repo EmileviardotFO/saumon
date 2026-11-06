@@ -12819,8 +12819,9 @@ loadRemoteData().then(live => {
   q2.addEventListener('keydown', e => { if (e.key === 'Enter') run(q2.value); if (e.key === 'Escape') close(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && P.style.display === 'block') close();
     if (e.key === '/' && !/INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || '')) { e.preventDefault(); open(''); } });
-  const goTab = (v, title) => { close(); if (v === 'is') v = 'iceland'; const b = document.querySelector(`#sideNav .sn-item[data-v="${v}"]`) || document.querySelector(`#viewToggle button[data-v="${v}"]`); if (b) b.click();
-    if (title) setTimeout(() => { const pid = v === 'iceland' && !document.getElementById('icelandView') ? 'is' : v; const t = [...document.querySelectorAll('#' + pid + 'View .sig-title, #' + v + 'View .gm-t, #' + v + 'View .gm-h1')].find(x => x.textContent.trim() === title); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 900); };
+  const PANEL_TAB = { eu: 'euflows', tas: 'timeatsea', pl: 'poland', pr: 'prices', is: 'iceland', up: 'usaprices' }, TAB_PANEL = {}; Object.entries(PANEL_TAB).forEach(([a, b]) => TAB_PANEL[b] = a);
+  const goTab = (v, title) => { close(); v = PANEL_TAB[v] || v; const b = document.querySelector(`#sideNav .sn-item[data-v="${v}"]`) || document.querySelector(`#viewToggle button[data-v="${v}"]`); if (b) b.click();
+    if (title) setTimeout(() => { const pid = document.getElementById(v + 'View') ? v : (TAB_PANEL[v] || v); const t = [...document.querySelectorAll('#' + pid + 'View .sig-title, #' + v + 'View .gm-t, #' + v + 'View .gm-h1')].find(x => x.textContent.trim() === title); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 900); };
   window.gsGoTab = goTab;
   // ---- fiches calculees
   const R = () => (typeof DATA_RAW !== 'undefined' && DATA_RAW ? DATA_RAW : {}).bw_register || {};
@@ -12934,8 +12935,48 @@ loadRemoteData().then(live => {
     const B = D['big_fish.json']; const z = B && (B.zones || []).find(x => x.po === po); if (!z) return '';
     return `<div class="gs-card"><h4>Big fish to harvest · zone ${po}</h4><div class="s">Farmers' shares of the zone's projected 6 kg+ harvest: ${(z.companies || []).slice(0, 6).map(c => `${esc(c.co)} ${c.share6} %`).join(' · ')}. <span class="gs-go" onclick="gsGoTab('generations')">→ Generations / big fish</span></div></div>`;
   }
+
+  // ---- marches : exportations norvegiennes par pays et par produit (SSB, mensuel)
+  const FR_C = { PL: 'pologne polska', DE: 'allemagne tyskland', ES: 'espagne espana spania', IT: 'italie italia', NL: 'pays-bas paysbas hollande nederland', DK: 'danemark danmark', GB: 'royaume-uni uk angleterre', US: 'etats-unis usa amerique', CN: 'chine kina', JP: 'japon', KR: 'coree', CH: 'suisse sveits', BE: 'belgique belgia', SE: 'suede sverige', FR: 'frankrike', LT: 'lituanie', LV: 'lettonie', VN: 'vietnam', TH: 'thailande', PT: 'portugal', GR: 'grece', CZ: 'tchequie', AT: 'autriche', IL: 'israel', HK: 'hongkong' };
+  const PROD = { fillet: /\b(fill?ets?|filets?|file|filler)\b/, fresh: /\b(fresh|frais|fraiche|fersk|fresco|chilled)\b/, frozen: /\b(frozen|congel\w*|frys\w*|surgel\w*)\b/, whole: /\b(whole|entiers?|hel|head on|hoso|ho)\b/ };
+  function findMarket(rest) {
+    const C = (((typeof DATA_RAW !== 'undefined' && DATA_RAW ? DATA_RAW : {}).ssb_exports || {}).meta || {}).countries || {};
+    const words = rest.split(/\s+/).filter(w => w.length >= 4);
+    for (const [iso, c] of Object.entries(C)) {
+      const names = [c.name, c.akva, FR_C[iso]].filter(Boolean).join(' ').split(/[\s,()]+/).map(norm).filter(n => n.length >= 4);
+      for (const w of words) for (const n of names) {
+        if (n === w || (w.length >= 4 && n.startsWith(w)) || (w.length >= 5 && n.length >= 5 && lev(w, n) <= 1)) return { iso, name: c.name, word: w, rx: new RegExp('\\b(' + names.map(x => x.replace(/[.*+?^${}()|[\]\\]/g, '')).join('|') + ')\\b') };
+      } }
+    return null;
+  }
+  function lev(a, b) { const d = Array.from({ length: a.length + 1 }, (_, i) => [i]); for (let j = 1; j <= b.length; j++) d[0][j] = j;
+    for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); return d[a.length][b.length]; }
+  function marketCard(mk, prods) {
+    const S = (typeof DATA_RAW !== 'undefined' && DATA_RAW ? DATA_RAW : {}).ssb_exports; if (!S || !mk) return '';
+    const P = Object.values(S.meta.products);   // 0 entier frais, 1 filet frais, 2 filet congele, 3 entier congele
+    let idx = [0, 1, 2, 3];
+    if (prods.includes('fillet')) idx = idx.filter(i => i === 1 || i === 2);
+    if (prods.includes('whole')) idx = idx.filter(i => i === 0 || i === 3);
+    if (prods.includes('fresh')) idx = idx.filter(i => i === 0 || i === 1);
+    if (prods.includes('frozen')) idx = idx.filter(i => i === 2 || i === 3);
+    const rows = S.rows, last = Math.max(...rows.map(r => r[0])), ks = []; for (let i = 11; i >= 0; i--) { let y = Math.floor(last / 100), m = last % 100 - i; while (m < 1) { m += 12; y--; } ks.push(y * 100 + m); }
+    const ml = x => `${MONTHS_FR[x % 100 - 1].slice(0, 3)} ${String(Math.floor(x / 100)).slice(2)}`;
+    const agg = (iso, k, ii) => { let kg = 0, nok = 0; rows.forEach(r => { if (r[0] === k && ii.includes(r[1]) && (!iso || r[2] === iso)) { kg += r[3]; nok += r[4]; } }); return [kg, nok]; };
+    const blocks = idx.map(i => {
+      const c = ks.map(k => agg(mk.iso, k, [i])), p = ks.map(k => agg(mk.iso, k - 100, [i])), all = ks.map(k => agg(null, k, [i]));
+      const tot = a => a.reduce((x, y) => [x[0] + y[0], x[1] + y[1]], [0, 0]); const T = tot(c), Tp = tot(p), Ta = tot(all);
+      if (!T[0] && !Tp[0]) return '';
+      const pr = a => a[0] ? (a[1] / a[0]).toFixed(1) : '—', t = a => a[0] ? Math.round(a[0] / 1000).toLocaleString('en-US') : '—';
+      const chg = (a, b) => a && b ? `${a >= b ? '+' : '−'}${Math.abs(Math.round(100 * (a / b - 1)))} %` : '—';
+      return `<div class="s" style="margin-top:8px"><b>${esc(P[i])}</b> — last 12 months: <b>${t(T)} t</b> (${chg(T[0], Tp[0])} on a year), average <b>${pr(T)} NOK/kg</b> against ${pr(Ta)} NOK/kg for all markets; ${Ta[0] ? (100 * T[0] / Ta[0]).toFixed(1) : '—'} % of Norway's exports of this product.</div>` +
+        `<table><tr><th>Month</th>${ks.map(k => `<th>${ml(k)}</th>`).join('')}</tr><tr><td>Tonnes</td>${c.map(x => `<td>${t(x)}</td>`).join('')}</tr><tr><td>a year earlier</td>${p.map(x => `<td>${t(x)}</td>`).join('')}</tr>` +
+        `<tr><td>NOK/kg</td>${c.map((x, j) => `<td class="${x[0] && all[j][0] && x[1] / x[0] > all[j][1] / all[j][0] * 1.03 ? 'good' : x[0] && all[j][0] && x[1] / x[0] < all[j][1] / all[j][0] * 0.97 ? 'bad' : ''}">${pr(x)}</td>`).join('')}</tr><tr><td>NOK/kg, all markets</td>${all.map(x => `<td>${pr(x)}</td>`).join('')}</tr></table>`; }).join('');
+    if (!blocks) return `<div class="gs-card"><h4>Norwegian salmon exports to ${esc(mk.name)}</h4><div class="s">No export of these products to ${esc(mk.name)} in the last 24 months (SSB).</div></div>`;
+    return `<div class="gs-card"><h4>Norwegian salmon exports to ${esc(mk.name)} — to ${ml(last)}</h4><div class="s">Statistics Norway, monthly customs exports (export value FOB, NOK). Green / red price: above / below the average of all markets that month.</div>${blocks}` +
+      `<div class="s" style="margin-top:6px"><span class="gs-go" onclick="gsGoTab('markets')">→ Markets, exports by market</span>${mk.iso === 'PL' || mk.iso === 'NL' || mk.iso === 'DK' ? ` · <span class="gs-go" onclick="gsGoTab('poland')">→ EU processing hubs</span>` : ''}</div></div>`;
+  }
   // ---- presse
-  function news(co, topics, words, bas) {
+  function news(co, topics, words, bas, mk, prods) {
     const N = D['news.json'] || {}, A = D['news_archive.json'] || {}, seen = new Set(), out = [];
     const add = (d, t, u, src, extra, b) => { const k = norm(t).slice(0, 80); if (seen.has(k)) return; seen.add(k); out.push({ d: d || '', t, u, src, extra, b: [].concat(b || []) }); };
     (N.items || []).forEach(i => add(i.date, i.title, i.url, i.source, i.summary || '', i.basins));
@@ -12945,6 +12986,8 @@ loadRemoteData().then(live => {
     const topRx = topics.map(t => TOP[t]);
     return out.filter(x => { const t = norm(x.t + ' ' + x.extra);
         if (bas && !x.b.includes(bas)) return false;
+        if (mk && !mk.rx.test(t)) return false;
+        if (prods && prods.length && !prods.some(p => PROD[p].test(t))) return false;
         if (coRx && !coRx.test(t)) return false;
         if (topRx.length && !topRx.some(r => r.test(t))) return false;
         if (topics.includes('mort') && topics.length === 1 && /laboral|workplace|worker|trabajador|accident|diver|buzo/.test(t)) return false;
@@ -12974,8 +13017,12 @@ loadRemoteData().then(live => {
     if (zm && +zm[1] >= 1 && +zm[1] <= 13) { po = +zm[1]; rest = rest.replace(zm[0], ' '); }
     else { const pn = Object.entries(PO_NAMES).find(([k, v]) => +k > 0 && v.split(/ til | og | med /).some(p => p.length > 4 && rest.includes(norm(p)))); if (pn) po = +pn[0]; }
     let bas = po ? 'NO' : ((BAS.find(([, rx]) => rx.test(rest)) || [])[0] || null); if (bas && !po) rest = rest.replace(BAS.find(b => b[0] === bas)[1], ' ');
+    const prods = Object.keys(PROD).filter(k => PROD[k].test(rest)); prods.forEach(k => rest = rest.replace(new RegExp(PROD[k].source, 'g'), ' '));
+    rest = rest.replace(/\b(exports?|exportations?|eksport|imports?|market|marche|marked)\b/g, ' ');
+    const mk = (!bas || bas === 'NO') ? findMarket(rest) : null; if (mk) rest = rest.replace(mk.word, ' ');
     const words = rest.split(/\s+/).filter(w => w.length > 1);
     let html = '';
+    if (mk) html += `<div class="gs-sec">From the dashboard's data · ${esc(mk.name)}${prods.length ? ' · ' + prods.join(', ') : ''}</div>` + marketCard(mk, prods);
     if (po) {
       const want = t => !topics.length || topics.includes(t);
       const cards = [want('mort') ? zoneMort(po) : '', want('mort') ? zoneEv(po) : '', want('lice') || want('dis') ? zoneLice(po) : '', want('dis') || want('mort') || want('lice') ? zoneDis(po) : '', want('big') || want('harv') ? zoneBig(po) : ''].filter(Boolean);
@@ -12988,14 +13035,15 @@ loadRemoteData().then(live => {
       if (cards.length) html += `<div class="gs-sec">From the dashboard's data · ${esc(co)}${topics.length ? ' · ' + topics.map(t => TOP_WORDS[t].split(' ')[0]).join(', ') : ''}</div>` + cards.join('');
     } else if (topics.includes('mort') && !po) html += evCard(null, [], bas);
     const nw = po ? [] : words;
-    let N = news(co, topics, nw, bas), fb = bas ? ` · ${BAS_NAME[bas]} only` : '';
+    let N = news(co, topics, nw, bas, mk, prods), fb = bas ? ` · ${BAS_NAME[bas]} only` : '';
+    if (!N.length && mk && prods.length) { N = news(co, topics, nw, bas, mk, []); if (N.length) fb += ` — none about ${prods.join(', ')}`; }
     if (!N.length && co && topics.length) { N = news(co, [], [], bas); if (N.length) fb += ` — none about ${topics.map(t => TOP_WORDS[t]).join(', ')}; latest about ${co}`; }
-    const hw = [...topics.map(t => TOP[t]), ...(co ? [COS.find(c => c[0] === co)[1]] : []), ...nw.filter(w => w.length > 2).map(w => new RegExp('\\b' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))];
+    const hw = [...topics.map(t => TOP[t]), ...prods.map(p => PROD[p]), ...(mk ? [mk.rx] : []), ...(co ? [COS.find(c => c[0] === co)[1]] : []), ...nw.filter(w => w.length > 2).map(w => new RegExp('\\b' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))];
     html += `<div class="gs-sec">Press · ${N.length} article${N.length === 1 ? '' : 's'}${N.length > 25 ? ', latest 25' : ''}${esc(fb)}</div>` +
       (N.length ? N.slice(0, 25).map(x => `<div class="gs-n">${x.u ? `<a href="${esc(typeof nwUrl === 'function' ? nwUrl(x.u) : x.u)}" target="_blank" rel="noopener">${hl(x.t, hw)}</a>` : hl(x.t, hw)}<small>${esc(x.d)} · ${esc(x.src || '')}</small>` +
         (x.extra ? `<div style="font-size:12px;color:#8fa4b0">${hl(String(x.extra).slice(0, 260), hw)}</div>` : '') + `</div>`).join('') : '<div class="gs-hint">No article in the last 400 days matches.</div>');
     const S = sections(nw.concat(topics.map(t => norm(TOP_WORDS[t]))).concat(po ? ['zone'] : []), co, bas);
-    if (S.length) html += `<div class="gs-sec">In the dashboard</div>` + S.map(s => `<div class="gs-go" onclick="gsGoTab('${s.v}', ${JSON.stringify(s.T).replace(/"/g, '&quot;')})">${esc(s.T)}<small>${esc((document.querySelector(`#sideNav .sn-item[data-v="${s.v}"]`) || {}).textContent || s.v)}</small></div>`).join('');
+    if (S.length) html += `<div class="gs-sec">In the dashboard</div>` + S.map(s => `<div class="gs-go" onclick="gsGoTab('${s.v}', ${JSON.stringify(s.T).replace(/"/g, '&quot;')})">${esc(s.T)}<small>${esc((document.querySelector(`#sideNav .sn-item[data-v="${PANEL_TAB[s.v] || s.v}"]`) || {}).textContent || s.v)}</small></div>`).join('');
     out.innerHTML = html || '<div class="gs-hint">Nothing found.</div>';
   }
 })();
