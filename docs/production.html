@@ -414,6 +414,9 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
   .wide-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
   .wide-wrap > svg { min-width: 680px; }
 }
+#multiTable th.name, #multiTable td.name { position: sticky; left: 0; z-index: 2; background: #12222c; box-shadow: 2px 0 0 #223642; }
+#multiTable thead th.name { z-index: 3; }
+@media (max-width: 760px) { #multiView { min-width: 0 !important; } #multiTable td.name, #multiTable th.name { max-width: 150px; white-space: normal; } }
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#1E4D3B">
@@ -523,7 +526,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <button data-m="biomasse">Total biomass (t, live)</button>
     <button data-m="stock">Live stock count</button>
     <button data-m="stockweight">Average stock weight (kg, live)</button>
-    <button data-m="croissance">Cohort growth trend (kg/month)</button>
+    <button data-m="croissance">Growth per fish (kg/month)</button>
     <button data-m="mer">Average time at sea (months)</button>
     <button data-m="feed">Feed consumption (t)</button>
     <button data-m="fcr">FCR (feed / biomass produced)</button>
@@ -561,14 +564,12 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <label>Layout</label>
     <div class="metric-toggle" id="multiLayoutToggle">
       <button data-lay="normal" class="active">Years as columns</button>
-      <button data-lay="transposed">Years as rows</button>
     </div>
   </div>
   <div class="field">
     <label>Display</label>
     <div class="metric-toggle" id="multiDisplayToggle">
       <button data-dm="values" class="active">Values only</button>
-      <button data-dm="rates">Change % only</button>
       <button data-dm="both">Values + change %</button>
     </div>
   </div>
@@ -1770,7 +1771,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
   Global smolt released: all fish released into the sea under 500 g, cumulated over the period, split into &lt; 250 g (<code>UTSETT_SMOLT_STK</code>) and 250–500 g (<code>UTSETT_SMOLT_STK_MINDRE_ENN_500G</code> minus <code>UTSETT_SMOLT_STK</code> — the 500 g column already contains the &lt; 250 g fish). Fish released above 500 g are in neither column.
   <br>Estimated post-smolt &gt; 500 g: fish that entered the water according to the stock count (closing stock − opening stock + harvest + mortality + other losses, per zone and month) minus Global smolt released. Fish released above 500 g are in no column of the source, so this gap is the only way to see them. <span class="warn">It is an estimate, ±5–8 M fish a year</span>: 2018–2023 hovered between −8 and +8 M (counting errors, reporting lags), then jumped to about +25 M a year in 2024–2025, concentrated in zones 2, 3 and 4 (south-west). Transfers between zones cancel out at national level (about 1–2 M of bias). Read it on a full year, never month by month, and ignore 2022 (December 2022 releases are over-declared by ~50 M).
   <br>Average stock weight: stock biomass ÷ headcount, at the end of the last month of the period (snapshot, like "Live stock count").
-  <br>Cohort growth trend (kg/month): calculated cohort by cohort (release year), not on the PO's raw average weight — insensitive to new smolt and to the month's harvests. Value = average of the monthly weight changes over the selected period (averaged across cohorts present each month, weighted by headcount; the national total/national view additionally weights by each PO's headcount). For a finer cohort-by-cohort analysis (not blended by PO), see the "Growth by cohort" tab. Two known limitations: a slightly negative age at the very start of a cohort is an artifact of the average release month; an apparently negative growth at the very end of a cohort's life (very small residual headcount) generally reflects a selection effect at harvest — the largest fish leave first — not an actual biological shrinkage.
+  <br>Growth per fish (kg/month): what the fish of a zone produced in the month, all generations together — change in biomass + harvested kilos + dead fish at half weight — divided by the average number of fish, then averaged over the months of the period (the national figure weights each zone by its fish). Smolts put to sea enter at 0.15 kg and fish that vanish without being declared leave at the average weight, so neither passes for growth or loss. Unlike the former "cohort growth trend" (change in average weight), it is not pulled down when the biggest fish are harvested first. The same measure, generation by generation and against last year, is in the "Generations vs last year" tab.
   <br>Feed consumption: cumulated over the period, in tonnes.
   <br><span class="warn">Smolt weight at release: only the size band is known (&lt; 250 g, 250–500 g). The source gives no weight or biomass at release, and nothing about fish released above 500 g.</span>
   <br>Source: Fiskeridirektoratet, Biomasseregisteret.
@@ -2503,8 +2504,7 @@ function computeForYear(year, startMonth, endMonth) {
       const mid = smoltMid(r);
       if (mid === null) p.mid_missing = true; else p.smoltmid += mid;
       p.implied += getImpliedEntry()[r.po + '|' + r.year + '|' + r.month] || 0;
-      p.growth_sum += (r.growth_kg || 0);
-      if (r.growth_kg !== null) p.growth_n += 1;
+      { const g = recGrowth(r.po, r.year * 100 + r.month); if (g !== null) { p.growth_sum += g; p.growth_n += 1; } }
       p.feed += (r.feed_kg || 0) / 1000;
       p.uttak_kg_sum += r.uttak_kg;
       p.uttak_stk_sum += r.uttak_stk;
@@ -5988,7 +5988,7 @@ const METRIC_LABELS = {
   biomasse: 'Total biomass (t, live weight)',
   stock: 'Live stock count',
   stockweight: 'Average stock weight (kg, live weight)',
-  croissance: 'Cohort growth trend (kg/month)',
+  croissance: 'Growth per fish (kg/month)',
   mer: 'Average time at sea (months)',
   feed: 'Feed consumption (t)',
   fcr: 'FCR (feed / biomass produced)',
@@ -6094,6 +6094,11 @@ function renderMulti() {
   if (fromYear > toYear) { const t = fromYear; fromYear = toYear; toYear = t; }
   const poFilter = getSelectedPoFilter();
   updateMapSelectionHighlight(poFilter);
+  multiLayout = 'normal'; if (multiDisplayMode === 'rates') multiDisplayMode = 'values';
+  { const lf = document.getElementById('multiLayoutToggle'); if (lf && lf.closest('.field')) lf.closest('.field').style.display = 'none'; }
+  { const mw = document.querySelector('.panel.mapwrap'), mv = document.getElementById('multiView');
+    if (mw) mw.style.display = multiBreakdown === 'national' ? 'none' : '';
+    if (mv) mv.style.maxWidth = multiBreakdown === 'national' ? '1500px' : '1080px'; }
 
   const years = [];
   for (let y = fromYear; y <= toYear; y++) years.push(y);
@@ -10606,6 +10611,21 @@ function gyFlow(zones, a, b) {
   let hk = 0, hn = 0, d = 0;
   (RECORDS || []).forEach(r => { if (!Zs.has(r.po)) return; const kk = r.year * 100 + r.month; if (kk < a || kk > b) return; hk += r.uttak_kg || 0; hn += r.uttak_stk || 0; d += r.dodfisk_stk || 0; });
   return { hk, hn, d, w: hn ? hk / hn : null };
+}
+// croissance par poisson d'une zone dans le mois, toutes generations : production (variation de biomasse + abattus + morts a
+// mi-poids, smolts entres a 0,15 kg, disparus non declares sortis au poids moyen) / nombre moyen de poissons.
+// Remplace l'ancien "cohort growth" (variation du poids moyen), que l'abattage des plus gros poissons faisait baisser.
+const REC_G = {};
+function recGrowth(po, k) {
+  const key = po + '|' + k; if (key in REC_G) return REC_G[key];
+  if (!po || !COHORT || !COHORT.length) return null;
+  const { IX } = gyPrep(); let P = 0, N = 0;
+  Object.values(IX[po] || {}).forEach(ser => { const a = ser[gySh(k, -1)], b = ser[k]; if (!a || !b || !(a.stock > 0) || !a.weight_kg || !b.weight_kg) return;
+    const d = (b.dead_stk || 0) + (b.loss_stk || 0), gap = b.stock - a.stock + (b.harv_stk || 0) + d;
+    let pr = b.stock * b.weight_kg - a.stock * a.weight_kg + (b.harv_kg || 0) + d * (a.weight_kg + b.weight_kg) / 4;
+    pr += gap > 0 ? -gap * 0.15 : -gap * (a.weight_kg + b.weight_kg) / 2;
+    P += pr; N += (a.stock + b.stock) / 2; });
+  return (REC_G[key] = N > 1e5 ? P / N : null);
 }
 // ---- croissance, temperature, mortalite par generation (novembre 2026) ----
 // Temperature : moyenne des temperatures de mer declarees chaque semaine par les sites (BarentsWatch), semaines rattachees au
