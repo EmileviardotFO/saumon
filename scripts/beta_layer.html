@@ -1,0 +1,202 @@
+<!-- ===== BETA : nouvelle mise en page (maquette C), ajoutee par scripts/build_beta.py ===== -->
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style id="betaCss">
+  :root { --bg:#eef2f5; --panel:#ffffff; --ink:#14232e; --muted:#5f6f7a; --accent:#0f6c8c; --border:#e3e9ee; --good:#2e7d32; --bad:#c0392b; --up:#c0392b; --down:#2e7d32; }
+  body { background:var(--bg) !important; color:var(--ink); font-family:Manrope, system-ui, sans-serif !important; align-items:stretch !important; padding-top:0 !important; }
+  @media (min-width:901px){ body{ padding-left:250px !important; padding-right:28px !important; } }
+  h1 { display:none !important; } .subtitle { display:none !important; }
+  #tabIndex, .bs-nav { display:none !important; }
+  /* menu lateral */
+  #sideNav { background:#0f3b4c !important; border-right:0 !important; width:230px !important; }
+  #sideNav .sn-brand { color:#fff !important; font-weight:800 !important; font-size:17px !important; }
+  #sideNav .sn-sub { color:#8fb6c6 !important; }
+  #sideNav .sn-cat { color:#7fa7b8 !important; font-size:11px !important; letter-spacing:.12em !important; }
+  #sideNav .sn-item { color:#d3e6ee !important; border-radius:8px !important; font-family:Manrope, sans-serif !important; font-size:14px !important; }
+  #sideNav .sn-item:hover { background:rgba(255,255,255,.08) !important; }
+  #sideNav .sn-item.on { background:#fff !important; color:#0f3b4c !important; font-weight:700 !important; box-shadow:none !important; border:0 !important; }
+  #snBurger { background:#0f3b4c !important; color:#fff !important; border:0 !important; }
+  /* barre du haut */
+  #bTop { position:sticky; top:0; z-index:60; display:flex; gap:12px; align-items:center; padding:16px 0 14px; background:var(--bg); max-width:1180px; width:100%; margin:0 auto; }
+  #bTop .s { flex:1; position:relative; }
+  #bTop input { width:100%; background:#fff; border:0; border-radius:10px; padding:11px 14px 11px 38px; font:500 14px Manrope, sans-serif; color:var(--ink); box-shadow:0 1px 2px rgba(0,0,0,.06); outline:none; }
+  #bTop .s:before { content:"🔍"; position:absolute; left:13px; top:10px; font-size:14px; opacity:.6; }
+  #bTop .res { position:absolute; left:0; right:0; top:46px; background:#fff; border-radius:10px; box-shadow:0 8px 30px rgba(0,0,0,.12); overflow:hidden; display:none; }
+  #bTop .res div { padding:10px 14px; cursor:pointer; font-size:14px; } #bTop .res div:hover, #bTop .res div.on { background:#eef6fa; }
+  #bTop .res small { color:var(--muted); margin-left:6px; }
+  #bAsk { background:#14232e; color:#fff; border:0; border-radius:10px; padding:11px 16px; font:700 14px Manrope, sans-serif; cursor:pointer; white-space:nowrap; }
+  #bAsk:hover { background:#0f3b4c; }
+  #bBeta { font-size:11px; font-weight:800; color:#0f6c8c; background:#e3f2f8; padding:4px 9px; border-radius:20px; white-space:nowrap; }
+  #bToast { position:fixed; right:24px; bottom:24px; z-index:999; background:#14232e; color:#fff; padding:14px 18px; border-radius:12px; font:500 14px/1.45 Manrope, sans-serif; max-width:360px; box-shadow:0 10px 30px rgba(0,0,0,.25); display:none; }
+  /* bandeau d'etat discret */
+  #dataBanner { max-width:1180px; margin:0 auto 10px !important; border-radius:10px !important; background:#e3f5e6 !important; color:#2e6b3a !important; font-family:Manrope,sans-serif !important; border:0 !important; } #dataBanner a { color:#2e6b3a !important; }
+  #statusBanner, .status-banner { max-width:1180px; margin:0 auto 6px !important; border-radius:10px !important; }
+  /* onglets */
+  .panel { background:transparent !important; border:0 !important; padding:0 !important; max-width:1180px !important; width:100%; margin:0 auto; }
+  .b-card, .b-hero { background:#fff; border-radius:18px; padding:20px 22px; box-shadow:0 1px 3px rgba(0,0,0,.06); margin-bottom:16px; min-width:0; overflow-x:auto; }
+  .b-hero .sig-title:first-child { font-size:26px !important; font-weight:800 !important; line-height:1.2; margin:6px 0 8px !important; letter-spacing:0 !important; }
+  .b-hero .b-tag { display:inline-block; background:#e3f2f8; color:#0f6c8c; font-weight:700; font-size:12px; padding:4px 10px; border-radius:20px; }
+  .b-hero > .sig-sub { font-size:15px !important; line-height:1.6 !important; color:#4a5a66 !important; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:4px !important; }
+  .b-hero.open > .sig-sub { -webkit-line-clamp:unset; display:block; }
+  .b-more { background:none; border:0; color:#0f6c8c; font:700 13px Manrope, sans-serif; cursor:pointer; padding:4px 0; }
+  .b-kpis { margin:0 0 16px !important; gap:14px !important; display:grid !important; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)) !important; }
+  .b-kpis .pr-card { flex:none !important; }
+  .top-controls:has(#tabIndex):not(:has(#yearSel)) { display:none !important; }
+  .b-note { max-width:1180px; margin:10px auto 30px; background:#fff; border-radius:14px; padding:4px 18px; } .b-note summary { cursor:pointer; padding:12px 0; font-weight:700; color:#5f6f7a; } .b-note .note { color:#5f6f7a !important; text-align:left !important; }
+  .b-lightened { background:#f4f7f9 !important; color:var(--ink) !important; border-color:#e3e9ee !important; }
+  .b-lightened.b-on { background:#0f3b4c !important; color:#fff !important; }
+  .b-kpis .pr-card, .pr-card { background:#fff !important; border:0 !important; border-radius:16px !important; box-shadow:0 1px 3px rgba(0,0,0,.06); padding:14px 16px !important; }
+  .pr-card .nm { font-size:12.5px !important; color:#5f6f7a; font-weight:700 !important; }
+  .pr-card .big { font-size:24px !important; font-weight:800 !important; color:var(--ink); }
+  .pr-card .ln { font-size:12px !important; color:#6b7b86 !important; }
+  .sig-title { font-size:16px !important; font-weight:800 !important; color:var(--ink) !important; }
+  .sig-sub { font-size:13px !important; color:#5f6f7a !important; line-height:1.55 !important; }
+  .b-acc { background:#fff; border-radius:18px; box-shadow:0 1px 3px rgba(0,0,0,.06); margin-bottom:10px; overflow:hidden; }
+  .b-acc > summary { list-style:none; cursor:pointer; padding:17px 22px; display:flex; gap:16px; align-items:baseline; justify-content:space-between; }
+  .b-acc > summary::-webkit-details-marker { display:none; }
+  .b-acc > summary b { font-size:15px; font-weight:800; }
+  .b-acc > summary span { font-size:13px; color:#6b7b86; text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:55%; }
+  .b-acc > summary span:after { content:" ›"; font-weight:700; }
+  .b-acc[open] > summary span:after { content:" ⌄"; }
+  .b-acc[open] > summary { border-bottom:1px solid #eef2f5; }
+  .b-acc > .b-body { padding:16px 22px 20px; overflow-x:auto; }
+  .b-acc > .b-body > .sig-title:first-child { display:none; }
+  .bs-slot { color:#0f6c8c !important; border-top:0 !important; margin:22px 0 10px 4px !important; }
+  .b-row { display:grid; grid-template-columns:1.3fr 1fr; gap:16px; } .b-row > .b-card { margin-bottom:16px; }
+  @media (max-width:900px){ .b-row{ grid-template-columns:1fr; } #bTop{ padding-left:52px; } #bBeta{ display:none; } #bAsk{ padding:11px 12px; font-size:13px; } }
+  /* tableaux */
+  table.sig-table th { color:#6b7b86 !important; border-bottom:1px solid #e3e9ee !important; background:transparent !important; }
+  table.sig-table td { border-bottom:1px solid #eef2f5 !important; color:var(--ink); }
+  table.sig-table th.name, table.sig-table td.name { background:#fff !important; }
+  table.sig-table tr:hover td { background:#f6f9fb !important; }
+  /* couleurs sombres ecrites en dur dans les graphiques et les blocs */
+  svg [fill="#8fa4b0"], svg [fill="#cfdde4"], svg [fill="#e7eef2"], svg [fill="#9fb4c1"], svg [fill="#7f97a6"], svg [fill="#b8c7d0"], svg [fill="#d5e1e7"] { fill:#5b6b76 !important; }
+  svg [stroke="#223642"], svg [stroke="#22384a"], svg [stroke="#1d3240"], svg [stroke="#2a4352"], svg [stroke="#2c4452"], svg [stroke="#1a2c38"], svg [stroke="#3a5566"] { stroke:#e3e9ee !important; }
+  svg [fill="#0d1a24"], svg [fill="#10202c"], svg [fill="#0b1620"], svg [fill="#12222c"] { fill:#ffffff !important; }
+  [style*="background:#0d1a24"], [style*="background: #0d1a24"], [style*="background:#12222c"], [style*="background:#102230"], [style*="background:#10202c"], [style*="background:#0b1620"], [style*="background:#0b1720"], [style*="background:#15293a"], [style*="background: #10202c"] { background:#f4f7f9 !important; }
+  [style*="color:#cfdde4"], [style*="color: #cfdde4"], [style*="color:#e7eef2"], [style*="color:#fff;"], [style*="color:#dbe7ee"] { color:var(--ink) !important; }
+  [style*="border:1px solid var(--border)"], [style*="border: 1px solid var(--border)"] { border-color:#e3e9ee !important; }
+  .delta-good { color:#2e7d32 !important; } .delta-bad { color:#c0392b !important; }
+  button, select, input { font-family:Manrope, sans-serif; }
+  .btn, .seg button, .tm-btn, .toggle button { background:#fff !important; color:var(--ink) !important; border:1px solid #d5dee4 !important; border-radius:9px !important; }
+  .btn.on, .btn.active, .seg button.on, .seg button.active, .toggle button.on, .toggle button.active { background:#0f3b4c !important; color:#fff !important; border-color:#0f3b4c !important; }
+  select { background:#fff !important; color:var(--ink) !important; border:1px solid #d5dee4 !important; border-radius:8px !important; }
+  a { color:#0f6c8c; }
+  .leaflet-container { background:#dfe8ee !important; }
+</style>
+<script id="betaJs">
+(function () {
+  const $ = s => document.querySelector(s);
+  // ---- barre du haut : recherche + Claude
+  const top = document.createElement('div'); top.id = 'bTop';
+  top.innerHTML = '<div class="s"><input id="bQ" placeholder="Search a page: Iceland, prices, lice, generations…" autocomplete="off"><div class="res" id="bRes"></div></div>' +
+    '<span id="bBeta">BETA · new layout</span><button id="bAsk" type="button">✦ Ask Claude about this page</button>';
+  document.body.insertBefore(top, document.body.firstChild);
+  const toast = document.createElement('div'); toast.id = 'bToast'; document.body.appendChild(toast);
+  const say = (h, ms) => { toast.innerHTML = h; toast.style.display = 'block'; clearTimeout(say.t); say.t = setTimeout(() => toast.style.display = 'none', ms || 7000); };
+  // recherche : les onglets du menu (nom + rubrique), puis les titres de section de chaque onglet
+  const items = () => [...document.querySelectorAll('#sideNav .sn-item')].map(b => ({ v: b.dataset.v, lab: b.textContent.trim(), grp: (b.closest('.sn-group') && b.closest('.sn-group').querySelector('.sn-cat') || {}).textContent || '' }));
+  const secs = () => { const out = []; document.querySelectorAll('.panel[id$="View"]').forEach(P => { const v = P.id.replace(/View$/, '');
+      P.querySelectorAll('.sig-title').forEach(t => out.push({ v, sec: t.textContent.trim(), el: t })); }); return out; };
+  const norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const q = $('#bQ'), res = $('#bRes'); let hits = [];
+  const viewOf = v => { const b = document.querySelector(`#sideNav .sn-item[data-v="${v}"]`); return b ? b.textContent.trim() : v; };
+  const go = h => { const b = document.querySelector(`#sideNav .sn-item[data-v="${h.v}"]`) || document.querySelector(`#sideNav .sn-item[data-v="${h.v.replace(/^is$/, 'iceland')}"]`);
+    if (b) b.click(); res.style.display = 'none'; q.value = '';
+    if (h.el) setTimeout(() => { const d = h.el.closest('details'); if (d) d.open = true; h.el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 900); };
+  q.addEventListener('input', () => { const s = norm(q.value.trim()); if (s.length < 2) { res.style.display = 'none'; return; }
+    hits = [...items().filter(x => norm(x.lab + ' ' + x.grp).includes(s)).map(x => ({ v: x.v, t: x.lab, sub: x.grp })),
+      ...secs().filter(x => norm(x.sec).includes(s)).map(x => ({ v: x.v, el: x.el, t: x.sec, sub: 'in ' + viewOf(x.v) }))].slice(0, 9);
+    res.innerHTML = hits.length ? hits.map((h, i) => `<div data-i="${i}">${h.t}<small>${h.sub}</small></div>`).join('') : '<div style="color:#6b7b86;cursor:default">Nothing found</div>';
+    res.style.display = 'block'; res.querySelectorAll('[data-i]').forEach(d => d.onclick = () => go(hits[+d.dataset.i])); });
+  q.addEventListener('keydown', e => { if (e.key === 'Enter' && hits[0]) go(hits[0]); if (e.key === 'Escape') { res.style.display = 'none'; q.blur(); } });
+  document.addEventListener('click', e => { if (!top.contains(e.target)) res.style.display = 'none'; });
+
+  // ---- "Ask Claude" : le texte de l'onglet ouvert (chiffres, tableaux, methode) copie, puis claude.ai s'ouvre
+  $('#bAsk').onclick = async () => {
+    const P = [...document.querySelectorAll('.panel[id$="View"]')].find(p => p.style.display === 'block' || getComputedStyle(p).display !== 'none' && p.offsetParent);
+    const name = (document.querySelector('#sideNav .sn-item.on') || {}).textContent || 'dashboard';
+    if (!P) { say('Open a page first.'); return; }
+    const closed = [...P.querySelectorAll('details:not([open])')]; closed.forEach(d => d.open = true);
+    let text = P.innerText.replace(/\n{3,}/g, '\n\n'); closed.forEach(d => d.open = false);
+    if (text.length > 60000) text = text.slice(0, 60000) + '\n[…page text cut here]';
+    const date = (document.getElementById('snSub') || {}).textContent || '';
+    const prompt = `I work at Hiddenfjord (Faroese salmon farmer). Below is the full text of the page "${name.trim()}" of our market-intelligence dashboard (${date}), with its figures, tables and method notes. ` +
+      `Use it to answer my questions: quote the figures from the page, explain the method in plain words when asked, and say clearly when the page does not contain the answer. Answer in the language I write in.\n\n` +
+      `===== PAGE =====\n${text}\n===== END OF PAGE =====\n\nMy question: `;
+    let ok = false; try { await navigator.clipboard.writeText(prompt); ok = true; } catch (e) { ok = false; }
+    if (!ok) { const ta = document.createElement('textarea'); ta.value = prompt; document.body.appendChild(ta); ta.select(); try { ok = document.execCommand('copy'); } catch (e) {} ta.remove(); }
+    window.open('https://claude.ai/new', '_blank', 'noopener');
+    say(ok ? `<b>The page “${name.trim()}” is copied.</b><br>In the Claude tab that just opened, paste it (⌘V / Ctrl+V), then type your question at the end.` : 'Could not copy the page automatically — select the text of the page and copy it by hand.', 9000);
+  };
+
+  // ---- mise en forme d'un onglet : en-tete (titre, phrase, chiffres), deux premiers blocs en cartes, le reste en sections repliables
+  const firstSentence = t => { t = (t || '').replace(/\s+/g, ' ').trim(); const m = t.match(/^(.{40,180}?[.!?])\s/); return m ? m[1] : t.slice(0, 140) + (t.length > 140 ? '…' : ''); };
+  function shape(P) {
+    if (P.dataset.beta) return;
+    const kids = [...P.children];
+    if (kids.filter(k => k.classList.contains('sig-title')).length < 2 && !kids.some(k => k.classList.contains('bs-slot'))) {
+      P.dataset.beta = 1; P.classList.add('b-card'); return; }
+    P.dataset.beta = 1;
+    // en-tete
+    let i = 0; const hero = document.createElement('div'); hero.className = 'b-hero';
+    const name = (document.querySelector('#sideNav .sn-item.on') || {}).textContent || '';
+    hero.innerHTML = `<span class="b-tag">${name.trim()} · ${(document.getElementById('snSub') || {}).textContent || ''}</span>`;
+    const kp = [];
+    while (i < kids.length) { const k = kids[i];
+      if (i > 0 && (k.classList.contains('sig-title') || k.classList.contains('bs-slot') || k.classList.contains('bs-nav'))) break;
+      if (k.classList.contains('pr-cards')) kp.push(k); else hero.appendChild(k); i++; }
+    const more = document.createElement('button'); more.className = 'b-more'; more.type = 'button'; more.textContent = 'Read more ▾';
+    more.onclick = () => { hero.classList.toggle('open'); more.textContent = hero.classList.contains('open') ? 'Less ▴' : 'Read more ▾'; };
+    hero.appendChild(more);
+    const frag = document.createDocumentFragment(); frag.appendChild(hero);
+    kp.forEach(k => { k.classList.add('b-kpis'); frag.appendChild(k); });
+    // blocs
+    const blocks = []; let cur = null;
+    for (; i < kids.length; i++) { const k = kids[i];
+      if (k.classList.contains('bs-nav')) { frag.appendChild(k); continue; }
+      if (k.classList.contains('bs-slot')) { blocks.push({ slot: k }); cur = null; continue; }
+      if (k.classList.contains('sig-title') || !cur) { cur = { els: [] }; blocks.push(cur); }
+      if (k.classList.contains('pr-cards') && cur.els.length === 0) { k.classList.add('b-kpis'); }
+      cur.els.push(k); }
+    // les deux blocs ouverts : en priorite les perspectives, les volumes, le poisson en mer ; sinon les deux premiers
+    const PRI = /outlook|volumes|fish at sea|standing biomass|harvest by|farms in use|smolts put|production$/i;
+    const cand = blocks.filter(b => !b.slot && b.els.some(e => e.classList.contains('sig-title')));
+    let openSet = cand.filter(b => PRI.test(b.els.find(e => e.classList.contains('sig-title')).textContent)).slice(0, 2);
+    if (openSet.length < 2) openSet = openSet.concat(cand.filter(b => !openSet.includes(b)).slice(0, 2 - openSet.length));
+    let n = 0, row = null;
+    blocks.forEach(b => {
+      if (b.slot) { frag.appendChild(b.slot); row = null; return; }
+      const t = b.els.find(e => e.classList.contains('sig-title')), sub = b.els.find(e => e.classList.contains('sig-sub'));
+      const isNote = b.els.length === 1 && b.els[0].classList.contains('sig-sub');
+      if (isNote) { const c = document.createElement('div'); c.className = 'b-card'; c.appendChild(b.els[0]); frag.appendChild(c); return; }
+      if (openSet.includes(b)) { const c = document.createElement('div'); c.className = 'b-card'; b.els.forEach(e => c.appendChild(e)); frag.appendChild(c); }
+      else { const d = document.createElement('details'); d.className = 'b-acc';
+        const s = document.createElement('summary'); s.innerHTML = `<b>${t ? t.textContent.trim() : 'Sources and notes'}</b><span></span>`;
+        d.appendChild(s); const body = document.createElement('div'); body.className = 'b-body'; b.els.forEach(e => body.appendChild(e)); d.appendChild(body);
+        const hint = () => { s.querySelector('span').textContent = sub ? firstSentence(sub.textContent) : ''; };
+        hint(); if (sub) new MutationObserver(hint).observe(sub, { childList: true, subtree: true, characterData: true });
+        d.addEventListener('toggle', () => { if (d.open) setTimeout(() => window.dispatchEvent(new Event('resize')), 60); });
+        frag.appendChild(d); }
+      n++;
+    });
+    P.innerHTML = ''; P.appendChild(frag);
+  }
+  const shapeVisible = () => document.querySelectorAll('.panel[id$="View"]').forEach(P => { if (P.style.display === 'block' || (P.style.display !== 'none' && P.offsetParent)) shape(P); });
+  document.querySelectorAll('.panel[id$="View"]').forEach(P => new MutationObserver(() => { if (P.style.display === 'block') setTimeout(() => shape(P), 50); }).observe(P, { attributes: true, attributeFilter: ['style'] }));
+  // blocs dont le fond sombre est ecrit en dur (listes de societes, boutons...) : eclaircis
+  const dark = c => { const m = c.match(/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)(?:,\s*([\d.]+))?/); if (!m || (m[4] !== undefined && +m[4] < .5)) return false;
+    return (0.2126 * m[1] + 0.7152 * m[2] + 0.0722 * m[3]) / 255 < 0.22; };
+  const lighten = () => document.querySelectorAll('.panel[id$="View"] *:not(svg):not(svg *)').forEach(el => {
+    if (el.classList.contains('b-lightened') || el.offsetWidth < 36) return;
+    const cs = getComputedStyle(el); if (!dark(cs.backgroundColor)) return;
+    el.classList.add('b-lightened');
+    if (/\b(on|active|sel|selected)\b/.test(el.className) || el.getAttribute('aria-pressed') === 'true' || /border-color:\s*(#4fc3f7|var\(--accent\))/.test(el.getAttribute('style') || '')) el.classList.add('b-on'); });
+  let lt = null; new MutationObserver(() => { clearTimeout(lt); lt = setTimeout(lighten, 250); }).observe(document.body, { childList: true, subtree: true });
+  const note = document.querySelector('body > .note');
+  if (note) { const d = document.createElement('details'); d.className = 'b-note'; d.innerHTML = '<summary>Definitions used in the Norway pages</summary>'; note.parentNode.insertBefore(d, note); d.appendChild(note); }
+  window.addEventListener('load', () => setTimeout(shapeVisible, 400));
+  setTimeout(shapeVisible, 2500);
+  document.title = 'Salmon dashboard — beta layout';
+})();
+</script>
+<!-- ===== fin BETA ===== -->
