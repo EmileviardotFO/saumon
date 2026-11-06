@@ -36,6 +36,32 @@ def fmt(x):
     return f"{x:,.0f}".replace(",", " ")
 
 
+def gen_vs_last_year(year, month):
+    """G(annee-1) a la fin du mois face a G(annee-2) un an plus tot : poissons restants, survie, part deja abattue, kilos produits."""
+    d = json.load(open("data/data.json", encoding="utf-8"))
+    k, k1, H = year * 100 + month, (year - 1) * 100 + month, year - 1
+    def gen(g, kk):
+        o = dict(fish=0.0, bio=0.0, h=0.0, hkg=0.0, dead=0.0)
+        for c in d.get("cohort", []):
+            if not c["po"] or c["cohort"] != g:
+                continue
+            ck = c["year"] * 100 + c["month"]
+            if ck > kk:
+                continue
+            if ck == kk:
+                o["fish"] += c["stock"] or 0; o["bio"] += (c["stock"] or 0) * (c["weight_kg"] or 0)
+            o["h"] += c["harv_stk"] or 0; o["hkg"] += c["harv_kg"] or 0; o["dead"] += (c["dead_stk"] or 0) + (c["loss_stk"] or 0)
+        o["start"] = o["fish"] + o["h"] + o["dead"]
+        return o
+    a, b = gen(H, k), gen(H - 1, k1)
+    if not (a["start"] and b["start"] and b["fish"]):
+        return ""
+    p = lambda x, y: f"{100 * (x / y - 1):+.0f} %"
+    return (f"\nG{H} vs G{H - 1} au meme stade : poissons restants {p(a['fish'], b['fish'])}, "
+            f"deja abattus {100 * a['h'] / a['start']:.0f} % vs {100 * b['h'] / b['start']:.0f} %, "
+            f"survivants {p(a['start'] - a['dead'], b['start'] - b['dead'])}, kilos produits {p(a['hkg'] + a['bio'], b['hkg'] + b['bio'])}")
+
+
 def nowcast_next(year, month):
     """Recolte (t vives) du mois suivant le dernier mois du registre, d'apres les exportations de saumon entier (SSB 03024)."""
     import calendar
@@ -98,6 +124,12 @@ def main():
             corps += f"\nRecolte {MOIS[nc['m'] - 1]} estimee (exportations) : {fmt(nc['t'])} t ({nc['yoy']:+.0f} % sur un an)"
     except Exception as e:
         print(f"Estimation par les exportations impossible : {e}")
+
+    # generation recoltee face a celle de l'an dernier au meme stade (onglet Generations vs last year)
+    try:
+        corps += gen_vs_last_year(year, month)
+    except Exception as e:
+        print(f"Comparaison des generations impossible : {e}")
 
     # durees de cycle (data/big_fish.json, reconstruit dans le meme passage) : sites proches du vidage, eleveurs qui accelerent
     try:

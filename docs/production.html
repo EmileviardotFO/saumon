@@ -474,6 +474,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
       <button data-v="register">Farm register</button>
       <button data-v="timeatsea">Time at sea</button>
       <button data-v="genmap">Generations map</button>
+      <button data-v="genyoy">Generations vs last year</button>
     </div></div>
     <div class="vt-row"><span class="vt-lab">Markets &amp; producers<small>trade, prices, other origins</small></span><div class="vt-btns">
       <button data-v="markets">Markets</button>
@@ -991,6 +992,29 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="note" id="cpNote" style="text-align:left;max-width:none;margin-top:16px"></div>
   </div>
 
+
+  <div class="panel" id="genyoyView" style="flex:1; min-width:0; max-width:1400px; display:none;">
+    <div class="sig-title">Generations vs last year — what is left of each generation, against the year before at the same stage</div>
+    <div class="chart-controls" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0">
+      <label class="sig-sub" style="margin:0">Area <select id="gyZone"></select></label>
+      <label class="sig-sub" style="margin:0">End of <select id="gyMonth"></select></label>
+    </div>
+    <div class="sig-sub" id="gySub">Loading…</div>
+    <div class="pr-cards" id="gyCards"></div>
+    <div class="sig-sub" id="gyRead" style="font-size:13.5px;margin:10px 0"></div>
+    <div class="sig-title" style="margin-top:16px;font-size:15px">1 · Generation by generation</div>
+    <div style="overflow-x:auto"><table class="sig-table gy-tab" id="gyTab"></table></div>
+    <div class="sig-title" style="margin-top:16px;font-size:15px">2 · Month by month: how far this year's generation is from last year's</div>
+    <div id="gyTrack"></div><div class="sig-sub" id="gyTrackLeg"></div>
+    <div class="sig-title" style="margin-top:16px;font-size:15px">3 · The same comparison a year ago, and what followed</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:12px" id="gyPar"></div>
+    <div class="sig-title" style="margin-top:16px;font-size:15px">4 · Harvest month by month, against the same month a year earlier</div>
+    <div id="gyHarvChart"></div>
+    <div style="overflow-x:auto"><table class="sig-table gy-tab" id="gyHarv"></table></div>
+    <div class="sig-title" style="margin-top:16px;font-size:15px">5 · By zone</div>
+    <div style="overflow-x:auto"><table class="sig-table gy-tab" id="gyZones"></table></div>
+    <div class="sig-sub" id="gyNote" style="margin-top:12px"></div>
+  </div>
 
   <div class="panel" id="genmapView" style="flex:1; min-width:0; max-width:1480px; display:none;">
 <div class="gm-h1">Generations at sea — growth, time at sea, water temperature, feed and biology, zone by zone</div>
@@ -5579,12 +5603,13 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     document.getElementById('feedView').style.display = currentView === 'feed' ? 'block' : 'none';
     document.getElementById('generationsView').style.display = currentView === 'generations' ? 'block' : 'none';
     document.getElementById('genmapView').style.display = currentView === 'genmap' ? 'block' : 'none';
+    document.getElementById('genyoyView').style.display = currentView === 'genyoy' ? 'block' : 'none';
     // The year / period selectors do not apply to the weekly fish-health view.
-    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'usaprices' || currentView === 'news' || currentView === 'coprod' || currentView === 'feed' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
+    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'usaprices' || currentView === 'news' || currentView === 'coprod' || currentView === 'feed' || currentView === 'genyoy' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
     // La carte des zones ne sert qu'aux vues qui raisonnent par PO. Les onglets
     // Markets et Calibre sont nationaux, elle n'y afficherait rien d'utile.
     const mw = document.querySelector('.panel.mapwrap');
-    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'usaprices' || currentView === 'news' || currentView === 'coprod' || currentView === 'feed' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
+    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'usaprices' || currentView === 'news' || currentView === 'coprod' || currentView === 'feed' || currentView === 'genyoy' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
     document.getElementById('poFilterField').style.display = (currentView === 'global' || currentView === 'multi' || currentView === 'outlook') ? 'flex' : 'none';
     document.getElementById('yearField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'none' : 'flex';
     document.getElementById('yearRangeField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'flex' : 'none';
@@ -5621,6 +5646,7 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     else if (currentView === 'coprod') { renderCoprod(); }
     else if (currentView === 'generations') { renderGenerations(); }
     else if (currentView === 'genmap') { renderGenMap(); renderBigFish(); }
+    else if (currentView === 'genyoy') { renderGenYoy(); }
     else { render(); }
   });
 });
@@ -10191,6 +10217,147 @@ function renderFeed() {
     `Feed used: national farm registers. World market and Peru quotas: entered by hand in data/feed_manual.json, with the source of each line. Fish-oil prices are not public month by month and are left out.`;
 }
 
+// ===================== Generations vs last year (novembre 2026) =====================
+// Chaque generation face a celle de l'an dernier AU MEME STADE (meme mois, un an plus tot), mois par mois et zone par zone :
+// poissons qui restent, biomasse, poids, gros poissons (5 et 6 kg vides), ce qui a deja ete abattu, ce qui est mort.
+// Et le parallele de l'an dernier : le meme ecart, un an plus tot, et ce qu'il a donne ensuite. Donnees : COHORT (registre).
+let GY = null, gyZone = 'NO', gyK = null;
+const GY_GUT = 0.888, GY_CV = 0.30;
+const GY_SETS = { NO: ['Norway', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]], S: ['South (zones 1–5)', [1, 2, 3, 4, 5]], M: ['Mid (zones 6–9)', [6, 7, 8, 9]], N: ['North (zones 10–13)', [10, 11, 12, 13]] };
+for (let z = 1; z <= 13; z++) GY_SETS['z' + z] = ['Zone ' + z, [z]];
+const gySh = (k, n) => { let y = Math.floor(k / 100), m = k % 100 - 1 + n; y += Math.floor(m / 12); m = ((m % 12) + 12) % 12; return y * 100 + m + 1; };
+const gyMon = k => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][k % 100 - 1] + ' ' + String(Math.floor(k / 100)).slice(2);
+const gyMonL = k => ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][k % 100 - 1] + ' ' + Math.floor(k / 100);
+function gyPhi(z) { const t = 1 / (1 + 0.3275911 * Math.abs(z / Math.SQRT2)), y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-z * z / 2); return 0.5 * (1 + (z >= 0 ? y : -y)); }
+function gyPrep() {
+  if (GY) return GY; const IX = {}, KS = new Set();
+  (COHORT || []).forEach(r => { if (!r.po) return; const k = r.year * 100 + r.month; ((IX[r.po] = IX[r.po] || {})[r.cohort] = IX[r.po][r.cohort] || {})[k] = r; KS.add(k); });
+  return (GY = { IX, months: [...KS].sort((a, b) => a - b) });
+}
+// une generation (sur un ensemble de zones) a la fin du mois k ; cumuls depuis sa mise en mer jusqu'a k inclus
+function gyGen(zones, gen, k) {
+  const { IX } = gyPrep(), s2 = Math.log(1 + GY_CV * GY_CV), sd = Math.sqrt(s2);
+  const o = { fish: 0, bio: 0, n5: 0, b5: 0, n6: 0, b6: 0, cumH: 0, cumHkg: 0, cumD: 0, cumL: 0, hk: 0, hn: 0, any: false };
+  zones.forEach(po => { const ser = (IX[po] || {})[gen]; if (!ser) return;
+    const c = ser[k];
+    if (c && c.stock > 0 && c.weight_kg > 0) { o.any = true; const N = c.stock, w = c.weight_kg, mu = Math.log(w) - s2 / 2;
+      o.fish += N; o.bio += N * w;
+      [[5, 'n5', 'b5'], [6, 'n6', 'b6']].forEach(([lo, kn, kb]) => { const L = Math.log(lo / GY_GUT);
+        o[kn] += N * (1 - gyPhi((L - mu) / sd)); o[kb] += N * w * (1 - gyPhi((L - mu - s2) / sd)); }); }
+    if (c) { o.hk += c.harv_kg || 0; o.hn += c.harv_stk || 0; }
+    Object.entries(ser).forEach(([kk, r]) => { if (+kk > k) return; o.cumH += r.harv_stk || 0; o.cumHkg += r.harv_kg || 0; o.cumD += r.dead_stk || 0; o.cumL += r.loss_stk || 0; }); });
+  o.w = o.fish ? o.bio / o.fish : null; o.start = o.fish + o.cumH + o.cumD + o.cumL;
+  return o;
+}
+// recolte et morts de toutes les generations sur les mois [a..b], depuis le registre (memes chiffres que les autres onglets)
+function gyFlow(zones, a, b) {
+  const Zs = new Set(zones); if (zones.length === 13) Zs.add(0);   // Norvege entiere : avec les sites sans zone (po 0), comme les autres onglets
+  let hk = 0, hn = 0, d = 0;
+  (RECORDS || []).forEach(r => { if (!Zs.has(r.po)) return; const kk = r.year * 100 + r.month; if (kk < a || kk > b) return; hk += r.uttak_kg || 0; hn += r.uttak_stk || 0; d += r.dodfisk_stk || 0; });
+  return { hk, hn, d, w: hn ? hk / hn : null };
+}
+function renderGenYoy() {
+  const $g = id => document.getElementById(id), e = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  if (!COHORT || !COHORT.length) { $g('gySub').innerHTML = 'Loading…'; return; }
+  const { months } = gyPrep(), last = months[months.length - 1];
+  const zs = $g('gyZone'), ms = $g('gyMonth');
+  if (!zs.dataset.w) { zs.dataset.w = 1;
+    zs.innerHTML = Object.entries(GY_SETS).map(([k, v]) => `<option value="${k}">${v[0]}</option>`).join('');
+    zs.onchange = () => { gyZone = zs.value; renderGenYoy(); }; ms.onchange = () => { gyK = +ms.value; renderGenYoy(); }; }
+  const sel = months.filter(k => k >= gySh(months[0], 24)).reverse();
+  if (!gyK || !sel.includes(gyK)) gyK = last;
+  ms.innerHTML = sel.map(k => `<option value="${k}" ${k === gyK ? 'selected' : ''}>${gyMonL(k)}${k === last ? ' (latest)' : ''}</option>`).join('');
+  zs.value = gyZone;
+  const [zName, Z] = GY_SETS[gyZone], k = gyK, k1 = gySh(k, -12), k2 = gySh(k, -24), Y = Math.floor(k / 100);
+  const H = Y - 1, N = Y, O = Y - 2;          // generation recoltee cette annee-ci, la suivante, la plus ancienne
+  const pct = (a, b) => (a && b) ? 100 * (a / b - 1) : null;
+  const dl = (a, b, good, min = 0) => { const v = (b || 0) < min ? null : pct(a, b); if (v === null) return '<span style="color:var(--muted)">—</span>';
+    const cls = good === undefined ? '' : (v >= 0) === good ? 'delta-good' : 'delta-bad'; return `<span class="${cls}">${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(1)} %</span>`; };
+  const M = v => v ? (v / 1e6).toLocaleString('en-US', { maximumFractionDigits: 1 }) : '—', KT = v => v ? (v / 1e6).toLocaleString('en-US', { maximumFractionDigits: 0 }) : '—';
+  const KG = v => v ? v.toFixed(2) : '—', PC = v => v === null || !isFinite(v) ? '—' : v.toFixed(1) + ' %';
+  const now = { O: gyGen(Z, O, k), H: gyGen(Z, H, k), N: gyGen(Z, N, k) }, ly = { O: gyGen(Z, O - 1, k1), H: gyGen(Z, H - 1, k1), N: gyGen(Z, N - 1, k1) };
+  const tot = (S, f) => S.O[f] + S.H[f] + S.N[f];
+  $g('gySub').innerHTML = `${e(zName)}, end of <b>${gyMonL(k)}</b>, against end of ${gyMonL(k1)}. Each generation (year the smolts went to sea) is set against the one of the year before at the <b>same stage</b>: ` +
+    `G${H} — the generation harvested over the coming months — against G${H - 1} a year ago, G${N} against G${N - 1}. Big fish: estimated from the average weight of each zone and generation (spread 0.30), gutted weight. Source: Biomasseregisteret, month by month.`;
+  // ---- cartes
+  const card = (t, big, ln) => `<div class="pr-card" style="cursor:default"><div class="nm">${t}</div><div class="big">${big}</div><div class="ln">${ln}</div></div>`;
+  $g('gyCards').innerHTML =
+    card(`G${H} · fish left`, `${M(now.H.fish)} M`, `${dl(now.H.fish, ly.H.fish, true)} vs G${H - 1} (${M(ly.H.fish)} M)`) +
+    card(`G${H} · biomass`, `${KT(now.H.bio)} kt`, `${dl(now.H.bio, ly.H.bio, true)} · ${KG(now.H.w)} kg vs ${KG(ly.H.w)}`) +
+    card(`G${H} · fish 5 kg+ gutted`, `${M(now.H.n5)} M`, `${dl(now.H.n5, ly.H.n5, true, 5e4)} · ${KT(now.H.b5)} kt`) +
+    card(`G${N} · fish at sea`, `${M(now.N.fish)} M`, `${dl(now.N.fish, ly.N.fish, true)} vs G${N - 1} · ${KG(now.N.w)} kg vs ${KG(ly.N.w)}`) +
+    card(`All generations · biomass`, `${KT(tot(now, 'bio'))} kt`, `${dl(tot(now, 'bio'), tot(ly, 'bio'), true)} · fish ${dl(tot(now, 'fish'), tot(ly, 'fish'), true)}`) +
+    card(`All · fish 5 kg+ / 6 kg+`, `${M(tot(now, 'n5'))} / ${M(tot(now, 'n6'))} M`, `${dl(tot(now, 'n5'), tot(ly, 'n5'), true)} / ${dl(tot(now, 'n6'), tot(ly, 'n6'), true)}`);
+  // ---- lecture : d'ou vient l'ecart de poissons restants de la generation recoltee
+  const sv = x => x.start - x.cumD - x.cumL, hp = x => x.start ? 100 * x.cumH / x.start : 0, su = x => x.start ? 100 * sv(x) / x.start : 0;
+  const a0 = now.H, b0 = ly.H, early = hp(a0) - hp(b0), dsurv = su(a0) - su(b0);
+  $g('gyRead').innerHTML = a0.start && b0.start ? `<b>Reading.</b> G${H} has ${dl(a0.fish, b0.fish, true)} fish left against G${H - 1} at the same stage. It was stocked with ${dl(a0.start, b0.start, true)} fish (estimated), ` +
+    `has kept ${su(a0).toFixed(1)} % of them alive against ${su(b0).toFixed(1)} % (${dsurv >= 0 ? '+' : '−'}${Math.abs(dsurv).toFixed(1)} pt), and has already sent ${hp(a0).toFixed(1)} % of them to slaughter against ${hp(b0).toFixed(1)} % (${early >= 0 ? '+' : '−'}${Math.abs(early).toFixed(1)} pt). ` +
+    `Fish that survived so far (harvested or still at sea): ${dl(sv(a0), sv(b0), true)}; kilos produced so far (harvested + at sea): ${dl(a0.cumHkg + a0.bio, b0.cumHkg + b0.bio, true)}. ` +
+    (early > 2 && Math.abs(pct(sv(a0), sv(b0)) || 0) < Math.abs(pct(a0.fish, b0.fish) || 0) / 2 ? `<b>The gap in fish left comes mostly from an earlier harvest, not from fewer fish produced.</b>` : '') : '';
+  // ---- tableau par generation
+  const row = (lab, a, b) => { if (!a.any && !b.any && !a.cumH) return '';
+    const surv = x => x.start ? 100 * (1 - (x.cumD + x.cumL) / x.start) : null, hs = x => x.start ? 100 * x.cumH / x.start : null;
+    return `<tr><td class="name"><b>${lab}</b></td>` +
+      `<td>${M(a.fish)}</td><td>${M(b.fish)}</td><td>${dl(a.fish, b.fish, true, 2e5)}</td>` +
+      `<td>${KT(a.bio)}</td><td>${KT(b.bio)}</td><td>${dl(a.bio, b.bio, true, 1e6)}</td>` +
+      `<td>${KG(a.w)}</td><td>${KG(b.w)}</td>` +
+      `<td>${M(a.n5)}</td><td>${dl(a.n5, b.n5, true, 5e4)}</td>` +
+      `<td>${M(a.start)}</td><td>${dl(a.start, b.start, true, 2e5)}</td>` +
+      `<td>${M(a.start - a.cumD - a.cumL)}</td><td>${dl(a.start - a.cumD - a.cumL, b.start - b.cumD - b.cumL, true, 2e5)}</td>` +
+      `<td>${KT(a.cumHkg + a.bio)}</td><td>${dl(a.cumHkg + a.bio, b.cumHkg + b.bio, true, 1e6)}</td>` +
+      `<td>${PC(hs(a))}</td><td>${PC(hs(b))}</td>` +
+      `<td>${PC(surv(a))}</td><td>${PC(surv(b))}</td></tr>`; };
+  $g('gyTab').innerHTML = `<thead><tr><th class="name">Generation<br>(now vs<br>a year ago)</th><th>Fish<br>now (M)</th><th>Fish<br>then (M)</th><th>Δ</th><th>Biomass<br>now (kt)</th><th>Biomass<br>then (kt)</th><th>Δ</th>` +
+    `<th>Weight<br>now (kg)</th><th>Weight<br>then</th><th>5 kg+<br>now (M)</th><th>Δ</th><th>Stocked<br>(M, est.)</th><th>Δ</th><th>Survived<br>(harvested +<br>at sea, M)</th><th>Δ</th><th>Produced<br>(harvested +<br>at sea, kt)</th><th>Δ</th><th>Already<br>harvested<br>now</th><th>…then</th><th>Survival<br>so far</th><th>…then</th></tr></thead><tbody>` +
+    row(`G${O} vs G${O - 1}`, now.O, ly.O) + row(`G${H} vs G${H - 1}`, now.H, ly.H) + row(`G${N} vs G${N - 1}`, now.N, ly.N) + `</tbody>`;
+  // ---- suivi mensuel : rapport cette annee / an dernier au meme stade, sur la vie de G(H), et le meme rapport un an plus tot
+  const start = H * 100 + 10, xs = [];   // avant l'automne, les mises en mer de printemps et d'automne rendent l'ecart instable
+  for (let m = start; m <= gySh(k, 12) && m <= gySh(last, 12); m = gySh(m, 1)) xs.push(m);
+  const ratio = (g, m, f) => { if (m > last) return null; const a = gyGen(Z, g, m), b = gyGen(Z, g - 1, gySh(m, -12)); return a[f] && b[f] ? 100 * (a[f] / b[f] - 1) : null; };
+  const cut = m => m <= k ? 1 : null;
+  const ser = [
+    { label: `Fish left, G${H} vs G${H - 1}`, col: '#4fc3f7', values: xs.map(m => cut(m) && ratio(H, m, 'fish')) },
+    { label: `Biomass, G${H} vs G${H - 1}`, col: '#81c784', values: xs.map(m => cut(m) && ratio(H, m, 'bio')) },
+    { label: `Fish left a year earlier, G${H - 1} vs G${H - 2}`, col: '#4fc3f7', dash: '5 4', w: 1.5, values: xs.map(m => ratio(H - 1, gySh(m, -12), 'fish')) },
+    { label: `Biomass a year earlier, G${H - 1} vs G${H - 2}`, col: '#81c784', dash: '5 4', w: 1.5, values: xs.map(m => ratio(H - 1, gySh(m, -12), 'bio')) }];
+  $g('gyTrack').innerHTML = fdLines(xs.map(gyMon), ser, { h: 250, ref: 0, fmt: v => (v > 0 ? '+' : '') + v.toFixed(0) + ' %' });
+  $g('gyTrackLeg').innerHTML = fdLeg(ser) + `<br>Solid: G${H} against G${H - 1} at the same stage, month by month since October ${H} (before that, spring and autumn stocking dates make the gap meaningless). Dashed: the same comparison one year earlier (G${H - 1} against G${H - 2}), carried on beyond ${gyMon(k)} to show how that gap moved as those fish were harvested. ` +
+    `Fish left fall as a generation is harvested: a generation harvested earlier than the previous one shows a widening gap in fish left that is not a smaller crop.`;
+  // ---- le parallele de l'an dernier
+  const p1 = gyGen(Z, H - 1, k1), p0 = gyGen(Z, H - 2, k2), q1 = gyGen(Z, N - 1, k1), q0 = gyGen(Z, N - 2, k2);
+  const fA = gyFlow(Z, gySh(k1, 1), k), fB = gyFlow(Z, gySh(k2, 1), k1), full = k <= last;
+  const fN = gyFlow(Z, gySh(k, -11), k), fL = gyFlow(Z, gySh(k1, -11), k1);
+  $g('gyPar').innerHTML =
+    `<div class="pr-card" style="cursor:default"><div class="nm">Now — end of ${gyMonL(k)}</div><div class="ln">` +
+    `G${H}: fish ${dl(now.H.fish, ly.H.fish, true)}, biomass ${dl(now.H.bio, ly.H.bio, true)}, weight ${KG(now.H.w)} kg (${dl(now.H.w, ly.H.w, true)}). G${N}: fish ${dl(now.N.fish, ly.N.fish, true)}, biomass ${dl(now.N.bio, ly.N.bio, true)}.<br>` +
+    `<b>What follows</b> (${gyMon(gySh(k, 1))} – ${gyMon(gySh(k, 12))}): this card will fill in month by month; section 4 shows each month as it is published.</div></div>` +
+    `<div class="pr-card" style="cursor:default"><div class="nm">A year earlier — end of ${gyMonL(k1)}</div><div class="ln">` +
+    `G${H - 1}: fish ${dl(p1.fish, p0.fish, true)}, biomass ${dl(p1.bio, p0.bio, true)}, weight ${KG(p1.w)} kg (${dl(p1.w, p0.w, true)}). G${N - 1}: fish ${dl(q1.fish, q0.fish, true)}, biomass ${dl(q1.bio, q0.bio, true)}.<br>` +
+    `<b>What followed</b> (${gyMon(gySh(k1, 1))} – ${gyMon(k)}): harvest ${dl(fA.hk, fB.hk, true)} in volume, ${dl(fA.hn, fB.hn, true)} in fish, harvest weight ${KG(fA.w)} kg (${dl(fA.w, fB.w, true)}); dead fish ${dl(fA.d, fB.d, false)}.</div></div>`;
+  // ---- recolte mois par mois : cette annee contre l'an dernier
+  const hm = [], LM = [];
+  for (let m = gySh(k, -11); m <= k; m = gySh(m, 1)) hm.push(m);
+  const mrow = m => { const a = gyFlow(Z, m, m), b = gyFlow(Z, gySh(m, -12), gySh(m, -12)), gH = gyGen(Z, Math.floor(m / 100) - 1, m), gHb = gyGen(Z, Math.floor(m / 100) - 2, gySh(m, -12));
+    return `<tr><td class="name">${gyMonL(m)}</td><td>${KT(a.hk)}</td><td>${KT(b.hk)}</td><td>${dl(a.hk, b.hk, true)}</td><td>${M(a.hn)}</td><td>${dl(a.hn, b.hn, true)}</td><td>${KG(a.w)}</td><td>${KG(b.w)}</td>` +
+      `<td>${a.hk ? Math.round(100 * gH.hk / a.hk) + ' %' : '—'}</td><td>${b.hk ? Math.round(100 * gHb.hk / b.hk) + ' %' : '—'}</td></tr>`; };
+  const HS = [{ label: 'Harvest this year (kt live)', col: '#4fc3f7', values: hm.map(m => gyFlow(Z, m, m).hk / 1e6) }, { label: 'Same month a year earlier', col: '#8fa4b0', dash: '5 4', values: hm.map(m => gyFlow(Z, gySh(m, -12), gySh(m, -12)).hk / 1e6) }];
+  $g('gyHarvChart').innerHTML = fdLines(hm.map(gyMon), HS, { h: 200, fmt: v => v.toFixed(0) }) + `<div class="sig-sub">${fdLeg(HS)}</div>`;
+  $g('gyHarv').innerHTML = `<thead><tr><th class="name">Month</th><th>Harvest<br>(kt live)</th><th>A year<br>earlier</th><th>Δ</th><th>Fish<br>(M)</th><th>Δ</th><th>Weight<br>(kg)</th><th>A year<br>earlier</th><th>From the<br>younger gen.</th><th>A year<br>earlier</th></tr></thead><tbody>` +
+    hm.slice().reverse().map(mrow).join('') + `</tbody>`;
+  // ---- par zone
+  const zrow = (lab, Zs) => { const a = gyGen(Zs, H, k), b = gyGen(Zs, H - 1, k1), c = gyGen(Zs, N, k), d = gyGen(Zs, N - 1, k1);
+    const all = g => [O, H, N].reduce((s, x, j) => { const r = gyGen(Zs, x - g, g ? k1 : k); return { bio: s.bio + r.bio, n5: s.n5 + r.n5 }; }, { bio: 0, n5: 0 });
+    const A = all(0), B = all(1), f1 = gyFlow(Zs, gySh(k, -11), k), f0 = gyFlow(Zs, gySh(k1, -11), k1);
+    return `<tr${Zs.length > 1 ? ' style="font-weight:bold"' : ''}><td class="name">${lab}</td><td>${dl(a.fish, b.fish, true, 1e6)}</td><td>${dl(a.bio, b.bio, true, 3e6)}</td><td>${a.fish > 2e5 && b.fish > 2e5 ? KG(a.w) + ' / ' + KG(b.w) : '—'}</td>` +
+      `<td>${dl(c.fish, d.fish, true, 1e6)}</td><td>${dl(c.bio, d.bio, true, 3e6)}</td><td>${dl(A.bio, B.bio, true, 3e6)}</td><td>${M(A.n5)}</td><td>${dl(A.n5, B.n5, true, 2e5)}</td><td>${dl(f1.hk, f0.hk, true)}</td><td>${dl(f1.d, f0.d, false)}</td></tr>`; };
+  $g('gyZones').innerHTML = `<thead><tr><th class="name">Zone</th><th>G${H}<br>fish</th><th>G${H}<br>biomass</th><th>G${H} weight<br>now / then</th><th>G${N}<br>fish</th><th>G${N}<br>biomass</th><th>All gen.<br>biomass</th><th>5 kg+<br>now (M)</th><th>5 kg+<br>Δ</th><th>Harvest<br>12 months</th><th>Dead fish<br>12 months</th></tr></thead><tbody>` +
+    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].map(z => zrow('Zone ' + z, [z])).join('') +
+    ['S', 'M', 'N', 'NO'].map(x => zrow(GY_SETS[x][0], GY_SETS[x][1])).join('') + `</tbody>`;
+  $g('gyNote').innerHTML = `<b>How to read it.</b> Every figure compares the end of ${gyMonL(k)} with the end of ${gyMonL(k1)}. "Stocked" = fish at sea + fish already harvested + dead + lost since the generation went to sea (smolt numbers are not published by generation). ` +
+    `Survival so far = 1 − (dead + lost) ÷ stocked. 5 kg+ / 6 kg+ = gutted weight classes estimated from each zone's average weight per generation. The month selector lets you replay any month of the last years; the tab updates by itself when the register publishes a new month (about five weeks after the month).`;
+}
+
 function renderCoprod() {
   const $c = id => document.getElementById(id), D = cpData();
   $c('cpPeriod').closest('.chart-controls').style.display = D ? '' : 'none';
@@ -11665,6 +11832,7 @@ loadRemoteData().then(live => {
   .bs-slot{margin:26px 0 8px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#4fc3f7;scroll-margin-top:60px}
   .bs-miss{font-size:11.5px;color:var(--muted);margin-top:18px}
   #feedView a,.bs-news a{color:#4fc3f7}
+  .gy-tab th,.gy-tab td{text-align:center;padding:5px 6px;white-space:nowrap} .gy-tab th{line-height:1.25;vertical-align:bottom} .gy-tab td.name,.gy-tab th.name{text-align:left}
   #tasCo th,#tasCo td{text-align:center;padding:5px 7px;white-space:nowrap}
   #tasCo th{line-height:1.25;vertical-align:bottom}
   #tasCo td.name,#tasCo th.name{text-align:left}
@@ -11687,7 +11855,7 @@ loadRemoteData().then(live => {
 // Menu lateral : les cinq rubriques, construit a partir des boutons existants (qui restent la mecanique d'affichage des onglets)
 (function () {
   const CATS = [['Front page', ['news', 'summary']],
-    ['Norway — production', ['global', 'po', 'multi', 'outlook', 'generations', 'genmap', 'timeatsea', 'health', 'register']],
+    ['Norway — production', ['global', 'po', 'multi', 'outlook', 'generations', 'genmap', 'genyoy', 'timeatsea', 'health', 'register']],
     ['Other basins', ['scotland', 'faroe', 'iceland', 'chile', 'canada', 'australia']],
     ['Prices & products', ['prices', 'calibre', 'products', 'coprod', 'feed']],
     ['Markets & trade', ['markets', 'producers', 'euflows', 'poland', 'usa', 'usaprices', 'china', 'world']]];
