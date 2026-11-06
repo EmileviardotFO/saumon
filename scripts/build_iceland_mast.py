@@ -64,11 +64,11 @@ class Report:
         sch = http(f'{self.host}/public/reports/conceptualschema', {'modelIds': [self.model_id], 'userPreferredLocale': 'en-US'}, self.h)
         self.tables = {e['Name']: [p['Name'] for p in e.get('Properties', [])] for e in sch['schemas'][0]['schema']['Entities']}
 
-    def query(self, table, groups, sums, where=None, count=30000):
-        """Rows of `groups` columns with the sum of each `sums` column, as a list of dicts."""
+    def query(self, table, groups, sums, where=None, count=30000, fn=0):
+        """Rows of `groups` columns with the sum (fn=0) or average (fn=1) of each `sums` column, as a list of dicts."""
         src = {'SourceRef': {'Source': 't'}}
         sel = [{'Column': {'Expression': src, 'Property': g}, 'Name': f't.{g}'} for g in groups] + \
-              [{'Aggregation': {'Expression': {'Column': {'Expression': src, 'Property': s}}, 'Function': 0}, 'Name': f'Sum(t.{s})'} for s in sums]
+              [{'Aggregation': {'Expression': {'Column': {'Expression': src, 'Property': s}}, 'Function': fn}, 'Name': f'Sum(t.{s})'} for s in sums]
         q = {'Version': 2, 'From': [{'Name': 't', 'Entity': table, 'Type': 0}], 'Select': sel}
         if where:
             q['Where'] = [{'Condition': {'In': {'Expressions': [{'Column': {'Expression': src, 'Property': col}}],
@@ -323,6 +323,25 @@ def main():
         out['cycles']['by_fjord'] = {f: summary([c['months'] for c in done if c['fjord'] == f]) for f in sorted({c['fjord'] for c in done if c['fjord']})}
         print('cycles:', out['cycles']['iceland'], 'by company:', out['cycles']['by_company'])
         print('active sites:', len(active))
+
+    # ---- sea temperature by site and month (average temperature of the period in the lice reports) ----
+    r = next((x for x in reports if 'Lús: Meðalhiti á tímabili' in x.tables.get('cage_lice_report', [])), None)
+    if r:
+        try:
+            rows = r.query('cage_lice_report', ['Lok tímabils', 'Svæði'], ['Lús: Meðalhiti á tímabili'], fn=1)
+            T = {}
+            for x in rows:
+                v = x.get('Lús: Meðalhiti á tímabili')
+                if x['Lok tímabils'] is None or not x['Svæði'] or v is None:
+                    continue
+                v = num(v)
+                if not (-2 < v < 20):
+                    continue
+                T.setdefault((x['Svæði'], month(x['Lok tímabils'])), []).append(v)
+            out['temp'] = [{'site': s_, 'm': m_, 't': round(sum(v) / len(v), 2)} for (s_, m_), v in sorted(T.items())]
+            print('sea temperature:', len(out['temp']), 'site-months')
+        except Exception as ex:
+            print('sea temperature not read:', ex)
 
     # ---- annual production by species, farming type (sea / land) and region, from MAST's yearly reports ----
     r = find('aquaculture_from_old_reports')

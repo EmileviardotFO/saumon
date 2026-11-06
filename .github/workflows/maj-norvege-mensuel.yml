@@ -79,6 +79,10 @@ jobs:
       continue-on-error: true
       timeout-minutes: 10
       run: python3 scripts/build_iceland_mast.py
+    - name: Islande - perspectives de recolte (structure du stock, 3 et 6 mois, annee suivante)
+      continue-on-error: true
+      timeout-minutes: 10
+      run: python3 scripts/build_iceland_outlook.py
     - name: Aliment et matieres premieres (Pink Sheet de la Banque mondiale, consommations d'aliment)
       id: feed
       continue-on-error: true
