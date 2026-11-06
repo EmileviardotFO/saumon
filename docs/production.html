@@ -12808,14 +12808,17 @@ loadRemoteData().then(live => {
   const box = document.createElement('div'); box.id = 'gsBox'; box.innerHTML = '<input id="gsQ" type="search" placeholder="Search: Lerøy lice, Mowi 6+, China…" autocomplete="off">';
   if (nav) { const sub = nav.querySelector('#snSub'); (sub ? sub.after(box) : nav.prepend(box)); }
   const P = document.createElement('div'); P.id = 'gsPanel';
-  P.innerHTML = '<div class="gs-h"><input id="gsQ2" type="search" autocomplete="off"><button class="gs-x" type="button">Close ✕</button></div><div class="gs-hint">A company and/or a subject, in English, French or Norwegian: <i>Lerøy lice</i>, <i>Mowi mortalité</i>, <i>SalMar 6+</i>, <i>Chine export</i>, <i>Kaldvík</i>. Enter to search, Esc to close.</div><div id="gsOut"></div>';
+  P.innerHTML = '<div class="gs-h"><input id="gsQ2" type="search" autocomplete="off"><button class="gs-x" type="button">Close ✕</button></div><div class="gs-hint">A company and/or a subject, in English, French or Norwegian: <i>Lerøy lice</i>, <i>Mowi mortalité</i>, <i>SalMar 6+</i>, <i>Chine export</i>, <i>Kaldvík</i>. Results follow your typing; Esc to close.</div><div id="gsOut"></div>';
   document.body.appendChild(P);
   const q1 = document.getElementById('gsQ'), q2 = document.getElementById('gsQ2'), out = document.getElementById('gsOut');
   const open = v => { P.style.display = 'block'; q2.value = v; run(v); setTimeout(() => q2.focus(), 30); };
   const close = () => { P.style.display = 'none'; };
   P.querySelector('.gs-x').onclick = close;
+  // recherche en direct : des la 2e lettre dans le menu, le panneau s'ouvre et les resultats suivent la frappe
+  q1.addEventListener('input', () => { const v = q1.value; if (v.trim().length >= 2) { q1.value = ''; open(v); const n = v.length; setTimeout(() => { q2.focus(); q2.setSelectionRange(n, n); }, 0); } });
   q1.addEventListener('keydown', e => { if (e.key === 'Enter' && q1.value.trim()) { open(q1.value.trim()); q1.value = ''; } });
-  let tm = null; q2.addEventListener('input', () => { clearTimeout(tm); tm = setTimeout(() => run(q2.value), 350); });
+  load();                                   // donnees chargees en avance : les resultats arrivent sans attente
+  let tm = null; q2.addEventListener('input', () => { clearTimeout(tm); tm = setTimeout(() => run(q2.value), 220); });
   q2.addEventListener('keydown', e => { if (e.key === 'Enter') run(q2.value); if (e.key === 'Escape') close(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && P.style.display === 'block') close();
     if (e.key === '/' && !/INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || '')) { e.preventDefault(); open(''); } });
@@ -13172,9 +13175,12 @@ loadRemoteData().then(live => {
     return out.sort((a, b) => b.sc - a.sc).slice(0, 10);
   }
   const hl = (t, rxs) => { let s = esc(t); rxs.forEach(rx => { try { s = s.replace(new RegExp(rx.source.replace(/\\b/g, '(?<![\\p{L}\\d])'), 'giu'), m => `<mark>${m}</mark>`); } catch (e) { } }); return s; };
+  let runId = 0;
   async function run(q) {
-    q = String(q || '').trim(); if (!q) { out.innerHTML = ''; return; }
-    out.innerHTML = '<div class="gs-hint">Searching…</div>'; await load();
+    q = String(q || '').trim(); const id = ++runId; if (!q) { out.innerHTML = ''; return; }
+    if (q.length < 2) return;
+    if (!D['search_index.json']) out.innerHTML = '<div class="gs-hint">Loading…</div>';
+    await load(); if (id !== runId) return;          // une frappe plus recente a pris le relais
     const nq = norm(q), co = (COS.find(([, rx]) => rx.test(nq)) || [])[0];
     const topics = Object.keys(TOP).filter(k => TOP[k].test(nq));
     let rest = nq; if (co) rest = rest.replace(COS.find(c => c[0] === co)[1], ' '); topics.forEach(k => rest = rest.replace(new RegExp(TOP[k].source, 'g'), ' '));
