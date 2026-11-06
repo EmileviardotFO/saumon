@@ -28,6 +28,9 @@ jobs:
       - name: Lancer la sonde
         env:
           CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
+          BW_CLIENT_ID: ${{ secrets.BW_CLIENT_ID }}
+          BW_CLIENT_SECRET: ${{ secrets.BW_CLIENT_SECRET }}
+          AISSTREAM_KEY: ${{ secrets.AISSTREAM_KEY }}
         run: |
           mkdir -p sonde_out
           python3 "scripts/sondes/${{ inputs.script }}" 2>&1 | tee sonde_out/log.txt
