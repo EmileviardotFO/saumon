@@ -24,13 +24,13 @@ jobs:
         with:
           python-version: '3.11'
       - name: Dependances
-        run: pip install pandas openpyxl xlrd requests pdfplumber
+        run: pip install pandas openpyxl xlrd requests pdfplumber websockets
       - name: Lancer la sonde
         env:
           CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
           BW_CLIENT_ID: ${{ secrets.BW_CLIENT_ID }}
           BW_CLIENT_SECRET: ${{ secrets.BW_CLIENT_SECRET }}
-          AISSTREAM_KEY: ${{ secrets.AISSTREAM_KEY }}
+          AISSTREAM_KEY: ${{ secrets.AISSTREAM_KEY || secrets.AISTREAM_KEY }}
         run: |
           mkdir -p sonde_out
           python3 "scripts/sondes/${{ inputs.script }}" 2>&1 | tee sonde_out/log.txt
