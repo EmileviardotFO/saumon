@@ -12799,7 +12799,7 @@ loadRemoteData().then(live => {
   const get = f => fetch(DATA_URL.replace('data.json', f), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
   function load() {
     if (loading) return loading;
-    loading = Promise.all(['search_index.json', 'eurostat.json', 'national_trade.json', 'bw_site_lice.json', 'events.json', 'news.json', 'news_archive.json', 'big_fish.json', 'quarterly.json', 'plants.json']
+    loading = Promise.all(['world_imports.json', 'search_index.json', 'eurostat.json', 'national_trade.json', 'bw_site_lice.json', 'events.json', 'news.json', 'news_archive.json', 'big_fish.json', 'quarterly.json', 'plants.json']
       .map(f => get(f).then(j => D[f] = j)));
     return loading;
   }
@@ -12941,6 +12941,9 @@ loadRemoteData().then(live => {
   const PROD = { smoked: /\b(smoked|fum[eé]s?|r[øo]kt|ahumado)\b/, fillet: /\b(fill?ets?|filets?|file|filler)\b/, fresh: /\b(fresh|frais|fraiche|fersk|fresco|chilled)\b/, frozen: /\b(frozen|congel\w*|frys\w*|surgel\w*)\b/, whole: /\b(whole|entiers?|hel|head on|hoso|ho)\b/ };
   function findMarket(rest) {
     const C = (((typeof DATA_RAW !== 'undefined' && DATA_RAW ? DATA_RAW : {}).ssb_exports || {}).meta || {}).countries || {};
+    const ab = { usa: 'US', us: 'US', uk: 'GB', 'u.s.': 'US', hk: 'HK', uae: 'AE' }, aw = rest.split(/\s+/).find(w => ab[w]);
+    if (aw && C[ab[aw]]) { const c = C[ab[aw]], names = [c.name, c.akva, FR_C[ab[aw]], aw].filter(Boolean).join(' ').split(/[\s,()]+/).map(norm).filter(n => n.length >= 2);
+      return { iso: ab[aw], name: c.name, word: aw, rx: new RegExp('\\b(' + names.join('|') + ')\\b') }; }
     const words = rest.split(/\s+/).filter(w => w.length >= 4);
     for (const [iso, c] of Object.entries(C)) {
       const names = [c.name, c.akva, FR_C[iso]].filter(Boolean).join(' ').split(/[\s,()]+/).map(norm).filter(n => n.length >= 4);
@@ -13108,6 +13111,34 @@ loadRemoteData().then(live => {
       return `<div class="gs-n"><span class="gs-go" onclick="gsGoTab('${n.v}', ${JSON.stringify(n.sec).replace(/"/g, '&quot;')})">${esc(n.sec || n.label)}</span><small>${esc(n.label)}</small><div style="font-size:12.5px;color:#a9bfcc;margin-top:3px">${hl1(snip, H.one)}</div></div>`; }).join('');
     return html;
   }
+
+  // ---- pays importateur hors UE : importations par origine (UN Comtrade, declarees par le pays importateur)
+  function worldCard(mk, prods) {
+    const W = D['world_imports.json']; if (!W) return '';
+    const I3 = { US: 'USA', JP: 'JPN', CN: 'CHN', HK: 'HKG', KR: 'KOR', BR: 'BRA', CA: 'CAN', AU: 'AUS', IL: 'ISR', TH: 'THA', VN: 'VNM', SG: 'SGP', TW: 'TWN', AE: 'ARE', MX: 'MEX', RU: 'RUS', TR: 'TUR', CH: 'CHE', GB: 'GBR', NO: 'NOR', UA: 'UKR', SA: 'SAU', EG: 'EGY', IN: 'IND', ID: 'IDN', MY: 'MYS', PH: 'PHL', CL: 'CHL', AR: 'ARG', PE: 'PER', CO: 'COL', ZA: 'ZAF', NZ: 'NZL', QA: 'QAT', KZ: 'KAZ', BY: 'BLR', RS: 'SRB', GE: 'GEO', UY: 'URY' };
+    const NM = W.meta.names || {}, iso3 = (NM[I3[mk.iso]] && I3[mk.iso]) || Object.keys(NM).find(k => norm(NM[k]) === norm(mk.name) || norm(NM[k]).startsWith(norm(mk.name))); if (!iso3) return '';
+    let H = { '030214': 'Fresh whole', '030441': 'Fresh fillets', '030313': 'Frozen whole', '030481': 'Frozen fillets', '030541': 'Smoked' };
+    const keep = Object.keys(H).filter(h => (!prods.includes('fillet') || /fillet/i.test(H[h])) && (!prods.includes('whole') || /whole/i.test(H[h])) &&
+      (!prods.includes('fresh') || /fresh/i.test(H[h])) && (!prods.includes('frozen') || /frozen/i.test(H[h])) && (!prods.includes('smoked') || /smoked/i.test(H[h])));
+    const R0 = W.rows.filter(r => r[1] === iso3 && keep.includes(r[2])); if (!R0.length) return '';
+    const last = (W.meta.last_by_reporter || {})[iso3] || Math.max(...R0.map(r => r[0]));
+    const ks = []; for (let i = 11; i >= 0; i--) { let y = Math.floor(last / 100), m = last % 100 - i; while (m < 1) { m += 12; y--; } ks.push(y * 100 + m); }
+    const K = new Set(ks), Kp = new Set(ks.map(k => k - 100)), ml = x => `${MONTHS_FR[x % 100 - 1].slice(0, 3)} ${String(Math.floor(x / 100)).slice(2)}`;
+    const nm = c => NM[c] || EU_EXTRA[c] || c, t0 = v => v ? Math.round(v).toLocaleString('en-US') : '—', pr = (kg, usd) => kg ? (usd / kg).toFixed(2) : '—';
+    const chg = (a, b) => a && b ? `<span class="${a >= b ? 'good' : 'bad'}">${a >= b ? '+' : '−'}${Math.abs(Math.round(100 * (a / b - 1)))} %</span>` : '—';
+    const by = {}, mon = {}, monP = {};
+    R0.forEach(r => { const isW = r[3] === 'W';
+      if (isW) { if (K.has(r[0])) { (mon[r[0]] = mon[r[0]] || [0, 0]); mon[r[0]][0] += r[4]; mon[r[0]][1] += r[5]; } if (Kp.has(r[0])) { (monP[r[0] + 100] = monP[r[0] + 100] || [0, 0]); monP[r[0] + 100][0] += r[4]; } return; }
+      const b = by[r[3]] = by[r[3]] || [0, 0, 0]; if (K.has(r[0])) { b[0] += r[4]; b[1] += r[5]; } if (Kp.has(r[0])) b[2] += r[4]; });
+    const T = ks.reduce((a, k) => [a[0] + ((mon[k] || [0])[0]), a[1] + ((mon[k] || [0, 0])[1])], [0, 0]), Tp = ks.reduce((a, k) => a + ((monP[k] || [0])[0]), 0);
+    const L = Object.entries(by).filter(([, b]) => b[0]).sort((a, b) => b[1][0] - a[1][0]).slice(0, 10);
+    return `<div class="gs-card"><h4>${esc(mk.name)} — salmon imports (${esc(keep.map(h => H[h].toLowerCase()).join(', '))}) to ${ml(last)}</h4><div class="s">UN Comtrade, imports declared by ${esc(mk.name)}, every origin (CIF, US dollars). Last 12 months: <b>${t0(T[0] / 1000)} t</b> (${chg(T[0], Tp)} on a year), average <b>${pr(T[0], T[1])} USD/kg</b>.</div>` +
+      `<table><tr><th>Origin</th><th>Tonnes, 12 months</th><th>Share</th><th>vs a year</th><th>USD/kg</th></tr>` +
+      L.map(([c, b]) => `<tr><td>${esc(nm(c))}</td><td>${t0(b[0] / 1000)}</td><td>${T[0] ? (100 * b[0] / T[0]).toFixed(0) + ' %' : ''}</td><td>${chg(b[0], b[2])}</td><td>${pr(b[0], b[1])}</td></tr>`).join('') + `</table>` +
+      `<table style="margin-top:4px"><tr><th>Month</th>${ks.map(k => `<th>${ml(k)}</th>`).join('')}</tr><tr><td>Tonnes</td>${ks.map(k => `<td>${t0(((mon[k] || [])[0] || 0) / 1000)}</td>`).join('')}</tr>` +
+      `<tr><td>a year earlier</td>${ks.map(k => `<td>${t0(((monP[k] || [])[0] || 0) / 1000)}</td>`).join('')}</tr><tr><td>USD/kg</td>${ks.map(k => `<td>${mon[k] ? pr(mon[k][0], mon[k][1]) : '—'}</td>`).join('')}</tr></table>` +
+      `<div class="s" style="margin-top:6px"><span class="gs-go" onclick="gsGoTab('world')">→ World imports</span>${mk.iso === 'US' ? ` · <span class="gs-go" onclick="gsGoTab('usa')">→ USA focus</span>` : mk.iso === 'CN' || mk.iso === 'HK' ? ` · <span class="gs-go" onclick="gsGoTab('china')">→ China focus</span>` : ''}</div></div>`;
+  }
   // ---- presse
   function news(co, topics, words, bas, mk, prods) {
     const N = D['news.json'] || {}, A = D['news_archive.json'] || {}, seen = new Set(), out = [];
@@ -13158,9 +13189,9 @@ loadRemoteData().then(live => {
     const words = rest.split(/\s+/).filter(w => w.length > 1);
     let html = '';
     if (bas && wantTrade && !po) { const pcd = producerCard(bas, prods, mon); if (pcd) html += `<div class="gs-sec">From the dashboard's data · exports from ${BAS_NAME[bas]}</div>` + pcd; }
-    if (mk) { const eu = euCard(mk, prods);
+    if (mk) { const eu = euCard(mk, prods) || worldCard(mk, prods);
       html += `<div class="gs-sec">From the dashboard's data · ${esc(mk.name)}${prods.length ? ' · ' + prods.join(', ') : ''}</div>` + eu +
-        (eu ? `<details class="gs-card"><summary style="cursor:pointer;color:#a9bfcc;font-size:13px">Norwegian exports to ${esc(mk.name)} only (Statistics Norway, faster than Eurostat)</summary>${marketCard(mk, prods).replace(/^<div class="gs-card">|<\/div>$/g, '')}</details>` : marketCard(mk, prods)); }
+        (eu ? `<details class="gs-card"><summary style="cursor:pointer;color:#a9bfcc;font-size:13px">Norway's own figures: Norwegian exports to ${esc(mk.name)} (Statistics Norway, usually one month fresher)</summary>${marketCard(mk, prods).replace(/^<div class="gs-card">|<\/div>$/g, '')}</details>` : marketCard(mk, prods)); }
     if (po) {
       const want = t => !topics.length || topics.includes(t);
       const cards = [want('mort') ? zoneMort(po) : '', want('mort') ? zoneEv(po) : '', want('lice') || want('dis') ? zoneLice(po) : '', want('dis') || want('mort') || want('lice') ? zoneDis(po) : '', want('big') || want('harv') ? zoneBig(po) : ''].filter(Boolean);

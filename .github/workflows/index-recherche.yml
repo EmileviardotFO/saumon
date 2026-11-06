@@ -3,7 +3,7 @@ name: Index de recherche (toutes les lignes de tous les tableaux)
 # affiche et ses tableaux sont lus dans data/search_index.json (recherche du tableau de bord).
 on:
   schedule:
-    - cron: '41 9 * * *'
+    - cron: '33 11 * * *'
   workflow_dispatch: {}
 permissions:
   contents: write
