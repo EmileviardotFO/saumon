@@ -815,7 +815,7 @@
   ],
   "card": {
    "kind": "better",
-   "s": "low losses, no exceptional mortality in Q1–Q3; no ISA since 2024, no AGD reported",
+   "s": "no exceptional mortality in Q1–Q3; no ISA since May 2024, no AGD reported",
    "threat": "occasional ISA"
   },
   "threats": "LLMMLLL",
@@ -827,25 +827,62 @@
   "supply_line": "Health is not the constraint; volumes follow licences.",
   "events": [
    {
+    "d": "2023",
+    "k": "warn",
+    "t": "Bakkafrost Faroes: 7.3 % mortality; main causes handling and treatments, seals, CMS, HSMI, gill health.",
+    "u": "https://www.bakkafrost.com/en/sustainability/data"
+   },
+   {
     "d": "May 2024",
     "k": "bad",
-    "t": "Last ISA case found: Bakkafrost A-19 Vágur, harvested early (about 2–3 kt off that year's harvest).",
-    "u": "https://www.seafoodsource.com/news/aquaculture/bakkafrost-set-to-cull-180-000-salmon-following-isa-detection-at-faroese-farm"
+    "t": "ISA at Bakkafrost A-19 Vágur (2 pens, about 180,000 fish culled); site harvested early, 2,000–3,000 t off the 2024 harvest. Last ISA case found.",
+    "u": "https://www.fishfarmermagazine.com/2024/05/27/isa-discovered-at-bakkafrost-faroes-site/"
+   },
+   {
+    "d": "2024",
+    "k": "warn",
+    "t": "Bakkafrost Faroes: 6.6 % mortality; causes handling (stocking, delousing), seals, wounds, ISA, CMS. Mowi Faroes: 15 % of sites above the lice limit.",
+    "u": "https://www.bakkafrost.com/en/sustainability/data"
+   },
+   {
+    "d": "2025",
+    "k": "good",
+    "t": "Bakkafrost Faroes: 4.3 % mortality, the lowest since 2019; causes wounds (winter ulcers, mechanical) and handling. No thermal delousing any more. Mowi Faroes: no incident-based mortality cost, 3 % of sites above the lice limit.",
+    "u": "https://www.bakkafrost.com/en/sustainability/data"
    },
    {
     "d": "Jan–Sep 2026",
     "k": "good",
-    "t": "Bakkafrost Faroes: no exceptional mortality cost in Q1, Q2 or Q3; harvest 25.1, 26.7 and 23.1 kt.",
-    "u": "https://www.fishfarmingexpert.com/bakkafrost-faroe-islands-financial-results/bakkafrost-profit-improved-in-q3-as-scotland-losses-lessened/2204501"
+    "t": "Bakkafrost Faroes: no exceptional mortality cost in Q1, Q2 or Q3; survival 90 days after transfer about 97.5 % in Q3; harvest 75.0 kt in nine months.",
+    "u": "https://www.inderes.dk/releases/bakkafrost-q3-2026-trading-update"
    },
    {
     "d": "2025–2026",
     "k": "info",
-    "t": "AGD (amoebic gill disease): no case reported in the Faroes in 2025 or 2026 in Bakkafrost's reports or the press; the Faroese food authority (HFS) publishes no yearly list.",
-    "u": "https://www.hfs.fo/"
+    "t": "No ISA and no AGD outbreak reported in 2025–2026. AGD, CMS, HSMI and BKD are known to be present in the Faroes (Seafood Watch 2022); HFS publishes lice counts every two weeks by site but no database of disease cases.",
+    "u": "https://www.hfs.fo/webcenter/portal/HFS/Aling"
    }
   ],
-  "kpis": [],
+  "kpis": [
+   {
+    "l": "Bakkafrost exceptional mortality, Q1–Q3 2026",
+    "v": "0 DKK",
+    "d": "none in any quarter",
+    "k": "good"
+   },
+   {
+    "l": "Lice, adult females per fish (2025)",
+    "v": "0.27",
+    "d": "0.22 in 2024 (Bakkafrost, all sites)",
+    "k": "info"
+   },
+   {
+    "l": "National loss per generation, 2019–21",
+    "v": "17 %",
+    "d": "stocked minus harvested (HFS data via Seafood Watch); Bakkafrost 10.3 %, Hiddenfjord 4.9 % in 2021",
+    "k": "info"
+   }
+  ],
   "sources": [
    {
     "d": "yearly",
@@ -860,6 +897,34 @@
     "n": "SeafoodSource — Bakkafrost culls 180,000 salmon after ISA",
     "u": "https://www.seafoodsource.com/news/aquaculture/bakkafrost-set-to-cull-180-000-salmon-following-isa-detection-at-faroese-farm",
     "w": "ISA handling"
+   },
+   {
+    "d": "every 2 weeks",
+    "ty": "data",
+    "n": "HFS (Faroese Food and Veterinary Authority) — Aling: lice by site (Lúsatøl), fish numbers, medicines",
+    "u": "https://www.hfs.fo/webcenter/portal/HFS/Aling",
+    "w": "lice counts by site"
+   },
+   {
+    "d": "Dec 2022",
+    "ty": "rep",
+    "n": "Seafood Watch — Farmed Atlantic salmon, Faroe Islands (PDF)",
+    "u": "https://www.seafoodwatch.org/globalassets/sfw-data-blocks/reports/s/seafood-watch-farmed-salmon-faroes-27921.pdf",
+    "w": "diseases present, national loss per generation 2019–21"
+   },
+   {
+    "d": "2026",
+    "ty": "co",
+    "n": "Mowi — Integrated Annual Report 2025 (Faroes section)",
+    "u": "https://ml-eu.globenewswire.com/Resource/Download/96c5e442-0aa6-4e23-91e0-60d4c12dd67d",
+    "w": "harvest, incident mortality, lice compliance"
+   },
+   {
+    "d": "Oct 2026",
+    "ty": "co",
+    "n": "Bakkafrost — Q3 2026 trading update",
+    "u": "https://www.inderes.dk/releases/bakkafrost-q3-2026-trading-update",
+    "w": "exceptional mortality, survival after transfer"
    }
   ]
  },
@@ -1169,6 +1234,24 @@
   "supply_line": "SRS endemic, antibiotic permit suspended: heavy losses each austral summer.",
   "events": [
    {
+    "d": "Sep 2023 – Mar 2024",
+    "k": "bad",
+    "t": "Macquarie Harbour: about 1,150 t of dead salmon removed in six months (peak 314 t in January), government RTI release.",
+    "u": "https://pulsetasmania.com.au/news/1150-tonnes-of-dead-salmon-removed-from-macquarie-harbour-in-six-months"
+   },
+   {
+    "d": "Jul 2023 – Jun 2024",
+    "k": "warn",
+    "t": "66 'elevated mortality' events reported statewide (40 in Huon / D'Entrecasteaux Channel, 12 Storm Bay, 7 Macquarie Harbour).",
+    "u": "https://tasmaniantimes.com/?p=163197"
+   },
+   {
+    "d": "2024",
+    "k": "warn",
+    "t": "Tassal: 89.2 % survival in marine pens (88.3 % in freshwater), against 91 % in 2023.",
+    "u": "https://www.alphinity.com.au/wp-content/uploads/2025/08/Nature-risks-in-farmed-seafood.pdf"
+   },
+   {
     "d": "17 Apr 2026",
     "k": "bad",
     "t": "EPA: 9,200 t of dead salmon in January–March 2026, about a third less than the 2025 event.",
@@ -1193,7 +1276,14 @@
     "u": "https://nre.tas.gov.au/Documents/Reflections%20and%20Learnings%20-%20Salmon%20Mortality%20Event%202025.pdf"
    }
   ],
-  "kpis": [],
+  "kpis": [
+   {
+    "l": "Tassal marine survival, 2024",
+    "v": "89.2 %",
+    "d": "91 % in 2023 (company figure, definition not published)",
+    "k": "warn"
+   }
+  ],
   "sources": [
    {
     "d": "quarterly",
@@ -1236,9 +1326,30 @@
     "n": "Pulse Tasmania — 1,150 t of dead salmon removed from Macquarie Harbour in six months",
     "u": "https://pulsetasmania.com.au/news/1150-tonnes-of-dead-salmon-removed-from-macquarie-harbour-in-six-months",
     "w": "only pre-2025 mortality figure"
+   },
+   {
+    "d": "Aug 2024",
+    "ty": "co",
+    "n": "Tassal — Sustainability Highlights 2023 (PDF)",
+    "u": "https://tassalgroup.com.au/wp-content/uploads/sites/2/2024/08/Tassal-Sustainability-Highlights-2023.pdf",
+    "w": "marine survival 91 %"
+   },
+   {
+    "d": "Jun 2025",
+    "ty": "co",
+    "n": "Tassal — Sustainability Report 2024 (PDF)",
+    "u": "https://tassalgroup.com.au/wp-content/uploads/sites/2/2025/06/Sustainability-Report-2024.pdf",
+    "w": "survival 2024 (89.2 % marine)"
+   },
+   {
+    "d": "live",
+    "ty": "co",
+    "n": "Tassal — sustainability dashboard",
+    "u": "https://dashboard.tassalgroup.com.au/",
+    "w": "harvest by year; no survival series"
    }
   ],
-  "chart_note": "Tasmania: EPA monthly mortality figures exist only from January 2025 (reporting became a licence condition after the February 2025 event); no official 2023 or 2024 total. Closest figure: about 1,150 t removed from Macquarie Harbour alone, September 2023 – March 2024."
+  "chart_note": "Tasmania: EPA monthly mortality figures exist only from January 2025 (a licence condition since the February 2025 event), so the chart starts in 2025. Before that only fragments: Tassal reported marine survival of 91 % (2023) and 89.2 % (2024); about 1,150 t of dead salmon were removed from Macquarie Harbour alone in September 2023 – March 2024; 66 'elevated mortality' events were reported in July 2023 – June 2024. Huon and Petuna publish no survival figure."
  },
  "notes": {
   "measures": "Norway, Chile and the Faroes count fish; Scotland, Iceland and Tasmania weigh them (dead tonnes against biomass or production). A tonnage measure gives more weight to large fish lost late in the cycle, so it usually runs above a count measure. Compare trends within a country rather than levels across countries."
