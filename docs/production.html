@@ -5636,8 +5636,12 @@ function scSvg(keys, series, o) {   // petit graphique : barres et lignes sur un
   const X = i => l + bw * (i + .5), Y = v => t + ph - (v - mn) / (mx - mn) * ph;
   let s = '';
   for (let i = 0; i <= 4; i++) { const v = mn + (mx - mn) * i / 4, y = Y(v); s += `<line x1="${l}" x2="${W - r}" y1="${y}" y2="${y}" stroke="#223642"/><text x="${l - 5}" y="${y + 4}" font-size="10" text-anchor="end" fill="#8fa4b0">${o.fmt ? o.fmt(v) : Math.round(v)}</text>`; }
-  series.forEach(x => { if (x.bar) x.v.forEach((v, i) => { if (v === null || !isFinite(v)) return; const c = typeof x.col === 'function' ? x.col(i, v) : x.col;
-      s += `<rect x="${l + bw * i + bw * .15}" y="${Y(v)}" width="${bw * .7}" height="${Math.max(0, Y(mn) - Y(v))}" fill="${c}" fill-opacity=".85"><title>${o.lab(keys[i])}: ${o.fmt ? o.fmt(v) : v}</title></rect>`; });
+  // les series principales (marquees de points) sont dessinees en barres, cote a cote s'il y en a plusieurs ; les comparaisons restent en lignes, par-dessus
+  series = series.map(x => x.dots && x.bar === undefined && !o.lines ? { ...x, bar: true } : x);
+  const BS = series.filter(x => x.bar), nb = BS.length || 1, gw = bw * (nb > 1 ? .8 : .7), sw = gw / nb;
+  BS.forEach((x, j) => x.v.forEach((v, i) => { if (v === null || !isFinite(v)) return; const c = typeof x.col === 'function' ? x.col(i, v) : x.col;
+      s += `<rect x="${(l + bw * i + (bw - gw) / 2 + sw * j).toFixed(1)}" y="${Y(v)}" width="${Math.max(0.8, sw - (nb > 1 ? 1 : 0)).toFixed(1)}" height="${Math.max(0, Y(mn) - Y(v))}" fill="${c}" fill-opacity=".85"><title>${x.lab ? x.lab + ' — ' : ''}${o.lab(keys[i])}: ${o.fmt ? o.fmt(v) : v}</title></rect>`; }));
+  series.forEach(x => { if (x.bar) return;
     else { let d = '', pen = false; x.v.forEach((v, i) => { if (v === null || !isFinite(v)) { pen = false; return; } d += (pen ? 'L' : 'M') + X(i) + ',' + Y(v); pen = true; });
       s += `<path d="${d}" fill="none" stroke="${x.col}" stroke-width="${x.w || 2}"${x.dash ? ` stroke-dasharray="${x.dash}"` : ''}/>`;
       if (x.dots) x.v.forEach((v, i) => { if (v !== null && isFinite(v)) s += `<circle cx="${X(i)}" cy="${Y(v)}" r="2.4" fill="${x.col}"><title>${o.lab(keys[i])}: ${o.fmt ? o.fmt(v) : v}</title></circle>`; }); } });
