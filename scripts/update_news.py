@@ -59,7 +59,8 @@ FEED_CORE = rx([r'fish ?meal', r'fiskemel', r'harina de pescado', r'fish ?oil', 
 # presse (ou sont generes automatiquement) sans rien apporter.
 BLOCK_SRC = rx([r'investing\.com', r'yahoo', r'gurufocus', r'tradingview', r'marketscreener', r'tipranks', r'biggo', r'indexbox', r'tridge', r'openpr',
                 r'dealroom', r'facebook', r'instagram', r'tiktok', r'youtube', r'indiaipo', r'investywise', r'haberler', r'marketbeat', r'zacks', r'simply ?wall',
-                r'stocktitan', r'seeking ?alpha', r'bioengineer', r'techround', r'newser', r'talent24h', r'trending now', r'news of bahrain', r'msn\b'])
+                r'stocktitan', r'seeking ?alpha', r'bioengineer', r'techround', r'newser', r'talent24h', r'trending now', r'news of bahrain', r'msn\b',
+                r'ecosistema ?startup'])   # blog de reecriture automatique (titres trompeurs, ex. "le saumon chilien esquive le droit de 12,5 %")
 BLOCK_TITLE = rx([r'earnings call transcript', r'\bslides:', r'stock (is )?(dropping|falling|rising|jumps?)', r'shares (fall|rise|jump|drop)', r'reports earnings results for',
                   r'market (size|forecast|to reach|report)', r'prices? & trade data', r'export data & price', r'forecast to 20[3-4]\d',
                   r'invitation to (the )?presentation', r'invitasjon til presentasjon', r'sets .{0,30}results release', r'\bwebinar\b', r'^news - aqua agenda'])

@@ -43,7 +43,7 @@
    },
    {
     "k": "Trade",
-    "t": "United States tariffs reshape who sells where; Chilean salmon is reported to avoid the 12.5 % US tariff. China's fast-growing demand could pull fish away from other markets as supply stalls in 2027 (Undercurrent News, 4 Nov 2026)."
+    "t": "United States tariffs reshape who sells where: Chilean salmon has paid an additional 12.5 % US tariff since July 2026 (exemption talks under way, none confirmed). China's fast-growing demand could pull fish away from other markets as supply stalls in 2027 (Undercurrent News, 4 Nov 2026)."
    },
    {
     "k": "Biology",
@@ -103,11 +103,11 @@
    "dir": "down",
    "y2027": "flat to down, with downside risk",
    "y2026": "Record 2025 (1.15 Mt all species). Q3 2026 −2.1 %; Q4 2026 expected about −10 % (Mowi). Standing biomass −7 % year on year.",
-   "oneliner": "Chile starts 2027 with less fish in the water and an extraordinary El Niño: the risk is mostly on the downside.",
+   "oneliner": "Chile starts 2027 with less fish in the water (−7 % industry-wide) and an extraordinary El Niño: the risk is mostly on the downside.",
    "drivers": [
     {
      "k": "Biomass",
-     "t": "Standing biomass is about 7 % lower than a year ago after biological problems forced earlier harvests and raised mortality (Mowi Q3 2026). Less fish at sea today means less to harvest in the first half of 2027. Arctic Securities expects Chilean supply to stay tight into 2027; SEB cut its Chilean production estimates."
+     "t": "Standing biomass in Chile (all farmers) was about 7 % lower than a year earlier at the end of September 2026 — an industry estimate by Kontali, published in Mowi's Q3 report, not Mowi's own fish. Biological problems forced earlier harvests and raised mortality. Less fish at sea today means less to harvest in the first half of 2027. Arctic Securities expects Chilean supply to stay tight into 2027; SEB cut its Chilean production estimates."
     },
     {
      "k": "Climate",
@@ -119,7 +119,7 @@
     },
     {
      "k": "Trade",
-     "t": "Chilean salmon reportedly avoids the 12.5 % US tariff, which keeps the US market (its first destination for fillets) open."
+     "t": "Since late July 2026 the United States charges an additional 12.5 % tariff on Chilean salmon (as on fruit, wine and timber). Chile and the US have been negotiating exemptions since August; as of early November no exemption for salmon has been confirmed. The US is Chile's first market for fresh fillets, so the tariff weighs on prices and could push more fish towards Brazil, Asia and Europe — it does not change how much is farmed in 2027."
     },
     {
      "k": "Companies",
