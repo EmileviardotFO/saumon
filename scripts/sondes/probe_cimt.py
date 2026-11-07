@@ -1,12 +1,21 @@
-"""Sonde : jeux de donnees CIMT (commerce par SH, province) sur open.canada.ca + page de l'application."""
-import re, requests, json
+"""Sonde CIMT : structure des fichiers annuels d'exportations (SH, pays, province, mensuel) et lignes saumon."""
+import re, requests, json, zipfile, io, csv, time
 H = {'User-Agent': 'Mozilla/5.0 (salmon-dashboard)'}
-for q in ['cimt', 'Canadian International Merchandise Trade HS', 'merchandise trade province HS exports', 'international merchandise trade database']:
-    r = requests.get('https://open.canada.ca/data/api/3/action/package_search', params={'q': q, 'rows': 30}, headers=H, timeout=60).json()['result']['results']
-    for p in r:
-        t = (p.get('title_translated') or {}).get('en') or p.get('title')
-        if re.search(r'(?i)trade|cimt|commerce', t):
-            print('PKG', p['id'], p.get('metadata_modified', '')[:10], t[:140]); [print('    ', x.get('format'), x.get('url')) for x in p['resources'][:6]]
-r = requests.get('https://www150.statcan.gc.ca/n1/en/catalogue/71-607-X2021004', headers=H, timeout=60)
-for m in sorted(set(re.findall(r'href="([^"]+)"', r.text))):
-    if re.search(r'(?i)cimt|trade|71-607|commerce', m): print('LINK', m)
+p = requests.get('https://open.canada.ca/data/api/3/action/package_show', params={'id': '2909a648-5753-4924-878a-b069392d9cde'}, headers=H, timeout=60).json()['result']
+for x in p['resources']: print('RES', x.get('format'), x.get('url'))
+u = 'https://www150.statcan.gc.ca/n1/pub/71-607-x/2021004/zip/CIMT-CICM_Tot_Exp_2026.zip'
+t0 = time.time(); r = requests.get(u, headers=H, timeout=600); print('GET', u, r.status_code, len(r.content), round(time.time() - t0))
+if not r.ok:
+    u = u.replace('2026', '2025'); r = requests.get(u, headers=H, timeout=600); print('GET', u, r.status_code, len(r.content))
+z = zipfile.ZipFile(io.BytesIO(r.content))
+for n in z.namelist(): print('FILE', n, z.getinfo(n).file_size)
+for n in z.namelist():
+    with z.open(n) as f:
+        tx = io.TextIOWrapper(f, encoding='utf-8-sig', errors='replace')
+        head = [next(tx) for _ in range(5)]
+        print('HEAD', n, ''.join(head)[:1500])
+        k = 0
+        for line in tx:
+            if re.search(r'\b030214|\b0302140|\b030441|\b0304410', line):
+                print('ROW', n, line.strip()[:300]); k += 1
+                if k > 25: break
