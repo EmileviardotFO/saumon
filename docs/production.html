@@ -13720,37 +13720,82 @@ loadRemoteData().then(live => {
     body.sn-open .db-pill{display:none}
   }
   html{background:#0b1620}
-  /* ---- theme « Liquid Glass » : fond en halos colores, surfaces translucides a bord lumineux.
-     Le flou (backdrop-filter) est reserve aux surfaces qui passent au-dessus du contenu (menu, recherche, boutons flottants) : ailleurs il ne se verrait pas et ralentirait le telephone. */
-  html{background:#060e15}
-  body{background:transparent!important}
-  html::before{content:'';position:fixed;inset:-20vh -20vw;z-index:-1;pointer-events:none;
-    background:radial-gradient(60vw 50vh at 8% 0%,rgba(47,184,166,.46),transparent 62%),radial-gradient(55vw 45vh at 100% 6%,rgba(79,195,247,.38),transparent 60%),
-      radial-gradient(70vw 60vh at 55% 105%,rgba(110,100,255,.34),transparent 62%),radial-gradient(45vw 40vh at 92% 58%,rgba(47,184,166,.20),transparent 60%),radial-gradient(40vw 35vh at 5% 70%,rgba(79,195,247,.16),transparent 60%),linear-gradient(180deg,#071119,#060d14)}
-  .panel,.top-controls{background:linear-gradient(160deg,rgba(255,255,255,.10),rgba(255,255,255,.035) 45%,rgba(255,255,255,.06))!important;border:1px solid rgba(255,255,255,.15)!important;border-radius:22px!important;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -1px 0 rgba(255,255,255,.05),0 20px 60px rgba(0,0,0,.35)}
-  .pr-card,details.cl-sec,#gsPanel .gs-card,.gs-card{background:linear-gradient(160deg,rgba(255,255,255,.13),rgba(255,255,255,.04) 50%,rgba(255,255,255,.07))!important;border:1px solid rgba(255,255,255,.17)!important;border-radius:18px!important;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 10px 30px rgba(0,0,0,.28)}
-  .sig-table{border-radius:12px}
-  select,input[type=search],input[type=text],input:not([type]),.st-row input,.st-row select,#gsPanel .gs-h input{background-color:rgba(255,255,255,.06)!important;border:1px solid rgba(255,255,255,.14)!important;border-radius:14px!important;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
-  .nw-chips button,#gsPanel .gs-x,.db-pill,#snBurger,#gsFab{background:linear-gradient(160deg,rgba(255,255,255,.16),rgba(255,255,255,.05))!important;border:1px solid rgba(255,255,255,.20)!important;border-radius:999px!important;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 4px 14px rgba(0,0,0,.22)!important;-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%)}
-  #snBurger,#gsFab{border-radius:14px!important}
-  #snLogo{border-radius:14px!important}
-  .nw-chips button.on{background:rgba(79,195,247,.20)!important;border-color:rgba(79,195,247,.55)!important}
-  #sideNav{background:rgba(9,18,26,.62)!important;-webkit-backdrop-filter:blur(26px) saturate(170%);backdrop-filter:blur(26px) saturate(170%);border-right:1px solid rgba(255,255,255,.08)!important}
-  #sideNav .sn-item.on,#sideNav .sn-item.active{background:rgba(255,255,255,.09)!important;border-radius:12px;box-shadow:inset 0 1px 0 rgba(255,255,255,.10)}
-  #gsPanel{background:rgba(5,12,18,.93)!important;-webkit-backdrop-filter:blur(30px) saturate(170%);backdrop-filter:blur(30px) saturate(170%)}
-  #srcPanel{background:rgba(10,20,28,.85)!important;-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);border-radius:16px!important}
-  @media (max-width:900px){body::before{background:#08121a!important;border-bottom:1px solid rgba(255,255,255,.07)!important}
-    .gs-card table tr>*:first-child{position:sticky;left:0;z-index:1;background:#13212c}}
+  /* ---- theme « Liquid Glass » (facon iOS 26) : fond oceanique plus clair, surfaces de verre translucides et floutees,
+     liseres lumineux. Le verre epais (flou) est reserve aux grandes surfaces et aux elements flottants ; les cartes a l'interieur
+     d'un panneau sont du verre fin, sans flou supplementaire (sinon le telephone rame). */
+  :root{--bg:#123049;--panel:rgba(255,255,255,.10);--border:rgba(255,255,255,.20);--ink:#f3f8fb;--muted:#b6c8d4;
+    --glass:linear-gradient(140deg,rgba(255,255,255,.20),rgba(255,255,255,.07) 42%,rgba(255,255,255,.11));
+    --glass-thin:linear-gradient(140deg,rgba(255,255,255,.14),rgba(255,255,255,.04) 50%,rgba(255,255,255,.08));
+    --rim:inset 0 1px 0 rgba(255,255,255,.55),inset 0 -1px 0 rgba(255,255,255,.14),inset 1px 0 0 rgba(255,255,255,.10),inset -1px 0 0 rgba(255,255,255,.10)}
+  html{background:#123049}
+  body{background:transparent!important;color:var(--ink)}
+  html::before{content:'';position:fixed;inset:-10vh -10vw;z-index:-1;pointer-events:none;
+    background:radial-gradient(55vw 55vh at 6% 4%,#2a8fa3 0%,transparent 65%),radial-gradient(50vw 50vh at 96% 10%,#3a63b8 0%,transparent 62%),
+      radial-gradient(60vw 55vh at 80% 70%,#1f7f86 0%,transparent 62%),radial-gradient(55vw 50vh at 12% 85%,#4a4fa3 0%,transparent 60%),
+      radial-gradient(40vw 35vh at 50% 45%,#246b8c 0%,transparent 70%),linear-gradient(160deg,#17405e,#112b45 55%,#162a52)}
+  /* grandes surfaces : verre epais */
+  .panel,.top-controls{background:var(--glass)!important;border:1px solid rgba(255,255,255,.26)!important;border-radius:26px!important;
+    -webkit-backdrop-filter:blur(26px) saturate(180%);backdrop-filter:blur(26px) saturate(180%);
+    box-shadow:var(--rim),0 18px 50px rgba(3,18,35,.38)!important}
+  /* cartes : verre fin */
+  .pr-card,details.cl-sec,.gs-card,.nw-story,.dz-card{background:var(--glass-thin)!important;border:1px solid rgba(255,255,255,.22)!important;border-radius:20px!important;box-shadow:var(--rim),0 8px 24px rgba(3,18,35,.22)!important}
+  [style*="background:#102231"],[style*="background: #102231"],[style*="background:#0f1e2b"],[style*="background: #0f1e2b"],[style*="background:#13283a"],[style*="background: #13283a"],
+  [style*="background:#0f2229"],[style*="background:#132230"],[style*="background:#1a2b36"],[style*="background:#12304a"],[style*="background:#10202c"],[style*="background:#0b1620"]{
+    background:rgba(255,255,255,.08)!important;border-color:rgba(255,255,255,.20)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.30)}
+  [style*="background:#0d1a24"],[style*="background: #0d1a24"]{background:rgba(255,255,255,.07)!important}
+  .sig-table th{background:rgba(255,255,255,.07)!important}
+  .sig-table td,.sig-table th{border-color:rgba(255,255,255,.12)!important}
+  #sideNav .sn-top{display:none}
+  /* champs, listes, boutons : pilules de verre */
+  select,input[type=search],input[type=text],input:not([type]),.st-row input,.st-row select,#gsPanel .gs-h input{background-color:rgba(255,255,255,.12)!important;color:var(--ink)!important;
+    border:1px solid rgba(255,255,255,.28)!important;border-radius:16px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}
+  input::placeholder{color:rgba(232,242,248,.62)}
+  select option{background:#163a57;color:#fff}
+  .nw-chips button,#gsPanel .gs-x,.db-pill,#snBurger,#gsFab,.bs-nav button,#gsSug button{background:linear-gradient(150deg,rgba(255,255,255,.26),rgba(255,255,255,.09))!important;
+    border:1px solid rgba(255,255,255,.34)!important;border-radius:999px!important;color:#fff!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.6),inset 0 -1px 0 rgba(255,255,255,.12),0 6px 18px rgba(3,18,35,.28)!important;
+    -webkit-backdrop-filter:blur(18px) saturate(180%);backdrop-filter:blur(18px) saturate(180%)}
+  #snBurger,#gsFab{border-radius:16px!important}
+  .nw-chips button.on{background:linear-gradient(150deg,rgba(255,255,255,.55),rgba(255,255,255,.28))!important;color:#0d2a40!important;font-weight:700}
+  #snLogo{border-radius:14px!important;box-shadow:0 0 0 1px rgba(255,255,255,.35),0 6px 18px rgba(3,18,35,.3)!important}
+  /* menu lateral : verre epais, element actif en pastille claire */
+  #sideNav{background:linear-gradient(170deg,rgba(255,255,255,.16),rgba(255,255,255,.06))!important;-webkit-backdrop-filter:blur(30px) saturate(180%);backdrop-filter:blur(30px) saturate(180%);
+    border-right:1px solid rgba(255,255,255,.22)!important;box-shadow:inset -1px 0 0 rgba(255,255,255,.18)}
+  #sideNav .sn-item{color:#e3edf3;border-radius:14px}
+  #sideNav .sn-item:hover{background:rgba(255,255,255,.10)}
+  #sideNav .sn-item.on{background:linear-gradient(150deg,rgba(255,255,255,.34),rgba(255,255,255,.16))!important;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 4px 12px rgba(3,18,35,.25)!important}
+  #sideNav .sn-cat{gap:8px}
+  #sideNav .sn-cat .sn-ic{display:inline-flex;width:26px;height:26px;border-radius:9px;align-items:center;justify-content:center;flex:0 0 auto;
+    background:linear-gradient(150deg,rgba(255,255,255,.32),rgba(255,255,255,.10));box-shadow:inset 0 1px 0 rgba(255,255,255,.55);margin-right:2px}
+  #sideNav .sn-cat .sn-lab{flex:1}
+  #sideNav .sn-sub{color:#cfdde6}
+  #gsPanel{background:rgba(18,48,73,.62)!important;-webkit-backdrop-filter:blur(34px) saturate(180%);backdrop-filter:blur(34px) saturate(180%)}
+  #srcPanel{background:rgba(22,58,87,.78)!important;-webkit-backdrop-filter:blur(26px);backdrop-filter:blur(26px);border-radius:18px!important;border:1px solid rgba(255,255,255,.25)!important}
+  #snShade{background:rgba(5,20,35,.35)!important}
+  body > h1 .h1-cat{color:#cfe0ea!important}
+  .sig-sub,.subtitle{color:var(--muted)}
+  @media (max-width:900px){
+    body::before{background:rgba(20,52,78,.78)!important;-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);border-bottom:1px solid rgba(255,255,255,.18)!important}
+    .gs-card table tr>*:first-child{position:sticky;left:0;z-index:1;background:#1d4562}
+    /* le menu ouvert : son haut reste fixe sous le bouton de fermeture, le reste defile dessous */
+    #sideNav{padding-top:0!important;background:linear-gradient(170deg,rgba(32,84,120,.88),rgba(24,58,96,.86))!important}
+    #sideNav .sn-brand{display:none}
+    #sideNav .sn-top{display:block;position:sticky;top:0;z-index:2;height:calc(58px + env(safe-area-inset-top,0px));margin:0 -12px 4px;
+      background:linear-gradient(180deg,rgba(24,62,92,.92),rgba(24,62,92,.70));-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.14)}
+  }
   /* pas de retour arriere du navigateur par glissement horizontal */
   html,body{overscroll-behavior-x:none}
 </style>
 <script>
 // Menu lateral : les cinq rubriques, construit a partir des boutons existants (qui restent la mecanique d'affichage des onglets)
 (function () {
+  const SVG = d => `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  const SN_ICONS = [   // une icone par grande categorie du menu
+    SVG('<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/>'),                                   // une : journal
+    SVG('<path d="M2 12c3-4.5 7-6 11-6 3 0 5.5 1.5 7 3l2-2v10l-2-2c-1.5 1.5-4 3-7 3-4 0-8-1.5-11-6z"/><circle cx="16.5" cy="10.5" r=".8" fill="#fff"/>'),   // Norvege : poisson
+    SVG('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 3.8 5.5 3.8 9S14.5 18.5 12 21c-2.5-2.5-3.8-5.5-3.8-9S9.5 5.5 12 3z"/>'),          // autres bassins : globe
+    SVG('<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.3"/>'),                      // prix : etiquette
+    SVG('<path d="M3 17h18l-2.5 4h-13z"/><path d="M5 17V9h14v8M9 9V5h6v4"/>')];                                                 // marches : navire
   const CATS = [['Front page', ['news', 'supply', 'disease', 'summary']],
     ['Norway — production', ['global', 'po', 'multi', 'outlook', 'generations', 'genmap', 'genyoy', 'timeatsea', 'health', 'wellboats', 'register']],
     ['Other basins', ['scotland', 'faroe', 'iceland', 'chile', 'canada', 'australia']],
@@ -13759,8 +13804,8 @@ loadRemoteData().then(live => {
   const btn = v => document.querySelector(`#viewToggle button[data-v="${v}"]`);
   const nav = document.createElement('nav'); nav.id = 'sideNav'; nav.setAttribute('aria-label', 'Dashboard sections');
   const closed = JSON.parse((() => { try { return localStorage.getItem('snClosed') || '{}'; } catch (e) { return '{}'; } })());
-  nav.innerHTML = `<div class="sn-brand"><img src="icons/logo.svg" alt="Salmon Outlook" title="Salmon Outlook" width="36" height="36"></div><div class="sn-sub" id="snSub"></div>` +
-    CATS.map(([c, L], i) => `<div class="sn-group${closed[i] ? ' closed' : ''}" data-g="${i}"><button type="button" class="sn-cat" aria-expanded="${!closed[i]}">${c}<span>${closed[i] ? '▸' : '▾'}</span></button>` +
+  nav.innerHTML = `<div class="sn-top" aria-hidden="true"></div><div class="sn-brand"><img src="icons/logo.svg" alt="Salmon Outlook" title="Salmon Outlook" width="36" height="36"></div><div class="sn-sub" id="snSub"></div>` +
+    CATS.map(([c, L], i) => `<div class="sn-group${closed[i] ? ' closed' : ''}" data-g="${i}"><button type="button" class="sn-cat" aria-expanded="${!closed[i]}"><span class="sn-ic">${SN_ICONS[i] || ''}</span><span class="sn-lab">${c}</span><span>${closed[i] ? '▸' : '▾'}</span></button>` +
       L.filter(btn).map(v => `<button type="button" class="sn-item" data-v="${v}">${btn(v).textContent.trim()}</button>`).join('') + `</div>`).join('');
   document.body.prepend(nav);
   // telephone : les boutons fixes (menu, loupe) s'effacent quand on descend dans la page et reviennent des qu'on remonte
@@ -13791,7 +13836,7 @@ loadRemoteData().then(live => {
   // le geste "retour" du telephone (bord de l'ecran, bouton Android) ouvre le menu au lieu de quitter l'onglet
   if (mobile()) { try { history.replaceState({ snBase: 1 }, ''); history.pushState({ snGuard: 1 }, ''); } catch (e) { /* rien */ } }
   nav.querySelectorAll('.sn-cat').forEach(c => c.onclick = () => { const g = c.parentNode, i = g.dataset.g; g.classList.toggle('closed');
-    closed[i] = g.classList.contains('closed'); c.querySelector('span').textContent = closed[i] ? '▸' : '▾'; c.setAttribute('aria-expanded', !closed[i]);
+    closed[i] = g.classList.contains('closed'); c.querySelector('span:last-child').textContent = closed[i] ? '▸' : '▾'; c.setAttribute('aria-expanded', !closed[i]);
     try { localStorage.setItem('snClosed', JSON.stringify(closed)); } catch (e) { /* pas de stockage */ } });
   const mark = v => nav.querySelectorAll('.sn-item').forEach(x => x.classList.toggle('on', x.dataset.v === v));
   let curV = location.hash.slice(1);
@@ -13890,7 +13935,7 @@ loadRemoteData().then(live => {
     const P = [...document.querySelectorAll('.panel')].find(p => p.style.display === 'block' || (p.style.display === '' && vis(p) && p.closest('body')));
     const active = document.querySelector('#sideNav .sn-item.on') || document.querySelector('#viewToggle button.active');
     if (H1) { const t = active && active.textContent.trim() ? active.textContent.trim() : H1_0, g = active && active.closest('.sn-group'), cb = g && g.querySelector('.sn-cat');
-      const cat = cb ? cb.childNodes[0].textContent.trim() : '';
+      const cat = cb ? (cb.querySelector('.sn-lab') || cb.childNodes[0]).textContent.trim() : '';
       H1.innerHTML = (cat ? `<span class="h1-cat">${cat}</span>` : '') + `<span class="h1-t">${t.replace(/</g, '&lt;')}</span>`; }
     const yearBox = boxes.find(b => b.querySelector('#yearSel'));
     if (SUB) SUB.style.display = yearBox && vis(yearBox) ? '' : 'none';
