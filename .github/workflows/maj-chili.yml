@@ -26,7 +26,7 @@ jobs:
         id: customs
         continue-on-error: true
         timeout-minutes: 25
-        run: python3 scripts/build_chile_customs.py --depuis 2023
+        run: python3 scripts/build_chile_customs.py --depuis 2023 --relire
       - name: INE regional - Los Lagos, Magallanes, Aysen
         id: regional
         continue-on-error: true
