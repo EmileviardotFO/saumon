@@ -1530,6 +1530,9 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="sig-title" style="margin-top:14px">Exports month by month — customs declarations</div>
     <div class="sig-sub" id="clCusSub"></div>
     <div id="clCus"></div>
+    <div class="sig-title" style="margin-top:14px">Fillets — size class, trim and quality grade (customs declarations)</div>
+    <div class="sig-sub" id="clFilSub"></div>
+    <div id="clFil"></div>
     <div class="sig-title" style="margin-top:14px">Exports by product form (UN Comtrade)</div>
     <div class="sig-sub" id="clExpSub"></div>
     <div id="clExp"></div>
@@ -1568,7 +1571,10 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="sig-title" style="margin-top:14px">Mortality by company — closed cycles, year by year</div>
     <div class="sig-sub" id="clAnnSub"></div>
     <div style="overflow-x:auto"><table class="sig-table" id="clAnn"></table></div>
-    <div class="sig-title" style="margin-top:14px">Exporters followed month by month (customs, anonymised)</div>
+    <div class="sig-title" style="margin-top:14px">Exports by producer — the plant named on the declaration</div>
+    <div class="sig-sub" id="clPrdSub"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="clPrd"></table></div>
+    <div class="sig-title" style="margin-top:14px">Exporters followed month by month (customs)</div>
     <div class="sig-sub" id="clExpoSub"></div>
     <div style="overflow-x:auto"><table class="sig-table" id="clExpo"></table></div>
     </details>
@@ -5401,11 +5407,12 @@ function clMore() {
     const X = (C.exporters || []).map(x => { const ms = Object.entries(x.months || {}), s12 = ms.filter(([k]) => +k > last - 100).reduce((a, [, v]) => a + v[0], 0), s0 = ms.filter(([k]) => +k <= last - 100 && +k > last - 200).reduce((a, [, v]) => a + v[0], 0);
       return { ...x, s12, s0, n: ms.length }; }).filter(x => x.s12 > 0).sort((a, b) => b.s12 - a.s12), tot12 = ks.filter(k => k > last - 100).reduce((a, k) => a + CM[k].t_kusd[0], 0);
     $c('clExpoSub').innerHTML = `Customs files carry no exporter name and renumber exporters every month. Each exporter is followed from month to month by its own product codes, town, products and markets (${C.meta.linked_share_pct} % of the volume could be followed over several months). ` +
-      `The name is not known, but the exporter's registered town (often its head office: Santiago districts, Rancagua, Puerto Montt) and its product mix often tell which company it is. A chain can break when an exporter changes its codes: read it as likely, not certain. Last 12 months to ${ml(last)}.`;
-    $c('clExpo').innerHTML = `<thead><tr><th class="name">Exporter</th><th>Last 12 m (t)</th><th>Share</th><th>12 m before</th><th>Change</th><th style="text-align:left">Town</th><th style="text-align:left">Main products</th><th style="text-align:left">Main markets</th><th>Months seen</th></tr></thead><tbody>` +
+      `The exporter's name is not in the file, but the producer written on its declarations (column "Producer named") almost always tells which company it is; its registered town is often the head office (Santiago districts, Rancagua, Puerto Montt). A chain can break when an exporter changes its codes: read it as likely, not certain. Last 12 months to ${ml(last)}.`;
+    $c('clExpo').innerHTML = `<thead><tr><th class="name">Exporter</th><th>Last 12 m (t)</th><th>Share</th><th>12 m before</th><th>Change</th><th style="text-align:left">Town</th><th style="text-align:left">Producer named</th><th style="text-align:left">Main products</th><th style="text-align:left">Main markets</th><th>Months seen</th></tr></thead><tbody>` +
       X.slice(0, 20).map(x => `<tr><td class="name">${x.id}</td><td><b>${f0(x.s12)}</b></td><td>${(100 * x.s12 / tot12).toFixed(1)} %</td><td>${x.s0 ? f0(x.s0) : '—'}</td><td>${x.s0 ? pc(x.s12, x.s0) : '—'}</td>` +
-        `<td style="text-align:left">${e(CL_COM[+x.comuna] || x.comuna || '')}</td><td style="text-align:left;font-size:12px">${Object.entries(x.mix || {}).slice(0, 2).map(([k, v]) => `${lab(k)} ${v.toFixed(0)} %`).join(', ')}</td>` +
+        `<td style="text-align:left">${e(CL_COM[+x.comuna] || x.comuna || '')}</td><td style="text-align:left;font-size:12px">${Object.entries(x.producers || {}).filter(([n]) => n !== 'not stated').slice(0, 2).map(([n, v]) => `${e(n)} ${v.toFixed(0)} %`).join(', ') || '—'}</td><td style="text-align:left;font-size:12px">${Object.entries(x.mix || {}).slice(0, 2).map(([k, v]) => `${lab(k)} ${v.toFixed(0)} %`).join(', ')}</td>` +
         `<td style="text-align:left;font-size:12px">${Object.entries(x.dest || {}).slice(0, 3).map(([k, v]) => `${e(k.replace('U.S.A.', 'USA').replace('Brasil', 'Brazil').replace('Japon', 'Japan').replace('Rusia', 'Russia'))} ${v.toFixed(0)} %`).join(', ')}</td><td>${x.n}</td></tr>`).join('') + `</tbody>`;
+    clFilPrd(CM, ks, last, lab);
     SUM.clS5 = `${X.length} exporters followed; the 5 largest ship ${(100 * X.slice(0, 5).reduce((a, x) => a + x.s12, 0) / tot12).toFixed(0)} % · mortality by company`;
   } else { $c('clCusSub').innerHTML = 'Customs reader has not run yet.'; }
   // cartes du haut : remplacer les chiffres saisis a la main par les plus frais (Subpesca, douanes)
@@ -5474,6 +5481,51 @@ function clMore() {
   Object.entries(SUM).forEach(([k, v]) => { const el = $c(k + 'Sum'); if (el) el.textContent = v; });
   clW();
 }
+function clFilPrd(CM, ks, last, lab) {   // filets (classes, trims, grades) et exportations par producteur nomme
+  const $c = id => document.getElementById(id), e = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), f0 = v => v === null || v === undefined || !isFinite(v) ? '—' : Math.round(v).toLocaleString('en-US');
+  const MON = MONTHS_FR.map(m => m.slice(0, 3)), ml = k => `${MON[k % 100 - 1]} ${Math.floor(k / 100)}`;
+  const pc = (a, b) => a && b ? (v => `<span class="${v >= 0 ? 'delta-good' : 'delta-bad'}">${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(0)} %</span>`)(100 * (a / b - 1)) : '—';
+  const k12 = ks.filter(k => k > last - 100), k0 = ks.filter(k => k <= last - 100 && k > last - 200);
+  const has = ks.some(k => CM[k].fillets);
+  if (!has) { $c('clFilSub').innerHTML = 'The size classes, trims and grades of the fillets are being read from the declarations (first run under way).'; $c('clFil').innerHTML = ''; }
+  else {
+    const sum = (kk, f, key) => { const o = {}; kk.forEach(k => { const F = ((CM[k].fillets || {})[f] || {})[key]; if (!F) return; if (Array.isArray(F)) F.forEach((v, i) => o[i] = (o[i] || 0) + v); else Object.entries(F).forEach(([n, v]) => { if (Array.isArray(v)) { const q = o[n] = o[n] || [0, 0]; q[0] += v[0]; q[1] += v[1]; } else o[n] = (o[n] || 0) + v; }); }); return o; };
+    const LB = ['1-2', '2-3', '3-4', '4-5', '5-6', '6+'], FS = [['atlantic|fresh fillets', 'Atlantic, fresh fillets'], ['atlantic|frozen fillets', 'Atlantic, frozen fillets'], ['coho|frozen fillets', 'Coho, frozen fillets']];
+    const share = (o, n) => { const t = Object.values(o).reduce((a, v) => a + (Array.isArray(v) ? v[0] : v), 0) || 1; const v = o[n]; return 100 * (Array.isArray(v) ? v[0] : (v || 0)) / t; };
+    let h = '';
+    FS.forEach(([f, name]) => {
+      const L1 = sum(k12, f, 'lb_t'), L0 = sum(k0, f, 'lb_t'), T1 = sum(k12, f, 'trim'), T0 = sum(k0, f, 'trim'), G1 = sum(k12, f, 'grade'), G0 = sum(k0, f, 'grade'), K1 = sum(k12, f, 'kind');
+      const lt = o => LB.reduce((a, _, i) => a + (o[i] || 0), 0) || 1, core = o => 100 * ((o[2] || 0) + (o[3] || 0)) / lt(o);
+      if (!Object.keys(G1).length) return;
+      const gr = Object.entries(G1).sort((a, b) => b[1][0] - a[1][0]), tr = ['C', 'D', 'E', 'B', 'A', 'not stated'].filter(t => T1[t]);
+      h += `<div class="sig-sub" style="margin-top:10px"><b>${name}</b> — last 12 months to ${ml(last)} (the 12 months before in grey). Sizes of the fillet itself, in lb: the world retail market buys mostly 3-5 lb fillets (from 4-6 kg fish).</div>` +
+        `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px"><div style="overflow-x:auto"><table class="sig-table"><thead><tr><th class="name">Fillet class (lb)</th><th>Share</th><th style="color:var(--muted)">before</th></tr></thead><tbody>` +
+        LB.map((b, i) => `<tr><td class="name">${b} <span style="font-size:11px;color:var(--muted)">(${(i + 1) * .4536 > 0 ? ((i + 1) * .4536).toFixed(2) : ''}–${i < 5 ? ((i + 2) * .4536).toFixed(2) + ' kg' : ''})</span></td><td><b>${(100 * (L1[i] || 0) / lt(L1)).toFixed(0)} %</b></td><td style="color:var(--muted)">${(100 * (L0[i] || 0) / lt(L0)).toFixed(0)} %</td></tr>`).join('') +
+        `<tr style="font-weight:700"><td class="name">3-5 lb (retail core)</td><td>${core(L1).toFixed(0)} %</td><td style="color:var(--muted)">${core(L0).toFixed(0)} %</td></tr></tbody></table></div>` +
+        `<div style="overflow-x:auto"><table class="sig-table"><thead><tr><th class="name">Quality grade written</th><th>Share</th><th style="color:var(--muted)">before</th><th>$/kg FOB</th></tr></thead><tbody>` +
+        gr.filter(([g]) => share(G1, g) >= 0.5 || share(G0, g) >= 0.5).map(([g, v]) => `<tr><td class="name">${e(g)}</td><td><b>${share(G1, g).toFixed(0)} %</b></td><td style="color:var(--muted)">${share(G0, g).toFixed(0)} %</td><td>${v[0] ? (v[1] / v[0]).toFixed(2) : '—'}</td></tr>`).join('') + (gr.some(([g]) => share(G1, g) < 0.5 && share(G0, g) < 0.5) ? `<tr><td class="name" style="color:var(--muted)">rare (&lt; 0.5 %)</td><td colspan="3" style="text-align:left;font-size:12px">${gr.filter(([g]) => share(G1, g) < 0.5 && share(G0, g) < 0.5).map(([g, v]) => `${e(g)} ${f0(v[0])} t at ${(v[1] / v[0]).toFixed(2)} $/kg`).join(', ')}</td></tr>` : '') + `</tbody></table></div>` +
+        `<div style="overflow-x:auto"><table class="sig-table"><thead><tr><th class="name">Trim</th><th>Share</th><th style="color:var(--muted)">before</th></tr></thead><tbody>` +
+        tr.map(t => `<tr><td class="name">${t === 'not stated' ? t : 'Trim ' + t}</td><td><b>${share(T1, t).toFixed(0)} %</b></td><td style="color:var(--muted)">${share(T0, t).toFixed(0)} %</td></tr>`).join('') +
+        `<tr><td class="name" style="color:var(--muted)">product</td><td colspan="2" style="text-align:left;font-size:12px">${Object.entries(K1).sort((a, b) => b[1] - a[1]).map(([n, v]) => `${e(n)} ${share(K1, n).toFixed(0)} %`).join(', ')}</td></tr></tbody></table></div></div>`; });
+    $c('clFilSub').innerHTML = `What the exporters write in each declaration: the size class of the fillet, its trim and a quality word. Chile is known for cheap "production" fillets; the grade words show how much is sold as premium, superior, standard or industrial — and at what price. ` +
+      `A grade or trim that is not written stays "not stated" (skinless fillets without a trim are counted as trim E). Coverage depends on each exporter's habits, so read changes in the shares with that in mind.`;
+    $c('clFil').innerHTML = h;
+  }
+  // producteurs
+  const P1 = {}, P0 = {};
+  const AL = { 'Ventisquero': 'Ventisqueros', 'Salmones Pacific': 'Pacific Star', 'Mutli X': 'Multi X', 'South W Ind': 'South Wind', 'Mfc Hile': 'MFC Chile' };
+  const add = (o, k) => Object.entries(CM[k].producers || {}).forEach(([n0, sf]) => { const n = AL[n0] || n0; const q = o[n] = o[n] || { t: 0, v: 0, atl: 0, coho: 0, trout: 0, fresh: 0, fil: 0, sf: {} }; Object.entries(sf).forEach(([f, [t, u]]) => { q.t += t; q.v += u; q.sf[f] = (q.sf[f] || 0) + t; if (f.startsWith('atlantic')) q.atl += t; if (f.startsWith('coho')) q.coho += t; if (f.startsWith('trout')) q.trout += t; if (f.includes('fresh')) q.fresh += t; if (f.includes('fillets')) q.fil += t; }); });
+  k12.forEach(k => add(P1, k)); k0.forEach(k => add(P0, k));
+  const tot = Object.values(P1).reduce((a, q) => a + q.t, 0), ns = (P1['not stated'] || {}).t || 0;
+  if (!tot) { $c('clPrdSub').innerHTML = 'The producer named on each declaration is being read (first run under way).'; $c('clPrd').innerHTML = ''; return; }
+  $c('clPrdSub').innerHTML = `Most declarations name the plant that made the product (« AQUACHILE-F », « MULTI X S.A.-F »: F for <i>fabricante</i>), even though the exporter itself stays anonymous. Summed here by producer, last 12 months to ${ml(last)} against the 12 before. ` +
+    `${(100 * (1 - ns / tot)).toFixed(0)} % of the tonnes name a producer. A producer's figure includes fish it processes for others, and traders (ACME, ICH…) appear when they are the named maker. Product weight, not live weight.`;
+  $c('clPrd').innerHTML = `<thead><tr><th class="name">Producer</th><th>Last 12 m (t)</th><th>Share</th><th>12 m before</th><th>Change</th><th>FOB $/kg</th><th>Atlantic</th><th>Coho</th><th>Trout</th><th>Fresh</th><th>Fillets</th><th style="text-align:left">Main product</th></tr></thead><tbody>` +
+    Object.entries(P1).filter(([n, q]) => n !== 'not stated' && q.t >= 300).sort((a, b) => b[1].t - a[1].t).map(([n, q]) => { const o = P0[n], top = Object.entries(q.sf).sort((a, b) => b[1] - a[1])[0];
+      return `<tr><td class="name">${e(n)}</td><td><b>${f0(q.t)}</b></td><td>${(100 * q.t / tot).toFixed(1)} %</td><td>${o ? f0(o.t) : '—'}</td><td>${o ? pc(q.t, o.t) : '—'}</td><td>${(q.v / q.t).toFixed(2)}</td>` +
+        `<td>${(100 * q.atl / q.t).toFixed(0)} %</td><td>${q.coho ? (100 * q.coho / q.t).toFixed(0) + ' %' : '—'}</td><td>${q.trout ? (100 * q.trout / q.t).toFixed(0) + ' %' : '—'}</td><td>${(100 * q.fresh / q.t).toFixed(0)} %</td><td>${(100 * q.fil / q.t).toFixed(0)} %</td><td style="text-align:left;font-size:12px">${top ? lab(top[0]) : ''}</td></tr>`; }).join('') +
+    `<tr style="color:var(--muted)"><td class="name">not stated</td><td>${f0(ns)}</td><td>${(100 * ns / tot).toFixed(1)} %</td><td colspan="9"></td></tr></tbody>`;
+}
 function clW() {   // poids : calibres exportes (douanes), poids moyen en mer (Salmon Outlook), smolts et temps en mer
   const $c = id => document.getElementById(id), el = $c('clW'); if (!el) return;
   const CM = (CLX && CLX.cus && CLX.cus.months) || {}, ks = Object.keys(CM).map(Number).sort((a, b) => a - b).filter(k => CM[k].sizes);
@@ -5504,8 +5556,9 @@ function clW() {   // poids : calibres exportes (douanes), poids moyen en mer (S
     html += `<div class="sig-sub" style="margin-top:8px"><b>Atlantic fresh whole by weight class (kg gutted), ${ml(l3[0])}–${ml(l3[l3.length - 1])} against a year earlier</b> — share of tonnes</div><div style="overflow-x:auto"><table class="sig-table"><thead><tr><th class="name"></th>${labs.map(l => `<th>${l} kg</th>`).join('')}</tr></thead><tbody>` +
       `<tr><td class="name">${Math.floor(l3[l3.length - 1] / 100)}</td>${a.map(v => `<td><b>${v.toFixed(0)} %</b></td>`).join('')}</tr>` + (p3.length ? `<tr><td class="name">a year earlier</td>${b.map(v => `<td>${v.toFixed(0)} %</td>`).join('')}</tr>` : '') + `</tbody></table></div>`;
     // reconstruction : toutes les formes (entier frais, entier congele, filets) ramenees au poids vif du poisson, ponderees par tonnes equivalent vif
-    const FAC = { 'atlantic|fresh whole': [HON, HON], 'atlantic|frozen whole': [HON, HON], 'atlantic|fresh fillets': [3.6, 2.0], 'atlantic|frozen fillets': [3.6, 2.0] };
-    const rec = k => { let n = 0, d = 0; Object.entries(FAC).forEach(([f, [fw, ft]]) => { const q = z(k, f); if (q.mean_kg && q.t_sized >= 100) { n += q.mean_kg * fw * q.t * ft; d += q.t * ft; } }); return d ? n / d : null; };
+    // filets : une classe de filet de a-b lb vient d'un poisson vide de (a+1)-(b+1) kg (regle du metier) ; tonnes de filet -> vif a 67 % de rendement (trim D)
+    const FY = 0.67, FAC = { 'atlantic|fresh whole': [w => w * HON, HON], 'atlantic|frozen whole': [w => w * HON, HON], 'atlantic|fresh fillets': [w => (w / 0.4536 + 1) * HON, HON / FY], 'atlantic|frozen fillets': [w => (w / 0.4536 + 1) * HON, HON / FY] };
+    const rec = k => { let n = 0, d = 0; Object.entries(FAC).forEach(([f, [fw, ft]]) => { const q = z(k, f); if (q.mean_kg && q.t_sized >= 100) { n += fw(q.mean_kg) * q.t * ft; d += q.t * ft; } }); return d ? n / d : null; };
     const yr = (yy, lm) => { const kk = ks.filter(k => Math.floor(k / 100) === yy && k % 100 <= lm), v = kk.map(rec).filter(x => x); return v.length ? v.reduce((a, x) => a + x, 0) / v.length : null; };
     const SPr = (CLP && (CLP.reports || []).filter(r => r && r.k && !r.unread && r.species && r.species.salar && r.species.salar.cum_kt).sort((a, b) => b.k - a.k)[0]) || null;
     const KPI = (((CLD && CLD.company_kpi) || {}).rows || []);
@@ -5513,10 +5566,10 @@ function clW() {   // poids : calibres exportes (douanes), poids moyen en mer (S
     if (SPr) { const y = Math.floor(SPr.k / 100), lm = SPr.k % 100, c1 = SPr.species.salar.cum_kt, c0 = c1 / (1 + SPr.species.salar.var_pct / 100), w1 = yr(y, lm), w0 = yr(y - 1, lm);
       if (w1 && w0) fish = `<br><b>Fish harvested</b> (Subpesca harvest ÷ this weight), Atlantic salmon Jan–${MON[lm - 1]}: <b>${(c1 / w1).toFixed(0)} M fish in ${y}</b> at ${w1.toFixed(2)} kg, against ${(c0 / w0).toFixed(0)} M in ${y - 1} at ${w0.toFixed(2)} kg — ` +
         `${(100 * (c1 / w1 / (c0 / w0) - 1)).toFixed(0)} % more fish, ${(100 * (w1 / w0 - 1)).toFixed(1)} % heavier. Compare with the smolts put to sea about 14 months earlier (84 M Atlantic in H1 2025, Salmon Council).`; }
-    html += `<div class="sig-sub" style="margin-top:12px"><b>Reconstruction: average weight of the Atlantic salmon harvested, from every export form</b> — whole fish (gutted ×${HON}) and fillets (a fillet of the stated class ×3.6 ≈ the live fish it came from: two fillets of trim D weigh about 62 % of the gutted fish), weighted by live-equivalent tonnes. ` +
-      `Fillets state a class for over 90 % of the tonnes, so the whole harvest is covered, not only the premium whole fish. The level runs above what the farmers report (${KPI.map(r => `${e(r.co)} ${r.period.replace('-', ' ')}: ${r.harvest_kg} kg WFE`).join(', ')}); the month-to-month and year-on-year changes are the useful part.${fish}</div>` +
+    html += `<div class="sig-sub" style="margin-top:12px"><b>Reconstruction: average weight of the Atlantic salmon harvested, from every export form</b> — whole fish (gutted ×${HON}) and fillets, with the trade's rule of thumb that a fillet class of a–b lb comes from a gutted fish of (a+1)–(b+1) kg (3-4 lb fillets from 4-5 kg fish), whatever the trim; weighted by live-equivalent tonnes (fillets at a ${Math.round(FY * 100)} % yield, trim D). ` +
+      `Fillets state a class for over 90 % of the tonnes, so the whole harvest is covered, not only the premium whole fish. Compare with what the farmers report (${KPI.map(r => `${e(r.co)} ${r.period.replace('-', ' ')}: ${r.harvest_kg} kg WFE`).join(', ')}).${fish}</div>` +
       scSvg(k36, [{ v: k36.map(rec), col: '#ffd54f', w: 2.6, dots: true, lab: 'reconstructed average live weight, kg' }, { v: k36.map(k => CM[k - 100] && CM[k - 100].sizes ? rec(k - 100) : null), col: '#8fa4b0', w: 1.4, dash: '4 3', lab: 'a year earlier' }],
-        { lab: ml, xl: k => k % 100 === 1 || k === k36[0] ? ml(k) : MON[k % 100 - 1].slice(0, 1), fmt: v => v.toFixed(1), min: 5, H: 180 });
+        { lab: ml, xl: k => k % 100 === 1 || k === k36[0] ? ml(k) : MON[k % 100 - 1].slice(0, 1), fmt: v => v.toFixed(1), min: 4, H: 180 });
     if (KPI.length) html += `<div style="overflow-x:auto;margin-top:6px"><table class="sig-table"><thead><tr><th class="name">Farmer, quarter</th><th>Harvest weight<br>(kg WFE)</th><th>a year<br>earlier</th><th>Harvest (t WFE)</th><th>a year<br>earlier</th><th>Months at sea /<br>months fallow</th><th>kg harvested<br>per smolt</th></tr></thead><tbody>` +
       KPI.map(r => `<tr><td class="name"><a href="${r.url}" target="_blank" rel="noopener" style="color:var(--accent)">${e(r.co)} ${r.period.replace('-', ' ')}</a></td><td><b>${r.harvest_kg}</b></td><td>${r.harvest_kg_prev ?? '—'}${r.prev_derived ? '*' : ''}</td><td>${(r.harvest_t || 0).toLocaleString('en-US')}</td><td>${(r.harvest_t_prev || 0).toLocaleString('en-US')}</td><td>${r.cycle || '—'}${r.cycle_prev ? ` <span style="color:var(--muted);font-size:11px">(${r.cycle_prev})</span>` : ''}</td><td>${r.kg_per_smolt ?? '—'}</td></tr>`).join('') +
       `</tbody></table></div><div class="sig-sub">* worked out from the change the report gives. Camanchaca's closed cycles: 13 months at sea and 11 of fallow in 2025 (14/10 in 2023–24, 16/8 in 2020–22) — Chilean time at sea is short and getting shorter.</div>`;

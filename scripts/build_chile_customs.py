@@ -85,7 +85,7 @@ CAL = re.compile(r'(?<![\d])(\d{1,2}(?:[.,]\d)?)\s*(?:-|/|A|TO)\s*(\d{1,2}(?:[.,
 CALG = re.compile(r'(?<![\d.,])(\d{3,4})\s*(?:-|/|A|TO)\s*(\d{3,4})\s*(?:GRS?|GRAMOS|G)\b')
 LB_BINS = ['1-2', '2-3', '3-4', '4-5', '5-6', '6+']   # classes de filets en livres (milieu de la classe declaree)
 # producteur nomme dans la description (« AQUACHILE-F », « MULTI X S.A.-F » : F = fabricant) ; du plus precis au plus general
-PRODUCERS = [('AQUACHILE', 'AquaChile'), ('MULTI X', 'Multi X'), ('MULTIX', 'Multi X'), ('MULTIEXPORT', 'Multi X'), ('CERMAQ', 'Cermaq'), ('MOWI', 'Mowi'),
+PRODUCERS = [('AQUACHILE', 'AquaChile'), ('MULTI X', 'Multi X'), ('MULTIX', 'Multi X'), ('MUTLI X', 'Multi X'), ('VENTISQUERO', 'Ventisqueros'), ('SALMONES PACIFIC', 'Pacific Star'), ('SOUTH WIND', 'South Wind'), ('SOUTH W IND', 'South Wind'), ('MULTIEXPORT', 'Multi X'), ('CERMAQ', 'Cermaq'), ('MOWI', 'Mowi'),
              ('MARINE HARVEST', 'Mowi'), ('CAMANCHACA', 'Camanchaca'), ('BLUMAR', 'Blumar'), ('LOS FIORDOS', 'Los Fiordos'), ('VENTISQUEROS', 'Ventisqueros'),
              ('AUSTRALIS', 'Australis'), ('NOVA AUSTRAL', 'Nova Austral'), ('SALMONES AUSTRAL', 'Salmones Austral'), ('YADRAN', 'Yadrán'), ('TRUSAL', 'Trusal'),
              ('INVERMAR', 'Invermar'), ('TORNAGALEONES', 'Tornagaleones'), ('SALMONES AYSEN', 'Salmones Aysén'), ('PACIFIC STAR', 'Pacific Star'),
@@ -191,8 +191,8 @@ def aggregate(rows):
             'fillets': {k: {'grade': {g: [round(v / 1000, 1), round(f['grade_usd'][g] / 1000, 1)] for g, v in f['grade'].most_common()},
                             'trim': {g: round(v / 1000, 1) for g, v in f['trim'].most_common()}, 'kind': {g: round(v / 1000, 1) for g, v in f['kind'].most_common()},
                             'lb_t': [round(v / 1000, 1) for v in f['lb']]} for k, f in fil.items()},
-            'producers': {n: {k: [round(v[0] / 1000, 1), round(v[1] / 1000, 1)] for k, v in sorted(d.items(), key=lambda kv: -kv[1][0]) if v[0] >= 500}
-                          for n, d in sorted(prod.items(), key=lambda kv: -sum(v[0] for v in kv[1].values())) if sum(v[0] for v in d.values()) >= 5000}}, ex
+            'producers': {n: {k: [round(v[0] / 1000, 1), round(v[1] / 1000, 1)] for k, v in sorted(d.items(), key=lambda kv: -kv[1][0]) if v[0] >= 2000}
+                          for n, d in sorted(prod.items(), key=lambda kv: -sum(v[0] for v in kv[1].values())) if sum(v[0] for v in d.values()) >= 20000}}, ex
 
 
 def link_exporters(months):
