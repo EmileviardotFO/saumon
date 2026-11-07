@@ -107,6 +107,11 @@ GQ = [
     (gnews('(laksur OR alibrúk) deyð OR deydu OR algur', 'da', 'DK', 'DK:da'), 'FO', 'fo'),
     (gnews('salmon farm (Canada OR "British Columbia" OR "New Brunswick" OR Newfoundland) (mortality OR "algal bloom" OR "die-off" OR deaths OR oxygen)', 'en', 'CA', 'CA:en'), 'CA', 'en'),
     (gnews('salmon farm (Ireland OR Tasmania OR "New Zealand") (mortality OR "algal bloom" OR jellyfish OR heatwave OR deaths)', 'en', 'GB', 'GB:en'), None, 'en'),
+    # Canada atlantique : les avis publics de Terre-Neuve (pertes > 10 % d'un site, a publier sous 24 h par l'eleveur sur son site)
+    # ne sont plus regroupes nulle part (les PDF de la NAIA ont disparu en 2026) : on les attrape par la presse, avec les noms des baies
+    (gnews('salmon ("Harbour Breton" OR "Fortune Bay" OR "Bay d\'Espoir" OR "Placentia Bay" OR "Connaigre" OR "Passamaquoddy" OR "Grand Manan" OR "Charlotte County") (mortality OR "die-off" OR dead OR ISA OR lice)', 'en', 'CA', 'CA:en'), 'CA', 'en'),
+    (gnews('("infectious salmon anaemia" OR "infectious salmon anemia" OR ISA) ("New Brunswick" OR "Nova Scotia" OR Newfoundland) salmon farm', 'en', 'CA', 'CA:en'), 'CA', 'en'),
+    (gnews('("Mowi Canada East" OR "Cooke Aquaculture" OR "Northern Harvest") (mortality OR "mortality event" OR "die-off" OR "sea lice")', 'en', 'CA', 'CA:en'), 'CA', 'en'),
     # salmonbusiness.com n'a plus de flux RSS (novembre 2026) : ses articles passent par Google News
     (gnews('site:salmonbusiness.com (mortality OR deaths OR algae OR jellyfish OR disease OR lice OR ILA OR ISA)', 'en', 'GB', 'GB:en'), None, 'en'),
 ]
