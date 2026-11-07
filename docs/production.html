@@ -775,6 +775,18 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="sig-title">Wellboats — live-fish carriers and slaughter boats at Norwegian salmon farms (BarentsWatch)</div>
     <div class="sig-sub" id="wbSub">Loading…</div>
     <div id="wbCards" class="pr-cards"></div>
+    <div id="wbKBlock" style="display:none">
+    <div class="sig-title" style="margin-top:18px">What the wellboats are doing — smolts in, lice treatments, harvest</div>
+    <div class="sig-sub" id="wbKSub"></div>
+    <div id="wbKCards" class="pr-cards"></div>
+    <div class="sig-title" style="margin-top:18px">Smolts stocked, millions per month</div>
+    <div id="wbSm"></div><div class="sig-sub" id="wbSmSub"></div>
+    <div class="sig-title" style="margin-top:18px">Wellboat visits for lice treatments, per month</div>
+    <div id="wbTr"></div><div class="sig-sub" id="wbTrSub"></div>
+    <div class="sig-title" style="margin-top:18px">By production zone — the three kinds of visit</div>
+    <div class="sig-sub" id="wbKZSub"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="wbKZ"></table></div>
+    </div>
     <div class="sig-title" style="margin-top:18px">Wellboat visits to farms, week by week — this year against last year</div>
     <div class="sig-sub" id="wbChartSub"></div>
     <div id="wbTog" style="margin:6px 0"></div>
@@ -14672,6 +14684,55 @@ function renderSupply() {
 <script>
 // ---- Wellboats : passages sur les fermes norvegiennes (data/wellboats.json <- scripts/build_wellboats.py, API fiskehelse BarentsWatch)
 let WB = null, WB_LOADING = false, WB_KEY = 'NO', WB_MAP = null, WB_LAYER = null;
+function wbKindTxt(k) {   // nature des passages d'une ferme sur 14 jours
+  if (!k) return '—';
+  const P = [['M', 'smolts in', '#81c784'], ['T', 'lice treatment', '#ffb74d'], ['H', 'harvest / transfer', '#4fc3f7']].filter(([c]) => k[c]);
+  return P.map(([c, l, col]) => `<span style="color:${col}">${l}${k[c] > 1 ? ' ×' + k[c] : ''}</span>`).join(' · ') || '—';
+}
+function wbKinds() {   // smolts mis en eau, traitements, recolte : passages classes selon l'etat declare de la ferme (BarentsWatch)
+  const $ = id => document.getElementById(id), K = WB.kinds, SM = WB.smolt;
+  if (!K || !K.NO || !SM || !SM.NO) { $('wbKBlock').style.display = 'none'; return; }
+  $('wbKBlock').style.display = '';
+  const MO = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], YC = ['#3d5a6c', '#6fa8c7', '#f2a541'];
+  const lastM = WB.kinds_meta.last_month, LY = +lastM.slice(0, 4), lm = +lastM.slice(5), Y3 = [LY - 2, LY - 1, LY];
+  const mk = (y, m) => `${y}-${String(m).padStart(2, '0')}`, sum = (o, y, i, m1 = 1, m2 = lm) => { let t = 0; for (let m = m1; m <= m2; m++) t += ((o || {})[mk(y, m)] || [0, 0, 0])[i]; return t; };
+  const pc = (a, b) => a != null && b ? Math.round(100 * (a / b - 1)) : null, ps = v => v == null ? '—' : (v > 0 ? '+' : '') + v + ' %';
+  const pcol = (v, good) => v == null ? '#a9bfcc' : (good ? v > 5 : v < -5) ? '#81c784' : (good ? v < -5 : v > 5) ? '#ffb74d' : '#a9bfcc';
+  const f1 = v => (v / 1e6).toFixed(1), N = SM.NO, O = N.official, E = N.est, ok = Object.keys(O).sort(), lo = ok[ok.length - 1], loM = +lo.slice(5), loY = +lo.slice(0, 4);
+  const cum = y => { let t = 0; for (let m = 1; m <= loM; m++) t += O[mk(y, m)] || 0; return t; };
+  const card = (lab, big, sub, col, sc) => `<div class="pr-card" style="cursor:default"><div class="nm"><i style="background:${col}"></i>${lab}</div><div class="big">${big}</div><div class="ln" style="color:${sc || ''}">${sub}</div></div>`;
+  const ek = Object.keys(E).sort(), cards = [];
+  ek.slice(-1).forEach(k => { const ly = mk(+k.slice(0, 4) - 1, +k.slice(5)), d = pc(E[k], O[ly]);
+    cards.push(card(`Smolts stocked, ${MO[+k.slice(5) - 1]} ${k.slice(0, 4)} (estimate)`, `≈ ${f1(E[k])} M`, `${ps(d)} vs ${f1(O[ly] || 0)} M a year earlier · ±${f1(N.err || 0)} M`, '#81c784', pcol(d, true))); });
+  const c1 = cum(loY), c0 = cum(loY - 1);
+  cards.push(card(`Smolts stocked, Jan–${MO[loM - 1]} ${loY} (official)`, `${Math.round(c1 / 1e6)} M`, `${ps(pc(c1, c0))} vs ${Math.round(c0 / 1e6)} M a year earlier`, '#81c784', pcol(pc(c1, c0), true)));
+  const t1 = sum(K.NO, LY, 2), t0 = sum(K.NO, LY - 1, 2);
+  cards.push(card(`Lice-treatment visits, Jan–${MO[lm - 1]} ${LY}`, t1.toLocaleString('en-US'), `${ps(pc(t1, t0))} vs ${t0.toLocaleString('en-US')} a year earlier`, '#ffb74d', pcol(pc(t1, t0), false)));
+  cards.push(card('How well the sorting works', `r = ${N.r.toFixed(2)}`, `smolt-delivery visits vs smolts stocked (Fiskeridirektoratet), month by month since 2024`, '#4fc3f7'));
+  $('wbKCards').innerHTML = cards.join('');
+  $('wbKSub').innerHTML = `Each visit is sorted by what the farm reported to BarentsWatch around that week: a farm that was <b>fallow</b> and starts reporting lice is being <b>stocked with smolts</b>; a farm that reports a <b>lice treatment</b> that week is being treated; every other visit (and every slaughter-boat visit) counts as <b>harvest or a transfer</b>. ` +
+    `For Norway's harvest the weekly SSB exports remain the better guide (half the wellboat visits are treatments); the wellboats add what is published late: smolts and treatments, zone by zone.`;
+  // smolts : 3 ans par mois, estimation en clair
+  $('wbSm').innerHTML = scSvg(MO, Y3.map((y, j) => ({ lab: String(y) + (j === 2 && ek.length ? ' (light = estimate)' : ''), bar: true, col0: YC[j],
+    col: j === 2 ? (i => E[mk(y, i + 1)] != null && O[mk(y, i + 1)] == null ? 'rgba(242,165,65,.4)' : YC[2]) : YC[j],
+    v: MO.map((m, i) => { const k = mk(y, i + 1), x = O[k] ?? (j === 2 ? E[k] : null); return x == null ? null : x / 1e6; }) })), { lab: k => k, fmt: v => v.toFixed(1) + ' M', H: 230 });
+  $('wbSmSub').innerHTML = `Official to ${MO[loM - 1]} ${loY} (Fiskeridirektoratet); later months estimated from the smolt-delivery visits (one visit ≈ ${f1(N.per_visit)} M smolts; tested blind on the months April to December, ±${f1(N.err || 0)} M on average). The latest weeks firm up as farms report. Smolts stocked now are the harvest of 18–24 months from now.`;
+  // traitements
+  $('wbTr').innerHTML = scSvg(MO, Y3.map((y, j) => ({ lab: String(y), bar: true, col: YC[j], v: MO.map((m, i) => { const k = mk(y, i + 1); return k > lastM ? null : ((K.NO[k] || [0, 0, 0])[2] || null); }) })), { lab: k => k, H: 210 });
+  $('wbTrSub').innerHTML = 'Thermal, mechanical and freshwater delousing is done with a wellboat; each treatment handles the fish and kills some of them. Fewer treatment visits usually goes with lower mortality.';
+  // par zone : 3 derniers mois complets contre un an plus tot
+  const m1 = Math.max(1, lm - 2), lab = `${MO[m1 - 1]}–${MO[lm - 1]}`, PN = typeof PO_NAMES !== 'undefined' ? PO_NAMES : {};
+  const mxs = [0, 1, 2].map(i => Math.max(1, ...Array.from({ length: 13 }, (_, z) => Math.max(sum(K['PO' + (z + 1)], LY, i, m1, lm), sum(K['PO' + (z + 1)], LY - 1, i, m1, lm)))));
+  const cell = (a, b, mx, good) => { const d = pc(b, a); return `<td><div style="display:flex;align-items:center;gap:8px"><div style="display:flex;flex-direction:column;gap:2px;width:110px">` +
+    `<div style="height:7px;width:${Math.round(105 * a / mx)}px;background:${YC[1]}" title="${LY - 1}: ${a}"></div><div style="height:7px;width:${Math.round(105 * b / mx)}px;background:${YC[2]}" title="${LY}: ${b}"></div></div>` +
+    `<span style="font-size:12px;color:#a9bfcc;white-space:nowrap">${a} → ${b}</span> <b style="font-size:12px;color:${d == null ? '#a9bfcc' : pcol(d, good)}">${d == null ? '' : ps(d)}</b></div></td>`; };
+  $('wbKZSub').innerHTML = `Visits ${lab} ${LY} against ${lab} ${LY - 1} (light blue last year, orange this year). “Fit” = how closely the zone's smolt-delivery visits followed its official smolts stocked since 2024.`;
+  $('wbKZ').innerHTML = `<thead><tr><th class="name">Zone</th><th style="text-align:left">Smolt deliveries</th><th style="text-align:left">Lice treatments</th><th style="text-align:left">Harvest and transfers</th><th>Fit</th></tr></thead><tbody>` +
+    Array.from({ length: 13 }, (_, z) => { const k = 'PO' + (z + 1), o = K[k]; if (!o) return '';
+      return `<tr><td class="name"><b>${z + 1}</b> <span style="color:var(--muted)">${PN[z + 1] || ''}</span></td>` + cell(sum(o, LY - 1, 1, m1, lm), sum(o, LY, 1, m1, lm), mxs[1], true) +
+        cell(sum(o, LY - 1, 2, m1, lm), sum(o, LY, 2, m1, lm), mxs[2], false) + cell(sum(o, LY - 1, 0, m1, lm), sum(o, LY, 0, m1, lm), mxs[0], true) +
+        `<td>${SM[k] ? 'r = ' + SM[k].r.toFixed(2) : '—'}</td></tr>`; }).join('') + '</tbody>';
+}
 function renderWellboats() {
   const $ = id => document.getElementById(id);
   if (!WB) { if (!WB_LOADING) { WB_LOADING = true; fetch(DATA_URL.replace('data.json', 'wellboats.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
@@ -14694,6 +14755,7 @@ function renderWellboats() {
     card(`Slaughter-boat visits · week ${LW % 100}`, `${f0(v('NO', LW, 1))}`, `fish slaughtered on board at the farm · last year ${f0(v('NO', isoBack(LW, 52), 1))}`, '#ff8a65') +
     card(`Since January (weeks 1–${LW % 100})`, `${f0(ytd)} ${vt(pc(ytd, ytdLy))}`, `${f0(ytdLy)} a year earlier · ${f0(v('NO', LW, 2))} hours at farms in week ${LW % 100}`, '#81c784') +
     card('Unusual this week', `${(WB.alerts || []).length}`, `zones or farmers with activity far above (or below) their recent pace — table below`, '#ffb74d');
+  wbKinds();
   $('wbSub').innerHTML = `A wellboat is a ship with water tanks that carries live salmon: smolts from the hatchery to the sea farm, grown fish from the farm to the slaughterhouse, and fish to be treated against sea lice (warm or fresh water baths) and back. ` +
     `Slaughter boats kill and bleed the fish at the farm. So <b>more wellboat visits than usual means more harvesting, more stocking or more lice treatments</b> — a signal that comes days or weeks before the official harvest and biomass figures. ` +
     `BarentsWatch records a visit whenever one of the ${f0(M.boats)} registered wellboats or slaughter boats stays inside a farm's area (Norwegian Coastal Administration AIS); ${f0(M.sites)} salmon farms are followed. ` +
@@ -14721,8 +14783,8 @@ function renderWellboats() {
   // ---- fermes
   const HT = WB.hot || [];
   $('wbHotSub').innerHTML = `Farms with the most wellboat and slaughter-boat visits over the last 14 days. Many visits in a few days usually means the farm is being harvested (or treated against lice); a slaughter boat means harvest on site.`;
-  $('wbHot').innerHTML = `<thead><tr><th class="name">Farm</th><th>Zone</th><th style="text-align:left">Licence holder</th><th>Wellboat visits</th><th>Slaughter-boat visits</th><th>Hours on site</th><th style="text-align:left">Boats</th><th>Last visit</th></tr></thead><tbody>` +
-    HT.slice(0, 40).map(h => `<tr><td class="name">${e(h.name || h.no)} <span style="color:var(--muted);font-size:11px">${h.no}</span></td><td>${h.po || '—'}</td><td style="text-align:left;white-space:normal">${e(h.org)}</td><td><b>${h.wb}</b></td><td>${h.sb || '—'}</td><td>${f0(h.hours)}</td><td style="text-align:left;white-space:normal">${e((h.boats || []).join(', '))}</td><td>${e((h.last || '').replace('T', ' '))}</td></tr>`).join('') + `</tbody>`;
+  $('wbHot').innerHTML = `<thead><tr><th class="name">Farm</th><th>Zone</th><th style="text-align:left">Licence holder</th><th>Wellboat visits</th><th>Slaughter-boat visits</th><th style="text-align:left">What for</th><th>Hours on site</th><th style="text-align:left">Boats</th><th>Last visit</th></tr></thead><tbody>` +
+    HT.slice(0, 40).map(h => `<tr><td class="name">${e(h.name || h.no)} <span style="color:var(--muted);font-size:11px">${h.no}</span></td><td>${h.po || '—'}</td><td style="text-align:left;white-space:normal">${e(h.org)}</td><td><b>${h.wb}</b></td><td>${h.sb || '—'}</td><td style="text-align:left;white-space:normal;font-size:12px">${wbKindTxt(h.kind)}</td><td>${f0(h.hours)}</td><td style="text-align:left;white-space:normal">${e((h.boats || []).join(', '))}</td><td>${e((h.last || '').replace('T', ' '))}</td></tr>`).join('') + `</tbody>`;
   // ---- carte
   const P = WB.positions || [];
   $('wbMapSub').innerHTML = `Latest AIS position of each wellboat (blue) and slaughter boat (orange) followed by BarentsWatch: ${P.length} boats. Filled = moving, ring = stopped. Positions as of the last update (${e(M.built)}).`;
