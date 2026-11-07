@@ -1,0 +1,586 @@
+{
+ "meta": {
+  "note": "Figures copied by hand from official reports (veterinary institutes, food-safety and environment agencies). Each block names its source. Measures differ by country: read the 'measure' field before comparing levels.",
+  "updated": "2026-11-07"
+ },
+ "NO": {
+  "name": "Norway",
+  "source": "Norwegian Veterinary Institute, Fish Health Report 2025 (published 2026)",
+  "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fish-health-report-2025",
+  "measure": "share of the fish at sea that die in the year (count, monthly risks compounded)",
+  "years": [
+   2021,
+   2022,
+   2023,
+   2024,
+   2025
+  ],
+  "mortality_pct": [
+   15.5,
+   16.1,
+   16.7,
+   15.4,
+   14.2
+  ],
+  "dead_fish_m": [
+   54.1,
+   56.8,
+   62.8,
+   57.8,
+   54.9
+  ],
+  "cycle_mortality_pct": [
+   15.8,
+   15.2,
+   17.8,
+   15.4,
+   14.7
+  ],
+  "harvest_t_round": [
+   1557255,
+   1538646,
+   1520726,
+   1544395,
+   1719781
+  ],
+  "biomass_avg_t": [
+   836742,
+   814039,
+   827651,
+   837359,
+   875687
+  ],
+  "smolts_to_sea_m": [
+   381.7,
+   461.9,
+   432.8,
+   413.6,
+   405.3
+  ],
+  "trout_mortality_pct": [
+   14.8,
+   17.1,
+   14.0,
+   15.0,
+   17.0
+  ],
+  "cleaner_fish_stocked_m": [
+   48.3,
+   36.3,
+   34.0,
+   24.1,
+   18.9
+  ],
+  "pa": {
+   "cols": [
+    2023,
+    2024,
+    2025
+   ],
+   "rows": [
+    [
+     "PA1–2",
+     19.8,
+     13.6,
+     18.2
+    ],
+    [
+     "PA3",
+     25.7,
+     17.5,
+     15.2
+    ],
+    [
+     "PA4",
+     17.8,
+     20.2,
+     20.1
+    ],
+    [
+     "PA5",
+     16.9,
+     16.7,
+     17.5
+    ],
+    [
+     "PA6",
+     16.3,
+     22.3,
+     14.6
+    ],
+    [
+     "PA7",
+     11.0,
+     14.4,
+     10.4
+    ],
+    [
+     "PA8",
+     17.6,
+     11.6,
+     10.6
+    ],
+    [
+     "PA9",
+     13.0,
+     9.1,
+     16.1
+    ],
+    [
+     "PA10",
+     13.8,
+     12.2,
+     11.1
+    ],
+    [
+     "PA11",
+     9.8,
+     10.2,
+     11.6
+    ],
+    [
+     "PA12–13",
+     12.1,
+     13.3,
+     9.4
+    ]
+   ]
+  },
+  "cycle_months_median_2025": 17,
+  "causes": {
+   "note": "Share of registered dead fish by main cause, AquaCloud database (408 sea sites, about half of Norway's), not the true prevalence",
+   "years": [
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+   ],
+   "rows": [
+    [
+     "Injuries (trauma), mostly handling and delousing",
+     [
+      24.8,
+      31.9,
+      32.7,
+      26.6,
+      33.5
+     ]
+    ],
+    [
+     "Infectious diseases",
+     [
+      22.8,
+      28.4,
+      38.4,
+      33.1,
+      28.1
+     ]
+    ],
+    [
+     "Unknown cause",
+     [
+      43.5,
+      32.8,
+      19.9,
+      21.2,
+      27.4
+     ]
+    ],
+    [
+     "Physiological causes",
+     [
+      5.7,
+      4.4,
+      4.0,
+      5.8,
+      4.7
+     ]
+    ],
+    [
+     "Environmental conditions (algae, jellyfish, oxygen)",
+     [
+      0.2,
+      0.4,
+      2.7,
+      8.5,
+      4.3
+     ]
+    ],
+    [
+     "Other causes",
+     [
+      3.0,
+      2.1,
+      2.3,
+      4.8,
+      2.0
+     ]
+    ]
+   ]
+  },
+  "diseases": {
+   "note": "Number of sites with the disease detected (Veterinary Institute and private laboratories)",
+   "years": [
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+   ],
+   "rows": [
+    [
+     "ISA (infectious salmon anaemia)",
+     [
+      10,
+      23,
+      25,
+      15,
+      18,
+      13,
+      18
+     ]
+    ],
+    [
+     "PD (pancreas disease)",
+     [
+      152,
+      158,
+      100,
+      98,
+      58,
+      48,
+      44
+     ]
+    ],
+    [
+     "CMS (cardiomyopathy syndrome)",
+     [
+      82,
+      154,
+      155,
+      131,
+      129,
+      78,
+      114
+     ]
+    ],
+    [
+     "HSMI (heart and skeletal muscle inflammation)",
+     [
+      79,
+      161,
+      188,
+      147,
+      184,
+      115,
+      167
+     ]
+    ],
+    [
+     "IPN (infectious pancreatic necrosis)",
+     [
+      23,
+      22,
+      20,
+      12,
+      12,
+      13,
+      40
+     ]
+    ],
+    [
+     "Winter ulcer (Moritella viscosa)",
+     [
+      null,
+      null,
+      204,
+      296,
+      320,
+      289,
+      246
+     ]
+    ],
+    [
+     "Tenacibaculosis",
+     [
+      null,
+      null,
+      159,
+      205,
+      155,
+      159,
+      147
+     ]
+    ],
+    [
+     "Pasteurellosis",
+     [
+      14,
+      57,
+      45,
+      52,
+      27,
+      29,
+      34
+     ]
+    ],
+    [
+     "Yersiniosis",
+     [
+      12,
+      16,
+      19,
+      34,
+      44,
+      35,
+      38
+     ]
+    ],
+    [
+     "AGD (amoebic gill disease)",
+     [
+      null,
+      null,
+      null,
+      null,
+      73,
+      40,
+      99
+     ]
+    ],
+    [
+     "Gill disease with epitheliocysts",
+     [
+      null,
+      null,
+      null,
+      null,
+      null,
+      65,
+      83
+     ]
+    ]
+   ]
+  },
+  "lice_treatments": {
+   "note": "Weeks with a reported treatment (site-weeks)",
+   "years": [
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+   ],
+   "non_medicinal": [
+    2446,
+    2962,
+    2830,
+    3145,
+    2609,
+    3163,
+    3918
+   ],
+   "medicinal": [
+    929,
+    940,
+    968,
+    1031,
+    974,
+    774,
+    628
+   ]
+  },
+  "highlights": [
+   "Mortality 14.2 % in 2025, the lowest in five years; 1.72 Mt harvested (+11 %) — fewer losses were part of the big 2025 volumes.",
+   "Injuries from handling and delousing are now the first registered cause of death (33.5 %); non-medicinal delousing hit a record 3,918 treatment-weeks (+24 %), linked to warm autumn seas in the south.",
+   "Gill disease is the No. 1 problem named by fish health staff; AGD found at 99 sites (40 in 2024), as far north as PA10 and Troms.",
+   "ISA up to 18 sites (13), mostly Vesterålen, 7 of them at vaccinated sites; HSMI 167 sites (115), CMS 114 (78), IPN 40 (13) — new IPN variants seem to get past the IPN-resistant (QTL) eggs.",
+   "PD keeps falling (44 sites against 100 in 2021); winter ulcer down after a new vaccine (246 sites against 289).",
+   "Worst areas: PA4 20.1 %, PA1–2 18.2 %, PA5 17.5 %; PA9 jumped 7 points (ISA outbreaks and a spring algal bloom). Best: PA12–13 9.4 %.",
+   "Smolts put to sea fall for a third year: 405 M in 2025, against 462 M in 2022.",
+   "Policy: target of about 5 % mortality; a quota on lice-larvae emissions and a mortality levy are being studied."
+  ]
+ },
+ "CL": {
+  "name": "Chile",
+  "source": "Sernapesca, Informe Sanitario de Salmonicultura en Centros Marinos, año 2025 (March 2026)",
+  "url": "https://www.sernapesca.cl/app/uploads/2026/03/Informe-Situacion-Sanitaria-Salmonicultura-Ano-2025.pdf",
+  "measure": "share of the fish put to sea that died, farms harvested in the year (closed cycles, count)",
+  "cycle_mortality_pct": {
+   "Atlantic salmon": [
+    11.0,
+    10.1
+   ],
+   "Rainbow trout": [
+    12.9,
+    7.2
+   ],
+   "Coho": [
+    6.8,
+    4.7
+   ]
+  },
+  "cycle_years": [
+   2024,
+   2025
+  ],
+  "primary_causes_atlantic_2025": [
+   [
+    "Infectious",
+    25.7
+   ],
+   [
+    "Mechanical damage",
+    22.2
+   ],
+   [
+    "Culled (eliminación)",
+    17.4
+   ],
+   [
+    "Other",
+    14.0
+   ]
+  ],
+  "infectious_atlantic_2025": [
+   [
+    "SRS (Piscirickettsia salmonis)",
+    52.8
+   ],
+   [
+    "Tenacibaculosis",
+    31.5
+   ]
+  ],
+  "isa_outbreaks": {
+   "years": [
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+   ],
+   "sites": [
+    2,
+    1,
+    0,
+    0,
+    1,
+    1,
+    0,
+    1,
+    0,
+    0
+   ]
+  },
+  "highlights": [
+   "Closed-cycle mortality of Atlantic salmon 10.1 % in 2025 (11.0 % in 2024); trout 7.2 %, coho 4.7 %. Monthly mortality fell 1.5 % on 2024 while biomass rose 17 %.",
+   "SRS (Piscirickettsia salmonis) remains the first infectious killer: 52.8 % of infectious deaths of Atlantic salmon, then tenacibaculosis 31.5 %. Coho dies mostly of HSMI and jaundice syndrome.",
+   "Sea lice (Caligus): loads stable in Los Lagos and Aysén; Aysén peaked at 3.6 egg-bearing females per fish (week 42); 211 high-surveillance farms went above 3.0 during 2025, mostly fish near harvest size. Magallanes much lower.",
+   "ISA: no outbreak of the virulent variant for the second year running (last in 2023).",
+   "Algal blooms (FAN) are the big tail risk: 2016 (about 39,000 t, Los Lagos) and 2021 (7,100 t, Comau fjord and Aysén) — with El Niño, Chile declared a preventive algal-bloom emergency in 15 regions in 2026."
+  ]
+ },
+ "IS": {
+  "name": "Iceland",
+  "source": "MAST (Icelandic Food and Veterinary Authority), Ársskýrsla dýralækna fisksjúkdóma 2025",
+  "url": "https://www.mast.is/static/files/Fiskeldi/arsskyrslur/arsskyrsla-dyralaekna-fiskeldis-2025.pdf",
+  "measure": "dead fish tonnes ÷ average biomass at sea (MAST dashboard)",
+  "dead_fish_2025": {
+   "East fjords": [
+    2.3,
+    0.35
+   ],
+   "Westfjords": [
+    2.4,
+    0.3
+   ]
+  },
+  "smolts_to_sea_m": {
+   "years": [
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+   ],
+   "values": [
+    10.05,
+    13.8,
+    13.15,
+    12.99,
+    19.46
+   ],
+   "note": "salmon smolts put in sea cages (MAST report, table 4)"
+  },
+  "highlights": [
+   "About 4.7 M salmon died at sea in 2025 (East fjords 2.3 M, Westfjords 2.4 M) and about 650,000 were culled — while harvest rose 17.6 % to 64,400 t.",
+   "Winter: cold sea and storms → net abrasion, winter ulcers (Moritella viscosa, Tenacibaculum) and Parvicapsula; part of the early-2025 losses came from smolts put to sea too late, into cold water, in autumn 2024 (MAST referred one case to the police).",
+   "Berufjörður (East): summer losses from algal blooms (Thalassiosira, Leptocylindrus) hurting gills, plus Costia and jellyfish.",
+   "Westfjords: heart and muscle inflammation (HSMI, virus PRV) weakening fish, sea lice (13 medicinal and 19 warm-water treatments), and kidney disease (BKD) — three sea areas infected at the end of 2025, spread probably by boats and gear.",
+   "ISA: no virulent case since 2022 (30 positive samples for the harmless HPR0 variant out of 11,957).",
+   "Smolts put to sea jumped to 19.5 M in 2025 (13.0 M in 2024): the base of Iceland's growth in 2026–27.",
+   "2026: over one million salmon died in September alone, mostly jellyfish in Reyðarfjörður (Kaldvík)."
+  ]
+ },
+ "FO": {
+  "name": "Faroe Islands",
+  "source": "Bakkafrost annual reports (no yearly public health report from the Faroese authority, Heilsufrøðiliga Starvsstovan)",
+  "url": "https://www.bakkafrost.com/en/sustainability/data",
+  "measure": "Bakkafrost Faroes, share of fish dying in the year (company figure)",
+  "highlights": [
+   "Bakkafrost Faroes mortality 4.29 % in 2025, the lowest of the major basins (6.6 % in 2024, 11.56 % in 2018).",
+   "Sea lice under control with low counts (0.27 adult females per fish in 2025) and long fallow periods (13–20 weeks).",
+   "ISA flares up now and then and is handled by culling: Bakkafrost culled about 180,000 salmon after an ISA detection at a Faroese site in May 2024.",
+   "Bakkafrost has reported pasteurella bacteria (pasteurellosis) in the Faroes."
+  ]
+ },
+ "GB": {
+  "name": "Scotland",
+  "source": "SEPA farm returns (deaths and biomass) and Fish Health Inspectorate mortality reports (Marine Directorate)",
+  "url": "https://www.gov.scot/publications/fish-health-inspectorate-mortality-information/",
+  "measure": "dead fish tonnes ÷ average biomass at sea (SEPA)",
+  "highlights": [
+   "Scotland loses far more than Norway or the Faroes: about 28,000 t of dead fish in 2025, 22.5 % of the average biomass (29–30 % in 2022–23).",
+   "Gills are the first cause in the farms' reports to the Fish Health Inspectorate (complex gill disease, AGD, plankton and jellyfish), then bacterial disease.",
+   "Warm autumns make it worse: amoebic gill disease losses in Shetland pushed Scottish Sea Farms into the red.",
+   "Early harvests of small fish to limit losses (Bakkafrost Scotland) act like mortality on supply."
+  ]
+ },
+ "CA": {
+  "name": "Canada",
+  "source": "DFO (Fisheries and Oceans Canada) carcass classification for British Columbia; provinces of Atlantic Canada for ISA",
+  "url": "https://open.canada.ca/data/en/dataset/0a8c5505-ecb3-4d8b-8120-462bd7def6bb",
+  "measure": "British Columbia: monthly mortality % of fish on site, compounded over the year (DFO)",
+  "highlights": [
+   "British Columbia: open-net farms in the Discovery Islands have been closed and the remaining licences end in 2029; the DFO data show the causes month by month (environment such as algae and low oxygen, infectious disease, handling, predators).",
+   "Atlantic Canada (New Brunswick, Nova Scotia, Newfoundland): ISA keeps coming back and is handled by culling (CFIA list of infected sites); extreme water temperatures, very warm or superchilled, have caused sudden mass mortalities."
+  ]
+ },
+ "AU": {
+  "name": "Tasmania",
+  "source": "EPA Tasmania (mortality waste by month), NRE Tasmania / EPA debrief of the 2025 event",
+  "url": "https://nre.tas.gov.au/Documents/Reflections%20and%20Learnings%20-%20Salmon%20Mortality%20Event%202025.pdf",
+  "measure": "dead fish tonnes (mortality waste) compared with the year's production",
+  "highlights": [
+   "About 20,100 t of salmon died in 2025 — roughly 30 % of the 68,000 t produced in 2024/25; February 2025 alone 6,300 t.",
+   "Main trigger: Piscirickettsia salmonis (SRS, the bacterium behind most infectious deaths in Chile), present on the east coast since at least 2021 and in the south-east since 2023, now endemic and not eradicable.",
+   "Made worse by marine heatwaves (east Tasmanian waters warm almost four times faster than the world average), algae and jellyfish blooms; vaccine protection is partial; density was ruled out as the cause.",
+   "2026 is not back to normal: 14,900 t from January to September, and March–June 34 % above 2025; the emergency permit for the antibiotic florfenicol was suspended in February 2026.",
+   "Risk season is the austral summer (December–April): high losses in early 2027 are the base case."
+  ]
+ },
+ "notes": {
+  "measures": "Norway, Chile and the Faroes count fish; Scotland, Iceland and Tasmania weigh them (dead tonnes against biomass or production). A tonnage measure gives more weight to large fish lost late in the cycle, so it usually runs above a count measure. Compare trends within a country rather than levels across countries."
+ }
+}
