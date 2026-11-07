@@ -5600,8 +5600,8 @@ let DZ = null, DZ_LOADING = false;
 function renderDisease() {
   const root = document.getElementById('dzRoot'); if (!root) return;
   if (!DZ) { if (!DZ_LOADING) { DZ_LOADING = true; const g = n => fetch(DATA_URL.replace('data.json', n), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
-      Promise.all(['disease_manual.json', 'scotland.json', 'iceland_mast.json', 'canada_extra.json', 'australia.json', 'faroe.json', 'chili.json', 'events.json'].map(g))
-        .then(([m, sc, is, ca, au, fo, cl, ev]) => { DZ = { m: m || {}, sc, is, ca, au, fo, cl, ev }; DZ_LOADING = false; if (currentView === 'disease') renderDisease(); }); }
+      Promise.all(['disease_manual.json', 'scotland.json', 'iceland_mast.json', 'canada_extra.json', 'australia.json', 'faroe.json', 'chili.json', 'events.json', 'canada_atl.json'].map(g))
+        .then(([m, sc, is, ca, au, fo, cl, ev, cat]) => { DZ = { m: m || {}, sc, is, ca, au, fo, cl, ev, cat }; DZ_LOADING = false; if (currentView === 'disease') renderDisease(); }); }
     root.innerHTML = 'Loading…'; return; }
   const M = DZ.m, e = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), f0 = v => v === null || v === undefined || !isFinite(v) ? '—' : Math.round(v).toLocaleString('en-US');
   const f1 = v => v === null || v === undefined || !isFinite(v) ? '—' : (+v).toFixed(1), MON = MONTHS_FR.map(m => m.slice(0, 3));
@@ -5627,7 +5627,7 @@ function renderDisease() {
     ['FO', 'Faroe Islands', 'Bakkafrost, count', 'Low losses; occasional ISA (culled); pasteurellosis', 'ISA detections'],
     ['IS', 'Iceland', 'dead t ÷ biomass', 'Winter ulcers in cold, stormy winters; algae and jellyfish; HSMI; kidney disease (BKD) and lice in the Westfjords', 'Jellyfish (Sept. 2026), BKD spreading by boats'],
     ['GB', 'Scotland', 'dead t ÷ biomass', 'Gill disease (AGD, plankton, jellyfish); bacterial disease', 'Warm autumns, early harvests of small fish'],
-    ['CA', 'Canada (BC)', 'average site, compounded', 'Environment (algae blooms, low oxygen); fresh dead fish of unknown cause; culls', 'Open-net farms end in 2029'],
+    ['CA', 'Canada (BC)', 'average site, compounded', 'BC: environment (algae blooms, low oxygen). Atlantic: ISA, warm low-oxygen summers, sea lice', 'ISA in New Brunswick (14 detections in 2026); BC farms end in 2029'],
     ['AU', 'Tasmania', 'dead t ÷ production', 'Piscirickettsia salmonis (SRS) with marine heatwaves; algae, jellyfish', 'Austral summer Dec–Apr; antibiotic permit suspended']];
   const last = c => { const ys = Object.keys(yr[c] || {}).map(Number).sort((a, b) => a - b); const y = ys[ys.length - 1]; return y ? { y, v: yr[c][y], p: yr[c][y - 1] } : null; };
   const go = { NO: 'health', CL: 'chile', FO: 'faroe', IS: 'iceland', GB: 'scotland', CA: 'canada', AU: 'australia' };
@@ -5704,6 +5704,18 @@ function renderDisease() {
       hl(K.highlights) +
       `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px"><div><div class="sig-sub"><b>British Columbia, yearly mortality %</b> (average site, monthly rates compounded, DFO)</div>${scSvg(ys.slice(-10).map(String), [{ v: ys.slice(-10).map(y => yr.CA[y]), col: '#4fc3f7', bar: true, lab: 'mortality, %' }], { lab: k => k, fmt: v => v.toFixed(0), H: 170 })}</div>` +
       `<div><div class="sig-sub"><b>Causes in ${ly}</b> (DFO carcass classification)</div>${hb(Object.entries(q.c).sort((a, b) => b[1] - a[1]).map(([c, v]) => [c, 100 * v / t]), '#ff8a65')}</div></div>` +
+      (() => { const A = DZ.cat || {}, I = (A.isa || []).filter(r => /salmon/i.test(r.species || '')), PV = [['New Brunswick', '#4fc3f7'], ['Newfoundland', '#ffb74d'], ['Nova Scotia', '#81c784'], ['Prince Edward Island', '#ce93d8']];
+        const iy = [...new Set(I.map(r => r.year))].sort((a, b) => a - b).filter(y => y >= 2016);
+        const isa = iy.length ? `<div class="sig-sub" style="margin-top:14px"><b>Atlantic Canada — ISA detections in farmed salmon, by year and province</b> (CFIA list of infected locations; ${iy[iy.length - 1]} to date)</div>` +
+          scSvg(iy.map(String), PV.filter(([p]) => I.some(r => r.prov === p)).map(([p, c]) => ({ lab: p, col: c, bar: true, v: iy.map(y => I.filter(r => r.year === y && r.prov === p).length) })), { lab: k => k, fmt: v => v.toFixed(0), H: 200 }) : '';
+        const T = A.aar_totals || {}, SUB = [['Azamethiphos', 'lice bath'], ['Hydrogen peroxide', 'lice / AGD bath'], ['Emamectin benzoate', 'lice in feed'], ['Oxytetracycline', 'antibiotic'], ['Florfenicol', 'antibiotic']];
+        const ys = [...new Set(Object.values(T).flatMap(o => Object.keys(o)))].sort().slice(-4), PN = { NB: 'New Brunswick', NL: 'Newfoundland', NS: 'Nova Scotia' };
+        const trt = Object.keys(T).length ? `<div class="sig-sub" style="margin-top:12px"><b>Treatments used at sea sites, kg of active ingredient</b> (DFO public reporting under the Aquaculture Activities Regulations) — lice baths show sea-lice pressure, antibiotics show bacterial outbreaks</div>` +
+          tab(['Province, product', ...ys], Object.keys(T).flatMap(p => SUB.filter(([sb]) => ys.some(y => (T[p][y] || {})[sb] >= 1)).map(([sb, w]) => [`${PN[p] || p} — ${sb} <span style="color:var(--muted);font-size:11px">(${w})</span>`, ...ys.map(y => (T[p][y] || {})[sb] ? f0(T[p][y][sb]) : '—')]))) : '';
+        const ev = (K.atlantic_events || []).map(x => [x.date, `${e(x.prov)} — ${e(x.co)}, ${e(x.site)}`, `${f0(x.fish)}${x.fish_note ? ` <span style="font-size:11px;color:var(--muted)">(${e(x.fish_note)})</span>` : ''}`, `${e(x.cause)} <a href="${x.url}" target="_blank" rel="noopener" style="color:var(--accent)">source</a>`]);
+        const evt = ev.length ? `<div class="sig-sub" style="margin-top:12px"><b>Newfoundland — losses above 10 % of a site's fish</b> (public report compulsory since 2019)</div><div style="overflow-x:auto"><table class="sig-table"><thead><tr><th class="name">Reported</th><th style="text-align:left">Where</th><th>Fish</th><th style="text-align:left">Cause given</th></tr></thead><tbody>${ev.map(r => `<tr><td class="name">${r[0]}</td><td style="text-align:left">${r[1]}</td><td>${r[2]}</td><td style="text-align:left;white-space:normal">${r[3]}</td></tr>`).join('')}</tbody></table></div>` : '';
+        const se = (K.sources_extra || []).map(([n, u]) => `<a href="${u}" target="_blank" rel="noopener" style="color:var(--accent)">${e(n)}</a>`).join(' · ');
+        return isa + trt + evt + (se ? `<div class="sig-sub" style="margin-top:6px">Atlantic sources: ${se}.</div>` : ''); })() +
       src(K) + `<div class="sig-sub">Sites, ISA in Atlantic Canada: <span class="gs-go" onclick="gsGoTab('canada')">Canada</span> tab.</div>`); }
   // Tasmanie
   { const A = M.AU || {}, ks = auM.map(r => r.m);

@@ -563,8 +563,51 @@
   "url": "https://open.canada.ca/data/en/dataset/0a8c5505-ecb3-4d8b-8120-462bd7def6bb",
   "measure": "British Columbia: monthly mortality % of fish on site, compounded over the year (DFO)",
   "highlights": [
-   "British Columbia: open-net farms in the Discovery Islands have been closed and the remaining licences end in 2029; the DFO data show the causes month by month (environment such as algae and low oxygen, infectious disease, handling, predators).",
-   "Atlantic Canada (New Brunswick, Nova Scotia, Newfoundland): ISA keeps coming back and is handled by culling (CFIA list of infected sites); extreme water temperatures, very warm or superchilled, have caused sudden mass mortalities."
+   "British Columbia: open-net farms in the Discovery Islands have been closed and the remaining licences end in 2029; the DFO data show the causes month by month — 'environmental' (algae blooms, low oxygen) first, 42 % of deaths in 2025.",
+   "Atlantic Canada has no mortality rate published like BC's. What exists: ISA detections (CFIA), New Brunswick's fish-health notices by bay management area, drugs and pesticides used by site (DFO), and Newfoundland's compulsory public report of any loss above 10 % of a site's fish.",
+   "ISA is back hard in New Brunswick: 14 detections from February to August 2026, after 10 in 2025, 7 in 2024 and 2 in 2023 — the most since 2021 (29).",
+   "Newfoundland, 2025: Mowi Canada East's head called it the worst year of his 40-year career — about 400,000 salmon dead at three Harbour Breton Bay sites in August (warm water, low oxygen), more losses in July and December (sea lice).",
+   "Treatments show the pressure: New Brunswick used 5.6 t of the antibiotic oxytetracycline in 2024 (68 kg in 2023), a sign of bacterial outbreaks; azamethiphos baths against sea lice continue in Newfoundland (444 kg in 2024)."
+  ],
+  "atlantic_events": [
+   {
+    "date": "2025-12-20",
+    "prov": "Newfoundland",
+    "co": "Mowi Canada East",
+    "site": "Friar Cove (south coast)",
+    "fish": 24696,
+    "cause": "sea lice: residual effects of the autumn 2025 infestation",
+    "url": "https://www.salmonbusiness.com/mowi-reports-december-salmon-deaths-as-canada-head-calls-2025-dreadful/"
+   },
+   {
+    "date": "2025-08-31",
+    "prov": "Newfoundland",
+    "co": "Mowi Canada East",
+    "site": "Harvey Hill East, Harvey Hill South, Broad Cove (Harbour Breton Bay)",
+    "fish": 1700000,
+    "fish_note": "fish at the sites affected; about 400,000 reported dead",
+    "cause": "not stated: warm, low-oxygen summer; Mowi spoke of a rare ocean event",
+    "url": "https://www.salmonbusiness.com/mowi-reports-mass-mortality-at-three-newfoundland-sites-1-7-million-fish-affected/"
+   },
+   {
+    "date": "2025-07-20",
+    "prov": "Newfoundland",
+    "co": "Mowi Canada East",
+    "site": "Little Burdock Cove (Rencontre East)",
+    "fish": 17600,
+    "cause": "high water temperature, low oxygen",
+    "url": "https://www.salmonbusiness.com/mowi-reports-mass-mortality-at-three-newfoundland-sites-1-7-million-fish-affected/"
+   }
+  ],
+  "sources_extra": [
+   [
+    "CFIA — locations infected with ISA",
+    "https://inspection.canada.ca/en/animal-health/aquatic-animals/diseases/reportable-diseases/isa/locations-infected"
+   ],
+   [
+    "Newfoundland — aquaculture incident reporting (public report of losses above 10 %)",
+    "https://www.gov.nl.ca/ffa/files/21055-Aquaculture-Incident-Reporting-March-25.pdf"
+   ]
   ]
  },
  "AU": {
