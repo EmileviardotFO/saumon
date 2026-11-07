@@ -12597,25 +12597,11 @@ window.renderGenMap = function () { if ((!G || !S.k) && !gmStart()) return; rend
 })();
 
 function renderChina() { renderFocus('cn'); }
-function renderFocus(k) {
-  const C = FOCUS[k], pre = k, $ = id => document.getElementById(pre + id);
-  const sub = $('Sub');
-  if (!EU) { sub.innerHTML = 'Loading…'; loadEurostat(); return; }
-  tmBuild();
-  const DATA = C.data();
-  if (!DATA || !DATA.rows || !DATA.rows.length) {
-    sub.innerHTML = `<span class="warn">${C.market} import statistics not collected yet</span> — they arrive with the next update run (step "National statistics").`;
-    ['Cards', 'Vol', 'Price'].forEach(id => $(id).innerHTML = ''); $('ChkHead').innerHTML = ''; $('ChkBody').innerHTML = '';
-    return;
-  }
-  const P = EU.meta.products;
-  // Chine : Hong Kong inclus ou non
-  if (k === 'cn') {
-    const hk = $('HK');
-    if (!hk.dataset.w) { hk.dataset.w = 1; hk.checked = C.hk; hk.addEventListener('change', () => { C.hk = hk.checked; C.render(); }); }
-  }
-  const useRow = r => k !== 'cn' || C.hk || r[6] === 'CN';
-  const lastBy = (DATA.meta.last_by_reporter || {}), dests = k === 'cn' && !C.hk ? ['CN'] : C.dest;
+// series d'un marche « focus » (US, Chine) : douanes du pays importateur, puis declarations des exportateurs (Chine apres 2024)
+function focusRows(k, hkOn) {
+  const C = FOCUS[k], DATA = C.data(); if (!DATA || !DATA.rows) return null; const hkFlag = hkOn === undefined ? C.hk : hkOn;
+  const useRow = r => k !== 'cn' || hkFlag || r[6] === 'CN';
+  const lastBy = (DATA.meta.last_by_reporter || {}), dests = k === 'cn' && !hkFlag ? ['CN'] : C.dest;
   // lignes normalisees : [ym, origine, forme, t, k$, k€, k$ droits, k$ frais, source]
   // source : 'C' = douanes du pays importateur, 'X' = ce que le pays exportateur declare pour ce marche
   const rowsN = DATA.rows.filter(useRow).map(r => k === 'cn' ? [r[0], r[1], r[2], r[3], r[4], r[5], 0, 0, 'C'] : r.concat(['C']));
@@ -12639,6 +12625,26 @@ function renderFocus(k) {
     Object.entries(XO).forEach(([o, X]) => X.rows.forEach(([ym, de, pi, t, v]) => {
       if (ym > cEnd(de) && ym <= END) rowsN.push([ym, o, pi, t, 0, X.cur === '€' ? (v || 0) : 0, 0, 0, 'X']); }));
   }
+  return { DATA, rowsN, END, CUS_END, XO, lastBy, dests };
+}
+function renderFocus(k) {
+  const C = FOCUS[k], pre = k, $ = id => document.getElementById(pre + id);
+  const sub = $('Sub');
+  if (!EU) { sub.innerHTML = 'Loading…'; loadEurostat(); return; }
+  tmBuild();
+  const DATA = C.data();
+  if (!DATA || !DATA.rows || !DATA.rows.length) {
+    sub.innerHTML = `<span class="warn">${C.market} import statistics not collected yet</span> — they arrive with the next update run (step "National statistics").`;
+    ['Cards', 'Vol', 'Price'].forEach(id => $(id).innerHTML = ''); $('ChkHead').innerHTML = ''; $('ChkBody').innerHTML = '';
+    return;
+  }
+  const P = EU.meta.products;
+  // Chine : Hong Kong inclus ou non
+  if (k === 'cn') {
+    const hk = $('HK');
+    if (!hk.dataset.w) { hk.dataset.w = 1; hk.checked = C.hk; hk.addEventListener('change', () => { C.hk = hk.checked; C.render(); }); }
+  }
+  const FR = focusRows(k); const { rowsN, lastBy, dests, XO } = FR; let { END, CUS_END } = FR;
   const COV = new Set(k === 'cn' ? Object.keys(XO) : []), hyb = kk => k === 'cn' && kk > CUS_END, covAt = (g, r) => COV.has(g) && r <= XO[g].last;
   const perSel = $('Period'); tmPeriodLabels(perSel, pre, C.render, END);
   if (!perSel.dataset.w) { perSel.dataset.w = 1; perSel.addEventListener('change', C.render); }
@@ -13627,10 +13633,26 @@ loadRemoteData().then(live => {
     const chg = (a, b) => a && b ? `<span class="${a >= b ? 'good' : 'bad'}">${a >= b ? '+' : '−'}${Math.abs(Math.round(100 * (a / b - 1)))} %</span>` : '—';
     const keys = Object.keys({ ...A.o, ...B.o }).filter(k => (A.o[k] || [0])[0] || (B.o[k] || [0])[0]).sort((a, b) => (A.o[b] || [0])[0] - (A.o[a] || [0])[0] || (B.o[b] || [0])[0] - (B.o[a] || [0])[0]);
     const hist = []; for (let y = Y - 4; y <= Y; y++) { const h = agg(y); if (h.T[0]) hist.push([y, h.T]); }
+    // prix anormal : ecart de plus de 30 % (en dessous) ou 50 % (au-dessus) par rapport au prix attendu de la ligne
+    // (opt.ref = prix moyen de ses formes de produit, sinon prix moyen du total) ; seulement au-dela de 5 t
+    const ANOM = [];
+    function flagP(k, a, y) {
+      const v = pr(a); if (!a || !a[0] || opt.t(a[0]) < 5) return `<td>${v}</td>`;
+      const p = a[1] / a[0], R = opt.ref ? opt.ref(k, y, ms) : { exp: (y === Y ? A.T : B.T)[1] / (y === Y ? A.T : B.T)[0], bad: [] };
+      if (!R) return `<td>${v}</td>`;
+      const FN = { 0: 'fresh whole', 1: 'frozen whole', 2: 'fresh fillets', 3: 'frozen fillets', 5: 'smoked', 6: 'prepared' };
+      const off = p < 0.7 * R.exp || p > 1.5 * R.exp;
+      if (!off && !(R.bad || []).length) return `<td>${v}</td>`;
+      const msg = off ? `${opt.nm(k)} ${y}: ${p.toFixed(2)} ${opt.cur}/kg against about ${R.exp.toFixed(2)} for the same products elsewhere`
+        : `${opt.nm(k)} ${y}: ` + R.bad.map(b => `${FN[b.f] || 'form ' + b.f} at ${b.p.toFixed(2)} ${opt.cur}/kg against ${b.ref.toFixed(2)} elsewhere (${Math.round(opt.t(b.t)).toLocaleString('en-US')} t)`).join(', ');
+      if (y === Y) ANOM.push(msg);
+      return `<td style="color:#ffb74d;font-weight:bold" title="${esc(msg)}">${v} ⚠</td>`;
+    }
     return `<div class="s" style="margin-top:8px">${note}<b>${opt.head} — ${L(Y)}: ${t0(A.T[0])} t</b> (${chg(A.T[0], B.T[0])} on ${L(Y - 1)}: ${t0(B.T[0])} t), average <b>${pr(A.T)} ${opt.cur}/kg</b> against ${pr(B.T)} a year earlier.</div>` +
       (keys.length > 1 || opt.always ? `<table><tr><th>${opt.col}</th><th>${L(Y)} (t)</th><th>Share</th><th>${L(Y - 1)} (t)</th><th>Change</th><th>${opt.cur}/kg ${Y}</th><th>${opt.cur}/kg ${Y - 1}</th></tr>` +
-        keys.slice(0, 12).map(k => { const a = A.o[k] || [0, 0], b = B.o[k] || [0, 0]; return `<tr><td>${esc(opt.nm(k))}</td><td><b>${t0(a[0])}</b></td><td>${A.T[0] ? (100 * a[0] / A.T[0]).toFixed(0) + ' %' : ''}</td><td>${t0(b[0])}</td><td>${chg(a[0], b[0])}</td><td>${pr(a)}</td><td>${pr(b)}</td></tr>`; }).join('') +
-        `<tr><td><b>Total</b></td><td><b>${t0(A.T[0])}</b></td><td>100 %</td><td>${t0(B.T[0])}</td><td>${chg(A.T[0], B.T[0])}</td><td>${pr(A.T)}</td><td>${pr(B.T)}</td></tr></table>` : '') +
+        keys.slice(0, 12).map(k => { const a = A.o[k] || [0, 0], b = B.o[k] || [0, 0]; return `<tr><td>${esc(opt.nm(k))}</td><td><b>${t0(a[0])}</b></td><td>${A.T[0] ? (100 * a[0] / A.T[0]).toFixed(0) + ' %' : ''}</td><td>${t0(b[0])}</td><td>${chg(a[0], b[0])}</td>${flagP(k, a, Y)}${flagP(k, b, Y - 1)}</tr>`; }).join('') +
+        `<tr><td><b>Total</b></td><td><b>${t0(A.T[0])}</b></td><td>100 %</td><td>${t0(B.T[0])}</td><td>${chg(A.T[0], B.T[0])}</td><td>${pr(A.T)}</td><td>${pr(B.T)}</td></tr></table>` +
+        (ANOM.length ? `<div class="s" style="color:#ffb74d;margin-top:4px">⚠ Unusual price${ANOM.length > 1 ? 's' : ''}: ${ANOM.join('; ')}. Often a product declared under the wrong code, a value declared low (transfer between companies of one group, trimmings or offcuts sold as fillets) or a very small volume — read these rows with care.</div>` : '') : '') +
       (ms.length > 1 ? `<table style="margin-top:4px"><tr><th>Month</th>${ms.map(mo => `<th>${ML[mo - 1]}</th>`).join('')}</tr>` +
         [[Y, 'b'], [Y - 1, '']].map(([y]) => `<tr><td>${y} (t)</td>${ms.map(mo => { const g = agg2(y * 100 + mo); return `<td>${t0(g[0])}</td>`; }).join('')}</tr>`).join('') +
         `<tr><td>Change</td>${ms.map(mo => `<td>${chg(agg2(Y * 100 + mo)[0], agg2((Y - 1) * 100 + mo)[0])}</td>`).join('')}</tr><tr><td>${opt.cur}/kg ${Y}</td>${ms.map(mo => `<td>${pr(agg2(Y * 100 + mo))}</td>`).join('')}</tr></table>` : '') +
@@ -13702,10 +13724,11 @@ loadRemoteData().then(live => {
     const R0 = rows.filter(r => F.includes(r[2])), last = Math.max(...rows.map(r => r[0]));
     if (!R0.length) return `<div class="gs-card"><h4>Exports from ${esc({ NO: 'Norway', FO: 'Faroe Islands', IS: 'Iceland', GB: 'United Kingdom', CL: 'Chile', CA: 'Canada', AU: 'Australia' }[org] || org)}</h4><div class="s">This product is not in the monthly export data of this country${org === 'NO' ? ' (SSB monthly data here: fresh and frozen whole fish and fillets only)' : ''}.</div></div>`;
     const C0 = (((typeof DATA_RAW !== 'undefined' && DATA_RAW ? DATA_RAW : {}).ssb_exports || {}).meta || {}).countries || {};
-    if (per && !(per.ms !== 'ytd' && per.ms.length === 1 && !per.year)) { const G = {}; R0.forEach(r => { const g = G[r[0]] = G[r[0]] || {}; const b = g[r[1]] = g[r[1]] || [0, 0]; b[0] += r[3]; b[1] += r[4]; });
+    if (per && !(per.ms !== 'ytd' && per.ms.length === 1 && !per.year)) { const G = {}, GF = {}; R0.forEach(r => { const g = G[r[0]] = G[r[0]] || {}; const b = g[r[1]] = g[r[1]] || [0, 0]; b[0] += r[3]; b[1] += r[4];
+        const h = GF[r[0]] = GF[r[0]] || {}; const c = h[r[1] + '|' + r[2]] = h[r[1] + '|' + r[2]] || [0, 0]; c[0] += r[3]; c[1] += r[4]; });
       const nm0 = org === 'CA' && gsProv ? { BC: 'British Columbia', NB: 'New Brunswick', NS: 'Nova Scotia', NL: 'Newfoundland', PE: 'Prince Edward Island', ATL: 'Atlantic Canada' }[gsProv] : ({ NO: 'Norway', FO: 'Faroe Islands', IS: 'Iceland', GB: 'United Kingdom (Scotland)', CL: 'Chile', CA: 'Canada', AU: 'Australia' }[org] || org);
       return `<div class="gs-card"><h4>Exports from ${esc(nm0)} — ${esc(F.map(f => forms[f].toLowerCase()).join(', '))}</h4><div class="s">Source: ${org === 'NO' ? 'Statistics Norway (SSB), FOB in NOK' : cur === 'CAD' ? 'Statistics Canada (CIMT), domestic exports by province of origin, CAD' : 'national statistics office, export value in €'}.</div>` +
-        perHtml(per, k => G[k], { last, t: v => v, p: (q, v) => (v / q).toFixed(2), cur, nm: c => EU_EXTRA[c] || (C0[c] || {}).name || c, col: 'Destination', head: 'Exports' }) + `</div>`; }
+        perHtml(per, k => G[k], { last, t: v => v, p: (q, v) => (v / q).toFixed(2), cur, nm: c => EU_EXTRA[c] || (C0[c] || {}).name || c, col: 'Destination', head: 'Exports', ref: refPrice(GF) }) + `</div>`; }
     let ref = last, note = '';
     if (mon) { const c = [...new Set(rows.map(r => r[0]))].filter(k => k % 100 === mon).sort((a, b) => b - a);
       if (c.length && Math.floor(c[0] / 100) === Math.floor(last / 100)) ref = c[0];
@@ -13784,6 +13807,47 @@ loadRemoteData().then(live => {
   }
 
   // ---- pays importateur hors UE : importations par origine (UN Comtrade, declarees par le pays importateur)
+  // prix attendu d'une ligne (destination ou origine) : ses volumes par forme de produit, valorises au prix moyen que
+  // les AUTRES lignes obtiennent pour chaque forme la meme annee (sans elle-meme). GF[ym][cle|forme] = [t, valeur]
+  function refPrice(GF) {
+    const tot = {};
+    Object.entries(GF).forEach(([ym, h]) => Object.entries(h).forEach(([kk, b]) => { const [k, f] = kk.split('|'), y = Math.floor(ym / 100);
+      const a = tot[f + '|' + y] = tot[f + '|' + y] || [0, 0]; a[0] += b[0]; a[1] += b[1]; }));
+    return (k, y, ms) => {
+      const own = {}; ms.forEach(mo => Object.entries(GF[y * 100 + mo] || {}).forEach(([kk, b]) => { const [kx, f] = kk.split('|'); if (kx !== k) return; const o = own[f] = own[f] || [0, 0]; o[0] += b[0]; o[1] += b[1]; }));
+      // prix des autres : total de l'annee moins la ligne elle-meme sur l'annee
+      const self = {}; Object.entries(GF).forEach(([ym, h]) => { if (Math.floor(ym / 100) !== y) return; Object.entries(h).forEach(([kk, b]) => { const [kx, f] = kk.split('|'); if (kx !== k) return; const o = self[f] = self[f] || [0, 0]; o[0] += b[0]; o[1] += b[1]; }); });
+      let q = 0, v = 0; const bad = [], rowT = Object.values(own).reduce((a, o) => a + o[0], 0);
+      Object.entries(own).forEach(([f, o]) => { const t = tot[f + '|' + y] || [0, 0], sf = self[f] || [0, 0], oq = t[0] - sf[0], ov = t[1] - sf[1];
+        if (oq > 0 && ov > 0) { q += o[0]; v += o[0] * ov / oq;
+          const pf = o[1] / o[0], rf = ov / oq;                       // controle forme par forme (une forme peut etre masquee par le melange)
+          const lo = o[0] >= 200 ? 0.8 : 0.65, hi = o[0] >= 200 ? 1.3 : 1.6;     // gros volumes : un ecart de 20 % suffit ; petits volumes : bruit, seuil plus large
+          if (o[0] >= 5 && o[0] >= 0.1 * rowT && (pf < lo * rf || pf > hi * rf)) bad.push({ f, p: pf, ref: rf, t: o[0] }); } });
+      return q ? { exp: v / q, bad } : null; };
+  }
+  // ---- Chine / Hong Kong : ce que chaque pays producteur declare exporter vers eux (les douanes chinoises ne publient pas encore)
+  function chinaCard(mk, prods, per) {
+    const T = D['national_trade.json'], S = ((typeof DATA_RAW !== 'undefined' && DATA_RAW ? DATA_RAW : {}).ssb_exports) || null; if (!T) return '';
+    const forms = { 0: 'Fresh whole', 1: 'Frozen whole', 2: 'Fresh fillets', 3: 'Frozen fillets', 5: 'Smoked', 6: 'Prepared / preserved' };
+    let F = Object.keys(forms).map(Number);
+    if (prods.includes('smoked')) F = [5]; if (prods.includes('fillet')) F = F.filter(i => i === 2 || i === 3); if (prods.includes('whole')) F = F.filter(i => i === 0 || i === 1);
+    if (prods.includes('fresh')) F = F.filter(i => i === 0 || i === 2); if (prods.includes('frozen')) F = F.filter(i => i === 1 || i === 3);
+    const fx = ((T.meta || {}).fx || {}).NOK || {}, G = {}, GF = {}, lastBy = {};
+    const add = (ym, org, f, t, eur) => { if (!F.includes(f)) return; const g = G[ym] = G[ym] || {}; const b = g[org] = g[org] || [0, 0]; b[0] += t; b[1] += eur;
+      const h = GF[ym] = GF[ym] || {}; const c = h[org + '|' + f] = h[org + '|' + f] || [0, 0]; c[0] += t; c[1] += eur; lastBy[org] = Math.max(lastBy[org] || 0, ym); };
+    T.rows.forEach(r => { if (r[2] === mk.iso) add(r[0], r[1], r[3], r[4], r[6]); });
+    if (S) { const map = [0, 2, 3, 1]; S.rows.forEach(r => { if (r[2] === mk.iso && fx[r[0]]) add(r[0], 'NO', map[r[1]], r[3] / 1000, r[4] / 1000 / fx[r[0]]); }); }
+    const big = Object.keys(lastBy).filter(o => o === 'NO' || o === 'CL' || o === 'FO');
+    const last = big.length ? Math.min(...big.map(o => lastBy[o])) : Math.max(...Object.values(lastBy));
+    if (!isFinite(last)) return '';
+    const NMS = { NO: 'Norway', CL: 'Chile', FO: 'Faroe Islands', GB: 'United Kingdom (Scotland)', IS: 'Iceland', AU: 'Australia', CA: 'Canada' };
+    const p = per || { ms: 'ytd', year: null, lab: '' };
+    const reff = refPrice(GF);
+    return `<div class="gs-card"><h4>${esc(mk.name)} — salmon arriving (${esc(F.map(f => forms[f].toLowerCase()).join(', '))})</h4>` +
+      `<div class="s" style="color:#ffb74d"><b>Deduced from the exporters' figures.</b> ${mk.iso === 'CN' ? 'China\'s own customs figures are not available yet beyond Dec 2024 (UN Comtrade)' : 'Hong Kong\'s own figures run to Jul 2026 (below)'}: these are the volumes each producing country declares it exported to ${esc(mk.name)} — Norway (Statistics Norway), Chile, Canada and Australia (UN Comtrade), the Faroe Islands, Iceland and the UK (national statistics). Export value FOB in €, not the import price paid in China.</div>` +
+      perHtml(p, k => G[k], { last, t: v => v, p: (q, v) => (v / q).toFixed(2), cur: '€', nm: c => NMS[c] || c, col: 'Origin', head: 'Arrivals declared by exporters', ref: reff }) +
+      `<div class="s" style="margin-top:6px"><span class="gs-go" onclick="gsGoTab('china')">→ China focus</span></div></div>`;
+  }
   function worldCard(mk, prods, per) {
     const W = D['world_imports.json']; if (!W) return '';
     const I3 = { US: 'USA', JP: 'JPN', CN: 'CHN', HK: 'HKG', KR: 'KOR', BR: 'BRA', CA: 'CAN', AU: 'AUS', IL: 'ISR', TH: 'THA', VN: 'VNM', SG: 'SGP', TW: 'TWN', AE: 'ARE', MX: 'MEX', RU: 'RUS', TR: 'TUR', CH: 'CHE', GB: 'GBR', NO: 'NOR', UA: 'UKR', SA: 'SAU', EG: 'EGY', IN: 'IND', ID: 'IDN', MY: 'MYS', PH: 'PHL', CL: 'CHL', AR: 'ARG', PE: 'PER', CO: 'COL', ZA: 'ZAF', NZ: 'NZL', QA: 'QAT', KZ: 'KAZ', BY: 'BLR', RS: 'SRB', GE: 'GEO', UY: 'URY' };
@@ -13870,11 +13934,13 @@ loadRemoteData().then(live => {
     const pp = parsePeriod(rest); rest = pp.rest; let per = pp.per;
     let mon = null; MONTH_W.forEach((rx, i) => { if (mon === null && rx.test(rest)) { mon = i + 1; rest = rest.replace(rx, ' '); } });
     if (mon && !per) per = { ms: [mon], year: null, lab: '' }; if (mon && per && per.year && per.ms.length === 12) per.ms = [mon];
-    const mk = (!bas || bas === 'NO') ? findMarket(rest) : null; if (mk) rest = rest.replace(mk.word, ' ');
+    let mk = (!bas || bas === 'NO') ? findMarket(rest) : null; if (mk) rest = rest.replace(mk.word, ' ');
+    if (!mk && (!bas || bas === 'NO') && topics.includes('china') && (wantTrade || per || /\b(salmon|laks|saumon|price|prix|pris|volume|tonn\w*)\b/.test(nq))) mk = { iso: /\b(hong ?kong|hk)\b/.test(nq) ? 'HK' : 'CN', name: /\b(hong ?kong|hk)\b/.test(nq) ? 'Hong Kong' : 'China', word: '', rx: /\b(china|chine|kina|chinese)\b/ };
     const words = rest.split(/\s+/).filter(w => w.length > 1);
     let html = '';
     if (bas && wantTrade && !po) { const pcd = producerCard(bas, prods, mon, per); if (pcd) html += `<div class="gs-sec">From the dashboard's data · exports from ${BAS_NAME[bas]}</div>` + pcd; }
-    if (mk) { const eu = euCard(mk, prods, per) || worldCard(mk, prods, per);
+    if (mk && (mk.iso === 'CN' || mk.iso === 'HK')) { const cc = chinaCard(mk, prods, per); if (cc) html += `<div class="gs-sec">From the dashboard's data · salmon arriving in ${esc(mk.name)}</div>` + cc; }
+    if (mk) { const eu = (mk.iso === 'CN' || mk.iso === 'HK') ? worldCard(mk, prods, per) : euCard(mk, prods, per) || worldCard(mk, prods, per);
       html += `<div class="gs-sec">From the dashboard's data · ${esc(mk.name)}${prods.length ? ' · ' + prods.join(', ') : ''}</div>` + eu +
         (eu ? `<details class="gs-card"><summary style="cursor:pointer;color:#a9bfcc;font-size:13px">Norway's own figures: Norwegian exports to ${esc(mk.name)} (Statistics Norway, usually one month fresher)</summary>${marketCard(mk, prods, per).replace(/^<div class="gs-card">|<\/div>$/g, '')}</details>` : marketCard(mk, prods, per)); }
     if (po) {
