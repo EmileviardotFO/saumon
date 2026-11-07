@@ -182,6 +182,43 @@ def classify(rows, site_po, site_org, T):
             'meta': {'last_month': last_full, 'note': 'M = smolt delivery (farm fallow in the 8 weeks before, reporting after); T = lice treatment reported at the farm that week or the next/previous; H = harvest or transfer (all other visits, and every slaughter-boat visit).'}}
 
 
+PULSE_LOG = os.path.join(ROOT, 'data', 'harvest_pulse_log.json')
+
+
+def harvest_pulse(hist, reg, Y, T, kinds, rows):
+    """'pouls des abattages' (en test, pas affiche) : chaque semaine, livraisons des wellboats aux cages d'attente des abattoirs
+    + passages des bateaux d'abattage sur les fermes, contre la meme semaine un an plus tot. Chaque semaine, l'estimation est
+    notee AVANT la publication SSB (data/harvest_pulse_log.json) pour juger la precision sur des semaines jamais vues.
+    Test sur 2024-2026 : r = 0.88 avec les exportations SSB de saumon frais ; sens de l'ecart sur un an juste 56 fois sur 70."""
+    cages = [str(c['no']) for c in reg.get('slaughter_cages') or []]
+    if not cages:
+        return
+    hc = hist.setdefault('cages', {})
+    if str(Y - 1) not in hc:
+        hc[str(Y - 1)] = year_visits(cages, Y - 1, T, kinds)
+    hc[str(Y)] = year_visits(cages, Y, T, kinds)
+    for y in [y for y in hc if int(y) < Y - 1]:
+        del hc[y]
+    json.dump(hist, open(HIST, 'w', encoding='utf-8'), separators=(',', ':'))
+    wk = {}
+    for no, y, w, mm, k, start, hrs in hc[str(Y - 1)] + hc[str(Y)]:
+        wk.setdefault(y * 100 + w, [0, 0])[0] += 1
+    for no, y, w, mm, k, start, hrs in rows:
+        if k == 'S':
+            wk.setdefault(y * 100 + w, [0, 0])[1] += 1
+    iso = dt.date.today().isocalendar(); cur = iso[0] * 100 + iso[1]
+    full = max(k for k in wk if k < cur)
+    ly = (dt.date.fromisocalendar(full // 100, full % 100, 1) - dt.timedelta(weeks=52)).isocalendar(); lyk = ly[0] * 100 + ly[1]
+    a, b = sum(wk.get(full, [0, 0])), sum(wk.get(lyk, [0, 0]))
+    log = json.load(open(PULSE_LOG, encoding='utf-8')) if os.path.exists(PULSE_LOG) else {'note': harvest_pulse.__doc__.strip(), 'weeks': {}}
+    if str(full) not in log['weeks'] and b:
+        log['weeks'][str(full)] = {'made': dt.datetime.utcnow().strftime('%Y-%m-%d %H:%M'), 'cage_deliveries': wk[full][0], 'slaughter_boat_visits': wk[full][1],
+                                   'same_week_last_year': b, 'yoy_pct': round(100 * (a / b - 1), 1)}
+    log['series'] = {str(k): v for k, v in sorted(wk.items())}
+    json.dump(log, open(PULSE_LOG, 'w', encoding='utf-8'), separators=(',', ':'))
+    print(f'  pouls des abattages, semaine {full % 100} : {a} contre {b} un an plus tot ({100 * (a / b - 1) if b else 0:+.0f} %)')
+
+
 def main():
     T = token()
     V = get('/v1/geodata/fishhealth/vessels', T) or []
@@ -207,6 +244,7 @@ def main():
     for old_y in [y for y in hist.get('years', {}) if int(y) < Y - 2]:
         del hist['years'][old_y]
     rows = hist['years'].get(str(Y - 1), []) + cur
+    harvest_pulse(hist, reg, Y, T, kinds, rows)
     kinds_out = classify(hist['years'].get(str(Y - 2), []) + rows, site_po, site_org, T)
     # ---- agregats hebdomadaires : Norvege, zone, titulaire
     def wk(y, w): return y * 100 + w

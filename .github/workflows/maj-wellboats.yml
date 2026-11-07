@@ -34,7 +34,7 @@ jobs:
       - name: Enregistrer
         run: |
           git config user.name "github-actions"; git config user.email "actions@github.com"
-          git add data/wellboats.json data/wellboats_hist.json data/bw_farm_state.json
+          git add data/wellboats.json data/wellboats_hist.json data/bw_farm_state.json data/harvest_pulse_log.json
           if git diff --staged --quiet; then echo "Aucun changement."; else
             git commit -q -m "Wellboats ($(date -u +%Y-%m-%d))"
             for i in 1 2 3; do git pull -q --rebase && git push -q && break; sleep 10; done; fi
