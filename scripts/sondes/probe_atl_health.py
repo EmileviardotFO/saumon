@@ -1,32 +1,34 @@
-"""Sonde : (1) registre aquacole du Nouveau-Brunswick, section des conditions a declaration obligatoire ;
-(2) site de la NAIA (Terre-Neuve) : pages qui listent les avis publics de mortalite anormale, et liens PDF."""
-import html, re, requests
+"""Sonde : avis publics de mortalite anormale a Terre-Neuve (NAIA) — ou sont-ils listes, et sous quelle forme."""
+import io, re, json, requests
 H = {'User-Agent': 'Mozilla/5.0 (salmon-dashboard; github.com/EmileviardotFO/saumon)'}
 
 
-def text(u):
-    r = requests.get(u, headers=H, timeout=60); print(u, r.status_code, len(r.content), r.headers.get('content-type'))
-    return r
+def get(u, **kw):
+    r = requests.get(u, headers=H, timeout=60, **kw); print(u, r.status_code, len(r.content), r.headers.get('content-type')); return r
 
 
-r = text('https://dnr-mrn.gnb.ca/AquacultureRegistry/')
-x = re.sub(r'(?s)<script.*?</script>|<style.*?</style>', '', r.text)
-t = re.sub(r'\s+', ' ', html.unescape(re.sub(r'<[^>]+>', ' ', x)))
-for key in ('Date of Report', 'Reportable', 'Nature Source', 'ORDERS', 'Escapes'):
-    i = t.find(key); print('---', key, i); print(t[max(0, i - 300): i + 1500] if i >= 0 else '')
-print('dates 2026 :', sorted(set(re.findall(r'2026-\d\d-\d\d', t)))[-20:])
-print('dates 2025 :', len(set(re.findall(r'2025-\d\d-\d\d', t))))
-links = re.findall(r'href="([^"]+)"', r.text); print('liens', len(links)); print([l for l in links if 'eport' in l or 'ondition' in l or 'ealth' in l][:40])
-
-for u in ('https://naia.ca/', 'https://naia.ca/index.php/public-reporting', 'https://naia.ca/index.php/sustainability', 'https://naia.ca/index.php/public-notices',
-          'https://naia.ca/index.php/fish-health', 'https://www.naia.ca/'):
+r = get('https://naia.ca/publications/')
+for h, l in re.findall(r'href="([^"]+)"[^>]*>(.*?)</a>', r.text, re.S):
+    l = re.sub(r'<[^>]+>|\s+', ' ', l).strip()
+    if re.search(r'(?i)\.pdf|mortal|notice|report|public', h + ' ' + l): print('   ', h, '|', l[:120])
+for q in ('mortality', 'abnormal', 'notice'):
+    for kind in ('media', 'posts', 'pages'):
+        try:
+            r = get(f'https://naia.ca/wp-json/wp/v2/{kind}', params={'search': q, 'per_page': 100})
+            if r.ok and 'json' in (r.headers.get('content-type') or ''):
+                for x in r.json()[:60]:
+                    print('   ', kind, x.get('date'), (x.get('title') or {}).get('rendered', '')[:100], x.get('source_url') or x.get('link'))
+        except Exception as e:  # noqa: BLE001
+            print('ERREUR', e)
+# anciens liens Concrete5 : quels numeros repondent encore ?
+import pdfplumber
+ok = []
+for n in range(640, 760):
     try:
-        r = text(u)
-        if r.ok:
-            L = re.findall(r'href="([^"]+)"[^>]*>(.*?)</a>', r.text, re.S)
-            print('  liens :', len(L))
-            for h, l in L:
-                l = re.sub(r'<[^>]+>|\s+', ' ', l).strip()
-                if re.search(r'(?i)mortal|notice|report|download_file|public|health', h + ' ' + l): print('   ', h, '|', l[:120])
+        r = requests.get(f'https://naia.ca/index.php/download_file/view/{n}/200', headers=H, timeout=30)
+        if r.ok and r.content[:4] == b'%PDF':
+            t = (pdfplumber.open(io.BytesIO(r.content)).pages[0].extract_text() or '')[:300].replace('\n', ' ')
+            ok.append(n); print('PDF', n, '|', t)
     except Exception as e:  # noqa: BLE001
-        print(u, 'ERREUR', e)
+        pass
+print('PDF trouves', len(ok), ok[:5], ok[-5:])
