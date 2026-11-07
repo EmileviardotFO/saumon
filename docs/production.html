@@ -14155,7 +14155,7 @@ loadRemoteData().then(live => {
   const predict = v => { if (/\s$/.test(v) || v.trim().length < 2 || typeof SUG !== 'function') return null; const L = SUG(v).filter(o => !o.tab && o.t !== 'next' && o.t !== 'period');
     const last = norm(v.trim().split(/\s+/).pop()); const o = L[0]; if (!o) return null; if (norm(o.lab) === last) return null;
     return ['company', 'basin', 'market', 'topic', 'zone', 'trade', 'product'].includes(o.t) ? o : null; };
-  q2.addEventListener('input', () => { clearTimeout(tm); tm = setTimeout(() => { const o = predict(q2.value); gsPred = o ? o.lab : ''; run(o ? o.q : q2.value); }, 160); });
+  q2.addEventListener('input', () => { clearTimeout(tm); tm = setTimeout(() => { const o = approvalPlant(q2.value) ? null : predict(q2.value); gsPred = o ? o.lab : ''; run(o ? o.q : q2.value); }, 160); });
   q2.addEventListener('keydown', e => { if (e.key === 'Enter') run(q2.value); if (e.key === 'Escape') close(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && P.style.display === 'block') close();
     if (e.key === '/' && !/INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || '')) { e.preventDefault(); open(''); } });
@@ -14279,6 +14279,40 @@ loadRemoteData().then(live => {
     if (!L.length) return '';
     return `<div class="gs-card"><h4>Recorded mortality events${co ? ' · ' + esc(co) : ''}${bas ? ' · ' + BAS_NAME[bas] : ''}</h4><div class="s">` + L.map(e => `<b>${esc(e.date)}</b> ${esc(e.basin)} ${esc(e.region)} — ${esc(e.cause)}${e.fish_m ? `, ${e.fish_m} M fish` : ''}${e.tonnes ? `, ${Math.round(e.tonnes).toLocaleString('en-US')} t` : ''}: ${esc(String(e.note || '').slice(0, 220))}`).join('<br>') +
       ` <span class="gs-go" onclick="gsGoTab('health')">→ Fish health, recorded events</span></div></div>`;
+  }
+  // ---- numero d'agrement sur une etiquette (ovale sanitaire « NO N-169 EC ») -> l'abattoir, puis l'etat sanitaire des elevages autour
+  function approvalPlant(q) {
+    const PL = D['plants.json']; if (!PL) return null; const Q = String(q).toUpperCase().normalize('NFKD').replace(/[̀-ͯ]/g, '');
+    const cl = Q.match(/\b(?:CL|CHILE|SERNAPESCA)[\s.:#°N-]*(\d{5})\b/); if (cl) { const x = (PL.cl || []).find(p => String(p.code) === cl[1]); if (x) return { cl: x, id: 'CL ' + x.code }; }
+    for (const m of Q.matchAll(/(?:^|[^A-Z0-9])(?:NO[\s.-]*)?([A-Z]{1,2})[\s.-]?(\d{1,4})(?![0-9])/g)) { const x = (PL.no || []).find(p => p.id === m[1] + m[2]); if (x) return { no: x, id: 'NO ' + x.id.replace(/^([A-Z]+)/, '$1-') }; }
+    return null;
+  }
+  let SITES = null;
+  async function labelCard(a) {
+    if (a.cl) { const x = a.cl;
+      return `<div class="gs-card"><h4>${esc(x.plant)} — ${esc(x.town)}, ${esc(x.region)}</h4><div class="s">Sernapesca plant code <b>${esc(x.code)}</b>: ${x.slaughter ? 'slaughter and processing' : 'processing only'}; salmon handled for ${esc(x.farmers || '—')}. ` +
+        `The code identifies the plant, not the farm. Farm-by-farm disease status is not published in Chile the way it is in Norway; see the Chile tab for caligus and SRS by area. ${x.lat ? `<span class="gs-go" onclick="plClFocus('${esc(x.code)}')">→ the plant on the map</span>` : ''}</div></div>`; }
+    const x = a.no; if (SITES === null) SITES = await get('bw_sites.json'); const S = (SITES || {}).sites || {};
+    const B = (typeof DATA_RAW !== 'undefined' && DATA_RAW ? DATA_RAW : {}).bw_weekly || {}, M = B.meta || {}, lw = M.last ? M.last[0] * 100 + M.last[1] : 0, O = orgOf(), NM = R().site_name || {};
+    const k = Math.PI / 180, km = (s) => 6371 * Math.acos(Math.min(1, Math.sin(x.lat * k) * Math.sin(s.lat * k) + Math.cos(x.lat * k) * Math.cos(s.lat * k) * Math.cos((s.lon - x.lon) * k)));
+    const RAD = 80, sea = x.lat ? Object.values(S).filter(s => s.lat && !s.onLand && s.salmonoid !== false).map(s => ({ ...s, d: km(s) })).sort((p, q) => p.d - q.d) : [], near = sea.filter(s => s.d <= RAD);
+    const po = sea.length ? sea[0].po : null, inNear = new Set(near.map(s => String(s.no)));
+    const act = (B.site_dis || []).filter(r => inNear.has(String(r[0])) && r[4] >= lw - 2), rec = (B.site_dis || []).filter(r => inNear.has(String(r[0])) && r[3] >= lw - 26 && r[4] < lw - 2);
+    const dist = id => Math.round((near.find(s => String(s.no) === String(id)) || {}).d || 0);
+    const line = r => `${esc(NM[r[0]] || (S[r[0]] || {}).name || r[0])} (${esc(O[r[0]] || '?')}, ${dist(r[0])} km, since week ${String(r[3]).slice(4)} ${String(r[3]).slice(0, 4)})`;
+    const by = {}; act.forEach(r => (by[r[2]] = by[r[2]] || []).push(line(r)));
+    const L = D['bw_site_lice.json']; let lice = '';
+    if (L && (L.weeks || []).length && near.length) { const n = L.weeks.length, v = near.map(s => [s, (L.sites[s.no] || [])[n - 1]]).filter(([, y]) => y !== null && y !== undefined);
+      const all = Object.values(L.sites).map(a => a[n - 1]).filter(y => y !== null && y !== undefined), ov = v.filter(([, y]) => y > 0.5);
+      if (v.length) lice = `<br>Sea lice, week ${esc(L.weeks[n - 1])}: <b>${mean(v.map(z => z[1])).toFixed(2)}</b> adult female lice per fish on the ${v.length} farms within ${RAD} km that counted (all Norway ${mean(all).toFixed(2)})${ov.length ? `; <span class="bad">${ov.length} above the 0.5 limit</span> (${ov.map(([s, y]) => `${esc(s.name)} ${y.toFixed(2)}`).join(', ')})` : '; none above the limit'}.`; }
+    const grp = Object.values(O).includes(x.group) ? x.group : null, verdict = act.length ? `<b class="bad">${act.length} farm${act.length > 1 ? 's' : ''} with an open ILA or PD case within ${RAD} km</b>` : `<b class="good">no open ILA or PD case within ${RAD} km</b>`;
+    return `<div class="gs-card"><h4>${esc(x.name)} — ${esc(x.city)}${po ? ` · zone ${po} ${esc(PO_NAMES[po] || '')}` : ''}</h4><div class="s">Approval number <b>${esc(a.id)}</b> (Mattilsynet): ${x.slaughter ? 'slaughterhouse' : ''}${x.slaughter && x.processing ? ' and ' : ''}${x.processing ? 'processing plant' : ''}, group ${esc(x.group)}. ` +
+      `The number on the label is the plant where the salmon was slaughtered or packed, not the farm: the fish normally comes from farms within wellboat reach, so the check below looks at the sea farms within ${RAD} km (${near.length}).${x.slaughter ? '' : ' <i>This plant only processes: the salmon was slaughtered at another plant, possibly in another region, so the nearby check is only indicative; the slaughterhouse number, when the label shows two, is the one to search.</i>'}</div>` +
+      `<div class="s" style="margin-top:6px">Week ${lw % 100}: ${verdict}.${act.length ? ' ' + Object.entries(by).map(([d, v]) => `<b class="bad">${esc(d)}</b>: ${v.join('; ')}`).join('. ') + '.' : ''}` +
+      `${rec.length ? ` Cases closed in the last six months nearby: ${rec.length} (${[...new Set(rec.map(r => r[2]))].join(', ')}).` : ''}${lice}</div>` +
+      `<div class="s" style="margin-top:6px;color:var(--muted)">ILA and PD are fish diseases with no risk for people; fish from an affected farm can still be slaughtered for food under Mattilsynet's conditions. A food-safety issue on a batch would show as a recall or an EU RASFF alert, not here.` +
+      ` ${x.lat ? `<span class="gs-go" onclick="plNoFocus('${esc(x.id)}')">→ the plant on the map</span> · ` : ''}<span class="gs-go" onclick="gsGoTab('health')">→ Fish health tab</span></div></div>` +
+      (grp ? disCard(grp) : '') + (po ? zoneEv(po) : '');
   }
   function plantCard(co) {
     const PL = D['plants.json']; if (!PL) return ''; const k = norm(co).split(' ')[0];
@@ -14760,6 +14794,8 @@ loadRemoteData().then(live => {
     if (!mk && (!bas || bas === 'NO') && topics.includes('china') && (wantTrade || per || /\b(salmon|laks|saumon|price|prix|pris|volume|tonn\w*)\b/.test(nq))) mk = { iso: /\b(hong ?kong|hk)\b/.test(nq) ? 'HK' : 'CN', name: /\b(hong ?kong|hk)\b/.test(nq) ? 'Hong Kong' : 'China', word: '', rx: /\b(china|chine|kina|chinese)\b/ };
     const words = rest.split(/\s+/).filter(w => w.length > 1);
     let html = '';
+    const apn = approvalPlant(q);
+    if (apn) { const lc = await labelCard(apn); if (id !== runId) return; if (lc) html += `<div class="gs-sec">Label · approval number ${esc(apn.id)}</div>` + lc; }
     if (bas && wantTrade && !po) { const pcd = producerCard(bas, prods, mon, per); if (pcd) html += `<div class="gs-sec">From the dashboard's data · exports from ${BAS_NAME[bas]}</div>` + pcd; }
     if (mk && (mk.iso === 'CN' || mk.iso === 'HK')) { const cc = chinaCard(mk, prods, per); if (cc) html += `<div class="gs-sec">From the dashboard's data · salmon arriving in ${esc(mk.name)}</div>` + cc; }
     if (mk) { const eu = (mk.iso === 'CN' || mk.iso === 'HK') ? worldCard(mk, prods, per) : euCard(mk, prods, per) || worldCard(mk, prods, per);
