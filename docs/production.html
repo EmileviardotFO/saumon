@@ -287,7 +287,8 @@
   #genmapView .gm-brief b { color: #ffd54f; }
   #genmapView .gm-kpis { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin: 6px 0 12px; }
   #genmapView .gm-kpi { background: #0d1a24; border: 1px solid var(--border); border-radius: 8px; padding: 7px 9px; min-width: 0; }
-  #genmapView .gm-kpi b { display: block; font-size: 17px; white-space: nowrap; }
+  #genmapView .gm-kpi b { display: block; font-size: 17px; white-space: normal; overflow-wrap: anywhere; line-height: 1.2; }
+  #genmapView .gm-kpi, #genmapView .gm-kpi * { overflow-wrap: anywhere; }
   #genmapView .gm-kpi span { font-size: 10.5px; color: var(--muted); display: block; }
   #genmapView .gm-kpi em { display: block; font-style: normal; font-size: 10.5px; color: var(--muted); margin-top: 4px; padding-top: 4px; border-top: 1px dashed #223642; }
   #genmapView .gm-kpi em b { display: inline; font-size: 10.5px; }
@@ -2637,11 +2638,10 @@ const METRIC_CONF = {
 // Such months also break FCR, because biomass that died was fed but produced nothing
 // sellable, so the denominator collapses and the ratio explodes.
 const ANOMALIES = {};   // "year-month-po" -> reason
-RECORDS.forEach(r => {
-  if ((r.mortality_pct || 0) > 100) {
-    ANOMALIES[`${r.year}-${r.month}-${r.po}`] = `reported mortality ${r.mortality_pct.toFixed(0)}% of stock`;
-  }
-});
+{ const tot = {}; RECORDS.forEach(r => { const k = r.year * 100 + r.month; tot[k] = (tot[k] || 0) + (r.behfisk_stk || 0); });
+  RECORDS.forEach(r => {
+    if ((r.mortality_pct || 0) > 100 && (r.behfisk_stk || 0) >= 0.03 * (tot[r.year * 100 + r.month] || 0)) ANOMALIES[`${r.year}-${r.month}-${r.po}`] = `reported mortality ${r.mortality_pct.toFixed(0)}% of stock`;
+  }); }
 const FCR_PLAUSIBLE_MAX = 3;   // beyond this the ratio is not a feeding performance any more
 
 function anomaliesInPeriod(year, startMonth, endMonth, poList) {
@@ -5807,9 +5807,9 @@ function renderDisease() {
     h += box(`<div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px"><span style="font-size:13px;font-weight:700">World losses in 2025</span><span style="font-size:26px;font-weight:800">≈ ${f0(D)} kt</span>` +
       `<span style="font-size:13px;color:var(--muted)">of salmon died at sea (range ${f0(LO)}–${f0(HI)} kt) — <b style="color:#ff8a65">${(100 * D / P).toFixed(1)} %</b> of the ${f0(P)} kt harvested (live weight, seven basins, about 95 % of farmed Atlantic salmon)</span></div>` +
       `<div style="margin-top:8px">${R.map(x => `<div style="display:grid;grid-template-columns:120px minmax(0,1fr) 220px;gap:10px;align-items:center;font-size:12px;margin:3px 0"><span>${e(x.name)}</span>` +
-        `<div style="height:12px;width:${(100 * x.dead_kt / mx).toFixed(1)}%;background:${x.basis === 'measured' ? '#ff8a65' : 'repeating-linear-gradient(45deg,#ff8a65 0 4px,#7a3b2b 4px 8px)'};border-radius:2px" title="${e(x.how)}"></div>` +
+        `<div style="height:10px;border-radius:999px;background:rgba(255,255,255,.10)"><div style="height:100%;width:${(100 * x.dead_kt / mx).toFixed(1)}%;border-radius:999px;background:${x.basis === 'measured' ? 'linear-gradient(90deg,rgba(159,227,255,.75),#e9f8ff)' : 'repeating-linear-gradient(90deg,rgba(233,248,255,.85) 0 6px,rgba(233,248,255,.25) 6px 10px)'};box-shadow:0 0 10px rgba(159,227,255,.3)" title="${e(x.how)}"></div></div>` +
         `<span><b>${f1(x.dead_kt)} kt</b> · ${(100 * x.dead_kt / (x.prod_kt / 0.888)).toFixed(1)} % of its harvest <span style="color:var(--muted)">${x.basis === 'measured' ? '' : '(estimate)'}</span></span></div>`).join('')}</div>` +
-      `<div class="sig-sub" style="margin-top:6px">${e(W.note)} Plain bars are weighed by the country; hatched bars are our estimates (hover for the method). Norway is half of the world's losses by weight but one of the lowest rates; Tasmania, Iceland and Scotland lose the most per tonne produced.</div>`, 'margin-top:12px;background:rgba(255,138,101,.04)'); }
+      `<div class="sig-sub" style="margin-top:6px">${e(W.note)} Solid bars are weighed by the country; dashed bars are our estimates (hover for the method). Norway is half of the world's losses by weight but one of the lowest rates; Tasmania, Iceland and Scotland lose the most per tonne produced.</div>`, 'margin-top:12px;background:rgba(255,138,101,.04)'); }
   // A · cartes
   h += h2('A · The basins at a glance');
   h += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px">` + ORDER.map(([c, name]) => { const L = last(c), K = (M[c] || {}).card || {}, ys = [2023, 2024, 2025].filter(y => (yr[c] || {})[y] !== undefined), mx = Math.max(1, ...ys.map(y => yr[c][y]));
@@ -13746,9 +13746,10 @@ loadRemoteData().then(live => {
   { const [ly, lm] = latestYearMonth(); yearSel.value = ly; monthSel.value = lm; }
   // ANOMALIES was built from the embedded records at load time; rebuild it on the live data.
   Object.keys(ANOMALIES).forEach(k => delete ANOMALIES[k]);
-  RECORDS.forEach(r => {
-    if ((r.mortality_pct || 0) > 100) ANOMALIES[`${r.year}-${r.month}-${r.po}`] = `reported mortality ${r.mortality_pct.toFixed(0)}% of stock`;
-  });
+  { const tot = {}; RECORDS.forEach(r => { const k = r.year * 100 + r.month; tot[k] = (tot[k] || 0) + (r.behfisk_stk || 0); });
+    RECORDS.forEach(r => {   // une zone qui pese moins de 3 % du stock national ce mois-la ne fausse pas les totaux : pas d'alerte (zone 1, mars 2026)
+      if ((r.mortality_pct || 0) > 100 && (r.behfisk_stk || 0) >= 0.03 * (tot[r.year * 100 + r.month] || 0)) ANOMALIES[`${r.year}-${r.month}-${r.po}`] = `reported mortality ${r.mortality_pct.toFixed(0)}% of stock`;
+    }); }
   // La vue par defaut est 'global' : on rend celle-ci, pas la vue PO.
   // render() reste appele car le tableau PO alimente des agregats
   // reutilises ailleurs, mais son panneau est masque.
@@ -15250,6 +15251,125 @@ function renderWellboats() {
     if (pts.length) WB_MAP.fitBounds(pts, { padding: [20, 20], maxZoom: 8 }); setTimeout(() => WB_MAP.invalidateSize(), 60);
   });
 }
+</script>
+<style id="glassSweepCss">
+  /* ---- Balayage Liquid Glass (novembre 2026) : les restes de l'ancien theme sombre ---- */
+  .metric-toggle,#multiBreakdownToggle,#multiDisplayToggle,.cap-bar{display:inline-flex!important;flex-wrap:wrap;gap:2px!important;padding:4px!important;border-radius:22px!important;
+    background:rgba(255,255,255,.12)!important;border:1px solid rgba(255,255,255,.26)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.45)!important;max-width:100%}
+  .metric-toggle button,.cap-bar button,.dz-tab{font:inherit;font-size:13px!important;padding:7px 14px!important;border:0!important;border-radius:999px!important;background:transparent!important;color:#eef5f9!important;
+    box-shadow:none!important;font-weight:400!important;cursor:pointer;white-space:nowrap}
+  .metric-toggle button:hover,.cap-bar button:hover,.dz-tab:hover{background:rgba(255,255,255,.12)!important}
+  .metric-toggle button.active,.cap-bar button.active,.cap-bar button.on,.dz-tab.on{background:linear-gradient(180deg,#ffffff,#dcecf5)!important;color:#0d2a40!important;font-weight:600!important;box-shadow:0 2px 8px rgba(3,18,35,.25)!important}
+  .po-filter-actions button,.gl-btn{font:inherit;font-size:12.5px!important;padding:6px 14px!important;border-radius:999px!important;border:1px solid rgba(255,255,255,.30)!important;flex:0 0 auto!important;width:auto!important;
+    background:linear-gradient(150deg,rgba(255,255,255,.24),rgba(255,255,255,.08))!important;color:#fff!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.45)!important;cursor:pointer}
+  .po-filter-actions{display:flex;gap:6px;margin-top:8px}
+  /* menus deroulants en verre (listes a choix multiples, longues rangees d'indicateurs) */
+  .gdd{position:relative;display:inline-block;max-width:100%}
+  .gdd-btn{font:inherit;font-size:13px;display:inline-flex;align-items:center;gap:10px;max-width:100%;padding:8px 14px 8px 16px;border-radius:999px;cursor:pointer;color:#fff;
+    border:1px solid rgba(255,255,255,.30);background:rgba(255,255,255,.14);box-shadow:inset 0 1px 0 rgba(255,255,255,.45)}
+  .gdd-btn b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.gdd-btn small{color:#cfe0ea;font-size:12px;white-space:nowrap}
+  .gdd-btn::after{content:'';width:9px;height:9px;flex:0 0 auto;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23ffffff' fill='none' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat center}
+  .gdd-panel{position:absolute;z-index:60;top:calc(100% + 6px);left:0;min-width:260px;max-width:min(560px,92vw);max-height:300px;overflow-y:auto;padding:8px;border-radius:18px;display:none;
+    background:rgba(24,62,92,.94);-webkit-backdrop-filter:blur(22px) saturate(170%);backdrop-filter:blur(22px) saturate(170%);border:1px solid rgba(255,255,255,.30);box-shadow:0 18px 40px rgba(3,18,35,.4)}
+  .gdd.open .gdd-panel{display:block}
+  .gdd-panel .gdd-opts{display:flex;flex-wrap:wrap;gap:5px}
+  .gdd-panel .gdd-opts button{font:inherit;font-size:12.5px;padding:6px 12px;border-radius:999px;cursor:pointer;color:#eef5f9;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.08);text-align:left}
+  .gdd-panel .gdd-opts button.on{background:linear-gradient(180deg,#ffffff,#dcecf5);color:#0d2a40;font-weight:600;border-color:transparent}
+  .gdd-panel .gdd-act{display:flex;gap:6px;margin-bottom:8px}
+  .gdd-panel .gdd-act button{font:inherit;font-size:12px;padding:4px 12px;border-radius:999px;cursor:pointer;color:#fff;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.12)}
+  #dataQualityBanner{background:linear-gradient(140deg,rgba(255,210,138,.20),rgba(255,210,138,.08))!important;border:1px solid rgba(255,210,138,.45)!important;border-radius:16px!important;
+    color:#fff3dc!important;font-size:12.5px!important;padding:10px 16px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.3)!important;line-height:1.5}
+  .gl-sticky{background:rgba(24,62,92,.92)!important;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+  #tabIndex:empty{display:none!important}
+  .hs-on th:first-child,.hs-on td:first-child{white-space:normal!important;max-width:min(44vw,260px);min-width:108px;overflow-wrap:break-word;word-break:normal;hyphens:auto}
+  /* defilement horizontal : seules les colonnes de chiffres bougent, la premiere colonne reste en place */
+  .hs-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
+  .hs-on th:first-child,.hs-on td:first-child{position:sticky;left:0;z-index:2;background:rgba(26,64,95,.96)!important;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:6px 0 10px -6px rgba(3,18,35,.55)}
+  /* graphiques qui defilent : l'echelle des valeurs reste fixe a gauche */
+  .ax-fix{position:sticky;left:0;z-index:3;overflow:hidden;pointer-events:none;background:linear-gradient(90deg,rgba(26,64,95,.96) 80%,rgba(26,64,95,0))}
+  .ax-fix svg{display:block;max-width:none!important}
+</style>
+<script id="glassSweepJs">
+// Balayage Liquid Glass : fonds sombres laisses par l'ancien theme -> verre ; listes et longues rangees de choix -> menus deroulants ;
+// tableaux et graphiques qui defilent : premiere colonne et echelle fixes.
+(function () {
+  const SKIP = 'svg,canvas,.leaflet-container,#sideNav,#gsPanel,#maptooltip,.sb-chart,.sr-chart,img,video,.gdd-panel,.ax-fix';
+  const parse = c => { const m = String(c).match(/rgba?\(([^)]+)\)/); if (!m) return null; const a = m[1].split(',').map(Number); return { r: a[0], g: a[1], b: a[2], a: a.length > 3 ? a[3] : 1 }; };
+  const satur = c => c && c.a > .3 && Math.max(c.r, c.g, c.b) - Math.min(c.r, c.g, c.b) > 60;   // couleur franche (bordure d'une carte de produit…)
+  function fix(el) {
+    if (el.dataset.gl || el.closest(SKIP)) return; const cs = getComputedStyle(el), c = parse(cs.backgroundColor); if (!c || c.a < .5) return;
+    const L = (0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b) / 255, mx = Math.max(c.r, c.g, c.b), mn = Math.min(c.r, c.g, c.b);
+    if (el.tagName === 'BUTTON' && L > .82 && mx - mn < 12) { el.classList.add('gl-btn'); el.dataset.gl = 1; return; }
+    if (L >= .17) return;
+    const sat = mx - mn > 18 && !(c.b > c.r + 12 && c.b >= c.g);
+    el.dataset.gl = 1;
+    if (cs.position === 'sticky') { el.classList.add('gl-sticky'); return; }
+    if (sat) { const k = 255 / Math.max(1, mx); el.style.setProperty('background', `rgba(${Math.round(c.r * k)},${Math.round(c.g * k)},${Math.round(c.b * k)},.22)`, 'important'); }
+    else el.style.setProperty('background', el.tagName === 'BUTTON' ? 'linear-gradient(150deg,rgba(255,255,255,.22),rgba(255,255,255,.07))' : 'linear-gradient(140deg,rgba(255,255,255,.13),rgba(255,255,255,.05))', 'important');
+    ['Top', 'Right', 'Bottom', 'Left'].forEach(sd => { if (!satur(parse(cs['border' + sd + 'Color']))) el.style.setProperty('border-' + sd.toLowerCase() + '-color', 'rgba(255,255,255,.26)', 'important'); });
+    if (!/^(TD|TH|TR|SPAN)$/.test(el.tagName)) { const br = parseFloat(cs.borderTopLeftRadius) || 0; if (br < 12 && el.offsetHeight > 40) el.style.setProperty('border-radius', '16px', 'important'); }
+    if (el.tagName === 'BUTTON' && !el.closest('.metric-toggle,.cap-bar')) el.style.setProperty('border-radius', '999px', 'important');
+  }
+  // menu deroulant : bouton-pilule + panneau en verre ; la liste ou la rangee d'origine reste dans la page, cachee, et garde son role
+  const closeAll = except => document.querySelectorAll('.gdd.open').forEach(d => { if (d !== except) d.classList.remove('open'); });
+  document.addEventListener('click', ev => { if (!ev.target.closest('.gdd')) closeAll(); });
+  function mkDD(anchor, label) { const d = document.createElement('div'); d.className = 'gdd'; d.innerHTML = `<button type="button" class="gdd-btn"></button><div class="gdd-panel"></div>`;
+    anchor.after(d); d.querySelector('.gdd-btn').addEventListener('click', () => { const o = !d.classList.contains('open'); closeAll(d); d.classList.toggle('open', o); }); return d; }
+  function multi(sel) {
+    if (sel.dataset.gl || !sel.multiple || !sel.options.length) return; sel.dataset.gl = 1;
+    const lab = ((sel.closest('.field') || {}).querySelector ? (sel.closest('.field').querySelector('label') || {}).textContent : '') || 'Selection';
+    const acts = sel.parentNode.querySelector('.po-filter-actions'); if (acts) acts.style.display = 'none';
+    const d = mkDD(sel, lab); sel.style.display = 'none'; const btn = d.querySelector('.gdd-btn'), pan = d.querySelector('.gdd-panel');
+    const draw = () => { const O = [...sel.options], on = O.filter(o => o.selected);
+      btn.innerHTML = `<b>${on.length === O.length ? 'All' : on.length === 1 ? on[0].textContent : on.length ? on[0].textContent + ' +' + (on.length - 1) : 'None'}</b><small>${on.length} of ${O.length}</small>`;
+      pan.innerHTML = (acts ? `<div class="gdd-act">${[...acts.querySelectorAll('button')].map((b, i) => `<button type="button" data-a="${i}">${b.textContent}</button>`).join('')}</div>` : '') +
+        `<div class="gdd-opts">${O.map((o, i) => `<button type="button" data-i="${i}" class="${o.selected ? 'on' : ''}">${o.textContent}</button>`).join('')}</div>`; };
+    pan.addEventListener('click', ev => { const b = ev.target.closest('button'); if (!b) return;
+      if (b.dataset.a !== undefined) { acts.querySelectorAll('button')[+b.dataset.a].click(); setTimeout(draw, 0); return; }
+      const o = sel.options[+b.dataset.i]; o.selected = !o.selected; sel.dispatchEvent(new Event('change', { bubbles: true })); draw(); });
+    sel.addEventListener('change', draw); draw();
+  }
+  function longRow(row) {   // une rangee de plus de 8 boutons a choix unique -> menu deroulant au style Capsule
+    if (row.dataset.gl || row.children.length <= 8 || row.closest('.gdd')) return; row.dataset.gl = 1;
+    const d = mkDD(row); row.style.setProperty('display', 'none', 'important'); const btn = d.querySelector('.gdd-btn'), pan = d.querySelector('.gdd-panel');
+    const B = () => [...row.querySelectorAll('button')];
+    const draw = () => { const a = B().find(b => b.classList.contains('active') || b.classList.contains('on')) || B()[0];
+      btn.innerHTML = `<b>${a ? a.innerHTML : ''}</b><small>${B().length} indicators</small>`;
+      pan.innerHTML = `<div class="gdd-opts">${B().map((b, i) => `<button type="button" data-i="${i}" class="${b === a ? 'on' : ''}">${b.innerHTML}</button>`).join('')}</div>`; };
+    pan.addEventListener('click', ev => { const b = ev.target.closest('button'); if (!b) return; B()[+b.dataset.i].click(); d.classList.remove('open'); setTimeout(draw, 0); });
+    new MutationObserver(draw).observe(row, { attributes: true, subtree: true, attributeFilter: ['class'] }); draw();
+  }
+  // tableaux larges : leur propre cadre de defilement (le reste du panneau ne bouge plus), premiere colonne figee
+  function tables() {
+    document.querySelectorAll('table').forEach(t => { if (t.offsetParent === null || t.closest('#sideNav,#gsPanel,svg')) return;
+      let sc = t; const csT = getComputedStyle(t);
+      if (!/(auto|scroll)/.test(csT.overflowX)) { const p = t.parentElement; if (p && /(auto|scroll)/.test(getComputedStyle(p).overflowX) && p.children.length === 1) sc = p;
+        else if (t.scrollWidth > (p ? p.clientWidth : 0) + 4) { const w = document.createElement('div'); w.className = 'hs-scroll'; t.before(w); w.appendChild(t); sc = w; } else sc = p; }
+      const on = sc && sc.scrollWidth > sc.clientWidth + 4; t.classList.toggle('hs-on', !!on); });
+    // panneaux entiers qui defilaient (texte, filtres et carte avec le tableau) : seul le tableau defile maintenant
+    document.querySelectorAll('.panel').forEach(p => { if (p.offsetParent === null) return; const cs = getComputedStyle(p); if (/(auto|scroll)/.test(cs.overflowX) && p.querySelector('table')) { p.style.overflowX = 'visible';
+      p.querySelectorAll('table').forEach(t => { if (!t.parentElement.classList.contains('hs-scroll') && t.scrollWidth > p.clientWidth - 30) { const w = document.createElement('div'); w.className = 'hs-scroll'; t.before(w); w.appendChild(t); } }); } });
+  }
+  // graphiques qui defilent : copie de la bande de l'axe des valeurs, collee a gauche
+  function axes() {
+    document.querySelectorAll('.wide-wrap').forEach(w => { const svg = [...w.children].find(x => x.tagName === 'svg' || x.tagName === 'SVG'); if (!svg) return;
+      const old = w.querySelector(':scope > .ax-fix'), need = w.scrollWidth > w.clientWidth + 4;
+      if (!need) { if (old) old.remove(); return; }
+      const r = svg.getBoundingClientRect(); if (!r.width) return;
+      // largeur de la bande : bord droit des etiquettes de l'echelle (textes alignes a droite, dans le premier quart)
+      let ax = 0; svg.querySelectorAll('text').forEach(tx => { const b = tx.getBoundingClientRect(); if (b.left - r.left < r.width * .2 && (tx.getAttribute('text-anchor') === 'end')) ax = Math.max(ax, b.right - r.left); });
+      if (ax < 12) { if (old) old.remove(); return; } ax = Math.ceil(ax + 6);
+      const key = svg.outerHTML.length + ':' + Math.round(r.width) + ':' + ax; if (old && old.dataset.k === key) return; if (old) old.remove();
+      const f = document.createElement('div'); f.className = 'ax-fix'; f.dataset.k = key; const c = svg.cloneNode(true); c.removeAttribute('id'); c.style.width = r.width + 'px'; c.style.height = r.height + 'px'; f.appendChild(c);
+      f.style.width = ax + 'px'; f.style.height = r.height + 'px'; f.style.marginBottom = -r.height + 'px'; w.insertBefore(f, svg); });
+  }
+  let t = null;
+  const run = () => { t = null; document.querySelectorAll('select[multiple]').forEach(multi); document.querySelectorAll('.metric-toggle').forEach(longRow);
+    document.querySelectorAll('body *').forEach(el => { if (el.offsetParent !== null || el.tagName === 'TD') fix(el); }); tables(); axes(); };
+  const kick = () => { if (!t) t = setTimeout(run, 150); };
+  new MutationObserver(ms => { if (ms.every(m => [...m.addedNodes].every(n => n.nodeType === 1 && n.classList && n.classList.contains('ax-fix')))) return; kick(); }).observe(document.body, { childList: true, subtree: true });
+  window.addEventListener('load', kick); window.addEventListener('resize', kick); document.addEventListener('click', kick, true); kick();
+})();
 </script>
 </body>
 </html>
