@@ -13746,6 +13746,15 @@ loadRemoteData().then(live => {
   .sig-table th{background:rgba(255,255,255,.07)!important}
   .sig-table td,.sig-table th{border-color:rgba(255,255,255,.12)!important}
   #sideNav .sn-top{display:none}
+  .leaflet-container{z-index:0;isolation:isolate}
+  #gsPanel{z-index:970!important}
+  @media (min-width:901px){
+    body{padding-top:64px}
+    #gsBox{position:fixed!important;top:12px;left:calc(244px + (100vw - 244px) / 2);transform:translateX(-50%);width:min(560px,46vw);z-index:900;margin:0!important}
+    #gsBox input{width:100%;height:40px;padding-left:40px!important;font-size:14px;border-radius:999px!important;background:linear-gradient(150deg,rgba(255,255,255,.24),rgba(255,255,255,.08))!important;
+      border:1px solid rgba(255,255,255,.32)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 8px 24px rgba(3,18,35,.30)!important;-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%)}
+    #gsBox:before{left:15px!important;top:7px!important;color:#e9f3f8!important}
+  }
   /* champs, listes, boutons : pilules de verre */
   select,input[type=search],input[type=text],input:not([type]),.st-row input,.st-row select,#gsPanel .gs-h input{background-color:rgba(255,255,255,.12)!important;color:var(--ink)!important;
     border:1px solid rgba(255,255,255,.28)!important;border-radius:16px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}
@@ -13780,6 +13789,8 @@ loadRemoteData().then(live => {
     /* le menu ouvert : son haut reste fixe sous le bouton de fermeture, le reste defile dessous */
     #sideNav{padding-top:0!important;background:linear-gradient(170deg,rgba(32,84,120,.88),rgba(24,58,96,.86))!important}
     #sideNav .sn-brand{display:none}
+    #sideNav #gsBox{position:sticky!important;top:calc(9px + env(safe-area-inset-top,0px));z-index:3;margin:calc(-49px - env(safe-area-inset-top,0px)) 12px 14px 62px!important}
+    #sideNav #gsBox input{height:40px;border-radius:999px!important}
     #sideNav .sn-top{display:block;position:sticky;top:0;z-index:2;height:calc(58px + env(safe-area-inset-top,0px));margin:0 -12px 4px;
       background:linear-gradient(180deg,rgba(24,62,92,.92),rgba(24,62,92,.70));-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.14)}
   }
@@ -13810,7 +13821,7 @@ loadRemoteData().then(live => {
   document.body.prepend(nav);
   // telephone : les boutons fixes (menu, loupe) s'effacent quand on descend dans la page et reviennent des qu'on remonte
   { let lastY = 0, tick = false; window.addEventListener('scroll', () => { if (tick) return; tick = true; requestAnimationFrame(() => { const y = window.scrollY, hide = y > 120 && y > lastY + 4 && !document.body.classList.contains('sn-open');
-      if (Math.abs(y - lastY) > 4) { document.body.classList.toggle('fab-hide', hide); lastY = y; } tick = false; }); }, { passive: true }); }
+      if (Math.abs(y - lastY) > 4) { document.body.classList.toggle('fab-hide', false && hide); lastY = y; } tick = false; }); }, { passive: true }); }
   const burger = document.createElement('button'); burger.id = 'snBurger'; burger.type = 'button'; burger.setAttribute('aria-label', 'Open the menu'); burger.textContent = '☰'; document.body.prepend(burger);
   { const lg = document.createElement('img'); lg.id = 'snLogo'; lg.src = 'icons/logo.svg'; lg.alt = 'Salmon Outlook'; lg.title = 'Salmon Outlook'; document.body.prepend(lg); }
   const shade = document.createElement('div'); shade.id = 'snShade'; document.body.prepend(shade);
@@ -13921,9 +13932,14 @@ loadRemoteData().then(live => {
   if (!frame) return;
   const st = document.createElement('style');
   st.textContent = `#tabIndex{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;width:100%}
-    #tabIndex button{font:inherit;font-size:12.5px;padding:5px 11px;border-radius:999px;border:1px solid var(--border);background:none;color:var(--ink);cursor:pointer;white-space:nowrap}
-    #tabIndex button:hover{border-color:#4fc3f7;color:#4fc3f7}
-    #tabIndex .ti-n{color:#4fc3f7;font-weight:700;margin-right:4px}
+    #tabIndex button{font:inherit;font-size:13px;padding:7px 14px 7px 8px;border-radius:999px;cursor:pointer;white-space:nowrap;color:#fff;display:inline-flex;align-items:center;gap:8px;
+      background:linear-gradient(150deg,rgba(255,255,255,.24),rgba(255,255,255,.08));border:1px solid rgba(255,255,255,.32);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.55),inset 0 -1px 0 rgba(255,255,255,.10),0 4px 14px rgba(3,18,35,.22);-webkit-backdrop-filter:blur(14px) saturate(180%);backdrop-filter:blur(14px) saturate(180%);
+      transition:transform .15s ease,background .15s ease}
+    #tabIndex button:hover{background:linear-gradient(150deg,rgba(255,255,255,.40),rgba(255,255,255,.16));transform:translateY(-1px)}
+    #tabIndex button:active{transform:scale(.97)}
+    #tabIndex .ti-n{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;border-radius:999px;font-size:11.5px;font-weight:800;color:#0d2a40;
+      background:linear-gradient(150deg,#ffffff,#cfe6f3);box-shadow:inset 0 -1px 0 rgba(0,0,0,.08)}
     @media (max-width:760px){#tabIndex{flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;padding-bottom:4px}}
     .bs-nav{display:none !important}`;
   document.head.appendChild(st);
@@ -13952,7 +13968,13 @@ loadRemoteData().then(live => {
     idx.querySelectorAll('button').forEach(b => b.onclick = () => { const el = items[+b.dataset.n][0]; const y = el.getBoundingClientRect().top + window.scrollY - 70; window.scrollTo({ top: y, behavior: 'smooth' }); });
   };
   const later = () => { clearTimeout(tm); tm = setTimeout(build, 350); };
-  new MutationObserver(muts => { if (muts.some(m => !idx.contains(m.target) && m.target !== H1)) later(); })
+  // le titre suit tout de suite (le sommaire, plus lourd, attend que la page ait fini de se dessiner)
+  const title = () => { if (!H1) return; const active = document.querySelector('#sideNav .sn-item.on') || document.querySelector('#viewToggle button.active');
+    const t = active && active.textContent.trim() ? active.textContent.trim() : H1_0, g = active && active.closest('.sn-group'), cb = g && g.querySelector('.sn-cat');
+    const cat = cb ? (cb.querySelector('.sn-lab') || cb.childNodes[0]).textContent.trim() : '';
+    const html = (cat ? `<span class="h1-cat">${cat}</span>` : '') + `<span class="h1-t">${t.replace(/</g, '&lt;')}</span>`; if (H1.innerHTML !== html) H1.innerHTML = html; };
+  document.addEventListener('click', e => { if (e.target.closest && e.target.closest('#sideNav .sn-item, #viewToggle button')) setTimeout(title, 0); }, true);
+  new MutationObserver(muts => { if (muts.some(m => !idx.contains(m.target) && m.target !== H1)) { title(); later(); } })
     .observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['style', 'class'] });
   window.addEventListener('hashchange', later); later();
 })();
@@ -14038,7 +14060,12 @@ loadRemoteData().then(live => {
   // ---- UI
   const nav = document.getElementById('sideNav');
   const box = document.createElement('div'); box.id = 'gsBox'; box.innerHTML = '<input id="gsQ" type="search" placeholder="Search: Lerøy lice, Mowi 6+, China…" autocomplete="off">';
-  if (nav) { const sub = nav.querySelector('#snSub'); (sub ? sub.after(box) : nav.prepend(box)); }
+  // grand ecran : barre de recherche en haut au centre (hors du menu, dont le verre flou capterait le positionnement fixe) ;
+  // telephone : dans le menu, collee en haut a cote du bouton de fermeture, elle reste accessible quand on fait defiler le menu
+  const placeBox = () => { const wide = matchMedia('(min-width:901px)').matches;
+    if (wide) { if (box.parentNode !== document.body) document.body.appendChild(box); }
+    else if (nav) { const top = nav.querySelector('.sn-top'); if (box.previousElementSibling !== top) (top ? top.after(box) : nav.prepend(box)); } };
+  placeBox(); matchMedia('(min-width:901px)').addEventListener('change', placeBox);
   const P = document.createElement('div'); P.id = 'gsPanel';
   P.innerHTML = '<div class="gs-h"><input id="gsQ2" type="search" placeholder="Company, subject, zone…" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"><button class="gs-x" type="button">Close ✕</button></div><div id="gsSug" role="listbox"></div><div class="gs-hint">A company and/or a subject, in English, French or Norwegian: <i>Lerøy lice</i>, <i>Mowi mortalité</i>, <i>SalMar 6+</i>, <i>Chine export</i>, <i>Kaldvík</i>. Results follow your typing; Esc to close.</div><div id="gsOut"></div>';
   document.body.appendChild(P);
@@ -14402,7 +14429,13 @@ loadRemoteData().then(live => {
     if (!idx.length) idx = [0, 1, 2, 3, 4, 5, 6];
     const C = (((typeof DATA_RAW !== 'undefined' && DATA_RAW ? DATA_RAW : {}).ssb_exports || {}).meta || {}).countries || {};
     const nm = c => EU_EXTRA[c] || (C[c] || {}).name || c;
-    const R0 = E.rows.filter(r => r[1] === mk.iso && idx.includes(r[3])), last = E.meta.last_period;
+    const R0 = E.rows.filter(r => r[1] === mk.iso && idx.includes(r[3]));
+    // dernier mois publie par Eurostat souvent partiel (les pays declarent en retard) : s'il pese moins de 40 % de la moyenne
+    // des 11 mois d'avant, on l'ecarte des totaux et on s'arrete au mois precedent
+    const prevM = k => (k % 100 === 1 ? k - 89 : k - 1);
+    let last = E.meta.last_period, partial = null;
+    { const tot = k => R0.reduce((a, r) => a + (r[0] === k ? r[5] : 0), 0); let k = prevM(last), sm = 0; for (let i = 0; i < 11; i++) { sm += tot(k); k = prevM(k); }
+      const lv = tot(last); if (sm && lv < 0.4 * sm / 11) { partial = [last, lv]; last = prevM(last); } }
     const ks = []; for (let i = 11; i >= 0; i--) { let y = Math.floor(last / 100), m = last % 100 - i; while (m < 1) { m += 12; y--; } ks.push(y * 100 + m); }
     const K = new Set(ks), Kp = new Set(ks.map(k => k - 100)), ml = x => `${MONTHS_FR[x % 100 - 1].slice(0, 3)} ${String(Math.floor(x / 100)).slice(2)}`;
     const t0 = v => v ? Math.round(v).toLocaleString('en-US') : '—', ep = (kg, eur) => kg ? (eur / kg).toFixed(2) : '—';
@@ -14420,7 +14453,7 @@ loadRemoteData().then(live => {
         `<table><tr><th>${flow === 1 ? 'Origin' : 'Destination'}</th><th>Tonnes, 12 months</th><th>Share</th><th>vs a year</th><th>€/kg</th></tr>` +
         L.slice(0, 10).map(([c, b]) => `<tr><td>${esc(nm(c))}</td><td>${t0(b[0])}</td><td>${T[0] ? (100 * b[0] / T[0]).toFixed(0) + ' %' : ''}</td><td>${chg(b[0], b[2])}</td><td>${ep(b[0], b[1])}</td></tr>`).join('') + `</table>` +
         `<table style="margin-top:4px"><tr><th>Month</th>${ks.map(k => `<th>${ml(k)}</th>`).join('')}</tr><tr><td>Tonnes</td>${ks.map(k => `<td>${t0((mon[k] || [])[0])}</td>`).join('')}</tr>` +
-        `<tr><td>a year earlier</td>${ks.map(k => `<td>${t0((monP[k] || [])[0])}</td>`).join('')}</tr>${(() => { const lv = (mon[ks[11]] || [0])[0], av = ks.slice(0, 11).reduce((a, k) => a + ((mon[k] || [0])[0]), 0) / 11; return lv < av * 0.4 ? `<tr><td colspan="13" style="color:#ffb74d;white-space:normal">${ml(ks[11])} looks incomplete (Eurostat often revises the latest month upward).</td></tr>` : ''; })()}<tr><td>€/kg</td>${ks.map(k => `<td>${mon[k] ? ep(mon[k][0], mon[k][1]) : '—'}</td>`).join('')}</tr></table>`; };
+        `<tr><td>a year earlier</td>${ks.map(k => `<td>${t0((monP[k] || [])[0])}</td>`).join('')}</tr>${(() => { const lv = (mon[ks[11]] || [0])[0], av = ks.slice(0, 11).reduce((a, k) => a + ((mon[k] || [0])[0]), 0) / 11; return lv < av * 0.4 ? `<tr><td colspan="13" style="color:#ffb74d;white-space:normal">${ml(ks[11])} looks incomplete (Eurostat often revises the latest month upward).</td></tr>` : (partial ? `<tr><td colspan="13" style="color:#ffb74d;white-space:normal">${ml(partial[0])} is published but still partial (${t0(partial[1])} t so far): left out of the totals until the countries have reported.</td></tr>` : ''); })()}<tr><td>€/kg</td>${ks.map(k => `<td>${mon[k] ? ep(mon[k][0], mon[k][1]) : '—'}</td>`).join('')}</tr></table>`; };
     const pl = idx.map(i => P[i].toLowerCase()).join(', ');
     return `<div class="gs-card"><h4>${esc(mk.name)} — salmon trade (${esc(pl)})${per ? '' : ' to ' + ml(last)}</h4><div class="s">Eurostat Comext, monthly, every origin and destination. Customs values: imports CIF, exports FOB, in € per kg of product.` +
       (mk.iso === 'PL' || mk.iso === 'DK' ? ' Imports "from Sweden" or "from Denmark" are mostly Norwegian salmon trucked through those countries.' : '') + `</div>` +
