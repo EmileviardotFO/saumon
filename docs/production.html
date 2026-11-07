@@ -12960,6 +12960,8 @@ loadRemoteData().then(live => {
     /* sur telephone : on garde l'essentiel (la fourchette et la part de cycles malades restent sur grand ecran) */
     #tasCo .tas-long{display:none}
     #tasCo th:nth-child(2),#tasCo td:nth-child(2),#tasCo th:nth-child(4),#tasCo td:nth-child(4),#tasCo th:nth-child(7),#tasCo td:nth-child(7){display:none} }
+  body.fab-hide #snBurger, body.fab-hide #gsFab{transform:translateY(-80px);opacity:0;pointer-events:none}
+  #snBurger, #gsFab{transition:transform .2s ease, opacity .2s ease}
   #snBurger{display:none;position:fixed;left:10px;top:calc(10px + env(safe-area-inset-top,0px));z-index:950;padding:7px 12px;border-radius:8px;border:1px solid #2a4352;background:#0d1a24;color:#e7eef2;font-size:18px;cursor:pointer}
   #snShade{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:880}
   #viewToggle{display:none!important}
@@ -12986,6 +12988,9 @@ loadRemoteData().then(live => {
     CATS.map(([c, L], i) => `<div class="sn-group${closed[i] ? ' closed' : ''}" data-g="${i}"><button type="button" class="sn-cat" aria-expanded="${!closed[i]}">${c}<span>${closed[i] ? '▸' : '▾'}</span></button>` +
       L.filter(btn).map(v => `<button type="button" class="sn-item" data-v="${v}">${btn(v).textContent.trim()}</button>`).join('') + `</div>`).join('');
   document.body.prepend(nav);
+  // telephone : les boutons fixes (menu, loupe) s'effacent quand on descend dans la page et reviennent des qu'on remonte
+  { let lastY = 0, tick = false; window.addEventListener('scroll', () => { if (tick) return; tick = true; requestAnimationFrame(() => { const y = window.scrollY, hide = y > 120 && y > lastY + 4 && !document.body.classList.contains('sn-open');
+      if (Math.abs(y - lastY) > 4) { document.body.classList.toggle('fab-hide', hide); lastY = y; } tick = false; }); }, { passive: true }); }
   const burger = document.createElement('button'); burger.id = 'snBurger'; burger.type = 'button'; burger.setAttribute('aria-label', 'Open the menu'); burger.textContent = '☰'; document.body.prepend(burger);
   const shade = document.createElement('div'); shade.id = 'snShade'; document.body.prepend(shade);
   const setOpen = o => { document.body.classList.toggle('sn-open', o); burger.textContent = o ? '✕' : '☰';
@@ -13851,22 +13856,33 @@ function renderSupply() {
   const card = (lab, big, sub, c) => `<div class="pr-card" style="cursor:default"><div class="nm"><i style="background:${c}"></i>${lab}</div><div class="big">${big}</div><div class="ln">${sub}</div></div>`;
   // ---- graphique : volume 2025 par bassin et sens attendu pour 2027
   const rows = B.filter(b => b.v2025).map(b => [b.name === 'Canada' ? 'North America' : b.name, b.v2025, b.dir, b.id]).concat([['Other Europe (Iceland, Ireland)', 63, 'flat', 'IS'], ['Other (incl. Australia)', 107, 'up', 'AU']]);
-  const mx = Math.max(...rows.map(r => r[1])), Wd = 1000, rh = 38, H = rows.length * rh + 30, L = 230;
+  const NAR = window.innerWidth < 700, FS = NAR ? 20 : 15;   // telephone : dessin plus etroit, textes plus gros (le SVG est mis a l'echelle)
+  const mx = Math.max(...rows.map(r => r[1])), Wd = NAR ? 560 : 1000, rh = NAR ? 44 : 38, H = rows.length * rh + 30, L = NAR ? 175 : 230;
   const col = d => d === 'up' ? '#7ed98f' : d === 'down' ? '#ff8a65' : '#8fa4b0';
   let g = '';
   rows.forEach((r, i) => { const y = 10 + i * rh, w = Math.max(4, (Wd - L - 150) * r[1] / mx);
-    g += `<text x="${L - 10}" y="${y + 21}" text-anchor="end" fill="#e7eef2" font-size="15">${e(r[0])}</text>` +
+    g += `<text x="${L - 10}" y="${y + 21}" text-anchor="end" fill="#e7eef2" font-size="${FS}">${e(NAR ? r[0].replace(/ \(.*\)/, '').replace('North America', 'N. America').replace('Other Europe', 'Other Eur.') : r[0])}</text>` +
       `<rect x="${L}" y="${y + 5}" width="${w.toFixed(1)}" height="24" rx="4" fill="#4fc3f7" fill-opacity=".75"><title>${e(r[0])}: ${f0(r[1])} kt gutted weight in 2025</title></rect>` +
-      `<text x="${L + w + 8}" y="${y + 22}" fill="#cfdde4" font-size="14">${f0(r[1])} kt</text>` +
-      `<text x="${L + w + 78}" y="${y + 23}" fill="${col(r[2])}" font-size="18" font-weight="bold">${AR[r[2]][1]}</text>`; });
+      `<text x="${L + w + 8}" y="${y + 22}" fill="#cfdde4" font-size="${FS - 1}">${f0(r[1])} kt</text>` +
+      `<text x="${L + w + (NAR ? 92 : 78)}" y="${y + 23}" fill="${col(r[2])}" font-size="${FS + 4}" font-weight="bold">${AR[r[2]][1]}</text>`; });
   const chart = `<svg viewBox="0 0 ${Wd} ${H}" style="width:100%;height:auto;display:block">${g}</svg>` +
     `<div class="sig-sub">Bars: 2025 supply in thousand tonnes gutted weight (Kontali, via Mowi). Arrow: direction expected for 2027 (<b style="color:#7ed98f">↑ up</b>, <b>→ flat</b>, <b style="color:#ff8a65">↓ down</b>), from the basin summaries below.</div>`;
+  // ---- graphique 2 : variation attendue en 2027, fourchette par bassin (lecture des syntheses ci-dessous)
+  const RG = [['World', (W.r2027 || [0, 0]), 'world'], ...B.filter(b => b.r2027).map(b => [b.name, b.r2027, b.dir])];
+  const xmin = -20, xmax = 20, L2 = NAR ? 175 : 230, W2 = NAR ? 560 : 1000, X = v => L2 + (W2 - L2 - (NAR ? 70 : 40)) * (v - xmin) / (xmax - xmin), rh2 = NAR ? 40 : 34, H2 = RG.length * rh2 + 50;
+  let g2 = [-20, -10, 0, 10, 20].map(v => `<line x1="${X(v)}" x2="${X(v)}" y1="8" y2="${H2 - 30}" stroke="${v ? '#1e3442' : '#5d7685'}" stroke-dasharray="${v ? '3 4' : ''}"/><text x="${X(v)}" y="${H2 - 12}" text-anchor="middle" fill="#8fa4b0" font-size="${FS - 2}">${v > 0 ? '+' : ''}${v} %</text>`).join('');
+  RG.forEach(([n, r, d], i) => { const y = 14 + i * rh2, c = d === 'world' ? '#e7eef2' : col(d), a = Math.max(xmin, r[0]), z = Math.min(xmax, r[1]);
+    g2 += `<text x="${L2 - 10}" y="${y + 15}" text-anchor="end" fill="${d === 'world' ? '#fff' : '#e7eef2'}" font-size="${FS}"${d === 'world' ? ' font-weight="bold"' : ''}>${e(NAR ? n.replace(/ \(.*\)/, '') : n)}</text>` +
+      `<rect x="${X(a)}" y="${y + 3}" width="${Math.max(6, X(z) - X(a)).toFixed(1)}" height="16" rx="8" fill="${c}" fill-opacity=".8"><title>${e(n)}: ${r[0] > 0 ? '+' : ''}${r[0]} % to ${r[1] > 0 ? '+' : ''}${r[1]} % in 2027</title></rect>` +
+      `<text x="${X(z) + 10}" y="${y + 16}" fill="#cfdde4" font-size="${FS - 2}">${r[0] === r[1] ? '' : (r[0] > 0 ? '+' : '') + r[0] + ' to '}${r[1] > 0 ? '+' : ''}${r[1]} %</text>`; });
+  const chart2 = `<svg viewBox="0 0 ${W2} ${H2}" style="width:100%;height:auto;display:block">${g2}</svg>` +
+    `<div class="sig-sub">Change in volume expected for 2027 against 2026, as a range — our reading of the basin summaries below (company guidance, fish in the sea, analysts). The wider the bar, the more uncertain the basin.</div>`;
   // ---- articles relatifs aux projections, par bassin
   const KW = /2027|guidance|forecast|outlook|supply|harvest (volume|guidance|forecast|estimate|record|cut|down|up)|harvest|biomass|smolt|capacity|licen[cs]e|quota|\bban\b|tariff|mortalit|el ni[ñn]o|alga|bloom|\bISA\b|\bcut\b|growth|prognos|slaktevolum|cosecha|siembra|producci[óo]n|production|lice/i;
   const SAL = /salmon|laks|salm[óo]n|lax|salmo|trout|aquacult|fish farm/i;
   const N = SUP_NEWS || {}, seen = new Set(), A = [];
   const add = (d, t, u, src, b, sum) => { if (!t || !d) return; const k = t.toLowerCase().replace(/\W+/g, ' ').slice(0, 70); if (seen.has(k)) return; seen.add(k);
-    const bs = [].concat(b || []).filter(Boolean); if (!KW.test(t + ' ' + (sum || ''))) return; if (bs.some(x => /FEED/.test(x)) && !SAL.test(t)) return; if ((!bs.length || bs.includes('global')) && !SAL.test(t + ' ' + (sum || ''))) return;
+    const bs = [].concat(b || []).filter(Boolean); if (!bs.some(x => x === 'AU' || x === 'CA') && !KW.test(t + ' ' + (sum || ''))) return;   // Australie, Canada : peu d'articles, tous gardes if (bs.some(x => /FEED/.test(x)) && !SAL.test(t)) return; if ((!bs.length || bs.includes('global')) && !SAL.test(t + ' ' + (sum || ''))) return;
     A.push({ d: String(d).slice(0, 10), t, u, src, b: bs.length ? bs : ['global'], sum }); };
   ((N.st || {}).stories || []).forEach(s => { const a = s.arts || []; const best = a.find(x => x.access === 'free') || a[0] || {}; add(s.last || best.date, s.title, best.url, (best.source ? best.source + ' · ' : '') + `summary of ${a.length} article${a.length === 1 ? '' : 's'}`, s.basin, s.summary); });
   ((N.a || {}).stories || []).forEach(s => { const a = s.a || []; const best = a.find(x => x.x === 'free') || a[0] || {}; add(s.z || s.f || (a[0] || {}).d, s.t, best.u, best.s, s.b, s.m); });
@@ -13891,6 +13907,7 @@ function renderSupply() {
       card('2026', e(W.y2026), e(W.y2026_note), '#81c784') + card('2027', e(W.y2027), e(W.y2027_note), '#ffb74d') +
       card('Basins up / flat / down in 2027', `${B.filter(b => b.dir === 'up').length} · ${B.filter(b => b.dir === 'flat').length} · ${B.filter(b => b.dir === 'down').length}`, B.map(b => `${e(b.name.split(' (')[0])} ${AR[b.dir][1]}`).join(' · '), '#ce93d8') + `</div>` +
     `<div class="sup-sec">Who produces the salmon, and where it is going</div>${chart}` +
+    `<div class="sup-sec">How much more (or less) salmon in 2027, basin by basin</div>${chart2}` +
     `<div class="sup-sec">Basin by basin</div><div class="sup-grid">${[...B].sort((a, b) => (b.v2025 || 50) - (a.v2025 || 50)).map(bcard).join('')}</div>` +
     `<div class="sup-sec">What could change the picture in 2027</div><div class="sup-risk">${(W.risks || []).map(r => `<div class="sup-r"><span class="sup-tag">${e(r.k)}</span>${e(r.t)}</div>`).join('')}</div>` +
     `<div class="sup-sec">Articles on supply, volumes and regulation — by basin</div><div class="sig-sub">Every press article of the dashboard that talks about harvest, guidance, biomass, smolts, capacity, licences, tariffs, mortality or the 2027 outlook, newest first; unsorted for now.</div>` +
