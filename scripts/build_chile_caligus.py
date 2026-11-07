@@ -30,7 +30,7 @@ def parse(pdf_bytes):
                 # « NOM CENTRE  EMPRESA » : la societe commence au premier mot de raison sociale connu
                 mm = re.search(r'\s((?:[A-ZÁÉÍÓÚÑ.,&]+\s)*?(?:S\.A\.|S\.A|LTDA\.?|LIMITADA|SPA|SpA)\.?(?:,\s*[A-ZÁÉÍÓÚÑ ]+)?)$', mid)
                 rows.append({'n': int(n), 'code': code, 'site_company': mid, 'region': {'X': 'Los Lagos', 'XI': 'Aysén', 'XII': 'Magallanes'}.get(reg, reg),
-                             'acs': acs.replace(' ', ''), 'sp': {'S.A.': 'atlantic', 'T.A.': 'trout', 'S.C.': 'coho', 'O.K.': 'coho'}.get(sp, sp), 'week': f'{yr}-W{wk}'})
+                             'acs': acs.replace(' ', ''), 'sp': {'S.A': 'atlantic', 'T.A': 'trout', 'S.C': 'coho', 'O.K': 'coho'}.get(sp.rstrip('.'), sp), 'week': f'{yr}-W{wk}'})
     return rows
 
 

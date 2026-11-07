@@ -22,7 +22,7 @@ SP = [('atlantic', r'salmondelatlantico'), ('coho', r'salmon(plateado)?(o)?coho|
 
 
 def flat(t):
-    t = unicodedata.normalize('NFKD', t.replace('´', '').replace('˜', '')).encode('ascii', 'ignore').decode().lower()
+    t = unicodedata.normalize('NFKD', t.replace('´', '').replace('˜', '').replace('ı', 'i')).encode('ascii', 'ignore').decode().lower()
     return re.sub(r'\s+', '', t)
 
 
@@ -39,17 +39,21 @@ def pdf_text(url):
 
 
 def species_rows(text):
-    """Lignes « Espece  N-1  N  ... » : premier couple de nombres apres le nom de l'espece."""
+    """Lignes de tableau « Espece  N-1  N  [ecart]  variation% » ; une ligne n'est gardee que si la variation imprimee
+    correspond aux deux chiffres (evite de lire une autre serie)."""
     out = {}
     for line in text.splitlines():
         f = flat(line)
         for k, pat in SP:
-            m = re.match(r'(' + pat + r')([\d.,\-]+)', f)
-            if m and k not in out:
-                nums = [n for n in re.findall(r'(?<![\d,])\d{1,3}(?:\.\d{3})*(?:,\d+)?(?![\d])', line)]
-                if len(nums) >= 2:
-                    try: out[k] = [num(nums[0]), num(nums[1])]
-                    except ValueError: pass
+            if k in out or not re.match(r'(' + pat + r')-?\d', f): continue
+            nums = re.findall(r'-?(?<![\d,])\d{1,3}(?:\.\d{3})*(?:,\d+)?(?![\d])', line)
+            if len(nums) < 3: continue
+            try:
+                a, b = num(nums[0]), num(nums[1])
+                var = 100 * (b / a - 1) if a else None
+                if var is not None and any(abs(num(v) - var) <= 0.35 for v in nums[2:5]): out[k] = [a, b]
+            except (ValueError, ZeroDivisionError):
+                pass
     return out
 
 
