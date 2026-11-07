@@ -1,0 +1,34 @@
+name: Collecte AIS des wellboats (aisstream)
+# Toutes les 2 heures : 20 minutes d'ecoute du flux AIS gratuit d'aisstream.io sur les regions salmonicoles ;
+# les wellboats reperes et leurs positions vont dans data/ais/ (scripts/collect_ais.py).
+on:
+  schedule:
+    - cron: '17 */2 * * *'
+  workflow_dispatch: {}
+permissions:
+  contents: write
+concurrency:
+  group: collecte-ais
+  cancel-in-progress: false
+jobs:
+  ais:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -q websockets
+      - name: Ecoute AIS
+        env:
+          AISSTREAM_KEY: ${{ secrets.AISSTREAM_KEY || secrets.AISTREAM_KEY }}
+          AIS_SECONDS: '1200'
+        run: python3 scripts/collect_ais.py
+      - name: Enregistrer
+        run: |
+          git config user.name "github-actions"; git config user.email "actions@github.com"
+          git add data/ais
+          if git diff --staged --quiet; then echo "Aucun changement."; else
+            git commit -q -m "AIS wellboats ($(date -u +%Y-%m-%dT%H:%M))"
+            for i in 1 2 3; do git pull -q --rebase && git push -q && break; sleep 10; done; fi
