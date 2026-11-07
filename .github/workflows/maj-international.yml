@@ -145,6 +145,14 @@ jobs:
       continue-on-error: true
       timeout-minutes: 10
       run: pip install -q pdfplumber && python3 scripts/build_canada_atlantic.py
+    - name: Canada atlantique - alerte si nouvelle AIS ou nouvelle condition au Nouveau-Brunswick
+      continue-on-error: true
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        if [ -s data/canada_atl_new_alerts.md ]; then
+          gh issue create --title "Canada atlantique - sante : nouveautes ($(date -u +%Y-%m-%d))" --body-file data/canada_atl_new_alerts.md
+        fi
     - name: Feroe - poissons par ferme (Bakkafrost, mensuel), recolte et registre des zones
       id: faroe
       continue-on-error: true

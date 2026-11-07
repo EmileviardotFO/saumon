@@ -353,6 +353,28 @@ def main():
     out['isa'] = step('isa', isa_table, [])
     cond = step('nb_registry', nb_registry, ([], []))
     out['nb_conditions'], out['nb_escapes'] = cond if isinstance(cond, tuple) else (old.get('nb_conditions', []), old.get('nb_escapes', []))
+    # date a laquelle nous avons vu chaque ligne pour la premiere fois (mesure le retard de publication) et alertes des nouveautes
+    today, alerts = time.strftime('%Y-%m-%d'), []
+    def mark(new, prev, key, label, fmt):
+        seen = {}
+        for r in prev or []: seen.setdefault(key(r), []).append(r.get('first_seen'))
+        for r in new:
+            k = key(r)
+            if seen.get(k): r['first_seen'] = seen[k].pop(0)   # None : deja la avant que l'on note les dates
+            else:
+                r['first_seen'] = today
+                if prev: alerts.append(f'- {label} : {fmt(r)}')
+    mark(out['isa'], old.get('isa'), lambda r: (r['year'], r['date'], r['prov'], r['species']), 'AIS (CFIA)', lambda r: f"{r['date']} {r['year']}, {r['prov']}, {r['species']}")
+    mark(out['nb_conditions'], old.get('nb_conditions'), lambda r: (r['date'], r['area'], r['type'], r['action']), 'Nouveau-Brunswick, condition a declaration obligatoire',
+         lambda r: f"{r['date']}, {r['area']}, {r['type']} - {r['action']}")
+    mark(out['nb_escapes'], old.get('nb_escapes'), lambda r: (r['date'], r['area'], r['type'], r.get('fish')), 'Nouveau-Brunswick, evasion (rapport final)',
+         lambda r: f"{r['date']}, zone {r['area']}, {r['type']}, {r.get('fish') or '?'} poissons")
+    AL = os.path.join(ROOT, 'data', 'canada_atl_new_alerts.md')
+    if alerts:
+        open(AL, 'w', encoding='utf-8').write('Nouveautes sanitaires au Canada atlantique depuis la derniere lecture :\n\n' + '\n'.join(alerts) +
+                                             '\n\nSources : CFIA (sites infectes par l\'AIS) et registre aquacole du Nouveau-Brunswick (conditions a declaration obligatoire).\n')
+        print(len(alerts), 'alerte(s) ecrite(s)')
+    elif os.path.exists(AL): os.remove(AL)
     sc = step('statcan', statcan, ({}, {}))
     out['production'], out['exports'] = sc if isinstance(sc, tuple) else (old.get('production', {}), old.get('exports', {}))
     out['ns_county'] = step('ns_county', ns_county, {})
