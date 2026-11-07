@@ -8561,6 +8561,8 @@ function renderMarketsView() {
 
   const num = (v, d) => (v === null || v === undefined || !isFinite(v)) ? '—'
     : v.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+  // prix = valeur / volume ; masque quand la source donne un volume ou une valeur negatifs (corrections d'Akvafakta)
+  const mPx = (v, q) => q > 0 && v >= 0 ? v / q : null;
   const pcOf = (a, b) => (a === null || b === null || b === undefined || !b) ? null : (a - b) / b * 100;
   const dcell = (a, b, cls) => {
     const c = ' class="' + (cls || '') + ' ';
@@ -8616,9 +8618,9 @@ function renderMarketsView() {
       `<td class="name"><span style="color:${GRP_COLORS[g.g] || '#8CA6B0'}">■</span> <b>${GRP_LABEL[g.g] || g.g}</b>`
       + `<small>${g.list.length} destination${g.list.length > 1 ? 's' : ''} · click to fold</small></td>`
       + `<td class="mkt-c-q"><b>${num(g.q / 1000, 1)} kt</b></td><td class="mkt-c-q">${num(g.pq / 1000, 1)} kt</td>` + dcell(g.q, g.pq, 'mkt-c-q')
-      + `<td class="sep-left mkt-c-p"><b>${num(g.q > 0 ? g.v / g.q : null, 2)}</b></td>`
-      + `<td class="mkt-c-p">${num(g.pq > 0 ? g.pv / g.pq : null, 2)}</td>`
-      + dcell(g.q > 0 ? g.v / g.q : null, g.pq > 0 ? g.pv / g.pq : null, 'mkt-c-p')
+      + `<td class="sep-left mkt-c-p"><b>${num(mPx(g.v, g.q), 2)}</b></td>`
+      + `<td class="mkt-c-p">${num(mPx(g.pv, g.pq), 2)}</td>`
+      + dcell(mPx(g.v, g.q), mPx(g.pv, g.pq), 'mkt-c-p')
       + `<td class="sep-left mkt-c-v"><b>${num(g.v / 1e6, 2)} bn</b></td><td class="mkt-c-v">${num(g.pv / 1e6, 2)} bn</td>` + dcell(g.v, g.pv, 'mkt-c-v');
     tb.appendChild(tr);
     const kids = [];
@@ -8629,9 +8631,9 @@ function renderMarketsView() {
         `<td class="name" style="padding-left:28px;color:var(--muted)">${r.pays === 'Autres' ? 'Other (below reporting threshold)' : r.pays}`
         + `<small>${num(r.q / tot * 100, 1)}% of the shown total</small></td>`
         + `<td class="mkt-c-q">${num(r.q / 1000, 1)} kt</td><td class="mkt-c-q">${b ? num(b.q / 1000, 1) + ' kt' : '—'}</td>` + dcell(r.q, b && b.q, 'mkt-c-q')
-        + `<td class="sep-left mkt-c-p">${num(r.q > 0 ? r.v / r.q : null, 2)}</td>`
-        + `<td class="mkt-c-p">${b && b.q > 0 ? num(b.v / b.q, 2) : '—'}</td>`
-        + dcell(r.q > 0 ? r.v / r.q : null, b && b.q > 0 ? b.v / b.q : null, 'mkt-c-p')
+        + `<td class="sep-left mkt-c-p">${num(mPx(r.v, r.q), 2)}</td>`
+        + `<td class="mkt-c-p">${b && mPx(b.v, b.q) !== null ? num(mPx(b.v, b.q), 2) : '—'}</td>`
+        + dcell(mPx(r.v, r.q), (b ? mPx(b.v, b.q) : null), 'mkt-c-p')
         + `<td class="sep-left mkt-c-v">${num(r.v / 1e6, 2)} bn</td><td class="mkt-c-v">${b ? num(b.v / 1e6, 2) + ' bn' : '—'}</td>` + dcell(r.v, b && b.v, 'mkt-c-v');
       tb.appendChild(t2); kids.push(t2);
     });
@@ -8653,9 +8655,9 @@ function renderMarketsView() {
   trTot.innerHTML =
     `<td class="name"><b>Total${mktGroup !== 'all' ? ' — ' + (GRP_LABEL[mktGroup] || mktGroup) : ''}</b></td>`
     + `<td class="mkt-c-q"><b>${num(totQ / 1000, 1)} kt</b></td><td class="mkt-c-q">${num(totPQ / 1000, 1)} kt</td>` + dcell(totQ, totPQ, 'mkt-c-q')
-    + `<td class="sep-left mkt-c-p"><b>${num(totQ > 0 ? totV / totQ : null, 2)}</b></td>`
-    + `<td class="mkt-c-p">${num(totPQ > 0 ? totPV / totPQ : null, 2)}</td>`
-    + dcell(totQ > 0 ? totV / totQ : null, totPQ > 0 ? totPV / totPQ : null, 'mkt-c-p')
+    + `<td class="sep-left mkt-c-p"><b>${num(mPx(totV, totQ), 2)}</b></td>`
+    + `<td class="mkt-c-p">${num(mPx(totPV, totPQ), 2)}</td>`
+    + dcell(mPx(totV, totQ), mPx(totPV, totPQ), 'mkt-c-p')
     + `<td class="sep-left mkt-c-v"><b>${num(totV / 1e6, 2)} bn</b></td><td class="mkt-c-v">${num(totPV / 1e6, 2)} bn</td>` + dcell(totV, totPV, 'mkt-c-v');
   tb.appendChild(trTot);
 
@@ -13627,9 +13629,22 @@ function renderEuFlows() {
       `<td>${pac ? '—' : tN ? (100 * a[0] / tN).toFixed(1) + '%' : '—'}</td><td class="${tmCls(a[0] - b[0], 50)}">${tmSg(a[0] - b[0])}</td>${tmPct(a[0], b[0])}` +
       `<td class="sep-left">${price}</td><td class="sep-left" style="text-align:left;font-size:11px">${src}</td></tr>`; }).join('') +
     `<tr><td class="name" style="color:var(--accent)">Total Atlantic salmon</td><td><b>${tmF0(tN)}</b></td><td>100%</td><td class="${tmCls(tN - tP, 50)}">${tmSg(tN - tP)}</td>${tmPct(tN, tP)}<td class="sep-left"></td><td class="sep-left"></td></tr>` +
-    (euCty === 'CH' && TM.chNative ? `<tr><td colspan="7" class="name" style="font-weight:normal;color:var(--muted);font-size:11px;white-space:normal">EU countries of origin: ${(() => { const T6 = { '0302.14': 0, '0303.13': 1, '0304.41': 2, '0304.81': 3, '0305.41': 5 }, ks = new Set(keys), fs = new Set(forms), EU27 = new Set(EU.meta.reporters_up), g = {};
-        EU_WI.ch.rows.forEach(([ym, tn, c, kg]) => { const pi = T6[tn.slice(0, 7)]; if (!ks.has(ym) || !fs.has(pi) || !EU27.has(c) || c === 'IE') return; g[c] = (g[c] || 0) + kg / 1000; });
-        return Object.entries(g).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([c, t]) => `${euName(c)} ${tmF0(t)} t`).join(' · ') || '—'; })()}. Under Swiss origin rules, Norwegian salmon smoked or filleted in Poland or Germany becomes Polish or German; whole fish only trucked through the EU keeps its Norwegian origin.</td></tr>`
+    (euCty === 'CH' && TM.chNative ? `<tr><td colspan="7" class="name" style="font-weight:normal;white-space:normal;padding-top:12px">${(() => {
+        // detail par pays d'origine europeen (douanes suisses) : volume, prix, et la forme du produit
+        const T6 = { '0302.14': 0, '0303.13': 1, '0304.41': 2, '0304.81': 3, '0305.41': 5 }, kN = new Set(keys), kB = new Set(kP), fs = new Set(forms), EU27 = new Set(EU.meta.reporters_up), G = {};
+        EU_WI.ch.rows.forEach(([ym, tn, c, kg, chf, eur]) => { const pi = T6[tn.slice(0, 7)], cur = kN.has(ym), prv = kB.has(ym); if ((!cur && !prv) || !fs.has(pi) || !(EU27.has(c) || c === 'NO')) return;
+          const o = G[c] || (G[c] = { n: [0, 0], p: [0, 0], f: {} }), x = cur ? o.n : o.p; x[0] += kg / 1000; x[1] += eur / 1000; if (cur) { const y = o.f[pi] || (o.f[pi] = [0, 0]); y[0] += kg / 1000; y[1] += eur / 1000; } });
+        const px = x => x && x[0] > 0.05 && x[1] >= 0 ? x[1] / x[0] : null, f2 = v => v === null ? '—' : v.toFixed(2), fT = v => v < 1 ? v.toFixed(1) : tmF0(v);
+        const FC = forms.filter(pi => Object.values(G).some(o => o.f[pi] && o.f[pi][0] >= 0.5));
+        const L = Object.entries(G).filter(([c, o]) => c !== 'NO' && (o.n[0] >= 0.5 || (o.p[0] >= 5 && o.n[0] >= 0.05))).sort((x, y) => y[1].n[0] - x[1].n[0]);
+        const row = ([c, o], ref) => { const d = o.p[0] ? 100 * (o.n[0] / o.p[0] - 1) : null, pn = px(o.n), pp = px(o.p);
+          return `<tr${ref ? ' style="color:var(--muted)"' : ''}><td style="text-align:left">${ref ? 'Norway (for comparison)' : euName(c)}</td><td>${fT(o.n[0])}</td><td>${d === null ? '—' : tmVar(d, 5)}</td><td><b>${f2(pn)}</b></td><td>${f2(pp)}</td>` +
+            FC.map(pi => { const y = o.f[pi]; return y && y[0] >= 0.05 ? `<td>${fT(y[0])} t <span style="color:var(--muted)">· ${f2(px(y))}</span></td>` : '<td style="color:var(--muted)">—</td>'; }).join('') + `</tr>`; };
+        if (!L.length) return 'No salmon of EU origin in this period.';
+        return `<div style="font-size:12.5px;font-weight:600;margin-bottom:6px">EU countries of origin — volume, price (€/kg) and form, ${plab}</div>` +
+          `<div style="overflow-x:auto"><table class="sum-table" style="font-size:12px;min-width:640px"><tr><th style="text-align:left">Origin</th><th>Tonnes</th><th>Δ vs N-1</th><th>€/kg</th><th>€/kg N-1</th>${FC.map(pi => `<th>${P[pi]}<br><span style="font-weight:normal">t · €/kg</span></th>`).join('')}</tr>` +
+          L.map(r => row(r)).join('') + (G.NO ? row(['NO', G.NO], true) : '') + `</table></div>` +
+          `<div style="color:var(--muted);font-size:11px;margin-top:6px">Swiss customs, values in euros as published, prices = value ÷ net weight. Under Swiss origin rules, Norwegian salmon smoked or filleted in Poland or Germany becomes Polish or German; whole fish only trucked through the EU keeps its Norwegian origin. The Δ column compares with the same months a year earlier.</div>`; })()}</td></tr>`
     : `<tr><td colspan="7" class="name" style="font-weight:normal;color:var(--muted);font-size:11px;white-space:normal">All arrivals from other EU countries, gross (they include Norwegian salmon already counted under Norway): ${hubTxt || '—'}.</td></tr>`) +
     (N._over > 1 ? `<tr><td colspan="7" class="name" style="font-weight:normal;color:#ffb74d;font-size:11px">The producing countries' export statistics (${['Norway'].concat(NATO.map(g => ORIG_LAB[g])).join(', ')}) declare ${tmF0(N._over)} t more for ${euName(euCty)} than ${euName(euCty)} records as imports over the period — small importers exempt from EU-internal trade declarations, timing, or salmon re-sold before arrival. The total shown is the higher figure.</td></tr>` : '');
 
