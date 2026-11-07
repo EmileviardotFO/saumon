@@ -42,7 +42,7 @@ jobs:
       continue-on-error: true
       timeout-minutes: 10
       run: python3 scripts/update_news.py
-    - name: Page d'accueil This week - sujets par bassin et entreprise (resumes en anglais)
+    - name: Page d'accueil This week - sujets par bassin et entreprise (resumes en anglais ; Claude ne lit que les titres nouveaux)
       id: stories
       continue-on-error: true
       timeout-minutes: 10
@@ -58,8 +58,7 @@ jobs:
       id: quarterly
       continue-on-error: true
       timeout-minutes: 15
-      env:
-        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      # sans cle : gratuit (trading updates lus par regles) ; les rapports complets sont saisis par les taches planifiees aux dates de publication
       run: python3 scripts/build_quarterly.py
     - name: Enregistrer l'etat des sources dans data.json
       if: always()

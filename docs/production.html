@@ -1543,6 +1543,9 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="sig-title" style="margin-top:18px">Mortality: causes, species, regions, health programmes</div>
     <div class="sig-sub" id="clHealthSub"></div>
     <div id="clHealth"></div>
+    <div class="sig-title" style="margin-top:18px">Chile in brief — production by year, export value, US tariff, events, sources</div>
+    <div class="sig-sub">Brought over from the first Chile page (chili.html) so that nothing is lost: yearly production by species, what Chile earns per product, the US tariff, dated events, and how late each Chilean source publishes. Destinations month by month are in <span class="gs-go" onclick="gsGoTab('producers')">Producing countries</span>; the tariff in detail in the <span class="gs-go" onclick="gsGoTab('usa')">USA</span> tab.</div>
+    <div id="clBrief"></div>
   </div>
 
   <div class="panel" id="producersView" style="flex:1; min-width:0; max-width:1600px; display:none;">
@@ -5184,6 +5187,25 @@ function clSubpesca() {
   const st = [['salar', 'Atlantic salmon', '#4fc3f7'], ['coho', 'Coho', '#ffb74d'], ['trucha', 'Rainbow trout', '#81c784']].map(([sp, lab, col]) => ({ lab, col, vals: qs.map(q => F.filter(f => f.sp === sp && qk(f.date) === q).reduce((a, f) => a + f.fish, 0) / 1e6) }));
   $c('clStkChart').innerHTML = typeof vzStack === 'function' ? vzStack(qs, st, { axis: 'Million fish (quarter of the resolution)', unit: 'M fish', H: 210 }) + vzLegend(st.map(x => [x.lab, x.col, false, true])) : '';
 }
+function clBrief(D) {
+  const el = document.getElementById('clBrief'); if (!el || !D) return;
+  const e = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), f0 = v => v === null || v === undefined ? '—' : Math.round(v).toLocaleString('en-US');
+  const P = D.provenance || {}, src = c => `<span title="${e(P[c] || c)}" style="color:var(--muted);font-size:11px">${e(c)}</span>`;
+  const SP = { salar: 'Atlantic salmon', coho: 'Coho', trucha: 'Rainbow trout' };
+  const prod = (D.prod || []).map(r => `<tr><td class="name">${r.year}</td><td>${f0(r.total_t)}</td><td>${r.especes ? f0(r.especes.salar) : r.part_pct ? r.part_pct.salar + ' %' : '—'}</td><td>${r.especes ? f0(r.especes.coho) : r.part_pct ? r.part_pct.coho + ' %' : '—'}</td><td>${r.especes ? f0(r.especes.trucha) : r.part_pct ? r.part_pct.trucha + ' %' : '—'}</td><td style="text-align:left;white-space:normal;font-size:12px">${r.base === 'WFE' ? 'whole-fish equivalent' : 'as declared'}${r.derive ? ', rebuilt from published growth' : ''} ${src(r.src)}</td></tr>`).join('');
+  const mix = (D.export_mix_produit || []).map(r => `<div style="display:flex;align-items:center;gap:8px;margin:3px 0"><span style="width:150px;font-size:12px">${e(r.produit.replace('Filet frais', 'Fresh fillet').replace('Filet congele', 'Frozen fillet').replace(' salar', ', Atlantic').replace('Entier frais', 'Fresh whole').replace('congele', 'frozen').replace('Autres formats', 'Other forms'))}</span><span style="height:12px;width:${r.part_valeur_pct * 4}px;background:#4fc3f7;border-radius:3px"></span><b style="font-size:12px">${r.part_valeur_pct} %</b></div>`).join('');
+  const T = D.tarif || {}, ev = (D.evenements || []).slice().sort((a, b) => b.date.localeCompare(a.date));
+  const lat = (D.latence || []).map(r => `<tr><td class="name" style="text-align:left">${e(P[r.source] || r.source)}</td><td>${r.cadence === 'mensuelle' ? 'monthly' : r.cadence === 'semestrielle' ? 'half-yearly' : r.cadence === 'trimestrielle' ? 'quarterly' : e(r.cadence)}</td><td>${r.retard_semaines} weeks</td><td>${e(r.dernier)}</td></tr>`).join('');
+  el.innerHTML = `<div class="pr-cards">` +
+    `<div class="pr-card" style="cursor:default"><div class="nm"><i style="background:#ff8a65"></i>US tariff on Chilean salmon</div><div class="big">${T.taux_apres_pct ?? '—'} %</div><div class="ln">from ${T.taux_avant_pct} % on ${e(T.entree_vigueur)}; the US takes ${T.part_us_dans_envois_pct} % of Chile's salmon shipments (about $${f0(T.assiette_usd_m_an)} M a year): +$${f0(T.surcout_incremental_usd_m_an)} M a year of extra duty. ${src(T.src)}</div></div>` +
+    (D.mix_centres_espece || []).map(r => `<div class="pr-card" style="cursor:default"><div class="nm"><i style="background:#81c784"></i>Farms at sea by species · ${r.year}</div><div class="big">${r.salar_pct} % Atlantic</div><div class="ln">${r.coho_pct} % coho, ${r.trucha_pct} % trout ${src(r.src)}</div></div>`).join('') + `</div>` +
+    `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-top:10px">` +
+    `<div><div class="sig-sub"><b>Production by year (tonnes)</b></div><div style="overflow-x:auto"><table class="sig-table"><thead><tr><th class="name">Year</th><th>Total</th><th>Atlantic</th><th>Coho</th><th>Trout</th><th>Basis</th></tr></thead><tbody>${prod}</tbody></table></div></div>` +
+    `<div><div class="sig-sub"><b>Export value by product · 2025</b> ${src('SCH')}</div>${mix}</div></div>` +
+    `<div class="sig-sub" style="margin-top:12px"><b>Dated events</b></div>` + ev.map(x => `<div style="font-size:13px;margin:3px 0"><span style="color:var(--muted);font-size:11px">${x.date}</span> <b>${e(x.titre.replace('Droit de douane EEUU porte a', 'US duty raised to').replace('Negociations bilaterales annoncees', 'Bilateral talks announced'))}</b> — ${e(({ '2026-07-24': 'The provisional 10 % rate is replaced by 12.5 %. Chilean farmed salmon was not placed on the exemption list (Annex A).', '2026-07-27': 'A USTR delegation is expected in Chile at the end of August to negotiate exclusions.' })[x.date] || x.detail)} ${src(x.src)}</div>`).join('') +
+    `<div class="sig-sub" style="margin-top:12px"><b>Chilean sources and how late they publish</b></div><div style="overflow-x:auto"><table class="sig-table"><thead><tr><th class="name" style="text-align:left">Source</th><th>Frequency</th><th>Delay</th><th>Latest</th></tr></thead><tbody>${lat}</tbody></table></div>`;
+}
+
 function renderChile() {
   setTimeout(plChile, 100);
   if (!CLD) { if (!CL_LOADING) { CL_LOADING = true; const g = n => fetch(DATA_URL.replace('data.json', n), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
@@ -5191,6 +5213,7 @@ function renderChile() {
     document.getElementById('clSub').innerHTML = 'Loading…'; return; }
   if (!MEV && !MEV_LOADING) { MEV_LOADING = true; fetch(DATA_URL.replace('data.json', 'events.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
     .then(j => { MEV = j || { manual: [], news: [] }; MEV_LOADING = false; if (currentView === 'chile') renderChile(); }); }
+  clBrief(CLD);
   const B = (CLD.biologie || {}), S = B.sanitaire || {}, C = S.cycle_ferme || {}, M = S.mortalite || {};
   const f0 = v => v === null || v === undefined || !isFinite(v) ? '—' : Math.round(v).toLocaleString('en-US'), f1 = v => v === null || v === undefined || !isFinite(v) ? '—' : (+v).toFixed(1);
   const vt = (a, b, badUp) => a && b ? (v => `<span class="${(v >= 0) !== !!badUp ? 'delta-good' : 'delta-bad'}" style="font-size:12px">${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(1)}%</span>`)(100 * (a / b - 1)) : '';

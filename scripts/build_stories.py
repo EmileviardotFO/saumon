@@ -12,6 +12,13 @@ With the secret ANTHROPIC_API_KEY, grouping, titles and summaries are written by
 headlines and the publishers' own short descriptions (og:description of free pages only, never
 paywalled text). Without it, or if the call fails, headlines are grouped by rules (same company or
 same key words within a few days) and the title is the most representative free English headline.
+
+COST: incremental. Stories already written are kept from one run to the next (with their headline ids);
+Claude only receives the NEW headlines of a basin group, with the titles of that group's existing stories,
+and either attaches them to an existing story (updating its summary if they add facts) or writes new stories.
+A group with fewer than STORIES_MIN_NEW new headlines (default 6) is not sent at all: they wait for the
+next run (shown meanwhile as rule-grouped stories). The top five is re-picked only when stories changed.
+A full rewrite happens only if STORIES_FULL=1 or when no previous stories exist.
 """
 import argparse
 import datetime as dt
@@ -148,6 +155,52 @@ Output ONE JSON object PER LINE (JSON Lines), nothing else: no array, no prose, 
 Skip headlines that are not about salmon farming, salmon markets or fish feed."""
 
 LOTS = [('NO',), ('CL', 'CA', 'AU', 'US', 'NZ', 'IE'), ('FO', 'GB', 'IS'), ('FEED', 'global')]
+MIN_NEW = int(os.environ.get('STORIES_MIN_NEW', '6'))
+
+INCR = """
+
+INCREMENTAL MODE. The input is {"existing": [...], "headlines": [...]}: "existing" are stories already written (number k, who,
+event, title, summary); "headlines" are NEW headlines only. For new headlines that belong to an existing story, output one line
+{"k": <k>, "ids": [<new ids>], "summary": "<rewritten 1-3 sentence summary including the new facts>"} (omit "summary" if the new
+headlines add no fact). For the other new headlines, output full story lines as described above. Never repeat an existing story
+without new ids."""
+
+
+def claude_incr(new, existing, cle):
+    lignes = [{'id': n['id'], 'date': n['date'], 'source': n['source'], 'title': n['title'], 'basins': n.get('basins'),
+               **({'desc': n['desc']} if n.get('desc') else {})} for n in new]
+    ex = [{'k': k, 'who': s['who'], 'event': s.get('event', ''), 'title': s['title'], 'summary': s.get('summary', '')} for k, s in enumerate(existing)]
+    body = {'model': MODEL, 'max_tokens': 16000, 'system': PROMPT + INCR,
+            'messages': [{'role': 'user', 'content': json.dumps({'existing': ex, 'headlines': lignes}, ensure_ascii=False)}]}
+    req = urllib.request.Request('https://api.anthropic.com/v1/messages', data=json.dumps(body).encode('utf-8'),
+                                 headers={'x-api-key': cle, 'anthropic-version': '2023-06-01', 'content-type': 'application/json'})
+    rep = json.loads(urllib.request.urlopen(req, timeout=600).read().decode('utf-8'))
+    txt = ''.join(b.get('text', '') for b in rep.get('content', []) if b.get('type') == 'text')
+    adds, nouvelles = [], []
+    for ligne in txt.splitlines():
+        ligne = ligne.strip().strip(',')
+        if not ligne.startswith('{'): continue
+        try: x = json.loads(ligne)
+        except ValueError: continue
+        (adds if isinstance(x.get('k'), int) else nouvelles).append(x)
+    return adds, nouvelles, {'in': (rep.get('usage') or {}).get('input_tokens'), 'out': (rep.get('usage') or {}).get('output_tokens')}
+
+
+def anciennes(by_id):
+    """Stories of the previous run, with their headline ids (kept in the file; older files: found again from the article urls)."""
+    if os.environ.get('STORIES_FULL') == '1' or not os.path.exists(OUT): return None
+    old = json.load(io.open(OUT, encoding='utf-8'))
+    if (old.get('meta') or {}).get('method') != 'claude': return None
+    par_url = {}
+    for i, n in by_id.items():
+        for u in (n.get('url'), n.get('link')):
+            if u: par_url[u] = i
+    out = []
+    for s in old.get('stories', []):
+        ids = [i for i in (s.get('ids') or [par_url.get(a.get('url')) or par_url.get(a.get('link')) for a in s.get('arts', [])]) if i in by_id]
+        if ids: out.append({k: v for k, v in s.items() if k not in ('arts', 'last')} | {'ids': list(dict.fromkeys(ids))})
+    return {'stories': out, 'top': old.get('top', []), 'titles': [s['title'] for s in old.get('stories', [])],
+            'seen': set((old.get('meta') or {}).get('seen_ids') or []) & set(by_id) | {i for s in out for i in s['ids']}}
 
 
 def claude_lot(items, cle):
@@ -263,7 +316,36 @@ def main():
             n['desc'] = og_description(n.get('link') or n['url'])
     method, note, stories = 'rules', '', []
     cle = os.environ.get('ANTHROPIC_API_KEY')
-    if cle and items:
+    prev = anciennes(by_id) if cle else None
+    changed = True
+    if cle and items and prev:
+        stories, journal, appels = [dict(s) for s in prev['stories']], [], 0
+        connus = set(prev['seen'])
+        attente = []
+        for lot in LOTS:
+            new = [n for n in items if basin_of(n) in lot and n['id'] not in connus]
+            if not new: continue
+            if len(new) < MIN_NEW:
+                attente += new; journal.append(f"{'+'.join(lot)}: {len(new)} new, waiting"); continue
+            idx = [k for k, s in enumerate(stories) if s['basin'] in lot]
+            try:
+                adds, nouvelles, info = claude_incr(new, [stories[k] for k in idx], cle); appels += 1
+                connus |= {n['id'] for n in new}          # lus par Claude (meme ceux qu'il ecarte : hors sujet)
+                ok_ids = {n['id'] for n in new}
+                for a in adds:
+                    if 0 <= a['k'] < len(idx):
+                        st = stories[idx[a['k']]]; ids = [i for i in a.get('ids') or [] if i in ok_ids and i not in st['ids']]
+                        if ids:
+                            st['ids'] += ids; ok_ids -= set(ids)
+                            if a.get('summary'): st['summary'] = str(a['summary'])[:700]
+                ns, _ = check(nouvelles, {i: by_id[i] for i in ok_ids})
+                stories += ns
+                journal.append(f"{'+'.join(lot)}: {len(new)} new, {len(ns)} new stories, tokens {info['in']}/{info['out']}")
+            except Exception as e:  # noqa: BLE001
+                attente += new; journal.append(f"{'+'.join(lot)}: ERROR {str(e)[:80]}")
+        stories += rules([n for n in attente if company(n['title'])]) if attente else []
+        method, note, changed = 'claude', f'incremental, {appels} Claude call(s); ' + '; '.join(journal), appels > 0
+    elif cle and items:
         try:
             brut, journal = claude(items, cle)
             stories, seen = check(brut, by_id)
@@ -284,10 +366,14 @@ def main():
                  **({'link': by_id[i]['link']} if by_id[i].get('link') else {}),
                  'lang': by_id[i].get('lang', ''), 'access': access(by_id[i]['source'])} for i in s['ids']]
         arts.sort(key=lambda x: ({'free': 0, '?': 1, 'metered': 2, 'pay': 3}[x['access']], x['date']), reverse=False)
-        out.append({k: v for k, v in s.items() if k != 'ids'} | {'arts': arts, 'last': max(x['date'] for x in arts)})
+        out.append(dict(s) | {'arts': arts, 'last': max(x['date'] for x in arts)})
     out.sort(key=lambda s: (-len(s['arts']), s['last']), reverse=False)
     top = []
-    if method == 'claude' and cle:
+    if prev and not changed:                                        # rien de nouveau envoye a Claude : on garde le top cinq (par titre)
+        pos = {s['title']: i for i, s in enumerate(out)}
+        top = [{'i': pos[prev['titles'][t['i']]], 'why': t.get('why', '')} for t in prev['top']
+               if t.get('i') is not None and t['i'] < len(prev['titles']) and prev['titles'][t['i']] in pos]
+    if not top and method == 'claude' and cle:
         try: top = top5(out, cle)
         except Exception as e:  # noqa: BLE001
             note += f'; top five by rules ({str(e)[:80]})'
@@ -295,6 +381,7 @@ def main():
     meta = {'generated': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'), 'news_generated': gen, 'from': since, 'to': gen,
             'method': method, 'model': MODEL if method == 'claude' else None, 'headlines': len(items), 'note': note, 'basins': BASINS}
     meta['note'] = note
+    if method == 'claude': meta['seen_ids'] = sorted(connus if prev else set(by_id))
     io.open(OUT, 'w', encoding='utf-8').write(json.dumps({'meta': meta, 'stories': out, 'top': top}, ensure_ascii=False, separators=(',', ':')))
     print(f'data/stories.json : {len(out)} stories from {len(items)} headlines ({method})' + (f' — {note}' if note else ''))
 
