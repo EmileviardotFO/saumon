@@ -14020,7 +14020,7 @@ function renderWellboats() {
     return; }
   if (!WB.series || !WB.series.NO) { $('wbSub').innerHTML = 'Not built yet: data/wellboats.json comes from the daily step "Wellboats".'; return; }
   const e = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), f0 = v => v === null || v === undefined || !isFinite(v) ? '—' : Math.round(v).toLocaleString('en-US');
-  const M = WB.meta, L = M.last_full_week, S = WB.series, Y = Math.floor(L / 100);
+  const M = WB.meta, LW = M.last_full_week, S = WB.series, Y = Math.floor(LW / 100);
   const isoBack = (k, n) => { // semaine ISO n semaines avant k
     const y = Math.floor(k / 100), w = k % 100, j4 = new Date(Date.UTC(y, 0, 4)), mon = new Date(j4.getTime() - ((j4.getUTCDay() + 6) % 7) * 864e5 + (w - 1 - n) * 7 * 864e5);
     const th = new Date(mon.getTime() + 3 * 864e5), yy = th.getUTCFullYear(), jj = new Date(Date.UTC(yy, 0, 4)), m1 = new Date(jj.getTime() - ((jj.getUTCDay() + 6) % 7) * 864e5);
@@ -14029,36 +14029,36 @@ function renderWellboats() {
   const avg8 = (key, k) => { let a = 0; for (let n = 1; n <= 8; n++) a += v(key, isoBack(k, n)); return a / 8; };
   const pc = (a, b) => a && b ? 100 * (a / b - 1) : null, vt = x => x === null ? '—' : `<span class="${x >= 0 ? 'delta-good' : 'delta-bad'}" style="font-size:12px">${x >= 0 ? '+' : '−'}${Math.abs(x).toFixed(0)}%</span>`;
   const card = (lab, big, sub, c) => `<div class="pr-card" style="cursor:default"><div class="nm"><i style="background:${c}"></i>${lab}</div><div class="big">${big}</div><div class="ln">${sub}</div></div>`;
-  const x = v('NO', L), ly = v('NO', isoBack(L, 52)), a8 = avg8('NO', L);
-  let ytd = 0, ytdLy = 0; for (let w = 1; w <= L % 100; w++) { ytd += v('NO', Y * 100 + w); ytdLy += v('NO', (Y - 1) * 100 + w); }
-  $('wbCards').innerHTML = card(`Wellboat visits · week ${L % 100}`, `${f0(x)} ${vt(pc(x, ly))}`, `same week last year ${f0(ly)} · average of the 8 previous weeks ${f0(a8)} · ${f0(v('NO', L, 3))} boats`, '#4fc3f7') +
-    card(`Slaughter-boat visits · week ${L % 100}`, `${f0(v('NO', L, 1))}`, `fish slaughtered on board at the farm · last year ${f0(v('NO', isoBack(L, 52), 1))}`, '#ff8a65') +
-    card(`Since January (weeks 1–${L % 100})`, `${f0(ytd)} ${vt(pc(ytd, ytdLy))}`, `${f0(ytdLy)} a year earlier · ${f0(v('NO', L, 2))} hours at farms in week ${L % 100}`, '#81c784') +
+  const x = v('NO', LW), ly = v('NO', isoBack(LW, 52)), a8 = avg8('NO', LW);
+  let ytd = 0, ytdLy = 0; for (let w = 1; w <= LW % 100; w++) { ytd += v('NO', Y * 100 + w); ytdLy += v('NO', (Y - 1) * 100 + w); }
+  $('wbCards').innerHTML = card(`Wellboat visits · week ${LW % 100}`, `${f0(x)} ${vt(pc(x, ly))}`, `same week last year ${f0(ly)} · average of the 8 previous weeks ${f0(a8)} · ${f0(v('NO', LW, 3))} boats`, '#4fc3f7') +
+    card(`Slaughter-boat visits · week ${LW % 100}`, `${f0(v('NO', LW, 1))}`, `fish slaughtered on board at the farm · last year ${f0(v('NO', isoBack(LW, 52), 1))}`, '#ff8a65') +
+    card(`Since January (weeks 1–${LW % 100})`, `${f0(ytd)} ${vt(pc(ytd, ytdLy))}`, `${f0(ytdLy)} a year earlier · ${f0(v('NO', LW, 2))} hours at farms in week ${LW % 100}`, '#81c784') +
     card('Unusual this week', `${(WB.alerts || []).length}`, `zones or farmers with activity far above (or below) their recent pace — table below`, '#ffb74d');
   $('wbSub').innerHTML = `A wellboat is a ship with water tanks that carries live salmon: smolts from the hatchery to the sea farm, grown fish from the farm to the slaughterhouse, and fish to be treated against sea lice (warm or fresh water baths) and back. ` +
     `Slaughter boats kill and bleed the fish at the farm. So <b>more wellboat visits than usual means more harvesting, more stocking or more lice treatments</b> — a signal that comes days or weeks before the official harvest and biomass figures. ` +
     `BarentsWatch records a visit whenever one of the ${f0(M.boats)} registered wellboats or slaughter boats stays inside a farm's area (Norwegian Coastal Administration AIS); ${f0(M.sites)} salmon farms are followed. ` +
-    `Last complete week: <b>week ${L % 100} ${Y}</b>; updated ${e(M.built)}.`;
+    `Last complete week: <b>week ${LW % 100} ${Y}</b>; updated ${e(M.built)}.`;
   // ---- graphique : semaine par semaine, annee en cours contre precedente
   const OPTS = [['NO', 'Norway'], ...Array.from({ length: 13 }, (_, i) => [`PO${i + 1}`, `Zone ${i + 1}`])];
   $('wbTog').innerHTML = OPTS.map(([k, l]) => `<button data-k="${k}" style="margin:0 6px 6px 0;padding:5px 11px;border-radius:14px;cursor:pointer;font-size:12.5px;background:${k === WB_KEY ? '#1c3a4a' : '#12222c'};color:${k === WB_KEY ? '#fff' : '#cfdde4'};border:1px solid ${k === WB_KEY ? '#4fc3f7' : '#223642'}">${l}</button>`).join('');
   $('wbTog').querySelectorAll('button').forEach(b => b.onclick = () => { WB_KEY = b.dataset.k; renderWellboats(); });
-  const weeks = Array.from({ length: 52 }, (_, i) => i + 1), cy = weeks.map(w => Y * 100 + w <= L ? v(WB_KEY, Y * 100 + w) : null), py = weeks.map(w => v(WB_KEY, (Y - 1) * 100 + w) || null);
+  const weeks = Array.from({ length: 52 }, (_, i) => i + 1), cy = weeks.map(w => Y * 100 + w <= LW ? v(WB_KEY, Y * 100 + w) : null), py = weeks.map(w => v(WB_KEY, (Y - 1) * 100 + w) || null);
   $('wbChart').innerHTML = vzLines(weeks, [{ lab: String(Y - 1), col: '#8fa4b0', pts: py, w: 1.8 }, { lab: String(Y), col: '#4fc3f7', pts: cy }],
     { axis: 'Wellboat visits per week', unit: 'visits', digits: 0, H: 240, xfmt: (k, i, tip) => tip ? `week ${k}` : (k % 4 === 1 ? 'w' + k : '') }) + vzLegend([[String(Y - 1), '#8fa4b0'], [String(Y), '#4fc3f7']]);
   $('wbChartSub').innerHTML = `Number of wellboat visits to salmon farms each week (${WB_KEY === 'NO' ? 'all of Norway' : 'production zone ' + WB_KEY.slice(2)}). A visit can last an hour (a smolt delivery) or a day (a harvest or a treatment). Click a zone to see it alone.`;
   // ---- alertes
   const OL = k => k === 'NO' ? 'Norway' : k.startsWith('PO') ? `Zone ${k.slice(2)} · ${e((typeof PO_NAMES !== 'undefined' && PO_NAMES[k.slice(2)]) || '')}` : e(k.replace(/^ORG:/, ''));
   const AL = WB.alerts || [];
-  $('wbAlertSub').innerHTML = AL.length ? `Week ${L % 100}: zones and licence holders whose wellboat visits are far from their recent pace (at least 1.5 times the average of the 8 previous weeks and two standard deviations above it, with 5 visits or more; or a zone falling below 40 % of its average). A burst often means a harvest campaign, a delousing round or an emergency — for instance fish moved or harvested early because of disease or poor welfare.` :
-    `Week ${L % 100}: no zone or farmer far from its recent pace.`;
-  $('wbAlerts').innerHTML = AL.length ? `<thead><tr><th class="name">Zone or licence holder</th><th>Visits, week ${L % 100}</th><th>Average 8 weeks</th><th>Same week last year</th><th>Signal</th></tr></thead><tbody>` +
+  $('wbAlertSub').innerHTML = AL.length ? `Week ${LW % 100}: zones and licence holders whose wellboat visits are far from their recent pace (at least 1.5 times the average of the 8 previous weeks and two standard deviations above it, with 5 visits or more; or a zone falling below 40 % of its average). A burst often means a harvest campaign, a delousing round or an emergency — for instance fish moved or harvested early because of disease or poor welfare.` :
+    `Week ${LW % 100}: no zone or farmer far from its recent pace.`;
+  $('wbAlerts').innerHTML = AL.length ? `<thead><tr><th class="name">Zone or licence holder</th><th>Visits, week ${LW % 100}</th><th>Average 8 weeks</th><th>Same week last year</th><th>Signal</th></tr></thead><tbody>` +
     AL.map(a => `<tr><td class="name">${OL(a.key)}</td><td><b>${a.visits}</b></td><td>${a.avg8}</td><td>${a.ly}</td><td>${a.kind === 'high' ? `<b style="color:#ffb74d">unusually high</b> (${a.z} σ)` : '<b style="color:#4fc3f7">unusually low</b>'}</td></tr>`).join('') + `</tbody>` : '';
   // ---- zones
-  $('wbZones').innerHTML = `<thead><tr><th class="name">Production zone</th><th>Week ${L % 100}</th><th>Average 8 weeks</th><th>Same week last year</th><th>vs last year</th><th>Since January</th><th>vs last year</th><th>Slaughter-boat visits, wk ${L % 100}</th></tr></thead><tbody>` +
-    Array.from({ length: 13 }, (_, i) => `PO${i + 1}`).map(k => { let a = 0, b = 0; for (let w = 1; w <= L % 100; w++) { a += v(k, Y * 100 + w); b += v(k, (Y - 1) * 100 + w); }
-      const xx = v(k, L), aa = avg8(k, L), yy = v(k, isoBack(L, 52)), hot = xx >= 5 && xx >= 1.5 * aa;
-      return `<tr${hot ? ' style="background:rgba(255,183,77,.08)"' : ''}><td class="name">${OL(k)}</td><td><b>${xx}</b></td><td>${aa.toFixed(1)}</td><td>${yy}</td><td>${vt(pc(xx, yy))}</td><td>${f0(a)}</td><td>${vt(pc(a, b))}</td><td>${v(k, L, 1) || '—'}</td></tr>`; }).join('') + `</tbody>`;
+  $('wbZones').innerHTML = `<thead><tr><th class="name">Production zone</th><th>Week ${LW % 100}</th><th>Average 8 weeks</th><th>Same week last year</th><th>vs last year</th><th>Since January</th><th>vs last year</th><th>Slaughter-boat visits, wk ${LW % 100}</th></tr></thead><tbody>` +
+    Array.from({ length: 13 }, (_, i) => `PO${i + 1}`).map(k => { let a = 0, b = 0; for (let w = 1; w <= LW % 100; w++) { a += v(k, Y * 100 + w); b += v(k, (Y - 1) * 100 + w); }
+      const xx = v(k, LW), aa = avg8(k, LW), yy = v(k, isoBack(LW, 52)), hot = xx >= 5 && xx >= 1.5 * aa;
+      return `<tr${hot ? ' style="background:rgba(255,183,77,.08)"' : ''}><td class="name">${OL(k)}</td><td><b>${xx}</b></td><td>${aa.toFixed(1)}</td><td>${yy}</td><td>${vt(pc(xx, yy))}</td><td>${f0(a)}</td><td>${vt(pc(a, b))}</td><td>${v(k, LW, 1) || '—'}</td></tr>`; }).join('') + `</tbody>`;
   // ---- fermes
   const HT = WB.hot || [];
   $('wbHotSub').innerHTML = `Farms with the most wellboat and slaughter-boat visits over the last 14 days. Many visits in a few days usually means the farm is being harvested (or treated against lice); a slaughter boat means harvest on site.`;
