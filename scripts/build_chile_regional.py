@@ -49,7 +49,7 @@ def species_rows(text, want=None):
         elif re.search(r'elaboraci|plantas?de|produccionpesquerayacuicola|lineadeelaboracion|lineas', f): ctx = 'processing'
         for k, pat in SP:
             if not re.search(r'(' + pat + r')-?\d', f): continue          # la ligne peut contenir du texte de l'autre colonne
-            low = line.lower(); tok = {'atlantic': 'ntico', 'coho': 'coho', 'trout': 'iris'}[k]
+            low = line.lower(); tok = {'atlantic': 'ntico', 'coho': 'coho', 'trout': 'ris'}[k]
             pos = [mm.end() for mm in re.finditer(tok, low) if re.match(r'\s*-?\d', line[mm.end():])]
             if not pos: continue
             nums = re.findall(r'-?(?<![\d,])\d{1,3}(?:\.\d{3})*(?:,\d+)?(?![\d])', line[pos[0]:])
