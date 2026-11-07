@@ -1186,5 +1186,54 @@
     "published": "2026-07-02"
    }
   ]
+ },
+ "company_kpi": {
+  "_note": "Figures from the listed Chilean farmers' quarterly management reports (Análisis Razonado, filed with the CMF). WFE = whole fish equivalent. Cycle = months at sea / months of fallow of the closed cycles. Entered by hand; the quarterly scheduled runs add new quarters.",
+  "rows": [
+   {
+    "co": "Multi X",
+    "period": "2026-Q1",
+    "harvest_kg": 5.13,
+    "harvest_kg_prev": 4.75,
+    "prev_derived": true,
+    "harvest_t": 27504,
+    "harvest_t_prev": 27701,
+    "note": "highest first-quarter weight in six years",
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/76672100/analisis_razonado_76672100_2026Q1.pdf"
+   },
+   {
+    "co": "Camanchaca",
+    "period": "2025-Q1",
+    "harvest_kg": 5.1,
+    "harvest_kg_prev": 4.4,
+    "harvest_t": 12612,
+    "harvest_t_prev": 9911,
+    "cycle": "14/10",
+    "kg_per_smolt": 4.7,
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/93711000/analisis_razonado_93711000_2025Q1.pdf"
+   },
+   {
+    "co": "Camanchaca",
+    "period": "2025-Q4",
+    "harvest_kg": 5.1,
+    "harvest_kg_prev": 5.5,
+    "harvest_t": 14358,
+    "harvest_t_prev": 13689,
+    "cycle": "13/11",
+    "cycle_prev": "14/10",
+    "kg_per_smolt": 4.72,
+    "kg_per_smolt_prev": 4.55,
+    "ltm_kg": {
+     "2023": 5.19,
+     "2024": 4.93,
+     "2025": 5.11
+    },
+    "guidance_2026_t": [
+     58000,
+     61000
+    ],
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/76065596/analisis_razonado_76065596_2025Q4.pdf"
+   }
+  ]
  }
 }
