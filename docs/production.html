@@ -1377,6 +1377,33 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
       <div id="caOpList"></div>
       <div id="caMap" style="height:560px;border:1px solid var(--border);border-radius:8px;background:#0d1a24"></div>
     </div>
+    <div class="sig-title" style="margin-top:22px">Atlantic Canada farms and their operators — New Brunswick, Nova Scotia, Newfoundland</div>
+    <div class="sig-sub" id="caAtlSub"></div>
+    <div id="caAtlCards" class="pr-cards"></div>
+    <div class="sc-mapgrid">
+      <div><div id="caAtlCtl"></div><div id="caAtlList"></div></div>
+      <div id="caAtlMap" style="height:600px;border:1px solid var(--border);border-radius:8px;background:#0d1a24"></div>
+    </div>
+    <div class="sig-title" style="margin-top:18px">Atlantic Canada site by site</div>
+    <div class="sig-sub" id="caAtlTabSub"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="caAtlTab"></table></div>
+    <div class="sig-title" style="margin-top:18px">Infectious salmon anaemia (ISA) — confirmed cases by year</div>
+    <div class="sig-sub" id="caIsaSub"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="caIsaTab"></table></div>
+    <div class="sig-title" style="margin-top:18px">New Brunswick — reportable conditions and escapes by management area</div>
+    <div class="sig-sub" id="caNbSub"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="caNbTab"></table></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="caNbEsc"></table></div>
+    <div class="sig-title" style="margin-top:18px">Atlantic Canada — sea lice and disease treatments declared, kg of active ingredient</div>
+    <div class="sig-sub" id="caAarSub"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="caAarTab"></table></div>
+    <div class="sig-title" style="margin-top:18px">Newfoundland — fish put to sea by site</div>
+    <div class="sig-sub" id="caStockSub"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="caStockTab"></table></div>
+    <div class="sig-title" style="margin-top:18px">Atlantic Canada — production by province and exports of farmed salmon</div>
+    <div class="sig-sub" id="caAtlProdSub"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="caAtlProd"></table></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="caAtlExp"></table></div>
     <div class="sig-title" style="margin-top:18px">Farms in use each month</div>
     <div class="sig-sub" id="caFarmSub"></div>
     <div id="caFarms"></div>
@@ -4400,6 +4427,124 @@ function caMap(lastC) {
     if (pts.length) CA_MAP.fitBounds(pts, { padding: [24, 24], maxZoom: 10 }); setTimeout(() => CA_MAP.invalidateSize(), 50);
   });
 }
+
+// ---- Canada atlantique : sites, exploitants, sante, traitements, production (data/canada_atl.json, scripts/build_canada_atlantic.py)
+let CATL = null, CATL_LOADING = false, CATL_MAP = null, CATL_LAYER = null, CATL_OP = null, CATL_PROV = '', CATL_Q = '', CATL_MK = {};
+function caAtl() {
+  if (!CATL) { if (!CATL_LOADING) { CATL_LOADING = true; fetch(DATA_URL.replace('data.json', 'canada_atl.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
+      .then(j => { CATL = j || { sites: [] }; CATL_LOADING = false; if (currentView === 'canada') caAtl(); }); }
+    document.getElementById('caAtlSub').innerHTML = 'Loading…'; return; }
+  const $ = id => document.getElementById(id), e = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const S = CATL.sites || []; if (!S.length) { $('caAtlSub').innerHTML = 'No Atlantic data yet: data/canada_atl.json is built by the update step "Canada atlantique".'; return; }
+  const PN = { NB: 'New Brunswick', NS: 'Nova Scotia', NL: 'Newfoundland' }, f0 = v => v === null || v === undefined ? '—' : Math.round(v).toLocaleString('en-US');
+  const fin = x => /salmon|steelhead|trout/i.test(x.species || '');
+  const active = x => x.prov === 'NB' ? x.status === 'Active' : x.prov === 'NS' ? /issued/i.test(x.status) : true;
+  const lastAar = x => { const y = Object.keys(x.aar || {}).sort(); return y.length ? y[y.length - 1] : null; };
+  const AY = Math.max(...Object.values(CATL.aar_totals || {}).flatMap(t => Object.keys(t).map(Number)), 0);
+  // ---- cartes de synthese
+  const ops = {}; S.forEach(x => { const o = ops[x.group] = ops[x.group] || { n: 0, r: 0, p: new Set() }; o.n++; if (x.recent) o.r++; o.p.add(x.prov); });
+  const order = Object.keys(ops).sort((a, b) => ops[b].r - ops[a].r || ops[b].n - ops[a].n), col = g => SC_COL[order.indexOf(g) % SC_COL.length];
+  const isa = (CATL.isa || []).map(i => ({ ...i, prov: /newfoundland/i.test(i.prov) ? 'Newfoundland and Labrador' : i.prov })), yNow = new Date().getFullYear(), isaY = y => isa.filter(i => i.year === y).length;
+  const P = CATL.production || {}, sc = (g, k = 'Salmon') => { const o = (P[g] || {})[k] || {}; const ys = Object.keys(o).filter(y => o[y][0]).sort(); return ys.length ? [ys[ys.length - 1], o[ys[ys.length - 1]]] : null; };
+  const nb = sc('New Brunswick'), ns = sc('Nova Scotia'), NF = CATL.nl_facts || {}, nlP = NF.production || {}, nlY = Object.keys(nlP).sort();
+  const card = (lab, big, sub, c) => `<div class="pr-card" style="cursor:default"><div class="nm"><i style="background:${c}"></i>${lab}</div><div class="big">${big}</div><div class="ln">${sub}</div></div>`;
+  $('caAtlCards').innerHTML =
+    card('Salmon sites on the registers', `${S.filter(x => x.type === 'marine').length}`, Object.keys(PN).map(p => `${PN[p]} ${S.filter(x => x.prov === p && x.type === 'marine').length}`).join(' · ') + ` · ${S.filter(x => x.recent).length} treated or stocked recently`, '#4fc3f7') +
+    card(`Production · ${nb ? nb[0] : ''}`, `${f0((nb ? nb[1][0] : 0) + (ns && ns[0] === (nb || [])[0] ? ns[1][0] : 0) + (nlP[(nb || [])[0]] || 0))} t`,
+      `New Brunswick ${nb ? f0(nb[1][0]) : '—'} t · Nova Scotia ${ns ? f0(ns[1][0]) : '—'} t · Newfoundland ${nlY.length ? f0(nlP[nlY[nlY.length - 1]]) + ' t (' + nlY[nlY.length - 1] + ')' : '—'}`, '#81c784') +
+    card(`ISA confirmed · ${yNow}`, `${isaY(yNow)}`, `${yNow - 1}: ${isaY(yNow - 1)} · ${yNow - 2}: ${isaY(yNow - 2)} (CFIA, all provinces)`, '#ff8a65') +
+    card('Main operators', e(order.slice(0, 3).map(g => g.split(' ')[0]).join(' · ')), order.slice(0, 3).map(g => `${e(g.split(' (')[0])}: ${ops[g].n} sites (${[...ops[g].p].join(', ')})`).join(' · '), '#ffb74d');
+  $('caAtlSub').innerHTML = `Every Atlantic salmon, steelhead and trout site on the three provinces' public registers, at its registered position, with its licence holder and today's group. ` +
+    `<b>Filled</b>: site with a treatment declared to DFO in ${AY - 1} or ${AY}, or fish put to sea since 2023 (Newfoundland) — a sign it has fish; <b>faded</b>: no such sign, i.e. fallow, on hold or not used. ` +
+    `Licence holders: Kelly Cove Salmon (New Brunswick, Nova Scotia) and Cold Ocean Salmon (Newfoundland) are Cooke Aquaculture; Northern Harvest became Mowi Canada East; Grieg's Newfoundland farms are now Cermaq's (sale closed in 2025). ` +
+    `New Brunswick: provincial site mapping program (MF numbers); Nova Scotia: provincial open data (AQ leases, land-based licences); Newfoundland: licence holders list${CATL.meta && CATL.meta.nl_edition ? ' of ' + e(CATL.meta.nl_edition) : ''}. Read ${e(CATL.meta && CATL.meta.built)}. ` +
+    `Atlantic Canada publishes no farm-by-farm sea lice counts or monthly mortality like British Columbia: what follows is what is public — sites, operators, disease and treatments.`;
+  // ---- filtres : province, exploitant (menu), recherche
+  if (!$('caAtlQ')) {
+    $('caAtlCtl').innerHTML = `<div style="display:flex;gap:6px;margin-bottom:6px">${[['', 'All'], ['NB', 'NB'], ['NS', 'NS'], ['NL', 'NL']].map(([k, l]) => `<button type="button" class="ca-pv" data-p="${k}" style="flex:1;padding:6px;border-radius:7px;border:1px solid var(--border);background:#0d1a24;color:var(--ink);cursor:pointer">${l}</button>`).join('')}</div>` +
+      `<select id="caAtlSel" style="width:100%;margin-bottom:6px;padding:7px;background:#0d1a24;color:var(--ink);border:1px solid var(--border);border-radius:7px;font-size:12.5px"></select>` +
+      `<input id="caAtlQ" type="search" autocomplete="off" placeholder="Search: site, bay, holder, licence no." style="width:100%;box-sizing:border-box;margin-bottom:6px;padding:7px 9px;background:#0d1a24;color:var(--ink);border:1px solid var(--border);border-radius:7px;font-size:12.5px">`;
+    $('caAtlCtl').querySelectorAll('.ca-pv').forEach(b => b.onclick = () => { CATL_PROV = b.dataset.p; caAtl(); });
+    $('caAtlSel').onchange = ev => { CATL_OP = ev.target.value || null; caAtl(); };
+    let t = null; $('caAtlQ').oninput = ev => { clearTimeout(t); t = setTimeout(() => { CATL_Q = ev.target.value; caAtl(); }, 150); };
+  }
+  $('caAtlCtl').querySelectorAll('.ca-pv').forEach(b => b.style.borderColor = b.dataset.p === CATL_PROV ? '#ffd54f' : '');
+  $('caAtlSel').innerHTML = `<option value="">All operators (${order.length})</option>` + [...order].sort().map(g => `<option value="${e(g)}"${CATL_OP === g ? ' selected' : ''}>${e(g)} — ${ops[g].n} sites</option>`).join('');
+  const nq = t => String(t || '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '');
+  const Q = nq(CATL_Q).trim().split(/\s+/).filter(Boolean);
+  const show = x => (!CATL_PROV || x.prov === CATL_PROV) && (!CATL_OP || x.group === CATL_OP) && (!Q.length || Q.every(w => nq([x.name, x.holder, x.group, x.id, x.county, PN[x.prov]].join(' ')).includes(w)));
+  const V = S.filter(show);
+  $('caAtlList').innerHTML = `<div class="sc-op${CATL_OP ? '' : ' on'}" data-h=""><i style="background:#e7eef2"></i><b>All operators</b><span>${S.filter(x => x.recent).length} active<br>${S.length} sites</span></div>` +
+    order.filter(g => ops[g].n >= 3).map(g => `<div class="sc-op${CATL_OP === g ? ' on' : ''}" data-h="${e(g)}"><i style="background:${col(g)}"></i><b>${e(g)}</b><span>${ops[g].r} active<br>${ops[g].n} sites</span></div>`).join('');
+  $('caAtlList').querySelectorAll('.sc-op').forEach(el => el.onclick = () => { CATL_OP = el.dataset.h || null; caAtl(); });
+  const pop = x => `<b>${e(x.name)}</b> · ${e(PN[x.prov])}<br>${x.prov === 'NB' ? 'Site' : 'Licence'} <b>${e(x.id)}</b>${x.type === 'land' ? ' (land-based)' : ''}<br>Holder: ${e(x.holder)}<br>Group: <b>${e(x.group)}</b><br>Species: ${e(x.species)}<br>` +
+    `Status: ${e(x.status)}${x.expiry ? ' · until ' + e(x.expiry) : ''}${x.ha ? ' · ' + x.ha + ' ha' : ''}` +
+    (x.stocked ? `<br>Last put to sea: ${e(x.stocked.date)}, ${f0(x.stocked.n)} ${e(x.stocked.species).toLowerCase()}` : '') +
+    (lastAar(x) ? `<br>Treatments declared to DFO: ${Object.keys(x.aar).sort().join(', ')} (latest ${lastAar(x)}: ${Object.entries(x.aar[lastAar(x)]).map(([k, v]) => k + ' ' + v.toLocaleString('en-US') + ' kg').join(', ')})` : '');
+  scLeaflet(() => {
+    if (!CATL_MAP) { CATL_MAP = L.map('caAtlMap', { scrollWheelZoom: false }).setView([46.5, -60.5], 6);
+      const esri = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', { attribution: 'Tiles &copy; Esri · sites: NB, NS, NL governments', maxZoom: 13 }).addTo(CATL_MAP);
+      let fails = 0; esri.on('tileerror', () => { if (++fails === 4) { CATL_MAP.removeLayer(esri); L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors', maxZoom: 13 }).addTo(CATL_MAP); } }); }
+    if (CATL_LAYER) CATL_LAYER.remove(); CATL_LAYER = L.layerGroup().addTo(CATL_MAP); CATL_MK = {}; const pts = [];
+    [...V].sort((a, b) => a.recent - b.recent).forEach(x => { if (!x.lat) return; const on = x.recent, c = col(x.group);
+      CATL_MK[x.id] = L.circleMarker([x.lat, x.lon], { radius: on ? 6 : 4, color: on ? c : '#5d7685', weight: x.type === 'land' ? 2.5 : 1.2, fillColor: on ? c : '#5d7685', fillOpacity: on ? .75 : .25, dashArray: x.type === 'land' ? '2 2' : null })
+        .addTo(CATL_LAYER).bindPopup(pop(x)); pts.push([x.lat, x.lon]); });
+    if (pts.length) CATL_MAP.fitBounds(pts, { padding: [24, 24], maxZoom: 11 }); setTimeout(() => CATL_MAP.invalidateSize(), 50);
+  });
+  window.caAtlFocus = id => { const m = CATL_MK[id]; if (!m) return; $('caAtlMap').scrollIntoView({ behavior: 'smooth', block: 'center' }); CATL_MAP.setView(m.getLatLng(), 11); setTimeout(() => m.openPopup(), 300); };
+  // ---- tableau site par site
+  const T = [...V].sort((a, b) => (b.recent - a.recent) || a.prov.localeCompare(b.prov) || a.group.localeCompare(b.group) || String(a.name).localeCompare(String(b.name)));
+  $('caAtlTabSub').innerHTML = `${V.length} site${V.length > 1 ? 's' : ''}${CATL_PROV || CATL_OP || Q.length ? ' (filtered with the map controls above)' : ''}, active-looking ones first. Click a licence number to see the site on the map. ` +
+    `Treatments: kilograms of active ingredient the site declared to Fisheries and Oceans Canada under the Aquaculture Activities Regulations (sea lice baths and in-feed treatments, antibiotics), latest year published ${AY}.`;
+  $('caAtlTab').innerHTML = `<thead><tr><th class="name">Site</th><th style="text-align:left">Province</th><th>Licence / site no.</th><th style="text-align:left">Group</th><th style="text-align:left">Holder</th><th style="text-align:left">Species</th><th style="text-align:left">Status</th><th>Hectares</th><th style="text-align:left">Last treatment declared</th><th style="text-align:left">Last put to sea</th></tr></thead><tbody>` +
+    T.map(x => { const ly = lastAar(x); return `<tr><td class="name">${x.recent ? '<b>' : ''}${e(x.name)}${x.recent ? '</b>' : ''}${x.type === 'land' ? ' <span style="color:var(--muted)">(land)</span>' : ''}</td><td style="text-align:left">${x.prov}</td>` +
+      `<td>${x.lat ? `<a href="#" onclick="caAtlFocus('${e(x.id)}');return false" style="color:#4fc3f7">${e(x.id)}</a>` : e(x.id)}</td><td style="text-align:left">${e(x.group)}</td><td style="text-align:left;white-space:normal">${e(x.holder)}</td>` +
+      `<td style="text-align:left;white-space:normal">${e(x.species)}</td><td style="text-align:left">${e(x.status)}${x.expiry ? ' · ' + e(x.expiry.slice(0, 4)) : ''}</td><td>${x.ha ? x.ha.toFixed(1) : '—'}</td>` +
+      `<td style="text-align:left;white-space:normal">${ly ? `${ly}: ${Object.entries(x.aar[ly]).filter(([, v]) => v > 0).map(([k, v]) => `${e(k)} ${v.toLocaleString('en-US')}`).join(', ') || 'trace'}` : '—'}</td>` +
+      `<td style="text-align:left">${x.stocked ? `${e(x.stocked.date)} · ${f0(x.stocked.n)}` : '—'}</td></tr>`; }).join('') + `</tbody>`;
+  // ---- AIS (ACIA)
+  const ys = [...new Set(isa.map(i => i.year))].sort((a, b) => b - a).slice(0, 15), provs = [...new Set(isa.map(i => i.prov))].sort();
+  $('caIsaSub').innerHTML = `Infectious salmon anaemia is a federally reportable disease: every infected location confirmed by the Canadian Food Inspection Agency is listed (one line = one confirmed infected location; farms are not named). ` +
+    `Latest confirmations: ${isa.slice(0, 6).map(i => `${e(i.date)} ${i.year}, ${e(i.prov)}`).join(' · ')}. In New Brunswick a confirmed site is usually harvested early or depopulated under the provincial ISA control standard.`;
+  $('caIsaTab').innerHTML = `<thead><tr><th class="name">Province</th>${ys.map(y => `<th>${y}</th>`).join('')}</tr></thead><tbody>` +
+    provs.map(p => `<tr><td class="name">${e(p)}</td>${ys.map(y => { const n = isa.filter(i => i.year === y && i.prov === p).length; return `<td>${n ? `<b style="color:${n >= 5 ? '#ff8a65' : 'inherit'}">${n}</b>` : '—'}</td>`; }).join('')}</tr>`).join('') +
+    `<tr style="font-weight:bold"><td class="name">All</td>${ys.map(y => `<td>${isaY(y)}</td>`).join('')}</tr></tbody>`;
+  // ---- registre du Nouveau-Brunswick
+  const C = CATL.nb_conditions || [], ES = CATL.nb_escapes || [];
+  $('caNbSub').innerHTML = `New Brunswick's public aquaculture registry lists every reportable condition (a hazard on Schedule A of the Aquaculture Products Health and Welfare Regulation — Part 1 includes ISA virus, Part 4 sea lice and other parasites) and every mortality event reported to the Chief Veterinary Officer, by aquaculture bay management area (ABMA, Bay of Fundy), with the action taken. ` +
+    `${C.length} reports since ${e((C[C.length - 1] || {}).date || '')}; the last 12 months: ${C.filter(c => c.date >= new Date(Date.now() - 365 * 864e5).toISOString().slice(0, 10)).length}. Escapes below.`;
+  $('caNbTab').innerHTML = `<thead><tr><th class="name">Date</th><th style="text-align:left">Area</th><th style="text-align:left">Condition</th><th style="text-align:left">Action taken</th></tr></thead><tbody>` +
+    C.slice(0, 60).map(c => `<tr><td class="name">${e(c.date)}</td><td style="text-align:left">${e(c.area)}</td><td style="text-align:left">${e(c.type)}${/part 1/i.test(c.type) ? ' <span style="color:var(--muted)">(ISA virus and other listed diseases)</span>' : /part 4/i.test(c.type) ? ' <span style="color:var(--muted)">(sea lice, parasites)</span>' : ''}</td><td style="text-align:left;white-space:normal">${e(c.action)}</td></tr>`).join('') + `</tbody>`;
+  $('caNbEsc').innerHTML = ES.length ? `<thead><tr><th class="name">Escape report</th><th style="text-align:left">Area</th><th style="text-align:left">Type</th><th>Fish</th></tr></thead><tbody>` +
+    ES.map(x => `<tr><td class="name">${e(x.date)}</td><td style="text-align:left">${e(x.area)}</td><td style="text-align:left">${e(x.type)}</td><td>${x.fish ? f0(x.fish) : '—'}</td></tr>`).join('') + `</tbody>` : '';
+  // ---- traitements (DFO)
+  const AT = CATL.aar_totals || {}, subs = [...new Set(Object.values(AT).flatMap(t => Object.values(t).flatMap(o => Object.keys(o))))].sort(), AYS = [...new Set(Object.values(AT).flatMap(t => Object.keys(t)))].sort();
+  $('caAarSub').innerHTML = `Drugs and pesticides each Atlantic marine salmon site declared to Fisheries and Oceans Canada, summed by province (kg of active ingredient). Azamethiphos and hydrogen peroxide are sea lice bath treatments; emamectin benzoate and ivermectin are in-feed sea lice treatments; florfenicol and oxytetracycline are antibiotics. ` +
+    `A year with much more bath treatment points to heavier lice pressure. Published with about a year's delay; a blank year means nothing was published for that province.`;
+  $('caAarTab').innerHTML = `<thead><tr><th class="name">Province · substance</th>${AYS.map(y => `<th>${y}</th>`).join('')}</tr></thead><tbody>` +
+    Object.keys(AT).sort().map(p => subs.filter(k => AYS.some(y => ((AT[p][y] || {})[k] || 0) > 0)).map(k => `<tr><td class="name">${PN[p] || p} · ${e(k)}</td>${AYS.map(y => `<td>${(AT[p][y] || {})[k] ? f0(AT[p][y][k]) : '—'}</td>`).join('')}</tr>`).join('')).join('') + `</tbody>`;
+  // ---- mise en mer a Terre-Neuve
+  const SK = CATL.nl_stocking || [];
+  $('caStockSub').innerHTML = SK.length ? `Sites stocked with fish in Newfoundland and the number put to sea at the last stocking, from a 2024 access-to-information response of the provincial government (published by the Atlantic Salmon Federation). ` +
+    `${f0(SK.reduce((a, x) => a + x.n, 0))} fish on ${SK.length} sites. Newfoundland had ${NF.sites_licensed || '—'} salmonid sites licensed and ${NF.sites_active || '—'} in active production in ${NF.year || '—'} (Code of Containment report).` :
+    `Newfoundland had ${NF.sites_licensed || '—'} salmonid sites licensed and ${NF.sites_active || '—'} in active production in ${NF.year || '—'} (Code of Containment report); the stocking list by site will appear after the next update run.`;
+  $('caStockTab').innerHTML = SK.length ? `<thead><tr><th class="name">Site</th><th style="text-align:left">Last stocked</th><th style="text-align:left">Species</th><th>Fish put to sea</th><th style="text-align:left">Group</th></tr></thead><tbody>` +
+    SK.map(x => { const s = S.find(y => y.id === x.matched); return `<tr><td class="name">${s ? `<a href="#" onclick="caAtlFocus('${e(s.id)}');return false" style="color:#4fc3f7">${e(x.site)}</a>` : e(x.site)}</td><td style="text-align:left">${e(x.date)}</td><td style="text-align:left">${e(x.species)}</td><td>${f0(x.n)}</td><td style="text-align:left">${s ? e(s.group) : '—'}</td></tr>`; }).join('') + `</tbody>` : '';
+  // ---- production et exportations
+  const yrs = [...new Set(['New Brunswick', 'Nova Scotia', 'Newfoundland and Labrador', 'British Columbia', 'Canada'].flatMap(g => Object.keys((P[g] || {}).Salmon || {})))].sort().slice(-12);
+  const row = (lab, g, k = 'Salmon', i = 0) => `<tr><td class="name">${lab}</td>${yrs.map(y => { const v = (((P[g] || {})[k] || {})[y] || [])[i]; return `<td>${v ? f0(i ? v / 1e6 : v) : '<span style="color:var(--muted)">..</span>'}</td>`; }).join('')}</tr>`;
+  $('caAtlProdSub').innerHTML = `Farmed salmon production by province, tonnes (Statistics Canada 32-10-0107; ".." = not published, usually for confidentiality — Newfoundland's salmon has been suppressed since 2004, ` +
+    `the province's own Code of Containment report gives ${nlY.map(y => `${f0(nlP[y])} t in ${y}`).join(' and ')}). Then Canada's exports of farmed Atlantic salmon by destination (Statistics Canada 32-10-0005, tonnes): more than 90 % goes to the United States — California, New York and Massachusetts first; the destinations are for all of Canada, British Columbia's fish included.`;
+  $('caAtlProd').innerHTML = `<thead><tr><th class="name">Salmon, tonnes</th>${yrs.map(y => `<th>${y}</th>`).join('')}</tr></thead><tbody>` +
+    row('New Brunswick', 'New Brunswick') + row('Nova Scotia', 'Nova Scotia') + row('Newfoundland and Labrador', 'Newfoundland and Labrador') +
+    `<tr><td class="name">Newfoundland (provincial report)</td>${yrs.map(y => `<td>${nlP[y] ? f0(nlP[y]) : '—'}</td>`).join('')}</tr>` +
+    row('British Columbia', 'British Columbia') + row('<b>Canada</b>', 'Canada') + row('New Brunswick, C$ million', 'New Brunswick', 'Salmon', 1) + row('Nova Scotia, C$ million', 'Nova Scotia', 'Salmon', 1) + `</tbody>`;
+  const EX = (CATL.exports || {})['Atlantic salmon'] || {}, EF = (CATL.exports || {})['Atlantic salmon fillets'] || {}, ey = [...new Set(Object.values(EX).flatMap(o => Object.keys(o)))].sort().slice(-8);
+  const dest = Object.keys(EX).sort((a, b) => ((EX[b][ey[ey.length - 1]] || [0])[0] || 0) - ((EX[a][ey[ey.length - 1]] || [0])[0] || 0));
+  $('caAtlExp').innerHTML = ey.length ? `<thead><tr><th class="name">Exports, whole Atlantic salmon (t)</th>${ey.map(y => `<th>${y}</th>`).join('')}</tr></thead><tbody>` +
+    dest.map(d => `<tr${/^Total/.test(d) ? ' style="font-weight:bold"' : ''}><td class="name">${e(d)}</td>${ey.map(y => `<td>${(EX[d][y] || [])[0] ? f0(EX[d][y][0]) : '—'}</td>`).join('')}</tr>`).join('') +
+    (EF['Total, country of destination'] ? `<tr><td class="name">Fillets, all destinations</td>${ey.map(y => `<td>${(EF['Total, country of destination'][y] || [])[0] ? f0(EF['Total, country of destination'][y][0]) : '—'}</td>`).join('')}</tr>` : '') + `</tbody>` : '';
+}
 // ---- Canada : volumes par cote, perspectives BC, cycles, mortalite, temperature, fermes (data/canada_extra.json)
 let CAX = null, CAX_LOADING = false, CAX_COAST = 'all';
 function caBars(vfn, years, o) {
@@ -4556,7 +4701,11 @@ function canadaExtra() {
 }
 function renderCanada() {
   if (!CAN) { if (!CAN_LOADING) { CAN_LOADING = true; fetch(DATA_URL.replace('data.json', 'canada.json'), { cache: 'no-store' })
-      .then(r => r.ok ? r.json() : null).catch(() => null).then(j => { CAN = j || {}; CAN_LOADING = false; if (currentView === 'canada') renderCanada(); }); }
+      .then(r => r.ok ? r.json() : null).catch(() => null).then(j => { CAN = j || {};
+        // Grieg Seafood a vendu ses fermes de Colombie-Britannique a Cermaq (vente conclue en 2025) : le DFO garde l'ancien nom
+        (CAN.sites || []).forEach(x => { if (/grieg/i.test(x.co)) x.co = 'Cermaq Canada (ex-Grieg BC)'; });
+        if (CAN.lice_by_company) Object.keys(CAN.lice_by_company).filter(k => /grieg/i.test(k)).forEach(k => { CAN.lice_by_company['Cermaq Canada (ex-Grieg BC)'] = CAN.lice_by_company[k]; delete CAN.lice_by_company[k]; });
+        CAN_LOADING = false; if (currentView === 'canada') renderCanada(); }); }
     document.getElementById('caSub').innerHTML = 'Loading…'; return; }
   const L = CAN.lice || [], EV = CAN.events, TR = CAN.transfers;
   const ids = ['caCards', 'caFarmSub', 'caFarms', 'caLiceSub', 'caLice', 'caMonthTab', 'caCoTab', 'caEvSub', 'caEvTab', 'caEvList', 'caTrSub', 'caTrTab', 'caTrList', 'caNote'];
@@ -4571,7 +4720,7 @@ function renderCanada() {
   // mois de reference = dernier mois complet (toutes les entreprises ont declare) ; le mois suivant, partiel, reste visible dans le tableau
   const lastAll = L.length ? L[L.length - 1].m : null, last = (CAN.meta && CAN.meta.lice_complete) || lastAll, partial = lastAll && last !== lastAll ? lastAll : null;
   const cur = last ? by[last] : null, yAgo = last ? by[last - 100] : null;
-  document.getElementById('caSub').innerHTML = `British Columbia is Canada's Pacific salmon-farming province (Atlantic salmon in open net pens; MOWI Canada West, Cermaq Canada, Grieg Seafood BC). ` +
+  document.getElementById('caSub').innerHTML = `British Columbia is Canada's Pacific salmon-farming province (Atlantic salmon in open net pens; MOWI Canada West and Cermaq Canada, which bought Grieg Seafood's BC farms in 2025 — shown as "ex-Grieg BC"). ` +
     `<b>Open net-pen farming in BC coastal waters is to end by 30 June 2029</b>: the number of farms in use and smolt transfers are the leading signs of that run-down. ` +
     `All figures come from DFO public reporting, read at each update run.` + (last ? ` Latest complete month: <b>${tmMl(last)}</b>` + (partial ? ` — ${tmMl(partial)} is still being reported by some companies and is shown apart.` : '.') : '');
   const card = (lab, big, sub, col) => `<div class="pr-card" style="cursor:default"><div class="nm"><i style="background:${col}"></i>${lab}</div><div class="big">${big}</div><div class="ln">${sub}</div></div>`;
@@ -4605,7 +4754,7 @@ function renderCanada() {
       `*Newfoundland's salmon figure is suppressed for confidentiality: its total finfish (almost entirely salmon and steelhead trout) is shown instead, and it is not in the published Canada salmon total. ` +
       `Atlantic Canada publishes no monthly farm data comparable to BC's.` + (ex ? ` More recent: ${ex}.` : '');
   }
-  caMap(last);
+  caMap(last); caAtl();
   // fermes en activite
   if (L.length) {
     const keys = tmRange(last, 60).filter(k => k >= L[0].m);
@@ -12700,7 +12849,7 @@ loadRemoteData().then(live => {
 (function () {
   const SLOTS = [['map', 'Farms, licences and companies'], ['stock', 'Fish at sea'], ['harvest', 'Harvest and production'], ['cycles', 'Cycles and time at sea'],
     ['bio', 'Mortality and fish health'], ['companies', 'Company results'], ['trade', 'Exports'], ['news', 'News']];
-  const RULES = [[/cycle length|time at sea|smolt entries|sea temperature/i, 'cycles'], [/volumes by coast/i, 'harvest'], [/farm by farm/i, 'stock'], [/^news$/i, 'news'], [/export/i, 'trade'], [/^fish at sea|smolt transfer/i, 'stock'],
+  const RULES = [[/site by site/i, 'map'], [/anaemia|reportable conditions/i, 'bio'], [/put to sea/i, 'stock'], [/cycle length|time at sea|smolt entries|sea temperature/i, 'cycles'], [/volumes by coast/i, 'harvest'], [/farm by farm/i, 'stock'], [/^news$/i, 'news'], [/export/i, 'trade'], [/^fish at sea|smolt transfer/i, 'stock'],
     [/^mortality/i, 'bio'], [/company results|year by year$|farmers' results|bakkafrost scotland/i, 'companies'],
     [/farms and|farming areas|farm leases|licences|^map/i, 'map'],
     [/mortal|death|dead fish|lice|disease|health/i, 'bio'], [/harvest|survey|by province|production/i, 'harvest'],
