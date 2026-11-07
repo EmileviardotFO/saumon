@@ -13120,6 +13120,12 @@ loadRemoteData().then(live => {
   #gsPanel .gs-h input{flex:1;background:#0d1a24;border:1px solid #4fc3f7;border-radius:8px;color:#e7eef2;padding:10px 12px;font-size:15px;outline:none}
   #gsPanel .gs-x{background:none;border:1px solid #2a4352;color:#cfdde4;border-radius:8px;padding:8px 12px;cursor:pointer}
   #gsPanel .gs-hint{font-size:12px;color:#8fa4b0;margin-bottom:14px}
+  #gsSug{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px;min-height:0}
+  #gsSug button{font:inherit;font-size:13px;padding:6px 11px;border-radius:999px;border:1px solid #2a4352;background:#0d1a24;color:#e7eef2;cursor:pointer;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+  #gsSug button.on,#gsSug button:hover{border-color:#4fc3f7;background:#12304a}
+  #gsSug button small{color:#8fa4b0;margin-left:5px;font-size:11px}
+  #gsSug button.tab{border-style:dashed}
+  @media (max-width:900px){#gsSug{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}#gsSug button{font-size:14px;padding:8px 12px}}
   #gsPanel .gs-sec{font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#4fc3f7;margin:18px 0 8px}
   #gsPanel .gs-card{background:#10202c;border:1px solid #223642;border-radius:10px;padding:12px 14px;margin-bottom:10px;max-width:1100px}
   #gsPanel .gs-card h4{margin:0 0 6px;font-size:14px;color:#e7eef2}
@@ -13161,7 +13167,7 @@ loadRemoteData().then(live => {
   const get = f => fetch(DATA_URL.replace('data.json', f), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
   function load() {
     if (loading) return loading;
-    loading = Promise.all(['world_imports.json', 'search_index.json', 'eurostat.json', 'national_trade.json', 'bw_site_lice.json', 'events.json', 'news.json', 'news_archive.json', 'big_fish.json', 'quarterly.json', 'plants.json', 'canada_trade.json']
+    loading = Promise.all(['world_imports.json', 'search_index.json', 'eurostat.json', 'national_trade.json', 'bw_site_lice.json', 'events.json', 'news.json', 'news_archive.json', 'big_fish.json', 'quarterly.json', 'plants.json', 'canada_trade.json', 'global_supply.json']
       .map(f => get(f).then(j => D[f] = j)));
     return loading;
   }
@@ -13170,17 +13176,17 @@ loadRemoteData().then(live => {
   const box = document.createElement('div'); box.id = 'gsBox'; box.innerHTML = '<input id="gsQ" type="search" placeholder="Search: Lerøy lice, Mowi 6+, China…" autocomplete="off">';
   if (nav) { const sub = nav.querySelector('#snSub'); (sub ? sub.after(box) : nav.prepend(box)); }
   const P = document.createElement('div'); P.id = 'gsPanel';
-  P.innerHTML = '<div class="gs-h"><input id="gsQ2" type="search" autocomplete="off"><button class="gs-x" type="button">Close ✕</button></div><div class="gs-hint">A company and/or a subject, in English, French or Norwegian: <i>Lerøy lice</i>, <i>Mowi mortalité</i>, <i>SalMar 6+</i>, <i>Chine export</i>, <i>Kaldvík</i>. Results follow your typing; Esc to close.</div><div id="gsOut"></div>';
+  P.innerHTML = '<div class="gs-h"><input id="gsQ2" type="search" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"><button class="gs-x" type="button">Close ✕</button></div><div id="gsSug" role="listbox"></div><div class="gs-hint">A company and/or a subject, in English, French or Norwegian: <i>Lerøy lice</i>, <i>Mowi mortalité</i>, <i>SalMar 6+</i>, <i>Chine export</i>, <i>Kaldvík</i>. Results follow your typing; Esc to close.</div><div id="gsOut"></div>';
   document.body.appendChild(P);
   const q1 = document.getElementById('gsQ'), q2 = document.getElementById('gsQ2'), out = document.getElementById('gsOut');
-  const open = v => { P.style.display = 'block'; q2.value = v; run(v); q2.focus(); };
+  const open = v => { P.style.display = 'block'; q2.value = v; run(v); q2.focus(); if (typeof showSug === 'function') setTimeout(showSug, 0); };
   const close = () => { P.style.display = 'none'; };
   P.querySelector('.gs-x').onclick = close;
   // la case du menu ne sert que de porte d'entree : au premier toucher (ou clic, ou tabulation) le panneau s'ouvre et la saisie se fait
   // directement dans sa grande case, focus donne dans le meme geste (sinon iOS n'ouvre pas le clavier) ; le menu mobile se referme
   const enter = () => { const v = q1.value; q1.value = ''; document.body.classList.remove('sn-open'); const bg = document.getElementById('snBurger'); if (bg) bg.textContent = '☰';
     if (P.style.display !== 'block') { P.style.display = 'block'; q2.value = v; if (v.trim()) run(v); }
-    q2.focus(); try { q2.setSelectionRange(q2.value.length, q2.value.length); } catch (e) {} };
+    q2.focus(); try { q2.setSelectionRange(q2.value.length, q2.value.length); } catch (e) {} setTimeout(() => { if (typeof showSug === 'function') showSug(); }, 0); };
   q1.addEventListener('touchend', e => { e.preventDefault(); enter(); });
   q1.addEventListener('mousedown', e => { e.preventDefault(); enter(); });
   q1.addEventListener('focus', enter);
@@ -13196,6 +13202,55 @@ loadRemoteData().then(live => {
   window.gsGoTab = goTab;
   if (nav) nav.addEventListener('click', e => { if (e.target.closest('.sn-item, button[data-v], a') && P.style.display === 'block') close(); }, true);
   document.addEventListener('click', e => { if (e.target.closest('#viewToggle button, #tabIndex a, #tabIndex button') && P.style.display === 'block') close(); }, true);
+
+  // ---- suggestions pendant la frappe : complete le mot en cours, puis propose les suites utiles (sujet, periode, onglet)
+  const SUG = (() => {
+    const V = [];   // [libelle, type, mots-cles normalises]
+    COS.forEach(([n]) => V.push([n, 'company']));
+    ['Norway', 'Chile', 'Scotland', 'Faroe Islands', 'Iceland', 'Canada', 'Tasmania', 'British Columbia', 'New Brunswick', 'Newfoundland', 'Nova Scotia'].forEach(n => V.push([n, 'basin']));
+    for (let z = 1; z <= 13; z++) V.push([`zone ${z}`, 'zone', (typeof PO_NAMES !== 'undefined' && PO_NAMES[z]) || '']);
+    [['lice', 'topic'], ['mortality', 'topic'], ['disease', 'topic'], ['6+', 'topic', 'big fish 6 kg'], ['harvest', 'topic'], ['time at sea', 'topic', 'growth cycle'], ['plants', 'topic', 'slaughterhouse processing'],
+     ['price', 'topic'], ['export', 'trade'], ['import', 'trade'], ['fresh fillets', 'product'], ['fresh whole', 'product'], ['frozen', 'product'], ['smoked', 'product'],
+     ['Q1', 'period'], ['Q2', 'period'], ['Q3', 'period'], ['Q4', 'period'], ['H1', 'period'], ['H2', 'period'], ['2025', 'period'], ['2026', 'period'], ['YTD', 'period'],
+     ['supply 2027', 'topic', 'outlook forecast global'], ['guidance', 'topic', 'forecast'], ['wellboat', 'topic'], ['ISA', 'topic', 'anaemia']].forEach(x => V.push(x));
+    ['United States', 'China', 'Poland', 'France', 'Spain', 'Germany', 'Italy', 'Japan', 'South Korea', 'Netherlands', 'Denmark', 'United Kingdom', 'Vietnam', 'Thailand', 'Brazil', 'Taiwan', 'Israel', 'Switzerland', 'Belgium']
+      .forEach(n => V.push([n, 'market']));
+    const TABS = [...document.querySelectorAll('#viewToggle button[data-v]')].map(b => [b.textContent.trim(), b.dataset.v]);
+    const NEXT = { company: ['lice', 'mortality', '6+', 'time at sea', 'plants', 'harvest'], basin: ['export', 'harvest', 'mortality', 'supply 2027'], zone: ['lice', 'mortality', 'disease', '6+', 'time at sea'],
+      market: ['import', 'export', 'fresh fillets', 'Q3'], trade: ['Q1', 'Q2', 'Q3', 'H1', '2026'], product: ['Q3', '2026', 'YTD'], topic: [], period: [] };
+    const tokens = q => q.trim().split(/\s+/).filter(Boolean);
+    const known = q => { const nq = norm(q); return V.filter(([l]) => new RegExp('(^|\\s)' + norm(l).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '($|\\s)').test(nq)); };
+    return q => {
+      const out = [], T = tokens(q), endsSpace = /\s$/.test(q), last = endsSpace ? '' : norm(T[T.length - 1] || ''), head = endsSpace ? q.trim() : T.slice(0, -1).join(' ');
+      const K = known(q), kinds = new Set(K.map(k => k[1]));
+      if (last) {
+        V.forEach(([l, t, kw]) => { const nl = norm(l), hit = nl.startsWith(last) || nl.split(/\s+/).some(w => w.startsWith(last)) || (last.length >= 3 && norm(kw || '').split(/\s+/).some(w => w.startsWith(last)));
+          if (hit && !K.some(k => k[0] === l)) out.push({ q: (head ? head + ' ' : '') + l, lab: l, t }); });
+        out.sort((a, b) => (norm(a.lab).startsWith(last) ? 0 : 1) - (norm(b.lab).startsWith(last) ? 0 : 1) || a.lab.length - b.lab.length);
+      }
+      // suites logiques de ce qui est deja reconnu
+      const base = q.trim();
+      if (base && (!last || K.some(k => norm(k[0]).endsWith(last)))) {
+        const t0 = (K[K.length - 1] || [])[1]; (NEXT[t0] || []).filter(n => !K.some(k => k[0] === n)).forEach(n => out.push({ q: base + ' ' + n, lab: base + ' ' + n, t: 'next' }));
+      }
+      // onglets du tableau de bord dont le nom contient le mot
+      if (last.length >= 3) TABS.filter(([l]) => norm(l).split(/\s+/).some(w => w.startsWith(last))).slice(0, 2).forEach(([l, v]) => out.push({ tab: v, lab: l, t: 'tab' }));
+      const seen = new Set(); return out.filter(o => { const k = o.tab || norm(o.q); if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, 8);
+    };
+  })();
+  const sugBox = document.getElementById('gsSug'); let sugI = -1, sugL = [];
+  const TYPE_LAB = { company: 'company', basin: 'country', zone: 'Norway zone', topic: 'subject', trade: 'trade', product: 'product', period: 'period', market: 'market', next: '', tab: 'open tab' };
+  function showSug() { sugL = SUG(q2.value); sugI = -1;
+    sugBox.innerHTML = sugL.map((o, i) => `<button type="button" data-i="${i}" class="${o.tab ? 'tab' : ''}">${esc(o.lab)}${TYPE_LAB[o.t] ? `<small>${TYPE_LAB[o.t]}</small>` : ''}</button>`).join('');
+    sugBox.querySelectorAll('button').forEach(b => { b.onmousedown = ev => ev.preventDefault(); b.onclick = () => pickSug(+b.dataset.i); }); }
+  function pickSug(i) { const o = sugL[i]; if (!o) return; if (o.tab) { goTab(o.tab); return; }
+    q2.value = o.q + ' '; q2.focus(); try { q2.setSelectionRange(q2.value.length, q2.value.length); } catch (e) {} clearTimeout(tm); run(q2.value); showSug(); }
+  q2.addEventListener('input', showSug);
+  q2.addEventListener('keydown', ev => { if (!sugL.length) return;
+    if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') { ev.preventDefault(); sugI = (sugI + (ev.key === 'ArrowDown' ? 1 : -1) + sugL.length) % sugL.length;
+      sugBox.querySelectorAll('button').forEach((b, i) => b.classList.toggle('on', i === sugI)); }
+    else if (ev.key === 'Tab' && sugL.length) { ev.preventDefault(); pickSug(sugI >= 0 ? sugI : 0); }
+    else if (ev.key === 'Enter' && sugI >= 0) { ev.preventDefault(); ev.stopImmediatePropagation(); pickSug(sugI); } }, true);
   // ---- fiches calculees
   const R = () => (typeof DATA_RAW !== 'undefined' && DATA_RAW ? DATA_RAW : {}).bw_register || {};
   const orgOf = () => { const G = { 'ocean farming as': 'SalMar', 'mariculture as': 'SalMar' }, o = {}; Object.entries(R().site_org || {}).forEach(([k, v]) => o[k] = G[(v || '').toLowerCase()] || v); return o; };
@@ -13682,6 +13737,12 @@ loadRemoteData().then(live => {
       if (cards.length) html += `<div class="gs-sec">From the dashboard's data · ${esc(co)}${topics.length ? ' · ' + topics.map(t => TOP_WORDS[t]).join(', ') : ''}</div>` + cards.join('');
     } else if (topics.includes('mort') && !po) html += evCard(null, [], bas);
     if (!co && !po && topics.includes('tas') && (!bas || bas === 'NO')) { const c = tasNorway(); if (c) html += `<div class="gs-sec">From the dashboard's data · time at sea</div>` + c; }
+    if (/\b(supply|2027|outlook|forecast|offre|projection\w*|prevision\w*|prognos\w*|guidance)\b/.test(nq) && D['global_supply.json']) {
+      const G = D['global_supply.json'], AR = { up: '↑', flat: '→', down: '↓' }, bb = (G.basins || []).filter(b => !bas || b.id === bas);
+      html += `<div class="gs-sec">Global supply 2027</div><div class="gs-card"><h4>${bas ? esc(BAS_NAME[bas] || bas) + ' — 2027 outlook' : 'World salmon supply — 2027 outlook'}</h4><div class="s">` +
+        (bas ? '' : `World: ${esc(G.world.y2026)} in 2026, <b>${esc(G.world.y2027)}</b> in 2027. ${esc(G.world.y2027_note)}<br>`) +
+        bb.map(b => `<b>${AR[b.dir] || '→'} ${esc(b.name)}</b> — 2027: ${esc(b.y2027)}. ${esc(b.oneliner)}`).join('<br>') +
+        ` <span class="gs-go" onclick="gsGoTab('supply')">→ Global supply 2027</span></div></div>`; }
     const ih = indexHtml(q); html += ih;
     const nw = po ? [] : words;
     let N = news(co, topics, nw, bas, mk, prods), fb = bas ? ` · ${BAS_NAME[bas]} only` : '';
