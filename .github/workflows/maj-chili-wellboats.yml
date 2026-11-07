@@ -1,0 +1,33 @@
+name: Chili - wellboats (Global Fishing Watch)
+# Chaque lundi : escales des wellboats et navires de service dans la zone salmonicole chilienne (API GFW gratuite).
+on:
+  schedule:
+    - cron: '41 6 * * 1'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: maj-chili-wellboats
+  cancel-in-progress: false
+jobs:
+  wellboats:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -q requests
+      - name: Escales GFW
+        env:
+          GGLOBALFISHING_KEY: ${{ secrets.GGLOBALFISHING_KEY }}
+          GFW_TOKEN: ${{ secrets.GFW_TOKEN }}
+        run: python3 scripts/build_chile_wellboats.py
+      - name: Enregistrer
+        run: |
+          git config user.name "github-actions"; git config user.email "actions@github.com"
+          git add data/chile_wellboats_raw.json
+          if git diff --staged --quiet; then echo "Aucun changement."; else
+            git commit -q -m "Chili wellboats ($(date -u +%Y-%m-%d))"
+            for i in 1 2 3; do git pull -q --rebase && git push -q && break; sleep 10; done; fi
