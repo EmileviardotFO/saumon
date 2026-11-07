@@ -1599,6 +1599,22 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="sig-sub" style="margin-top:10px">Brought over from the first Chile page (chili.html) so that nothing is lost. Destinations month by month are also in <span class="gs-go" onclick="gsGoTab('producers')">Producing countries</span>; the tariff in detail in the <span class="gs-go" onclick="gsGoTab('usa')">USA</span> tab.</div>
     <div id="clBrief"></div>
     </details>
+    <details class="cl-sec" id="clS9"><summary><span class="cl-st">9 · Wellboat watch — the harvest seen from the boats</span><span class="cl-ss" id="clS9Sum"></span></summary>
+    <div class="sig-sub" id="clWbSub"></div>
+    <div id="clWbKpi" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:10px 0 16px"></div>
+    <div class="sig-title" style="font-size:15px">Harvest processed in Los Lagos plants, kt per month</div>
+    <div id="clWbNow"></div><div class="sig-sub" id="clWbNowSub"></div>
+    <div class="sig-title" style="font-size:15px;margin-top:18px">Wellboat stops by region, per month</div>
+    <div id="clWbReg" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(560px,1fr));gap:14px"></div>
+    <div class="sig-title" style="font-size:15px;margin-top:18px">Weekly pulse, Los Lagos — last 12 weeks against the same weeks a year earlier</div>
+    <div id="clWbWk"></div>
+    <div class="sig-title" style="font-size:15px;margin-top:18px">Where the boats are working — last 30 days against the same 30 days a year earlier</div>
+    <div class="sig-sub" id="clWbHotSub"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="clWbHot"></table></div>
+    <div class="sig-title" style="font-size:15px;margin-top:18px">The fleet — stops in the last 30 days</div>
+    <div style="overflow-x:auto"><table class="sig-table" id="clWbFleet"></table></div>
+    <div class="sig-sub" id="clWbSrc" style="margin-top:8px"></div>
+    </details>
     <details class="cl-sec" id="clS8"><summary><span class="cl-st">8 · News</span><span class="cl-ss" id="clS8Sum">the week's Chilean stories, grouped and summarised</span></summary>
     <div class="bs-news" id="chileView-newsbox"></div>
     </details>
@@ -5295,7 +5311,7 @@ function renderChile() {
   if (!MEV && !MEV_LOADING) { MEV_LOADING = true; fetch(DATA_URL.replace('data.json', 'events.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
     .then(j => { MEV = j || { manual: [], news: [] }; MEV_LOADING = false; if (currentView === 'chile') renderChile(); }); }
   clBrief(CLD);
-  clSecInit(); clMore();
+  clSecInit(); clMore(); clWbw();
   const B = (CLD.biologie || {}), S = B.sanitaire || {}, C = S.cycle_ferme || {}, M = S.mortalite || {};
   const f0 = v => v === null || v === undefined || !isFinite(v) ? '—' : Math.round(v).toLocaleString('en-US'), f1 = v => v === null || v === undefined || !isFinite(v) ? '—' : (+v).toFixed(1);
   const vt = (a, b, badUp) => a && b ? (v => `<span class="${(v >= 0) !== !!badUp ? 'delta-good' : 'delta-bad'}" style="font-size:12px">${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(1)}%</span>`)(100 * (a / b - 1)) : '';
@@ -5539,6 +5555,65 @@ function clFilPrd(CM, ks, last, lab) {   // filets (classes, trims, grades) et e
       return `<tr><td class="name">${e(n)}</td><td><b>${f0(q.t)}</b></td><td>${(100 * q.t / tot).toFixed(1)} %</td><td>${o ? f0(o.t) : '—'}</td><td>${o ? pc(q.t, o.t) : '—'}</td><td>${(q.v / q.t).toFixed(2)}</td>` +
         `<td>${(100 * q.atl / q.t).toFixed(0)} %</td><td>${q.coho ? (100 * q.coho / q.t).toFixed(0) + ' %' : '—'}</td><td>${q.trout ? (100 * q.trout / q.t).toFixed(0) + ' %' : '—'}</td><td>${(100 * q.fresh / q.t).toFixed(0)} %</td><td>${(100 * q.fil / q.t).toFixed(0)} %</td><td style="text-align:left;font-size:12px">${top ? lab(top[0]) : ''}</td></tr>`; }).join('') +
     `<tr style="color:var(--muted)"><td class="name">not stated</td><td>${f0(ns)}</td><td>${(100 * ns / tot).toFixed(1)} %</td><td colspan="9"></td></tr></tbody>`;
+}
+// ---- Chili : wellboats (data/chile_wellboats.json <- scripts/build_chile_wellboats.py, escales AIS via Global Fishing Watch)
+let CLWB = null;
+function clWbw() {
+  if (CLWB === null) { CLWB = undefined; fetch(DATA_URL.replace('data.json', 'chile_wellboats.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : false).catch(() => false)
+      .then(j => { CLWB = j || false; if (currentView === 'chile') clWbw(); }); return; }
+  if (!CLWB) { const el = document.getElementById('clWbSub'); if (el) el.innerHTML = 'Not built yet: data/chile_wellboats.json comes from the weekly step "Chili - wellboats".'; return; }
+  const W = CLWB, $ = id => document.getElementById(id), e = x => String(x ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const MO = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], YC = ['#3d5a6c', '#6fa8c7', '#f2a541'];
+  const f0 = v => v == null ? '—' : Math.round(v).toLocaleString('en-US'), pc = (a, b) => a != null && b ? Math.round(100 * (a / b - 1)) : null;
+  const ps = v => v == null ? '—' : (v > 0 ? '+' : '') + v + ' %', pcol = v => v == null ? '#a9bfcc' : v > 5 ? '#81c784' : v < -5 ? '#ffb74d' : '#a9bfcc';
+  const last = W.meta.last, LY = +last.slice(0, 4), Y3 = [LY - 2, LY - 1, LY], O = W.ll_official, E = W.ll_estimate, S = W.stops;
+  // indicateurs
+  const ek = Object.keys(E).sort(), kpi = [];
+  ek.slice(-2).reverse().forEach(k => { const ly = (+k.slice(0, 4) - 1) + k.slice(4), d = pc(E[k], O[ly]);
+    kpi.push([`Los Lagos plants, ${MO[+k.slice(5) - 1]} ${k.slice(0, 4)} (estimate)`, `≈ ${Math.round(E[k] / 1000)} kt`, `${ps(d)} vs ${MO[+k.slice(5) - 1]} ${ly.slice(0, 4)} (${Math.round(O[ly] / 1000)} kt)`, pcol(d)]); });
+  const lm = +last.slice(5, 7) - (last.slice(8, 10) < '25' ? 1 : 0), ytd = y => ['LL', 'AY', 'MA'].reduce((t, r) => t + Object.entries(S[r]).filter(([k]) => +k.slice(0, 4) === y && +k.slice(5) <= lm).reduce((a, [, v]) => a + v, 0), 0);
+  const y1 = ytd(LY), y0 = ytd(LY - 1);
+  kpi.push([`Wellboat stops, Jan–${MO[lm - 1]} ${LY}`, f0(y1), `${ps(pc(y1, y0))} vs Jan–${MO[lm - 1]} ${LY - 1}`, pcol(pc(y1, y0))]);
+  kpi.push(['How well stops track harvest', `r = ${W.ll_fit.r.toFixed(2)}`, `${W.ll_fit.n} months; blind test on ${W.ll_fit.n_test}: ${Math.round(100 * W.ll_fit.mape)} % average error`, '#a9bfcc']);
+  $('clWbKpi').innerHTML = kpi.map(([a, b, c, col]) => `<div style="padding:14px;border-radius:10px;background:#102231;border:1px solid #223642"><div style="font-size:12px;color:#8fa4b0">${a}</div><div style="font-size:26px;font-weight:700;margin:4px 0">${b}</div><div style="font-size:12.5px;font-weight:600;color:${col}">${c}</div></div>`).join('');
+  const kl = ek.length ? ek[ek.length - 1] : null;
+  $('clS9Sum').textContent = kl ? `${MO[+kl.slice(5) - 1]} ${kl.slice(0, 4)} ≈ ${Math.round(E[kl] / 1000)} kt in Los Lagos plants, ${ps(pc(E[kl], O[(+kl.slice(0, 4) - 1) + kl.slice(4)]))} y/y` : '';
+  $('clWbSub').innerHTML = `Every live salmon harvested in Chile travels by wellboat from the farm to the processing plant. Global Fishing Watch records each stop these ${W.meta.boats} boats make (AIS), so counting the stops gives the harvest weeks before the official figures (Sernapesca via INE, about two months late). ` +
+    `<b>The estimate is not a statistic</b>: it averages a fit on ${W.ll_fit.n} months and the change against the same month a year earlier.`;
+  // 1. recolte des usines, 3 ans par mois, estimation en clair
+  const ser = Y3.map((y, j) => ({ lab: String(y) + (j === 2 && ek.length ? ' (light = estimate)' : ''), bar: true, col0: YC[j],
+    col: j === 2 ? (i => E[`${y}-${String(i + 1).padStart(2, '0')}`] ? 'rgba(242,165,65,.4)' : YC[2]) : YC[j],
+    v: MO.map((m, i) => { const k = `${y}-${String(i + 1).padStart(2, '0')}`; const v = O[k] ?? (j === 2 ? E[k] : null); return v == null ? null : v / 1000; }) }));
+  $('clWbNow').innerHTML = scSvg(MO, ser, { lab: k => k, fmt: v => Math.round(v) + ' kt', H: 240 });
+  $('clWbNowSub').innerHTML = `Official plant output to ${(() => { const k = Object.keys(O).sort().pop(); return MO[+k.slice(5) - 1] + ' ' + k.slice(0, 4); })()}; later months estimated from the stops. The Los Lagos plants also process fish harvested in Aysén.` +
+    (W.ma_fit ? ` Check on Magallanes, where the official harvest is monthly too: stops and harvest move together (r = ${W.ma_fit.r.toFixed(2)} over ${W.ma_fit.n} months).` : '');
+  // 2. escales par region
+  const RN = { LL: ['Los Lagos (Chiloé, Reloncaví)', 'Where the plants are: most harvest trips end here, including fish from Aysén.'], AY: ['Aysén', 'Fewer stops are detected in the outer fjords: read the trend, not the level.'], MA: ['Magallanes', 'Harvests to Puerto Natales and Punta Arenas plants.'] };
+  $('clWbReg').innerHTML = ['LL', 'AY', 'MA'].map(r => { const a = ytd2(r, LY), b = ytd2(r, LY - 1), d = pc(a, b);
+    return `<div style="padding:12px;border-radius:10px;background:#102231;border:1px solid #223642"><div style="display:flex;justify-content:space-between"><b>${RN[r][0]}</b><span style="font-weight:600;color:${pcol(d)}">Jan–${MO[lm - 1]} ${ps(d)}</span></div>` +
+      scSvg(MO.map(m => m[0]), Y3.map((y, j) => ({ lab: String(y), bar: true, col: YC[j], v: MO.map((m, i) => { const k = `${y}-${String(i + 1).padStart(2, '0')}`; return k >= last.slice(0, 7) ? null : (S[r][k] ?? null); }) })), { lab: k => k, H: 260 }) +
+      `<div class="sig-sub">${RN[r][1]}</div></div>`; }).join('');
+  function ytd2(r, y) { return Object.entries(S[r]).filter(([k]) => +k.slice(0, 4) === y && +k.slice(5) <= lm).reduce((a, [, v]) => a + v, 0); }
+  // 3. pouls hebdomadaire
+  const WK = W.weeks.LL, wks = Object.keys(WK).filter(k => +k.slice(0, 4) === LY).sort().slice(-13, -1);
+  const w1 = wks.map(k => WK[k]), w0 = wks.map(k => WK[(LY - 1) + k.slice(4)] || 0), s1 = w1.reduce((a, b) => a + b, 0), s0 = w0.reduce((a, b) => a + b, 0);
+  $('clWbWk').innerHTML = `<div class="sig-sub"><b style="color:${pcol(pc(s1, s0))}">${f0(s1)} stops vs ${f0(s0)} (${ps(pc(s1, s0))})</b> — the earliest signal on the page: a week shows here 3 to 4 days after it ends.</div>` +
+    scSvg(wks.map(k => k.slice(5)), [{ lab: String(LY - 1), bar: true, col: YC[1], v: w0 }, { lab: String(LY), bar: true, col: YC[2], v: w1 }], { lab: k => k, H: 180 });
+  // 4. points d'escale
+  const RG = { LL: 'Los Lagos', AY: 'Aysén', MA: 'Magallanes' }, cap = x => String(x || '').toLowerCase().replace(/(^|[\s(-])\S/g, c => c.toUpperCase()).replace(/\b(Ii|Iii|Iv|Vi|Vii|Viii|Ix|Xi|Chl)\b/g, m => m.toUpperCase());
+  $('clWbHotSub').innerHTML = 'Stop points as named by Global Fishing Watch; companies holding salmon concessions within 6 km (a lead, not a match: a point groups several farms). Quellón, Isla Cailín, Teupa and Puerto Natales are processing hubs.';
+  const mx = Math.max(...W.hot.map(h => Math.max(h.cur, h.prv)), 1);
+  $('clWbHot').innerHTML = `<thead><tr><th class="name">Stop point</th><th>Region</th><th class="name">Concessions nearby</th><th style="min-width:200px">Stops: ${LY - 1} · ${LY}</th><th>Change</th></tr></thead><tbody>` +
+    W.hot.slice(0, 18).map(h => { const d = h.prv ? pc(h.cur, h.prv) : null;
+      return `<tr><td class="name"><b>${e(cap(h.a))}</b></td><td>${RG[h.reg]}</td><td class="name">${e(h.near.join(', ') || '—')}</td><td><div style="display:flex;flex-direction:column;gap:2px">` +
+        `<div style="display:flex;align-items:center;gap:6px"><div style="height:7px;width:${Math.round(150 * h.prv / mx)}px;background:${YC[1]}"></div><span style="font-size:11px;color:#8fa4b0">${h.prv}</span></div>` +
+        `<div style="display:flex;align-items:center;gap:6px"><div style="height:7px;width:${Math.round(150 * h.cur / mx)}px;background:${YC[2]}"></div><span style="font-size:11px">${h.cur}</span></div></div></td>` +
+        `<td style="font-weight:600;color:${d === null ? '#81c784' : pcol(d)}">${d === null ? 'new' : ps(d)}</td></tr>`; }).join('') + '</tbody>';
+  // 5. flotte
+  $('clWbFleet').innerHTML = `<thead><tr><th class="name">Series (operator)</th><th>Boats active</th><th>Stops ${LY - 1}</th><th>Stops ${LY}</th><th>Change</th><th class="name">Busiest boats</th></tr></thead><tbody>` +
+    Object.entries(W.fleet).map(([n, f]) => { const d = pc(f.cur, f.prv); return `<tr><td class="name"><b>${e(n)}</b></td><td>${f.active}</td><td>${f.prv}</td><td>${f.cur}</td><td style="font-weight:600;color:${pcol(d)}">${ps(d)}</td>` +
+      `<td class="name" style="font-size:12px;color:#a9bfcc">${f.boats.filter(b => b[1]).slice(0, 5).map(b => `${e(cap(b[0]))} ${b[1]}`).join(' · ') || '—'}</td></tr>`; }).join('') + '</tbody>';
+  $('clWbSrc').innerHTML = `Source: <a href="https://globalfishingwatch.org/our-apis/" target="_blank" rel="noopener" style="color:#4fc3f7">Powered by Global Fishing Watch</a> (port visits detected from AIS), stops to ${e(last.slice(0, 10))}; official harvest: Sernapesca via INE regional bulletins. Series names follow the operators (Grip = Aquaship, Orca = Naviera Orca, Ronja = Sølvtrans Chile). Updated every Monday.`;
 }
 function clW() {   // poids : calibres exportes (douanes), poids moyen en mer (Salmon Outlook), smolts et temps en mer
   const $c = id => document.getElementById(id), el = $c('clW'); if (!el) return;
