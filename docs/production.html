@@ -13553,7 +13553,7 @@ loadRemoteData().then(live => {
 
   // ---- marches : exportations norvegiennes par pays et par produit (SSB, mensuel)
   const FR_C = { PL: 'pologne polska', DE: 'allemagne tyskland', ES: 'espagne espana spania', IT: 'italie italia', NL: 'pays-bas paysbas hollande nederland', DK: 'danemark danmark', GB: 'royaume-uni uk angleterre', US: 'etats-unis usa amerique', CN: 'chine kina', JP: 'japon', KR: 'coree', CH: 'suisse sveits', BE: 'belgique belgia', SE: 'suede sverige', FR: 'frankrike', LT: 'lituanie', LV: 'lettonie', VN: 'vietnam', TH: 'thailande', PT: 'portugal', GR: 'grece', CZ: 'tchequie', AT: 'autriche', IL: 'israel', HK: 'hongkong' };
-  const PROD = { smoked: /\b(smoked|fum[eé]s?|r[øo]kt|ahumado)\b/, fillet: /\b(fill?ets?|filets?|file|filler)\b/, fresh: /\b(fresh|frais|fraiche|fersk|fresco|chilled)\b/, frozen: /\b(frozen|congel\w*|frys\w*|surgel\w*)\b/, whole: /\b(whole|entiers?|hel|head on|hoso|ho)\b/ };
+  const PROD = { smoked: /\b(smoked|fum[eé]s?|r[øo]kt|ahumado)\b/, fillet: /\b(fill?ets?|filets?|file|filler)\b/, fresh: /\b(fresh|frais|fraiche|fersk|fresco|chilled)\b/, frozen: /\b(frozen|congel\w*|frys\w*|surgel\w*)\b/, whole: /\b(whole|entiers?|hel|head on|head-on|hoso|hog|ho|gutted|vid[eé]s?|entero|sl[øo]yd|h\/g)\b/ };
   function findMarket(rest) {
     const C = (((typeof DATA_RAW !== 'undefined' && DATA_RAW ? DATA_RAW : {}).ssb_exports || {}).meta || {}).countries || {};
     const ab = { usa: 'US', us: 'US', uk: 'GB', 'u.s.': 'US', hk: 'HK', uae: 'AE' }, aw = rest.split(/\s+/).find(w => ab[w]);
