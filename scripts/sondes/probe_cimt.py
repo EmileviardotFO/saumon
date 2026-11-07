@@ -9,13 +9,13 @@ if not r.ok:
     u = u.replace('2026', '2025'); r = requests.get(u, headers=H, timeout=600); print('GET', u, r.status_code, len(r.content))
 z = zipfile.ZipFile(io.BytesIO(r.content))
 for n in z.namelist(): print('FILE', n, z.getinfo(n).file_size)
-for n in z.namelist():
+for n in [x for x in z.namelist() if x.endswith(('.csv', '.TXT'))]:
     with z.open(n) as f:
         tx = io.TextIOWrapper(f, encoding='utf-8-sig', errors='replace')
-        head = [next(tx) for _ in range(5)]
+        head = [next(tx, '') for _ in range(5)]
         print('HEAD', n, ''.join(head)[:1500])
         k = 0
         for line in tx:
-            if re.search(r'\b030214|\b0302140|\b030441|\b0304410', line):
+            if re.search(r'030214|030441|Salmon|saumon', line):
                 print('ROW', n, line.strip()[:300]); k += 1
-                if k > 25: break
+                if k > 15: break
