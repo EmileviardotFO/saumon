@@ -1,13 +1,12 @@
-import requests, re, sys, io, gzip, base64
+import requests, re, io, csv, collections
 H = {'User-Agent': 'Mozilla/5.0 (salmon-dashboard)'}
-s = requests.Session(); s.headers.update(H)
-for u in ['https://aquaculture.scotland.gov.uk/Data/FishFarmMonthlyBiomassAndTreatmentReports',
-          'https://aquaculture.scotland.gov.uk/Data',
-          'https://aquaculture.scotland.gov.uk/Resources/DatasetDescriptions/FishFarmMonthlyBiomassAndTreatmentReports']:
-    try:
-        r = s.get(u, timeout=60); print('==', u, r.status_code, len(r.text))
-        links = sorted(set(re.findall(r'(?:href|action|src)="([^"]+)"', r.text)))
-        print('\n'.join(l for l in links if not l.endswith(('.css', '.png', '.jpg', '.svg', '.ico'))))
-        for m in re.finditer(r'<form[\s\S]{0,3000}?</form>', r.text): print('FORM', m.group(0)[:2500])
-        for m in re.finditer(r'(?i)(csv|export|download|api)[^<>"]{0,120}', r.text): print('KW', m.group(0)[:150])
-    except Exception as e: print('ERR', u, e)
+B = 'https://aquaculture.scotland.gov.uk'
+r = requests.get(B + '/csv/se_monthly_reports.csv', headers=H, timeout=300); print('CSV', r.status_code, len(r.content))
+rows = list(csv.reader(io.StringIO(r.content.decode('utf-8-sig', 'replace'))))
+print(rows[0]); yi = rows[0].index('Year')
+c = collections.Counter(x[yi][-8:] for x in rows[1:]); print(sorted(c.items(), key=lambda kv: (kv[0][-4:], kv[0]))[-24:])
+r = requests.get(B + '/Data', headers=H, timeout=60)
+pages = sorted(set(re.findall(r'href="(/Data/[^"]+)"', r.text))); print(pages)
+for p in pages:
+    t = requests.get(B + p, headers=H, timeout=60).text
+    print('==', p, re.findall(r'/csv/[^"\']+', t), re.findall(r'/js/datasets/[^"\']+', t))
