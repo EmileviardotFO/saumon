@@ -625,5 +625,80 @@
  },
  "notes": {
   "measures": "Norway, Chile and the Faroes count fish; Scotland, Iceland and Tasmania weigh them (dead tonnes against biomass or production). A tonnage measure gives more weight to large fish lost late in the cycle, so it usually runs above a count measure. Compare trends within a country rather than levels across countries."
+ },
+ "world_2025": {
+  "note": "Dead fish in 2025, thousand tonnes of live weight, against each basin's 2025 harvest in live weight (gutted ÷ 0.888). Measured where the country weighs its dead fish; estimated where it only counts them.",
+  "rows": [
+   {
+    "c": "NO",
+    "name": "Norway",
+    "dead_kt": 105.3,
+    "lo": 85,
+    "hi": 125,
+    "basis": "estimate",
+    "how": "54.1 M dead fish (Fiskeridirektoratet register) × the average weight of the fish on site that month (1.95 kg); dead fish can be lighter or heavier than the average, hence ±20 %",
+    "prod_kt": 1537.1
+   },
+   {
+    "c": "CL",
+    "name": "Chile",
+    "dead_kt": 42.2,
+    "lo": 42.2,
+    "hi": 60.3,
+    "basis": "measured",
+    "how": "Sernapesca: dead biomass of Atlantic salmon in the cycles closed in 2025 (42.2 kt); all salmonids together 60.3 kt",
+    "prod_kt": 724.0
+   },
+   {
+    "c": "GB",
+    "name": "Scotland",
+    "dead_kt": 27.7,
+    "lo": 27.7,
+    "hi": 27.7,
+    "basis": "measured",
+    "how": "SEPA farm returns, tonnes of dead fish reported by every sea farm",
+    "prod_kt": 175.7
+   },
+   {
+    "c": "AU",
+    "name": "Tasmania",
+    "dead_kt": 20.1,
+    "lo": 20.1,
+    "hi": 20.1,
+    "basis": "measured",
+    "how": "EPA Tasmania, tonnes of salmon mortality waste handled",
+    "prod_kt": 68.0
+   },
+   {
+    "c": "IS",
+    "name": "Iceland",
+    "dead_kt": 9.0,
+    "lo": 9.0,
+    "hi": 9.0,
+    "basis": "measured",
+    "how": "MAST monthly farm reports, tonnes of dead fish",
+    "prod_kt": 54.5
+   },
+   {
+    "c": "CA",
+    "name": "Canada",
+    "dead_kt": 8.5,
+    "lo": 6,
+    "hi": 11,
+    "basis": "estimate",
+    "how": "no tonnage published: about 20 % of the fish dying (BC 24 % in 2025, a very bad year in Newfoundland) scaled on Norway's ratio of dead weight to harvest",
+    "prod_kt": 87.5
+   },
+   {
+    "c": "FO",
+    "name": "Faroe Islands",
+    "dead_kt": 2.4,
+    "lo": 2,
+    "hi": 3,
+    "basis": "estimate",
+    "how": "Bakkafrost's 4.3 % of fish dying, scaled on Norway's ratio of dead weight to harvest",
+    "prod_kt": 114.9
+   }
+  ]
  }
 }
