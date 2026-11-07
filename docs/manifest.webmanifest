@@ -1,6 +1,6 @@
 {
-  "name": "Saumon — Market Intelligence",
-  "short_name": "Saumon",
+  "name": "Salmon Outlook",
+  "short_name": "Salmon Outlook",
   "description": "Production, stocks, marchés et prix du saumon d'élevage",
   "start_url": "production.html",
   "scope": "./",
