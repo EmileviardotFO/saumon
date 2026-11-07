@@ -56,7 +56,7 @@ def fetch():
         import requests, tempfile
         r = requests.get(URL, headers={'User-Agent': 'Mozilla/5.0 (salmon-dashboard; github.com/EmileviardotFO/saumon)'}, timeout=600)
         r.raise_for_status()
-        if not r.content.lstrip(b'\xef\xbb\xbf').startswith(b'Monthly Report ID'): raise ValueError('unexpected content')
+        if b'Monthly Report ID' not in r.content[:300]: raise ValueError('unexpected content: ' + repr(r.content[:120]))
         t = tempfile.NamedTemporaryFile(suffix='.csv', delete=False); t.write(r.content); t.close()
         print(f'scotland: downloaded {len(r.content) // 1024} KB from {URL}'); return t.name
     except Exception as e:  # noqa: BLE001

@@ -11,7 +11,7 @@ Unite commune : milliers de tonnes, poids vide (GWT / equivalent poisson entier 
 Par bassin (detail dans 'method') :
   NO  registre de biomasse (Fiskeridirektoratet) : recolte mensuelle ; 2027 = scenarios par generation (gen_outlook.json)
   CL  rapports sectoriels mensuels de Subpesca : recolte cumulee de saumon atlantique ; 2027 = rythme du dernier trimestre
-  GB  SEPA (biomasse, aliment) + exportations britanniques ; 2027 = biomasse en mer et annonces des societes
+  GB  enquete officielle (niveau) + rapports trimestriels Mowi / SSF / Bakkafrost (73 %) ; controle SEPA
   FO  exportations (Hagstova) ; 2027 = annonces de Bakkafrost (societe, pas analyste)
   IS  rapports de MAST ; 2027 = notre simulation ferme par ferme (iceland_outlook.json)
   CA  exportations par province (Statistique Canada, CIMT) ; 2027 = cycles des fermes de Colombie-Britannique (DFO)
@@ -114,23 +114,32 @@ def faroe():
 
 
 def scotland():
-    s = D('scotland.json'); n = s['national']; last = max(n); ly = int(last[:4]) if last.endswith('12') else int(last[:4]) - 1
+    """Niveau 2025 = enquete officielle ; 2026 = les trois eleveurs cotes (73 %, rapports trimestriels et previsions)
+    + les autres au rythme de l'estimation officielle ; 2027 = previsions des eleveurs, rabotees de leur ecart habituel."""
+    C = D('scotland_companies.json'); M = C['meta']; G = M['live_to_gutted']; CO = C['companies']
+    tot25 = M['official_2025_live_t'] * G; big25 = sum(c['year']['2025'] for c in CO.values()); oth25 = tot25 - big25
+    off26 = M['official_2026_forecast_live_t'] / M['official_2025_live_t']
+    ytd, ytd_ly = sum(c['ytd']['2026'] for c in CO.values()), sum(c['ytd']['2025'] for c in CO.values())
+    to = next(iter(CO.values()))['ytd']['to']
+    g26, g27 = sum(c['guidance']['2026'] for c in CO.values()), sum(c['guidance']['2027'] for c in CO.values())
+    oth26 = oth25 * off26; e26 = g26 + oth26
+    HAIR = 0.95                       # les eleveurs ecossais livrent en general un peu moins que prevu un an a l'avance
+    c27 = g27 * HAIR + oth26; lo27 = g27 * 0.88 + oth26 * 0.9; hi27 = g27 + oth26 * 1.05
+    # controle SEPA (bilan de masse 2025, rapports mensuels des fermes)
+    n = D('scotland.json')['national']; last = max(n)
     get = lambda y, i: sum(v[i] for k, v in n.items() if k.startswith(str(y)))
-    FCRB = 1.22   # aliment par kg de croissance (rapport biologique), ordre de grandeur ecossais
-
-    def harvest(y):   # bilan de masse : croissance (aliment / FCR) + biomasse de debut - biomasse de fin - poissons morts
-        b0, b1 = n.get(f'{y - 1}12', [0])[0], n.get(f'{y}12', [0])[0]
-        return (get(y, 2) / FCRB + b0 - b1 - get(y, 1)) * GUT
-    v25 = harvest(ly)
-    m, lx = exports_wfe('GB'); Y, M = divmod(lx, 100)
-    ytd, ytd_ly = sum(m.get(Y * 100 + i, 0) for i in range(1, M + 1)), sum(m.get((Y - 1) * 100 + i, 0) for i in range(1, M + 1))
-    e26 = v25 * (ytd / ytd_ly) if ytd_ly else v25
-    b, b_ly = n[last][0], n[str(int(last) - 100)][0]
-    return {'v2025': kt(v25), 'ytd': {'to': f'{MON[M - 1]} {Y} (UK exports)', 'kt': kt(ytd), 'chg': pc(ytd, ytd_ly)}, 'e2026': kt(e26), 'chg2026': pc(e26, v25),
-            'c2027': kt(e26 * 1.08), 'chg2027': 8, 'lo': -5, 'hi': 15, 'sepa_last': last, 'sepa_biomass_chg': pc(b, b_ly), 'confidence': 'low',
-            'source': 'SEPA monthly biomass, feed and mortality reports (mass balance) and UK salmon exports (HMRC)',
-            'method': f'{ly} harvest rebuilt from SEPA farm reports: growth (feed ÷ {FCRB}) + biomass at the start − biomass at the end − dead fish = {v25 / 1000:,.0f} kt gutted. SEPA publishes with a long delay (last month {MON[int(last[4:]) - 1]} {last[:4]}), so 2026 follows UK exports to date ({pc(ytd, ytd_ly):+.0f} %) — a rough guide, since UK exports also move with the home market. '
-                      '2027: the companies have more fish to harvest after two poor years (Bakkafrost Scotland plans 28,000 t against 20,000 t, Mowi Scotland 76,000 t against 74,000 t); we read +8 % (−5 to +15 %) as Scottish biology has disappointed several years in a row.',
+    sepa25 = (get(2025, 2) / 1.22 + n['202412'][0] - n['202512'][0] - get(2025, 1)) * GUT if '202512' in n else None
+    names = ', '.join(f"{k} {c['guidance']['2026'] / 1000:.0f} kt" for k, c in CO.items())
+    names27 = ', '.join(f"{k} {c['guidance']['2027'] / 1000:.0f} kt" for k, c in CO.items())
+    return {'v2025': kt(tot25), 'ytd': {'to': f'{to} 2026 (Mowi, SSF, Bakkafrost)', 'kt': kt(ytd), 'chg': pc(ytd, ytd_ly)}, 'e2026': kt(e26), 'chg2026': pc(e26, tot25),
+            'c2027': kt(c27), 'chg2027': pc(c27, e26), 'lo': pc(lo27, e26), 'hi': pc(hi27, e26), 'confidence': 'medium',
+            'sepa_last': last, 'sepa_2025_kt': kt(sepa25) if sepa25 else None, 'official_2026_chg': round((off26 - 1) * 100, 1),
+            'source': 'Scottish Fish Farm Production Survey (Marine Directorate), quarterly reports of Mowi, Scottish Sea Farms and Bakkafrost, SEPA monthly farm reports',
+            'method': f'2025 = official survey, {M["official_2025_live_t"]:,} t live = {tot25 / 1000:,.0f} kt gutted (our cross-check from SEPA farm reports: {sepa25 / 1000:,.0f} kt). '
+                      f'2026: the three farmers that report every quarter (73 % of the harvest) harvested {ytd / 1000:,.1f} kt to {to}, {pc(ytd, ytd_ly):+.0f} % on 2025, and plan {g26 / 1000:,.0f} kt for the year ({names}); '
+                      f'that needs a strong fourth quarter ({(g26 - ytd) / 1000:,.0f} kt against {(big25 - ytd_ly) / 1000:,.0f} kt in Q4 2025), so watch the Q4 reports in January; the others (Cooke, Loch Duart…) follow the farmers\' own estimate in the official survey ({(off26 - 1) * 100:+.1f} %). '
+                      f'2027: the three plan {g27 / 1000:,.0f} kt ({names27}), +{(g27 / g26 - 1) * 100:.0f} %; we take 95 % of that, because Scottish farmers usually deliver a bit less than planned a year ahead (SSF cut 2026 from 43 to 40 kt in November), and keep the others level. '
+                      'Range: the three deliver 88 % to 100 % of plan. In twenty years of data, neither fish at sea at year end nor smolts put to sea predicted the next year better than "no change" in Scotland (the average miss is about ±10 %): mortality decides, so the range stays wide.',
             'tab': 'scotland'}
 
 

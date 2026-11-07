@@ -41,23 +41,24 @@
    "tab": "chile"
   },
   "GB": {
-   "v2025": 169.3,
+   "v2025": 175.7,
    "ytd": {
-    "to": "Aug 2026 (UK exports)",
-    "kt": 74.9,
-    "chg": -25.7
+    "to": "Q3 2026 (Mowi, SSF, Bakkafrost)",
+    "kt": 99.2,
+    "chg": -5.6
    },
-   "e2026": 125.8,
-   "chg2026": -25.7,
-   "c2027": 135.8,
-   "chg2027": 8,
-   "lo": -5,
-   "hi": 15,
+   "e2026": 182.0,
+   "chg2026": 3.6,
+   "c2027": 189.6,
+   "chg2027": 4.1,
+   "lo": -4.2,
+   "hi": 9.6,
+   "confidence": "medium",
    "sepa_last": "202512",
-   "sepa_biomass_chg": -2.1,
-   "confidence": "low",
-   "source": "SEPA monthly biomass, feed and mortality reports (mass balance) and UK salmon exports (HMRC)",
-   "method": "2025 harvest rebuilt from SEPA farm reports: growth (feed ÷ 1.22) + biomass at the start − biomass at the end − dead fish = 169 kt gutted. SEPA publishes with a long delay (last month Dec 2025), so 2026 follows UK exports to date (-26 %) — a rough guide, since UK exports also move with the home market. 2027: the companies have more fish to harvest after two poor years (Bakkafrost Scotland plans 28,000 t against 20,000 t, Mowi Scotland 76,000 t against 74,000 t); we read +8 % (−5 to +15 %) as Scottish biology has disappointed several years in a row.",
+   "sepa_2025_kt": 169.3,
+   "official_2026_chg": 0.7,
+   "source": "Scottish Fish Farm Production Survey (Marine Directorate), quarterly reports of Mowi, Scottish Sea Farms and Bakkafrost, SEPA monthly farm reports",
+   "method": "2025 = official survey, 197,836 t live = 176 kt gutted (our cross-check from SEPA farm reports: 169 kt). 2026: the three farmers that report every quarter (73 % of the harvest) harvested 99.2 kt to Q3, -6 % on 2025, and plan 134 kt for the year (Mowi Scotland 74 kt, Scottish Sea Farms 40 kt, Bakkafrost Scotland 20 kt); that needs a strong fourth quarter (35 kt against 23 kt in Q4 2025), so watch the Q4 reports in January; the others (Cooke, Loch Duart…) follow the farmers' own estimate in the official survey (+0.7 %). 2027: the three plan 149 kt (Mowi Scotland 76 kt, Scottish Sea Farms 45 kt, Bakkafrost Scotland 28 kt), +11 %; we take 95 % of that, because Scottish farmers usually deliver a bit less than planned a year ahead (SSF cut 2026 from 43 to 40 kt in November), and keep the others level. Range: the three deliver 88 % to 100 % of plan. In twenty years of data, neither fish at sea at year end nor smolts put to sea predicted the next year better than \"no change\" in Scotland (the average miss is about ±10 %): mortality decides, so the range stays wide.",
    "tab": "scotland"
   },
   "FO": {
@@ -135,13 +136,13 @@
   }
  },
  "tracked": {
-  "v2025": 2755.3,
-  "e2026": 2870.8,
-  "chg2026": 4.2,
-  "c2027": 2876.0,
-  "chg2027": 0.2,
-  "lo": -5.9,
-  "hi": 3.9,
+  "v2025": 2761.7,
+  "e2026": 2927.0,
+  "chg2026": 6.0,
+  "c2027": 2929.8,
+  "chg2027": 0.1,
+  "lo": -5.8,
+  "hi": 3.8,
   "note": "Sum of the seven basins we follow (about 95 % of farmed Atlantic salmon). Ireland, the United States, Russia, New Zealand and other small producers are not tracked."
  }
 }

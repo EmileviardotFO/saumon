@@ -1152,6 +1152,11 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="sig-title">Scotland — salmon farming at a glance (SEPA, Marine Directorate, company reports)</div>
     <div class="sig-sub" id="scSub"></div>
     <div id="scCards" class="pr-cards"></div>
+    <div class="sig-title" style="margin-top:18px">Supply outlook — 2026 and 2027, our numbers</div>
+    <div class="sig-sub" id="scOutSub"></div>
+    <div id="scOutCards" class="pr-cards"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="scOutTab"></table></div>
+    <div id="scOutSig" style="margin-top:12px"></div>
     <div class="sig-title" style="margin-top:18px">Mortality and feed conversion, year by year</div>
     <div class="sig-sub" id="scAnnSub"></div>
     <div style="overflow-x:auto"><table class="sig-table" id="scAnn"></table></div>
@@ -5614,7 +5619,39 @@ function renderScotlandSurvey() {
     scHistory() +
     `<div class="sig-sub" style="margin-top:14px"><b>Harvest and value by marine region.</b> The survey values every region at the same average price (£${(MR.reduce((t, r) => t + r[2], 0) * 1e6 / mrT / 1000).toFixed(2)} per kg live in 2025), so the value only restates the tonnage.</div><div style="overflow-x:auto">${reg}</div>`;
 }
+// ---- perspective d'offre (own_supply.json, scotland_companies.json, scotland_extra.json)
+let SCOUT = null, SCOUT_LOADING = false;
+function renderScOutlook() {
+  if (!SCOUT) { if (!SCOUT_LOADING) { SCOUT_LOADING = true; const gj = f => fetch(DATA_URL.replace('data.json', f), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
+      Promise.all(['own_supply.json', 'scotland_companies.json', 'scotland_extra.json'].map(gj)).then(([o, c, x]) => { SCOUT = { o, c, x }; SCOUT_LOADING = false; if (currentView === 'scotland') renderScOutlook(); }); } return; }
+  const o = ((SCOUT.o || {}).basins || {}).GB, C = SCOUT.c, X = SCOUT.x || {}, el = id => document.getElementById(id);
+  const esc = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), kt = v => v === null || v === undefined ? '—' : (v / 1000).toLocaleString('en-US', { maximumFractionDigits: 1 }) + ' kt';
+  const sg = v => v === null || v === undefined || !isFinite(v) ? '—' : `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(0)} %`;
+  const card = (t, v, sub, col) => `<div class="pr-card" style="cursor:default"><div class="nm"><i style="background:${col}"></i>${t}</div><div class="big">${v}</div><div class="ln">${sub}</div></div>`;
+  if (!o || !C) { el('scOutSub').textContent = 'Outlook not available yet.'; return; }
+  el('scOutSub').innerHTML = `Built only from primary data: the official production survey for the level, the quarterly reports of the three farmers that publish (${Object.values(C.companies).reduce((a, c) => a + (c.share_2025_pct || 0), 0)} % of the harvest) for this year and next, SEPA farm reports as a cross-check. Same figures as the <span class="gs-go" onclick="gsGoTab('supply')">Global supply</span> tab. <details style="display:inline"><summary style="display:inline;cursor:pointer;color:#4fc3f7">Method</summary> ${esc(o.method)}</details>`;
+  el('scOutCards').innerHTML = card('2025 · official', `${o.v2025.toFixed(0)} kt`, `gutted weight (survey: ${C.meta.official_2025_live_t.toLocaleString('en-US')} t live). Our SEPA cross-check: ${o.sepa_2025_kt} kt`, '#4fc3f7') +
+    card(`2026 so far · ${esc(o.ytd.to.split(' (')[0])}`, sg(o.ytd.chg), `the three listed farmers, ${o.ytd.kt} kt against ${(o.ytd.kt / (1 + o.ytd.chg / 100)).toFixed(1)} kt a year earlier`, o.ytd.chg < 0 ? '#ef5350' : '#81c784') +
+    card('2026 · our estimate', `${o.e2026.toFixed(0)} kt <small style="font-size:14px;color:#ffb74d">${sg(o.chg2026)}</small>`, `farmers' plans for the year; the official survey said ${o.official_2026_chg >= 0 ? '+' : ''}${o.official_2026_chg} %`, '#81c784') +
+    card('2027 · our projection', `${o.c2027.toFixed(0)} kt <small style="font-size:14px;color:#ffb74d">${sg(o.chg2027)}</small>`, `range ${sg(o.lo)} to ${sg(o.hi)}`, '#ffb74d');
+  const ys = ['2025', '2026'];
+  el('scOutTab').innerHTML = `<thead><tr><th style="text-align:left">Farmer</th><th>Share 2025</th><th>Harvest 2025</th><th>Jan–Sep 2025</th><th>Jan–Sep 2026</th><th>Change</th><th>Q3 2025</th><th>Q3 2026</th><th>Plan 2026</th><th>Plan 2027</th><th>2027 vs 2026</th></tr></thead><tbody>` +
+    Object.entries(C.companies).map(([n, c]) => `<tr><td style="text-align:left"><b>${esc(n)}</b><div style="font-size:11px;color:var(--muted);max-width:340px;min-width:220px;white-space:normal;text-align:left">${esc(c.notes)} <a href="${esc(c.url)}" target="_blank" rel="noopener" style="color:#4fc3f7">${esc(c.src)}</a></div></td><td>${c.share_2025_pct} %</td><td>${kt(c.year['2025'])}</td><td>${kt(c.ytd['2025'])}</td><td>${kt(c.ytd['2026'])}</td><td>${sg(100 * (c.ytd['2026'] / c.ytd['2025'] - 1))}</td><td>${kt(c.quarters['2025Q3'])}</td><td>${kt(c.quarters['2026Q3'])}</td><td>${kt(c.guidance['2026'])}</td><td>${kt(c.guidance['2027'])}</td><td>${sg(100 * (c.guidance['2027'] / c.guidance['2026'] - 1))}</td></tr>`).join('') +
+    (() => { const T = k => Object.values(C.companies).reduce((a, c) => a + k(c), 0), y25 = T(c => c.year['2025']), a = T(c => c.ytd['2025']), b = T(c => c.ytd['2026']), g6 = T(c => c.guidance['2026']), g7 = T(c => c.guidance['2027']);
+      return `<tr style="font-weight:bold"><td style="text-align:left">Three listed farmers</td><td>${Object.values(C.companies).reduce((s, c) => s + c.share_2025_pct, 0)} %</td><td>${kt(y25)}</td><td>${kt(a)}</td><td>${kt(b)}</td><td>${sg(100 * (b / a - 1))}</td><td>${kt(T(c => c.quarters['2025Q3']))}</td><td>${kt(T(c => c.quarters['2026Q3']))}</td><td>${kt(g6)}</td><td>${kt(g7)}</td><td>${sg(100 * (g7 / g6 - 1))}</td></tr>`
+        + `<tr><td colspan="11" style="font-size:12px;color:var(--muted);white-space:normal;text-align:left">To reach their 2026 plans the three must harvest ${kt(g6 - b)} in Q4, against ${kt(y25 - a)} in Q4 2025. ${esc(C.others.names)} do not publish quarterly volumes. Updated by hand after each quarterly report (${esc(C.meta.updated)}).</td></tr>`; })() + '</tbody>';
+  // signaux biologiques
+  const R = X.restrictions || [], E = X.escapes || [], act = R.filter(r => r.active), cut = new Date(Date.now() - 365 * 864e5).toISOString().slice(0, 10), E12 = E.filter(e => e.date >= cut && e.water === 'S');
+  const sv = (C.survival || {}).points || {};
+  el('scOutSig').innerHTML = `<div class="sig-sub" style="margin-bottom:6px"><b>Biology signals between reports</b> — the SEPA farm reports come about 10 months late, so these are the fastest signs of trouble.</div>` +
+    `<div class="pr-cards">${card('Monthly survival (Salmon Scotland)', (() => { const e = Object.entries(sv); return e.length ? `${e[e.length - 1][1]} %` : '—'; })(), Object.entries(sv).map(([k, v]) => `${esc(k)}: ${v} %`).join(' · ') + '. ' + esc((C.survival || {}).note || ''), '#81c784')}` +
+    card('Movement restrictions for disease', `${act.length} active`, act.length ? act.map(r => `${esc(r.site)} (${esc(r.operator)}) — ${esc(r.disease)} since ${r.date}`).join('<br>') : 'none in force', act.length ? '#ef5350' : '#81c784') +
+    card('Escapes at sea, last 12 months', `${E12.length} reported`, E12.slice(0, 4).map(e => `${e.date} ${esc(e.site)} (${esc(e.operator)}): ${e.number === null ? 'number unknown' : e.number.toLocaleString('en-US') + ' fish'}`).join('<br>') || '—', E12.some(e => (e.number || 0) > 10000) ? '#ffb74d' : '#81c784') + `</div>` +
+    `<div class="sig-sub">Source: Scotland's Aquaculture (Marine Directorate Fish Health Inspectorate), read at each update${X.meta ? ' — ' + esc(X.meta.built) : ''}.</div>`;
+}
+
 function renderScotland() {
+  renderScOutlook();
   if (!MEV && !MEV_LOADING) { MEV_LOADING = true; fetch(DATA_URL.replace('data.json', 'events.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
     .then(j => { MEV = j || { manual: [], news: [] }; MEV_LOADING = false; if (currentView === 'scotland') renderScotland(); }); }
   if (!SCO) { if (!SCO_LOADING) { SCO_LOADING = true; fetch(DATA_URL.replace('data.json', 'scotland.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)

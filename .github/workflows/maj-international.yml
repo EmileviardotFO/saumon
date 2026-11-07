@@ -77,6 +77,11 @@ jobs:
       continue-on-error: true
       timeout-minutes: 5
       run: python3 scripts/build_scotland.py
+    - name: Ecosse - restrictions sanitaires, evasions et sites (Marine Directorate)
+      id: scotland_extra
+      continue-on-error: true
+      timeout-minutes: 10
+      run: python3 scripts/build_scotland_extra.py
     - name: Ecosse - enquete annuelle de production (tableaux complementaires deposes dans xlsx/scotland/)
       id: scotland_survey
       continue-on-error: true
