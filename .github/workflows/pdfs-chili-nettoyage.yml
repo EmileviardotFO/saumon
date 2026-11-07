@@ -1,0 +1,11 @@
+name: Chili - supprimer la branche temporaire des PDF
+on:
+  workflow_dispatch: {}
+permissions:
+  contents: write
+jobs:
+  clean:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: git push origin --delete tmp-chili-pdfs || echo "deja supprimee"
