@@ -1357,6 +1357,14 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="sig-sub" id="caSub"></div>
     <div id="caCards" class="pr-cards"></div>
     <div id="caxCards" class="pr-cards"></div>
+    <div class="sig-title" style="margin-top:18px">Canadian salmon exports by month and province of origin (Statistics Canada)</div>
+    <div class="sig-sub" id="ctSub"></div>
+    <div id="ctCards" class="pr-cards"></div>
+    <div id="ctTog" style="margin:6px 0"></div>
+    <div id="ctChart"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="ctTab"></table></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="ctForm"></table></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="ctDest"></table></div>
     <div class="sig-title" style="margin-top:18px">Monthly volumes by coast — fresh whole salmon into the US</div>
     <div class="sig-sub" id="caVolSub"></div>
     <div id="caVolTog" style="margin:6px 0"></div>
@@ -4428,6 +4436,59 @@ function caMap(lastC) {
   });
 }
 
+
+// ---- Canada : exportations mensuelles par province d'origine (data/canada_trade.json, Statistique Canada CIMT)
+let CT = null, CT_LOADING = false, CT_VIEW = 'ATL';
+const CT_PROV = { BC: 'British Columbia', NB: 'New Brunswick', NS: 'Nova Scotia', NL: 'Newfoundland and Labrador', PE: 'Prince Edward Island', QC: 'Quebec', ON: 'Ontario', AB: 'Alberta', MB: 'Manitoba' };
+const CT_ATL = ['NB', 'NS', 'NL', 'PE'];
+function caTrade() {
+  const $ = id => document.getElementById(id);
+  if (!CT) { if (!CT_LOADING) { CT_LOADING = true; fetch(DATA_URL.replace('data.json', 'canada_trade.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
+      .then(j => { CT = j || { rows: [] }; CT_LOADING = false; if (currentView === 'canada') caTrade(); }); }
+    $('ctSub').innerHTML = 'Loading…'; return; }
+  const R = CT.rows || []; if (!R.length) { $('ctSub').innerHTML = 'Not built yet: data/canada_trade.json comes from the workflow "Canada - exportations mensuelles".'; return; }
+  const e = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), f0 = v => v === null || v === undefined || !isFinite(v) ? '—' : Math.round(v).toLocaleString('en-US');
+  const F = CT.meta.forms, last = CT.meta.last, ly = Math.floor(last / 100), lm = last % 100;
+  const grp = p => p === 'BC' ? 'BC' : CT_ATL.includes(p) ? 'ATL' : 'OTH';
+  const sum = (filt) => { const o = {}; R.forEach(r => { if (!filt(r)) return; const a = o[r[0]] = o[r[0]] || [0, 0]; a[0] += r[5]; a[1] += r[6]; }); return o; };
+  const by = { ALL: sum(() => true), BC: sum(r => r[1] === 'BC'), ATL: sum(r => CT_ATL.includes(r[1])) };
+  CT_ATL.forEach(p => by[p] = sum(r => r[1] === p));
+  const v = (k, ym) => ((by[k] || {})[ym] || [0])[0], pr = (k, ym) => { const a = (by[k] || {})[ym]; return a && a[0] ? a[1] / a[0] : null; };
+  const m12 = tmRange(last, 12), p12 = m12.map(k => k - 100), ytd = Array.from({ length: lm }, (_, i) => ly * 100 + i + 1);
+  const S = (k, ks) => ks.reduce((a, x) => a + v(k, x), 0), pct = (a, b) => a && b ? 100 * (a / b - 1) : null;
+  const vt = x => x === null ? '' : `<span class="${x >= 0 ? 'delta-good' : 'delta-bad'}" style="font-size:12px">${x >= 0 ? '+' : '−'}${Math.abs(x).toFixed(0)}%</span>`;
+  const card = (lab, big, sub, c) => `<div class="pr-card" style="cursor:default"><div class="nm"><i style="background:${c}"></i>${lab}</div><div class="big">${big}</div><div class="ln">${sub}</div></div>`;
+  $('ctCards').innerHTML = [['ALL', 'Canada', '#e7eef2'], ['BC', 'British Columbia', '#4fc3f7'], ['ATL', 'Atlantic provinces', '#ffb74d']].map(([k, lab, c]) =>
+    card(`${lab} · ${tmMl(last)}`, `${f0(v(k, last))} t ${vt(pct(v(k, last), v(k, last - 100)))}`,
+      `${tmMl(last - 100)}: ${f0(v(k, last - 100))} t · Jan–${MONTHS_FR[lm - 1].slice(0, 3)} ${ly}: ${f0(S(k, ytd))} t ${vt(pct(S(k, ytd), S(k, ytd.map(x => x - 100))))} · 12 months ${f0(S(k, m12))} t ${vt(pct(S(k, m12), S(k, p12)))}`, c)).join('');
+  $('ctSub').innerHTML = `Farmed Atlantic salmon exported from Canada each month, by the <b>province where it was produced</b> — British Columbia (Pacific) against New Brunswick, Nova Scotia, Newfoundland and Prince Edward Island (Atlantic). ` +
+    `Source: Statistics Canada's merchandise trade database (CIMT), domestic exports (re-exports excluded), in tonnes of product: fresh and frozen whole fish, fillets, smoked. ` +
+    `Published about five weeks after the month; latest month <b>${tmMl(last)}</b>, the freshest Canadian figure available — a month ahead of UN Comtrade and on the same day as US imports. ` +
+    `Almost all Canadian farmed salmon is exported, almost all of it fresh to the United States, so these exports track the harvest month by month. Values in Canadian dollars at the border.`;
+  const VIEWS = { ATL: 'Atlantic provinces', BC: 'British Columbia', ALL: 'Canada', NB: 'New Brunswick', NS: 'Nova Scotia', NL: 'Newfoundland' };
+  $('ctTog').innerHTML = Object.entries(VIEWS).map(([k, l]) => `<button data-k="${k}" style="margin:0 6px 6px 0;padding:5px 11px;border-radius:14px;cursor:pointer;font-size:12.5px;background:${k === CT_VIEW ? '#1c3a4a' : '#12222c'};color:${k === CT_VIEW ? '#fff' : '#cfdde4'};border:1px solid ${k === CT_VIEW ? '#4fc3f7' : '#223642'}">${l}</button>`).join('');
+  $('ctTog').querySelectorAll('button').forEach(b => b.onclick = () => { CT_VIEW = b.dataset.k; caTrade(); });
+  const yrs = [ly - 2, ly - 1, ly];
+  $('ctChart').innerHTML = caBars((y, m) => (y * 100 + m <= last ? v(CT_VIEW, y * 100 + m) : null), yrs, { axis: `Tonnes exported · ${VIEWS[CT_VIEW]}`, fmt: t => f0(t), tip: t => f0(t) + ' t' });
+  // tableau : 13 derniers mois par province, un an plus tot, prix
+  const ks = tmRange(last, 13), rows = [['BC', 'British Columbia'], ['NB', 'New Brunswick'], ['NS', 'Nova Scotia'], ['NL', 'Newfoundland'], ['PE', 'Prince Edward Island'], ['ATL', '<b>Atlantic provinces</b>'], ['ALL', '<b>Canada</b>']];
+  $('ctTab').innerHTML = `<thead><tr><th class="name">Tonnes</th>${ks.map(k => `<th>${tmMl(k)}</th>`).join('')}<th>12 months</th><th>vs a year</th></tr></thead><tbody>` +
+    rows.filter(([k]) => S(k, m12) || S(k, p12)).map(([k, l]) => `<tr><td class="name">${l}</td>${ks.map(x => `<td>${f0(v(k, x))}<div style="font-size:10.5px;color:var(--muted)">${f0(v(k, x - 100))}</div></td>`).join('')}<td><b>${f0(S(k, m12))}</b></td><td>${vt(pct(S(k, m12), S(k, p12)))}</td></tr>`).join('') +
+    `<tr><td class="name">CAD/kg, Canada</td>${ks.map(x => `<td>${pr('ALL', x) ? pr('ALL', x).toFixed(2) : '—'}</td>`).join('')}<td></td><td></td></tr></tbody>`;
+  // produits, 12 mois, par cote
+  const fs = (g, fi, ks2) => R.reduce((a, r) => a + (r[2] === fi && ks2.includes(r[0]) && (g === 'ALL' || grp(r[1]) === g) ? r[5] : 0), 0);
+  $('ctForm').innerHTML = `<thead><tr><th class="name">Product, last 12 months (t)</th><th>British Columbia</th><th>vs a year</th><th>Atlantic</th><th>vs a year</th><th>Canada</th><th>vs a year</th></tr></thead><tbody>` +
+    F.map((nm, fi) => `<tr><td class="name">${e(nm)}</td>${['BC', 'ATL', 'ALL'].map(g => `<td>${f0(fs(g, fi, m12))}</td><td>${vt(pct(fs(g, fi, m12), fs(g, fi, p12)))}</td>`).join('')}</tr>`).filter((_, fi) => fs('ALL', fi, m12) + fs('ALL', fi, p12) > 0).join('') + `</tbody>`;
+  // destinations, 12 mois
+  const dest = {}; R.forEach(r => { const inA = m12.includes(r[0]), inB = p12.includes(r[0]); if (!inA && !inB) return; const k = r[3] === 'US' ? 'US-' + (r[4] || '?') : r[3];
+    const d = dest[k] = dest[k] || { BC: [0, 0], ATL: [0, 0] }; const g = grp(r[1]); if (g === 'OTH') return; d[g][inA ? 0 : 1] += r[5]; });
+  const NM = (((typeof DATA_RAW !== 'undefined' && DATA_RAW ? DATA_RAW : {}).ssb_exports || {}).meta || {}).countries || {};
+  const US = { CA: 'California', WA: 'Washington', NY: 'New York', MA: 'Massachusetts', ME: 'Maine', IL: 'Illinois', MD: 'Maryland', NJ: 'New Jersey', PA: 'Pennsylvania', OR: 'Oregon', FL: 'Florida', TX: 'Texas', GA: 'Georgia', MN: 'Minnesota', OH: 'Ohio', NV: 'Nevada', CT: 'Connecticut', VA: 'Virginia', MI: 'Michigan', NC: 'North Carolina', CO: 'Colorado', AZ: 'Arizona', UT: 'Utah', TN: 'Tennessee', NH: 'New Hampshire', RI: 'Rhode Island', DE: 'Delaware' };
+  const dn = k => k.startsWith('US-') ? `United States · ${US[k.slice(3)] || k.slice(3)}` : ((NM[k] || {}).name || (typeof EU_EXTRA !== 'undefined' && EU_EXTRA[k]) || k);
+  const DL = Object.entries(dest).sort((a, b) => (b[1].BC[0] + b[1].ATL[0]) - (a[1].BC[0] + a[1].ATL[0])).slice(0, 20);
+  $('ctDest').innerHTML = `<thead><tr><th class="name">Destination, last 12 months (t)</th><th>From British Columbia</th><th>vs a year</th><th>From the Atlantic provinces</th><th>vs a year</th></tr></thead><tbody>` +
+    DL.map(([k, d]) => `<tr><td class="name">${e(dn(k))}</td><td>${f0(d.BC[0])}</td><td>${vt(pct(d.BC[0], d.BC[1]))}</td><td>${f0(d.ATL[0])}</td><td>${vt(pct(d.ATL[0], d.ATL[1]))}</td></tr>`).join('') + `</tbody>`;
+}
 // ---- Canada atlantique : sites, exploitants, sante, traitements, production (data/canada_atl.json, scripts/build_canada_atlantic.py)
 let CATL = null, CATL_LOADING = false, CATL_MAP = null, CATL_LAYER = null, CATL_OP = null, CATL_PROV = '', CATL_Q = '', CATL_MK = {};
 function caAtl() {
@@ -4754,7 +4815,7 @@ function renderCanada() {
       `*Newfoundland's salmon figure is suppressed for confidentiality: its total finfish (almost entirely salmon and steelhead trout) is shown instead, and it is not in the published Canada salmon total. ` +
       `Atlantic Canada publishes no monthly farm data comparable to BC's.` + (ex ? ` More recent: ${ex}.` : '');
   }
-  caMap(last); caAtl();
+  caMap(last); caAtl(); caTrade();
   // fermes en activite
   if (L.length) {
     const keys = tmRange(last, 60).filter(k => k >= L[0].m);
@@ -12849,7 +12910,7 @@ loadRemoteData().then(live => {
 (function () {
   const SLOTS = [['map', 'Farms, licences and companies'], ['stock', 'Fish at sea'], ['harvest', 'Harvest and production'], ['cycles', 'Cycles and time at sea'],
     ['bio', 'Mortality and fish health'], ['companies', 'Company results'], ['trade', 'Exports'], ['news', 'News']];
-  const RULES = [[/site by site/i, 'map'], [/anaemia|reportable conditions/i, 'bio'], [/put to sea/i, 'stock'], [/cycle length|time at sea|smolt entries|sea temperature/i, 'cycles'], [/volumes by coast/i, 'harvest'], [/farm by farm/i, 'stock'], [/^news$/i, 'news'], [/export/i, 'trade'], [/^fish at sea|smolt transfer/i, 'stock'],
+  const RULES = [[/exports by month and province/i, 'harvest'], [/site by site/i, 'map'], [/anaemia|reportable conditions/i, 'bio'], [/put to sea/i, 'stock'], [/cycle length|time at sea|smolt entries|sea temperature/i, 'cycles'], [/volumes by coast/i, 'harvest'], [/farm by farm/i, 'stock'], [/^news$/i, 'news'], [/export/i, 'trade'], [/^fish at sea|smolt transfer/i, 'stock'],
     [/^mortality/i, 'bio'], [/company results|year by year$|farmers' results|bakkafrost scotland/i, 'companies'],
     [/farms and|farming areas|farm leases|licences|^map/i, 'map'],
     [/mortal|death|dead fish|lice|disease|health/i, 'bio'], [/harvest|survey|by province|production/i, 'harvest'],
@@ -13005,7 +13066,7 @@ loadRemoteData().then(live => {
   const get = f => fetch(DATA_URL.replace('data.json', f), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
   function load() {
     if (loading) return loading;
-    loading = Promise.all(['world_imports.json', 'search_index.json', 'eurostat.json', 'national_trade.json', 'bw_site_lice.json', 'events.json', 'news.json', 'news_archive.json', 'big_fish.json', 'quarterly.json', 'plants.json']
+    loading = Promise.all(['world_imports.json', 'search_index.json', 'eurostat.json', 'national_trade.json', 'bw_site_lice.json', 'events.json', 'news.json', 'news_archive.json', 'big_fish.json', 'quarterly.json', 'plants.json', 'canada_trade.json']
       .map(f => get(f).then(j => D[f] = j)));
     return loading;
   }
@@ -13278,7 +13339,7 @@ loadRemoteData().then(live => {
   // ---- marche de l'UE : importations par origine et exportations par destination (Eurostat Comext, mensuel)
   let EUS = null;
   const EU_EXTRA = { ZZ: 'Others (small partners)', NO: 'Norway', SE: 'Sweden', FO: 'Faroe Islands', IS: 'Iceland', CL: 'Chile', GB: 'United Kingdom', DK: 'Denmark', DE: 'Germany', NL: 'Netherlands', PL: 'Poland', FR: 'France', IT: 'Italy', ES: 'Spain', US: 'United States', CN: 'China', VN: 'Vietnam', AU: 'Australia', CH: 'Switzerland', CZ: 'Czechia', LT: 'Lithuania', BE: 'Belgium', AT: 'Austria', TR: 'Türkiye', CA: 'Canada', UA: 'Ukraine', PE: 'Peru', BR: 'Brazil', MX: 'Mexico', AR: 'Argentina', CO: 'Colombia', UY: 'Uruguay', RU: 'Russia', JP: 'Japan', KR: 'South Korea', IL: 'Israel', TH: 'Thailand', TW: 'Taiwan', SG: 'Singapore', HK: 'Hong Kong', AE: 'United Arab Emirates', EC: 'Ecuador', CR: 'Costa Rica', DO: 'Dominican Republic', PA: 'Panama', BO: 'Bolivia', PY: 'Paraguay', MY: 'Malaysia', PH: 'Philippines', ID: 'Indonesia' };
-  let gsFlow = 0;   // 1 = importations seulement, 2 = exportations seulement (mot de la recherche)
+  let gsFlow = 0, gsProv = null;   // gsProv : province canadienne demandee (BC, NB, NS, NL, ATL)   // 1 = importations seulement, 2 = exportations seulement (mot de la recherche)
   function euCard(mk, prods, per) {
     const E = D['eurostat.json']; if (!E || !(E.meta.reporters_up || []).includes(mk.iso)) return '';
     const P = E.meta.products; // 0 Fresh whole, 1 Frozen whole, 2 Fresh fillets, 3 Frozen fillets, 4 Other fresh meat, 5 Smoked, 6 Prepared
@@ -13325,6 +13386,9 @@ loadRemoteData().then(live => {
     const forms = { 0: 'Fresh whole', 1: 'Frozen whole', 2: 'Fresh fillets', 3: 'Frozen fillets', 5: 'Smoked', 6: 'Prepared / preserved' };
     if (org === 'NO') { const S = (typeof DATA_RAW !== 'undefined' && DATA_RAW ? DATA_RAW : {}).ssb_exports; if (!S) return ''; const map = [0, 2, 3, 1];
       rows = S.rows.map(r => [r[0], r[2], map[r[1]], r[3] / 1000, r[4] / 1000]); cur = 'NOK'; }
+    else if (org === 'CA' && D['canada_trade.json'] && (D['canada_trade.json'].rows || []).length) {   // Statistique Canada (CIMT) : par province d'origine, en CAD
+      const FM = [0, 2, 1, 3, 5], A = ['NB', 'NS', 'NL', 'PE'];
+      rows = D['canada_trade.json'].rows.filter(r => !gsProv || (gsProv === 'ATL' ? A.includes(r[1]) : r[1] === gsProv)).map(r => [r[0], r[3], FM[r[2]], r[5], r[6]]); cur = 'CAD'; }
     else { const T = D['national_trade.json']; if (!T) return ''; rows = T.rows.filter(r => r[1] === org).map(r => [r[0], r[2], r[3], r[4], r[6]]); cur = '€'; }
     if (!rows.length) return '';
     let F = Object.keys(forms).map(Number);
@@ -13337,8 +13401,8 @@ loadRemoteData().then(live => {
     if (!R0.length) return `<div class="gs-card"><h4>Exports from ${esc({ NO: 'Norway', FO: 'Faroe Islands', IS: 'Iceland', GB: 'United Kingdom', CL: 'Chile', CA: 'Canada', AU: 'Australia' }[org] || org)}</h4><div class="s">This product is not in the monthly export data of this country${org === 'NO' ? ' (SSB monthly data here: fresh and frozen whole fish and fillets only)' : ''}.</div></div>`;
     const C0 = (((typeof DATA_RAW !== 'undefined' && DATA_RAW ? DATA_RAW : {}).ssb_exports || {}).meta || {}).countries || {};
     if (per && !(per.ms !== 'ytd' && per.ms.length === 1 && !per.year)) { const G = {}; R0.forEach(r => { const g = G[r[0]] = G[r[0]] || {}; const b = g[r[1]] = g[r[1]] || [0, 0]; b[0] += r[3]; b[1] += r[4]; });
-      const nm0 = { NO: 'Norway', FO: 'Faroe Islands', IS: 'Iceland', GB: 'United Kingdom (Scotland)', CL: 'Chile', CA: 'Canada', AU: 'Australia' }[org] || org;
-      return `<div class="gs-card"><h4>Exports from ${esc(nm0)} — ${esc(F.map(f => forms[f].toLowerCase()).join(', '))}</h4><div class="s">Source: ${org === 'NO' ? 'Statistics Norway (SSB), FOB in NOK' : 'national statistics office, export value in €'}.</div>` +
+      const nm0 = org === 'CA' && gsProv ? { BC: 'British Columbia', NB: 'New Brunswick', NS: 'Nova Scotia', NL: 'Newfoundland', PE: 'Prince Edward Island', ATL: 'Atlantic Canada' }[gsProv] : ({ NO: 'Norway', FO: 'Faroe Islands', IS: 'Iceland', GB: 'United Kingdom (Scotland)', CL: 'Chile', CA: 'Canada', AU: 'Australia' }[org] || org);
+      return `<div class="gs-card"><h4>Exports from ${esc(nm0)} — ${esc(F.map(f => forms[f].toLowerCase()).join(', '))}</h4><div class="s">Source: ${org === 'NO' ? 'Statistics Norway (SSB), FOB in NOK' : cur === 'CAD' ? 'Statistics Canada (CIMT), domestic exports by province of origin, CAD' : 'national statistics office, export value in €'}.</div>` +
         perHtml(per, k => G[k], { last, t: v => v, p: (q, v) => (v / q).toFixed(2), cur, nm: c => EU_EXTRA[c] || (C0[c] || {}).name || c, col: 'Destination', head: 'Exports' }) + `</div>`; }
     let ref = last, note = '';
     if (mon) { const c = [...new Set(rows.map(r => r[0]))].filter(k => k % 100 === mon).sort((a, b) => b - a);
@@ -13352,10 +13416,10 @@ loadRemoteData().then(live => {
     R0.filter(r => r[0] === ref || r[0] === ref - 100).forEach(r => { const b = by[r[1]] = by[r[1]] || [0, 0, 0, 0]; if (r[0] === ref) { b[0] += r[3]; b[1] += r[4]; } else { b[2] += r[3]; b[3] += r[4]; } });
     const L = Object.entries(by).filter(([, b]) => b[0] || b[2]).sort((a, b) => b[1][0] - a[1][0]);
     const ks = []; for (let i = 11; i >= 0; i--) { let y = Math.floor(last / 100), m = last % 100 - i; while (m < 1) { m += 12; y--; } ks.push(y * 100 + m); }
-    const name = { NO: 'Norway', FO: 'Faroe Islands', IS: 'Iceland', GB: 'United Kingdom (Scotland)', CL: 'Chile', CA: 'Canada', AU: 'Australia' }[org] || org;
+    const name = org === 'CA' && gsProv ? { BC: 'British Columbia', NB: 'New Brunswick', NS: 'Nova Scotia', NL: 'Newfoundland', PE: 'Prince Edward Island', ATL: 'Atlantic Canada' }[gsProv] : ({ NO: 'Norway', FO: 'Faroe Islands', IS: 'Iceland', GB: 'United Kingdom (Scotland)', CL: 'Chile', CA: 'Canada', AU: 'Australia' }[org] || org);
     return `<div class="gs-card"><h4>Exports from ${esc(name)} — ${esc(F.map(f => forms[f].toLowerCase()).join(', '))} — ${ml(ref)}</h4><div class="s">${note}` +
       `${ml(ref)}: <b>${t0(A[0])} t</b> (${chg(A[0], B[0])} on ${ml(ref - 100)}), average <b>${pr(A[0], A[1])} ${cur}/kg</b> (${pr(B[0], B[1])} a year earlier). ` +
-      `Source: ${org === 'NO' ? 'Statistics Norway (SSB), FOB in NOK' : 'national statistics office, export value in € (converted at the month\'s rate)'}.</div>` +
+      `Source: ${org === 'NO' ? 'Statistics Norway (SSB), FOB in NOK' : cur === 'CAD' ? 'Statistics Canada (CIMT), domestic exports by province of origin, in Canadian dollars' : 'national statistics office, export value in € (converted at the month\'s rate)'}.</div>` +
       `<table><tr><th>Destination, ${ml(ref)}</th><th>Tonnes</th><th>vs a year</th><th>${cur}/kg</th><th>a year earlier</th></tr>` +
       L.slice(0, 12).map(([c, b]) => `<tr><td>${esc(nm(c))}</td><td>${t0(b[0])}</td><td>${chg(b[0], b[2])}</td><td>${pr(b[0], b[1])}</td><td>${pr(b[2], b[3])}</td></tr>`).join('') + `</table>` +
       `<table style="margin-top:4px"><tr><th>Month</th>${ks.map(k => `<th>${MONTHS_FR[k % 100 - 1].slice(0, 3)} ${String(Math.floor(k / 100)).slice(2)}</th>`).join('')}</tr>` +
@@ -13490,6 +13554,9 @@ loadRemoteData().then(live => {
     const nq = norm(q), co = (COS.find(([, rx]) => rx.test(nq)) || [])[0];
     const topics = Object.keys(TOP).filter(k => TOP[k].test(nq));
     let rest = nq; if (co) rest = rest.replace(COS.find(c => c[0] === co)[1], ' '); topics.forEach(k => rest = rest.replace(new RegExp(TOP[k].source, 'g'), ' '));
+    gsProv = null;
+    for (const [k, rx] of [['BC', /\b(british columbia|colombie[- ]britannique|bc)\b/], ['NB', /\b(new brunswick|nouveau[- ]brunswick)\b/], ['NS', /\b(nova scotia|nouvelle[- ]ecosse)\b/],
+      ['NL', /\b(newfoundland|terre[- ]neuve)( and labrador| et labrador)?\b/], ['ATL', /\b(atlantic canada|canada atlantique|east coast canada)\b/]]) if (rx.test(rest)) { gsProv = k; rest = rest.replace(rx, ' canada '); break; }
     let po = null; const zm = rest.match(/\b(?:zone|po|omrade|produksjonsomrade|area|zona)\s*(\d{1,2})\b/);
     if (zm && +zm[1] >= 1 && +zm[1] <= 13) { po = +zm[1]; rest = rest.replace(zm[0], ' '); }
     else { const pn = Object.entries(PO_NAMES).find(([k, v]) => +k > 0 && v.split(/ til | og | med /).some(p => p.length > 4 && rest.includes(norm(p)))); if (pn) po = +pn[0]; }
