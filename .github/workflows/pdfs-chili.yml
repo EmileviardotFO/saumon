@@ -1,0 +1,25 @@
+name: Chili - telecharger les PDF Subpesca illisibles sur une branche temporaire
+# Lancement manuel : telecharge les resolutions listees dans scripts/sondes/chili_ids.txt et les pousse sur la
+# branche tmp-chili-pdfs (a supprimer apres lecture). Rien n'est publie sur main.
+on:
+  workflow_dispatch: {}
+permissions:
+  contents: write
+jobs:
+  pdfs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Telecharger
+        run: |
+          mkdir -p chili_pdfs
+          while read id; do [ -z "$id" ] && continue
+            curl -sSL --retry 3 -A "Mozilla/5.0 (salmon-dashboard)" -o "chili_pdfs/$id.pdf" "https://www.subpesca.cl/portal/615/articles-${id}_documento.pdf" || echo "echec $id"
+          done < scripts/sondes/chili_ids.txt
+          ls -la chili_pdfs | head -60; du -sh chili_pdfs
+      - name: Pousser sur une branche temporaire
+        run: |
+          git config user.name "github-actions"; git config user.email "actions@github.com"
+          git checkout -b tmp-chili-pdfs
+          git add chili_pdfs && git commit -q -m "PDF Subpesca a relire (temporaire)" && git push -q -f origin tmp-chili-pdfs
