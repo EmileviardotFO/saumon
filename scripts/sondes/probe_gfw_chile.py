@@ -1,53 +1,38 @@
-"""Sonde GFW Chili v3 : identites (recherche avancee), puis evenements de quelques wellboats."""
+"""Sonde GFW Chili v4 : tous les navires 'carrier/support' qui font escale dans la zone salmonicole."""
 import os, json, requests
+from collections import Counter, defaultdict
 tok = next(v for k, v in os.environ.items() if k.startswith('S_') and v and 'FISH' in k.upper())
 H = {'Authorization': f'Bearer {tok.strip()}'}
 B = 'https://gateway.api.globalfishingwatch.org/v3'
-ID = 'public-global-vessel-identity:latest'
+PV = 'public-global-port-visits-events:latest'
+POLY = {'type': 'Polygon', 'coordinates': [[[-75.8, -55.5], [-69.5, -55.5], [-69.5, -41.0], [-75.8, -41.0], [-75.8, -55.5]]]}
 
-def g(path, p):
-    r = requests.get(B + path, headers=H, params=p, timeout=120)
-    if not r.ok: print('  ERR', path, r.status_code, r.text[:250])
-    return r
+def ev(body, maxn=6000):
+    out, off = [], 0
+    while off < maxn:
+        r = requests.post(B + '/events', headers=H, params={'limit': 500, 'offset': off}, json=body, timeout=180)
+        if not r.ok:
+            print('ERR', r.status_code, r.text[:400]); break
+        j = r.json(); out += j.get('entries', [])
+        if j.get('nextOffset') in (None, 0) or not j.get('entries'): break
+        off = j['nextOffset']
+    return out
 
-def show(e, tag=''):
-    si = (e.get('selfReportedInfo') or [{}])
-    s0 = si[0] if si else {}
-    reg = (e.get('registryInfo') or [{}])
-    r0 = reg[0] if reg else {}
-    cs = (e.get('combinedSourcesInfo') or [{}])[0]
-    st = [x['name'] for x in cs.get('shiptypes', [])]
-    print(f"  {tag}|{s0.get('shipname') or r0.get('shipname')}|{s0.get('flag') or r0.get('flag')}|mmsi {s0.get('ssvid')}|imo {r0.get('imo')}|{st}|{s0.get('transmissionDateFrom','')[:10]}->{s0.get('transmissionDateTo','')[:10]}|pos {s0.get('positionsCount')}|id {s0.get('id')}|reg {r0.get('shiptypes') if r0 else ''} {r0.get('tonnageGt') if r0 else ''} {r0.get('lengthM') if r0 else ''}")
-    return s0.get('id')
-
-ids = {}
-for w in ["flag = 'CHL' AND shiptypes = 'CARRIER'", "flag = 'CHL' AND shiptypes = 'SUPPORT'", "flag = 'CHL' AND shiptypes = 'OTHER'",
-          "flag = 'CHL' AND shiptypes = 'FISH_TENDER'"]:
-    r = g('/vessels/search', {'where': w, 'datasets[0]': ID, 'limit': 50, 'includes[0]': 'MATCH_CRITERIA'})
-    if r.ok:
-        j = r.json(); print('WHERE', w, 'total', j.get('total'), 'n', len(j.get('entries', [])), 'next', j.get('since'))
-        for e in j.get('entries', [])[:50]: show(e, 'W')
-for q in ['PATAGON', 'PATAGON XI', 'PATAGON VII', 'ORCA YKA', 'ORCA CHONO', 'ORCA', 'GRIP PATAGONIA', 'RONJA', 'SOLVTRANS', 'AQUASHIP',
-          'DON', 'MARFOOD', 'SITECNA', 'TRANSMARKO', 'AUSTRAL', 'CAMANCHACA', 'BOLD', 'NORDIC', 'AYSEN', 'CHILOE', 'SAN CRISTOBAL', 'AQUAREOS']:
-    r = g('/vessels/search', {'query': q, 'datasets[0]': ID, 'limit': 20})
-    if r.ok:
-        es = r.json().get('entries', [])
-        print('Q', q, len(es))
-        for e in es:
-            s0 = (e.get('selfReportedInfo') or [{}])[0]
-            if s0.get('flag') == 'CHL' or 'PATAGON' in q or 'ORCA' in q:
-                i = show(e, q)
-                if i and s0.get('flag') == 'CHL': ids[s0.get('shipname')] = i
-print('IDS', json.dumps(ids)[:3000])
-# evenements pour les 6 premiers
-EV = ['public-global-port-visits-events:latest', 'public-global-loitering-events:latest', 'public-global-encounters-events:latest', 'public-global-fishing-events:latest']
-for name, vid in list(ids.items())[:8]:
-    for ds in EV:
-        r = g('/events', {'datasets[0]': ds, 'vessels[0]': vid, 'start-date': '2026-08-01', 'end-date': '2026-11-06', 'limit': 50, 'offset': 0})
-        if r.ok:
-            es = r.json().get('entries', [])
-            print('EV', name, ds.split('-')[2], len(es), r.json().get('total'))
-            for e in es[:6]:
-                pos = e.get('position') or {}
-                pv = (e.get('port_visit') or {}).get('startAnchorage') or {}
-                print('     ', e.get('start', '')[:16], e.get('end', '')[:16], round(pos.get('lat', 0), 3), round(pos.get('lon', 0), 3), pv.get('name'), e.get('loitering', {}).get('totalTimeHours'))
+for vt in (['CARRIER'], ['SUPPORT'], ['CARGO'], ['OTHER']):
+    body = {'datasets': [PV], 'startDate': '2026-09-01', 'endDate': '2026-10-31', 'geometry': POLY, 'vesselTypes': vt}
+    es = ev(body)
+    print('\nTYPE', vt, 'events', len(es))
+    if es: print('  cles event', list(es[0])[:20], 'vessel', list(es[0].get('vessel', {}))[:20])
+    c = Counter(); info = {}; ports = defaultdict(Counter)
+    for e in es:
+        v = e.get('vessel') or {}
+        k = v.get('id'); c[k] += 1; info[k] = (v.get('name'), v.get('flag'), v.get('ssvid'), v.get('type'))
+        pv = (e.get('port_visit') or {}).get('intermediateAnchorage') or (e.get('port_visit') or {}).get('startAnchorage') or {}
+        ports[k][pv.get('name')] += 1
+    for k, n in c.most_common(80):
+        print('  %-24s %-4s %-10s %-9s %4d  %s' % (*[str(x)[:24] for x in info[k]], n, ', '.join(f'{p}:{m}' for p, m in ports[k].most_common(4))))
+# profondeur d'historique sur un navire
+vid = '5eb825d9c-cb47-3b48-02a0-fc40858d8bc2'
+for y in range(2017, 2027):
+    r = requests.get(B + '/events', headers=H, params={'datasets[0]': PV, 'vessels[0]': vid, 'start-date': f'{y}-01-01', 'end-date': f'{y}-12-31', 'limit': 1, 'offset': 0}, timeout=120)
+    print('HIST PATAGON 7', y, r.status_code, r.json().get('total') if r.ok else r.text[:100])
