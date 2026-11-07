@@ -3636,7 +3636,7 @@ function renderUsaPrices() {
       Promise.all([g('national_trade.json'), g('us_imports.json'), g('eurostat.json')]).then(([a, b, c]) => { UP = { nt: a || { rows: [], meta: {} }, us: b || { rows: [] }, eu: c || { rows: [] } }; UP_LOADING = false; if (currentView === 'usaprices') renderUsaPrices(); }); }
     sub.innerHTML = 'Loading…'; return; }
   const FX = (UP.nt.meta || {}).fx || {}, fx = (c, k) => c === 'EUR' ? 1 : c === 'DKK' ? 7.46 : ((FX[c] || {})[k] || null);
-  const O = [['CL', 'Chile'], ['NO', 'Norway'], ['FO', 'Faroe Islands'], ['IS', 'Iceland'], ['CA', 'Canada'], ['GB', 'United Kingdom']];
+  const O = [['NO', 'Norway'], ['CL', 'Chile'], ['FO', 'Faroe Islands'], ['IS', 'Iceland'], ['CA', 'Canada'], ['GB', 'United Kingdom']];
   const so = document.getElementById('upO'); if (!so.options.length) { so.innerHTML = O.map(([c, n]) => `<option value="${c}">${n}</option>`).join(''); ['upO', 'upF', 'upC'].forEach(id => document.getElementById(id).onchange = renderUsaPrices); }
   const o = so.value, f = +document.getElementById('upF').value, cur = document.getElementById('upC').value;
   const EU = new Set(['AT', 'BE', 'BG', 'CY', 'CZ', 'DE', 'DK', 'EE', 'ES', 'FI', 'FR', 'GR', 'EL', 'HR', 'HU', 'IE', 'IT', 'LT', 'LU', 'LV', 'MT', 'NL', 'PL', 'PT', 'RO', 'SE', 'SI', 'SK']);
