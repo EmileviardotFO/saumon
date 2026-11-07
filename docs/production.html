@@ -5343,10 +5343,19 @@ function renderScAnnual() {
 let SC_MAP = null, SC_LAYER = null, SC_OP = null, SC_LL = false;
 const SC_COL = ['#4fc3f7', '#ffb74d', '#81c784', '#ce93d8', '#ff8a65', '#ffd54f', '#90caf9', '#e57373', '#a1887f', '#4db6ac', '#f06292', '#aed581'];
 function scLeaflet(cb) {
-  if (window.L) return cb(); if (SC_LL) return; SC_LL = true;
+  // Leaflet charge une fois ; les cartes demandees pendant le chargement attendent leur tour (avant : la 2e carte etait perdue)
+  if (window.L) return cb(); (window.SC_LLQ = window.SC_LLQ || []).push(cb); if (SC_LL) return; SC_LL = true;
   const css = document.createElement('link'); css.rel = 'stylesheet'; css.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css'; document.head.appendChild(css);
-  const js = document.createElement('script'); js.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js'; js.onload = () => { SC_LL = false; cb(); };
-  js.onerror = () => { SC_LL = false; document.getElementById('scMap').innerHTML = '<div style="padding:16px;color:var(--muted)">The map library could not load (offline?).</div>'; }; document.head.appendChild(js);
+  const js = document.createElement('script'); js.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+  js.onload = () => { SC_LL = false;
+    // telephone : un doigt fait defiler la page, pas la carte ; toucher la carte une fois l'active (deux doigts zooment toujours)
+    if (window.matchMedia('(max-width:900px)').matches) L.Map.addInitHook(function () { const m = this; m.dragging.disable(); let t = null;
+      m.on('click', () => { m.dragging.enable(); clearTimeout(t); t = setTimeout(() => m.dragging.disable(), 15000); });
+      const c = m.getContainer(); if (!c.querySelector('.ll-tip')) { const tip = document.createElement('div'); tip.className = 'll-tip';
+        tip.style.cssText = 'position:absolute;z-index:500;bottom:6px;left:50%;transform:translateX(-50%);background:rgba(8,20,28,.85);color:#cfdde4;font-size:11.5px;padding:3px 9px;border-radius:10px;pointer-events:none';
+        tip.textContent = 'Tap the map to move it · two fingers to zoom'; c.appendChild(tip); m.on('click', () => tip.remove()); } });
+    const Q = window.SC_LLQ || []; window.SC_LLQ = []; Q.forEach(f => { try { f(); } catch (err) { console.error(err); } }); };
+  js.onerror = () => { SC_LL = false; window.SC_LLQ = []; const el = document.getElementById('scMap'); if (el) el.innerHTML = '<div style="padding:16px;color:var(--muted)">The map library could not load (offline?).</div>'; }; document.head.appendChild(js);
 }
 function scPeriod(D) {
   const ms = D.months, L = ms[ms.length - 1], sel = document.getElementById('scPer'), fS = document.getElementById('scFrom'), tS = document.getElementById('scTo');
