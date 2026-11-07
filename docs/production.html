@@ -2524,7 +2524,7 @@ function showDataBanner(live) {
   b.addEventListener('click', tg); b.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tg(); } });
   document.addEventListener('click', e => { if (pnl.style.display !== 'none' && !pnl.contains(e.target) && !b.contains(e.target)) pnl.style.display = 'none'; });
 }
-const PO_NAMES = {"0": "Other licences, no zone (broodstock, research, education, display)", "1": "Svenskegrensen til Jæren", "2": "Ryfylket", "3": "Karmøy til Sotra", "4": "Nordhordland til Stadt", "5": "Stadt til Hustadvika", "6": "Nordmøre og Sør-Trøndelag", "7": "Nord-Trøndelag med Bindal", "8": "Helgeland til Bodø", "9": "Vestfjorden og Vesterålen", "10": "Andøya til Senja", "11": "Kvaløya til Loppa", "12": "Vest-Finnmark", "13": "Øst-Finnmark"};
+const PO_NAMES = {"0": "Outside production zones (land-based and inland farms, offshore development licences, broodstock, research)", "1": "Svenskegrensen til Jæren", "2": "Ryfylket", "3": "Karmøy til Sotra", "4": "Nordhordland til Stadt", "5": "Stadt til Hustadvika", "6": "Nordmøre og Sør-Trøndelag", "7": "Nord-Trøndelag med Bindal", "8": "Helgeland til Bodø", "9": "Vestfjorden og Vesterålen", "10": "Andøya til Senja", "11": "Kvaløya til Loppa", "12": "Vest-Finnmark", "13": "Øst-Finnmark"};
 // toutes les "zones" de donnees : 0 = licences sans zone de production (code (null) du Biomasseregisteret, gardees depuis novembre 2026)
 const ALL_PO = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
 let YEARS = [];   // annees presentes dans data.json, remplies au chargement (fillYearSelectors)
