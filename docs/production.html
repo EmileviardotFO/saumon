@@ -1365,6 +1365,13 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div style="overflow-x:auto"><table class="sig-table" id="ctTab"></table></div>
     <div style="overflow-x:auto"><table class="sig-table" id="ctForm"></table></div>
     <div style="overflow-x:auto"><table class="sig-table" id="ctDest"></table></div>
+    <div class="sig-title" style="margin-top:22px">Canada supply outlook — the next 6 to 12 months, by coast</div>
+    <div class="sig-sub" id="csSub"></div>
+    <div id="csCards" class="pr-cards"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="csMonths"></table></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="csSources"></table></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="csBack"></table></div>
+    <div class="sig-sub" id="csNote"></div>
     <div class="sig-title" style="margin-top:18px">Monthly volumes by coast — fresh whole salmon into the US</div>
     <div class="sig-sub" id="caVolSub"></div>
     <div id="caVolTog" style="margin:6px 0"></div>
@@ -4488,6 +4495,90 @@ function caTrade() {
   const DL = Object.entries(dest).sort((a, b) => (b[1].BC[0] + b[1].ATL[0]) - (a[1].BC[0] + a[1].ATL[0])).slice(0, 20);
   $('ctDest').innerHTML = `<thead><tr><th class="name">Destination, last 12 months (t)</th><th>From British Columbia</th><th>vs a year</th><th>From the Atlantic provinces</th><th>vs a year</th></tr></thead><tbody>` +
     DL.map(([k, d]) => `<tr><td class="name">${e(dn(k))}</td><td>${f0(d.BC[0])}</td><td>${vt(pct(d.BC[0], d.BC[1]))}</td><td>${f0(d.ATL[0])}</td><td>${vt(pct(d.ATL[0], d.ATL[1]))}</td></tr>`).join('') + `</tbody>`;
+  caSupply();
+}
+
+// ---- Canada : perspectives d'offre a 6-12 mois par cote, en croisant les sources (exportations CIMT, cycles DFO, Mowi, sites atlantiques)
+// Equivalent poisson entier vide : filets / 0,62 et fume / 0,5, le reste tel quel (rendements usuels du saumon atlantique).
+function caSupply() {
+  const $ = id => document.getElementById(id); if (!$('csSub')) return;
+  if (!CT || !(CT.rows || []).length) { $('csSub').innerHTML = 'Waiting for the monthly exports…'; return; }
+  if (typeof QR === 'undefined' || !QR) { if (typeof qrLoad === 'function' && !window.CS_QR) { window.CS_QR = 1; qrLoad(() => caSupply()); } }
+  const f0 = v => v === null || v === undefined || !isFinite(v) ? '—' : Math.round(v).toLocaleString('en-US'), e = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const FAC = [1, 1 / 0.62, 1, 1 / 0.62, 2], A = ['NB', 'NS', 'NL', 'PE'], last = CT.meta.last;
+  const W = { BC: {}, ATL: {} };
+  CT.rows.forEach(r => { const g = r[1] === 'BC' ? 'BC' : A.includes(r[1]) ? 'ATL' : null; if (!g) return; W[g][r[0]] = (W[g][r[0]] || 0) + r[5] * FAC[r[2]]; });
+  const x = (g, k) => W[g][k] || 0, add = (k, n) => tmBack(k, -n);
+  const first = CT.meta.first;
+  // methode : meme mois un an plus tot x rythme des 3 derniers mois contre un an plus tot (borne 0,5-2)
+  const ratio = (g, t, n) => { let a = 0, b = 0; for (let i = 0; i < n; i++) { a += x(g, tmBack(t, i)); b += x(g, tmBack(t, i + 12)); } return b ? Math.min(2, Math.max(0.5, a / b)) : 1; };
+  const MN = { r3: 3, r6: 6, r12: 12 };
+  const fc = (g, t, h, m) => x(g, tmBack(add(t, h), 12)) * (MN[m] ? ratio(g, t, MN[m]) : 1);
+  // test sur l'historique : depuis chaque mois connu, les 6 mois suivants (et 1-3 / 4-6)
+  const back = {};
+  const METH = [['naive', 'Same months a year earlier'], ['r3', '… × pace of the last 3 months vs a year earlier'], ['r6', '… × pace of the last 6 months'], ['r12', '… × pace of the last 12 months']];
+  ['BC', 'ATL'].forEach(g => METH.forEach(([m]) => { const er = { s6: [], s3: [], b6: [] };
+    for (let t = tmBack(first, -24); add(t, 6) <= last; t = add(t, 1)) {
+      let p6 = 0, a6 = 0, p3 = 0, a3 = 0; for (let h = 1; h <= 6; h++) { const p = fc(g, t, h, m), a = x(g, add(t, h)); p6 += p; a6 += a; if (h <= 3) { p3 += p; a3 += a; } }
+      if (a6) { er.s6.push(Math.abs(p6 / a6 - 1)); er.b6.push(p6 / a6 - 1); } if (a3) er.s3.push(Math.abs(p3 / a3 - 1)); }
+    const mean = L => L.length ? 100 * L.reduce((a, b) => a + b, 0) / L.length : null;
+    back[g + m] = { m6: mean(er.s6), m3: mean(er.s3), bias: mean(er.b6), n: er.s6.length }; }));
+  const best = g => METH.map(([m]) => m).sort((a, b) => back[g + a].m6 - back[g + b].m6)[0];
+  const ML = Object.fromEntries(METH);
+  const nxt = Array.from({ length: 6 }, (_, i) => add(last, i + 1));
+  const P = { BC: nxt.map(k => fc('BC', last, nxt.indexOf(k) + 1, best('BC'))), ATL: nxt.map(k => fc('ATL', last, nxt.indexOf(k) + 1, best('ATL'))) };
+  const LY = { BC: nxt.map(k => x('BC', tmBack(k, 12))), ATL: nxt.map(k => x('ATL', tmBack(k, 12))) };
+  const sum = a => a.reduce((p, q) => p + q, 0), pc = (a, b) => a && b ? 100 * (a / b - 1) : null;
+  const vt = v => v === null ? '—' : `<span class="${v >= 0 ? 'delta-good' : 'delta-bad'}">${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(0)} %</span>`;
+  // autres sources
+  const O = (typeof CAX !== 'undefined' && CAX && CAX.outlook) || null; let dfo = null;
+  if (O && O.current) { const obs = O.observed || {}, Q = {}; O.current.quarters.forEach(q => Q[q.q] = q.t); const val = q => obs[q] !== undefined ? obs[q] : Q[q];
+    const y1 = Math.floor(O.current.asof / 100), tot = y => [1, 2, 3, 4].reduce((a, i) => a + (val(`${y}Q${i}`) || 0), 0), ok = y => [1, 2, 3, 4].every(i => val(`${y}Q${i}`) !== undefined);
+    const nq = [0, 1].map(i => { const q = Math.floor((last % 100 - 1) / 3) + 1 + i + 1; const y = Math.floor(last / 100) + Math.floor((q - 1) / 4); const qq = (q - 1) % 4 + 1; return [`${y}Q${qq}`, `${y - 1}Q${qq}`]; });
+    dfo = { y1, y0: y1 + 1, chg: ok(y1) && ok(y1 + 1) ? pc(tot(y1 + 1), tot(y1)) : null, err: ((O.errors || {}).year || {}).mape, q: nq.map(([a, b]) => [a, val(a), val(b), pc(val(a), val(b))]) }; }
+  let mowi = null;
+  ((typeof QR !== 'undefined' && QR && QR.reports) || []).forEach(r => (r.segments || []).forEach(g => { if (g.basin === 'CA' && g.guidance_t && (!mowi || r.quarter > mowi.q)) mowi = { co: r.company.replace(/ Scotland$/, ''), q: r.quarter, g: g.guidance_t, gy: g.guidance_year, n: g.next_year_guidance_t, notes: g.notes || [], h: g.harvest_t, hly: g.harvest_t_ly }; }));
+  const isa = ((typeof CATL !== 'undefined' && CATL && CATL.isa) || []), yN = new Date().getFullYear(), isaN = y => isa.filter(i => i.year === y && /brunswick/i.test(i.prov)).length;
+  const stock = ((typeof CATL !== 'undefined' && CATL && CATL.nl_stocking) || []);
+  // cartes
+  const card = (lab, big, sub, c) => `<div class="pr-card" style="cursor:default"><div class="nm"><i style="background:${c}"></i>${lab}</div><div class="big">${big}</div><div class="ln">${sub}</div></div>`;
+  const rng = (v, g) => { const m = back[g + best(g)].m6 / 100; return `${f0(v * (1 - m))}–${f0(v * (1 + m))} t`; };
+  const r3 = g => { let a = 0, b = 0; for (let i = 0; i < 3; i++) { a += x(g, tmBack(last, i)); b += x(g, tmBack(last, i + 12)); } return pc(a, b); };
+  const ce = mowi ? +(((mowi.notes.join(' ').match(/includes ([\d,]+) gwt harvested by Canada East/i) || [])[1] || '0').replace(/,/g, '')) : 0;
+  const mBC0 = mowi ? mowi.g - ce : null, mChg = mowi && mBC0 ? pc(mowi.n, mBC0) : null;
+  const sig = (g) => { const L = [];
+    if (g === 'BC') { if (dfo) L.push(`farm cycles: ${dfo.q.map(q => `${q[0]} ${vt(q[3])}`).join(', ')}`); L.push(`last 3 months of exports ${vt(r3('BC'))}`); }
+    else { L.push(`last 3 months of exports ${vt(r3('ATL'))}`); L.push(`ISA in New Brunswick: ${isaN(yN)} sites in ${yN} vs ${isaN(yN - 1)}`); }
+    return L.join(' · '); };
+  $('csCards').innerHTML =
+    card(`British Columbia · ${tmMl(nxt[0])}–${tmMl(nxt[5])}`, `≈ ${f0(sum(P.BC))} t`, `central = the same months a year earlier (no rule tested better) · range ${rng(sum(P.BC), 'BC')} · signals: ${sig('BC')}`, '#4fc3f7') +
+    card(`Atlantic provinces · ${tmMl(nxt[0])}–${tmMl(nxt[5])}`, `≈ ${f0(sum(P.ATL))} t`, `range ${rng(sum(P.ATL), 'ATL')} · signals: ${sig('ATL')}`, '#ffb74d') +
+    (dfo && dfo.chg !== null ? card(`British Columbia · ${dfo.y0} vs ${dfo.y1}`, `${vt(dfo.chg)}`, `farm-cycle projection (±${f0(dfo.err)} % on past years)${mowi ? ` · ${e(mowi.co)} guidance BC: ${f0(mowi.n)} t in ${mowi.gy + 1} against ${f0(mBC0)} t in ${mowi.gy} (${vt(mChg)})` : ''}`, '#81c784') : '') +
+    (mowi ? card(`${e(mowi.co)} Canada · ${e(mowi.q)}`, `${f0(mowi.g)} t ${mowi.gy}`, `${ce ? `incl. ${f0(ce)} t from Canada East (Atlantic), being sold to Cooke · ` : ''}${f0(mowi.n)} t guided for ${mowi.gy + 1}, British Columbia only`, '#ce93d8') : '');
+  $('csSub').innerHTML = `What the public data says about Canadian supply in the coming months, coast by coast. ` +
+    `<b>Month by month</b>, the exports of each coast are projected from the same months a year earlier, for British Columbia: <i>${e(ML[best('BC')])}</i>, for the Atlantic: <i>${e(ML[best('ATL')])}</i> ` +
+    `— the rule that was the most accurate when rerun from every month since ${tmMl(add(first, 24))} with only the data known then. Exports are converted into whole-fish equivalent (fillets ÷ 0.62, smoked ÷ 0.5). ` +
+    `They are then checked against what the other sources say: the cycle of every BC farm (smolts in, harvest out, DFO), the guidance of the listed farmer, and the Atlantic signals (disease, stocking).`;
+  $('csMonths').innerHTML = `<thead><tr><th class="name">Whole-fish equivalent, tonnes</th>${nxt.map(k => `<th>${tmMl(k)}</th>`).join('')}<th>6 months</th></tr></thead><tbody>` +
+    ['BC', 'ATL'].map(g => `<tr><td class="name"><b>${g === 'BC' ? 'British Columbia' : 'Atlantic provinces'}</b> — expected${best(g) === 'naive' ? ' <span style="color:var(--muted);font-weight:normal">(= same months a year earlier)</span>' : ''}</td>${P[g].map(v => `<td style="color:#ffb74d;font-style:italic">${f0(v)}</td>`).join('')}<td><b>${f0(sum(P[g]))}</b></td></tr>` +
+      (best(g) === 'naive' ? '' : `<tr><td class="name" style="color:var(--muted)">a year earlier</td>${LY[g].map(v => `<td style="color:var(--muted)">${f0(v)}</td>`).join('')}<td style="color:var(--muted)">${f0(sum(LY[g]))}</td></tr>`)).join('') +
+    `<tr><td class="name"><b>Canada</b></td>${nxt.map((k, i) => `<td><b>${f0(P.BC[i] + P.ATL[i])}</b></td>`).join('')}<td><b>${f0(sum(P.BC) + sum(P.ATL))}</b> ${vt(pc(sum(P.BC) + sum(P.ATL), sum(LY.BC) + sum(LY.ATL)))}</td></tr></tbody>`;
+  const row = (src, hz, bc, atl, rec) => `<tr><td class="name">${src}</td><td style="text-align:left">${hz}</td><td style="text-align:left;white-space:normal">${bc}</td><td style="text-align:left;white-space:normal">${atl}</td><td style="text-align:left;white-space:normal">${rec}</td></tr>`;
+  const yt = g => { const ks = Array.from({ length: last % 100 }, (_, i) => Math.floor(last / 100) * 100 + i + 1); return pc(sum(ks.map(k => x(g, k))), sum(ks.map(k => x(g, k - 100)))); };
+  $('csSources').innerHTML = `<thead><tr><th class="name">Source</th><th style="text-align:left">Horizon</th><th style="text-align:left">British Columbia</th><th style="text-align:left">Atlantic provinces</th><th style="text-align:left">Track record</th></tr></thead><tbody>` +
+    row('Exports, Statistics Canada (actual)', `to ${tmMl(last)}`, `last 3 months ${vt(r3('BC'))} · year to date ${vt(yt('BC'))}`, `last 3 months ${vt(r3('ATL'))} · year to date ${vt(yt('ATL'))}`, 'observed') +
+    row('Exports projected (this section)', `${tmMl(nxt[0])}–${tmMl(nxt[5])}`, `${vt(pc(sum(P.BC), sum(LY.BC)))} · ${rng(sum(P.BC), 'BC')}`, `${vt(pc(sum(P.ATL), sum(LY.ATL)))} · ${rng(sum(P.ATL), 'ATL')}`,
+      `±${f0(back['BC' + best('BC')].m6)} % (BC) and ±${f0(back['ATL' + best('ATL')].m6)} % (Atlantic) on 6-month totals, ${back.BCnaive.n} tests`) +
+    (dfo ? row('BC farm cycles (DFO sea lice reports)', `${dfo.q.map(q => q[0]).join(', ')} · year ${dfo.y0}`, `${dfo.q.map(q => `${q[0]}: ${vt(q[3])}`).join(' · ')} · ${dfo.y0}: ${vt(dfo.chg)}`, '— (no farm data published)', `±${f0(dfo.err)} % on a year`) : '') +
+    (mowi ? row(`${e(mowi.co)} guidance (${e(mowi.q)})`, `${mowi.gy} and ${mowi.gy + 1}`, `${f0(mowi.n)} t in ${mowi.gy + 1} (British Columbia only) · ${f0(mowi.g)} t in ${mowi.gy} incl. Atlantic`, e(mowi.notes.find(n => /east|cooke/i.test(n)) || '—'), 'company guidance, revised each quarter') : '') +
+    row('ISA in New Brunswick (CFIA)', `${yN}`, '—', `${isaN(yN)} confirmed infected sites in ${yN} (${isaN(yN - 1)} in ${yN - 1}, ${isaN(yN - 2)} in ${yN - 2}): more early harvests and depopulations, then less fish`, 'leading sign, not a forecast') +
+    (stock.length ? row('Fish put to sea in Newfoundland', 'harvest 18-24 months later', '—', `${f0(sum(stock.map(s => s.n)))} fish on ${stock.length} sites, last stockings ${e([...new Set(stock.map(s => s.date))].sort().slice(-3).join(', '))}`, 'counts, not tonnes') : '') + `</tbody>`;
+  const b = (g, m) => back[g + m];
+  $('csBack').innerHTML = `<thead><tr><th class="name">Test on past months — average error</th><th>BC, next 3 months</th><th>BC, next 6 months</th><th>Atlantic, next 3 months</th><th>Atlantic, next 6 months</th></tr></thead><tbody>` +
+    METH.map(([m, l]) => `<tr><td class="name">${l}${best('BC') === m ? ' <span style="color:#4fc3f7">(used for BC)</span>' : ''}${best('ATL') === m ? ' <span style="color:#ffb74d">(used for the Atlantic)</span>' : ''}</td><td>±${f0(b('BC', m).m3)} %</td><td>±${f0(b('BC', m).m6)} %</td><td>±${f0(b('ATL', m).m3)} %</td><td>±${f0(b('ATL', m).m6)} %</td></tr>`).join('') + `</tbody>`;
+  $('csNote').innerHTML = `<b>How to read it.</b> British Columbia's harvest comes in waves (a few large farms emptied at a time), so a single month can be far off; read the 6-month total and its range. ` +
+    `The farm-cycle projection sees the fish already at sea and is the better guide beyond six months for BC; the Atlantic has no public farm data, so its outlook leans on exports, disease and stocking. ` +
+    `BC open net-pen licences end on 30 June 2029: companies are not restocking some farms, which lowers BC volumes from 2027 whatever the recent pace.`;
 }
 // ---- Canada atlantique : sites, exploitants, sante, traitements, production (data/canada_atl.json, scripts/build_canada_atlantic.py)
 let CATL = null, CATL_LOADING = false, CATL_MAP = null, CATL_LAYER = null, CATL_OP = null, CATL_PROV = '', CATL_Q = '', CATL_MK = {};
@@ -12910,7 +13001,7 @@ loadRemoteData().then(live => {
 (function () {
   const SLOTS = [['map', 'Farms, licences and companies'], ['stock', 'Fish at sea'], ['harvest', 'Harvest and production'], ['cycles', 'Cycles and time at sea'],
     ['bio', 'Mortality and fish health'], ['companies', 'Company results'], ['trade', 'Exports'], ['news', 'News']];
-  const RULES = [[/exports by month and province/i, 'harvest'], [/site by site/i, 'map'], [/anaemia|reportable conditions/i, 'bio'], [/put to sea/i, 'stock'], [/cycle length|time at sea|smolt entries|sea temperature/i, 'cycles'], [/volumes by coast/i, 'harvest'], [/farm by farm/i, 'stock'], [/^news$/i, 'news'], [/export/i, 'trade'], [/^fish at sea|smolt transfer/i, 'stock'],
+  const RULES = [[/exports by month and province|supply outlook/i, 'harvest'], [/site by site/i, 'map'], [/anaemia|reportable conditions/i, 'bio'], [/put to sea/i, 'stock'], [/cycle length|time at sea|smolt entries|sea temperature/i, 'cycles'], [/volumes by coast/i, 'harvest'], [/farm by farm/i, 'stock'], [/^news$/i, 'news'], [/export/i, 'trade'], [/^fish at sea|smolt transfer/i, 'stock'],
     [/^mortality/i, 'bio'], [/company results|year by year$|farmers' results|bakkafrost scotland/i, 'companies'],
     [/farms and|farming areas|farm leases|licences|^map/i, 'map'],
     [/mortal|death|dead fish|lice|disease|health/i, 'bio'], [/harvest|survey|by province|production/i, 'harvest'],
