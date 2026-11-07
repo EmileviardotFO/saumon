@@ -1,0 +1,40 @@
+name: Wellboats Norvege - passages sur les fermes (BarentsWatch)
+# Chaque matin : passages des wellboats et bateaux d'abattage sur les fermes de saumon (annee en cours),
+# alertes d'activite inhabituelle, positions actuelles. L'annee precedente est relue le 1er du mois.
+on:
+  schedule:
+    - cron: '23 5 * * *'
+  workflow_dispatch:
+    inputs:
+      annee_precedente:
+        description: "Relire aussi l'annee precedente (oui/non)"
+        required: false
+        default: 'non'
+permissions:
+  contents: write
+concurrency:
+  group: maj-wellboats
+  cancel-in-progress: false
+jobs:
+  wellboats:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -q requests
+      - name: Passages des wellboats
+        env:
+          BW_CLIENT_ID: ${{ secrets.BW_CLIENT_ID }}
+          BW_CLIENT_SECRET: ${{ secrets.BW_CLIENT_SECRET }}
+        run: |
+          if [ "${{ inputs.annee_precedente }}" = "oui" ] || [ "$(date -u +%d)" = "01" ]; then python3 scripts/build_wellboats.py --annee-precedente; else python3 scripts/build_wellboats.py; fi
+      - name: Enregistrer
+        run: |
+          git config user.name "github-actions"; git config user.email "actions@github.com"
+          git add data/wellboats.json data/wellboats_hist.json
+          if git diff --staged --quiet; then echo "Aucun changement."; else
+            git commit -q -m "Wellboats ($(date -u +%Y-%m-%d))"
+            for i in 1 2 3; do git pull -q --rebase && git push -q && break; sleep 10; done; fi

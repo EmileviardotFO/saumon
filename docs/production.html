@@ -479,6 +479,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
       <button data-v="generations">Generations</button>
       <button data-v="po">By zone (PO)</button>
       <button data-v="health">Fish health</button>
+      <button data-v="wellboats">Wellboats</button>
       <button data-v="register">Farm register</button>
       <button data-v="timeatsea">Time at sea</button>
       <button data-v="genmap">Generations map</button>
@@ -755,6 +756,26 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="note" id="outlookNote" style="margin-top:16px; text-align:left; max-width:none;"></div>
   </div>
 
+  <div class="panel" id="wbView" style="flex:1; min-width:0; max-width:1400px; display:none;">
+    <div class="sig-title">Wellboats — live-fish carriers and slaughter boats at Norwegian salmon farms (BarentsWatch)</div>
+    <div class="sig-sub" id="wbSub">Loading…</div>
+    <div id="wbCards" class="pr-cards"></div>
+    <div class="sig-title" style="margin-top:18px">Wellboat visits to farms, week by week — this year against last year</div>
+    <div class="sig-sub" id="wbChartSub"></div>
+    <div id="wbTog" style="margin:6px 0"></div>
+    <div id="wbChart"></div>
+    <div class="sig-title" style="margin-top:18px">Unusual activity — zones and farmers</div>
+    <div class="sig-sub" id="wbAlertSub"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="wbAlerts"></table></div>
+    <div class="sig-title" style="margin-top:18px">By production zone</div>
+    <div style="overflow-x:auto"><table class="sig-table" id="wbZones"></table></div>
+    <div class="sig-title" style="margin-top:18px">Busiest farms — last 14 days</div>
+    <div class="sig-sub" id="wbHotSub"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="wbHot"></table></div>
+    <div class="sig-title" style="margin-top:18px">Where the wellboats are now</div>
+    <div class="sig-sub" id="wbMapSub"></div>
+    <div id="wbMap" style="height:560px;border:1px solid var(--border);border-radius:8px;background:#0d1a24"></div>
+  </div>
   <div class="panel" id="healthView" style="flex:1; min-width: 0; max-width: 1320px; display:none;">
     <div class="sig-title">Fish health by production area — BarentsWatch</div>
     <div class="sig-sub" id="hlSub"></div>
@@ -6552,17 +6573,18 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     document.getElementById('upView').style.display = currentView === 'usaprices' ? 'block' : 'none';
     document.getElementById('newsView').style.display = currentView === 'news' ? 'block' : 'none';
     document.getElementById('supplyView').style.display = currentView === 'supply' ? 'block' : 'none';
+    document.getElementById('wbView').style.display = currentView === 'wellboats' ? 'block' : 'none';
     document.getElementById('coprodView').style.display = currentView === 'coprod' ? 'block' : 'none';
     document.getElementById('feedView').style.display = currentView === 'feed' ? 'block' : 'none';
     document.getElementById('generationsView').style.display = currentView === 'generations' ? 'block' : 'none';
     document.getElementById('genmapView').style.display = currentView === 'genmap' ? 'block' : 'none';
     document.getElementById('genyoyView').style.display = currentView === 'genyoy' ? 'block' : 'none';
     // The year / period selectors do not apply to the weekly fish-health view.
-    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'usaprices' || currentView === 'news' || currentView === 'supply' || currentView === 'coprod' || currentView === 'feed' || currentView === 'genyoy' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
+    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'usaprices' || currentView === 'news' || currentView === 'supply' || currentView === 'wellboats' || currentView === 'coprod' || currentView === 'feed' || currentView === 'genyoy' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
     // La carte des zones ne sert qu'aux vues qui raisonnent par PO. Les onglets
     // Markets et Calibre sont nationaux, elle n'y afficherait rien d'utile.
     const mw = document.querySelector('.panel.mapwrap');
-    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'usaprices' || currentView === 'news' || currentView === 'supply' || currentView === 'coprod' || currentView === 'feed' || currentView === 'genyoy' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
+    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'usaprices' || currentView === 'news' || currentView === 'supply' || currentView === 'wellboats' || currentView === 'coprod' || currentView === 'feed' || currentView === 'genyoy' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
     document.getElementById('poFilterField').style.display = (currentView === 'global' || currentView === 'multi' || currentView === 'outlook') ? 'flex' : 'none';
     document.getElementById('yearField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'none' : 'flex';
     document.getElementById('yearRangeField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'flex' : 'none';
@@ -6597,6 +6619,7 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     else if (currentView === 'usaprices') { renderUsaPrices(); }
     else if (currentView === 'news') { renderNews(); }
     else if (currentView === 'supply') { renderSupply(); }
+    else if (currentView === 'wellboats') { renderWellboats(); }
     else if (currentView === 'coprod') { renderCoprod(); }
     else if (currentView === 'generations') { renderGenerations(); }
     else if (currentView === 'genmap') { renderGenMap(); renderBigFish(); }
@@ -12952,7 +12975,7 @@ loadRemoteData().then(live => {
 // Menu lateral : les cinq rubriques, construit a partir des boutons existants (qui restent la mecanique d'affichage des onglets)
 (function () {
   const CATS = [['Front page', ['news', 'supply', 'summary']],
-    ['Norway — production', ['global', 'po', 'multi', 'outlook', 'generations', 'genmap', 'genyoy', 'timeatsea', 'health', 'register']],
+    ['Norway — production', ['global', 'po', 'multi', 'outlook', 'generations', 'genmap', 'genyoy', 'timeatsea', 'health', 'wellboats', 'register']],
     ['Other basins', ['scotland', 'faroe', 'iceland', 'chile', 'canada', 'australia']],
     ['Prices & products', ['prices', 'calibre', 'products', 'coprod', 'feed']],
     ['Markets & trade', ['markets', 'producers', 'euflows', 'poland', 'usa', 'usaprices', 'china', 'world']]];
@@ -13176,7 +13199,7 @@ loadRemoteData().then(live => {
   const get = f => fetch(DATA_URL.replace('data.json', f), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
   function load() {
     if (loading) return loading;
-    loading = Promise.all(['world_imports.json', 'search_index.json', 'eurostat.json', 'national_trade.json', 'bw_site_lice.json', 'events.json', 'news.json', 'news_archive.json', 'big_fish.json', 'quarterly.json', 'plants.json', 'canada_trade.json', 'global_supply.json']
+    loading = Promise.all(['world_imports.json', 'search_index.json', 'eurostat.json', 'national_trade.json', 'bw_site_lice.json', 'events.json', 'news.json', 'news_archive.json', 'big_fish.json', 'quarterly.json', 'plants.json', 'canada_trade.json', 'global_supply.json', 'wellboats.json']
       .map(f => get(f).then(j => D[f] = j)));
     return loading;
   }
@@ -13209,7 +13232,7 @@ loadRemoteData().then(live => {
   q2.addEventListener('keydown', e => { if (e.key === 'Enter') run(q2.value); if (e.key === 'Escape') close(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && P.style.display === 'block') close();
     if (e.key === '/' && !/INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || '')) { e.preventDefault(); open(''); } });
-  const PANEL_TAB = { eu: 'euflows', tas: 'timeatsea', pl: 'poland', pr: 'prices', is: 'iceland', up: 'usaprices' }, TAB_PANEL = {}; Object.entries(PANEL_TAB).forEach(([a, b]) => TAB_PANEL[b] = a);
+  const PANEL_TAB = { eu: 'euflows', tas: 'timeatsea', pl: 'poland', pr: 'prices', is: 'iceland', up: 'usaprices', wb: 'wellboats' }, TAB_PANEL = {}; Object.entries(PANEL_TAB).forEach(([a, b]) => TAB_PANEL[b] = a);
   const goTab = (v, title) => { close(); v = PANEL_TAB[v] || v; const b = document.querySelector(`#sideNav .sn-item[data-v="${v}"]`) || document.querySelector(`#viewToggle button[data-v="${v}"]`); if (b) b.click();
     if (title) setTimeout(() => { const pid = document.getElementById(v + 'View') ? v : (TAB_PANEL[v] || v); const t = [...document.querySelectorAll('#' + pid + 'View .sig-title, #' + v + 'View .gm-t, #' + v + 'View .gm-h1')].find(x => x.textContent.trim() === title); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 900); };
   window.gsGoTab = goTab;
@@ -13752,6 +13775,17 @@ loadRemoteData().then(live => {
       if (cards.length) html += `<div class="gs-sec">From the dashboard's data · ${esc(co)}${topics.length ? ' · ' + topics.map(t => TOP_WORDS[t]).join(', ') : ''}</div>` + cards.join('');
     } else if (topics.includes('mort') && !po) html += evCard(null, [], bas);
     if (!co && !po && topics.includes('tas') && (!bas || bas === 'NO')) { const c = tasNorway(); if (c) html += `<div class="gs-sec">From the dashboard's data · time at sea</div>` + c; }
+    if (/\b(wellboats?|well boats?|bronnbat\w*|brnnbat\w*|slaughter boats?|slaktebat\w*)\b/.test(nq) && D['wellboats.json'] && D['wellboats.json'].series) {
+      const W = D['wellboats.json'], Lw = W.meta.last_full_week, S = W.series, key = po ? 'PO' + po : 'NO', vv = k => ((S[key] || {})[String(k)] || [0])[0];
+      const prevW = k => { const y = Math.floor(k / 100), w = k % 100; return w > 1 ? k - 1 : (y - 1) * 100 + 52; };
+      let a8 = 0, k = Lw; for (let i = 0; i < 8; i++) { k = prevW(k); a8 += vv(k); } a8 /= 8;
+      const AL = (W.alerts || []).filter(a => !co || norm(a.key).includes(norm(co).split(' ')[0])).slice(0, 6);
+      const HT = (W.hot || []).filter(h => (!po || +h.po === po) && (!co || norm(h.org || '').includes(norm(co).split(' ')[0]))).slice(0, 8);
+      html += `<div class="gs-sec">From the dashboard's data · wellboats</div><div class="gs-card"><h4>Wellboat visits to Norwegian farms${po ? ' · zone ' + po : ''}${co ? ' · ' + esc(co) : ''} — week ${Lw % 100}</h4><div class="s">` +
+        `${po || !co ? `Visits in week ${Lw % 100}: <b>${vv(Lw)}</b> (average of the 8 previous weeks ${a8.toFixed(1)}, same week last year ${vv(Lw - 100)}).` : ''}` +
+        (AL.length ? `<br>Unusual activity: ${AL.map(a => `${esc(a.key.replace(/^ORG:/, '').replace(/^PO/, 'zone '))} ${a.visits} visits (usual ${a.avg8})`).join(' · ')}` : '') +
+        (HT.length ? `<br>Busiest farms over 14 days: ${HT.map(h => `${esc(h.name)} (${h.wb} wellboat${h.sb ? ', ' + h.sb + ' slaughter-boat' : ''} visits)`).join(' · ')}` : '') +
+        ` <span class="gs-go" onclick="gsGoTab('wellboats')">→ Wellboats tab</span></div></div>`; }
     if (/\b(supply|2027|outlook|forecast|offre|projection\w*|prevision\w*|prognos\w*|guidance)\b/.test(nq) && D['global_supply.json']) {
       const G = D['global_supply.json'], AR = { up: '↑', flat: '→', down: '↓' }, bb = (G.basins || []).filter(b => !bas || b.id === bas);
       html += `<div class="gs-sec">Global supply 2027</div><div class="gs-card"><h4>${bas ? esc(BAS_NAME[bas] || bas) + ' — 2027 outlook' : 'World salmon supply — 2027 outlook'}</h4><div class="s">` +
@@ -13888,6 +13922,77 @@ function renderSupply() {
       fetch(DATA_URL.replace('data.json', 'global_supply.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null).then(j => { G = j; draw(vid); }); })
       .observe(P, { attributes: true, attributeFilter: ['style'] }); });
 })();
+</script>
+
+<script>
+// ---- Wellboats : passages sur les fermes norvegiennes (data/wellboats.json <- scripts/build_wellboats.py, API fiskehelse BarentsWatch)
+let WB = null, WB_LOADING = false, WB_KEY = 'NO', WB_MAP = null, WB_LAYER = null;
+function renderWellboats() {
+  const $ = id => document.getElementById(id);
+  if (!WB) { if (!WB_LOADING) { WB_LOADING = true; fetch(DATA_URL.replace('data.json', 'wellboats.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
+      .then(j => { WB = j || { series: {} }; WB_LOADING = false; if (currentView === 'wellboats') renderWellboats(); }); }
+    return; }
+  if (!WB.series || !WB.series.NO) { $('wbSub').innerHTML = 'Not built yet: data/wellboats.json comes from the daily step "Wellboats".'; return; }
+  const e = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), f0 = v => v === null || v === undefined || !isFinite(v) ? '—' : Math.round(v).toLocaleString('en-US');
+  const M = WB.meta, L = M.last_full_week, S = WB.series, Y = Math.floor(L / 100);
+  const isoBack = (k, n) => { // semaine ISO n semaines avant k
+    const y = Math.floor(k / 100), w = k % 100, j4 = new Date(Date.UTC(y, 0, 4)), mon = new Date(j4.getTime() - ((j4.getUTCDay() + 6) % 7) * 864e5 + (w - 1 - n) * 7 * 864e5);
+    const th = new Date(mon.getTime() + 3 * 864e5), yy = th.getUTCFullYear(), jj = new Date(Date.UTC(yy, 0, 4)), m1 = new Date(jj.getTime() - ((jj.getUTCDay() + 6) % 7) * 864e5);
+    return yy * 100 + 1 + Math.round((mon - m1) / 6048e5); };
+  const v = (key, k, i = 0) => ((S[key] || {})[String(k)] || [0, 0, 0, 0])[i];
+  const avg8 = (key, k) => { let a = 0; for (let n = 1; n <= 8; n++) a += v(key, isoBack(k, n)); return a / 8; };
+  const pc = (a, b) => a && b ? 100 * (a / b - 1) : null, vt = x => x === null ? '—' : `<span class="${x >= 0 ? 'delta-good' : 'delta-bad'}" style="font-size:12px">${x >= 0 ? '+' : '−'}${Math.abs(x).toFixed(0)}%</span>`;
+  const card = (lab, big, sub, c) => `<div class="pr-card" style="cursor:default"><div class="nm"><i style="background:${c}"></i>${lab}</div><div class="big">${big}</div><div class="ln">${sub}</div></div>`;
+  const x = v('NO', L), ly = v('NO', isoBack(L, 52)), a8 = avg8('NO', L);
+  let ytd = 0, ytdLy = 0; for (let w = 1; w <= L % 100; w++) { ytd += v('NO', Y * 100 + w); ytdLy += v('NO', (Y - 1) * 100 + w); }
+  $('wbCards').innerHTML = card(`Wellboat visits · week ${L % 100}`, `${f0(x)} ${vt(pc(x, ly))}`, `same week last year ${f0(ly)} · average of the 8 previous weeks ${f0(a8)} · ${f0(v('NO', L, 3))} boats`, '#4fc3f7') +
+    card(`Slaughter-boat visits · week ${L % 100}`, `${f0(v('NO', L, 1))}`, `fish slaughtered on board at the farm · last year ${f0(v('NO', isoBack(L, 52), 1))}`, '#ff8a65') +
+    card(`Since January (weeks 1–${L % 100})`, `${f0(ytd)} ${vt(pc(ytd, ytdLy))}`, `${f0(ytdLy)} a year earlier · ${f0(v('NO', L, 2))} hours at farms in week ${L % 100}`, '#81c784') +
+    card('Unusual this week', `${(WB.alerts || []).length}`, `zones or farmers with activity far above (or below) their recent pace — table below`, '#ffb74d');
+  $('wbSub').innerHTML = `A wellboat is a ship with water tanks that carries live salmon: smolts from the hatchery to the sea farm, grown fish from the farm to the slaughterhouse, and fish to be treated against sea lice (warm or fresh water baths) and back. ` +
+    `Slaughter boats kill and bleed the fish at the farm. So <b>more wellboat visits than usual means more harvesting, more stocking or more lice treatments</b> — a signal that comes days or weeks before the official harvest and biomass figures. ` +
+    `BarentsWatch records a visit whenever one of the ${f0(M.boats)} registered wellboats or slaughter boats stays inside a farm's area (Norwegian Coastal Administration AIS); ${f0(M.sites)} salmon farms are followed. ` +
+    `Last complete week: <b>week ${L % 100} ${Y}</b>; updated ${e(M.built)}.`;
+  // ---- graphique : semaine par semaine, annee en cours contre precedente
+  const OPTS = [['NO', 'Norway'], ...Array.from({ length: 13 }, (_, i) => [`PO${i + 1}`, `Zone ${i + 1}`])];
+  $('wbTog').innerHTML = OPTS.map(([k, l]) => `<button data-k="${k}" style="margin:0 6px 6px 0;padding:5px 11px;border-radius:14px;cursor:pointer;font-size:12.5px;background:${k === WB_KEY ? '#1c3a4a' : '#12222c'};color:${k === WB_KEY ? '#fff' : '#cfdde4'};border:1px solid ${k === WB_KEY ? '#4fc3f7' : '#223642'}">${l}</button>`).join('');
+  $('wbTog').querySelectorAll('button').forEach(b => b.onclick = () => { WB_KEY = b.dataset.k; renderWellboats(); });
+  const weeks = Array.from({ length: 52 }, (_, i) => i + 1), cy = weeks.map(w => Y * 100 + w <= L ? v(WB_KEY, Y * 100 + w) : null), py = weeks.map(w => v(WB_KEY, (Y - 1) * 100 + w) || null);
+  $('wbChart').innerHTML = vzLines(weeks, [{ lab: String(Y - 1), col: '#8fa4b0', pts: py, w: 1.8 }, { lab: String(Y), col: '#4fc3f7', pts: cy }],
+    { axis: 'Wellboat visits per week', unit: 'visits', digits: 0, H: 240, xfmt: (k, i, tip) => tip ? `week ${k}` : (k % 4 === 1 ? 'w' + k : '') }) + vzLegend([[String(Y - 1), '#8fa4b0'], [String(Y), '#4fc3f7']]);
+  $('wbChartSub').innerHTML = `Number of wellboat visits to salmon farms each week (${WB_KEY === 'NO' ? 'all of Norway' : 'production zone ' + WB_KEY.slice(2)}). A visit can last an hour (a smolt delivery) or a day (a harvest or a treatment). Click a zone to see it alone.`;
+  // ---- alertes
+  const OL = k => k === 'NO' ? 'Norway' : k.startsWith('PO') ? `Zone ${k.slice(2)} · ${e((typeof PO_NAMES !== 'undefined' && PO_NAMES[k.slice(2)]) || '')}` : e(k.replace(/^ORG:/, ''));
+  const AL = WB.alerts || [];
+  $('wbAlertSub').innerHTML = AL.length ? `Week ${L % 100}: zones and licence holders whose wellboat visits are far from their recent pace (at least 1.5 times the average of the 8 previous weeks and two standard deviations above it, with 5 visits or more; or a zone falling below 40 % of its average). A burst often means a harvest campaign, a delousing round or an emergency — for instance fish moved or harvested early because of disease or poor welfare.` :
+    `Week ${L % 100}: no zone or farmer far from its recent pace.`;
+  $('wbAlerts').innerHTML = AL.length ? `<thead><tr><th class="name">Zone or licence holder</th><th>Visits, week ${L % 100}</th><th>Average 8 weeks</th><th>Same week last year</th><th>Signal</th></tr></thead><tbody>` +
+    AL.map(a => `<tr><td class="name">${OL(a.key)}</td><td><b>${a.visits}</b></td><td>${a.avg8}</td><td>${a.ly}</td><td>${a.kind === 'high' ? `<b style="color:#ffb74d">unusually high</b> (${a.z} σ)` : '<b style="color:#4fc3f7">unusually low</b>'}</td></tr>`).join('') + `</tbody>` : '';
+  // ---- zones
+  $('wbZones').innerHTML = `<thead><tr><th class="name">Production zone</th><th>Week ${L % 100}</th><th>Average 8 weeks</th><th>Same week last year</th><th>vs last year</th><th>Since January</th><th>vs last year</th><th>Slaughter-boat visits, wk ${L % 100}</th></tr></thead><tbody>` +
+    Array.from({ length: 13 }, (_, i) => `PO${i + 1}`).map(k => { let a = 0, b = 0; for (let w = 1; w <= L % 100; w++) { a += v(k, Y * 100 + w); b += v(k, (Y - 1) * 100 + w); }
+      const xx = v(k, L), aa = avg8(k, L), yy = v(k, isoBack(L, 52)), hot = xx >= 5 && xx >= 1.5 * aa;
+      return `<tr${hot ? ' style="background:rgba(255,183,77,.08)"' : ''}><td class="name">${OL(k)}</td><td><b>${xx}</b></td><td>${aa.toFixed(1)}</td><td>${yy}</td><td>${vt(pc(xx, yy))}</td><td>${f0(a)}</td><td>${vt(pc(a, b))}</td><td>${v(k, L, 1) || '—'}</td></tr>`; }).join('') + `</tbody>`;
+  // ---- fermes
+  const HT = WB.hot || [];
+  $('wbHotSub').innerHTML = `Farms with the most wellboat and slaughter-boat visits over the last 14 days. Many visits in a few days usually means the farm is being harvested (or treated against lice); a slaughter boat means harvest on site.`;
+  $('wbHot').innerHTML = `<thead><tr><th class="name">Farm</th><th>Zone</th><th style="text-align:left">Licence holder</th><th>Wellboat visits</th><th>Slaughter-boat visits</th><th>Hours on site</th><th style="text-align:left">Boats</th><th>Last visit</th></tr></thead><tbody>` +
+    HT.slice(0, 40).map(h => `<tr><td class="name">${e(h.name || h.no)} <span style="color:var(--muted);font-size:11px">${h.no}</span></td><td>${h.po || '—'}</td><td style="text-align:left;white-space:normal">${e(h.org)}</td><td><b>${h.wb}</b></td><td>${h.sb || '—'}</td><td>${f0(h.hours)}</td><td style="text-align:left;white-space:normal">${e((h.boats || []).join(', '))}</td><td>${e((h.last || '').replace('T', ' '))}</td></tr>`).join('') + `</tbody>`;
+  // ---- carte
+  const P = WB.positions || [];
+  $('wbMapSub').innerHTML = `Latest AIS position of each wellboat (blue) and slaughter boat (orange) followed by BarentsWatch: ${P.length} boats. Filled = moving, ring = stopped. Positions as of the last update (${e(M.built)}).`;
+  scLeaflet(() => {
+    if (!WB_MAP) { WB_MAP = L.map('wbMap', { scrollWheelZoom: false }).setView([65, 13], 5);
+      const esri = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', { attribution: 'Tiles &copy; Esri · positions: BarentsWatch / Kystverket', maxZoom: 13 }).addTo(WB_MAP);
+      let fails = 0; esri.on('tileerror', () => { if (++fails === 4) { WB_MAP.removeLayer(esri); L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors', maxZoom: 13 }).addTo(WB_MAP); } }); }
+    if (WB_LAYER) WB_LAYER.remove(); WB_LAYER = L.layerGroup().addTo(WB_MAP); const pts = [];
+    P.forEach(p => { const c = p.k === 'S' ? '#ff8a65' : '#4fc3f7', mv = (p.sog || 0) > 1;
+      L.circleMarker([p.lat, p.lon], { radius: 5, color: c, weight: 1.5, fillColor: c, fillOpacity: mv ? .85 : .1 }).addTo(WB_LAYER)
+        .bindPopup(`<b>${e(p.name)}</b> (${p.k === 'S' ? 'slaughter boat' : 'wellboat'})<br>${mv ? `moving, ${p.sog} knots` : 'stopped'}${p.dest ? ` · to ${e(p.dest)}` : ''}<br><span style="color:#8fa4b0">${e(p.ts.replace('T', ' '))} UTC · MMSI ${p.mmsi}</span>`);
+      if (p.lat > 57 && p.lat < 72 && p.lon > 3 && p.lon < 32) pts.push([p.lat, p.lon]); });
+    if (pts.length) WB_MAP.fitBounds(pts, { padding: [20, 20], maxZoom: 8 }); setTimeout(() => WB_MAP.invalidateSize(), 60);
+  });
+}
 </script>
 </body>
 </html>
