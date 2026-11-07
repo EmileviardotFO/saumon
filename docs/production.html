@@ -438,8 +438,8 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0b1620">
-<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png?v=orb">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=orb">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -13952,7 +13952,7 @@ loadRemoteData().then(live => {
   const btn = v => document.querySelector(`#viewToggle button[data-v="${v}"]`);
   const nav = document.createElement('nav'); nav.id = 'sideNav'; nav.setAttribute('aria-label', 'Dashboard sections');
   const closed = JSON.parse((() => { try { return localStorage.getItem('snClosed') || '{}'; } catch (e) { return '{}'; } })());
-  nav.innerHTML = `<div class="sn-top" aria-hidden="true"></div><div class="sn-brand"><img src="icons/logo.svg" alt="Salmon Outlook" title="Salmon Outlook" width="36" height="36"></div><div class="sn-sub" id="snSub"></div>` +
+  nav.innerHTML = `<div class="sn-top" aria-hidden="true"></div><div class="sn-brand"><img src="icons/logo.svg?v=orb" alt="Salmon Outlook" title="Salmon Outlook" width="36" height="36"></div><div class="sn-sub" id="snSub"></div>` +
     CATS.map(([c, L], i) => `<div class="sn-group${closed[i] ? ' closed' : ''}" data-g="${i}"><button type="button" class="sn-cat" aria-expanded="${!closed[i]}"><span class="sn-ic">${SN_ICONS[i] || ''}</span><span class="sn-lab">${c}</span><span>${closed[i] ? '▸' : '▾'}</span></button>` +
       L.filter(btn).map(v => `<button type="button" class="sn-item" data-v="${v}">${btn(v).textContent.trim()}</button>`).join('') + `</div>`).join('');
   document.body.prepend(nav);
@@ -13960,7 +13960,7 @@ loadRemoteData().then(live => {
   { let lastY = 0, tick = false; window.addEventListener('scroll', () => { if (tick) return; tick = true; requestAnimationFrame(() => { const y = window.scrollY, hide = y > 120 && y > lastY + 4 && !document.body.classList.contains('sn-open');
       if (Math.abs(y - lastY) > 4) { document.body.classList.toggle('fab-hide', false && hide); lastY = y; } tick = false; }); }, { passive: true }); }
   const burger = document.createElement('button'); burger.id = 'snBurger'; burger.type = 'button'; burger.setAttribute('aria-label', 'Open the menu'); burger.textContent = '☰'; document.body.prepend(burger);
-  { const lg = document.createElement('img'); lg.id = 'snLogo'; lg.src = 'icons/logo.svg'; lg.alt = 'Salmon Outlook'; lg.title = 'Salmon Outlook'; document.body.prepend(lg); }
+  { const lg = document.createElement('img'); lg.id = 'snLogo'; lg.src = 'icons/logo.svg?v=orb'; lg.alt = 'Salmon Outlook'; lg.title = 'Salmon Outlook'; document.body.prepend(lg); }
   const shade = document.createElement('div'); shade.id = 'snShade'; document.body.prepend(shade);
   const setOpen = o => { document.body.classList.toggle('sn-open', o); burger.textContent = o ? '✕' : '☰';
     burger.setAttribute('aria-label', o ? 'Close the menu' : 'Open the menu'); };
