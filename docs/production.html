@@ -2512,32 +2512,46 @@ function showDataBanner(live) {
     .db-pill:hover,.db-pill:focus{color:#cfdde4;border-color:#2f5873;outline:none}
     .db-dot{width:7px;height:7px;border-radius:50%;background:#4caf50;box-shadow:0 0 0 2px rgba(76,175,80,.15)}
     .db-pill.warn .db-dot{background:#ffb74d;box-shadow:0 0 0 2px rgba(255,183,77,.18)}
-    #srcPanel{position:absolute;top:40px;right:16px;z-index:959;width:min(1100px,calc(100vw - 32px));max-height:72vh;overflow:auto;border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.55)}
-    @media (max-width:900px){.db-pill{top:calc(16px + env(safe-area-inset-top,0px));right:58px}#srcPanel{top:calc(52px + env(safe-area-inset-top,0px))}}`;
+    #srcPanel{position:fixed;top:48px;right:16px;z-index:959;width:min(980px,calc(100vw - 32px));max-height:76vh;overflow:auto;border-radius:24px;padding:14px!important;
+      background:rgba(24,62,92,.82)!important;-webkit-backdrop-filter:blur(26px) saturate(170%);backdrop-filter:blur(26px) saturate(170%);border:1px solid rgba(255,255,255,.28);box-shadow:0 18px 50px rgba(3,18,35,.45);
+      transform-origin:top right;animation:sbIn .28s cubic-bezier(.2,.9,.3,1.2)}
+    @keyframes sbIn{from{opacity:0;transform:scale(.85) translateY(-6px)}to{opacity:1;transform:none}}
+    .sb-head{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:#d9f7e4;margin:2px 4px 12px}.sb-head.warn{color:#ffd28a}.sb-head span:not(.db-dot){font-weight:400;color:#cfe0ea;margin-left:6px}
+    .sb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+    .sb-b{padding:10px 12px;border-radius:18px;background:linear-gradient(140deg,rgba(255,255,255,.18),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.26);box-shadow:inset 0 1px 0 rgba(255,255,255,.45);
+      opacity:0;animation:sbPop .42s cubic-bezier(.2,.9,.3,1.35) forwards}
+    @keyframes sbPop{from{opacity:0;transform:scale(.6) translateY(8px)}to{opacity:1;transform:none}}
+    .sb-t{display:flex;align-items:center;gap:7px;font-size:12px;color:#eef5f9;font-weight:600;line-height:1.3}
+    .sb-t i{flex:0 0 auto;width:8px;height:8px;border-radius:50%;background:#5fdc8f;box-shadow:0 0 0 3px rgba(95,220,143,.22)}
+    .sb-b.late .sb-t i{background:#ffb74d;box-shadow:0 0 0 3px rgba(255,183,77,.25)}
+    @media (max-width:700px){.sb-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sb-b{padding:9px 10px}.sb-t{font-size:11px}.sb-v{font-size:15px!important}.sb-s{font-size:10.5px!important}}
+    .sb-v{font-size:17px;font-weight:800;color:#fff;margin:4px 0 2px}.sb-s{font-size:11.5px;color:#cfe0ea}.sb-due{color:#ffd28a}
+    .sb-foot{font-size:11.5px;color:#cfe0ea;margin:12px 4px 2px;line-height:1.5}.sb-foot a{color:#9fe3ff}
+    .db-pill{background:linear-gradient(150deg,rgba(255,255,255,.24),rgba(255,255,255,.08))!important;border:1px solid rgba(255,255,255,.32)!important;border-radius:999px!important;color:#fff!important;
+      padding:4px 11px!important;font-size:12px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.45);transition:transform .15s}
+    .db-pill:active{transform:scale(.95)}
+    @media (prefers-reduced-motion:reduce){.sb-b,#srcPanel{animation:none;opacity:1}}
+    @media (max-width:900px){.db-pill{top:calc(16px + env(safe-area-inset-top,0px));right:58px}#srcPanel{top:calc(56px + env(safe-area-inset-top,0px));right:12px!important;width:calc(100vw - 24px)}}`;
   document.head.appendChild(css);
   const pnl = document.createElement('div');
   pnl.id = 'srcPanel';
   pnl.style.cssText = 'display:none;background:#0d1a24;padding:12px 18px 14px;font-size:12px;';
   const outc = o => o === 'failure' ? '<span class="delta-bad">failed</span>' : o === 'success' ? '<span class="delta-good">ok</span>'
                   : o === 'skipped' ? '<span style="color:var(--muted)">nothing new</span>' : '<span style="color:var(--muted)">—</span>';
-  window.srcPanelFill = () => { const src = sourceStatus(); pnl.innerHTML = `<div style="max-width:1100px;margin:0 auto 8px;color:${warn ? '#ffb74d' : '#81c784'}">${warn ? 'Attention: ' + why + '.' : 'All sources up to date.'}${LAST_WEEK ? ` Last complete week in the data: week ${LAST_WEEK.week} ${LAST_WEEK.year}.` : ''}</div><table class="sig-table" style="max-width:1100px;margin:0 auto"><thead><tr><th class="name">Source</th><th style="text-align:left">Latest data</th>` +
-    `<th style="text-align:left">Status</th><th style="text-align:left">Last run</th><th style="text-align:left">Next expected</th><th style="text-align:left">Publication / coverage</th></tr></thead><tbody>` +
-    src.map(x => `<tr><td class="name">${x.name}</td><td style="text-align:left">${x.last}</td>` +
-      `<td style="text-align:left">${x.late ? '<span class="delta-bad">late</span>' : '<span class="delta-good">up to date</span>'}</td>` +
-      `<td style="text-align:left">${outc(x.step)}</td><td style="text-align:left;white-space:nowrap">${x.next ? (x.next < new Date() ? '<span class="delta-bad">due ' : '≈ ') + x.next.toISOString().slice(0, 10) + (x.next < new Date() ? '</span>' : '') : '<span style="color:var(--muted)">each run</span>'}</td>` +
-      `<td style="text-align:left;white-space:normal;color:var(--muted)">${x.note}</td></tr>`).join('') +
-    `</tbody></table>` +
-    `<div style="max-width:1100px;margin:8px auto 0;color:var(--muted)">` +
-    (st ? `Last update run ${st.run_utc ? st.run_utc.replace('T', ' ').slice(0, 16) + ' UTC' : ''}` +
-          (st.smoke ? ` · dashboard test: ${st.smoke.ok ? '<span class="delta-good">all tabs ok</span>' : '<span class="delta-bad">' + st.smoke.checks.filter(c => !c.ok).map(c => c.name).join('; ') + '</span>'}` : '') +
-          (((st.steps || []).filter(x => x.outcome === 'failure').length) ? ` · failed steps: <span class="delta-bad">${st.steps.filter(x => x.outcome === 'failure').map(x => x.name).join('; ')}</span>` : '') +
-          (st.run_url ? ` · <a href="${st.run_url}" target="_blank" rel="noopener" style="color:var(--accent)">open the run in GitHub</a>` : '')
-        : 'The run status appears after the next update run.') +
-    ` · "Late" means behind the usual publication calendar of the source, which can also be a delay at the source itself. "Next expected" is the usual calendar of the source, not a promise.</div>`; };
+  window.srcPanelFill = () => { const src = sourceStatus(), today = new Date();
+    const nxt = x => x.next ? (x.next < today ? `<span class="sb-due">due ${x.next.toISOString().slice(0, 10)}</span>` : `next ≈ ${x.next.toISOString().slice(0, 10)}`) : 'each run';
+    pnl.innerHTML = `<div class="sb-head ${warn ? 'warn' : ''}"><span class="db-dot"></span>${warn ? 'Attention: ' + why + '.' : 'All sources up to date.'}${LAST_WEEK ? ` <span>Last complete week: ${LAST_WEEK.week} · ${LAST_WEEK.year}</span>` : ''}</div>` +
+      `<div class="sb-grid">${src.map((x, i) => `<div class="sb-b ${x.late || x.step === 'failure' ? 'late' : ''}" style="animation-delay:${Math.min(i * 45, 900)}ms" title="${String(x.note || '').replace(/"/g, '&quot;')}">` +
+        `<div class="sb-t"><i></i>${x.name}</div><div class="sb-v">${x.last}</div><div class="sb-s">${x.late ? 'late' : x.step === 'failure' ? 'last run failed' : 'up to date'} · ${nxt(x)}</div></div>`).join('')}</div>` +
+      `<div class="sb-foot">` + (st ? `Last update run ${st.run_utc ? st.run_utc.replace('T', ' ').slice(0, 16) + ' UTC' : ''}` +
+          (st.smoke ? ` · dashboard test: ${st.smoke.ok ? 'all tabs ok' : '<span class="sb-due">' + st.smoke.checks.filter(c => !c.ok).map(c => c.name).join('; ') + '</span>'}` : '') +
+          (((st.steps || []).filter(x => x.outcome === 'failure').length) ? ` · failed steps: <span class="sb-due">${st.steps.filter(x => x.outcome === 'failure').map(x => x.name).join('; ')}</span>` : '') +
+          (st.run_url ? ` · <a href="${st.run_url}" target="_blank" rel="noopener">open the run in GitHub</a>` : '') : 'The run status appears after the next update run.') +
+      ` · "Late" means behind the usual publication calendar of the source. Hover a bubble for its calendar.</div>`; };
   window.srcPanelFill();
   document.body.insertBefore(pnl, document.body.firstChild);
   document.body.insertBefore(b, document.body.firstChild);
-  const tg = () => { pnl.style.display = pnl.style.display === 'none' ? 'block' : 'none'; };
+  const tg = () => { const open = pnl.style.display === 'none'; if (open) window.srcPanelFill(); pnl.style.display = open ? 'block' : 'none'; };   // a chaque ouverture, les bulles reapparaissent une a une
   b.addEventListener('click', tg); b.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tg(); } });
   document.addEventListener('click', e => { if (pnl.style.display !== 'none' && !pnl.contains(e.target) && !b.contains(e.target)) pnl.style.display = 'none'; });
 }
@@ -13984,7 +13998,7 @@ loadRemoteData().then(live => {
     -webkit-backdrop-filter:blur(18px) saturate(180%);backdrop-filter:blur(18px) saturate(180%)}
   #snBurger,#gsFab{border-radius:16px!important}
   .nw-chips button.on{background:linear-gradient(150deg,rgba(255,255,255,.55),rgba(255,255,255,.28))!important;color:#0d2a40!important;font-weight:700}
-  #snLogo{border-radius:14px!important;box-shadow:0 0 0 1px rgba(255,255,255,.35),0 6px 18px rgba(3,18,35,.3)!important}
+  #snLogo{border-radius:50%!important;box-shadow:none!important;background:none!important;filter:drop-shadow(0 4px 10px rgba(3,18,35,.35))}
   /* menu lateral : verre epais, element actif en pastille claire */
   #sideNav{background:linear-gradient(170deg,rgba(255,255,255,.16),rgba(255,255,255,.06))!important;-webkit-backdrop-filter:blur(30px) saturate(180%);backdrop-filter:blur(30px) saturate(180%);
     border-right:1px solid rgba(255,255,255,.22)!important;box-shadow:inset -1px 0 0 rgba(255,255,255,.18)}
