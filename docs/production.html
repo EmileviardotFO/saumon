@@ -501,13 +501,13 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
       <button data-v="genyoy">Generations vs last year</button>
     </div></div>
     <div class="vt-row"><span class="vt-lab">Markets &amp; producers<small>trade, prices, other origins</small></span><div class="vt-btns">
-      <button data-v="markets">Markets</button>
+      <button data-v="markets">Norway export WFE</button>
       <button data-v="products">Product per market</button>
       <button data-v="calibre">Calibre &amp; premium</button>
-      <button data-v="coprod">Co-products</button>
+      <button data-v="coprod">By-products</button>
       <button data-v="feed">Feed &amp; raw materials</button>
-      <button data-v="producers">Producers</button>
-      <button data-v="euflows">EU markets</button>
+      <button data-v="producers">Export by country and product</button>
+      <button data-v="euflows">EU imports</button>
       <button data-v="poland">EU hubs</button>
       <button data-v="prices">Prices</button>
       <button data-v="usa">USA focus</button>
@@ -1024,7 +1024,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
   </div>
 
   <div class="panel" id="coprodView" style="flex:1; min-width:0; max-width:1400px; display:none;">
-    <div class="sig-title">Co-products — frozen salmon heads, frames and other by-products exported by Norway</div>
+    <div class="sig-title">By-products — frozen salmon heads, frames and other by-products exported by Norway</div>
     <div class="sig-sub" id="cpSub"></div>
     <div class="chart-controls">
       <span class="cc-label">Period</span>
@@ -1247,8 +1247,8 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="sig-sub" id="upSub"></div>
     <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:10px 0">
       <label style="font-size:12px;color:var(--muted)">Origin</label><select id="upO"></select>
-      <label style="font-size:12px;color:var(--muted)">Product</label><select id="upF"><option value="1">Fresh fillets</option><option value="0">Fresh whole</option><option value="2">Frozen fillets</option></select>
-      <label style="font-size:12px;color:var(--muted)">Currency</label><select id="upC"><option>EUR</option><option>USD</option><option>NOK</option><option>DKK</option></select>
+      <label style="font-size:12px;color:var(--muted)">Product</label><select id="upF"><option value="0" selected>Fresh whole</option><option value="1">Fresh fillets</option><option value="2">Frozen fillets</option></select>
+      <label style="font-size:12px;color:var(--muted)">Currency</label><select id="upC"><option>EUR</option><option>USD</option><option>NOK</option><option selected>DKK</option></select>
     </div>
     <div id="upChart"></div><div id="upLeg"></div>
     <div style="overflow-x:auto;margin-top:8px"><table class="sig-table" id="upTab" style="max-width:1100px"></table></div>
@@ -10715,8 +10715,9 @@ function tmPeriodLabels(sel, pre, rerender, end, maxEnd) {
   end = end || TM.common; maxEnd = Math.max(maxEnd || 0, end);
   const o = [...sel.options].find(x => x.value === 'last');
   if (o) o.textContent = `Last month available (${tmMl(end)})`;
-  if (!['last', 'ytd', 'custom'].includes(sel.value)) sel.value = 'last';
-  periodSeg(sel, [['last', `Last month available · ${tmMl(end)}`], ['ytd', `Year to date · Jan–${tmMl(end).split(' ')[0]}`], ['custom', 'Selected period']]);
+  if (![...sel.options].some(x => x.value === '12')) sel.insertAdjacentHTML('beforeend', '<option value="12">12 months rolling</option>');
+  if (!['last', 'ytd', '12', 'custom'].includes(sel.value)) sel.value = 'last';
+  periodSeg(sel, [['last', `Last month available · ${tmMl(end)}`], ['ytd', `Year to date · Jan–${tmMl(end).split(' ')[0]}`], ['12', `12 months rolling · ${tmMl(tmBack(end, 11))} – ${tmMl(end)}`], ['custom', 'Selected period']]);
   const box = document.getElementById(pre + 'Custom'), f = document.getElementById(pre + 'From'), t = document.getElementById(pre + 'To');
   if (!f.options.length || +f.options[0].value < maxEnd) {
     // liste des mois de la periode choisie : jusqu'au mois le plus recent publie par au moins un pays
@@ -13750,7 +13751,8 @@ loadRemoteData().then(live => {
   #gsPanel{z-index:970!important}
   @media (min-width:901px){
     body{padding-top:64px}
-    #gsBox{position:fixed!important;top:12px;left:calc(244px + (100vw - 244px) / 2);transform:translateX(-50%);width:min(560px,46vw);z-index:900;margin:0!important}
+    body > h1{min-height:64px;display:flex;flex-direction:column;justify-content:center;margin:-64px auto 0!important;padding:8px 0}
+    #gsBox{position:absolute!important;top:12px;left:calc(244px + (100vw - 244px) / 2);transform:translateX(-50%);width:min(560px,46vw);z-index:900;margin:0!important}
     #gsBox input{width:100%;height:40px;padding-left:40px!important;font-size:14px;border-radius:999px!important;background:linear-gradient(150deg,rgba(255,255,255,.24),rgba(255,255,255,.08))!important;
       border:1px solid rgba(255,255,255,.32)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 8px 24px rgba(3,18,35,.30)!important;-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%)}
     #gsBox:before{left:15px!important;top:7px!important;color:#e9f3f8!important}
@@ -14353,7 +14355,7 @@ loadRemoteData().then(live => {
         `<tr><td>NOK/kg</td>${c.map((x, j) => `<td class="${x[0] && all[j][0] && x[1] / x[0] > all[j][1] / all[j][0] * 1.03 ? 'good' : x[0] && all[j][0] && x[1] / x[0] < all[j][1] / all[j][0] * 0.97 ? 'bad' : ''}">${pr(x)}</td>`).join('')}</tr><tr><td>NOK/kg, all markets</td>${all.map(x => `<td>${pr(x)}</td>`).join('')}</tr></table>`; }).join('');
     if (!blocks) return `<div class="gs-card"><h4>Norwegian salmon exports to ${esc(mk.name)}</h4><div class="s">No export of these products to ${esc(mk.name)} in the last 24 months (SSB).</div></div>`;
     return `<div class="gs-card"><h4>Norwegian salmon exports to ${esc(mk.name)} — to ${ml(last)}</h4><div class="s">Statistics Norway, monthly customs exports (export value FOB, NOK). Green / red price: above / below the average of all markets that month.</div>${blocks}` +
-      `<div class="s" style="margin-top:6px"><span class="gs-go" onclick="gsGoTab('markets')">→ Markets, exports by market</span>${mk.iso === 'PL' || mk.iso === 'NL' || mk.iso === 'DK' ? ` · <span class="gs-go" onclick="gsGoTab('poland')">→ EU processing hubs</span>` : ''}</div></div>`;
+      `<div class="s" style="margin-top:6px"><span class="gs-go" onclick="gsGoTab('markets')">→ Norway export WFE</span>${mk.iso === 'PL' || mk.iso === 'NL' || mk.iso === 'DK' ? ` · <span class="gs-go" onclick="gsGoTab('poland')">→ EU processing hubs</span>` : ''}</div></div>`;
   }
 
 
