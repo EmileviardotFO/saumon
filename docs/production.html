@@ -13475,12 +13475,20 @@ function renderEuFlows() {
   // Suisse et Royaume-Uni (hors Eurostat) : leurs propres declarations d'importation a l'ONU (UN Comtrade, data/world_imports.json),
   // origine telle que declaree ; la Norvege vient comme ailleurs de ses statistiques d'exportation
   if (!TM.extraDone) {
-    if (EU_WI === null) { EU_WI = undefined; Promise.all(['world_imports.json', 'national_trade.json'].map(f => fetch(DATA_URL.replace('data.json', f), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)))
-        .then(([w, n]) => { EU_WI = { w, fx: (((n || {}).meta || {}).fx || {}).USD || {} }; if (currentView === 'euflows') renderEuFlows(); }); }
+    if (EU_WI === null) { EU_WI = undefined; Promise.all(['world_imports.json', 'national_trade.json', 'swiss_imports.json'].map(f => fetch(DATA_URL.replace('data.json', f), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)))
+        .then(([w, n, ch]) => { EU_WI = { w, ch: ch && ch.rows && ch.rows.length ? ch : null, fx: (((n || {}).meta || {}).fx || {}).USD || {} }; if (currentView === 'euflows') renderEuFlows(); }); }
     if (EU_WI) { TM.extraDone = true; TM.extraRep = [];
       const W = EU_WI.w; const I3 = { NOR: 'NO', DNK: 'DK', DEU: 'DE', FRA: 'FR', POL: 'PL', NLD: 'NL', ITA: 'IT', SWE: 'SE', BEL: 'BE', ESP: 'ES', PRT: 'PT', IRL: 'IE', AUT: 'AT', LTU: 'LT', LVA: 'LV', EST: 'EE', FIN: 'FI', CZE: 'CZ', HUN: 'HU', GRC: 'GR', HRV: 'HR', ROU: 'RO', BGR: 'BG', SVK: 'SK', SVN: 'SI', LUX: 'LU', CHE: 'CH', GBR: 'GB', ISL: 'IS', FRO: 'FO', CHL: 'CL', USA: 'US', CAN: 'CA', CHN: 'CN', RUS: 'RU', VNM: 'VN', TUR: 'TR', AUS: 'AU', NZL: 'NZ', JPN: 'JP', THA: 'TH', CYP: 'CY', MLT: 'MT' };
       const HS = { '030214': 0, '030313': 1, '030441': 2, '030481': 3, '030541': 5 }, REP = { CHE: 'CH', GBR: 'GB' }, EU27 = new Set(EU.meta.reporters_up);
-      if (W && W.rows) W.rows.forEach(([ym, r3, hs, pt, kg, usd]) => { const rep = REP[r3], pi = HS[hs]; if (!rep || pi === undefined || pt === 'W' || ym > TM.last) return;
+      // Suisse : directement les douanes suisses (OFDF/BAZG, donnees ouvertes = Swiss-Impex), mensuel, en EUR, par pays d'origine
+      const CHD = EU_WI.ch;
+      if (CHD) { const T6 = { '0302.14': 0, '0303.13': 1, '0304.41': 2, '0304.81': 3, '0305.41': 5 };
+        CHD.rows.forEach(([ym, tn8, part, kg, chf, eur]) => { const pi = T6[tn8.slice(0, 7)]; if (pi === undefined || ym > TM.last || part === 'CH') return;
+          const o = part === 'GB' ? 'GB' : part === 'IE' ? 'IE' : EU27.has(part) ? null : ['NO', 'FO', 'IS', 'CL'].includes(part) ? part : (pi >= 2 && PAC_SRC.has(part)) ? 'PAC' : 'OTH';
+          const A = TM.imp[ym] || (TM.imp[ym] = {}), R = A.CH || (A.CH = {}), C = R[pi] || (R[pi] = { d: {}, h: {} }), box = o ? C.d : C.h, key = o || part;
+          const x = box[key] || (box[key] = [0, 0]); x[0] += kg / 1000; x[1] += eur / 1000; });
+        TM.extraRep.push('CH'); TM.chProv = new Set(CHD.meta.provisional || []); }
+      if (W && W.rows) W.rows.forEach(([ym, r3, hs, pt, kg, usd]) => { const rep = REP[r3], pi = HS[hs]; if (!rep || pi === undefined || pt === 'W' || ym > TM.last || (CHD && rep === 'CH')) return;
         const part = I3[pt] || pt; if (part === rep) return;
         const o = part === 'GB' ? 'GB' : part === 'IE' ? 'IE' : EU27.has(part) ? null : ['NO', 'FO', 'IS', 'CL'].includes(part) ? part : (pi >= 2 && PAC_SRC.has(part)) ? 'PAC' : 'OTH';
         const fx = EU_WI.fx[ym] || 1.1, A = TM.imp[ym] || (TM.imp[ym] = {}), R = A[rep] || (A[rep] = {}), C = R[pi] || (R[pi] = { d: {}, h: {} }), box = o ? C.d : C.h, key = o || part;
@@ -13558,7 +13566,8 @@ function renderEuFlows() {
     (NATO.length ? `<b>${NATO.map(g => ORIG_LAB[g]).join(' and ')}</b> = their own export statistics, by destination declared at export, like Norway. ` : '') +
     `<b>Other origins</b> = what arrives declared with its origin. <b>Grey</b> = arrivals from another EU country whose origin is not declared` +
     (NATO.length === 2 ? ` (mainly Scottish salmon cleared in another EU country, and gaps between the statistics of the two sides).` : ` — this is where Faroese, Icelandic and Scottish salmon sold to this market but cleared in Denmark, the Netherlands or Germany ends up, until their national statistics are added.`) +
-    (euCty === 'CH' || euCty === 'GB' ? ` <span class="warn">${euName(euCty)} is not in Eurostat: its own import declarations to the UN (Comtrade), by country of origin as declared (fish smoked or processed in an EU country counts under that country, shown here as "via another EU country"); prices converted from US dollars.</span>` : '') +
+    (euCty === 'CH' && EU_WI && EU_WI.ch ? ` <span class="warn">Switzerland is not in Eurostat: Swiss customs figures (Federal Office for Customs and Border Security, open data, the same as Swiss-Impex), monthly, values in euros as published, by <b>country of origin</b> (salmon smoked or filleted in an EU country counts under that country, shown here as "via another EU country")${TM.chProv && TM.chProv.size ? `; months from ${tmMl(Math.min(...TM.chProv))} are provisional` : ''}.</span>` : '') +
+    ((euCty === 'CH' && !(EU_WI && EU_WI.ch)) || euCty === 'GB' ? ` <span class="warn">${euName(euCty)} is not in Eurostat: its own import declarations to the UN (Comtrade), by country of origin as declared (fish smoked or processed in an EU country counts under that country, shown here as "via another EU country"); prices converted from US dollars.</span>` : '') +
     vzLegend(shown.map(g => [CLAB[g], CCOL[g], false, true]).concat([['Total, a year earlier', '#e7eef2', true]]));
   document.getElementById('euCtyChart').innerHTML = vzStack(k24, shown.map(g => ({ lab: CLAB[g], col: CCOL[g], vals: mon.map(o => o[g] ? o[g][0] : 0) })),
     { axis: 'Tonnes per month', unit: 't', lines: [{ lab: 'a year earlier', col: '#e7eef2', pts: prevTot }] });
