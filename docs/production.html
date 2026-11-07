@@ -10504,12 +10504,16 @@ function vzLines(keys, series, o) {
   const all = series.flatMap(s => s.pts).filter(v => v !== null && isFinite(v));
   if (!all.length) return `<div class="sig-sub">No data for this selection.</div>`;
   const sc = vzScale(o.zero === false ? Math.min(...all) * 0.94 : 0, Math.max(...all) * 1.06, 4);
-  const X = i => mL + (n === 1 ? pw / 2 : i * pw / (n - 1)), Y = v => mT + ph - (v - sc.lo) / (sc.hi - sc.lo) * ph;
+  const cand = series.filter(se => !se.dash && se.bar !== false), mw = Math.max(...cand.map(se => se.w || 2.2)), top = cand.filter(se => (se.w || 2.2) === mw), main = !o.lines && n <= 60 && top.length === 1 ? top[0] : null;   // une seule serie principale evidente, sinon on garde les lignes (prix de plusieurs origines…)
+  const X = main ? (i => mL + (i + .5) * pw / n) : (i => mL + (n === 1 ? pw / 2 : i * pw / (n - 1))), Y = v => mT + ph - (v - sc.lo) / (sc.hi - sc.lo) * ph;
   let s = `<text transform="translate(14,${mT + ph / 2}) rotate(-90)" text-anchor="middle" fill="#cfdde4" font-size="12" font-weight="bold">${o.axis}</text>`;
   for (let g = sc.lo; g <= sc.hi + sc.step / 2; g += sc.step)
     s += `<line x1="${mL}" x2="${W - mR}" y1="${Y(g)}" y2="${Y(g)}" stroke="#223642"/><text x="${mL - 8}" y="${Y(g) + 4}" text-anchor="end" fill="#8fa4b0" font-size="11">${vzFmt(g, o.digits)}</text>`;
   if (o.xAxis !== false) s += vzXLabels(keys, X, H - 12, o.xfmt);
-  series.forEach(se => {
+  if (main) { const bw = Math.max(1.5, Math.min(60, pw / n * .66));
+    main.pts.forEach((v, i) => { if (v === null || !isFinite(v)) return; const y0 = Y(Math.max(sc.lo, Math.min(sc.hi, 0 >= sc.lo ? 0 : sc.lo)));
+      s += `<rect x="${(X(i) - bw / 2).toFixed(1)}" y="${Math.min(Y(v), y0).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.abs(y0 - Y(v)).toFixed(1)}" fill="${main.col}" fill-opacity="${(main.op || 1) * .8}" rx="1.5"><title>${main.lab} — ${o.xfmt ? o.xfmt(keys[i], i, true) : tmMl(keys[i])}: ${vzFmt(v, o.digits)} ${o.unit}</title></rect>`; }); }
+  series.forEach(se => { if (se === main) return;
     let d = '', pen = false;
     se.pts.forEach((v, i) => { if (v === null || !isFinite(v)) { pen = false; return; } d += (pen ? 'L' : 'M') + X(i).toFixed(1) + ',' + Y(v).toFixed(1); pen = true; });
     if (d) s += `<path d="${d}" fill="none" stroke="${se.col}" stroke-width="${se.w || 2.2}" stroke-opacity="${se.op || 1}"${se.dash ? ` stroke-dasharray="${se.dash}"` : ''} stroke-linejoin="round"/>`;
@@ -11513,7 +11517,8 @@ function fdLines(x, series, o = {}) {
   const all = series.flatMap(s => s.values).filter(v => v !== null && v !== undefined && isFinite(v));
   if (!all.length) return '<div class="sig-sub">No data.</div>';
   let lo = Math.min(...all), hi = Math.max(...all); if (o.zero) lo = Math.min(0, lo); const pad = (hi - lo) * 0.06 || 1; lo -= pad; hi += pad;
-  const X = i => L + (W - L - R) * (x.length > 1 ? i / (x.length - 1) : 0.5), Y = v => T + (H - T - B) * (1 - (v - lo) / (hi - lo));
+  const cand = series.filter(s => !s.dash && s.bar !== false), mw = Math.max(...cand.map(s => s.w || 2)), top = cand.filter(s => (s.w || 2) === mw), main = !o.lines && x.length <= 60 && top.length === 1 ? top[0] : null;
+  const X = main ? (i => L + (W - L - R) * (i + .5) / x.length) : (i => L + (W - L - R) * (x.length > 1 ? i / (x.length - 1) : 0.5)), Y = v => T + (H - T - B) * (1 - (v - lo) / (hi - lo));
   let g = '';
   const step = Math.pow(10, Math.floor(Math.log10((hi - lo) / 4))), nice = [1, 2, 2.5, 5, 10].map(m => m * step).find(s => (hi - lo) / s <= 6) || step * 10;
   for (let v = Math.ceil(lo / nice) * nice; v <= hi; v += nice)
@@ -11521,7 +11526,10 @@ function fdLines(x, series, o = {}) {
   if (o.ref !== undefined) g += `<line x1="${L}" x2="${W - R}" y1="${Y(o.ref)}" y2="${Y(o.ref)}" stroke="#8fa4b0" stroke-dasharray="3 3"/>`;
   const every = Math.max(1, Math.ceil(x.length / 10));
   x.forEach((k, i) => { if (i % every === 0 || i === x.length - 1) g += `<text x="${X(i)}" y="${H - 8}" text-anchor="middle" font-size="10" fill="#8fa4b0">${k}</text>`; });
-  series.forEach(s => { let d = '', pen = false;
+  if (main) { const bw = Math.max(1.5, Math.min(60, (W - L - R) / x.length * .66)), y0 = Y(lo <= 0 && hi >= 0 ? 0 : lo);
+    main.values.forEach((v, i) => { if (v === null || v === undefined || !isFinite(v)) return;
+      g += `<rect x="${(X(i) - bw / 2).toFixed(1)}" y="${Math.min(Y(v), y0).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.abs(y0 - Y(v)).toFixed(1)}" fill="${main.col}" fill-opacity=".8" rx="1.5"><title>${x[i]}: ${o.fmt ? o.fmt(v) : (+v).toLocaleString('en-US')}</title></rect>`; }); }
+  series.forEach(s => { if (s === main) return; let d = '', pen = false;
     s.values.forEach((v, i) => { if (v === null || v === undefined || !isFinite(v)) { pen = false; return; } d += `${pen ? 'L' : 'M'}${X(i).toFixed(1)},${Y(v).toFixed(1)}`; pen = true; });
     g += `<path d="${d}" fill="none" stroke="${s.col}" stroke-width="${s.w || 2}" ${s.dash ? `stroke-dasharray="${s.dash}"` : ''}/>`;
     const li = s.values.map((v, i) => v !== null && v !== undefined && isFinite(v) ? i : -1).filter(i => i >= 0).pop();
