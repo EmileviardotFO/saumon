@@ -13042,7 +13042,7 @@ loadRemoteData().then(live => {
 (function () {
   const SLOTS = [['map', 'Farms, licences and companies'], ['stock', 'Fish at sea'], ['harvest', 'Harvest and production'], ['cycles', 'Cycles and time at sea'],
     ['bio', 'Mortality and fish health'], ['companies', 'Company results'], ['trade', 'Exports'], ['news', 'News']];
-  const RULES = [[/exports by month and province|supply outlook/i, 'harvest'], [/site by site/i, 'map'], [/anaemia|reportable conditions/i, 'bio'], [/put to sea/i, 'stock'], [/cycle length|time at sea|smolt entries|sea temperature/i, 'cycles'], [/volumes by coast/i, 'harvest'], [/farm by farm/i, 'stock'], [/^news$/i, 'news'], [/export/i, 'trade'], [/^fish at sea|smolt transfer/i, 'stock'],
+  const RULES = [[/exports by month and province|supply outlook/i, 'harvest'], [/^atlantic canada site by site/i, 'map'], [/anaemia|reportable conditions/i, 'bio'], [/put to sea/i, 'stock'], [/cycle length|time at sea|smolt entries|sea temperature/i, 'cycles'], [/volumes by coast/i, 'harvest'], [/farm by farm/i, 'stock'], [/^news$/i, 'news'], [/export/i, 'trade'], [/^fish at sea|smolt transfer/i, 'stock'],
     [/^mortality/i, 'bio'], [/company results|year by year$|farmers' results|bakkafrost scotland/i, 'companies'],
     [/farms and|farming areas|farm leases|licences|^map/i, 'map'],
     [/mortal|death|dead fish|lice|disease|health/i, 'bio'], [/harvest|survey|by province|production/i, 'harvest'],
