@@ -12949,7 +12949,7 @@ loadRemoteData().then(live => {
   #gsPanel{display:none;position:fixed;top:0;right:0;bottom:0;left:244px;z-index:870;background:#08141c;overflow-y:auto;padding:22px 28px 60px}
   @media (max-width:900px){#gsPanel{left:0;padding:60px 12px 60px}
     #gsPanel .gs-card{padding:10px 10px;overflow-x:auto;-webkit-overflow-scrolling:touch}
-    #gsPanel .gs-h input{font-size:16px}  /* 16 px : iOS ne zoome pas sur la case */
+    #gsPanel .gs-h input,#gsQ,#plNoQ,#plNoSel,#caAtlQ,#caAtlSel{font-size:16px!important}  /* 16 px : iOS ne zoome pas sur la case */
     #gsPanel table th,#gsPanel table td{white-space:nowrap}}
   /* telephone : chaque tableau defile de gauche a droite dans sa propre bande, la page ne deborde plus */
   @media (max-width:900px){
@@ -13038,6 +13038,8 @@ loadRemoteData().then(live => {
   const goTab = (v, title) => { close(); v = PANEL_TAB[v] || v; const b = document.querySelector(`#sideNav .sn-item[data-v="${v}"]`) || document.querySelector(`#viewToggle button[data-v="${v}"]`); if (b) b.click();
     if (title) setTimeout(() => { const pid = document.getElementById(v + 'View') ? v : (TAB_PANEL[v] || v); const t = [...document.querySelectorAll('#' + pid + 'View .sig-title, #' + v + 'View .gm-t, #' + v + 'View .gm-h1')].find(x => x.textContent.trim() === title); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 900); };
   window.gsGoTab = goTab;
+  if (nav) nav.addEventListener('click', e => { if (e.target.closest('.sn-item, button[data-v], a') && P.style.display === 'block') close(); }, true);
+  document.addEventListener('click', e => { if (e.target.closest('#viewToggle button, #tabIndex a, #tabIndex button') && P.style.display === 'block') close(); }, true);
   // ---- fiches calculees
   const R = () => (typeof DATA_RAW !== 'undefined' && DATA_RAW ? DATA_RAW : {}).bw_register || {};
   const orgOf = () => { const G = { 'ocean farming as': 'SalMar', 'mariculture as': 'SalMar' }, o = {}; Object.entries(R().site_org || {}).forEach(([k, v]) => o[k] = G[(v || '').toLowerCase()] || v); return o; };
