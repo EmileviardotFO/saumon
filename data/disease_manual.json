@@ -587,7 +587,7 @@
   ],
   "card": {
    "kind": "worse",
-   "s": "ISA back in two Aysén farms; sea-lice listings at a high; El Niño",
+   "s": "SRS at Camanchaca, ISA at Izaza and Luchín, and 918 t lost to algae in Magallanes in October; El Niño",
    "threat": "SRS, sea lice, algal blooms"
   },
   "threats": "MLHMHHM",
@@ -598,6 +598,18 @@
   },
   "supply_line": "Less fish in the water, ISA back, El Niño: the risk is on the downside.",
   "events": [
+   {
+    "d": "Feb 2026",
+    "k": "bad",
+    "t": "Invermar: about 283 t of salmon (around 10 % of one farm's biomass) killed by low oxygen.",
+    "u": "https://www.intrafish.com/salmon/mass-mortality-wipes-out-283-tons-of-salmon/2-1-1943992"
+   },
+   {
+    "d": "Jan–Mar 2026",
+    "k": "bad",
+    "t": "Salmones Camanchaca: SRS outbreaks at several sites, US$2.8 M of exceptional mortality in the first quarter; SRS again at two sites in the second quarter.",
+    "u": "https://www.salmonbusiness.com/salmones-camanchaca-srs-outbreaks-and-weak-prices-cut-q1-ebitda-by-52/"
+   },
    {
     "d": "Jul–Sep 2026",
     "k": "bad",
@@ -621,6 +633,18 @@
     "k": "info",
     "t": "Sernapesca health report 2025: closed-cycle mortality of Atlantic salmon 10.1 % (11.0 % in 2024).",
     "u": "https://www.sernapesca.cl/app/uploads/2026/03/Informe-Situacion-Sanitaria-Salmonicultura-Ano-2025.pdf"
+   },
+   {
+    "d": "Oct 2026",
+    "k": "bad",
+    "t": "Magallanes: a Leptocylindrus minimus algal bloom killed 918 t at Multi X's Taraba sites (concessions 43A/43B); Sernapesca authorised early harvest, with strong El Niño alerts.",
+    "u": "https://www.emol.com/noticias/Economia/2026/10/16/1214309/salmones-perdidas-magallanes-sernapesca-algas.html"
+   },
+   {
+    "d": "2026",
+    "k": "info",
+    "t": "No national mortality rate for 2026 yet: Sernapesca publishes it once a year (the 2026 report is due around March 2027). Until then, losses are known event by event.",
+    "u": "https://www.sernapesca.cl/informacion-utilidad/informes-sanitarios-acuicultura/"
    }
   ],
   "kpis": [
@@ -666,8 +690,26 @@
     "n": "Diario Acuícola — harvest of Izaza finished after ISA",
     "u": "https://www.diarioacuicola.cl/noticia/actualidad/2026/10/finaliza-cosecha-de-centro-salmonero-izaza-tras-deteccion-del-virus-isa-en-aysen",
     "w": "timeline of the Izaza case"
+   },
+   {
+    "d": "Sep 2024",
+    "ty": "press",
+    "n": "WeAreAquaculture — Chile's 2023 health report (cycle mortality 2023)",
+    "u": "https://weareaquaculture.com/news/aquaculture/chile-recorded-only-one-isa-outstanding-outbreak-in-2023",
+    "w": "Atlantic salmon 9.4 % in 2023"
+   },
+   {
+    "d": "16 Oct 2026",
+    "ty": "press",
+    "n": "Emol — Magallanes algal bloom, Multi X losses",
+    "u": "https://www.emol.com/noticias/Economia/2026/10/16/1214309/salmones-perdidas-magallanes-sernapesca-algas.html",
+    "w": "918 t lost, early harvest"
    }
-  ]
+  ],
+  "cycle_mortality_hist": {
+   "2023": 9.4
+  },
+  "cycle_mortality_hist_note": "2023: Sernapesca health report 2023 as summarised by WeAreAquaculture (17 Sep 2024); coho 6.8 %, rainbow trout 6.9 %."
  },
  "IS": {
   "name": "Iceland",
@@ -773,7 +815,7 @@
   ],
   "card": {
    "kind": "better",
-   "s": "low losses; ISA handled by culling",
+   "s": "low losses, no exceptional mortality in Q1–Q3; no ISA since 2024, no AGD reported",
    "threat": "occasional ISA"
   },
   "threats": "LLMMLLL",
@@ -783,7 +825,26 @@
    "supply": "Health is not the constraint in the Faroes: volumes follow licences and Bakkafrost's plans."
   },
   "supply_line": "Health is not the constraint; volumes follow licences.",
-  "events": [],
+  "events": [
+   {
+    "d": "May 2024",
+    "k": "bad",
+    "t": "Last ISA case found: Bakkafrost A-19 Vágur, harvested early (about 2–3 kt off that year's harvest).",
+    "u": "https://www.seafoodsource.com/news/aquaculture/bakkafrost-set-to-cull-180-000-salmon-following-isa-detection-at-faroese-farm"
+   },
+   {
+    "d": "Jan–Sep 2026",
+    "k": "good",
+    "t": "Bakkafrost Faroes: no exceptional mortality cost in Q1, Q2 or Q3; harvest 25.1, 26.7 and 23.1 kt.",
+    "u": "https://www.fishfarmingexpert.com/bakkafrost-faroe-islands-financial-results/bakkafrost-profit-improved-in-q3-as-scotland-losses-lessened/2204501"
+   },
+   {
+    "d": "2025–2026",
+    "k": "info",
+    "t": "AGD (amoebic gill disease): no case reported in the Faroes in 2025 or 2026 in Bakkafrost's reports or the press; the Faroese food authority (HFS) publishes no yearly list.",
+    "u": "https://www.hfs.fo/"
+   }
+  ],
   "kpis": [],
   "sources": [
    {
@@ -815,7 +876,7 @@
   ],
   "card": {
    "kind": "mixed",
-   "s": "fewer reports, but Q3 incidents at Scottish Sea Farms and early harvests",
+   "s": "Bakkafrost harvests small fish early (Q2–Q3, 3.0 kg), Scottish Sea Farms gill incidents and early harvests",
    "threat": "gill disease (AGD, plankton)"
   },
   "threats": "MHHLMMH",
@@ -827,10 +888,28 @@
   "supply_line": "More fish in the pens, but gill incidents and early harvests keep cutting forecasts.",
   "events": [
    {
+    "d": "Q4 2025",
+    "k": "bad",
+    "t": "Bakkafrost Scotland: Pasteurella skyensis at Portree, 900 t harvested early at 2.3 kg.",
+    "u": "https://www.fishfarmingexpert.com/bakkafrost-faroe-islands-operating-profit/bakkafrost-quadrupled-operating-profit-in-q2/2174451"
+   },
+   {
     "d": "3 Mar 2026",
     "k": "info",
     "t": "Campaigners call on Scottish farms to scale back after record mortalities.",
     "u": "https://www.seafoodnews.com/Story/1091504/Groups-Call-on-Scottish-Salmon-Farms-to-Scale-Back-after-Record-Mortalities"
+   },
+   {
+    "d": "Apr–Jun 2026",
+    "k": "bad",
+    "t": "Bakkafrost Scotland: biological problems in one batch of bought-in smolts at Sgian Dubh and Ardyne; harvest down 55 % to 3,145 t, DKK 31–32 M of exceptional mortality. The company does not name the disease.",
+    "u": "https://www.fishfarmingexpert.com/bakkafrost-faroe-islands-operating-profit/bakkafrost-quadrupled-operating-profit-in-q2/2174451"
+   },
+   {
+    "d": "Jul–Sep 2026",
+    "k": "bad",
+    "t": "Bakkafrost Scotland harvests the two sites out early: 4,537 t at only 3.0 kg on average, DKK 42 M of exceptional mortality (33.5 M from the sites emptied); the effect runs into Q4.",
+    "u": "https://www.fishfarmingexpert.com/bakkafrost-faroe-islands-financial-results/bakkafrost-profit-improved-in-q3-as-scotland-losses-lessened/2204501"
    },
    {
     "d": "Aug–Sep 2026",
@@ -849,6 +928,18 @@
     "k": "bad",
     "t": "Mowi Scotland harvested a third less than a year earlier.",
     "u": "https://www.fishfarmingexpert.com/atlantic-salmon-harvest-volumes-mowi-scotland/mowi-scotland-made-164m-in-q3/2205881"
+   },
+   {
+    "d": "Jul–Sep 2026",
+    "k": "warn",
+    "t": "Mowi Scotland: incident-based mortality cost €4.2 M in Q3 (€2.9 M a year earlier), put down to warmer sea water; 2026 guidance kept at 74,000 t.",
+    "u": "https://www.fishfarmingexpert.com/atlantic-salmon-harvest-volumes-mowi-scotland/mowi-scotland-made-164m-in-q3/2205881"
+   },
+   {
+    "d": "30 Sep 2026",
+    "k": "info",
+    "t": "Fish Farm Production Survey 2025: 197,836 t produced (+3 %); 68.8 % of the 2023 smolt year class reached harvest, against 61.8 % for the 2022 class.",
+    "u": "https://www.gov.scot/publications/scottish-fish-farm-production-survey-2025/"
    }
   ],
   "kpis": [
@@ -857,6 +948,18 @@
     "v": "40,000 t",
     "d": "43,000 t before (−7 %)",
     "k": "bad"
+   },
+   {
+    "l": "Bakkafrost Scotland, Q3 2026 harvest weight",
+    "v": "3.0 kg",
+    "d": "early harvest of two sites; DKK 42 M exceptional mortality",
+    "k": "bad"
+   },
+   {
+    "l": "Smolt-to-harvest survival, 2023 year class",
+    "v": "68.8 %",
+    "d": "61.8 % for the 2022 class (Production Survey 2025)",
+    "k": "good"
    }
   ],
   "sources": [
@@ -875,6 +978,13 @@
     "w": "farms' mortality reports with the cause given"
    },
    {
+    "d": "30 Sep 2026",
+    "ty": "rep",
+    "n": "Scottish Government — Scottish Fish Farm Production Survey 2025 (PDF)",
+    "u": "https://www.gov.scot/binaries/content/documents/govscot/publications/statistics/2026/09/scottish-fish-farm-production-survey-2025/documents/scottish-fish-farm-production-survey-2025/scottish-fish-farm-production-survey-2025/govscot%3Adocument/scottish-fish-farm-production-survey-2025.pdf",
+    "w": "production, smolts, survival from smolt to harvest by year class"
+   },
+   {
     "d": "3 Nov 2026",
     "ty": "press",
     "n": "Fish Farming Expert — Scottish Sea Farms cuts 2026 guidance by 3,000 t",
@@ -887,6 +997,13 @@
     "n": "Fish Farming Expert — Mowi Scotland Q3",
     "u": "https://www.fishfarmingexpert.com/atlantic-salmon-harvest-volumes-mowi-scotland/mowi-scotland-made-164m-in-q3/2205881",
     "w": "Q3 harvest and mortality"
+   },
+   {
+    "d": "Q2–Q3 2026",
+    "ty": "co",
+    "n": "Bakkafrost — Q3 2026 trading update",
+    "u": "https://mfn.se/cis/a/bakkafrost/bakkafrost-q3-2026-trading-update-1f5efddf.iframe",
+    "w": "Scottish harvest, weights, exceptional mortality"
    }
   ]
  },
@@ -1112,8 +1229,16 @@
     "n": "Peter George MP — winter mortalities worse than last year",
     "u": "https://petergeorgeforfranklin.com/?p=224301",
     "w": "March–June 2026 against 2025"
+   },
+   {
+    "d": "23 Oct 2024",
+    "ty": "press",
+    "n": "Pulse Tasmania — 1,150 t of dead salmon removed from Macquarie Harbour in six months",
+    "u": "https://pulsetasmania.com.au/news/1150-tonnes-of-dead-salmon-removed-from-macquarie-harbour-in-six-months",
+    "w": "only pre-2025 mortality figure"
    }
-  ]
+  ],
+  "chart_note": "Tasmania: EPA monthly mortality figures exist only from January 2025 (reporting became a licence condition after the February 2025 event); no official 2023 or 2024 total. Closest figure: about 1,150 t removed from Macquarie Harbour alone, September 2023 – March 2024."
  },
  "notes": {
   "measures": "Norway, Chile and the Faroes count fish; Scotland, Iceland and Tasmania weigh them (dead tonnes against biomass or production). A tonnage measure gives more weight to large fish lost late in the cycle, so it usually runs above a count measure. Compare trends within a country rather than levels across countries."

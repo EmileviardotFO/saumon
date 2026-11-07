@@ -5727,7 +5727,7 @@ function renderDisease() {
     root.innerHTML = 'Loading…'; return; }
   if (!DZ_B) { try { DZ_B = localStorage.getItem('dzBasin') || 'NO'; } catch (_) { DZ_B = 'NO'; } }
   const M = DZ.m, e = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), f0 = v => v === null || v === undefined || !isFinite(v) ? '—' : Math.round(v).toLocaleString('en-US');
-  const f1 = v => v === null || v === undefined || !isFinite(v) ? '—' : (+v).toFixed(1), MON = MONTHS_FR.map(m => m.slice(0, 3)), YC = ['#5b7a8c', '#90caf9', '#4fc3f7'];
+  const f1 = v => v === null || v === undefined || !isFinite(v) ? '—' : (+v).toFixed(1), MON = MONTHS_FR.map(m => m.slice(0, 3)), YC = ['#c3ced6', '#ffc38a', '#3fb8f0'];   // 3 annees bien distinctes : gris clair, peche, bleu
   const pct = (a, b) => a && b ? (100 * (a / b - 1)) : null, sg = v => v === null ? '' : (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(0) + ' %';
   const ORDER = [['NO', 'Norway'], ['CL', 'Chile'], ['GB', 'Scotland'], ['IS', 'Iceland'], ['CA', 'Canada'], ['AU', 'Tasmania'], ['FO', 'Faroe Islands']];
   // ---------------- series annuelles (mesure propre a chaque pays) ----------------
@@ -5740,7 +5740,7 @@ function renderDisease() {
   const caY = {}; { const C = (DZ.ca && DZ.ca.carcass) || {}; (C.months || []).forEach(r => { const y = Math.floor(r.m / 100), q = caY[y] = caY[y] || { s: 1, n: 0, c: {} }; q.s *= 1 - (r.mort || 0) / 100; q.n++; Object.entries(r.cause || {}).forEach(([k, v]) => q.c[k] = (q.c[k] || 0) + (v || 0)); });
     yr.CA = Object.fromEntries(Object.entries(caY).filter(([, q]) => q.n === 12).map(([y, q]) => [+y, 100 * (1 - q.s)])); }
   yr.FO = Object.fromEntries(Object.entries(((DZ.fo && DZ.fo.annual) || {}).mortality_pct || {}).map(([y, v]) => [+y, v]));
-  const CS = (((DZ.cl || {}).biologie || {}).sanitaire || {}).cycle_ferme || {}; yr.CL = Object.fromEntries(Object.entries(CS.espece || {}).filter(([, o]) => o.salar).map(([y, o]) => [+y, o.salar[1]]));
+  const CS = (((DZ.cl || {}).biologie || {}).sanitaire || {}).cycle_ferme || {}; yr.CL = Object.assign(Object.fromEntries(Object.entries((M.CL || {}).cycle_mortality_hist || {}).map(([y, v]) => [+y, v])), Object.fromEntries(Object.entries(CS.espece || {}).filter(([, o]) => o.salar).map(([y, o]) => [+y, o.salar[1]])));
   const auM = ((DZ.au && DZ.au.mortality) || []).filter(r => r.total), auY = {}; auM.forEach(r => { const y = Math.floor(r.m / 100); auY[y] = (auY[y] || 0) + r.total; });
   const auP = {}; ((DZ.au && DZ.au.production) || []).forEach(r => auP[r.fy_end] = (auP[r.fy_end] || 0) + r.t);
   yr.AU = Object.fromEntries(Object.entries(auY).filter(([y]) => auM.filter(r => Math.floor(r.m / 100) === +y).length === 12 && auP[y]).map(([y, t]) => [+y, 100 * t / auP[y]]));
@@ -5823,7 +5823,8 @@ function renderDisease() {
         `<div style="font-size:12px;color:#a9bfcc;margin-top:6px;text-align:left"><b style="color:var(--ink)">Main threat:</b> ${e(K.threat || '—')}</div></button>`; }).join('') + `</div>`;
   // B · barres par bassin, 3 annees
   h += h2('B · Mortality by basin, 2023 to 2025') + box(`<div class="sig-sub">Each basin's own measure, %, three years side by side. 2026 so far is in each basin's page below.</div>` +
-    grp(ORDER.map(b => b[1]), [2023, 2024, 2025], (y, n) => { const c = ORDER.find(b => b[1] === n)[0]; return (yr[c] || {})[y] ?? null; }, { H: 230, fmt: v => v.toFixed(0) }));
+    grp(ORDER.map(b => b[1]), [2023, 2024, 2025], (y, n) => { const c = ORDER.find(b => b[1] === n)[0]; return (yr[c] || {})[y] ?? null; }, { H: 230, fmt: v => v.toFixed(0) }) +
+    ((M.AU || {}).chart_note ? `<div class="sig-sub" style="margin-top:6px">${e(M.AU.chart_note)}</div>` : ''));
   // C · matrice des menaces
   const TH = ['Handling & delousing', 'Gills & AGD', 'Bacteria (SRS, ulcers)', 'Viruses (ISA, HSMI, CMS)', 'Sea lice', 'Algae & jellyfish', 'Heat or cold'], LV = { H: ['High', '#7a2e1f', '#ffd9cf'], M: ['Med.', '#5a4318', '#ffe7a8'], L: ['Low', '#16303f', '#8fa4b0'] };
   h += h2('C · Which threats matter where') + `<div class="sig-sub">Our reading of each country's official health report and 2026 events. Darker = bigger share of the losses. Click a basin to open it.</div>` +
@@ -5848,6 +5849,7 @@ function renderDisease() {
     (sf && sf.kpis.length ? `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin-bottom:12px">${sf.kpis.map(k => `<div style="padding:12px;border-radius:10px;background:#0d1c28;border:1px solid #1f3646"><div style="font-size:12px;color:var(--muted)">${e(k.l)}</div><div style="font-size:22px;font-weight:800;margin:2px 0">${e(k.v)}</div><div style="font-size:12px;color:${KC[k.k] || 'var(--muted)'}">${e(k.d)}</div></div>`).join('')}</div>` : '') +
     (sf ? `<div style="font-size:13px;font-weight:600">${e(sf.lab)} — ${sf.years.join(', ')} side by side, month by month</div>` + grp([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], sf.years, (y, m) => sf.val(y, m), { lab: m => MONTHS_FR[m - 1], xl: m => MON[m - 1], fmt: sf.fmt, H: 210 })
        : c === 'FO' ? `<div class="sig-sub">No monthly mortality is published for the Faroes; Bakkafrost reports a yearly figure.</div>` + grp([''], (Object.keys(yr.FO).map(Number).slice(-3)), y => yr.FO[y], { fmt: v => v.toFixed(1), H: 160 }) : '') +
+    (sf ? `<div id="dzHov" class="dz-hov">Hover a bar to see what happened that month.</div>` : '') +
     (ev.length ? `<div style="font-size:13px;font-weight:600;margin-top:10px">What happened</div>` + ev.map(x => `<div style="display:grid;grid-template-columns:110px 14px minmax(0,1fr);gap:10px;font-size:13px;line-height:1.45;margin:5px 0"><span style="color:var(--muted)">${e(x.d)}</span><span style="width:10px;height:10px;border-radius:50%;margin-top:5px;background:${KC[x.k] || '#8fa4b0'}"></span><span>${e(x.t)}${x.u ? ` <a href="${x.u}" target="_blank" rel="noopener" style="color:var(--accent);font-size:12px">source</a>` : ''}</span></div>`).join('') : '')) + `</div>`;
   // 2 · pourquoi
   const W = B.why || {};
@@ -5909,7 +5911,30 @@ function renderDisease() {
     .dz-tab{font:inherit;font-size:12.5px;padding:6px 12px;border-radius:999px;background:#13283a;color:#a9bfcc;border:1px solid var(--border);cursor:pointer}
     .dz-tab.on{background:#1b3a4f;color:#e7eef2;border-color:#2f5873}
     .dz-sub{font-size:12.5px;padding:5px 11px;border-radius:999px;border:1px solid var(--border);color:#a9bfcc;text-decoration:none}
-    .dz-sub:hover{border-color:#4fc3f7;color:#4fc3f7}</style>` + h;
+    .dz-sub:hover{border-color:#4fc3f7;color:#4fc3f7}
+    .dz-hov{margin-top:10px;padding:10px 14px;border-radius:14px;font-size:13px;line-height:1.5;min-height:44px;background:linear-gradient(140deg,rgba(255,255,255,.16),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.26)}
+    #dzs0 rect[data-k]{cursor:pointer;transition:fill-opacity .12s}#dzs0 rect[data-k]:hover{fill-opacity:1;stroke:#fff;stroke-width:1.5}</style>` + h;
+  // survol d'une barre du graphique « 2026 so far » : la raison du mois dans la case
+  { const hov = document.getElementById('dzHov'), MN = MONTHS_FR.map(m => m.slice(0, 3).toLowerCase());
+    // une date d'evenement (« Sep 2026 », « Jan–Sep 2026 », « 2026 », « 2026-09 ») -> [annee, mois de debut, mois de fin]
+    const span = d => { d = String(d || '').toLowerCase(); const y = +(d.match(/(19|20)\d\d/) || [0])[0]; if (!y) return null;
+      const iso = d.match(/(20\d\d)-(\d\d)/); if (iso) return [+iso[1], +iso[2], +iso[2]];
+      const q = d.match(/q([1-4])/); if (q) return [y, 3 * q[1] - 2, 3 * q[1]];
+      const ms = [...d.matchAll(/[a-z]{3,}/g)].map(m => MN.indexOf(m[0].slice(0, 3))).filter(i => i >= 0);
+      return ms.length ? [y, ms[0] + 1, ms[ms.length - 1] + 1] : [y, 1, 12]; };
+    const extra = (y, m) => { if (c === 'GB') { const q = (((DZ.ev || {}).scotland_fhi || {}).monthly || {})[`${y}-${String(m).padStart(2, '0')}`];
+        if (q && q.causes) { const L = Object.entries(q.causes).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${(MEV_CAUSE[k] || [k])[0]} ×${n}`); return L.length ? `Causes named in the reports: ${L.join(', ')}.` : ''; } }
+      if (c === 'CA') { const r = (((DZ.ca && DZ.ca.carcass) || {}).months || []).find(r => r.m === y * 100 + m); if (r && r.cause) { const L = Object.entries(r.cause).filter(([, v]) => v).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, v]) => `${k} ${(+v).toFixed(1)} %`); return L.length ? `Main causes (BC farms): ${L.join(', ')}.` : ''; } }
+      return ''; };
+    const root0 = document.getElementById('dzs0');
+    if (hov && root0 && sf) root0.addEventListener('mouseover', ev2 => { const r = ev2.target.closest('rect[data-k]'); if (!r) return;
+      const m = +r.dataset.k, y = +r.dataset.s, v = +r.dataset.v, pv = sf.val(y - 1, m);
+      const hits = (B.events || []).map(x => ({ x, sp: span(x.d) })).filter(o => o.sp && o.sp[0] === y && m >= o.sp[1] && m <= o.sp[2]).sort((a, b) => (a.sp[2] - a.sp[1]) - (b.sp[2] - b.sp[1]));
+      // d'abord les evenements de ce mois ou de ce trimestre (hors simples publications), puis ceux de l'annee entiere
+      const cause = hits.filter(o => o.x.k !== 'info'), exact = cause.filter(o => o.sp[2] - o.sp[1] < 11), why = exact.length ? exact : cause.length ? cause.slice(0, 2) : hits.slice(0, 1);
+      hov.innerHTML = `<b>${MONTHS_FR[m - 1]} ${y}: ${sf.fmt(v)}</b>${pv !== null && pv !== undefined && isFinite(pv) && pv ? ` <span style="color:${v > pv ? '#ff9b7a' : '#8be3b0'}">(${v >= pv ? '+' : ''}${Math.round(100 * (v / pv - 1))} % on ${MONTHS_FR[m - 1]} ${y - 1})</span>` : ''}<br>` +
+        (why.length ? why.slice(0, 3).map(o => `<span style="color:${KC[o.x.k] || '#d6e3ea'}">●</span> ${e(o.x.t)}`).join('<br>') : '') +
+        (extra(y, m) ? `${why.length ? '<br>' : ''}${extra(y, m)}` : '') + (!why.length && !extra(y, m) ? '<span style="color:var(--muted)">No event recorded for this month in our sources.</span>' : ''); }); }
   // interactions
   const pick = b => { DZ_B = b; try { localStorage.setItem('dzBasin', b); } catch (_) {} renderDisease(); setTimeout(() => { const x = document.getElementById('dzBasin'); if (x) x.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 30); };
   root.querySelectorAll('.dz-card, #dzBasin .dz-tab').forEach(x => x.onclick = () => pick(x.dataset.b));
@@ -5967,7 +5992,7 @@ function scSvg(keys, series, o) {   // petit graphique : barres et lignes sur un
   series = series.map(x => x.dots && x.bar === undefined && !o.lines ? { ...x, bar: true } : x);
   const BS = series.filter(x => x.bar), nb = BS.length || 1, gw = bw * (nb > 1 ? .8 : .7), sw = gw / nb;
   BS.forEach((x, j) => x.v.forEach((v, i) => { if (v === null || !isFinite(v)) return; const c = typeof x.col === 'function' ? x.col(i, v) : x.col;
-      s += `<rect x="${(l + bw * i + (bw - gw) / 2 + sw * j).toFixed(1)}" y="${Y(v)}" width="${Math.max(0.8, sw - (nb > 1 ? 1 : 0)).toFixed(1)}" height="${Math.max(0, Y(mn) - Y(v))}" fill="${c}" fill-opacity=".85"><title>${x.lab ? x.lab + ' — ' : ''}${o.lab(keys[i])}: ${o.fmt ? o.fmt(v) : v}</title></rect>`; }));
+      s += `<rect x="${(l + bw * i + (bw - gw) / 2 + sw * j).toFixed(1)}" y="${Y(v)}" width="${Math.max(0.8, sw - (nb > 1 ? 1 : 0)).toFixed(1)}" height="${Math.max(0, Y(mn) - Y(v))}" fill="${c}" fill-opacity=".85" data-k="${keys[i]}" data-s="${x.lab || ''}" data-v="${v}"><title>${x.lab ? x.lab + ' — ' : ''}${o.lab(keys[i])}: ${o.fmt ? o.fmt(v) : v}</title></rect>`; }));
   series.forEach(x => { if (x.bar) return;
     else { let d = '', pen = false; x.v.forEach((v, i) => { if (v === null || !isFinite(v)) { pen = false; return; } d += (pen ? 'L' : 'M') + X(i) + ',' + Y(v); pen = true; });
       s += `<path d="${d}" fill="none" stroke="${x.col}" stroke-width="${x.w || 2}"${x.dash ? ` stroke-dasharray="${x.dash}"` : ''}/>`;
