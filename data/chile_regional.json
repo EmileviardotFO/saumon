@@ -1,0 +1,561 @@
+{
+"meta": {
+"built": "2026-11-07",
+"unit": "tonnes (Sernapesca provisional figures, via INE regional bulletins)",
+"note": "Los Lagos = output of processing plants (monthly); Magallanes = harvest at farms (monthly); Aysén = harvest at farms (quarterly). Each bulletin also gives the same period a year earlier."
+},
+"los_lagos": {
+"2023-09": {
+"t": {
+"atlantic": 80423.0,
+"coho": 40894.0,
+"trout": 2956.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2024/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-septiembre-2024.pdf",
+"from_next_year": true
+},
+"2023-10": {
+"t": {
+"atlantic": 70807.0,
+"coho": 60823.0,
+"trout": 2556.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2024/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-octubre-2024.pdf",
+"from_next_year": true
+},
+"2023-11": {
+"t": {
+"atlantic": 78945.0,
+"coho": 67829.0,
+"trout": 2646.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2024/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-noviembre-2024.pdf",
+"from_next_year": true
+},
+"2023-12": {
+"t": {
+"coho": 62593.0,
+"atlantic": 73118.0,
+"trout": 2617.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2024/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-diciembre-2024.pdf",
+"from_next_year": true
+},
+"2024-01": {
+"t": {
+"atlantic": 61989.0,
+"coho": 61800.0,
+"trout": 4710.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2025/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-enero-2025.pdf",
+"from_next_year": true
+},
+"2024-02": {
+"t": {
+"atlantic": 48322.0,
+"coho": 35826.0,
+"trout": 8577.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2025/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-febrero-2025.pdf",
+"from_next_year": true
+},
+"2024-03": {
+"t": {
+"atlantic": 44441.0,
+"coho": 5796.0,
+"trout": 9020.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2025/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-marzo-2025.pdf",
+"from_next_year": true
+},
+"2024-04": {
+"t": {
+"atlantic": 49089.0,
+"trout": 7791.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2025/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-abril-2025.pdf",
+"from_next_year": true
+},
+"2024-05": {
+"t": {
+"atlantic": 53279.0,
+"trout": 6805.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2025/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-mayo-2025.pdf",
+"from_next_year": true
+},
+"2024-06": {
+"t": {
+"atlantic": 52105.0,
+"trout": 11101.0,
+"coho": 304.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2025/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-junio-2025.pdf",
+"from_next_year": true
+},
+"2024-07": {
+"t": {
+"atlantic": 66679.0,
+"trout": 7060.0,
+"coho": 15671.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2025/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-julio-2025.pdf",
+"from_next_year": true
+},
+"2024-08": {
+"t": {
+"atlantic": 71964.0,
+"coho": 23187.0,
+"trout": 3732.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2025/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-agosto-2025.pdf",
+"from_next_year": true
+},
+"2024-09": {
+"t": {
+"atlantic": 65702.0,
+"coho": 27548.0,
+"trout": 3010.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2024/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-septiembre-2024.pdf"
+},
+"2024-10": {
+"t": {
+"atlantic": 75984.0,
+"coho": 47450.0,
+"trout": 6049.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2024/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-octubre-2024.pdf"
+},
+"2024-11": {
+"t": {
+"atlantic": 59150.0,
+"coho": 54821.0,
+"trout": 9396.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2024/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-noviembre-2024.pdf"
+},
+"2024-12": {
+"t": {
+"coho": 61592.0,
+"atlantic": 56447.0,
+"trout": 8559.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2024/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-diciembre-2024.pdf"
+},
+"2025-01": {
+"t": {
+"atlantic": 51067.0,
+"coho": 50581.0,
+"trout": 6393.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2025/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-enero-2025.pdf"
+},
+"2025-02": {
+"t": {
+"atlantic": 43412.0,
+"coho": 41219.0,
+"trout": 3966.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2025/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-febrero-2025.pdf"
+},
+"2025-03": {
+"t": {
+"atlantic": 53064.0,
+"coho": 6013.0,
+"trout": 4995.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2025/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-marzo-2025.pdf"
+},
+"2025-04": {
+"t": {
+"atlantic": 51657.0,
+"trout": 8405.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2025/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-abril-2025.pdf"
+},
+"2025-05": {
+"t": {
+"atlantic": 51934.0,
+"trout": 9916.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2025/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-mayo-2025.pdf"
+},
+"2025-06": {
+"t": {
+"atlantic": 64039.0,
+"trout": 7269.0,
+"coho": 418.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2025/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-junio-2025.pdf"
+},
+"2025-07": {
+"t": {
+"atlantic": 65634.0,
+"trout": 6816.0,
+"coho": 6649.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2025/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-julio-2025.pdf"
+},
+"2025-08": {
+"t": {
+"atlantic": 80111.0,
+"coho": 32246.0,
+"trout": 4661.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2025/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-agosto-2025.pdf"
+},
+"2025-09": {
+"t": {
+"atlantic": 80701.0,
+"coho": 45785.0,
+"trout": 3905.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2025/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-septiembre-2025.pdf"
+},
+"2025-10": {
+"t": {
+"atlantic": 89608.0,
+"coho": 56759.0,
+"trout": 4719.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2025/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-octubre-2025.pdf"
+},
+"2025-11": {
+"t": {
+"atlantic": 81744.0,
+"coho": 68709.0,
+"trout": 3396.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2025/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-noviembre-2025.pdf"
+},
+"2025-12": {
+"t": {
+"atlantic": 79325.0,
+"coho": 70560.0,
+"trout": 5970.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2025/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-diciembre-2025.pdf"
+},
+"2026-01": {
+"t": {
+"atlantic": 64299.0,
+"coho": 51328.0,
+"trout": 9005.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2026/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-enero-2026.pdf"
+},
+"2026-02": {
+"t": {
+"atlantic": 54780.0,
+"coho": 34122.0,
+"trout": 10910.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2026/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-febrero-2026.pdf"
+},
+"2026-03": {
+"t": {
+"atlantic": 57477.0,
+"trout": 12049.0,
+"coho": 3655.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2026/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-marzo-2026.pdf"
+},
+"2026-04": {
+"t": {
+"atlantic": 58398.0,
+"trout": 10167.0,
+"coho": 690.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2026/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-abril-2026.pdf"
+},
+"2026-05": {
+"t": {
+"atlantic": 53964.0,
+"trout": 7572.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2026/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-mayo-2026.pdf"
+},
+"2026-06": {
+"t": {
+"atlantic": 60969.0,
+"trout": 7405.0,
+"coho": 4598.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2026/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-junio-2026.pdf"
+},
+"2026-07": {
+"t": {
+"atlantic": 69724.0,
+"coho": 24136.0,
+"trout": 4569.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2026/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-julio-2026.pdf"
+},
+"2026-08": {
+"t": {
+"atlantic": 75207.0,
+"coho": 39591.0,
+"trout": 4569.0
+},
+"what": "processing plant output",
+"url": "https://regiones.ine.cl/documentos/default-source/region-x/estadisticas/industria-pesquera-y-acuicola/boletines/2026/bolet%c3%adn-de-industria-pesquera-y-acu%c3%adcola-agosto-2026.pdf"
+}
+},
+"magallanes": {
+"2025-03": {
+"t": {
+"atlantic": 14687.36
+},
+"what": "farm harvest",
+"url": "https://regiones.ine.cl/documentos/default-source/region-xii/estadisticas/pesca/boletines/2026/pes_mar_2026_(3-0).pdf",
+"from_next_year": true
+},
+"2025-04": {
+"t": {
+"atlantic": 15457.61
+},
+"what": "farm harvest",
+"url": "https://regiones.ine.cl/documentos/default-source/region-xii/estadisticas/pesca/boletines/2026/pes_abr_2026_(3-0).pdf",
+"from_next_year": true
+},
+"2025-05": {
+"t": {
+"atlantic": 13125.77
+},
+"what": "farm harvest",
+"url": "https://regiones.ine.cl/documentos/default-source/region-xii/estadisticas/pesca/boletines/2026/pes_may_2026_(3-0).pdf",
+"from_next_year": true
+},
+"2025-06": {
+"t": {
+"atlantic": 11925.04
+},
+"what": "farm harvest",
+"url": "https://regiones.ine.cl/documentos/default-source/region-xii/estadisticas/pesca/boletines/2026/pes_jun_2026_(3-0).pdf",
+"from_next_year": true
+},
+"2025-07": {
+"t": {
+"atlantic": 13984.41
+},
+"what": "farm harvest",
+"url": "https://regiones.ine.cl/documentos/default-source/region-xii/estadisticas/pesca/boletines/2026/pes_jul_2026_(3-0).pdf",
+"from_next_year": true
+},
+"2025-08": {
+"t": {
+"atlantic": 12137.08
+},
+"what": "farm harvest",
+"url": "https://regiones.ine.cl/documentos/default-source/region-xii/estadisticas/pesca/boletines/2026/pes_ago_2026_(3-0).pdf",
+"from_next_year": true
+},
+"2026-03": {
+"t": {
+"atlantic": 16305.08
+},
+"what": "farm harvest",
+"url": "https://regiones.ine.cl/documentos/default-source/region-xii/estadisticas/pesca/boletines/2026/pes_mar_2026_(3-0).pdf"
+},
+"2026-04": {
+"t": {
+"atlantic": 13222.36
+},
+"what": "farm harvest",
+"url": "https://regiones.ine.cl/documentos/default-source/region-xii/estadisticas/pesca/boletines/2026/pes_abr_2026_(3-0).pdf"
+},
+"2026-05": {
+"t": {
+"atlantic": 12852.27
+},
+"what": "farm harvest",
+"url": "https://regiones.ine.cl/documentos/default-source/region-xii/estadisticas/pesca/boletines/2026/pes_may_2026_(3-0).pdf"
+},
+"2026-06": {
+"t": {
+"atlantic": 7185.61
+},
+"what": "farm harvest",
+"url": "https://regiones.ine.cl/documentos/default-source/region-xii/estadisticas/pesca/boletines/2026/pes_jun_2026_(3-0).pdf"
+},
+"2026-07": {
+"t": {
+"atlantic": 11104.3
+},
+"what": "farm harvest",
+"url": "https://regiones.ine.cl/documentos/default-source/region-xii/estadisticas/pesca/boletines/2026/pes_jul_2026_(3-0).pdf"
+},
+"2026-08": {
+"t": {
+"atlantic": 12450.73
+},
+"what": "farm harvest",
+"url": "https://regiones.ine.cl/documentos/default-source/region-xii/estadisticas/pesca/boletines/2026/pes_ago_2026_(3-0).pdf"
+}
+},
+"aysen": {
+"2023-Q1": {
+"t": {
+"atlantic": 106683.0,
+"coho": 22177.0,
+"trout": 7690.0
+},
+"what": "farm harvest (quarter)",
+"url": "https://regiones.ine.cl/documentos/default-source/region-xi/estadisticas/pesca/boletines/2024/bolet%C3%ADn-de-pesca---primer-trimestre-2024.pdf",
+"from_next_year": true
+},
+"2023-Q2": {
+"t": {
+"atlantic": 84747.0,
+"trout": 12165.0
+},
+"what": "farm harvest (quarter)",
+"url": "https://regiones.ine.cl/documentos/default-source/region-xi/estadisticas/pesca/boletines/2024/bolet%C3%ADn-de-pesca---segundo-trimestre-2024.pdf",
+"from_next_year": true
+},
+"2023-Q3": {
+"t": {
+"atlantic": 111184.0,
+"coho": 12903.0,
+"trout": 10546.0
+},
+"what": "farm harvest (quarter)",
+"url": "https://regiones.ine.cl/documentos/default-source/region-xi/estadisticas/pesca/boletines/2024/bolet%C3%ADn-de-pesca---tercer-trimestre-2024.pdf",
+"from_next_year": true
+},
+"2023-Q4": {
+"t": {
+"atlantic": 109809.0,
+"coho": 29254.0,
+"trout": 8828.0
+},
+"what": "farm harvest (quarter)",
+"url": "https://regiones.ine.cl/documentos/default-source/region-xi/estadisticas/pesca/boletines/2024/bolet%C3%ADn-de-pesca---cuarto-trimestre-2024.pdf",
+"from_next_year": true
+},
+"2024-Q1": {
+"t": {
+"atlantic": 86004.0,
+"coho": 21717.0,
+"trout": 5890.0
+},
+"what": "farm harvest (quarter)",
+"url": "https://regiones.ine.cl/documentos/default-source/region-xi/estadisticas/pesca/boletines/2024/bolet%C3%ADn-de-pesca---primer-trimestre-2024.pdf"
+},
+"2024-Q2": {
+"t": {
+"atlantic": 56349.0,
+"trout": 7457.0
+},
+"what": "farm harvest (quarter)",
+"url": "https://regiones.ine.cl/documentos/default-source/region-xi/estadisticas/pesca/boletines/2024/bolet%C3%ADn-de-pesca---segundo-trimestre-2024.pdf"
+},
+"2024-Q3": {
+"t": {
+"atlantic": 82179.0,
+"coho": 18361.0,
+"trout": 2473.0
+},
+"what": "farm harvest (quarter)",
+"url": "https://regiones.ine.cl/documentos/default-source/region-xi/estadisticas/pesca/boletines/2024/bolet%C3%ADn-de-pesca---tercer-trimestre-2024.pdf"
+},
+"2024-Q4": {
+"t": {
+"atlantic": 79072.0,
+"coho": 33553.0,
+"trout": 10.0
+},
+"what": "farm harvest (quarter)",
+"url": "https://regiones.ine.cl/documentos/default-source/region-xi/estadisticas/pesca/boletines/2024/bolet%C3%ADn-de-pesca---cuarto-trimestre-2024.pdf"
+},
+"2025-Q1": {
+"t": {
+"atlantic": 81117.0,
+"coho": 31832.0,
+"trout": 4162.0
+},
+"what": "farm harvest (quarter)",
+"url": "https://regiones.ine.cl/documentos/default-source/region-xi/estadisticas/pesca/boletines/2025/bolet%C3%ADn-de-pesca---primer-trimestre-2025.pdf"
+},
+"2025-Q2": {
+"t": {
+"atlantic": 89155.0,
+"trout": 9873.0,
+"coho": 593.0
+},
+"what": "farm harvest (quarter)",
+"url": "https://regiones.ine.cl/documentos/default-source/region-xi/estadisticas/pesca/boletines/2025/bolet%C3%ADn-de-pesca---segundo-trimestre-2025.pdf"
+},
+"2025-Q3": {
+"t": {
+"atlantic": 104250.0,
+"coho": 15286.0,
+"trout": 6257.0
+},
+"what": "farm harvest (quarter)",
+"url": "https://regiones.ine.cl/documentos/default-source/region-xi/estadisticas/pesca/boletines/2025/bolet%C3%ADn-de-pesca---tercer-trimestre-2025.pdf"
+},
+"2025-Q4": {
+"t": {
+"atlantic": 132608.0,
+"coho": 36142.0
+},
+"what": "farm harvest (quarter)",
+"url": "https://regiones.ine.cl/documentos/default-source/region-xi/estadisticas/pesca/boletines/2025/bolet%C3%ADn-de-pesca---cuarto-trimestre-2025.pdf"
+},
+"2026-Q1": {
+"t": {
+"atlantic": 97535.0,
+"coho": 25750.0,
+"trout": 13302.0
+},
+"what": "farm harvest (quarter)",
+"url": "https://regiones.ine.cl/documentos/default-source/region-xi/estadisticas/pesca/boletines/2026/bolet%C3%ADn-de-pesca---primer-trimestre-2026.pdf"
+},
+"2026-Q2": {
+"t": {
+"atlantic": 77114.0,
+"trout": 7996.0,
+"coho": 2131.0
+},
+"what": "farm harvest (quarter)",
+"url": "https://regiones.ine.cl/documentos/default-source/region-xi/estadisticas/pesca/boletines/2026/bolet%C3%ADn-de-pesca---segundo-trimestre-2026.pdf"
+}
+}
+}
