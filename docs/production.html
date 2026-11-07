@@ -13163,6 +13163,9 @@ loadRemoteData().then(live => {
   #gsSug button small{color:#8fa4b0;margin-left:5px;font-size:11px}
   #gsSug button.tab{border-style:dashed}
   .gs-pred{font-size:12px;color:#8fa4b0;margin:-2px 0 8px}
+  .sup-nums{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0}.sup-nums span{background:#0d1a24;border:1px solid #223642;border-radius:8px;padding:6px 8px;font-weight:bold;color:#e7eef2;font-size:14px}
+  .sup-nums small{display:block;font-weight:normal;color:#8fa4b0;font-size:11px;margin-bottom:2px}.sup-nums i{font-style:normal;color:#ffb74d;font-size:12px;margin-left:3px}
+  @media (max-width:700px){.sup-nums{grid-template-columns:1fr 1fr}}
   @media (max-width:900px){#gsPanel .gs-hint{display:none}#gsSug{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}#gsSug button{font-size:14px;padding:8px 12px}}
   #gsPanel .gs-sec{font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#4fc3f7;margin:18px 0 8px}
   #gsPanel .gs-card{background:#10202c;border:1px solid #223642;border-radius:10px;padding:12px 14px;margin-bottom:10px;max-width:1100px}
@@ -13868,14 +13871,16 @@ let SUP = null, SUP_LOADING = false, SUP_NEWS = null;
 function renderSupply() {
   const root = document.getElementById('supRoot'); if (!root) return;
   const get = f => fetch(DATA_URL.replace('data.json', f), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
-  if (!SUP) { if (!SUP_LOADING) { SUP_LOADING = true; Promise.all(['global_supply.json', 'news.json', 'news_archive.json', 'stories.json'].map(get)).then(([g, n, a, st]) => {
-      SUP = g || { basins: [] }; SUP_NEWS = { n, a, st }; SUP_LOADING = false; if (currentView === 'supply') renderSupply(); }); }
+  if (!SUP) { if (!SUP_LOADING) { SUP_LOADING = true; Promise.all(['global_supply.json', 'news.json', 'news_archive.json', 'stories.json', 'own_supply.json'].map(get)).then(([g, n, a, st, ow]) => {
+      SUP = g || { basins: [] }; SUP_NEWS = { n, a, st }; SUP.own = ow || null; SUP_LOADING = false; if (currentView === 'supply') renderSupply(); }); }
     root.innerHTML = 'Loading…'; return; }
   const e = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), f0 = v => v === null || v === undefined ? '—' : Math.round(v).toLocaleString('en-US');
   const W = SUP.world || {}, B = SUP.basins || [], AR = { up: ['sup-up', '↑', 'Up'], flat: ['sup-flat', '→', 'Flat'], down: ['sup-down', '↓', 'Down'] };
   const card = (lab, big, sub, c) => `<div class="pr-card" style="cursor:default"><div class="nm"><i style="background:${c}"></i>${lab}</div><div class="big">${big}</div><div class="ln">${sub}</div></div>`;
   // ---- graphique : volume 2025 par bassin et sens attendu pour 2027
-  const rows = B.filter(b => b.v2025).map(b => [b.name === 'Canada' ? 'North America' : b.name, b.v2025, b.dir, b.id]).concat([['Other Europe (Iceland, Ireland)', 63, 'flat', 'IS'], ['Other (incl. Australia)', 107, 'up', 'AU']]);
+  const OW = (SUP.own || {}).basins || {}, OT = (SUP.own || {}).tracked || null;
+  const rows = OT ? B.filter(b => OW[b.id] && OW[b.id].v2025).map(b => [b.name, OW[b.id].v2025, b.dir, b.id]).sort((a, b) => b[1] - a[1])
+    : B.filter(b => b.v2025).map(b => [b.name === 'Canada' ? 'North America' : b.name, b.v2025, b.dir, b.id]).concat([['Other Europe (Iceland, Ireland)', 63, 'flat', 'IS'], ['Other (incl. Australia)', 107, 'up', 'AU']]);
   const NAR = window.innerWidth < 700, FS = NAR ? 20 : 15;   // telephone : dessin plus etroit, textes plus gros (le SVG est mis a l'echelle)
   const mx = Math.max(...rows.map(r => r[1])), Wd = NAR ? 560 : 1000, rh = NAR ? 44 : 38, H = rows.length * rh + 30, L = NAR ? 175 : 230;
   const col = d => d === 'up' ? '#7ed98f' : d === 'down' ? '#ff8a65' : '#8fa4b0';
@@ -13886,17 +13891,18 @@ function renderSupply() {
       `<text x="${L + w + 8}" y="${y + 22}" fill="#cfdde4" font-size="${FS - 1}">${f0(r[1])} kt</text>` +
       `<text x="${L + w + (NAR ? 92 : 78)}" y="${y + 23}" fill="${col(r[2])}" font-size="${FS + 4}" font-weight="bold">${AR[r[2]][1]}</text>`; });
   const chart = `<svg viewBox="0 0 ${Wd} ${H}" style="width:100%;height:auto;display:block">${g}</svg>` +
-    `<div class="sig-sub">Bars: 2025 supply in thousand tonnes gutted weight (Kontali, via Mowi). Arrow: direction expected for 2027 (<b style="color:#7ed98f">↑ up</b>, <b>→ flat</b>, <b style="color:#ff8a65">↓ down</b>), from the basin summaries below.</div>`;
+    `<div class="sig-sub">Bars: 2025 harvest in thousand tonnes gutted weight, ${OT ? 'our own count from each country\'s official data (registers, monthly harvest, exports)' : 'Kontali, via Mowi'}. Arrow: direction expected for 2027 (<b style="color:#7ed98f">↑ up</b>, <b>→ flat</b>, <b style="color:#ff8a65">↓ down</b>), from the basin summaries below.</div>`;
   // ---- graphique 2 : variation attendue en 2027, fourchette par bassin (lecture des syntheses ci-dessous)
-  const RG = [['World', (W.r2027 || [0, 0]), 'world'], ...B.filter(b => b.r2027).map(b => [b.name, b.r2027, b.dir])];
+  const RG = [[OT ? 'All seven basins' : 'World', (W.r2027 || [0, 0]), 'world', W.c2027], ...B.filter(b => b.r2027).map(b => [b.name, b.r2027, b.dir, b.c2027])];
   const xmin = -20, xmax = 20, L2 = NAR ? 175 : 230, W2 = NAR ? 560 : 1000, X = v => L2 + (W2 - L2 - (NAR ? 70 : 40)) * (v - xmin) / (xmax - xmin), rh2 = NAR ? 40 : 34, H2 = RG.length * rh2 + 50;
   let g2 = [-20, -10, 0, 10, 20].map(v => `<line x1="${X(v)}" x2="${X(v)}" y1="8" y2="${H2 - 30}" stroke="${v ? '#1e3442' : '#5d7685'}" stroke-dasharray="${v ? '3 4' : ''}"/><text x="${X(v)}" y="${H2 - 12}" text-anchor="middle" fill="#8fa4b0" font-size="${FS - 2}">${v > 0 ? '+' : ''}${v} %</text>`).join('');
-  RG.forEach(([n, r, d], i) => { const y = 14 + i * rh2, c = d === 'world' ? '#e7eef2' : col(d), a = Math.max(xmin, r[0]), z = Math.min(xmax, r[1]);
+  RG.forEach(([n, r, d, cc], i) => { const y = 14 + i * rh2, c = d === 'world' ? '#e7eef2' : col(d), a = Math.max(xmin, r[0]), z = Math.min(xmax, r[1]);
     g2 += `<text x="${L2 - 10}" y="${y + 15}" text-anchor="end" fill="${d === 'world' ? '#fff' : '#e7eef2'}" font-size="${FS}"${d === 'world' ? ' font-weight="bold"' : ''}>${e(NAR ? n.replace(/ \(.*\)/, '') : n)}</text>` +
       `<rect x="${X(a)}" y="${y + 3}" width="${Math.max(6, X(z) - X(a)).toFixed(1)}" height="16" rx="8" fill="${c}" fill-opacity=".8"><title>${e(n)}: ${r[0] > 0 ? '+' : ''}${r[0]} % to ${r[1] > 0 ? '+' : ''}${r[1]} % in 2027</title></rect>` +
+      (cc !== undefined && cc !== null ? `<circle cx="${X(Math.max(xmin, Math.min(xmax, cc)))}" cy="${y + 11}" r="${NAR ? 7 : 6}" fill="#fff" stroke="#0b1620" stroke-width="2"><title>central: ${cc > 0 ? '+' : ''}${cc} %</title></circle>` : '') +
       `<text x="${X(z) + 10}" y="${y + 16}" fill="#cfdde4" font-size="${FS - 2}">${r[0] === r[1] ? '' : (r[0] > 0 ? '+' : '') + r[0] + ' to '}${r[1] > 0 ? '+' : ''}${r[1]} %</text>`; });
   const chart2 = `<svg viewBox="0 0 ${W2} ${H2}" style="width:100%;height:auto;display:block">${g2}</svg>` +
-    `<div class="sig-sub">Change in volume expected for 2027 against 2026, as a range — our reading of the basin summaries below (company guidance, fish in the sea, analysts). The wider the bar, the more uncertain the basin.</div>`;
+    `<div class="sig-sub">Change in volume expected for 2027 against our 2026 estimate: the bar is the range, the white dot our central projection — computed from each country's own data and our models (method in each basin card). The wider the bar, the more uncertain the basin.</div>`;
   // ---- articles relatifs aux projections, par bassin
   const KW = /2027|guidance|forecast|outlook|supply|harvest (volume|guidance|forecast|estimate|record|cut|down|up)|harvest|biomass|smolt|capacity|licen[cs]e|quota|\bban\b|tariff|mortalit|el ni[ñn]o|alga|bloom|\bISA\b|\bcut\b|growth|prognos|slaktevolum|cosecha|siembra|producci[óo]n|production|lice/i;
   const SAL = /salmon|laks|salm[óo]n|lax|salmo|trout|aquacult|fish farm/i;
@@ -13912,23 +13918,29 @@ function renderSupply() {
   const art = id => A.filter(a => a.b.includes(id));
   const artHtml = L => L.slice(0, 40).map(a => `<div class="sup-art">${a.u ? `<a href="${e(a.u)}" target="_blank" rel="noopener">${e(a.t)}</a>` : e(a.t)}<small>${e(a.d)} · ${e(a.src || '')}</small></div>`).join('') || '<div class="sup-art" style="color:var(--muted)">No article yet.</div>';
   // ---- page
-  const bcard = b => { const a = AR[b.dir] || AR.flat, na = art(b.id).length;
+  const bcard = b => { const a = AR[b.dir] || AR.flat, na = art(b.id).length, o = OW[b.id];
     return `<div class="sup-b" id="sup-${b.id}"><h3><span class="sup-arrow ${a[0]}" title="${a[2]} in 2027">${a[1]}</span>${e(b.name)}</h3>` +
-      `<div class="sup-y"><b style="color:#e7eef2">2027: ${e(b.y2027)}</b>${b.v2025 ? ` · 2025: ${f0(b.v2025)} kt gutted${b.share ? `, ${b.share} % of world supply` : ''}` : b.v_local ? ` · ${e(b.v_local)}` : ''}${b.v_note ? ` <span style="color:var(--muted)">(${e(b.v_note)})</span>` : ''}</div>` +
+      (o ? `<div class="sup-y"><b style="color:#e7eef2">2027: ${e(b.y2027)}</b></div>` +
+        `<div class="sup-nums"><span><small>2025</small>${f0(o.v2025)} kt</span><span><small>2026 so far${o.ytd ? ' · to ' + e(o.ytd.to) : ''}</small>${o.ytd && o.ytd.chg !== null ? (o.ytd.chg >= 0 ? '+' : '−') + Math.abs(o.ytd.chg).toFixed(0) + ' %' : '—'}</span>` +
+        `<span><small>2026 estimate</small>${f0(o.e2026)} kt <i>${o.chg2026 >= 0 ? '+' : '−'}${Math.abs(o.chg2026).toFixed(0)} %</i></span><span><small>2027 projection</small>${f0(o.c2027)} kt <i>${o.chg2027 >= 0 ? '+' : '−'}${Math.abs(o.chg2027).toFixed(0)} %</i></span></div>` +
+        (o.confidence === 'low' ? `<div class="sup-kv" style="color:#ffb74d">Low confidence: ${e(b.name)}'s official data comes with a long delay.</div>` : '')
+      : `<div class="sup-y"><b style="color:#e7eef2">2027: ${e(b.y2027)}</b>${b.v2025 ? ` · 2025: ${f0(b.v2025)} kt gutted${b.share ? `, ${b.share} % of world supply` : ''}` : b.v_local ? ` · ${e(b.v_local)}` : ''}</div>`) +
       `<div class="sup-one">${e(b.oneliner)}</div>` +
-      `<div class="sup-kv"><b>2026 so far:</b> ${e(b.y2026)}</div>` +
-      `<details><summary>Why — ${(b.drivers || []).length} reasons</summary>${(b.drivers || []).map(d => `<div class="sup-d"><span class="sup-tag">${e(d.k)}</span>${e(d.t)}</div>`).join('')}` +
+      `<div class="sup-kv"><b>What companies and analysts say:</b> ${e(b.y2026)}${b.analysts_2027 ? ` For 2027: ${e(b.analysts_2027)}.` : ''}</div>` +
+      `<details><summary>Why — ${(b.drivers || []).length} reasons${o ? ', and how we estimate it' : ''}</summary>${(b.drivers || []).map(d => `<div class="sup-d"><span class="sup-tag">${e(d.k)}</span>${e(d.t)}</div>`).join('')}` +
+      (o ? `<div class="sup-d"><span class="sup-tag" style="background:#12304a">Our method</span><b>${e(o.source)}.</b> ${e(o.method)}${o.note ? ' ' + e(o.note) : ''}</div>` : '') +
       (b.watch ? `<div class="sup-d"><span class="sup-tag" style="background:#3a2c12">To watch</span>${e(b.watch)}</div>` : '') + `</details>` +
       `<div style="display:flex;gap:14px;flex-wrap:wrap"><span class="sup-go" onclick="gsGoTab('${b.tab}')">→ ${e(b.name.split(' (')[0])} tab</span>${na ? `<span class="sup-go" onclick="document.getElementById('supArt-${b.id}').open=true;document.getElementById('supArt-${b.id}').scrollIntoView({behavior:'smooth',block:'start'})">${na} related articles ↓</span>` : ''}</div></div>`; };
   const ORDER = { up: 0, flat: 1, down: 2 };
   root.innerHTML = `<div class="sup-hero"><h2>Global salmon supply — where volumes are heading in 2027</h2>` +
-    `<div class="sup-lead">${e(W.summary)}</div><div class="sig-sub" style="margin-top:6px">Written ${e((SUP.meta || {}).written)} from the dashboard's data and the latest company reports and analysts; the articles at the bottom update every day. ${e((SUP.meta || {}).unit_note || '')}</div></div>` +
-    `<div class="pr-cards">${card('World supply 2025', `${(W.v2025 / 1000).toFixed(2)} Mt`, 'gutted weight, all farming countries (Kontali)', '#4fc3f7')}` +
-      card('2026', e(W.y2026), e(W.y2026_note), '#81c784') + card('2027', e(W.y2027), e(W.y2027_note), '#ffb74d') +
+    `<div class="sup-lead">${e(W.summary)}</div><div class="sig-sub" style="margin-top:6px">${OT ? `<b>Our own numbers</b>: every volume and projection on this page is computed from each country's official data (registers, monthly harvest reports, exports) and the dashboard's models, rebuilt with each update (${e((SUP.own.meta || {}).built)}). Analysts (Kontali, banks) appear only as a comparison. Texts written ${e((SUP.meta || {}).written)}; the articles at the bottom update every day.` : `Written ${e((SUP.meta || {}).written)} from the dashboard's data and the latest company reports and analysts. ${e((SUP.meta || {}).unit_note || '')}`}</div></div>` +
+    `<div class="pr-cards">${OT ? card('Harvest 2025 · our count', `${(OT.v2025 / 1000).toFixed(2)} Mt`, 'gutted weight, the seven basins we follow (about 95 % of farmed Atlantic salmon), from official data', '#4fc3f7') : card('World supply 2025', `${(W.v2025 / 1000).toFixed(2)} Mt`, 'gutted weight, all farming countries (Kontali)', '#4fc3f7')}` +
+      card('2026 · our estimate', e(W.y2026), e(W.y2026_note) + (W.analysts_2026 ? `<br><span style="color:var(--muted)">For comparison, analysts: ${e(W.analysts_2026)}</span>` : ''), '#81c784') +
+      card('2027 · our projection', e(W.y2027), e(W.y2027_note) + (W.analysts_2027 ? `<br><span style="color:var(--muted)">For comparison, analysts: ${e(W.analysts_2027)}</span>` : ''), '#ffb74d') +
       card('Basins up / flat / down in 2027', `${B.filter(b => b.dir === 'up').length} · ${B.filter(b => b.dir === 'flat').length} · ${B.filter(b => b.dir === 'down').length}`, B.map(b => `${e(b.name.split(' (')[0])} ${AR[b.dir][1]}`).join(' · '), '#ce93d8') + `</div>` +
     `<div class="sup-sec">Who produces the salmon, and where it is going</div>${chart}` +
     `<div class="sup-sec">How much more (or less) salmon in 2027, basin by basin</div>${chart2}` +
-    `<div class="sup-sec">Basin by basin</div><div class="sup-grid">${[...B].sort((a, b) => (b.v2025 || 50) - (a.v2025 || 50)).map(bcard).join('')}</div>` +
+    `<div class="sup-sec">Basin by basin</div><div class="sup-grid">${[...B].sort((a, b) => ((OW[b.id] || {}).v2025 || b.v2025 || 50) - ((OW[a.id] || {}).v2025 || a.v2025 || 50)).map(bcard).join('')}</div>` +
     `<div class="sup-sec">What could change the picture in 2027</div><div class="sup-risk">${(W.risks || []).map(r => `<div class="sup-r"><span class="sup-tag">${e(r.k)}</span>${e(r.t)}</div>`).join('')}</div>` +
     `<div class="sup-sec">Articles on supply, volumes and regulation — by basin</div><div class="sig-sub">Every press article of the dashboard that talks about harvest, guidance, biomass, smolts, capacity, licences, tariffs, mortality or the 2027 outlook, newest first; unsorted for now.</div>` +
     [...B.map(b => [b.id, b.name]), ['global', 'World and markets']].map(([id, nm]) => { const L = art(id); return `<details id="supArt-${id}" class="gs-card" style="margin:6px 0"><summary><b>${e(nm)}</b> — ${L.length} article${L.length === 1 ? '' : 's'}</summary>${artHtml(L)}</details>`; }).join('') +

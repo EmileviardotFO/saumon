@@ -1,0 +1,147 @@
+{
+ "meta": {
+  "built": "2026-11-07",
+  "unit": "thousand tonnes gutted weight (GWT) or whole-fish equivalent",
+  "note": "Built only from primary data (official registers, monthly harvest, exports, our own models). Analysts (Kontali, banks) appear only as a comparison."
+ },
+ "basins": {
+  "NO": {
+   "v2025": 1537.1,
+   "ytd": {
+    "to": "Sep 2026",
+    "kt": 1199.3,
+    "chg": 7.0
+   },
+   "e2026": 1630.1,
+   "chg2026": 6.1,
+   "c2027": 1639.7,
+   "chg2027": 0.6,
+   "lo": -4.5,
+   "hi": 4.1,
+   "source": "Fiskeridirektoratet biomass register, monthly harvest by farm (live weight × 0.888)",
+   "method": "Actual harvest to the last month published; rest of the year = same months a year earlier × our generation model (fish at sea, weights, growth, mortality — Generations tab). 2027 = the three generation scenarios (advance fades, central, advance kept), Oct–Dec 2027 assumed equal to 2026.",
+   "tab": "outlook"
+  },
+  "CL": {
+   "v2025": 724.0,
+   "ytd": {
+    "to": "Sep 2026",
+    "kt": 529.7,
+    "chg": 4.0
+   },
+   "last3": -2.1,
+   "e2026": 739.9,
+   "chg2026": 2.2,
+   "c2027": 724.7,
+   "chg2027": -2.1,
+   "lo": -9.1,
+   "hi": 0.9,
+   "source": "Subpesca monthly sector reports: cumulative Atlantic salmon harvest (live weight × 0.888)",
+   "method": "Actual Atlantic salmon harvest to Sep 2026; the last three months ran at -2.1 % on a year earlier (it was +16 % for 2025 as a whole) — the rest of 2026 and 2027 are carried at that pace. Range skewed down (−7 / +3 points): an extraordinary El Niño and an algae emergency raise the risk of mass mortality; Chile publishes no current biomass for free.",
+   "tab": "chile"
+  },
+  "GB": {
+   "v2025": 169.3,
+   "ytd": {
+    "to": "Aug 2026 (UK exports)",
+    "kt": 74.9,
+    "chg": -25.7
+   },
+   "e2026": 125.8,
+   "chg2026": -25.7,
+   "c2027": 135.8,
+   "chg2027": 8,
+   "lo": -5,
+   "hi": 15,
+   "sepa_last": "202512",
+   "sepa_biomass_chg": -2.1,
+   "confidence": "low",
+   "source": "SEPA monthly biomass, feed and mortality reports (mass balance) and UK salmon exports (HMRC)",
+   "method": "2025 harvest rebuilt from SEPA farm reports: growth (feed ÷ 1.22) + biomass at the start − biomass at the end − dead fish = 169 kt gutted. SEPA publishes with a long delay (last month Dec 2025), so 2026 follows UK exports to date (-26 %) — a rough guide, since UK exports also move with the home market. 2027: the companies have more fish to harvest after two poor years (Bakkafrost Scotland plans 28,000 t against 20,000 t, Mowi Scotland 76,000 t against 74,000 t); we read +8 % (−5 to +15 %) as Scottish biology has disappointed several years in a row.",
+   "tab": "scotland"
+  },
+  "FO": {
+   "v2025": 114.9,
+   "ytd": {
+    "to": "Aug 2026",
+    "kt": 83.0,
+    "chg": 18.7
+   },
+   "e2026": 136.3,
+   "chg2026": 18.7,
+   "chg2027": 0,
+   "c2027": 136.3,
+   "lo": -5,
+   "hi": 5,
+   "source": "Hagstova (Statistics Faroe Islands): salmon exports by month, converted to whole-fish equivalent",
+   "method": "Almost all Faroese salmon is exported, so exports measure the harvest month by month. 2026 = exports to date + the rest of the year at the same pace. 2027: Bakkafrost — most of Faroese salmon — plans the same Faroese harvest in 2027 as in 2026 (97,000 t) with as many smolts put to sea; we keep 0 % ± 5.",
+   "tab": "faroe"
+  },
+  "IS": {
+   "v2025": 54.5,
+   "ytd": {
+    "to": "Q3 2026",
+    "kt": 51.2,
+    "chg": 45.7
+   },
+   "e2026": 64.5,
+   "chg2026": 18.3,
+   "c2027": 60.0,
+   "chg2027": -7.0,
+   "lo": -13.5,
+   "hi": -2.0,
+   "source": "MAST monthly farm reports (fish, weights, harvest by site)",
+   "method": "Harvest to date from MAST; Q4 2026 and 2027 from our farm-by-farm simulation (growth, harvest weights, mortality) in three scenarios. The simulation has run high in past tests, so read the direction (down after a record 2026, with 30 % fewer fish over 4 kg at sea) more than the level.",
+   "tab": "iceland"
+  },
+  "CA": {
+   "v2025": 87.5,
+   "ytd": {
+    "to": "Sep 2026 (exports)",
+    "kt": 67.3,
+    "chg": 18.4
+   },
+   "e2026": 100.0,
+   "chg2026": 14.2,
+   "c2027": 101.5,
+   "chg2027": 1.5,
+   "lo": -5.5,
+   "hi": 6.5,
+   "bc_2027": 2.9,
+   "level_note": "production 2024 (Statistics Canada + Newfoundland report) carried to 2025 by exports",
+   "source": "Statistics Canada (CIMT): domestic exports by province of origin, whole-fish equivalent",
+   "method": "Level: Canadian salmon production of 2024 (Statistics Canada, plus Newfoundland's own report as Statistics Canada suppresses it), carried to 2025 by exports. Exports by province measure the change month by month. 2026 = exports to date + the rest of the year as a year earlier (the rule that tested best). 2027: British Columbia (53 % of the volume) from the cycle of every farm (DFO): +3 %; the Atlantic provinces held flat, with downside from ISA in New Brunswick.",
+   "tab": "canada"
+  },
+  "AU": {
+   "v2025": 68.0,
+   "ytd": {
+    "to": "FY 2025/26",
+    "kt": 74.2,
+    "chg": 9.2
+   },
+   "e2026": 74.2,
+   "chg2026": 9.2,
+   "c2027": 78.0,
+   "chg2027": 5,
+   "lo": 0,
+   "hi": 10,
+   "deaths_ytd": 14874,
+   "deaths_ly": 17624,
+   "deaths_chg": -15.6,
+   "source": "Tasmanian production by company (financial years July–June) and EPA Tasmania monthly mortality disposal",
+   "method": "Volumes are Tasmanian financial years (FY 2024/25 shown as \"2025\", FY 2025/26 as \"2026\"). Dead fish disposed of Jan–Sep 2026: 14,874 t, -16 % on a year earlier. If mortality keeps falling, more fish reach harvest: +5 % (0 to +10 %); the summer of 2027 (January–March) is the test.",
+   "tab": "australia"
+  }
+ },
+ "tracked": {
+  "v2025": 2755.3,
+  "e2026": 2870.8,
+  "chg2026": 4.2,
+  "c2027": 2876.0,
+  "chg2027": 0.2,
+  "lo": -5.9,
+  "hi": 3.9,
+  "note": "Sum of the seven basins we follow (about 95 % of farmed Atlantic salmon). Ireland, the United States, Russia, New Zealand and other small producers are not tracked."
+ }
+}

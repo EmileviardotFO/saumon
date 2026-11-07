@@ -145,6 +145,11 @@ jobs:
       continue-on-error: true
       timeout-minutes: 5
       run: python3 scripts/build_faroe.py
+    - name: Offre mondiale - nos propres estimations par bassin (2025, 2026, 2027)
+      id: own_supply
+      continue-on-error: true
+      timeout-minutes: 5
+      run: python3 scripts/build_own_supply.py
     - name: Index de recherche (toutes les lignes de tous les tableaux)
       id: search_index
       continue-on-error: true
