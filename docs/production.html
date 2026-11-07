@@ -13162,6 +13162,7 @@ loadRemoteData().then(live => {
   #gsSug button.on,#gsSug button:hover{border-color:#4fc3f7;background:#12304a}
   #gsSug button small{color:#8fa4b0;margin-left:5px;font-size:11px}
   #gsSug button.tab{border-style:dashed}
+  .gs-pred{font-size:12px;color:#8fa4b0;margin:-2px 0 8px}
   @media (max-width:900px){#gsPanel .gs-hint{display:none}#gsSug{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}#gsSug button{font-size:14px;padding:8px 12px}}
   #gsPanel .gs-sec{font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#4fc3f7;margin:18px 0 8px}
   #gsPanel .gs-card{background:#10202c;border:1px solid #223642;border-radius:10px;padding:12px 14px;margin-bottom:10px;max-width:1100px}
@@ -13233,7 +13234,12 @@ loadRemoteData().then(live => {
   q1.addEventListener('focus', enter);
   q1.addEventListener('input', enter);
   load();                                   // donnees chargees en avance : les resultats arrivent sans attente
-  let tm = null; q2.addEventListener('input', () => { clearTimeout(tm); tm = setTimeout(() => run(q2.value), 220); });
+  // prediction : si le dernier mot tape est inacheve et qu'une suggestion le complete (societe, pays, sujet...), les resultats montrent deja cette suggestion
+  let tm = null, gsPred = '';
+  const predict = v => { if (/\s$/.test(v) || v.trim().length < 2 || typeof SUG !== 'function') return null; const L = SUG(v).filter(o => !o.tab && o.t !== 'next' && o.t !== 'period');
+    const last = norm(v.trim().split(/\s+/).pop()); const o = L[0]; if (!o) return null; if (norm(o.lab) === last) return null;
+    return ['company', 'basin', 'market', 'topic', 'zone', 'trade', 'product'].includes(o.t) ? o : null; };
+  q2.addEventListener('input', () => { clearTimeout(tm); tm = setTimeout(() => { const o = predict(q2.value); gsPred = o ? o.lab : ''; run(o ? o.q : q2.value); }, 160); });
   q2.addEventListener('keydown', e => { if (e.key === 'Enter') run(q2.value); if (e.key === 'Escape') close(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && P.style.display === 'block') close();
     if (e.key === '/' && !/INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || '')) { e.preventDefault(); open(''); } });
@@ -13250,10 +13256,12 @@ loadRemoteData().then(live => {
     COS.forEach(([n]) => V.push([n, 'company']));
     ['Norway', 'Chile', 'Scotland', 'Faroe Islands', 'Iceland', 'Canada', 'Tasmania', 'British Columbia', 'New Brunswick', 'Newfoundland', 'Nova Scotia'].forEach(n => V.push([n, 'basin']));
     for (let z = 1; z <= 13; z++) V.push([`zone ${z}`, 'zone', (typeof PO_NAMES !== 'undefined' && PO_NAMES[z]) || '']);
-    [['lice', 'topic'], ['mortality', 'topic'], ['disease', 'topic'], ['6+', 'topic', 'big fish 6 kg'], ['harvest', 'topic'], ['time at sea', 'topic', 'growth cycle'], ['plants', 'topic', 'slaughterhouse processing'],
-     ['price', 'topic'], ['export', 'trade'], ['import', 'trade'], ['fresh fillets', 'product'], ['fresh whole', 'product'], ['frozen', 'product'], ['smoked', 'product'],
+    [['lice', 'topic', 'poux lus lakselus piojo'], ['mortality', 'topic', 'mortalite dodelighet mortalidad pertes'], ['disease', 'topic', 'maladie sykdom ila pd enfermedad'], ['6+', 'topic', 'big fish 6 kg gros poissons store'],
+     ['big fish', 'topic', 'gros poissons 6 kg'], ['harvest', 'topic', 'recolte slakt cosecha volumes'], ['time at sea', 'topic', 'growth cycle temps mer croissance'], ['plants', 'topic', 'slaughterhouse processing usines abattoir slakteri'],
+     ['price', 'topic', 'prix pris precio'], ['export', 'trade', 'exportation eksport exportacion'], ['import', 'trade', 'importation importacion'], ['fresh fillets', 'product', 'filets frais'], ['fresh whole', 'product', 'entier frais'],
+     ['frozen', 'product', 'congele frossen'], ['smoked', 'product', 'fume royk'], ['biomass', 'topic', 'biomasse stock'], ['smolt', 'topic', 'smolts mise en mer stocking'],
      ['Q1', 'period'], ['Q2', 'period'], ['Q3', 'period'], ['Q4', 'period'], ['H1', 'period'], ['H2', 'period'], ['2025', 'period'], ['2026', 'period'], ['YTD', 'period'],
-     ['supply 2027', 'topic', 'outlook forecast global'], ['guidance', 'topic', 'forecast'], ['wellboat', 'topic'], ['ISA', 'topic', 'anaemia']].forEach(x => V.push(x));
+     ['supply 2027', 'topic', 'outlook forecast global offre prevision projection'], ['guidance', 'topic', 'forecast prevision'], ['wellboat', 'topic', 'bronnbat'], ['ISA', 'topic', 'anaemia ila']].forEach(x => V.push(x));
     ['United States', 'China', 'Poland', 'France', 'Spain', 'Germany', 'Italy', 'Japan', 'South Korea', 'Netherlands', 'Denmark', 'United Kingdom', 'Vietnam', 'Thailand', 'Brazil', 'Taiwan', 'Israel', 'Switzerland', 'Belgium']
       .forEach(n => V.push([n, 'market']));
     const TABS = [...document.querySelectorAll('#viewToggle button[data-v]')].map(b => [b.textContent.trim(), b.dataset.v]);
@@ -13267,9 +13275,12 @@ loadRemoteData().then(live => {
       const out = [], T = tokens(q), endsSpace = /\s$/.test(q), last = endsSpace ? '' : norm(T[T.length - 1] || ''), head = endsSpace ? q.trim() : T.slice(0, -1).join(' ');
       const K = known(q), kinds = new Set(K.map(k => k[1]));
       if (last) {
-        V.forEach(([l, t, kw]) => { const nl = norm(l), hit = nl.startsWith(last) || nl.split(/\s+/).some(w => w.startsWith(last)) || (last.length >= 3 && norm(kw || '').split(/\s+/).some(w => w.startsWith(last)));
+        const last2 = T.length > 1 ? norm(T.slice(-2).join(' ')) : '', head2 = T.slice(0, -2).join(' ');
+        V.forEach(([l, t, kw]) => { const nl = norm(l);
+          if (last2 && nl.includes(' ') && nl.startsWith(last2)) { out.push({ q: (head2 ? head2 + ' ' : '') + l, lab: l, t, two: 1 }); return; }
+          const hit = nl.startsWith(last) || nl.split(/\s+/).some(w => w.startsWith(last)) || (last.length >= 3 && norm(kw || '').split(/\s+/).some(w => w.startsWith(last)));
           if (hit && !K.some(k => k[0] === l)) out.push({ q: (head ? head + ' ' : '') + l, lab: l, t }); });
-        out.sort((a, b) => (norm(a.lab).startsWith(last) ? 0 : 1) - (norm(b.lab).startsWith(last) ? 0 : 1) || a.lab.length - b.lab.length);
+        out.sort((a, b) => (b.two || 0) - (a.two || 0) || (norm(a.lab).startsWith(last) ? 0 : 1) - (norm(b.lab).startsWith(last) ? 0 : 1) || a.lab.length - b.lab.length);
       }
       // suites logiques de ce qui est deja reconnu
       const base = q.trim();
@@ -13791,12 +13802,21 @@ loadRemoteData().then(live => {
         (AL.length ? `<br>Unusual activity: ${AL.map(a => `${esc(a.key.replace(/^ORG:/, '').replace(/^PO/, 'zone '))} ${a.visits} visits (usual ${a.avg8})`).join(' · ')}` : '') +
         (HT.length ? `<br>Busiest farms over 14 days: ${HT.map(h => `${esc(h.name)} (${h.wb} wellboat${h.sb ? ', ' + h.sb + ' slaughter-boat' : ''} visits)`).join(' · ')}` : '') +
         ` <span class="gs-go" onclick="gsGoTab('wellboats')">→ Wellboats tab</span></div></div>`; }
-    if (/\b(supply|2027|outlook|forecast|offre|projection\w*|prevision\w*|prognos\w*|guidance)\b/.test(nq) && D['global_supply.json']) {
+    const basinOnly = bas && !co && !po && !topics.length && !mk && !gsFlow && !prods.length;   // un pays producteur seul : sa fiche 2027 en tete
+    if ((basinOnly || /\b(supply|2027|outlook|forecast|offre|projection\w*|prevision\w*|prognos\w*|guidance)\b/.test(nq)) && D['global_supply.json']) {
       const G = D['global_supply.json'], AR = { up: '↑', flat: '→', down: '↓' }, bb = (G.basins || []).filter(b => !bas || b.id === bas);
       html += `<div class="gs-sec">Global supply 2027</div><div class="gs-card"><h4>${bas ? esc(BAS_NAME[bas] || bas) + ' — 2027 outlook' : 'World salmon supply — 2027 outlook'}</h4><div class="s">` +
         (bas ? '' : `World: ${esc(G.world.y2026)} in 2026, <b>${esc(G.world.y2027)}</b> in 2027. ${esc(G.world.y2027_note)}<br>`) +
-        bb.map(b => `<b>${AR[b.dir] || '→'} ${esc(b.name)}</b> — 2027: ${esc(b.y2027)}. ${esc(b.oneliner)}`).join('<br>') +
+        bb.map(b => `<b>${AR[b.dir] || '→'} ${esc(b.name)}</b> — 2027: ${esc(b.y2027)}. ${esc(b.oneliner)}` + (bas ? `<br><b>2026 so far:</b> ${esc(b.y2026)}<br>${(b.drivers || []).map(d => `<b>${esc(d.k)}</b>: ${esc(d.t)}`).join('<br>')}<br><span class="gs-go" onclick="gsGoTab('${b.tab}')">→ ${esc(b.name.split(' (')[0])} tab</span> · ` : '')).join('<br>') +
         ` <span class="gs-go" onclick="gsGoTab('supply')">→ Global supply 2027</span></div></div>`; }
+    if (topics.length && !co && !po && !bas && !mk) {   // un sujet seul : les onglets qui le traitent, en tete
+      const TT = { lice: [['health', 'Fish health — sea lice by zone and farmer'], ['wellboats', 'Wellboats — delousing trips']], mort: [['health', 'Fish health — mortality and recorded events'], ['generations', 'Generations — survival']],
+        dis: [['health', 'Fish health — ILA and PD cases']], big: [['generations', 'Generations — big fish to harvest'], ['genmap', 'Generations map'], ['calibre', 'Calibre & premium']],
+        harv: [['outlook', 'Supply outlook (Norway)'], ['supply', 'Global supply 2027']], price: [['prices', 'Prices'], ['usaprices', 'US prices'], ['calibre', 'Calibre & premium']],
+        plant: [['register', 'Farm register — plants map']], tas: [['timeatsea', 'Time at sea']], china: [['china', 'China']] };
+      const tb = [...new Set(topics.flatMap(t => (TT[t] || []).map(x => x.join('|'))))].map(x => x.split('|'));
+      if (tb.length) html += `<div class="gs-sec">Where to look</div><div class="gs-card"><div class="s">${tb.map(([v, l]) => `<span class="gs-go" style="margin-right:14px" onclick="gsGoTab('${v}')">→ ${esc(l)}</span>`).join('')}</div><div class="s" style="margin-top:4px">Add a company, a zone or a country for figures: <i>Mowi ${esc(TOP_WORDS[topics[0]])}</i>, <i>zone 3 ${esc(TOP_WORDS[topics[0]])}</i>.</div></div>`;
+    }
     const ih = indexHtml(q); html += ih;
     const nw = po ? [] : words;
     let N = news(co, topics, nw, bas, mk, prods), fb = bas ? ` · ${BAS_NAME[bas]} only` : '';
@@ -13808,7 +13828,7 @@ loadRemoteData().then(live => {
         (x.extra ? `<div style="font-size:12px;color:#8fa4b0">${hl(String(x.extra).slice(0, 260), hw)}</div>` : '') + `</div>`).join('') : '<div class="gs-hint">No article in the last 400 days matches.</div>');
     const S = ih ? [] : sections(nw.concat(topics.map(t => norm(TOP_WORDS[t]))).concat(po ? ['zone'] : []), co, bas);
     if (S.length) html += `<div class="gs-sec">In the dashboard</div>` + S.map(s => `<div class="gs-go" onclick="gsGoTab('${s.v}', ${JSON.stringify(s.T).replace(/"/g, '&quot;')})">${esc(s.T)}<small>${esc((document.querySelector(`#sideNav .sn-item[data-v="${PANEL_TAB[s.v] || s.v}"]`) || {}).textContent || s.v)}</small></div>`).join('');
-    out.innerHTML = html || '<div class="gs-hint">Nothing found.</div>';
+    out.innerHTML = (gsPred && html ? `<div class="gs-pred">Showing <b>${esc(gsPred)}</b> — keep typing, or pick a suggestion above.</div>` : '') + (html || '<div class="gs-hint">Nothing found.</div>'); gsPred = '';
   }
 })();
 </script>
