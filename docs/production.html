@@ -5623,7 +5623,7 @@ function renderScotlandSurvey() {
 let SCOUT = null, SCOUT_LOADING = false;
 function renderScOutlook() {
   if (!SCOUT) { if (!SCOUT_LOADING) { SCOUT_LOADING = true; const gj = f => fetch(DATA_URL.replace('data.json', f), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
-      Promise.all(['own_supply.json', 'scotland_companies.json', 'scotland_extra.json'].map(gj)).then(([o, c, x]) => { SCOUT = { o, c, x }; SCOUT_LOADING = false; if (currentView === 'scotland') renderScOutlook(); }); } return; }
+      Promise.all(['own_supply.json', 'scotland_companies.json', 'scotland_extra.json', 'news.json'].map(gj)).then(([o, c, x, nw]) => { SCOUT = { o, c, x, nw }; SCOUT_LOADING = false; if (currentView === 'scotland') renderScOutlook(); }); } return; }
   const o = ((SCOUT.o || {}).basins || {}).GB, C = SCOUT.c, X = SCOUT.x || {}, el = id => document.getElementById(id);
   const esc = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), kt = v => v === null || v === undefined ? '—' : (v / 1000).toLocaleString('en-US', { maximumFractionDigits: 1 }) + ' kt';
   const sg = v => v === null || v === undefined || !isFinite(v) ? '—' : `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(0)} %`;
@@ -5647,7 +5647,42 @@ function renderScOutlook() {
     `<div class="pr-cards">${card('Monthly survival (Salmon Scotland)', (() => { const e = Object.entries(sv); return e.length ? `${e[e.length - 1][1]} %` : '—'; })(), Object.entries(sv).map(([k, v]) => `${esc(k)}: ${v} %`).join(' · ') + '. ' + esc((C.survival || {}).note || ''), '#81c784')}` +
     card('Movement restrictions for disease', `${act.length} active`, act.length ? act.map(r => `${esc(r.site)} (${esc(r.operator)}) — ${esc(r.disease)} since ${r.date}`).join('<br>') : 'none in force', act.length ? '#ef5350' : '#81c784') +
     card('Escapes at sea, last 12 months', `${E12.length} reported`, E12.slice(0, 4).map(e => `${e.date} ${esc(e.site)} (${esc(e.operator)}): ${e.number === null ? 'number unknown' : e.number.toLocaleString('en-US') + ' fish'}`).join('<br>') || '—', E12.some(e => (e.number || 0) > 10000) ? '#ffb74d' : '#81c784') + `</div>` +
-    `<div class="sig-sub">Source: Scotland's Aquaculture (Marine Directorate Fish Health Inspectorate), read at each update${X.meta ? ' — ' + esc(X.meta.built) : ''}.</div>`;
+    `<div class="sig-sub">Source: Scotland's Aquaculture (Marine Directorate Fish Health Inspectorate), read at each update${X.meta ? ' — ' + esc(X.meta.built) : ''}.</div>` + scEarly(C, o, esc) + scNews(C, SCOUT.nw, esc);
+}
+// recoltes anticipees : poids moyen mensuel de Bakkafrost Ecosse, croissance perdue
+function scEarly(C, o, esc) {
+  const B = ((C.companies['Bakkafrost Scotland'] || {}).monthly || {}).data || {}, EH = C.early_harvest || {}, ks = Object.keys(B).sort();
+  if (!ks.length) return '';
+  const ref = EH.ref_kg || 5.9, NAR = window.innerWidth < 700, W = NAR ? 360 : 900, H = NAR ? 220 : 240, pl = 34, pr = 34, pt = 14, pb = 34, n = ks.length, bw = (W - pl - pr) / n;
+  const tM = Math.max(...ks.map(k => B[k][0])) * 1.1, wM = 7.5, Y = v => pt + (H - pt - pb) * (1 - v / tM), YW = v => pt + (H - pt - pb) * (1 - v / wM);
+  const fs = NAR ? 10 : 11;
+  let svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px;height:auto;display:block">`;
+  [0, 2, 4, 6].forEach(v => svg += `<line x1="${pl}" x2="${W - pr}" y1="${YW(v)}" y2="${YW(v)}" stroke="#223642"/><text x="${W - pr + 4}" y="${YW(v) + 4}" fill="#ffb74d" font-size="${fs}">${v} kg</text>`);
+  svg += `<line x1="${pl}" x2="${W - pr}" y1="${YW(ref)}" y2="${YW(ref)}" stroke="#ffb74d" stroke-dasharray="4 4" opacity=".6"/>`;
+  ks.forEach((k, i) => { const [t, w] = B[k], x = pl + i * bw + bw * .15, small = w < (EH.small_kg || 4);
+    svg += `<rect x="${x}" y="${Y(t)}" width="${bw * .7}" height="${H - pb - Y(t)}" fill="${small ? '#ef5350' : w < 5 ? '#ffb74d' : '#4fc3f7'}" opacity=".8"><title>${k}: ${t.toLocaleString('en-US')} t at ${w} kg</title></rect>`;
+    if (k.endsWith('-01') || k.endsWith('-07') || i === n - 1) svg += `<text x="${x + bw * .35}" y="${H - pb + 14}" fill="#8fa4b0" font-size="${fs}" text-anchor="middle">${k.slice(5) === '01' ? k.slice(0, 4) : ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][+k.slice(5)]}</text>`; });
+  svg += `<polyline fill="none" stroke="#ffb74d" stroke-width="2" points="${ks.map((k, i) => `${pl + i * bw + bw / 2},${YW(B[k][1])}`).join(' ')}"/>` + ks.map((k, i) => `<circle cx="${pl + i * bw + bw / 2}" cy="${YW(B[k][1])}" r="3" fill="#ffb74d"/>`).join('');
+  [0, Math.round(tM / 2000) * 1000].forEach(v => svg += `<text x="${pl - 4}" y="${Y(v) + 4}" fill="#4fc3f7" font-size="${fs}" text-anchor="end">${v ? (v / 1000) + 'k' : 0}</text>`);
+  svg += '</svg>';
+  const L = (o && o.early_lost_t) || {}, sm = y => ks.filter(k => k.startsWith(y) && B[k][1] < (EH.small_kg || 4)).reduce((a, k) => a + B[k][0], 0);
+  return `<div class="sig-title" style="margin-top:18px">Early harvests — losses that do not show as deaths</div>
+    <div class="sig-sub">${esc(EH.note)}</div>
+    <div class="pr-cards"><div class="pr-card" style="cursor:default"><div class="nm"><i style="background:#ef5350"></i>Bakkafrost Scotland 2026 (Jan–Sep)</div><div class="big">${(L['2026'] / 1000).toFixed(1)} kt lost</div><div class="ln">${sm('2026').toLocaleString('en-US')} t harvested under ${EH.small_kg || 4} kg (Jul–Sep at about 3 kg). That is ${Math.round(100 * L['2026'] / C.companies['Bakkafrost Scotland'].guidance['2026'])} % of its 2026 plan.</div></div>
+    <div class="pr-card" style="cursor:default"><div class="nm"><i style="background:#ffb74d"></i>Bakkafrost Scotland 2025</div><div class="big">${(L['2025'] / 1000).toFixed(1)} kt lost</div><div class="ln">Mainly Portree emptied in October at 2.8 kg after Pasteurella.</div></div></div>
+    <div style="margin-top:8px">${svg}</div>
+    <div class="sig-sub">Bars: tonnes harvested each month (red = average under ${EH.small_kg || 4} kg, orange = under 5 kg). Line: average harvest weight, dotted = normal ${ref} kg. Source: ${esc(C.companies['Bakkafrost Scotland'].monthly.src)}.</div>`;
+}
+// fil des evenements et des news ecossaises qui peuvent faire bouger les chiffres
+function scNews(C, NW, esc) {
+  const KC = { 'early harvest': '#ef5350', disease: '#ef5350', 'guidance cut': '#ef5350', warning: '#ffb74d', plan: '#4fc3f7' };
+  const ev = (C.events || []).slice().sort((a, b) => b.date.localeCompare(a.date));
+  const re = /harvest|guidance|forecast|mortalit|early|fallow|cut|smolt|biolog|disease|pasteurel|gill|lice|escape|slakt|dødelig/i, cut = new Date(Date.now() - 60 * 864e5).toISOString().slice(0, 10);
+  const N = ((NW || {}).items || []).filter(a => (a.basins || []).includes('GB') && a.date >= cut && re.test(a.title)).slice(0, 10);
+  return `<div class="sig-title" style="margin-top:18px">What has moved the Scottish numbers — events and news</div>
+    <div class="sig-sub">Each event is already in the farmers' latest plans, so already in our estimate; when news shows a plan is out of date before the farmer updates it, we add an adjustment (none at the moment). Newest first.</div>
+    <div style="display:grid;gap:6px">${ev.map(e => `<div style="display:flex;gap:10px;align-items:flex-start;background:#0d1a24;border:1px solid #223642;border-radius:8px;padding:7px 10px"><span style="flex:0 0 auto;font-size:11px;color:#8fa4b0;width:74px">${e.date}</span><span style="flex:0 0 auto;font-size:10.5px;font-weight:bold;color:#0b1620;background:${KC[e.kind] || '#8fa4b0'};border-radius:6px;padding:1px 6px;text-transform:uppercase">${esc(e.kind)}</span><span style="font-size:13px"><b>${esc(e.co)}</b> — ${esc(e.text)} <a href="${esc(e.url)}" target="_blank" rel="noopener" style="color:#4fc3f7">source</a></span></div>`).join('')}</div>
+    ${N.length ? `<div class="sig-sub" style="margin-top:12px"><b>Latest news to watch</b> (last 60 days, from the news feed: harvest, guidance, mortality, disease, early harvest)</div><div style="display:grid;gap:4px">${N.map(a => `<div style="font-size:13px"><span style="color:#8fa4b0;font-size:11px">${a.date}</span> <a href="${esc(a.link || a.url)}" target="_blank" rel="noopener" style="color:#e7eef2">${esc(a.title)}</a> <span style="color:#8fa4b0;font-size:11px">${esc(a.source || '')}</span></div>`).join('')}</div>` : ''}`;
 }
 
 function renderScotland() {

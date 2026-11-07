@@ -122,6 +122,11 @@ def scotland():
     ytd, ytd_ly = sum(c['ytd']['2026'] for c in CO.values()), sum(c['ytd']['2025'] for c in CO.values())
     to = next(iter(CO.values()))['ytd']['to']
     g26, g27 = sum(c['guidance']['2026'] for c in CO.values()), sum(c['guidance']['2027'] for c in CO.values())
+    ADJ = (C.get('adjustments') or {}).get('items') or []          # news not yet in the farmers' plans
+    a26, a27 = sum(a.get('2026', 0) for a in ADJ), sum(a.get('2027', 0) for a in ADJ); g26 += a26; g27 += a27
+    EH = C.get('early_harvest') or {}; MB = (CO.get('Bakkafrost Scotland', {}).get('monthly') or {}).get('data') or {}
+    lost = {y: round(sum(t * (EH.get('ref_kg', 5.9) / w - 1) for k, (t, w) in MB.items() if k.startswith(y) and w < 4.5)) for y in ('2025', '2026')}
+    news = (f'News not yet in the plans: {a26:+,.0f} t in 2026, {a27:+,.0f} t in 2027. ' if (a26 or a27) else 'The latest plans already include the news so far (SSF guidance cut, Bakkafrost and SSF early harvests). ')
     oth26 = oth25 * off26; e26 = g26 + oth26
     HAIR = 0.95                       # les eleveurs ecossais livrent en general un peu moins que prevu un an a l'avance
     c27 = g27 * HAIR + oth26; lo27 = g27 * 0.88 + oth26 * 0.9; hi27 = g27 + oth26 * 1.05
@@ -133,13 +138,13 @@ def scotland():
     names27 = ', '.join(f"{k} {c['guidance']['2027'] / 1000:.0f} kt" for k, c in CO.items())
     return {'v2025': kt(tot25), 'ytd': {'to': f'{to} 2026 (Mowi, SSF, Bakkafrost)', 'kt': kt(ytd), 'chg': pc(ytd, ytd_ly)}, 'e2026': kt(e26), 'chg2026': pc(e26, tot25),
             'c2027': kt(c27), 'chg2027': pc(c27, e26), 'lo': pc(lo27, e26), 'hi': pc(hi27, e26), 'confidence': 'medium',
-            'sepa_last': last, 'sepa_2025_kt': kt(sepa25) if sepa25 else None, 'official_2026_chg': round((off26 - 1) * 100, 1),
+            'sepa_last': last, 'early_lost_t': lost, 'adj_t': {'2026': a26, '2027': a27}, 'sepa_2025_kt': kt(sepa25) if sepa25 else None, 'official_2026_chg': round((off26 - 1) * 100, 1),
             'source': 'Scottish Fish Farm Production Survey (Marine Directorate), quarterly reports of Mowi, Scottish Sea Farms and Bakkafrost, SEPA monthly farm reports',
             'method': f'2025 = official survey, {M["official_2025_live_t"]:,} t live = {tot25 / 1000:,.0f} kt gutted (our cross-check from SEPA farm reports: {sepa25 / 1000:,.0f} kt). '
                       f'2026: the three farmers that report every quarter (73 % of the harvest) harvested {ytd / 1000:,.1f} kt to {to}, {pc(ytd, ytd_ly):+.0f} % on 2025, and plan {g26 / 1000:,.0f} kt for the year ({names}); '
                       f'that needs a strong fourth quarter ({(g26 - ytd) / 1000:,.0f} kt against {(big25 - ytd_ly) / 1000:,.0f} kt in Q4 2025), so watch the Q4 reports in January; the others (Cooke, Loch Duart…) follow the farmers\' own estimate in the official survey ({(off26 - 1) * 100:+.1f} %). '
                       f'2027: the three plan {g27 / 1000:,.0f} kt ({names27}), +{(g27 / g26 - 1) * 100:.0f} %; we take 95 % of that, because Scottish farmers usually deliver a bit less than planned a year ahead (SSF cut 2026 from 43 to 40 kt in November), and keep the others level. '
-                      'Range: the three deliver 88 % to 100 % of plan. In twenty years of data, neither fish at sea at year end nor smolts put to sea predicted the next year better than "no change" in Scotland (the average miss is about ±10 %): mortality decides, so the range stays wide.',
+                      + news + 'Range: the three deliver 88 % to 100 % of plan. In twenty years of data, neither fish at sea at year end nor smolts put to sea predicted the next year better than "no change" in Scotland (the average miss is about ±10 %): mortality decides, so the range stays wide.',
             'tab': 'scotland'}
 
 

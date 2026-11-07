@@ -1,54 +1,305 @@
 {
-  "meta": {
-    "unit": "tonnes gutted weight (GWT / HOG)",
-    "updated": "2026-11-07",
-    "note": "Harvest reported by the three listed farmers that publish every quarter (about 73 % of Scottish harvest in 2025). Entered by hand after each quarterly report (trading updates mid-month after quarter end, full reports early the next month). Scottish Sea Farms is 100 % (owned 50/50 by Lerøy and SalMar through Norskott Havbruk).",
-    "official_2025_live_t": 197836,
-    "official_2026_forecast_live_t": 199200,
-    "official_src": "Scottish Fish Farm Production Survey 2025 (Marine Directorate, September 2026): 2025 production and the farmers' own estimate for 2026",
-    "live_to_gutted": 0.888
+ "meta": {
+  "unit": "tonnes gutted weight (GWT / HOG)",
+  "updated": "2026-11-07",
+  "note": "Harvest reported by the three listed farmers that publish every quarter (about 73 % of Scottish harvest in 2025). Entered by hand after each quarterly report (trading updates mid-month after quarter end, full reports early the next month). Scottish Sea Farms is 100 % (owned 50/50 by Lerøy and SalMar through Norskott Havbruk).",
+  "official_2025_live_t": 197836,
+  "official_2026_forecast_live_t": 199200,
+  "official_src": "Scottish Fish Farm Production Survey 2025 (Marine Directorate, September 2026): 2025 production and the farmers' own estimate for 2026",
+  "live_to_gutted": 0.888
+ },
+ "companies": {
+  "Mowi Scotland": {
+   "share_2025_pct": 41,
+   "ytd": {
+    "to": "Q3",
+    "2026": 58865,
+    "2025": 59255
+   },
+   "quarters": {
+    "2025Q3": 17399,
+    "2026Q3": 11615
+   },
+   "year": {
+    "2024": 66000,
+    "2025": 72000
+   },
+   "guidance": {
+    "2026": 74000,
+    "2027": 76000
+   },
+   "notes": "Record first half 2026 harvested early to cut biomass before the summer risk, so little was left for Q3. Standing biomass end of September 2026 about 9 % above a year earlier. Incident-based mortality cost EUR 4.2 m in Q3 (EUR 2.9 m a year earlier).",
+   "src": "Mowi Q3 2026 report (4 Nov 2026)",
+   "url": "https://www.globenewswire.com/news-release/2026/10/19/3382969/0/en/mowi-asa-ose-mowi-q3-2026-trading-update.html"
   },
-  "companies": {
-    "Mowi Scotland": {
-      "share_2025_pct": 41,
-      "ytd": {"to": "Q3", "2026": 58865, "2025": 59255},
-      "quarters": {"2025Q3": 17399, "2026Q3": 11615},
-      "year": {"2024": 66000, "2025": 72000},
-      "guidance": {"2026": 74000, "2027": 76000},
-      "notes": "Record first half 2026 harvested early to cut biomass before the summer risk, so little was left for Q3. Standing biomass end of September 2026 about 9 % above a year earlier. Incident-based mortality cost EUR 4.2 m in Q3 (EUR 2.9 m a year earlier).",
-      "src": "Mowi Q3 2026 report (4 Nov 2026)",
-      "url": "https://www.globenewswire.com/news-release/2026/10/19/3382969/0/en/mowi-asa-ose-mowi-q3-2026-trading-update.html"
+  "Scottish Sea Farms": {
+   "share_2025_pct": 19,
+   "ytd": {
+    "to": "Q3",
+    "2026": 26500,
+    "2025": 27300
+   },
+   "quarters": {
+    "2025Q3": 7200,
+    "2026Q3": 13000
+   },
+   "year": {
+    "2023": 24900,
+    "2024": 40400,
+    "2025": 32800
+   },
+   "guidance": {
+    "2026": 40000,
+    "2027": 45000
+   },
+   "guidance_history": [
+    {
+     "date": "2025-11",
+     "year": 2025,
+     "t": 33500,
+     "actual": 32800
     },
-    "Scottish Sea Farms": {
-      "share_2025_pct": 19,
-      "ytd": {"to": "Q3", "2026": 26500, "2025": 27300},
-      "quarters": {"2025Q3": 7200, "2026Q3": 13000},
-      "year": {"2023": 24900, "2024": 40400, "2025": 32800},
-      "guidance": {"2026": 40000, "2027": 45000},
-      "guidance_history": [{"date": "2025-11", "year": 2025, "t": 33500, "actual": 32800}, {"date": "2026-08", "year": 2026, "t": 43000}, {"date": "2026-11", "year": 2026, "t": 40000}],
-      "notes": "2026 forecast cut from 43,000 to 40,000 t in November 2026 after mortality problems; 2027 planned at 45,000 t.",
-      "src": "SalMar and Lerøy Q3 2026 reports (Nov 2026)",
-      "url": "https://www.salmonbusiness.com/scottish-sea-farms-mortality-problems-force-3000-tonne-harvest-forecast-cut/"
+    {
+     "date": "2026-08",
+     "year": 2026,
+     "t": 43000
     },
-    "Bakkafrost Scotland": {
-      "share_2025_pct": 13,
-      "ytd": {"to": "Q3", "2026": 13880, "2025": 18606},
-      "quarters": {"2025Q3": 5286, "2026Q3": 4537},
-      "year": {"2024": 27900, "2025": 23200},
-      "guidance": {"2026": 20000, "2027": 28000},
-      "smolts": {"2026": {"million": 10.0, "avg_g": 179}, "2027": {"million": 11.5, "avg_g": 222}},
-      "notes": "Two sites stocked with bought-in smolts had biological problems and were harvested early (average 3.0 kg in Q3). Mortality lower than in Q3 2025. Stops buying outside smolts from 2027, so fewer smolts than planned but bigger ones.",
-      "src": "Bakkafrost Q3 2026 report (Nov 2026)",
-      "url": "https://www.inderes.dk/en/releases/bakkafrost-q3-2026-trading-update"
+    {
+     "date": "2026-11",
+     "year": 2026,
+     "t": 40000
     }
+   ],
+   "notes": "2026 forecast cut from 43,000 to 40,000 t in November 2026 after mortality problems; 2027 planned at 45,000 t.",
+   "src": "SalMar and Lerøy Q3 2026 reports (Nov 2026)",
+   "url": "https://www.salmonbusiness.com/scottish-sea-farms-mortality-problems-force-3000-tonne-harvest-forecast-cut/"
   },
-  "others": {
-    "names": "Cooke Scotland, Loch Duart, Kames, Organic Sea Harvest, Wester Ross and smaller farmers",
-    "note": "They do not publish quarterly volumes. 2025 = official total minus the three listed farmers; SEPA farm reports give their biomass at sea."
-  },
-  "survival": {
-    "src": "Salmon Scotland, monthly farm-level survival",
-    "points": {"2025 average": 98.3, "Q1 2026": 99.03, "Mar 2026": 99.1},
-    "note": "Q1 2026 average monthly survival was the best first quarter since reporting began in 2018."
+  "Bakkafrost Scotland": {
+   "share_2025_pct": 13,
+   "ytd": {
+    "to": "Q3",
+    "2026": 13880,
+    "2025": 18606
+   },
+   "quarters": {
+    "2025Q3": 5286,
+    "2026Q3": 4537
+   },
+   "year": {
+    "2024": 27900,
+    "2025": 23200
+   },
+   "guidance": {
+    "2026": 20000,
+    "2027": 28000
+   },
+   "smolts": {
+    "2026": {
+     "million": 10.0,
+     "avg_g": 179
+    },
+    "2027": {
+     "million": 11.5,
+     "avg_g": 222
+    }
+   },
+   "notes": "Two sites stocked with bought-in smolts had biological problems and were harvested early (average 3.0 kg in Q3). Mortality lower than in Q3 2025. Stops buying outside smolts from 2027, so fewer smolts than planned but bigger ones.",
+   "src": "Bakkafrost Q3 2026 report (Nov 2026)",
+   "url": "https://www.inderes.dk/en/releases/bakkafrost-q3-2026-trading-update",
+   "monthly": {
+    "cols": [
+     "t",
+     "kg"
+    ],
+    "src": "Bakkafrost quarterly trading updates (harvest and average weight by month, HOG)",
+    "data": {
+     "2025-01": [
+      1900,
+      6.5
+     ],
+     "2025-02": [
+      2100,
+      6.9
+     ],
+     "2025-03": [
+      2300,
+      6.7
+     ],
+     "2025-04": [
+      1900,
+      6.2
+     ],
+     "2025-05": [
+      2400,
+      5.8
+     ],
+     "2025-06": [
+      2200,
+      5.6
+     ],
+     "2025-07": [
+      2400,
+      5.1
+     ],
+     "2025-08": [
+      1600,
+      4.4
+     ],
+     "2025-09": [
+      1200,
+      4.7
+     ],
+     "2025-10": [
+      1900,
+      2.8
+     ],
+     "2025-11": [
+      1600,
+      6.0
+     ],
+     "2025-12": [
+      1100,
+      5.8
+     ],
+     "2026-01": [
+      1300,
+      6.0
+     ],
+     "2026-02": [
+      2100,
+      6.3
+     ],
+     "2026-03": [
+      2800,
+      6.6
+     ],
+     "2026-04": [
+      1900,
+      5.9
+     ],
+     "2026-05": [
+      400,
+      4.7
+     ],
+     "2026-06": [
+      800,
+      4.4
+     ],
+     "2026-07": [
+      1200,
+      2.9
+     ],
+     "2026-08": [
+      1300,
+      3.1
+     ],
+     "2026-09": [
+      1900,
+      3.0
+     ]
+    }
+   }
   }
+ },
+ "others": {
+  "names": "Cooke Scotland, Loch Duart, Kames, Organic Sea Harvest, Wester Ross and smaller farmers",
+  "note": "They do not publish quarterly volumes. 2025 = official total minus the three listed farmers; SEPA farm reports give their biomass at sea."
+ },
+ "survival": {
+  "src": "Salmon Scotland, monthly farm-level survival",
+  "points": {
+   "2025 average": 98.3,
+   "Q1 2026": 99.03,
+   "Mar 2026": 99.1
+  },
+  "note": "Q1 2026 average monthly survival was the best first quarter since reporting began in 2018."
+ },
+ "early_harvest": {
+  "ref_kg": 5.9,
+  "small_kg": 4.0,
+  "note": "A farmer that empties a sick site early sells small fish instead of letting them grow. They do not count as dead fish, but the growth they would have made is lost all the same. Lost growth = tonnes harvested × (normal weight ÷ actual weight − 1), with a normal Bakkafrost Scotland harvest weight of 5.9 kg (its usual weight in months without incidents). Only Bakkafrost publishes weights month by month; Mowi and Scottish Sea Farms say in words when they harvest early."
+ },
+ "events": [
+  {
+   "date": "2025-09-30",
+   "co": "Bakkafrost Scotland",
+   "kind": "disease",
+   "text": "Pasteurella outbreak at Portree (Skye): 59 mDKK mortality cost in Q3 2025.",
+   "url": "https://news.cision.com/bakkafrost/r/q3-2025-trading-update,c4244708"
+  },
+  {
+   "date": "2025-10-31",
+   "co": "Bakkafrost Scotland",
+   "kind": "early harvest",
+   "text": "Portree emptied early: October harvest 1,900 t at 2.8 kg (900 t of 2.3 kg fish); without Portree the Q4 average would have been 5.9 kg instead of 4.1 kg.",
+   "url": "https://www.fishfarmingexpert.com/bakkafrost-pasteurella-skyensis-regin-jacobsen/bakkafrosts-unwelcome-weight-loss/2070465"
+  },
+  {
+   "date": "2026-04-30",
+   "co": "Mowi Scotland",
+   "kind": "early harvest",
+   "text": "Record first half: Mowi harvests ahead of plan to cut biomass before the summer risk — volume pulled forward from Q3 (Q3 −33 %).",
+   "url": "https://www.salmonbusiness.com/mowi-scotland-early-harvesting-weighs-on-q3-earnings-as-nine-month-profit-rises/"
+  },
+  {
+   "date": "2026-06-30",
+   "co": "Bakkafrost Scotland",
+   "kind": "warning",
+   "text": "Q2 harvest 3,200 t (7,000 t a year earlier), weight sliding from 5.9 to 4.4 kg; 32 mDKK mortality cost.",
+   "url": "https://news.cision.com/bakkafrost/r/q2-2026-trading-update,c4370593"
+  },
+  {
+   "date": "2026-08-19",
+   "co": "Scottish Sea Farms",
+   "kind": "warning",
+   "text": "Q2 harvest 8,144 t, −30 % on a year earlier; 2026 guidance still 43,000 t at that point.",
+   "url": "https://www.salmonbusiness.com/scottish-sea-farms-lower-volumes-fail-to-derail-q2-earnings-recovery/"
+  },
+  {
+   "date": "2026-09-30",
+   "co": "Scottish Sea Farms",
+   "kind": "disease",
+   "text": "Gill problems: Fada (39 % cycle mortality), Fiunary (32 %) and Tanera (>30 %) fallowed in August–September.",
+   "url": "https://www.fishfarmingexpert.com/fish-mortality-gill-health-harvest-guidance/scottish-sea-farms-cuts-2026-harvest-guidance-by-3000-gwt/2205124"
+  },
+  {
+   "date": "2026-09-30",
+   "co": "Bakkafrost Scotland",
+   "kind": "early harvest",
+   "text": "Two sites stocked with bought-in smolts harvested out early: Q3 4,500 t at 3.0 kg; 33.5 mDKK mortality cost tied to these sites.",
+   "url": "https://mfn.se/cis/a/bakkafrost/bakkafrost-q3-2026-trading-update-1f5efddf.iframe"
+  },
+  {
+   "date": "2026-10-31",
+   "co": "Scottish Sea Farms",
+   "kind": "early harvest",
+   "text": "Sites with biological problems harvested out in October: part of the Q4 2026 volume is fish taken early, so less to harvest in 2027.",
+   "url": "https://www.fishfarmingexpert.com/fish-mortality-gill-health-harvest-guidance/scottish-sea-farms-cuts-2026-harvest-guidance-by-3000-gwt/2205124"
+  },
+  {
+   "date": "2026-11-02",
+   "co": "Bakkafrost Scotland",
+   "kind": "plan",
+   "text": "Stops buying outside smolts: 11.5 million smolts in 2027 (fewer than planned, bigger); 2027 harvest plan 28,000 t.",
+   "url": "https://mfn.se/ob/a/bakkafrost/bakka-strong-faroese-performance-progress-in-scotland-and-tight-market-ahead-41d40cf4.iframe"
+  },
+  {
+   "date": "2026-11-03",
+   "co": "Scottish Sea Farms",
+   "kind": "guidance cut",
+   "text": "2026 guidance cut from 43,000 to 40,000 t after mortality; 2027 planned at 45,000 t.",
+   "url": "https://www.salmonbusiness.com/scottish-sea-farms-mortality-problems-force-3000-tonne-harvest-forecast-cut/"
+  },
+  {
+   "date": "2026-11-04",
+   "co": "Mowi Scotland",
+   "kind": "plan",
+   "text": "2026 kept at 74,000 t, 2027 76,000 t; biomass at sea end of September +9 %; incident mortality EUR 4.2 m in Q3.",
+   "url": "https://www.globenewswire.com/news-release/2026/10/19/3382969/0/en/mowi-asa-ose-mowi-q3-2026-trading-update.html"
+  }
+ ],
+ "adjustments": {
+  "_note": "Tonnes to add (+) or remove (−) from a farmer's published plan when news shows the plan is out of date and the farmer has not updated it yet. Empty = the latest plans already include the news.",
+  "items": []
+ }
 }
