@@ -404,6 +404,101 @@
    "Worst areas: PA4 20.1 %, PA1–2 18.2 %, PA5 17.5 %; PA9 jumped 7 points (ISA outbreaks and a spring algal bloom). Best: PA12–13 9.4 %.",
    "Smolts put to sea fall for a third year: 405 M in 2025, against 462 M in 2022.",
    "Policy: target of about 5 % mortality; a quota on lice-larvae emissions and a mortality levy are being studied."
+  ],
+  "card": {
+   "kind": "better",
+   "s": "first half 5.8 % against 7.3 % (−21 %); September back above last year",
+   "threat": "injuries from delousing, gill disease"
+  },
+  "threats": "HHMMMMM",
+  "why": {
+   "causes": "Injuries from handling and delousing are now the first recorded cause (33.5 % of registered deaths). Gill disease is the No. 1 problem for fish health staff; AGD was found at 99 sites (40 in 2024). Heart diseases HSMI (167 sites) and CMS (114) are up, ISA at 18 sites, IPN three times 2024.",
+   "worse": "Warm autumns in the south bring more lice, so more treatments: a record 3,918 treatment-weeks in 2025. Toxic algae in the south in spring 2026. ISA in Vesterålen even at vaccinated sites. Fewer cleaner fish (18.9 M against 48 M in 2021) means more mechanical and thermal delousing.",
+   "supply": "Better survival carried part of the 2025–26 volumes. But smolts put to sea fell for a third year (405 M) and there are 6 % fewer fish at sea: once mortality stops falling, Norwegian supply flattens. To watch: autumn sea temperatures, spring algae in the south, ISA in the north."
+  },
+  "supply_line": "Survival kept volumes up; fewer smolts and 6 % fewer fish at sea cap the upside.",
+  "events": [
+   {
+    "d": "Jan–Mar 2026",
+    "k": "bad",
+    "t": "Toxic algae in the south (PO1–2): first-half mortality there rose from 6.1 % to 15.8 %.",
+    "u": "https://www.salmonbusiness.com/norway-salmon-mortality-falls-21-in-first-half/"
+   },
+   {
+    "d": "8 Apr 2026",
+    "k": "good",
+    "t": "End of the southern algal bloom declared.",
+    "u": "https://www.undercurrentnews.com/2026/04/08/norway-declares-end-to-southern-salmon-farm-algal-bloom/"
+   },
+   {
+    "d": "Mar 2026",
+    "k": "info",
+    "t": "Fish Health Report 2025: mortality 14.2 %, lowest in five years; injuries from delousing now the first cause.",
+    "u": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fish-health-report-2025"
+   },
+   {
+    "d": "13 Aug 2026",
+    "k": "good",
+    "t": "Half-year mortality 5.8 % against 7.3 %; the north improves sharply (Vestfjorden–Vesterålen 12.3 % → 4.3 %).",
+    "u": "https://www.salmonbusiness.com/norway-salmon-mortality-falls-21-in-first-half/"
+   },
+   {
+    "d": "Sep 2026",
+    "k": "warn",
+    "t": "Monthly mortality back above last year: warm autumn, lice season (Fiskeridirektoratet register).",
+    "u": ""
+   }
+  ],
+  "kpis": [
+   {
+    "l": "Mortality, first half",
+    "v": "5.8 %",
+    "d": "7.3 % in H1 2025",
+    "k": "good"
+   },
+   {
+    "l": "Lice treatment-weeks, Jan–Oct",
+    "v": "2,613",
+    "d": "3,263 a year earlier (−20 %)",
+    "k": "good"
+   }
+  ],
+  "sources": [
+   {
+    "d": "Mar 2026",
+    "ty": "rep",
+    "n": "Veterinary Institute — Fish Health Report 2025 (PDF, 247 pages)",
+    "u": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fish-health-report-2025",
+    "w": "yearly mortality, causes, diseases by site, lice treatments, production areas"
+   },
+   {
+    "d": "monthly",
+    "ty": "data",
+    "n": "Fiskeridirektoratet — biomass register",
+    "u": "https://www.fiskeridir.no/Akvakultur/Tall-og-analyse/Biomassestatistikk",
+    "w": "dead fish and fish at sea by area and month (2026 so far)"
+   },
+   {
+    "d": "weekly",
+    "ty": "data",
+    "n": "BarentsWatch — fish health (ISA, PD, lice treatments)",
+    "u": "https://www.barentswatch.no/fiskehelse/",
+    "w": "sites with ISA and PD, treatment-weeks"
+   },
+   {
+    "d": "13 Aug 2026",
+    "ty": "press",
+    "n": "SalmonBusiness — Norway salmon mortality falls 21 % in first half",
+    "u": "https://www.salmonbusiness.com/norway-salmon-mortality-falls-21-in-first-half/",
+    "w": "half-year mortality by region"
+   },
+   {
+    "d": "8 Apr 2026",
+    "ty": "press",
+    "n": "Undercurrent — Norway declares end to southern algal bloom",
+    "u": "https://www.undercurrentnews.com/2026/04/08/norway-declares-end-to-southern-salmon-farm-algal-bloom/",
+    "w": "dates of the spring algae event"
+   }
   ]
  },
  "CL": {
@@ -489,6 +584,89 @@
    "Sea lice (Caligus): loads stable in Los Lagos and Aysén; Aysén peaked at 3.6 egg-bearing females per fish (week 42); 211 high-surveillance farms went above 3.0 during 2025, mostly fish near harvest size. Magallanes much lower.",
    "ISA: no outbreak of the virulent variant for the second year running (last in 2023).",
    "Algal blooms (FAN) are the big tail risk: 2016 (about 39,000 t, Los Lagos) and 2021 (7,100 t, Comau fjord and Aysén) — with El Niño, Chile declared a preventive algal-bloom emergency in 15 regions in 2026."
+  ],
+  "card": {
+   "kind": "worse",
+   "s": "ISA back in two Aysén farms; sea-lice listings at a high; El Niño",
+   "threat": "SRS, sea lice, algal blooms"
+  },
+  "threats": "MLHMHHM",
+  "why": {
+   "causes": "SRS (Piscirickettsia salmonis) causes 52.8 % of the infectious deaths of Atlantic salmon, then tenacibaculosis (31.5 %). Sea lice (Caligus) force treatments and early harvests. Coho dies mostly of HSMI and jaundice syndrome.",
+   "worse": "Algal blooms are the tail risk — about 39,000 t lost in 2016, 7,100 t in 2021 — and El Niño raises it: Chile declared a preventive algal-bloom emergency in 15 regions in 2026. The virulent ISA came back in Aysén in September–October 2026, the first cases since 2023.",
+   "supply": "Chile harvested early in 2025–26 and has less fish in the water. ISA, sea lice and El Niño put the risk for 2027 on the downside; an algal bloom like 2016 would remove several percent of world supply in a few weeks."
+  },
+  "supply_line": "Less fish in the water, ISA back, El Niño: the risk is on the downside.",
+  "events": [
+   {
+    "d": "Jul–Sep 2026",
+    "k": "bad",
+    "t": "65 farms listed for sea lice above the threshold in the third quarter, against 43 in an average quarter (Sernapesca).",
+    "u": "https://www.sernapesca.cl/informacion-utilidad/listados-y-registros/"
+   },
+   {
+    "d": "17 Sep 2026",
+    "k": "bad",
+    "t": "ISA (HPR5a) at Izaza, Salmones Camanchaca, ACS 20 in Aysén: zoning, harvest of the fish finished on 14 October.",
+    "u": "https://www.diarioacuicola.cl/noticia/actualidad/2026/10/finaliza-cosecha-de-centro-salmonero-izaza-tras-deteccion-del-virus-isa-en-aysen"
+   },
+   {
+    "d": "Oct 2026",
+    "k": "bad",
+    "t": "ISA (HPR3a) at Luchín, Cermaq Chile, ACS 30A — no link with Izaza according to Sernapesca; positive cages harvested by 23 October.",
+    "u": "https://infosalmon.cl/virus-isa-aysen-cermaq-centro-luchin-sernapesca/"
+   },
+   {
+    "d": "Mar 2026",
+    "k": "info",
+    "t": "Sernapesca health report 2025: closed-cycle mortality of Atlantic salmon 10.1 % (11.0 % in 2024).",
+    "u": "https://www.sernapesca.cl/app/uploads/2026/03/Informe-Situacion-Sanitaria-Salmonicultura-Ano-2025.pdf"
+   }
+  ],
+  "kpis": [
+   {
+    "l": "ISA outbreaks in 2026",
+    "v": "2 farms",
+    "d": "none in 2024–2025",
+    "k": "bad"
+   }
+  ],
+  "sources": [
+   {
+    "d": "Mar 2026",
+    "ty": "rep",
+    "n": "Sernapesca — Informe Sanitario de Salmonicultura 2025 (PDF)",
+    "u": "https://www.sernapesca.cl/app/uploads/2026/03/Informe-Situacion-Sanitaria-Salmonicultura-Ano-2025.pdf",
+    "w": "mortality by species, cause, region and company; SRS, ISA, sea lice"
+   },
+   {
+    "d": "weekly",
+    "ty": "data",
+    "n": "Sernapesca — list of high-dissemination farms (sea lice)",
+    "u": "https://www.sernapesca.cl/informacion-utilidad/listados-y-registros/",
+    "w": "farms above 3 egg-bearing lice per fish"
+   },
+   {
+    "d": "monthly",
+    "ty": "data",
+    "n": "Subpesca — monthly sector report",
+    "u": "https://www.subpesca.cl/portal/615/w3-channel.html",
+    "w": "harvest by species and region"
+   },
+   {
+    "d": "1 Oct 2026",
+    "ty": "press",
+    "n": "Infosalmon — ISA at Luchín (Cermaq), separate from Izaza",
+    "u": "https://infosalmon.cl/virus-isa-aysen-cermaq-centro-luchin-sernapesca/",
+    "w": "ISA cases of 2026, variants, zones"
+   },
+   {
+    "d": "19 Oct 2026",
+    "ty": "press",
+    "n": "Diario Acuícola — harvest of Izaza finished after ISA",
+    "u": "https://www.diarioacuicola.cl/noticia/actualidad/2026/10/finaliza-cosecha-de-centro-salmonero-izaza-tras-deteccion-del-virus-isa-en-aysen",
+    "w": "timeline of the Izaza case"
+   }
   ]
  },
  "IS": {
@@ -531,6 +709,55 @@
    "ISA: no virulent case since 2022 (30 positive samples for the harmless HPR0 variant out of 11,957).",
    "Smolts put to sea jumped to 19.5 M in 2025 (13.0 M in 2024): the base of Iceland's growth in 2026–27.",
    "2026: over one million salmon died in September alone, mostly jellyfish in Reyðarfjörður (Kaldvík)."
+  ],
+  "card": {
+   "kind": "mixed",
+   "s": "January–September better than 2025, but jellyfish killed over 1 M fish in September",
+   "threat": "cold winters, jellyfish, BKD"
+  },
+  "threats": "MMHMMHH",
+  "why": {
+   "causes": "Winter: cold sea and storms rub fish against the nets, then winter ulcers (Moritella viscosa, Tenacibaculum) and the gill parasite Parvicapsula. Summer: algae and jellyfish in the East fjords. Westfjords: heart and muscle inflammation (HSMI), sea lice and kidney disease (BKD).",
+   "worse": "Smolts put to sea too late, into cold water (MAST referred one case to the police); BKD spreading between sea areas with boats and gear (three areas infected at the end of 2025); one treatment-vessel failure killed most of a pen in August 2025.",
+   "supply": "Growth is real — smolts put to sea rose from 13.0 M to 19.5 M in 2025 and harvest is up by almost half in 2026 — but losses swing month to month: a single jellyfish or cold spell can remove a tenth of a fjord's stock."
+  },
+  "supply_line": "Smolts up to 19.5 M: growth is real, losses are volatile month to month.",
+  "events": [
+   {
+    "d": "Jan–Sep 2026",
+    "k": "good",
+    "t": "Dead fish at 13.6 % of the average biomass, against 17.9 % a year earlier (MAST).",
+    "u": "https://www.mast.is/is/maelabord-fiskeldis"
+   },
+   {
+    "d": "Sep 2026",
+    "k": "bad",
+    "t": "Over one million salmon died in the sea cages, mostly jellyfish in Reyðarfjörður (Kaldvík) — the third-highest month since 2020.",
+    "u": "https://www.mast.is/is/maelabord-fiskeldis"
+   },
+   {
+    "d": "2026",
+    "k": "info",
+    "t": "MAST annual report 2025: 4.7 M salmon died at sea and about 650,000 were culled; BKD in three Westfjords areas at year end.",
+    "u": "https://www.mast.is/static/files/Fiskeldi/arsskyrslur/arsskyrsla-dyralaekna-fiskeldis-2025.pdf"
+   }
+  ],
+  "kpis": [],
+  "sources": [
+   {
+    "d": "2026",
+    "ty": "rep",
+    "n": "MAST — annual report of the fish-disease veterinarians 2025 (PDF, Icelandic)",
+    "u": "https://www.mast.is/static/files/Fiskeldi/arsskyrslur/arsskyrsla-dyralaekna-fiskeldis-2025.pdf",
+    "w": "causes of the 2025 losses by fjord, BKD, ISA screening, smolts"
+   },
+   {
+    "d": "monthly",
+    "ty": "data",
+    "n": "MAST — fish farming dashboard",
+    "u": "https://www.mast.is/is/maelabord-fiskeldis",
+    "w": "biomass, dead fish, harvest by site and month"
+   }
   ]
  },
  "FO": {
@@ -543,6 +770,36 @@
    "Sea lice under control with low counts (0.27 adult females per fish in 2025) and long fallow periods (13–20 weeks).",
    "ISA flares up now and then and is handled by culling: Bakkafrost culled about 180,000 salmon after an ISA detection at a Faroese site in May 2024.",
    "Bakkafrost has reported pasteurella bacteria (pasteurellosis) in the Faroes."
+  ],
+  "card": {
+   "kind": "better",
+   "s": "low losses; ISA handled by culling",
+   "threat": "occasional ISA"
+  },
+  "threats": "LLMMLLL",
+  "why": {
+   "causes": "Low losses: Bakkafrost Faroes 4.3 % in 2025. ISA flares up now and then and is handled by culling (about 180,000 salmon in May 2024); pasteurella bacteria have been reported.",
+   "worse": "Few: sea lice under control (0.27 adult females per fish in 2025) and long fallow periods between cycles.",
+   "supply": "Health is not the constraint in the Faroes: volumes follow licences and Bakkafrost's plans."
+  },
+  "supply_line": "Health is not the constraint; volumes follow licences.",
+  "events": [],
+  "kpis": [],
+  "sources": [
+   {
+    "d": "yearly",
+    "ty": "co",
+    "n": "Bakkafrost — sustainability data",
+    "u": "https://www.bakkafrost.com/en/sustainability/data",
+    "w": "mortality, lice, fallow by year"
+   },
+   {
+    "d": "May 2024",
+    "ty": "press",
+    "n": "SeafoodSource — Bakkafrost culls 180,000 salmon after ISA",
+    "u": "https://www.seafoodsource.com/news/aquaculture/bakkafrost-set-to-cull-180-000-salmon-following-isa-detection-at-faroese-farm",
+    "w": "ISA handling"
+   }
   ]
  },
  "GB": {
@@ -555,6 +812,82 @@
    "Gills are the first cause in the farms' reports to the Fish Health Inspectorate (complex gill disease, AGD, plankton and jellyfish), then bacterial disease.",
    "Warm autumns make it worse: amoebic gill disease losses in Shetland pushed Scottish Sea Farms into the red.",
    "Early harvests of small fish to limit losses (Bakkafrost Scotland) act like mortality on supply."
+  ],
+  "card": {
+   "kind": "mixed",
+   "s": "fewer reports, but Q3 incidents at Scottish Sea Farms and early harvests",
+   "threat": "gill disease (AGD, plankton)"
+  },
+  "threats": "MHHLMMH",
+  "why": {
+   "causes": "Gills come first in the farms' reports to the Fish Health Inspectorate — complex gill disease, AGD, plankton and jellyfish — then bacterial disease. About 28,000 t of dead fish in 2025, 22.5 % of the average biomass.",
+   "worse": "Warm autumns on the west coast and in the Northern Isles; exposed sites; treatments of weak fish. Incidents can wipe out a third of a farm in a cycle (Fada 38.9 %, Fiunary 32.4 % in 2026).",
+   "supply": "Biology, not licences, sets Scottish supply. The sign to watch is early harvesting of small fish: it inflates supply for a few weeks, then leaves a hole — Scottish Sea Farms cut its 2026 volume from 43,000 to 40,000 t."
+  },
+  "supply_line": "More fish in the pens, but gill incidents and early harvests keep cutting forecasts.",
+  "events": [
+   {
+    "d": "3 Mar 2026",
+    "k": "info",
+    "t": "Campaigners call on Scottish farms to scale back after record mortalities.",
+    "u": "https://www.seafoodnews.com/Story/1091504/Groups-Call-on-Scottish-Salmon-Farms-to-Scale-Back-after-Record-Mortalities"
+   },
+   {
+    "d": "Aug–Sep 2026",
+    "k": "bad",
+    "t": "Scottish Sea Farms: gill incidents at Fada (38.9 % over the cycle), Fiunary (32.4 %) and Tanera (over 30 %); sites emptied early.",
+    "u": "https://www.fishfarmingexpert.com/fish-mortality-gill-health-harvest-guidance/scottish-sea-farms-cuts-2026-harvest-guidance-by-3000-gwt/2205124"
+   },
+   {
+    "d": "3 Nov 2026",
+    "k": "bad",
+    "t": "Scottish Sea Farms cuts its 2026 harvest guidance by 3,000 t to 40,000 t.",
+    "u": "https://www.fishfarmingexpert.com/fish-mortality-gill-health-harvest-guidance/scottish-sea-farms-cuts-2026-harvest-guidance-by-3000-gwt/2205124"
+   },
+   {
+    "d": "Q3 2026",
+    "k": "bad",
+    "t": "Mowi Scotland harvested a third less than a year earlier.",
+    "u": "https://www.fishfarmingexpert.com/atlantic-salmon-harvest-volumes-mowi-scotland/mowi-scotland-made-164m-in-q3/2205881"
+   }
+  ],
+  "kpis": [
+   {
+    "l": "Scottish Sea Farms 2026 guidance",
+    "v": "40,000 t",
+    "d": "43,000 t before (−7 %)",
+    "k": "bad"
+   }
+  ],
+  "sources": [
+   {
+    "d": "monthly",
+    "ty": "data",
+    "n": "Scotland's Aquaculture — SEPA farm returns (biomass, deaths)",
+    "u": "https://aquaculture.scotland.gov.uk/Data",
+    "w": "dead tonnes and biomass by farm and month"
+   },
+   {
+    "d": "monthly",
+    "ty": "rep",
+    "n": "Scottish Government — Fish Health Inspectorate mortality information",
+    "u": "https://www.gov.scot/publications/fish-health-inspectorate-mortality-information/",
+    "w": "farms' mortality reports with the cause given"
+   },
+   {
+    "d": "3 Nov 2026",
+    "ty": "press",
+    "n": "Fish Farming Expert — Scottish Sea Farms cuts 2026 guidance by 3,000 t",
+    "u": "https://www.fishfarmingexpert.com/fish-mortality-gill-health-harvest-guidance/scottish-sea-farms-cuts-2026-harvest-guidance-by-3000-gwt/2205124",
+    "w": "2026 incidents by site"
+   },
+   {
+    "d": "Nov 2026",
+    "ty": "press",
+    "n": "Fish Farming Expert — Mowi Scotland Q3",
+    "u": "https://www.fishfarmingexpert.com/atlantic-salmon-harvest-volumes-mowi-scotland/mowi-scotland-made-164m-in-q3/2205881",
+    "w": "Q3 harvest and mortality"
+   }
   ]
  },
  "CA": {
@@ -608,6 +941,89 @@
     "Newfoundland — aquaculture incident reporting (public report of losses above 10 %)",
     "https://www.gov.nl.ca/ffa/files/21055-Aquaculture-Incident-Reporting-March-25.pdf"
    ]
+  ],
+  "card": {
+   "kind": "worse",
+   "s": "BC first half 13.6 % against 7.9 %; ISA in New Brunswick at its highest since 2021",
+   "threat": "algae and low oxygen (BC), ISA (Atlantic)"
+  },
+  "threats": "LLMMLHH",
+  "why": {
+   "causes": "British Columbia: \"environmental\" causes — algal blooms and low oxygen — were 42 % of the deaths in 2025 (DFO). Atlantic Canada: ISA keeps coming back (New Brunswick), and warm, low-oxygen summers kill fish by the hundreds of thousands in Newfoundland.",
+   "worse": "Warming coastal waters; sea lice and their treatments in Newfoundland; storms that stop harvesting. Atlantic Canada has no published mortality rate — only ISA detections, treatments and Newfoundland's reports of losses above 10 % of a site.",
+   "supply": "BC open-net farming ends in 2029 anyway; losses speed up the decline. In the Atlantic, Mowi expected 12,000 t instead of 17,000 t in 2026 because of die-offs, and is selling the business to Cooke."
+  },
+  "supply_line": "BC winds down by 2029; ISA and summer die-offs weigh on the Atlantic.",
+  "events": [
+   {
+    "d": "Feb–Aug 2026",
+    "k": "bad",
+    "t": "14 ISA detections in New Brunswick (CFIA), after 10 in the whole of 2025.",
+    "u": "https://inspection.canada.ca/en/animal-health/aquatic-animals/diseases/reportable-diseases/isa/locations-infected"
+   },
+   {
+    "d": "30 Jun 2026",
+    "k": "info",
+    "t": "Cooke agrees to buy Mowi Canada East (NB, PEI, NL) for $225 M; Mowi expected 12,000 t instead of 17,000 t this year.",
+    "u": "https://www.bnnbloomberg.ca/business/company-news/2026/06/30/nb-based-cooke-acquires-salmon-farming-operations-across-atlantic-canada/"
+   },
+   {
+    "d": "Jan–Jun 2026",
+    "k": "bad",
+    "t": "British Columbia: mortality 13.6 % in the first half, against 7.9 % a year earlier (DFO).",
+    "u": "https://open.canada.ca/data/en/dataset/0a8c5505-ecb3-4d8b-8120-462bd7def6bb"
+   },
+   {
+    "d": "Dec 2025",
+    "k": "bad",
+    "t": "Newfoundland: Mowi Canada East calls 2025 the worst year in 40 years — about 400,000 salmon dead in August, sea-lice losses in December.",
+    "u": "https://www.salmonbusiness.com/mowi-reports-december-salmon-deaths-as-canada-head-calls-2025-dreadful/"
+   }
+  ],
+  "kpis": [],
+  "sources": [
+   {
+    "d": "monthly",
+    "ty": "data",
+    "n": "DFO — carcass classification, British Columbia",
+    "u": "https://open.canada.ca/data/en/dataset/0a8c5505-ecb3-4d8b-8120-462bd7def6bb",
+    "w": "monthly mortality and causes by farm"
+   },
+   {
+    "d": "ongoing",
+    "ty": "rep",
+    "n": "CFIA — locations infected with ISA",
+    "u": "https://inspection.canada.ca/en/animal-health/aquatic-animals/diseases/reportable-diseases/isa/locations-infected",
+    "w": "ISA detections by date and province"
+   },
+   {
+    "d": "ongoing",
+    "ty": "rep",
+    "n": "New Brunswick — aquaculture registry (reportable conditions)",
+    "u": "https://dnr-mrn.gnb.ca/AquacultureRegistry/",
+    "w": "notices by bay management area (none posted since Oct 2025)"
+   },
+   {
+    "d": "2025",
+    "ty": "rep",
+    "n": "Newfoundland — aquaculture incident reporting rules",
+    "u": "https://www.gov.nl.ca/ffa/files/21055-Aquaculture-Incident-Reporting-March-25.pdf",
+    "w": "public report within 24 h of any loss above 10 %"
+   },
+   {
+    "d": "4 Sep 2025",
+    "ty": "press",
+    "n": "SalmonBusiness — Mowi mass mortality at three Newfoundland sites",
+    "u": "https://www.salmonbusiness.com/mowi-reports-mass-mortality-at-three-newfoundland-sites-1-7-million-fish-affected/",
+    "w": "August 2025 die-off"
+   },
+   {
+    "d": "30 Jun 2026",
+    "ty": "press",
+    "n": "BNN Bloomberg — Cooke acquires Mowi Canada East",
+    "u": "https://www.bnnbloomberg.ca/business/company-news/2026/06/30/nb-based-cooke-acquires-salmon-farming-operations-across-atlantic-canada/",
+    "w": "sale, 2026 volume"
+   }
   ]
  },
  "AU": {
@@ -621,6 +1037,82 @@
    "Made worse by marine heatwaves (east Tasmanian waters warm almost four times faster than the world average), algae and jellyfish blooms; vaccine protection is partial; density was ruled out as the cause.",
    "2026 is not back to normal: 14,900 t from January to September, and March–June 34 % above 2025; the emergency permit for the antibiotic florfenicol was suspended in February 2026.",
    "Risk season is the austral summer (December–April): high losses in early 2027 are the base case."
+  ],
+  "card": {
+   "kind": "mixed",
+   "s": "14,900 t January–September (−16 %) but March–June 34 % above 2025",
+   "threat": "Piscirickettsia salmonis, heatwaves"
+  },
+  "threats": "LHHLLMH",
+  "why": {
+   "causes": "Piscirickettsia salmonis (SRS) — the bacterium behind most infectious deaths in Chile — was the main trigger of the 2025 event in the D'Entrecasteaux Channel (Huon, Tassal). Present on the east coast since 2021 and in the south-east since 2023, now endemic and not eradicable.",
+   "worse": "Marine heatwaves: east Tasmanian waters warm almost four times faster than the world average, and outbreaks follow the summer temperature peak. Algae and jellyfish blooms, partial vaccine protection, and the emergency permit for the antibiotic florfenicol suspended in February 2026. Density was ruled out as the cause.",
+   "supply": "About 20,100 t died in 2025, some 30 % of the year's production. Heavy losses each austral summer (December–April) are now the base case, not the exception."
+  },
+  "supply_line": "SRS endemic, antibiotic permit suspended: heavy losses each austral summer.",
+  "events": [
+   {
+    "d": "17 Apr 2026",
+    "k": "bad",
+    "t": "EPA: 9,200 t of dead salmon in January–March 2026, about a third less than the 2025 event.",
+    "u": "https://pulsetasmania.com.au/news/tasmanian-salmon-deaths-top-9000-tonnes-in-early-2026-epa-figures-show/"
+   },
+   {
+    "d": "Feb 2026",
+    "k": "bad",
+    "t": "The emergency permit for florfenicol is suspended by the veterinary medicines authority.",
+    "u": "https://pulsetasmania.com.au/news/tasmanian-salmon-deaths-top-9000-tonnes-in-early-2026-epa-figures-show/"
+   },
+   {
+    "d": "17 Jul 2026",
+    "k": "bad",
+    "t": "March–June 2026: 8,300 t dead, 34 % more than in 2025.",
+    "u": "https://petergeorgeforfranklin.com/?p=224301"
+   },
+   {
+    "d": "Oct 2025",
+    "k": "info",
+    "t": "Official debrief of the 2025 event: P. salmonis the main trigger, response plan missing.",
+    "u": "https://nre.tas.gov.au/Documents/Reflections%20and%20Learnings%20-%20Salmon%20Mortality%20Event%202025.pdf"
+   }
+  ],
+  "kpis": [],
+  "sources": [
+   {
+    "d": "quarterly",
+    "ty": "data",
+    "n": "EPA Tasmania — salmon waste management (monthly mortality)",
+    "u": "https://epa.tas.gov.au/business-industry/regulation/salmon-aquaculture/salmon-waste-management",
+    "w": "tonnes of dead salmon by month"
+   },
+   {
+    "d": "Oct 2025",
+    "ty": "rep",
+    "n": "NRE Tasmania / EPA — Reflections and Learnings, Salmon Mortality Event 2025 (PDF)",
+    "u": "https://nre.tas.gov.au/Documents/Reflections%20and%20Learnings%20-%20Salmon%20Mortality%20Event%202025.pdf",
+    "w": "causes, response, recommendations"
+   },
+   {
+    "d": "2025",
+    "ty": "rep",
+    "n": "EPA Tasmania — data shows salmon mortality event unprecedented",
+    "u": "https://epa.tas.gov.au/news/data-shows-salmon-mortality-event-unprecedented",
+    "w": "2025 event"
+   },
+   {
+    "d": "17 Apr 2026",
+    "ty": "press",
+    "n": "Pulse Tasmania — deaths top 9,000 t in early 2026",
+    "u": "https://pulsetasmania.com.au/news/tasmanian-salmon-deaths-top-9000-tonnes-in-early-2026-epa-figures-show/",
+    "w": "first quarter 2026"
+   },
+   {
+    "d": "17 Jul 2026",
+    "ty": "press",
+    "n": "Peter George MP — winter mortalities worse than last year",
+    "u": "https://petergeorgeforfranklin.com/?p=224301",
+    "w": "March–June 2026 against 2025"
+   }
   ]
  },
  "notes": {

@@ -5608,145 +5608,207 @@ function clSecInit() {   // memorise les sections ouvertes ; recale la carte a l
 }
 
 // ---------- Disease overview : mortalite et maladies, bassin par bassin (rapports officiels + nos series) ----------
-let DZ = null, DZ_LOADING = false;
+let DZ = null, DZ_LOADING = false, DZ_B = null, DZ_SF = { b: 'all', t: 'all' };
 function renderDisease() {
   const root = document.getElementById('dzRoot'); if (!root) return;
   if (!DZ) { if (!DZ_LOADING) { DZ_LOADING = true; const g = n => fetch(DATA_URL.replace('data.json', n), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
-      Promise.all(['disease_manual.json', 'scotland.json', 'iceland_mast.json', 'canada_extra.json', 'australia.json', 'faroe.json', 'chili.json', 'events.json', 'canada_atl.json'].map(g))
-        .then(([m, sc, is, ca, au, fo, cl, ev, cat]) => { DZ = { m: m || {}, sc, is, ca, au, fo, cl, ev, cat }; DZ_LOADING = false; if (currentView === 'disease') renderDisease(); }); }
+      Promise.all(['disease_manual.json', 'scotland.json', 'iceland_mast.json', 'canada_extra.json', 'australia.json', 'faroe.json', 'chili.json', 'events.json', 'canada_atl.json', 'own_supply.json', 'chile_caligus.json', 'chile_subpesca.json'].map(g))
+        .then(([m, sc, is, ca, au, fo, cl, ev, cat, sup, cad, sub]) => { DZ = { m: m || {}, sc, is, ca, au, fo, cl, ev, cat, sup, cad, sub }; DZ_LOADING = false; if (currentView === 'disease') renderDisease(); }); }
     root.innerHTML = 'Loading…'; return; }
+  if (!DZ_B) { try { DZ_B = localStorage.getItem('dzBasin') || 'NO'; } catch (_) { DZ_B = 'NO'; } }
   const M = DZ.m, e = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), f0 = v => v === null || v === undefined || !isFinite(v) ? '—' : Math.round(v).toLocaleString('en-US');
-  const f1 = v => v === null || v === undefined || !isFinite(v) ? '—' : (+v).toFixed(1), MON = MONTHS_FR.map(m => m.slice(0, 3));
-  const dl = (a, b, badUp = true) => a === null || b === null || a === undefined || b === undefined ? '' : (d => `<span class="${(d > 0) === badUp ? 'delta-bad' : 'delta-good'}" style="font-size:12px">${d >= 0 ? '+' : '−'}${Math.abs(d).toFixed(1)} pt</span>`)(a - b);
-  // ---- series calculees a partir de nos donnees
-  const yr = {};   // basin -> {year: pct}
-  const N = M.NO || {}; yr.NO = Object.fromEntries((N.years || []).map((y, i) => [y, N.mortality_pct[i]]));
+  const f1 = v => v === null || v === undefined || !isFinite(v) ? '—' : (+v).toFixed(1), MON = MONTHS_FR.map(m => m.slice(0, 3)), YC = ['#5b7a8c', '#90caf9', '#4fc3f7'];
+  const pct = (a, b) => a && b ? (100 * (a / b - 1)) : null, sg = v => v === null ? '' : (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(0) + ' %';
+  const ORDER = [['NO', 'Norway'], ['CL', 'Chile'], ['GB', 'Scotland'], ['IS', 'Iceland'], ['CA', 'Canada'], ['AU', 'Tasmania'], ['FO', 'Faroe Islands']];
+  // ---------------- series annuelles (mesure propre a chaque pays) ----------------
+  const yr = {}, N = M.NO || {};
+  yr.NO = Object.fromEntries((N.years || []).map((y, i) => [y, N.mortality_pct[i]]));
   { const n = (DZ.sc && DZ.sc.national) || {}, o = {}; Object.entries(n).forEach(([k, v]) => { const y = +k.slice(0, 4); const q = o[y] = o[y] || [0, 0, 0]; q[0] += v[1] || 0; q[1] += v[0] || 0; q[2]++; });
     yr.GB = Object.fromEntries(Object.entries(o).filter(([y, q]) => q[2] === 12 && +y >= 2016).map(([y, q]) => [+y, 100 * q[0] / (q[1] / q[2])])); }
   { const o = {}; ((DZ.is && DZ.is.national) || []).forEach(r => { const y = +r.m.slice(0, 4), q = o[y] = o[y] || [0, 0, 0]; q[0] += r.mortality_t || 0; q[1] += r.biomass_t || 0; q[2]++; });
     yr.IS = Object.fromEntries(Object.entries(o).filter(([, q]) => q[2] === 12).map(([y, q]) => [+y, 100 * q[0] / (q[1] / q[2])])); }
-  const caY = {}; { const C = (DZ.ca && DZ.ca.carcass) || {}, o = {}; (C.months || []).forEach(r => { const y = Math.floor(r.m / 100), q = o[y] = o[y] || { s: 1, n: 0, c: {} }; q.s *= 1 - (r.mort || 0) / 100; q.n++; Object.entries(r.cause || {}).forEach(([k, v]) => q.c[k] = (q.c[k] || 0) + (v || 0)); });
-    Object.entries(o).forEach(([y, q]) => { caY[y] = q; }); yr.CA = Object.fromEntries(Object.entries(o).filter(([, q]) => q.n === 12).map(([y, q]) => [+y, 100 * (1 - q.s)])); }
+  const caY = {}; { const C = (DZ.ca && DZ.ca.carcass) || {}; (C.months || []).forEach(r => { const y = Math.floor(r.m / 100), q = caY[y] = caY[y] || { s: 1, n: 0, c: {} }; q.s *= 1 - (r.mort || 0) / 100; q.n++; Object.entries(r.cause || {}).forEach(([k, v]) => q.c[k] = (q.c[k] || 0) + (v || 0)); });
+    yr.CA = Object.fromEntries(Object.entries(caY).filter(([, q]) => q.n === 12).map(([y, q]) => [+y, 100 * (1 - q.s)])); }
   yr.FO = Object.fromEntries(Object.entries(((DZ.fo && DZ.fo.annual) || {}).mortality_pct || {}).map(([y, v]) => [+y, v]));
-  { const C = (((DZ.cl || {}).biologie || {}).sanitaire || {}).cycle_ferme || {}, E = C.espece || {}; yr.CL = Object.fromEntries(Object.entries(E).filter(([, o]) => o.salar).map(([y, o]) => [+y, o.salar[1]])); }
+  const CS = (((DZ.cl || {}).biologie || {}).sanitaire || {}).cycle_ferme || {}; yr.CL = Object.fromEntries(Object.entries(CS.espece || {}).filter(([, o]) => o.salar).map(([y, o]) => [+y, o.salar[1]]));
   const auM = ((DZ.au && DZ.au.mortality) || []).filter(r => r.total), auY = {}; auM.forEach(r => { const y = Math.floor(r.m / 100); auY[y] = (auY[y] || 0) + r.total; });
   const auP = {}; ((DZ.au && DZ.au.production) || []).forEach(r => auP[r.fy_end] = (auP[r.fy_end] || 0) + r.t);
   yr.AU = Object.fromEntries(Object.entries(auY).filter(([y]) => auM.filter(r => Math.floor(r.m / 100) === +y).length === 12 && auP[y]).map(([y, t]) => [+y, 100 * t / auP[y]]));
-  // ---- tableau comparatif
-  const B = [
-    ['NO', 'Norway', 'count', 'Injuries from handling and delousing; gill disease; heart diseases (HSMI, CMS); winter ulcers', 'AGD moving north, record delousing, ISA in Vesterålen, IPN back'],
-    ['CL', 'Chile', 'closed cycles, count', 'SRS (Piscirickettsia salmonis); tenacibaculosis; sea lice (Caligus)', 'Algal blooms with El Niño; sea-lice listings at a high'],
-    ['FO', 'Faroe Islands', 'Bakkafrost, count', 'Low losses; occasional ISA (culled); pasteurellosis', 'ISA detections'],
-    ['IS', 'Iceland', 'dead t ÷ biomass', 'Winter ulcers in cold, stormy winters; algae and jellyfish; HSMI; kidney disease (BKD) and lice in the Westfjords', 'Jellyfish (Sept. 2026), BKD spreading by boats'],
-    ['GB', 'Scotland', 'dead t ÷ biomass', 'Gill disease (AGD, plankton, jellyfish); bacterial disease', 'Warm autumns, early harvests of small fish'],
-    ['CA', 'Canada (BC)', 'average site, compounded', 'BC: environment (algae blooms, low oxygen). Atlantic: ISA, warm low-oxygen summers, sea lice', 'ISA in New Brunswick (14 detections in 2026); BC farms end in 2029'],
-    ['AU', 'Tasmania', 'dead t ÷ production', 'Piscirickettsia salmonis (SRS) with marine heatwaves; algae, jellyfish', 'Austral summer Dec–Apr; antibiotic permit suspended']];
+  const MEAS = { NO: 'fish counted', CL: 'closed cycles', GB: 'tonnes vs biomass', IS: 'tonnes vs biomass', CA: 'BC, average site', AU: 'tonnes vs production', FO: 'Bakkafrost' };
   const last = c => { const ys = Object.keys(yr[c] || {}).map(Number).sort((a, b) => a - b); const y = ys[ys.length - 1]; return y ? { y, v: yr[c][y], p: yr[c][y - 1] } : null; };
-  const go = { NO: 'health', CL: 'chile', FO: 'faroe', IS: 'iceland', GB: 'scotland', CA: 'canada', AU: 'australia' };
-  let h = `<div class="sig-title">Disease overview — what kills farmed salmon, basin by basin</div>` +
-    `<div class="sig-sub">From the official health reports of each country (veterinary institutes, food-safety and environment agencies) and our own series built from their monthly data. ` +
-    `<b>Measures differ</b>: Norway, Chile and the Faroes count fish; Scotland, Iceland and Tasmania weigh them (dead tonnes against biomass or production), which gives more weight to big fish lost late and runs higher. ` +
-    `Compare each country with itself over time rather than the levels across countries.</div>` +
-    (() => { const W = M.world_2025; if (!W) return ''; const R = W.rows.slice().sort((a, b) => b.dead_kt - a.dead_kt), D = R.reduce((t, x) => t + x.dead_kt, 0), LO = R.reduce((t, x) => t + x.lo, 0), HI = R.reduce((t, x) => t + x.hi, 0), P = R.reduce((t, x) => t + x.prod_kt, 0) / 0.888, mx = R[0].dead_kt;
-      return `<div style="margin-top:12px;padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:rgba(255,138,101,.04)">` +
-        `<div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px"><span style="font-size:13px;font-weight:700">World losses in 2025</span>` +
-        `<span style="font-size:26px;font-weight:800">≈ ${f0(D)} kt</span><span style="font-size:13px;color:var(--muted)">of salmon died at sea (range ${f0(LO)}–${f0(HI)} kt) — <b style="color:#ff8a65">${(100 * D / P).toFixed(1)} %</b> of the ${f0(P)} kt harvested (live weight, seven basins, about 95 % of farmed Atlantic salmon)</span></div>` +
-        `<div style="margin-top:8px">${R.map(x => `<div style="display:grid;grid-template-columns:120px minmax(0,1fr) 210px;gap:10px;align-items:center;font-size:12px;margin:3px 0"><span>${e(x.name)}</span>` +
-          `<div style="height:12px;width:${(100 * x.dead_kt / mx).toFixed(1)}%;background:${x.basis === 'measured' ? '#ff8a65' : 'repeating-linear-gradient(45deg,#ff8a65 0 4px,#7a3b2b 4px 8px)'};border-radius:2px" title="${e(x.how)}"></div>` +
-          `<span><b>${f1(x.dead_kt)} kt</b> · ${(100 * x.dead_kt / (x.prod_kt / 0.888)).toFixed(1)} % of its harvest <span style="color:var(--muted)">${x.basis === 'measured' ? '' : '(estimate)'}</span></span></div>`).join('')}</div>` +
-        `<div class="sig-sub" style="margin-top:6px">${e(W.note)} Plain bars are weighed by the country; hatched bars are our estimates (hover for the method). Norway is half of the world's losses by weight but one of the lowest rates; Tasmania, Iceland and Scotland lose the most per tonne produced.</div></div>`; })() +
-    `<div style="overflow-x:auto;margin-top:8px"><table class="sig-table"><thead><tr><th class="name">Basin</th><th>Year</th><th>Mortality</th><th>vs year before</th><th style="text-align:left">Measure</th><th style="text-align:left">Main causes</th><th style="text-align:left">To watch now</th></tr></thead><tbody>` +
-    B.map(([c, n, ms, ca, w]) => { const L = last(c); return `<tr><td class="name"><span class="gs-go" onclick="document.getElementById('dz${c}').open=true;document.getElementById('dz${c}').scrollIntoView({behavior:'smooth'})">${n}</span></td><td>${L ? L.y : '—'}</td><td><b>${L ? f1(L.v) + ' %' : '—'}</b></td><td>${L ? dl(L.v, L.p) : ''}</td>` +
-      `<td style="text-align:left;font-size:12px;color:var(--muted)">${ms}</td><td style="text-align:left;font-size:12px;white-space:normal;min-width:220px">${e(ca)}</td><td style="text-align:left;font-size:12px;white-space:normal;min-width:180px">${e(w)}</td></tr>`; }).join('') + `</tbody></table></div>`;
-  // graphique : trois dernieres annees par bassin
-  const YS = [2023, 2024, 2025], YC = ['#5b7a8c', '#90caf9', '#4fc3f7'];
-  h += `<div class="sig-sub" style="margin-top:12px"><b>Mortality by basin, 2023–2025</b> (each country's own measure, %)</div>` +
-    scSvg(B.map(b => b[1]), YS.map((y, i) => ({ v: B.map(b => (yr[b[0]] || {})[y] ?? null), col: YC[i], bar: true, lab: String(y) })), { lab: k => k, fmt: v => v.toFixed(0), H: 230 });
-  // ---- sections par bassin
-  const sec = (c, title, sum, body) => `<details class="cl-sec" id="dz${c}"><summary><span class="cl-st">${title}</span><span class="cl-ss">${sum}</span></summary>${body}</details>`;
-  const hl = a => `<ul style="margin:8px 0 10px 18px;padding:0;font-size:13px;line-height:1.5">${(a || []).map(x => `<li>${e(x)}</li>`).join('')}</ul>`;
-  const src = o => `<div class="sig-sub" style="margin-top:6px">Source: <a href="${o.url}" target="_blank" rel="noopener" style="color:var(--accent)">${e(o.source)}</a>. Measure: ${e(o.measure)}.</div>`;
+  // ---------------- 2026 so far : series mensuelles (2 ou 3 annees cote a cote) et chiffres cles ----------------
+  const SF = {};   // c -> { lab, unit, keys(months 1..12), years:[], val(y,m), kpis:[] }
+  { const R = (typeof RECORDS !== 'undefined' ? RECORDS : []).filter(r => r.po >= 1 && r.po <= 13), cell = {};
+    R.forEach(r => { const k = r.year * 100 + r.month, q = cell[k] = cell[k] || [0, 0, 0, 0]; q[0] += r.dodfisk_stk || 0; q[1] += r.behfisk_stk || 0; });
+    const ks = Object.keys(cell).map(Number).filter(k => cell[k][1]).sort((a, b) => a - b), lk = ks[ks.length - 1];
+    if (lk) { const Y = Math.floor(lk / 100), lm = lk % 100, dead = y => ks.filter(k => Math.floor(k / 100) === y && k % 100 <= lm).reduce((a, k) => a + cell[k][0], 0);
+      SF.NO = { lab: 'Share of the salmon at sea dying each month, %', years: [Y - 2, Y - 1, Y], val: (y, m) => cell[y * 100 + m] ? 100 * cell[y * 100 + m][0] / cell[y * 100 + m][1] : null, fmt: v => v.toFixed(1),
+        kpis: [{ l: `Dying, Jan–${MON[lm - 1]} ${Y}`, v: (dead(Y) / 1e6).toFixed(1) + ' M fish', d: `${(dead(Y - 1) / 1e6).toFixed(1)} M a year earlier (${sg(pct(dead(Y), dead(Y - 1)))})`, k: dead(Y) <= dead(Y - 1) ? 'good' : 'bad' },
+          { l: `Fish at sea, ${MON[lm - 1]}`, v: (cell[lk][1] / 1e6).toFixed(0) + ' M', d: `${((cell[lk - 100] || [0, 0])[1] / 1e6).toFixed(0)} M a year earlier (${sg(pct(cell[lk][1], (cell[lk - 100] || [0, 0])[1]))})`, k: 'warn' }] }; } }
+  { const I = ((DZ.is && DZ.is.national) || []), c = {}; I.forEach(r => c[+r.m.replace('-', '')] = r);
+    const ks = Object.keys(c).map(Number).sort((a, b) => a - b), lk = ks[ks.length - 1];
+    if (lk) { const Y = Math.floor(lk / 100), lm = lk % 100, S = (y, f) => ks.filter(k => Math.floor(k / 100) === y && k % 100 <= lm).reduce((a, k) => a + (c[k][f] || 0), 0), B = y => S(y, 'biomass_t') / lm;
+      SF.IS = { lab: 'Dead salmon each month, tonnes (MAST)', years: [Y - 2, Y - 1, Y], val: (y, m) => c[y * 100 + m] ? c[y * 100 + m].mortality_t : null, fmt: v => f0(v),
+        kpis: [{ l: `Dead fish, Jan–${MON[lm - 1]} ${Y}`, v: f0(S(Y, 'mortality_t')) + ' t', d: `${f0(S(Y - 1, 'mortality_t'))} t a year earlier`, k: S(Y, 'mortality_t') <= S(Y - 1, 'mortality_t') ? 'good' : 'bad' },
+          { l: 'Share of the average biomass', v: f1(100 * S(Y, 'mortality_t') / B(Y)) + ' %', d: `${f1(100 * S(Y - 1, 'mortality_t') / B(Y - 1))} % a year earlier`, k: S(Y, 'mortality_t') / B(Y) <= S(Y - 1, 'mortality_t') / B(Y - 1) ? 'good' : 'bad' },
+          { l: `Harvest, Jan–${MON[lm - 1]}`, v: f0(S(Y, 'harvest_t')) + ' t', d: `${sg(pct(S(Y, 'harvest_t'), S(Y - 1, 'harvest_t')))} on a year earlier`, k: 'good' },
+          { l: `${MONTHS_FR[lm - 1]} alone`, v: f0(c[lk].mortality_t) + ' t', d: `${c[lk - 100] ? f0(c[lk - 100].mortality_t) : '—'} t a year earlier`, k: c[lk - 100] && c[lk].mortality_t > c[lk - 100].mortality_t ? 'bad' : 'good' }] }; } }
+  { const F = ((DZ.ev || {}).scotland_fhi || {}).monthly || {}, ks = Object.keys(F).sort(), lk = ks[ks.length - 1];
+    if (lk) { const Y = +lk.slice(0, 4), lm = +lk.slice(5), n = y => ks.filter(k => +k.slice(0, 4) === y && +k.slice(5) <= lm).reduce((a, k) => a + F[k].reports, 0);
+      const gill = y => { let g = 0, t = 0; ks.filter(k => +k.slice(0, 4) === y && +k.slice(5) <= lm).forEach(k => Object.entries(F[k].causes || {}).forEach(([c, v]) => { t += v; if (c === 'gill') g += v; })); return t ? 100 * g / t : null; };
+      SF.GB = { lab: 'Mortality reports to the Fish Health Inspectorate each month', years: [Y - 2, Y - 1, Y], val: (y, m) => { const q = F[`${y}-${String(m).padStart(2, '0')}`]; return q ? q.reports : null; }, fmt: v => f0(v),
+        kpis: [{ l: `Reports, Jan–${MON[lm - 1]} ${Y}`, v: f0(n(Y)), d: `${f0(n(Y - 1))} a year earlier (${sg(pct(n(Y), n(Y - 1)))})`, k: n(Y) <= n(Y - 1) ? 'good' : 'bad' },
+          { l: 'Gills among the causes named', v: f1(gill(Y)) + ' %', d: `${f1(gill(Y - 1))} % a year earlier`, k: gill(Y) > gill(Y - 1) ? 'bad' : 'good' }] }; } }
+  { const C = ((DZ.ca && DZ.ca.carcass) || {}).months || [], c = {}; C.forEach(r => c[r.m] = r); const ks = Object.keys(c).map(Number).sort((a, b) => a - b), lk = ks[ks.length - 1];
+    if (lk) { const Y = Math.floor(lk / 100), lm = lk % 100, cum = y => 100 * (1 - ks.filter(k => Math.floor(k / 100) === y && k % 100 <= lm).reduce((a, k) => a * (1 - (c[k].mort || 0) / 100), 1));
+      const I = ((DZ.cat || {}).isa || []).filter(r => /new brunswick/i.test(r.prov)), mo = d => MONTHS_FR.findIndex(m => m.toLowerCase().startsWith(String(d).slice(0, 3).toLowerCase())) + 1;
+      const Iy = y => I.filter(r => r.year === y).length, lim = Math.max(0, ...I.filter(r => r.year === Y + (I.some(r => r.year === Y + 1) ? 1 : 0)).map(r => mo(r.date)));
+      const YI = Math.max(...I.map(r => r.year), 0), Iyy = y => I.filter(r => r.year === y && mo(r.date) <= Math.max(0, ...I.filter(q => q.year === YI).map(q => mo(q.date)))).length;
+      SF.CA = { lab: 'British Columbia: mortality each month, % of fish on site (DFO, average site)', years: [Y - 2, Y - 1, Y], val: (y, m) => c[y * 100 + m] ? c[y * 100 + m].mort : null, fmt: v => v.toFixed(1),
+        kpis: [{ l: `BC mortality, Jan–${MON[lm - 1]} ${Y}`, v: f1(cum(Y)) + ' %', d: `${f1(cum(Y - 1))} % a year earlier`, k: cum(Y) <= cum(Y - 1) ? 'good' : 'bad' },
+          { l: `ISA detections, New Brunswick ${YI}`, v: String(Iy(YI)), d: `${Iyy(YI - 1)} by the same date of ${YI - 1}, ${Iy(YI - 1)} in the whole year`, k: Iy(YI) > Iyy(YI - 1) ? 'bad' : 'good' }] }; } }
+  { const c = {}; auM.forEach(r => c[r.m] = r.total); const ks = Object.keys(c).map(Number).sort((a, b) => a - b), lk = ks[ks.length - 1];
+    if (lk) { const Y = Math.floor(lk / 100), lm = lk % 100, S = (y, a = 1, b = lm) => ks.filter(k => Math.floor(k / 100) === y && k % 100 >= a && k % 100 <= b).reduce((t, k) => t + c[k], 0);
+      SF.AU = { lab: 'Dead salmon each month, tonnes (EPA Tasmania)', years: [Y - 1, Y], val: (y, m) => c[y * 100 + m] ?? null, fmt: v => f0(v),
+        kpis: [{ l: `Dead salmon, Jan–${MON[lm - 1]} ${Y}`, v: f0(S(Y)) + ' t', d: `${f0(S(Y - 1))} t a year earlier (${sg(pct(S(Y), S(Y - 1)))})`, k: S(Y) <= S(Y - 1) ? 'good' : 'bad' },
+          { l: 'March–June', v: f0(S(Y, 3, 6)) + ' t', d: `${f0(S(Y - 1, 3, 6))} t a year earlier (${sg(pct(S(Y, 3, 6), S(Y - 1, 3, 6)))})`, k: S(Y, 3, 6) <= S(Y - 1, 3, 6) ? 'good' : 'bad' },
+          { l: `Production FY ${Y - 1}/${String(Y).slice(2)}`, v: f0(auP[Y]) + ' t', d: `${sg(pct(auP[Y], auP[Y - 1]))} on the year before`, k: 'good' }] }; } }
+  { const E = ((DZ.cad || {}).entries || []), wk = w => { const [y, n] = w.split('-W').map(Number); const d = new Date(Date.UTC(y, 0, 4 + (n - 1) * 7)); return d.getUTCFullYear() * 100 + d.getUTCMonth() + 1; }, c = {};
+    E.forEach(x => { const k = wk(x.week); c[k] = (c[k] || 0) + 1; }); const ks = Object.keys(c).map(Number).sort((a, b) => a - b), lk = ks[ks.length - 1];
+    const R = ((DZ.sub || {}).reports || []).filter(r => r && r.k && !r.unread && r.species && r.species.salar && r.species.salar.cum_kt).sort((a, b) => b.k - a.k)[0];
+    if (lk) { const Y = Math.floor(lk / 100), lm = lk % 100, S = y => ks.filter(k => Math.floor(k / 100) === y && k % 100 <= lm).reduce((t, k) => t + c[k], 0);
+      SF.CL = { lab: 'Farms listed for sea lice above the threshold each month (Sernapesca)', years: [Y - 1, Y], val: (y, m) => c[y * 100 + m] ?? 0, fmt: v => f0(v),
+        kpis: [{ l: `Farms listed for sea lice, Jan–${MON[lm - 1]} ${Y}`, v: f0(S(Y)), d: `${f0(S(Y - 1))} a year earlier`, k: S(Y) > S(Y - 1) ? 'bad' : 'good' }]
+          .concat(R ? [{ l: `Atlantic harvest, Jan–${MON[R.k % 100 - 1]} ${Math.floor(R.k / 100)}`, v: f0(R.species.salar.cum_kt) + ' kt', d: `${sg(R.species.salar.var_pct)} on a year earlier (Subpesca)`, k: 'good' }] : []) }; } }
+  Object.keys(SF).forEach(c => SF[c].kpis = SF[c].kpis.concat((M[c] || {}).kpis || []));
+  // ---------------- briques d'affichage ----------------
+  const KC = { good: '#81c784', bad: '#ff8a65', warn: '#ffd54f', info: '#4fc3f7' };
   const tab = (head, rows) => `<div style="overflow-x:auto"><table class="sig-table"><thead><tr>${head.map((x, i) => `<th${i ? '' : ' class="name"'}>${x}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${r.map((x, i) => `<td${i ? '' : ' class="name" style="text-align:left;white-space:normal"'}>${x}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
-  const hb = (rows, col, unit = '%') => { const mx = Math.max(1, ...rows.map(r => r[1] || 0)); return rows.map(([l, v]) => `<div style="display:flex;align-items:center;gap:8px;font-size:12px;margin:3px 0"><span style="width:250px;color:var(--muted)">${e(l)}</span><div style="height:10px;width:${Math.round(220 * (v || 0) / mx)}px;background:${col};border-radius:2px"></div><b>${f1(v)} ${unit}</b></div>`).join(''); };
-  const yrs = o => Object.keys(o || {}).map(Number).sort((a, b) => a - b);
-  // Norvege
-  if (N.years) { const Y = N.years, D = N.diseases, Cz = N.causes, P = N.pa, Lt = N.lice_treatments, pc = v => v >= 18 ? 'color:#ff8a65;font-weight:bold' : v >= 15 ? 'color:#ffb74d' : '';
-    h += sec('NO', 'Norway', `${N.mortality_pct[N.mortality_pct.length - 1]} % in ${Y[Y.length - 1]}, lowest in five years · injuries from delousing now the first cause`,
-      hl(N.highlights) +
-      scSvg(Y.map(String), [{ v: N.mortality_pct, col: '#4fc3f7', bar: true, lab: 'share of salmon at sea dying in the year, %' }, { v: N.cycle_mortality_pct, col: '#ffd54f', w: 2, lab: 'completed production cycles (median), %' }], { lab: k => k, fmt: v => v.toFixed(0), H: 180 }) +
-      tab(['', ...Y], [['Salmon dead at sea (M)', ...N.dead_fish_m.map(f1)], ['Harvest (kt, round weight)', ...N.harvest_t_round.map(v => f0(v / 1000))], ['Average biomass (kt)', ...N.biomass_avg_t.map(v => f0(v / 1000))],
-        ['Smolts put to sea (M)', ...N.smolts_to_sea_m.map(f1)], ['Rainbow trout mortality (%)', ...N.trout_mortality_pct.map(f1)], ['Cleaner fish put to sea (M)', ...N.cleaner_fish_stocked_m.map(f1)]]) +
-      `<div class="sig-sub" style="margin-top:10px"><b>By production area</b> — share of salmon at sea dying in the year (orange above 15 %, red above 18 %)</div>` +
-      tab(['Area', ...P.cols], P.rows.map(r => [r[0], ...r.slice(1).map(v => `<span style="${pc(v)}">${f1(v)} %</span>`)])) +
-      `<div class="sig-sub" style="margin-top:10px"><b>Causes of death recorded by the farms</b> — ${e(Cz.note)}</div>` +
-      tab(['Cause', ...Cz.years], Cz.rows.map(([l, v]) => [e(l), ...v.map((x, i) => i === v.length - 1 ? `<b>${f1(x)} %</b>` : `${f1(x)} %`)])) +
-      `<div class="sig-sub" style="margin-top:10px"><b>Diseases</b> — ${e(D.note)}</div>` +
-      tab(['Disease', ...D.years], D.rows.map(([l, v]) => [e(l), ...v.map((x, i) => x === null ? '—' : i === v.length - 1 ? `<b>${x}</b>${v[i - 1] !== null && v[i - 1] !== undefined ? ' ' + (x > v[i - 1] ? '<span class="delta-bad">▲</span>' : x < v[i - 1] ? '<span class="delta-good">▼</span>' : '') : ''}` : x)])) +
-      `<div class="sig-sub" style="margin-top:10px"><b>Treatments against sea lice</b> — ${e(Lt.note)}</div>` +
-      scSvg(Lt.years.map(String), [{ v: Lt.non_medicinal, col: '#ffb74d', bar: true, lab: 'non-medicinal (thermal, mechanical, freshwater)' }, { v: Lt.medicinal, col: '#8fa4b0', bar: true, lab: 'medicinal' }], { lab: k => k, fmt: v => f0(v), H: 170 }) +
-      src(N) + `<div class="sig-sub">Month by month and zone by zone: <span class="gs-go" onclick="gsGoTab('health')">Fish health</span> tab.</div>`); }
-  // Chili
-  { const C = M.CL || {}, S = (((DZ.cl || {}).biologie || {}).sanitaire || {}), R5 = ((S.cycle_ferme || {}).region || {})['2025'] || {}, R4 = ((S.cycle_ferme || {}).region || {})['2024'] || {};
-    const cy = C.cycle_years || [];
-    h += sec('CL', 'Chile', `Atlantic salmon ${f1((C.cycle_mortality_pct || {})['Atlantic salmon'] && C.cycle_mortality_pct['Atlantic salmon'][1])} % per cycle in 2025 · SRS the first killer`,
-      hl(C.highlights) +
-      tab(['Closed cycles, share of fish dying', ...cy], Object.entries(C.cycle_mortality_pct || {}).map(([k, v]) => [k, ...v.map(x => f1(x) + ' %')])) +
-      (Object.keys(R5).length ? `<div class="sig-sub" style="margin-top:8px"><b>By region</b> (all species, per cycle)</div>` + tab(['Region', '2024', '2025'], Object.keys(R5).map(r => [r, f1((R4[r] || [])[1]) + ' %', `<b>${f1(R5[r][1])} %</b>`])) : '') +
-      `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;margin-top:8px"><div><div class="sig-sub"><b>Atlantic salmon 2025: primary cause of death</b></div>${hb(C.primary_causes_atlantic_2025 || [], '#ff8a65')}</div>` +
-      `<div><div class="sig-sub"><b>Of the infectious deaths</b></div>${hb(C.infectious_atlantic_2025 || [], '#ffb74d')}</div></div>` +
-      (C.isa_outbreaks ? `<div class="sig-sub" style="margin-top:8px"><b>ISA outbreaks (virulent variant), farms per year</b></div>` + scSvg(C.isa_outbreaks.years.map(String), [{ v: C.isa_outbreaks.sites, col: '#ce93d8', bar: true, lab: 'farms with an ISA outbreak' }], { lab: k => k, fmt: v => v.toFixed(1), H: 140 }) : '') +
-      src(C) + `<div class="sig-sub">Live: the sea-lice list (farms above 3 egg-bearing females) in the <span class="gs-go" onclick="gsGoTab('chile')">Chile</span> tab, section 4.</div>`); }
-  // Islande
-  { const I = M.IS || {}, ys = yrs(yr.IS), sm = I.smolts_to_sea_m || {};
-    h += sec('IS', 'Iceland', `${f1(yr.IS[ys[ys.length - 1]])} % of the biomass died in ${ys[ys.length - 1]} (${f1(yr.IS[ys[ys.length - 2]])} % the year before) · winter ulcers, algae, jellyfish, BKD`,
-      hl(I.highlights) +
-      `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px"><div><div class="sig-sub"><b>Dead tonnes ÷ average biomass, %</b> (MAST)</div>${scSvg(ys.map(String), [{ v: ys.map(y => yr.IS[y]), col: '#4fc3f7', bar: true, lab: 'dead fish, % of biomass' }], { lab: k => k, fmt: v => v.toFixed(0), H: 170 })}</div>` +
-      `<div><div class="sig-sub"><b>Salmon smolts put to sea, millions</b></div>${scSvg((sm.years || []).map(String), [{ v: sm.values || [], col: '#81c784', bar: true, lab: 'smolts put to sea, M' }], { lab: k => k, fmt: v => v.toFixed(0), H: 170 })}</div></div>` +
-      src(I) + `<div class="sig-sub">Site by site and month by month: <span class="gs-go" onclick="gsGoTab('iceland')">Iceland</span> tab.</div>`); }
-  // Feroe
-  { const F = M.FO || {}, A = ((DZ.fo && DZ.fo.annual) || {}), ys = yrs(yr.FO);
-    h += sec('FO', 'Faroe Islands', `Bakkafrost ${f1(yr.FO[ys[ys.length - 1]])} % in ${ys[ys.length - 1]} — the lowest of the big basins`,
-      hl(F.highlights) + scSvg(ys.map(String), [{ v: ys.map(y => yr.FO[y]), col: '#4fc3f7', bar: true, lab: 'Bakkafrost Faroes mortality, %' }], { lab: k => k, fmt: v => v.toFixed(0), H: 170 }) +
-      (A.lice_af ? tab(['', ...ys], [['Adult female lice per fish (year average)', ...ys.map(y => A.lice_af[y] ?? '—')], ['Fallow between cycles (weeks)', ...ys.map(y => A.fallow_weeks[y] ?? '—')]]) : '') +
-      src(F) + `<div class="sig-sub">Farm by farm: <span class="gs-go" onclick="gsGoTab('faroe')">Faroe Islands</span> tab.</div>`); }
-  // Ecosse
-  { const G = M.GB || {}, ys = yrs(yr.GB), F = (DZ.ev || {}).scotland_fhi || {}, mk = Object.keys(F.monthly || {}).sort().slice(-12), cz = {};
-    mk.forEach(k => Object.entries(F.monthly[k].causes || {}).forEach(([c, n]) => cz[c] = (cz[c] || 0) + n)); const tz = Object.values(cz).reduce((a, v) => a + v, 0) || 1;
-    const CL = { gill: 'Gill health (AGD, plankton, complex gill disease)', disease: 'Bacterial or viral disease', unspecified: 'Not specified', jellyfish: 'Jellyfish', algae: 'Algae', lice: 'Sea lice / treatment', handling: 'Handling / treatment', environment: 'Environment (temperature, oxygen)', predator: 'Predators', treatment: 'Treatment (sea lice, handling)' };
-    h += sec('GB', 'Scotland', `${f1(yr.GB[ys[ys.length - 1]])} % of the biomass died in ${ys[ys.length - 1]} · gills first`,
-      hl(G.highlights) +
-      `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px"><div><div class="sig-sub"><b>Dead tonnes ÷ average biomass, %</b> (SEPA farm returns)</div>${scSvg(ys.map(String), [{ v: ys.map(y => yr.GB[y]), col: '#4fc3f7', bar: true, lab: 'dead fish, % of biomass' }], { lab: k => k, fmt: v => v.toFixed(0), H: 170 })}</div>` +
-      `<div><div class="sig-sub"><b>Causes in the farms' reports to the Fish Health Inspectorate</b>, last 12 months (${mk.length ? mk[0] + ' to ' + mk[mk.length - 1] : '—'}), share of causes named</div>${hb(Object.entries(cz).sort((a, b) => b[1] - a[1]).map(([c, n]) => [CL[c] || c, 100 * n / tz]), '#ff8a65')}</div></div>` +
-      src(G) + `<div class="sig-sub">Farm by farm and the movement restrictions: <span class="gs-go" onclick="gsGoTab('scotland')">Scotland</span> tab.</div>`); }
-  // Canada
-  { const K = M.CA || {}, ys = yrs(yr.CA), ly = ys[ys.length - 1], q = caY[ly] || { c: {} }, t = Object.values(q.c).reduce((a, v) => a + v, 0) || 1;
-    h += sec('CA', 'Canada', `British Columbia ${f1(yr.CA[ly])} % in ${ly} · environment (algae, oxygen) the first cause`,
-      hl(K.highlights) +
-      `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px"><div><div class="sig-sub"><b>British Columbia, yearly mortality %</b> (average site, monthly rates compounded, DFO)</div>${scSvg(ys.slice(-10).map(String), [{ v: ys.slice(-10).map(y => yr.CA[y]), col: '#4fc3f7', bar: true, lab: 'mortality, %' }], { lab: k => k, fmt: v => v.toFixed(0), H: 170 })}</div>` +
-      `<div><div class="sig-sub"><b>Causes in ${ly}</b> (DFO carcass classification)</div>${hb(Object.entries(q.c).sort((a, b) => b[1] - a[1]).map(([c, v]) => [c, 100 * v / t]), '#ff8a65')}</div></div>` +
-      (() => { const A = DZ.cat || {}, I = (A.isa || []).filter(r => /salmon/i.test(r.species || '')), PV = [['New Brunswick', '#4fc3f7'], ['Newfoundland', '#ffb74d'], ['Nova Scotia', '#81c784'], ['Prince Edward Island', '#ce93d8']];
-        const iy = [...new Set(I.map(r => r.year))].sort((a, b) => a - b).filter(y => y >= 2016);
-        const isa = iy.length ? `<div class="sig-sub" style="margin-top:14px"><b>Atlantic Canada — ISA detections in farmed salmon, by year and province</b> (CFIA list of infected locations; ${iy[iy.length - 1]} to date)</div>` +
-          scSvg(iy.map(String), PV.filter(([p]) => I.some(r => r.prov === p)).map(([p, c]) => ({ lab: p, col: c, bar: true, v: iy.map(y => I.filter(r => r.year === y && r.prov === p).length) })), { lab: k => k, fmt: v => v.toFixed(0), H: 200 }) : '';
-        const T = A.aar_totals || {}, SUB = [['Azamethiphos', 'lice bath'], ['Hydrogen peroxide', 'lice / AGD bath'], ['Emamectin benzoate', 'lice in feed'], ['Oxytetracycline', 'antibiotic'], ['Florfenicol', 'antibiotic']];
-        const ys = [...new Set(Object.values(T).flatMap(o => Object.keys(o)))].sort().slice(-4), PN = { NB: 'New Brunswick', NL: 'Newfoundland', NS: 'Nova Scotia' };
-        const trt = Object.keys(T).length ? `<div class="sig-sub" style="margin-top:12px"><b>Treatments used at sea sites, kg of active ingredient</b> (DFO public reporting under the Aquaculture Activities Regulations) — lice baths show sea-lice pressure, antibiotics show bacterial outbreaks</div>` +
-          tab(['Province, product', ...ys], Object.keys(T).flatMap(p => SUB.filter(([sb]) => ys.some(y => (T[p][y] || {})[sb] >= 1)).map(([sb, w]) => [`${PN[p] || p} — ${sb} <span style="color:var(--muted);font-size:11px">(${w})</span>`, ...ys.map(y => (T[p][y] || {})[sb] ? f0(T[p][y][sb]) : '—')]))) : '';
-        const ev = (K.atlantic_events || []).map(x => [x.date, `${e(x.prov)} — ${e(x.co)}, ${e(x.site)}`, `${f0(x.fish)}${x.fish_note ? ` <span style="font-size:11px;color:var(--muted)">(${e(x.fish_note)})</span>` : ''}`, `${e(x.cause)} <a href="${x.url}" target="_blank" rel="noopener" style="color:var(--accent)">source</a>`]);
-        const evt = ev.length ? `<div class="sig-sub" style="margin-top:12px"><b>Newfoundland — losses above 10 % of a site's fish</b> (public report compulsory since 2019)</div><div style="overflow-x:auto"><table class="sig-table"><thead><tr><th class="name">Reported</th><th style="text-align:left">Where</th><th>Fish</th><th style="text-align:left">Cause given</th></tr></thead><tbody>${ev.map(r => `<tr><td class="name">${r[0]}</td><td style="text-align:left">${r[1]}</td><td>${r[2]}</td><td style="text-align:left;white-space:normal">${r[3]}</td></tr>`).join('')}</tbody></table></div>` : '';
-        const se = (K.sources_extra || []).map(([n, u]) => `<a href="${u}" target="_blank" rel="noopener" style="color:var(--accent)">${e(n)}</a>`).join(' · ');
-        return isa + trt + evt + (se ? `<div class="sig-sub" style="margin-top:6px">Atlantic sources: ${se}.</div>` : ''); })() +
-      src(K) + `<div class="sig-sub">Sites, ISA in Atlantic Canada: <span class="gs-go" onclick="gsGoTab('canada')">Canada</span> tab.</div>`); }
-  // Tasmanie
-  { const A = M.AU || {}, ks = auM.map(r => r.m);
-    h += sec('AU', 'Tasmania', `${f0(auY[2025])} t of dead salmon in 2025 · Piscirickettsia salmonis now endemic`,
-      hl(A.highlights) +
-      `<div class="sig-sub"><b>Dead salmon by month, tonnes</b> (EPA Tasmania, mortality waste)</div>` + scSvg(ks, [{ v: auM.map(r => r.total), col: r => '#ff8a65', col0: '#ff8a65', bar: true, lab: 'tonnes of dead salmon' }], { lab: k => `${MON[k % 100 - 1]} ${Math.floor(k / 100)}`, xl: k => k % 100 === 1 ? `${MON[0]} ${Math.floor(k / 100)}` : MON[k % 100 - 1].slice(0, 1), fmt: v => f0(v), H: 190 }) +
-      tab(['', ...Object.keys(auY)], [['Dead salmon (t)', ...Object.keys(auY).map(y => f0(auY[y]) + (auM.filter(r => Math.floor(r.m / 100) === +y).length < 12 ? ` (to ${MON[Math.max(...auM.filter(r => Math.floor(r.m / 100) === +y).map(r => r.m % 100)) - 1]})` : ''))],
-        ['Production of the financial year ending that June (t gutted)', ...Object.keys(auY).map(y => auP[y] ? f0(auP[y]) : '—')]]) +
-      src(A) + `<div class="sig-sub">Leases and companies: <span class="gs-go" onclick="gsGoTab('australia')">Australia</span> tab.</div>`); }
-  h += `<div class="sig-sub" style="margin-top:14px">${e((M.notes || {}).measures || '')} Figures from reports are entered by hand (last update ${e((M.meta || {}).updated || '')}); our series update with each country's data.</div>`;
-  root.innerHTML = h;
+  const hb = (rows, col, unit = '%') => { const mx = Math.max(1, ...rows.map(r => r[1] || 0)); return rows.map(([l, v]) => `<div style="display:flex;align-items:center;gap:8px;font-size:12px;margin:3px 0"><span style="width:230px;color:var(--muted)">${e(l)}</span><div style="height:10px;width:${Math.round(200 * (v || 0) / mx)}px;background:${col};border-radius:2px"></div><b>${f1(v)} ${unit}</b></div>`).join(''); };
+  const grp = (keys, years, val, o = {}) => scSvg(keys.map(String), years.map((y, i) => ({ v: keys.map(k => val(y, k)), col: (o.cols || YC.slice(-years.length))[i], bar: true, lab: String(o.labs ? o.labs[i] : y) })), { lab: o.lab || (k => k), xl: o.xl, fmt: o.fmt || (v => v.toFixed(0)), H: o.H || 200 });
+  const box = (inner, st = '') => `<div style="padding:14px 16px;border:1px solid var(--border);border-radius:12px;background:#102231;${st}">${inner}</div>`;
+  const h2 = t => `<div style="font-size:15px;font-weight:700;margin:22px 0 8px">${t}</div>`;
+  // ---------------- en-tete ----------------
+  let h = `<div class="sig-title">What kills farmed salmon — and what it does to supply</div>` +
+    `<div class="sig-sub">Every basin is mature: volumes now move with losses, not licences. One card per basin with its 2026 signal, the threats that matter where, then each basin opened on its own: 2026 so far, why fish die, causes and diseases over the years, by area, and the source documents.</div>` +
+    `<div style="display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 4px"><span class="dz-chip">Counted in fish: Norway, Chile, Faroes</span><span class="dz-chip">Weighed in tonnes: Scotland, Iceland, Tasmania</span><span class="dz-chip" style="color:#ffd54f;border-color:#4a3d18;background:#2a2414">Compare each basin with itself, not the levels across basins</span></div>`;
+  // pertes mondiales 2025
+  if (M.world_2025) { const W = M.world_2025, R = W.rows.slice().sort((a, b) => b.dead_kt - a.dead_kt), D = R.reduce((t, x) => t + x.dead_kt, 0), LO = R.reduce((t, x) => t + x.lo, 0), HI = R.reduce((t, x) => t + x.hi, 0), P = R.reduce((t, x) => t + x.prod_kt, 0) / 0.888, mx = R[0].dead_kt;
+    h += box(`<div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px"><span style="font-size:13px;font-weight:700">World losses in 2025</span><span style="font-size:26px;font-weight:800">≈ ${f0(D)} kt</span>` +
+      `<span style="font-size:13px;color:var(--muted)">of salmon died at sea (range ${f0(LO)}–${f0(HI)} kt) — <b style="color:#ff8a65">${(100 * D / P).toFixed(1)} %</b> of the ${f0(P)} kt harvested (live weight, seven basins, about 95 % of farmed Atlantic salmon)</span></div>` +
+      `<div style="margin-top:8px">${R.map(x => `<div style="display:grid;grid-template-columns:120px minmax(0,1fr) 220px;gap:10px;align-items:center;font-size:12px;margin:3px 0"><span>${e(x.name)}</span>` +
+        `<div style="height:12px;width:${(100 * x.dead_kt / mx).toFixed(1)}%;background:${x.basis === 'measured' ? '#ff8a65' : 'repeating-linear-gradient(45deg,#ff8a65 0 4px,#7a3b2b 4px 8px)'};border-radius:2px" title="${e(x.how)}"></div>` +
+        `<span><b>${f1(x.dead_kt)} kt</b> · ${(100 * x.dead_kt / (x.prod_kt / 0.888)).toFixed(1)} % of its harvest <span style="color:var(--muted)">${x.basis === 'measured' ? '' : '(estimate)'}</span></span></div>`).join('')}</div>` +
+      `<div class="sig-sub" style="margin-top:6px">${e(W.note)} Plain bars are weighed by the country; hatched bars are our estimates (hover for the method). Norway is half of the world's losses by weight but one of the lowest rates; Tasmania, Iceland and Scotland lose the most per tonne produced.</div>`, 'margin-top:12px;background:rgba(255,138,101,.04)'); }
+  // A · cartes
+  h += h2('A · The basins at a glance');
+  h += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px">` + ORDER.map(([c, name]) => { const L = last(c), K = (M[c] || {}).card || {}, ys = [2023, 2024, 2025].filter(y => (yr[c] || {})[y] !== undefined), mx = Math.max(1, ...ys.map(y => yr[c][y]));
+      const S = K.kind === 'better' ? ['▼', '#81c784', '#14291f'] : K.kind === 'worse' ? ['▲', '#ff8a65', '#2e1d17'] : ['◆', '#ffd54f', '#2a2414'];
+      return `<button type="button" class="dz-card${DZ_B === c ? ' on' : ''}" data-b="${c}"><div style="display:flex;justify-content:space-between;align-items:baseline"><b style="font-size:15px">${name}</b><span style="font-size:11px;color:var(--muted)">${L ? L.y : ''}</span></div>` +
+        `<div style="display:flex;align-items:baseline;gap:8px;margin:6px 0"><span style="font-size:26px;font-weight:800">${L ? f1(L.v) + ' %' : '—'}</span>${L && L.p !== undefined ? `<span style="font-size:12px;font-weight:600;color:${L.v - L.p > 0 ? '#ff8a65' : '#81c784'}">${L.v - L.p >= 0 ? '+' : '−'}${Math.abs(L.v - L.p).toFixed(1)} pt</span>` : ''}</div>` +
+        `<div style="display:flex;align-items:flex-end;gap:6px;height:42px">${ys.map((y, i) => `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;height:100%;justify-content:flex-end"><div style="width:100%;height:${Math.round(100 * yr[c][y] / mx)}%;background:${YC[3 - ys.length + i]};border-radius:2px 2px 0 0" title="${y}: ${f1(yr[c][y])} %"></div></div>`).join('')}</div>` +
+        `<div style="display:flex;gap:6px;font-size:10px;color:var(--muted);margin-top:2px">${ys.map(y => `<span style="flex:1;text-align:center">${y}</span>`).join('')}</div>` +
+        `<div style="font-size:11px;color:var(--muted);margin:4px 0 6px">${MEAS[c]}</div>` +
+        `<div style="display:flex;gap:8px;padding:7px 9px;border-radius:8px;background:${S[2]};font-size:12px;line-height:1.35;text-align:left"><span style="color:${S[1]}">${S[0]}</span><span><b>2026 so far:</b> ${e(K.s || '—')}</span></div>` +
+        `<div style="font-size:12px;color:#a9bfcc;margin-top:6px;text-align:left"><b style="color:var(--ink)">Main threat:</b> ${e(K.threat || '—')}</div></button>`; }).join('') + `</div>`;
+  // B · barres par bassin, 3 annees
+  h += h2('B · Mortality by basin, 2023 to 2025') + box(`<div class="sig-sub">Each basin's own measure, %, three years side by side. 2026 so far is in each basin's page below.</div>` +
+    grp(ORDER.map(b => b[1]), [2023, 2024, 2025], (y, n) => { const c = ORDER.find(b => b[1] === n)[0]; return (yr[c] || {})[y] ?? null; }, { H: 230, fmt: v => v.toFixed(0) }));
+  // C · matrice des menaces
+  const TH = ['Handling & delousing', 'Gills & AGD', 'Bacteria (SRS, ulcers)', 'Viruses (ISA, HSMI, CMS)', 'Sea lice', 'Algae & jellyfish', 'Heat or cold'], LV = { H: ['High', '#7a2e1f', '#ffd9cf'], M: ['Med.', '#5a4318', '#ffe7a8'], L: ['Low', '#16303f', '#8fa4b0'] };
+  h += h2('C · Which threats matter where') + `<div class="sig-sub">Our reading of each country's official health report and 2026 events. Darker = bigger share of the losses. Click a basin to open it.</div>` +
+    `<div style="overflow-x:auto;border:1px solid var(--border);border-radius:12px;background:#102231"><table style="width:100%;min-width:820px;border-collapse:collapse;font-size:12px"><thead><tr><th style="text-align:left;padding:9px 12px;color:var(--muted)">Basin</th>${TH.map(t => `<th style="padding:9px 6px;color:var(--muted);font-weight:600">${t}</th>`).join('')}</tr></thead><tbody>` +
+    ORDER.map(([c, n]) => `<tr style="border-top:1px solid #1c3142"><td style="padding:6px 12px;font-weight:600;white-space:nowrap"><span class="gs-go" data-dzb="${c}">${n}</span></td>${((M[c] || {}).threats || '').split('').map(k => `<td style="padding:4px"><div style="height:28px;border-radius:6px;background:${LV[k][1]};color:${LV[k][2]};display:flex;align-items:center;justify-content:center;font-weight:600">${LV[k][0]}</div></td>`).join('')}</tr>`).join('') + `</tbody></table></div>`;
+  // D · consequence pour l'offre 2027
+  const SUP = (DZ.sup && DZ.sup.basins) || {};
+  h += h2('D · What it means for supply in 2027') + `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px">` + ORDER.map(([c, n]) => { const s = SUP[c] || {}, ch = s.chg2027;
+      const ar = ch === undefined || ch === null ? ['→', '#ffd54f'] : ch > 1 ? ['↑', '#81c784'] : ch < -1 ? ['↓', '#ff8a65'] : ['→', '#ffd54f'];
+      return box(`<div style="display:flex;gap:12px"><span style="font-size:22px;line-height:1;color:${ar[1]}">${ar[0]}</span><div><b>${n}</b> <span style="color:var(--muted)">· ${ch === undefined || ch === null ? 'no projection' : `${ch >= 0 ? '+' : '−'}${Math.abs(ch).toFixed(0)} % (${s.lo >= 0 ? '+' : '−'}${Math.abs(s.lo).toFixed(0)} to ${s.hi >= 0 ? '+' : '−'}${Math.abs(s.hi).toFixed(0)} %)`}</span>` +
+        `<div style="font-size:12px;color:#a9bfcc;margin-top:4px;line-height:1.45">${e((M[c] || {}).supply_line || '')}</div></div></div>`, 'padding:12px 14px'); }).join('') + `</div>` +
+    `<div class="sig-sub" style="margin-top:6px">Projections from the <span class="gs-go" onclick="gsGoTab('supply')">Global supply 2027</span> tab; the disease view explains the risk around them.</div>`;
+  // ---------------- un bassin ouvert ----------------
+  const c = DZ_B, B = M[c] || {}, nm = (ORDER.find(b => b[0] === c) || [, c])[1], L = last(c), K = B.card || {};
+  h += `<div id="dzBasin" style="margin-top:28px;padding-top:18px;border-top:1px solid var(--border)"><div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">` +
+    ORDER.map(([b, n]) => `<button type="button" class="dz-tab${b === c ? ' on' : ''}" data-b="${b}">${n}</button>`).join('') + `</div>` +
+    `<div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:12px"><span style="font-size:26px;font-weight:800">${nm}</span><span style="color:#a9bfcc;font-size:14px">${L ? `${f1(L.v)} % in ${L.y} (${MEAS[c]})` : ''} · 2026 so far: ${e(K.s || '—')}</span></div>` +
+    `<div style="display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px">${['2026 so far', 'Why fish die', 'Causes and diseases over the years', 'By area', 'Sources and documents'].map((t, i) => `<a class="dz-sub" href="#dzs${i}" onclick="event.preventDefault();document.getElementById('dzs${i}')&&document.getElementById('dzs${i}').scrollIntoView({behavior:'smooth',block:'start'})">${i + 1} · ${t}</a>`).join('')}</div>`;
+  // 1 · 2026 so far
+  const sf = SF[c], ev = B.events || [];
+  h += `<div id="dzs0">` + h2('1 · 2026 so far') + box(
+    (sf && sf.kpis.length ? `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin-bottom:12px">${sf.kpis.map(k => `<div style="padding:12px;border-radius:10px;background:#0d1c28;border:1px solid #1f3646"><div style="font-size:12px;color:var(--muted)">${e(k.l)}</div><div style="font-size:22px;font-weight:800;margin:2px 0">${e(k.v)}</div><div style="font-size:12px;color:${KC[k.k] || 'var(--muted)'}">${e(k.d)}</div></div>`).join('')}</div>` : '') +
+    (sf ? `<div style="font-size:13px;font-weight:600">${e(sf.lab)} — ${sf.years.join(', ')} side by side, month by month</div>` + grp([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], sf.years, (y, m) => sf.val(y, m), { lab: m => MONTHS_FR[m - 1], xl: m => MON[m - 1], fmt: sf.fmt, H: 210 })
+       : c === 'FO' ? `<div class="sig-sub">No monthly mortality is published for the Faroes; Bakkafrost reports a yearly figure.</div>` + grp([''], (Object.keys(yr.FO).map(Number).slice(-3)), y => yr.FO[y], { fmt: v => v.toFixed(1), H: 160 }) : '') +
+    (ev.length ? `<div style="font-size:13px;font-weight:600;margin-top:10px">What happened</div>` + ev.map(x => `<div style="display:grid;grid-template-columns:110px 14px minmax(0,1fr);gap:10px;font-size:13px;line-height:1.45;margin:5px 0"><span style="color:var(--muted)">${e(x.d)}</span><span style="width:10px;height:10px;border-radius:50%;margin-top:5px;background:${KC[x.k] || '#8fa4b0'}"></span><span>${e(x.t)}${x.u ? ` <a href="${x.u}" target="_blank" rel="noopener" style="color:var(--accent);font-size:12px">source</a>` : ''}</span></div>`).join('') : '')) + `</div>`;
+  // 2 · pourquoi
+  const W = B.why || {};
+  h += `<div id="dzs1">` + h2('2 · Why fish die — and what it does to supply') + `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px">` +
+    [['Main causes', '#ff8a65', W.causes], ['What makes it worse', '#ffd54f', W.worse], ['For supply', '#81c784', W.supply]].map(([t, col, x]) => box(`<div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:${col};margin-bottom:6px">${t}</div><div style="font-size:13px;line-height:1.55">${e(x || '—')}</div>`)).join('') + `</div></div>`;
+  // 3 · causes et maladies (2 ou 3 annees par colonne)
+  let cz = '';
+  if (c === 'NO' && N.causes) { const Y = N.causes.years, i0 = Y.length - 3, sh = ['Injuries', 'Infectious', 'Unknown', 'Physiological', 'Environment', 'Other'];
+    cz += `<div style="font-size:13px;font-weight:600">Registered causes of death, share of dead fish (%)</div><div class="sig-sub">${e(N.causes.note)}</div>` + grp(sh, Y.slice(i0), (y, k) => N.causes.rows[sh.indexOf(k)][1][Y.indexOf(y)], { fmt: v => v.toFixed(0) });
+    const D = N.diseases, Dy = D.years, j0 = Dy.length - 3, dn = ['ISA', 'PD', 'CMS', 'HSMI', 'IPN', 'Winter ulcer', 'Tenacibaculosis', 'Pasteurellosis', 'Yersiniosis', 'AGD', 'Gill (epitheliocysts)'];
+    cz += `<div style="font-size:13px;font-weight:600;margin-top:12px">Sites with the disease</div><div class="sig-sub">${e(D.note)}</div>` + grp(dn, Dy.slice(j0), (y, k) => D.rows[dn.indexOf(k)][1][Dy.indexOf(y)], { fmt: v => v.toFixed(0), H: 230 });
+    const T = N.lice_treatments, ty = T.years.slice(-3); cz += `<div style="font-size:13px;font-weight:600;margin-top:12px">Treatments against sea lice (site-weeks)</div>` + grp(['Non-medicinal (thermal, mechanical, freshwater)', 'Medicinal'], ty, (y, k) => k[0] === 'N' ? T.non_medicinal[T.years.indexOf(y)] : T.medicinal[T.years.indexOf(y)], { fmt: v => f0(v), H: 180 }) +
+      tab(['', ...N.years], [['Salmon dead at sea (M)', ...N.dead_fish_m.map(f1)], ['Smolts put to sea (M)', ...N.smolts_to_sea_m.map(f1)], ['Cleaner fish put to sea (M)', ...N.cleaner_fish_stocked_m.map(f1)], ['Rainbow trout mortality (%)', ...N.trout_mortality_pct.map(f1)]]); }
+  if (c === 'CL') { const C = M.CL || {};
+    cz += `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px"><div><div style="font-size:13px;font-weight:600">Atlantic salmon 2025: primary cause of death</div>${hb(C.primary_causes_atlantic_2025 || [], '#ff8a65')}</div><div><div style="font-size:13px;font-weight:600">Of the infectious deaths</div>${hb(C.infectious_atlantic_2025 || [], '#ffb74d')}</div></div>` +
+      `<div style="font-size:13px;font-weight:600;margin-top:12px">Closed cycles, share of the fish dying (%)</div>` + grp(Object.keys(C.cycle_mortality_pct || {}), C.cycle_years || [], (y, k) => C.cycle_mortality_pct[k][C.cycle_years.indexOf(y)], { fmt: v => v.toFixed(0), H: 170 }) +
+      (C.isa_outbreaks ? tab(['ISA outbreaks (virulent)', ...C.isa_outbreaks.years, 2026], [['Farms', ...C.isa_outbreaks.sites, '<b style="color:#ff8a65">2</b>']]) : ''); }
+  if (c === 'GB') { const F = ((DZ.ev || {}).scotland_fhi || {}).monthly || {}, ks = Object.keys(F).sort(), lm = ks.length ? +ks[ks.length - 1].slice(5) : 12, Y = ks.length ? +ks[ks.length - 1].slice(0, 4) : 2026;
+    const CN = { gill: 'Gills', disease: 'Bacteria / virus', unspecified: 'Not specified', treatment: 'Treatment', jellyfish: 'Jellyfish', algae: 'Algae', environment: 'Environment', predator: 'Predators', lice: 'Sea lice', handling: 'Handling' };
+    const sh = y => { const o = {}; let t = 0; ks.filter(k => +k.slice(0, 4) === y && +k.slice(5) <= lm).forEach(k => Object.entries(F[k].causes || {}).forEach(([q, v]) => { o[q] = (o[q] || 0) + v; t += v; })); return t ? Object.fromEntries(Object.entries(o).map(([q, v]) => [q, 100 * v / t])) : {}; };
+    const S = { [Y - 2]: sh(Y - 2), [Y - 1]: sh(Y - 1), [Y]: sh(Y) }, keys = Object.keys(S[Y]).sort((a, b) => S[Y][b] - S[Y][a]);
+    cz += `<div style="font-size:13px;font-weight:600">Causes named in the farms' reports to the Fish Health Inspectorate, Jan–${MON[lm - 1]}, share (%)</div>` + grp(keys.map(k => CN[k] || k), [Y - 2, Y - 1, Y], (y, k) => { const q = keys.find(x => (CN[x] || x) === k); return S[y][q] ?? 0; }, { fmt: v => v.toFixed(0) }) +
+      `<div style="font-size:13px;font-weight:600;margin-top:12px">Dead tonnes ÷ average biomass (%), SEPA</div>` + grp(['Scotland'], [2023, 2024, 2025], y => yr.GB[y] ?? null, { fmt: v => v.toFixed(0), H: 150 }); }
+  if (c === 'IS') { const sm = (M.IS || {}).smolts_to_sea_m || {};
+    cz += `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px"><div><div style="font-size:13px;font-weight:600">Dead tonnes ÷ average biomass (%), MAST</div>${grp(['Iceland'], [2023, 2024, 2025], y => yr.IS[y] ?? null, { fmt: v => v.toFixed(0), H: 160 })}</div>` +
+      `<div><div style="font-size:13px;font-weight:600">Salmon smolts put to sea (M)</div>${grp(['Smolts'], (sm.years || []).slice(-3), y => sm.values[sm.years.indexOf(y)], { fmt: v => v.toFixed(0), H: 160 })}</div></div>` +
+      `<div class="sig-sub">The causes are described fjord by fjord in MAST's yearly report (section 2); no breakdown in figures is published.</div>`; }
+  if (c === 'CA') { const ys = Object.keys(caY).map(Number).sort((a, b) => a - b).slice(-3), sh = y => { const q = caY[y] || { c: {} }, t = Object.values(q.c).reduce((a, v) => a + v, 0) || 1; return Object.fromEntries(Object.entries(q.c).map(([k, v]) => [k, 100 * v / t])); };
+    const S = Object.fromEntries(ys.map(y => [y, sh(y)])), keys = Object.keys(S[ys[ys.length - 1]] || {}).sort((a, b) => S[ys[ys.length - 1]][b] - S[ys[ys.length - 1]][a]).slice(0, 7);
+    cz += `<div style="font-size:13px;font-weight:600">British Columbia: causes of death, share (%), DFO carcass classification</div>` + grp(keys, ys, (y, k) => S[y][k] ?? 0, { fmt: v => v.toFixed(0) });
+    const T = (DZ.cat || {}).aar_totals || {}, SUB = [['Azamethiphos', 'lice bath'], ['Hydrogen peroxide', 'lice / AGD bath'], ['Emamectin benzoate', 'lice in feed'], ['Oxytetracycline', 'antibiotic'], ['Florfenicol', 'antibiotic']], yy = [...new Set(Object.values(T).flatMap(o => Object.keys(o)))].sort().slice(-3), PN = { NB: 'New Brunswick', NL: 'Newfoundland', NS: 'Nova Scotia' };
+    if (Object.keys(T).length) cz += `<div style="font-size:13px;font-weight:600;margin-top:12px">Atlantic Canada: treatments used at sea, kg of active ingredient (DFO)</div>` + tab(['Province, product', ...yy], Object.keys(T).flatMap(p => SUB.filter(([sb]) => yy.some(y => (T[p][y] || {})[sb] >= 1)).map(([sb, w]) => [`${PN[p] || p} — ${sb} <span style="color:var(--muted);font-size:11px">(${w})</span>`, ...yy.map(y => (T[p][y] || {})[sb] ? f0(T[p][y][sb]) : '—')])));
+    const AE = (M.CA || {}).atlantic_events || []; if (AE.length) cz += `<div style="font-size:13px;font-weight:600;margin-top:12px">Newfoundland: losses above 10 % of a site's fish (public report within 24 h)</div>` + tab(['Reported', 'Where', 'Fish', 'Cause given'], AE.map(x => [x.date, `${e(x.co)}, ${e(x.site)}`, f0(x.fish) + (x.fish_note ? ` <span style="font-size:11px;color:var(--muted)">(${e(x.fish_note)})</span>` : ''), `${e(x.cause)} <a href="${x.url}" target="_blank" rel="noopener" style="color:var(--accent)">source</a>`])); }
+  if (c === 'AU') cz += tab(['', ...Object.keys(auY)], [['Dead salmon (t)', ...Object.keys(auY).map(y => f0(auY[y]) + (auM.filter(r => Math.floor(r.m / 100) === +y).length < 12 ? ' (part year)' : ''))], ['Production of the financial year ending that June (t gutted)', ...Object.keys(auY).map(y => auP[y] ? f0(auP[y]) : '—')]]) + `<div class="sig-sub">Tasmania publishes no breakdown of the causes in figures; the official debrief of 2025 names Piscirickettsia salmonis as the main trigger.</div>`;
+  if (c === 'FO') { const A = ((DZ.fo && DZ.fo.annual) || {}), ys = Object.keys(A.mortality_pct || {}).slice(-3); cz += grp(['Mortality (%)'], ys.map(Number), y => A.mortality_pct[y], { fmt: v => v.toFixed(1), H: 150 }) + tab(['', ...ys], [['Adult female lice per fish', ...ys.map(y => A.lice_af[y] ?? '—')], ['Fallow between cycles (weeks)', ...ys.map(y => A.fallow_weeks[y] ?? '—')]]); }
+  h += `<div id="dzs2">` + h2('3 · Causes and diseases over the years') + box(cz || '<div class="sig-sub">No breakdown published.</div>') + `</div>`;
+  // 4 · par zone
+  let ar = '';
+  if (c === 'NO' && N.pa) ar = `<div style="font-size:13px;font-weight:600">Share of the salmon at sea dying in the year, by production area (%)</div>` + grp(N.pa.rows.map(r => r[0]), N.pa.cols, (y, k) => N.pa.rows.find(r => r[0] === k)[1 + N.pa.cols.indexOf(y)], { fmt: v => v.toFixed(0), H: 220 });
+  if (c === 'CL') { const R5 = (CS.region || {})['2025'] || {}, R4 = (CS.region || {})['2024'] || {}; if (Object.keys(R5).length) ar = `<div style="font-size:13px;font-weight:600">Closed cycles by region, share of fish dying (%)</div>` + grp(Object.keys(R5), [2024, 2025], (y, k) => ((y === 2025 ? R5 : R4)[k] || [])[1] ?? null, { fmt: v => v.toFixed(0), H: 180 }); }
+  if (c === 'CA') { const I = ((DZ.cat || {}).isa || []).filter(r => /salmon/i.test(r.species || '')), Y = Math.max(...I.map(r => r.year), 2026), PV = ['New Brunswick', 'Newfoundland', 'Nova Scotia', 'Prince Edward Island'];
+    ar = `<div style="font-size:13px;font-weight:600">ISA detections in farmed salmon by province (CFIA; ${Y} to date)</div>` + grp(PV, [Y - 2, Y - 1, Y], (y, p) => I.filter(r => r.year === y && r.prov === p).length, { fmt: v => v.toFixed(0), H: 190 }); }
+  if (c === 'IS') { const D = (M.IS || {}).dead_fish_2025 || {}; if (Object.keys(D).length) ar = tab(['2025', 'Salmon died (M)', 'Culled (M)'], Object.entries(D).map(([k, v]) => [k, f1(v[0]), f1(v[1])])); }
+  if (ar) h += `<div id="dzs3">` + h2('4 · By area') + box(ar) + `</div>`; else h += `<div id="dzs3"></div>`;
+  // 5 · sources du bassin
+  const TY = { rep: ['Official report', '#16324a', '#90caf9'], data: ['Data', '#183326', '#a5d6a7'], press: ['Press', '#33291a', '#ffd54f'], co: ['Company', '#2a1f33', '#ce93d8'] };
+  const srcRows = L2 => `<div style="overflow-x:auto"><table class="sig-table"><thead><tr><th class="name">Date</th><th style="text-align:left">Type</th>${L2.some(x => x.b) ? '<th style="text-align:left">Basin</th>' : ''}<th style="text-align:left">Document</th><th style="text-align:left">What we use from it</th></tr></thead><tbody>` +
+    L2.map(x => `<tr><td class="name" style="white-space:nowrap;color:var(--muted)">${e(x.d)}</td><td style="text-align:left"><span style="font-size:11px;padding:2px 8px;border-radius:999px;background:${(TY[x.ty] || TY.data)[1]};color:${(TY[x.ty] || TY.data)[2]}">${(TY[x.ty] || TY.data)[0]}</span></td>${x.b ? `<td style="text-align:left">${e(x.b)}</td>` : ''}<td style="text-align:left;white-space:normal"><a href="${x.u}" target="_blank" rel="noopener" style="color:var(--accent)">${e(x.n)}</a></td><td style="text-align:left;white-space:normal;color:var(--muted)">${e(x.w)}</td></tr>`).join('') + `</tbody></table></div>`;
+  h += `<div id="dzs4">` + h2('5 · Sources and documents') + box(srcRows(B.sources || [])) + `</div></div>`;
+  // E · bibliotheque de sources (tous bassins)
+  const ALL = ORDER.flatMap(([b, n]) => ((M[b] || {}).sources || []).map(x => ({ ...x, b: n, code: b }))), FL = ALL.filter(x => (DZ_SF.b === 'all' || x.code === DZ_SF.b) && (DZ_SF.t === 'all' || x.ty === DZ_SF.t));
+  h += `<div style="margin-top:28px;padding-top:18px;border-top:1px solid var(--border)">` + h2('E · Source library — every document this tab is built on') +
+    `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">${[['all', 'All basins'], ...ORDER].map(([b, n]) => `<button type="button" class="dz-tab${DZ_SF.b === b ? ' on' : ''}" data-sfb="${b}">${n}</button>`).join('')}` +
+    `<span style="width:12px"></span>${[['all', 'All types'], ['rep', 'Official reports'], ['data', 'Data'], ['press', 'Press'], ['co', 'Company']].map(([t, n]) => `<button type="button" class="dz-tab${DZ_SF.t === t ? ' on' : ''}" data-sft="${t}">${n}</button>`).join('')}` +
+    `<button type="button" class="dz-tab" id="dzCsv">Download the list (CSV)</button></div>` + box(srcRows(FL)) + `</div>`;
+  root.innerHTML = `<style>.dz-chip{font-size:12px;padding:4px 10px;border-radius:999px;background:#13283a;color:#a9bfcc;border:1px solid var(--border)}
+    .dz-card{font:inherit;color:inherit;text-align:left;cursor:pointer;padding:14px;border-radius:12px;background:#102231;border:1px solid var(--border);display:flex;flex-direction:column}
+    .dz-card:hover,.dz-card.on{border-color:#4fc3f7}
+    .dz-tab{font:inherit;font-size:12.5px;padding:6px 12px;border-radius:999px;background:#13283a;color:#a9bfcc;border:1px solid var(--border);cursor:pointer}
+    .dz-tab.on{background:#1b3a4f;color:#e7eef2;border-color:#2f5873}
+    .dz-sub{font-size:12.5px;padding:5px 11px;border-radius:999px;border:1px solid var(--border);color:#a9bfcc;text-decoration:none}
+    .dz-sub:hover{border-color:#4fc3f7;color:#4fc3f7}</style>` + h;
+  // interactions
+  const pick = b => { DZ_B = b; try { localStorage.setItem('dzBasin', b); } catch (_) {} renderDisease(); setTimeout(() => { const x = document.getElementById('dzBasin'); if (x) x.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 30); };
+  root.querySelectorAll('.dz-card, #dzBasin .dz-tab').forEach(x => x.onclick = () => pick(x.dataset.b));
+  root.querySelectorAll('[data-dzb]').forEach(x => x.onclick = () => pick(x.dataset.dzb));
+  root.querySelectorAll('[data-sfb]').forEach(x => x.onclick = () => { DZ_SF.b = x.dataset.sfb; renderDisease(); });
+  root.querySelectorAll('[data-sft]').forEach(x => x.onclick = () => { DZ_SF.t = x.dataset.sft; renderDisease(); });
+  const cb = document.getElementById('dzCsv'); if (cb) cb.onclick = () => { const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const csv = ['basin,date,type,document,url,what we use'].concat(ALL.map(x => [x.b, x.d, (TY[x.ty] || TY.data)[0], x.n, x.u, x.w].map(q).join(','))).join('\n');
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'disease-overview-sources.csv'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); };
 }
 function renderChileMap(H5, H4) {
   const sub = document.getElementById('clMapSub'), list = document.getElementById('clOpList'), sel = document.getElementById('clSel');
