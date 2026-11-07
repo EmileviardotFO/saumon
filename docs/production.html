@@ -419,7 +419,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
 @media (max-width: 760px) { #multiView { min-width: 0 !important; } #multiTable td.name, #multiTable th.name { max-width: 150px; white-space: normal; } }
 </style>
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#1E4D3B">
+<meta name="theme-color" content="#000000">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2365,7 +2365,7 @@ function showDataBanner(live) {
   b.id = 'dataBanner';
   b.style.cssText = 'padding:7px 14px;font-size:12px;text-align:center;'
     + 'font-family:monospace;letter-spacing:.03em;'
-    + (live ? 'background:#123a33;color:#5FD3C4;' : 'background:#4a1a1a;color:#ff8a65;');
+    + (live ? 'background:#0d0d0d;color:#9aa7ae;border-bottom:1px solid #222;' : 'background:#4a1a1a;color:#ff8a65;');
   if (!live) {
     b.textContent = 'Data could not be loaded (data/data.json) — nothing is shown. Reload the page; if it persists, check the last update run in GitHub Actions.';
     document.body.insertBefore(b, document.body.firstChild);
