@@ -8672,8 +8672,9 @@ function renderMarketsView() {
       + `here is a gap in the archive rather than a fall in trade.`;
   }
   document.getElementById('mktNote').innerHTML =
-    `<b>${GRP_LABEL[gr[0].g] || gr[0].g} grows fastest at ${pctOf(gr[0])}; `
+    (gr.length > 1 ? `<b>${GRP_LABEL[gr[0].g] || gr[0].g} grows fastest at ${pctOf(gr[0])}; `
     + `${GRP_LABEL[gr[gr.length - 1].g] || gr[gr.length - 1].g} is weakest at ${pctOf(gr[gr.length - 1])}.</b> `
+      : `<b>${rows.length === 1 ? mkEn(rows[0].pays) : (GRP_LABEL[gr[0].g] || gr[0].g)}: ${pctOf(gr[0])} in volume against ${yB}.</b> `)
     + (eu ? `The EU27 takes ${num(eu.q / tot * 100, 0)}% of the shown volume across ${eu.list.length} countries. ` : '')
     + `<span style="color:var(--muted)">Click a group row to fold its countries. Price is value ÷ round weight `
     + `and reflects product mix as much as calibre — Poland sits below the EU average because most of its volume `
@@ -8714,6 +8715,14 @@ function robinson(lat, lon) {
   return [x, y];
 }
 
+// noms norvegiens -> code ISO (etiquettes des bulles) et nom anglais (infobulle)
+const MK_ISO = { Australia: 'AU', Bahrain: 'BH', Belarus: 'BY', Belgia: 'BE', Bulgaria: 'BG', Canada: 'CA', Danmark: 'DK', 'De Forente Arabiske Emirater': 'AE', Egypt: 'EG', Estland: 'EE', Filippinene: 'PH',
+  Finland: 'FI', Frankrike: 'FR', Georgia: 'GE', Hellas: 'GR', Hongkong: 'HK', Indonesia: 'ID', Irland: 'IE', Israel: 'IL', Italia: 'IT', Japan: 'JP', Kasakhstan: 'KZ', Kina: 'CN', Kirgisistan: 'KG', Kuwait: 'KW',
+  Kypros: 'CY', Latvia: 'LV', Libanon: 'LB', Litauen: 'LT', Macao: 'MO', Malaysia: 'MY', Maldivene: 'MV', Marokko: 'MA', Mexico: 'MX', Mongolia: 'MN', Nederland: 'NL', 'New Zealand': 'NZ', Polen: 'PL',
+  Portugal: 'PT', Qatar: 'QA', Romania: 'RO', Russland: 'RU', 'Saudi-Arabia': 'SA', Serbia: 'RS', Singapore: 'SG', Spania: 'ES', Storbritannia: 'GB', Sveits: 'CH', Sverige: 'SE', 'Sør-Afrika': 'ZA',
+  'Sør-Korea': 'KR', Taiwan: 'TW', Thailand: 'TH', Tsjekkia: 'CZ', Tyrkia: 'TR', Tyskland: 'DE', Ukraina: 'UA', Usa: 'US', Usbekistan: 'UZ', Vietnam: 'VN', Østerrike: 'AT' };
+const mkIso = n => MK_ISO[n] || String(n).slice(0, 3).toUpperCase();
+const mkEn = n => { const a = (typeof MKT_ALIAS !== 'undefined' && MKT_ALIAS[n]) || ''; const m = a.match(/^(United (?:States|Kingdom|Arab Emirates)|South (?:Africa|Korea)|Saudi Arabia|Hong Kong|Viet Nam|[^\s]+)/); return m && !/^(US|UK|UAE)$/.test(m[1]) ? m[1] + (n !== m[1] ? ` <small style="opacity:.6">(${n})</small>` : '') : n; };
 function drawMktMap(rows, bAt, per, yA, yB) {
   const S = document.getElementById('mktMap');
   S.innerHTML = '';
@@ -8739,7 +8748,7 @@ function drawMktMap(rows, bAt, per, yA, yB) {
       : `<span style="color:${x >= 0 ? '#F2A65A' : '#5FD3C4'}">${x >= 0 ? '+' : ''}${x.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })}${u}</span>`;
     const pctq = prevQ ? (r.q - prevQ) / prevQ * 100 : null;
     const pctp = (px !== null && ppx) ? (px - ppx) / ppx * 100 : null;
-    tt.innerHTML = `<b>${r.pays}</b>`
+    tt.innerHTML = `<b>${r.agg ? r.pays : mkEn(r.pays)}</b>`
       + (r.agg ? `<small style="opacity:.7"> · ${r.n} destinations</small>` : '')
       + `<br><span style="opacity:.65">volume</span> ${(r.q / 1000).toFixed(1)} kt`
       + (dq === null ? '' : ` &nbsp;${sg(dq / 1000, 1, ' kt')} &nbsp;${sg(pctq, 1, '%')}`)
@@ -8754,20 +8763,12 @@ function drawMktMap(rows, bAt, per, yA, yB) {
   const hideTip = () => document.getElementById('maptooltip').style.display = 'none';
 
   const g = mkEl('g');
-  for (let lo = -180; lo <= 180; lo += 30) {
-    let d = '';
-    for (let la = -85; la <= 85; la += 5) { const p = PX(la, lo); d += (d ? 'L' : 'M') + p[0].toFixed(1) + ',' + p[1].toFixed(1); }
-    g.appendChild(mkEl('path', { d: d, fill: 'none', stroke: '#16303b' }));
-  }
-  for (let la = -60; la <= 80; la += 20) {
-    let d = '';
-    for (let lo = -180; lo <= 180; lo += 10) { const p = PX(la, lo); d += (d ? 'L' : 'M') + p[0].toFixed(1) + ',' + p[1].toFixed(1); }
-    g.appendChild(mkEl('path', { d: d, fill: 'none', stroke: '#16303b' }));
-  }
+  // style verre (novembre 2026) : plus de graticule, terres translucides, bulles pastel cerclees de blanc
+  const defs = mkEl('defs'); defs.innerHTML = '<filter id="mkSh" x="-50%" y="-50%" width="200%" height="200%"><feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#031223" flood-opacity=".35"/></filter>'; S.appendChild(defs);
   WORLD.forEach(country => country.forEach(ring => {
     let d = '';
     ring.forEach((pt, i) => { const p = PX(pt[1], pt[0]); d += (i ? 'L' : 'M') + p[0].toFixed(1) + ',' + p[1].toFixed(1); });
-    g.appendChild(mkEl('path', { d: d + 'Z', fill: '#1b3440', stroke: '#2c5563', 'stroke-width': .5 }));
+    g.appendChild(mkEl('path', { d: d + 'Z', fill: 'rgba(255,255,255,.16)', stroke: 'rgba(255,255,255,.30)', 'stroke-width': .5 }));
   }));
   S.appendChild(g);
 
@@ -8788,15 +8789,17 @@ function drawMktMap(rows, bAt, per, yA, yB) {
   }
   const maxQ = Math.max.apply(null, worldRows.map(r => r.q).concat([1]));
   const colFor = p => {
-    if (p === null) return 'rgba(140,166,176,.5)';
-    const c = Math.max(-40, Math.min(40, p)) / 40;
-    return c >= 0 ? `rgba(242,166,90,${0.35 + 0.55 * c})` : `rgba(95,211,196,${0.35 + 0.55 * -c})`;
+    // teintes opaques (une transparence sur le fond bleu virait au brun) : blanc casse -> peche si le volume monte, -> menthe s'il baisse
+    if (p === null) return '#e6eef3';
+    const c = Math.max(-40, Math.min(40, p)) / 40, t = Math.min(1, .35 + .65 * Math.abs(c)), A = [236, 243, 247], Z = c >= 0 ? [255, 179, 120] : [111, 214, 192];
+    return `rgb(${A.map((v, i) => Math.round(v + (Z[i] - v) * t)).join(',')})`;
   };
   const no = PX(61, 8.5);
-  S.appendChild(mkEl('circle', { cx: no[0], cy: no[1], r: 3.5, fill: '#E8F0F2' }));
-  const nt = mkEl('text', { x: no[0] + 7, y: no[1] - 7, fill: '#E8F0F2', 'font-size': 10,
-    'font-family': 'IBM Plex Mono', 'letter-spacing': '.08em' });
-  nt.textContent = 'NORWAY'; S.appendChild(nt);
+  S.appendChild(mkEl('circle', { cx: no[0], cy: no[1], r: 7, fill: 'rgba(255,255,255,.25)' }));
+  S.appendChild(mkEl('circle', { cx: no[0], cy: no[1], r: 3.5, fill: '#fff' }));
+  const nt = mkEl('text', { x: no[0] + 9, y: no[1] - 8, fill: '#fff', 'font-size': 11, 'font-weight': 600,
+    'font-family': '-apple-system, system-ui, sans-serif', 'letter-spacing': '.04em' });
+  nt.textContent = 'Norway'; S.appendChild(nt);
 
   worldRows.slice().sort((a, b) => b.q - a.q).forEach(r => {
     const c = r.agg ? [r.lat, r.lon] : CENTROIDS[r.pays]; if (!c) return;
@@ -8805,32 +8808,32 @@ function drawMktMap(rows, bAt, per, yA, yB) {
     const prevQ = r.agg ? r.pq : (bAt(r) || {}).q;
     const prevV = r.agg ? r.pv : (bAt(r) || {}).v;
     const pct = pcOf(r.q, prevQ);
-    const ci = mkEl('circle', { cx: p[0], cy: p[1], r: rad, fill: colFor(pct), stroke: '#0C1A21', 'stroke-width': 1 });
+    const ci = mkEl('circle', { cx: p[0], cy: p[1], r: rad, fill: colFor(pct), stroke: 'rgba(255,255,255,.95)', 'stroke-width': 1.5, filter: 'url(#mkSh)' });
     ci.style.cursor = 'pointer';
     ci.addEventListener('mousemove', e => showTip(e, r, prevQ, prevV));
     ci.addEventListener('mouseleave', hideTip);
     S.appendChild(ci);
     if (rad > 12) {
-      const lb = mkEl('text', { x: p[0], y: p[1] + 3, 'text-anchor': 'middle', fill: '#0C1A21',
-        'font-size': Math.min(11, rad * .58), 'font-family': 'IBM Plex Mono', 'font-weight': 600 });
+      const lb = mkEl('text', { x: p[0], y: p[1] + 4, 'text-anchor': 'middle', fill: '#0d2a40', 'pointer-events': 'none',
+        'font-size': Math.min(12, rad * .62), 'font-family': '-apple-system, system-ui, sans-serif', 'font-weight': 700 });
       // L'agregat garde son nom entier : 'EU2' ne voudrait rien dire.
-      lb.textContent = r.agg ? r.pays : r.pays.slice(0, 3).toUpperCase();
+      lb.textContent = r.agg ? r.pays : mkIso(r.pays);
       S.appendChild(lb);
     }
   });
-  const wt = mkEl('text', { x: 10, y: 16, fill: '#8CA6B0', 'font-size': 10,
-    'font-family': 'IBM Plex Mono', 'letter-spacing': '.16em' });
+  const wt = mkEl('text', { x: 14, y: 20, fill: 'rgba(255,255,255,.75)', 'font-size': 11, 'font-weight': 600,
+    'font-family': '-apple-system, system-ui, sans-serif', 'letter-spacing': '.14em' });
   wt.textContent = 'WORLD'; S.appendChild(wt);
 
   // ---- encart Europe, projection equirectangulaire sur la seule zone utile
   const EX = 572, EW = 408, EH = H - mB;
   const LA = [72, 33], LO = [-14, 33];
   const eg = mkEl('g', { transform: `translate(${EX},0)` });
-  eg.appendChild(mkEl('rect', { x: 0, y: 0, width: EW, height: EH, fill: '#0e1f27', stroke: '#274955', rx: 3 }));
+  eg.appendChild(mkEl('rect', { x: 0.5, y: 0.5, width: EW - 1, height: EH - 1, fill: 'rgba(255,255,255,.07)', stroke: 'rgba(255,255,255,.28)', rx: 20, class: 'mk-glass' }));
   const EPX = (lat, lon) => [(lon - LO[0]) / (LO[1] - LO[0]) * EW,
                              (LA[0] - lat) / (LA[0] - LA[1]) * EH];
   const cp = mkEl('clipPath', { id: 'euclip' });
-  cp.appendChild(mkEl('rect', { x: 0, y: 0, width: EW, height: EH }));
+  cp.appendChild(mkEl('rect', { x: 0, y: 0, width: EW, height: EH, rx: 20 }));
   eg.appendChild(cp);
   const ein = mkEl('g', { 'clip-path': 'url(#euclip)' });
   WORLD.forEach(country => country.forEach(ring => {
@@ -8839,10 +8842,11 @@ function drawMktMap(rows, bAt, per, yA, yB) {
     if (Math.max.apply(null, lats) < LA[1] - 5 || Math.min.apply(null, lats) > LA[0] + 5) return;
     let d = '';
     ring.forEach((pt, i) => { const p = EPX(pt[1], pt[0]); d += (i ? 'L' : 'M') + p[0].toFixed(1) + ',' + p[1].toFixed(1); });
-    ein.appendChild(mkEl('path', { d: d + 'Z', fill: '#1b3440', stroke: '#2c5563', 'stroke-width': .6 }));
+    ein.appendChild(mkEl('path', { d: d + 'Z', fill: 'rgba(255,255,255,.18)', stroke: 'rgba(255,255,255,.32)', 'stroke-width': .6 }));
   }));
   const eno = EPX(61, 8.5);
-  ein.appendChild(mkEl('circle', { cx: eno[0], cy: eno[1], r: 3, fill: '#E8F0F2' }));
+  ein.appendChild(mkEl('circle', { cx: eno[0], cy: eno[1], r: 6, fill: 'rgba(255,255,255,.25)' }));
+  ein.appendChild(mkEl('circle', { cx: eno[0], cy: eno[1], r: 3, fill: '#fff' }));
   const inEu = r => {
     const c = CENTROIDS[r.pays];
     return c && c[0] <= LA[0] && c[0] >= LA[1] && c[1] >= LO[0] && c[1] <= LO[1];
@@ -8855,27 +8859,27 @@ function drawMktMap(rows, bAt, per, yA, yB) {
     const c = CENTROIDS[r.pays], p = EPX(c[0], c[1]);
     const rad = 3 + 22 * Math.sqrt(r.q / maxE);
     const pct = pcOf(r.q, (bAt(r) || {}).q);
-    const ci = mkEl('circle', { cx: p[0], cy: p[1], r: rad, fill: colFor(pct), stroke: '#0C1A21', 'stroke-width': 1 });
+    const ci = mkEl('circle', { cx: p[0], cy: p[1], r: rad, fill: colFor(pct), stroke: 'rgba(255,255,255,.95)', 'stroke-width': 1.5, filter: 'url(#mkSh)' });
     ci.style.cursor = 'pointer';
     const b = bAt(r) || {};
     ci.addEventListener('mousemove', e => showTip(e, r, b.q, b.v));
     ci.addEventListener('mouseleave', hideTip);
     ein.appendChild(ci);
     if (rad > 8) {
-      const lb = mkEl('text', { x: p[0], y: p[1] + 3, 'text-anchor': 'middle', fill: '#0C1A21',
-        'font-size': Math.min(11, rad * .6), 'font-family': 'IBM Plex Mono', 'font-weight': 600 });
-      lb.textContent = r.pays.slice(0, 3).toUpperCase(); ein.appendChild(lb);
+      const lb = mkEl('text', { x: p[0], y: p[1] + 4, 'text-anchor': 'middle', fill: '#0d2a40', 'pointer-events': 'none',
+        'font-size': Math.min(12, rad * .66), 'font-family': '-apple-system, system-ui, sans-serif', 'font-weight': 700 });
+      lb.textContent = mkIso(r.pays); ein.appendChild(lb);
     }
   });
   eg.appendChild(ein);
-  const et = mkEl('text', { x: 10, y: 16, fill: '#8CA6B0', 'font-size': 10,
-    'font-family': 'IBM Plex Mono', 'letter-spacing': '.16em' });
+  const et = mkEl('text', { x: 14, y: 20, fill: 'rgba(255,255,255,.75)', 'font-size': 11, 'font-weight': 600,
+    'font-family': '-apple-system, system-ui, sans-serif', 'letter-spacing': '.14em' });
   et.textContent = 'EUROPE'; eg.appendChild(et);
   S.appendChild(eg);
 
   document.getElementById('mktMapLegend').innerHTML =
-    `<span><i class="sw" style="background:rgba(242,166,90,.85)"></i>volume up vs ${yB}</span>`
-    + `<span><i class="sw" style="background:rgba(95,211,196,.85)"></i>volume down</span>`
+    `<span style="display:inline-flex;align-items:center;gap:6px;margin-right:14px"><i style="display:inline-block;width:11px;height:11px;border-radius:50%;background:rgb(255,179,120);border:1.5px solid #fff"></i>volume up vs ${yB}</span>`
+    + `<span style="display:inline-flex;align-items:center;gap:6px;margin-right:14px"><i style="display:inline-block;width:11px;height:11px;border-radius:50%;background:rgb(111,214,192);border:1.5px solid #fff"></i>volume down</span>`
     + `<span style="color:var(--muted)">circle area proportional to volume · hover for detail · `
     + `each panel is scaled separately, so bubble sizes are not comparable between them</span>`;
 }
