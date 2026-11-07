@@ -13724,16 +13724,16 @@ loadRemoteData().then(live => {
   html{background:#060e15}
   body{background:transparent!important}
   html::before{content:'';position:fixed;inset:-20vh -20vw;z-index:-1;pointer-events:none;
-    background:radial-gradient(60vw 50vh at 8% 0%,rgba(47,184,166,.30),transparent 62%),radial-gradient(55vw 45vh at 100% 6%,rgba(79,195,247,.24),transparent 60%),
-      radial-gradient(70vw 60vh at 55% 105%,rgba(98,112,255,.20),transparent 62%),radial-gradient(45vw 40vh at 90% 60%,rgba(47,184,166,.10),transparent 60%),linear-gradient(180deg,#071119,#060d14)}
-  .panel,.top-controls{background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.025))!important;border:1px solid rgba(255,255,255,.09)!important;border-radius:20px!important;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 18px 50px rgba(0,0,0,.28)}
-  .pr-card,details.cl-sec,#gsPanel .gs-card{background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.03))!important;border:1px solid rgba(255,255,255,.11)!important;border-radius:16px!important;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 8px 24px rgba(0,0,0,.22)}
+    background:radial-gradient(60vw 50vh at 8% 0%,rgba(47,184,166,.46),transparent 62%),radial-gradient(55vw 45vh at 100% 6%,rgba(79,195,247,.38),transparent 60%),
+      radial-gradient(70vw 60vh at 55% 105%,rgba(110,100,255,.34),transparent 62%),radial-gradient(45vw 40vh at 92% 58%,rgba(47,184,166,.20),transparent 60%),radial-gradient(40vw 35vh at 5% 70%,rgba(79,195,247,.16),transparent 60%),linear-gradient(180deg,#071119,#060d14)}
+  .panel,.top-controls{background:linear-gradient(160deg,rgba(255,255,255,.10),rgba(255,255,255,.035) 45%,rgba(255,255,255,.06))!important;border:1px solid rgba(255,255,255,.15)!important;border-radius:22px!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -1px 0 rgba(255,255,255,.05),0 20px 60px rgba(0,0,0,.35)}
+  .pr-card,details.cl-sec,#gsPanel .gs-card,.gs-card{background:linear-gradient(160deg,rgba(255,255,255,.13),rgba(255,255,255,.04) 50%,rgba(255,255,255,.07))!important;border:1px solid rgba(255,255,255,.17)!important;border-radius:18px!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 10px 30px rgba(0,0,0,.28)}
   .sig-table{border-radius:12px}
   select,input[type=search],input[type=text],input:not([type]),.st-row input,.st-row select,#gsPanel .gs-h input{background-color:rgba(255,255,255,.06)!important;border:1px solid rgba(255,255,255,.14)!important;border-radius:14px!important;
     box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
-  .nw-chips button,#gsPanel .gs-x,.db-pill,#snBurger,#gsFab{background:rgba(255,255,255,.07)!important;border:1px solid rgba(255,255,255,.14)!important;border-radius:999px!important;
+  .nw-chips button,#gsPanel .gs-x,.db-pill,#snBurger,#gsFab{background:linear-gradient(160deg,rgba(255,255,255,.16),rgba(255,255,255,.05))!important;border:1px solid rgba(255,255,255,.20)!important;border-radius:999px!important;
     box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 4px 14px rgba(0,0,0,.22)!important;-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%)}
   #snBurger,#gsFab{border-radius:14px!important}
   #snLogo{border-radius:14px!important}
@@ -13742,7 +13742,8 @@ loadRemoteData().then(live => {
   #sideNav .sn-item.on,#sideNav .sn-item.active{background:rgba(255,255,255,.09)!important;border-radius:12px;box-shadow:inset 0 1px 0 rgba(255,255,255,.10)}
   #gsPanel{background:rgba(5,12,18,.93)!important;-webkit-backdrop-filter:blur(30px) saturate(170%);backdrop-filter:blur(30px) saturate(170%)}
   #srcPanel{background:rgba(10,20,28,.85)!important;-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);border-radius:16px!important}
-  @media (max-width:900px){body::before{background:#08121a!important;border-bottom:1px solid rgba(255,255,255,.07)!important}}
+  @media (max-width:900px){body::before{background:#08121a!important;border-bottom:1px solid rgba(255,255,255,.07)!important}
+    .gs-card table tr>*:first-child{position:sticky;left:0;z-index:1;background:#13212c}}
   /* pas de retour arriere du navigateur par glissement horizontal */
   html,body{overscroll-behavior-x:none}
 </style>
@@ -14266,7 +14267,8 @@ loadRemoteData().then(live => {
     const agg = (iso, k, ii) => { let kg = 0, nok = 0; rows.forEach(r => { if (r[0] === k && ii.includes(r[1]) && (!iso || r[2] === iso)) { kg += r[3]; nok += r[4]; } }); return [kg, nok]; };
     if (per) { const G = {}; rows.forEach(r => { if (r[2] !== mk.iso || !idx.includes(r[1])) return; const g = G[r[0]] = G[r[0]] || {}; const b = g[r[1]] = g[r[1]] || [0, 0]; b[0] += r[3]; b[1] += r[4]; });
       return `<div class="gs-card"><h4>Norwegian salmon exports to ${esc(mk.name)}</h4><div class="s">Statistics Norway, monthly customs exports (FOB, NOK), by product.</div>` +
-        perHtml(per, k => G[k], { last, t: v => v / 1000, p: (q, v) => (v / q).toFixed(1), cur: 'NOK', nm: i => P[i], col: 'Product', head: 'Norway → ' + mk.name, always: true }) + `</div>`; }
+        perHtml(per, k => G[k], { last, t: v => v / 1000, p: (q, v) => (v / q).toFixed(1), cur: 'NOK', nm: i => P[i], col: 'Product', head: 'Norway → ' + mk.name, always: true,
+          ref: (k, y, ms) => { let q = 0, v = 0; ms.forEach(mo => { const a = agg(null, y * 100 + mo, [+k]); q += a[0]; v += a[1]; }); return q ? { exp: v / q, bad: [] } : null; } }) + `</div>`; }
     const blocks = idx.map(i => {
       const c = ks.map(k => agg(mk.iso, k, [i])), p = ks.map(k => agg(mk.iso, k - 100, [i])), all = ks.map(k => agg(null, k, [i]));
       const tot = a => a.reduce((x, y) => [x[0] + y[0], x[1] + y[1]], [0, 0]); const T = tot(c), Tp = tot(p), Ta = tot(all);
@@ -14316,7 +14318,7 @@ loadRemoteData().then(live => {
     const ANOM = [];
     function flagP(k, a, y) {
       const v = pr(a); if (!a || !a[0] || opt.t(a[0]) < 5) return `<td>${v}</td>`;
-      const p = a[1] / a[0], R = opt.ref ? opt.ref(k, y, ms) : { exp: (y === Y ? A.T : B.T)[1] / (y === Y ? A.T : B.T)[0], bad: [] };
+      const p = a[1] / a[0], R = opt.ref ? opt.ref(k, y, ms) : (opt.col === 'Product' ? null : { exp: (y === Y ? A.T : B.T)[1] / (y === Y ? A.T : B.T)[0], bad: [] });
       if (!R) return `<td>${v}</td>`;
       const FN = { 0: 'fresh whole', 1: 'frozen whole', 2: 'fresh fillets', 3: 'frozen fillets', 5: 'smoked', 6: 'prepared' };
       const off = p < 0.7 * R.exp || p > 1.5 * R.exp;
