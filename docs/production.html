@@ -4464,14 +4464,14 @@ function caTrade() {
   $('ctSub').innerHTML = `Farmed Atlantic salmon exported from Canada each month, by the <b>province where it was produced</b> — British Columbia (Pacific) against New Brunswick, Nova Scotia, Newfoundland and Prince Edward Island (Atlantic). ` +
     `Source: Statistics Canada's merchandise trade database (CIMT), domestic exports (re-exports excluded), in tonnes of product: fresh and frozen whole fish, fillets, smoked. ` +
     `Published about five weeks after the month; latest month <b>${tmMl(last)}</b>, the freshest Canadian figure available — a month ahead of UN Comtrade and on the same day as US imports. ` +
-    `Almost all Canadian farmed salmon is exported, almost all of it fresh to the United States, so these exports track the harvest month by month. Values in Canadian dollars at the border.`;
+    `Almost all Canadian farmed salmon is exported, almost all of it fresh to the United States, so these exports track the harvest month by month. Values in Canadian dollars at the border. In the table, the small figure under each month is the same month a year earlier.`;
   const VIEWS = { ATL: 'Atlantic provinces', BC: 'British Columbia', ALL: 'Canada', NB: 'New Brunswick', NS: 'Nova Scotia', NL: 'Newfoundland' };
   $('ctTog').innerHTML = Object.entries(VIEWS).map(([k, l]) => `<button data-k="${k}" style="margin:0 6px 6px 0;padding:5px 11px;border-radius:14px;cursor:pointer;font-size:12.5px;background:${k === CT_VIEW ? '#1c3a4a' : '#12222c'};color:${k === CT_VIEW ? '#fff' : '#cfdde4'};border:1px solid ${k === CT_VIEW ? '#4fc3f7' : '#223642'}">${l}</button>`).join('');
   $('ctTog').querySelectorAll('button').forEach(b => b.onclick = () => { CT_VIEW = b.dataset.k; caTrade(); });
   const yrs = [ly - 2, ly - 1, ly];
   $('ctChart').innerHTML = caBars((y, m) => (y * 100 + m <= last ? v(CT_VIEW, y * 100 + m) : null), yrs, { axis: `Tonnes exported · ${VIEWS[CT_VIEW]}`, fmt: t => f0(t), tip: t => f0(t) + ' t' });
   // tableau : 13 derniers mois par province, un an plus tot, prix
-  const ks = tmRange(last, 13), rows = [['BC', 'British Columbia'], ['NB', 'New Brunswick'], ['NS', 'Nova Scotia'], ['NL', 'Newfoundland'], ['PE', 'Prince Edward Island'], ['ATL', '<b>Atlantic provinces</b>'], ['ALL', '<b>Canada</b>']];
+  const ks = tmRange(last, 13), rows = [['BC', 'British Columbia'], ['NB', 'New Brunswick'], ['NS', 'Nova Scotia'], ['NL', 'Newfoundland'], ['ATL', '<b>Atlantic provinces</b> (incl. PEI)'], ['ALL', '<b>Canada</b>']];
   $('ctTab').innerHTML = `<thead><tr><th class="name">Tonnes</th>${ks.map(k => `<th>${tmMl(k)}</th>`).join('')}<th>12 months</th><th>vs a year</th></tr></thead><tbody>` +
     rows.filter(([k]) => S(k, m12) || S(k, p12)).map(([k, l]) => `<tr><td class="name">${l}</td>${ks.map(x => `<td>${f0(v(k, x))}<div style="font-size:10.5px;color:var(--muted)">${f0(v(k, x - 100))}</div></td>`).join('')}<td><b>${f0(S(k, m12))}</b></td><td>${vt(pct(S(k, m12), S(k, p12)))}</td></tr>`).join('') +
     `<tr><td class="name">CAD/kg, Canada</td>${ks.map(x => `<td>${pr('ALL', x) ? pr('ALL', x).toFixed(2) : '—'}</td>`).join('')}<td></td><td></td></tr></tbody>`;
