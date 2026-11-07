@@ -314,7 +314,7 @@
     .content { gap: 14px; }
   }
   @media (max-width: 900px) {
-    body { padding: 12px 8px 32px; }
+    body { padding: 58px 8px 32px; }   /* place pour les boutons menu et loupe, fixes en haut a gauche */
     h1 { font-size: 17px; }
     .subtitle { font-size: 12px; margin-bottom: 12px; }
     .top-controls { padding: 10px 12px; gap: 10px; width: 100%; margin-bottom: 12px; }
@@ -13114,7 +13114,7 @@ loadRemoteData().then(live => {
   #gsPanel{display:none;position:fixed;top:0;right:0;bottom:0;left:244px;z-index:870;background:#08141c;overflow-y:auto;padding:22px 28px 60px}
   @media (max-width:900px){#gsPanel{left:0;padding:60px 12px 60px}
     #gsPanel .gs-card{padding:10px 10px;overflow-x:auto;-webkit-overflow-scrolling:touch}
-    #gsPanel .gs-h input,#gsQ,#plNoQ,#plNoSel,#caAtlQ,#caAtlSel{font-size:16px!important}  /* 16 px : iOS ne zoome pas sur la case */
+    #gsPanel .gs-h input,#gsQ,#plNoQ,#plNoSel,#caAtlQ,#caAtlSel,input[type=search],input[type=text],input:not([type]),select,textarea{font-size:16px!important}  /* 16 px : iOS ne zoome pas sur la case */
     #gsPanel table th,#gsPanel table td{white-space:nowrap}}
   /* telephone : chaque tableau defile de gauche a droite dans sa propre bande, la page ne deborde plus */
   @media (max-width:900px){
