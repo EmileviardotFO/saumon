@@ -3388,7 +3388,10 @@ function renderNewsLegacy() {
 
 
 // ===================== This week, version par bassin et entreprise (data/stories.json <- scripts/build_stories.py) =====================
-let ST_Q = '', NA = undefined;
+function stSortFor(b) {   // une rubrique (bassin, aliments...) s'ouvre sur les plus recentes ; la page d'ensemble garde le choix memorise
+  ST_SORT = b === 'all' ? ((() => { try { return localStorage.getItem('stSort') || 'rel'; } catch (e) { return 'rel'; } })()) : 'new';
+}
+let ST_Q = '', NA = undefined, ST_SORT = (() => { try { return localStorage.getItem('stSort') || 'rel'; } catch (e) { return 'rel'; } })();
 const stNorm = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 let ST = null, ST_LOADING = false, ST_B = 'all', ST_FREE = true, ST_HIDEPAY = false, QR = null, RB = undefined;
 // ---- resultats trimestriels (data/quarterly.json <- scripts/build_quarterly.py) ----
@@ -3451,14 +3454,14 @@ function renderNews() {
     `Sources marked with a closed lock need a subscription. Updated ${nwEsc((M.generated || '').slice(0, 10))}.` + (M.note ? ` <span style="color:var(--muted)">(${nwEsc(M.note)})</span>` : '');
   document.getElementById('nwCards').innerHTML = '';                 // page reservee aux actualites : pas de chiffres de marche
   document.getElementById('nwBar').innerHTML = `<div class="nw-chips">${['all'].concat(order).map(b => `<button type="button" data-b="${b}" class="${ST_B === b ? 'on' : ''}">${b === 'all' ? 'All basins' : nwEsc(B[b] || b)} <span style="opacity:.6">${b === 'all' ? '' : tally[b]}</span></button>`).join('')}</div>` +
-    `<label style="display:inline-flex;gap:6px;align-items:center;margin-left:12px"><input type="checkbox" id="stFree"${ST_FREE ? ' checked' : ''}> Free sources first</label>` +
-    `<label style="display:inline-flex;gap:6px;align-items:center;margin-left:12px"><input type="checkbox" id="stPay"${ST_HIDEPAY ? ' checked' : ''}> Hide subscription sources</label>` +
-    `<span style="margin-left:14px;font-size:12px;color:var(--muted);display:inline-flex;gap:12px;align-items:center">${ST_ICON.free} free ${ST_ICON.metered} a few free a month ${ST_ICON.pay} subscription ${ST_ICON['?']} not checked</span>` +
-    `<div style="margin-top:10px;display:flex;gap:8px;align-items:center"><input type="search" id="stQ" value="${nwEsc(ST_Q)}" placeholder="Search all news — company, place, topic (e.g. Agrosuper Blumar)" autocomplete="off" ` +
-    `style="flex:1;max-width:560px;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--ink);font-size:14px"></div>`;
-  document.querySelectorAll('#nwBar .nw-chips button').forEach(el => el.onclick = () => { ST_B = el.dataset.b; renderNews(); });
+    `<div class="st-row"><input type="search" id="stQ" value="${nwEsc(ST_Q)}" placeholder="Search news: company, place, topic" autocomplete="off" aria-label="Search all news">` +
+    `<select id="stSort" aria-label="Sort"><option value="rel"${ST_SORT === 'rel' ? ' selected' : ''}>By relevance</option><option value="new"${ST_SORT === 'new' ? ' selected' : ''}>Most recent</option></select></div>` +
+    `<div class="st-opts"><label><input type="checkbox" id="stFree"${ST_FREE ? ' checked' : ''}> Free sources first</label><label><input type="checkbox" id="stPay"${ST_HIDEPAY ? ' checked' : ''}> Hide subscription sources</label></div>` +
+    `<div class="st-legend"><span>${ST_ICON.free} free</span><span>${ST_ICON.metered} a few free a month</span><span>${ST_ICON.pay} subscription</span><span>${ST_ICON['?']} not checked</span></div>`;
+  document.querySelectorAll('#nwBar .nw-chips button').forEach(el => el.onclick = () => { ST_B = el.dataset.b; stSortFor(ST_B); renderNews(); });
   document.getElementById('stFree').onchange = e => { ST_FREE = e.target.checked; renderNews(); };
   document.getElementById('stPay').onchange = e => { ST_HIDEPAY = e.target.checked; renderNews(); };
+  document.getElementById('stSort').onchange = e => { ST_SORT = e.target.value; if (ST_B === 'all') try { localStorage.setItem('stSort', ST_SORT); } catch (er) {} renderNews(); };
   { const q = document.getElementById('stQ'); let tm = null;
     q.oninput = () => { clearTimeout(tm); tm = setTimeout(() => { ST_Q = q.value; const pos = q.selectionStart; renderNews(); const q2 = document.getElementById('stQ'); if (q2) { q2.focus(); try { q2.setSelectionRange(pos, pos); } catch (e) {} } }, 250); }; }
   if (ST_Q.trim().length >= 2 && NA === undefined) { NA = null; fetch(DATA_URL.replace('data.json', 'news_archive.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
@@ -3520,6 +3523,9 @@ function renderNews() {
     old.forEach(x => seen.add(stNorm(x.t)));
     const urls = new Set([...cur.flatMap(st => (st.arts || []).map(a => a.url)), ...old.flatMap(x => (x.a || []).map(a => a.u))]);
     const heads = NA ? (NA.headlines || []).filter(h => !urls.has(h.u) && hit(h.t + ' ' + (h.s || ''))).slice(0, 80) : [];
+    { const sc = t => { const x = stNorm(t || ''); return words.reduce((a, w) => a + (x.includes(w) ? 1 : 0), 0); };   // pertinence : mots trouves dans le titre
+      if (ST_SORT === 'new') { cur.sort((a, b) => (a.last < b.last ? 1 : a.last > b.last ? -1 : 0)); old.sort((a, b) => ((a.z || a.f) < (b.z || b.f) ? 1 : -1)); heads.sort((a, b) => (a.d < b.d ? 1 : -1)); }
+      else { cur.sort((a, b) => sc(b.title) - sc(a.title) || nSrc(b) - nSrc(a)); old.sort((a, b) => sc(b.t) - sc(a.t) || ((a.z || a.f) < (b.z || b.f) ? 1 : -1)); heads.sort((a, b) => sc(b.t) - sc(a.t) || (a.d < b.d ? 1 : -1)); } }
     const oldCard = x => `<article style="display:flex;flex-direction:column;gap:7px;padding:12px 14px;border:1px solid var(--border);border-radius:10px">` +
       `<span style="font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)">${nwEsc(B[x.b] || x.b || '')} · ${nwEsc(x.w)}${x.e ? ' · ' + nwEsc(x.e) : ''} · ${nwDay(x.f)}${x.z && x.z !== x.f ? ' – ' + nwDay(x.z) : ''} ${(x.z || '').slice(0, 4)}</span>` +
       `<h3 style="margin:0;font-size:15px;font-weight:600;line-height:1.35">${nwEsc(x.t)}</h3>${x.m ? `<p style="margin:0;opacity:.9">${nwEsc(x.m)}</p>` : ''}` +
@@ -3535,13 +3541,13 @@ function renderNews() {
     document.getElementById('nwTop').innerHTML = ''; document.getElementById('nwThemes').innerHTML = '';
     return;
   }
-  document.getElementById('nwStories').innerHTML = rbBox + topBox + shown.map(b => { const L = S.filter(s => s.basin === b).sort((x, y) => recent(x) - recent(y) || prio(x) - prio(y) || (x.last < y.last ? 1 : x.last > y.last ? -1 : 0) || nSrc(y) - nSrc(x));
+  document.getElementById('nwStories').innerHTML = rbBox + topBox + shown.map(b => { const L = S.filter(s => s.basin === b).sort(ST_SORT === 'new' ? ((x, y) => (x.last < y.last ? 1 : x.last > y.last ? -1 : 0) || prio(x) - prio(y)) : ((x, y) => recent(x) - recent(y) || prio(x) - prio(y) || (x.last < y.last ? 1 : x.last > y.last ? -1 : 0) || nSrc(y) - nSrc(x)));
     const lim = ST_B === 'all' ? 6 : 999, vis = L.slice(0, lim);
     return `<section style="margin:16px 0 4px"><div style="display:flex;gap:10px;align-items:baseline;border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:10px">` +
       `<h2 style="margin:0;font-size:18px">${nwEsc(B[b] || b)}</h2><span style="color:var(--muted);font-size:12.5px">${L.length} stor${L.length > 1 ? 'ies' : 'y'} · ${tally[b]} sources</span>` +
       (L.length > lim ? `<button type="button" class="nw-more" data-b="${b}" style="margin-left:auto">All ${L.length} stories</button>` : '') + `</div>` +
       `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,480px),1fr));gap:12px">${vis.map(card).join('')}</div></section>`; }).join('');
-  document.querySelectorAll('#nwStories .nw-more').forEach(el => el.onclick = () => { ST_B = el.dataset.b; renderNews(); window.scrollTo(0, 0); });
+  document.querySelectorAll('#nwStories .nw-more').forEach(el => el.onclick = () => { ST_B = el.dataset.b; stSortFor(ST_B); renderNews(); window.scrollTo(0, 0); });
   document.querySelectorAll('#nwStories .st-jump').forEach(el => el.onclick = () => { const i = +el.dataset.st, go = () => { const a = document.getElementById('st-' + i);
       if (a) { a.scrollIntoView({ behavior: 'smooth', block: 'start' }); a.style.outline = '2px solid #4fc3f7'; setTimeout(() => a.style.outline = '', 2500); return true; } return false; };
     if (!go()) { ST_B = S[i].basin; renderNews(); setTimeout(go, 50); } });
@@ -13615,6 +13621,28 @@ loadRemoteData().then(live => {
     body.sn-open #snShade{display:block} #snBurger{display:block}
     /* le bouton menu reste au-dessus : le contenu du menu commence en dessous */
     #sideNav{padding-top:calc(58px + env(safe-area-inset-top,0px))} }
+  .st-row{display:flex;gap:8px;align-items:stretch;margin-top:12px;width:100%}
+  .st-row input{flex:1 1 auto;min-width:0;height:42px;box-sizing:border-box;padding:0 14px;border-radius:10px;border:1px solid #2a4352;background:#0f1e2b;color:var(--ink);font-size:15px}
+  .st-row input:focus,.st-row select:focus{outline:none;border-color:#4fc3f7}
+  .st-row select{flex:0 0 auto;max-width:42%;height:42px;box-sizing:border-box;padding:0 30px 0 12px;border-radius:10px;border:1px solid #2a4352;background:#0f1e2b url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238fa4b0' fill='none' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 11px center;color:var(--ink);font-size:14px;-webkit-appearance:none;appearance:none}
+  .st-opts{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:10px;font-size:13px}
+  .st-opts label{display:inline-flex;gap:7px;align-items:center;white-space:nowrap}
+  .st-legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:6px;font-size:12px;color:var(--muted)}
+  @media (max-width:600px){.st-row input::placeholder{font-size:14px}.st-legend{gap:4px 10px;font-size:11.5px}}
+  .st-legend span{display:inline-flex;gap:5px;align-items:center;white-space:nowrap}
+  /* telephone : barre du haut pleine et opaque, boutons alignes a la meme hauteur */
+  @media (max-width:900px){
+    body::before{content:'';position:fixed;left:0;right:0;top:0;height:calc(56px + env(safe-area-inset-top,0px));background:#0b1620;border-bottom:1px solid #1c3040;z-index:940;transition:transform .2s ease}
+    body.fab-hide::before{transform:translateY(-100%)}
+    body.sn-open::before{display:none}
+    body{padding-top:calc(56px + env(safe-area-inset-top,0px))}
+    #snBurger,#gsFab{top:calc(8px + env(safe-area-inset-top,0px))!important;width:40px;height:40px;padding:0!important;display:flex;align-items:center;justify-content:center;font-size:18px!important;line-height:1!important;border-radius:10px!important;border:1px solid #2a4352!important;background:#102231!important;box-shadow:none!important}
+    #gsFab{left:58px!important}
+    #snLogo{top:calc(8px + env(safe-area-inset-top,0px));width:40px;height:40px;border-radius:10px;box-shadow:0 0 0 1px #2a4352}
+    .db-pill{position:fixed!important;top:calc(14px + env(safe-area-inset-top,0px))!important;right:60px!important;height:28px;box-sizing:border-box;background:#102231!important;border-color:#2a4352!important;color:#a9bfcc!important;border-radius:10px!important;transition:transform .2s ease,opacity .2s ease}
+    body.fab-hide .db-pill{transform:translateY(-80px);opacity:0}
+    body.sn-open .db-pill{display:none}
+  }
   /* pas de retour arriere du navigateur par glissement horizontal */
   html,body{overscroll-behavior-x:none}
 </style>
@@ -13868,7 +13896,7 @@ loadRemoteData().then(live => {
   P.innerHTML = '<div class="gs-h"><input id="gsQ2" type="search" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"><button class="gs-x" type="button">Close ✕</button></div><div id="gsSug" role="listbox"></div><div class="gs-hint">A company and/or a subject, in English, French or Norwegian: <i>Lerøy lice</i>, <i>Mowi mortalité</i>, <i>SalMar 6+</i>, <i>Chine export</i>, <i>Kaldvík</i>. Results follow your typing; Esc to close.</div><div id="gsOut"></div>';
   document.body.appendChild(P);
   const q1 = document.getElementById('gsQ'), q2 = document.getElementById('gsQ2'), out = document.getElementById('gsOut');
-  { const fb = document.createElement('button'); fb.id = 'gsFab'; fb.type = 'button'; fb.setAttribute('aria-label', 'Search'); fb.textContent = '⌕'; document.body.appendChild(fb);
+  { const fb = document.createElement('button'); fb.id = 'gsFab'; fb.type = 'button'; fb.setAttribute('aria-label', 'Search'); fb.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg>'; document.body.appendChild(fb);
     const st = document.createElement('style'); st.textContent = '#gsFab{display:none;position:fixed;left:62px;top:calc(10px + env(safe-area-inset-top,0px));z-index:950;padding:5px 12px;border-radius:8px;border:1px solid #2a4352;background:#0d1a24;color:#e7eef2;font-size:20px;line-height:1.2;cursor:pointer}@media (max-width:900px){#gsFab{display:block}body.sn-open #gsFab{display:none}}';
     document.head.appendChild(st);
     fb.addEventListener('click', () => { if (P.style.display === 'block') { close(); return; } document.body.classList.remove('sn-open'); P.style.display = 'block'; q2.focus(); setTimeout(() => { if (typeof showSug === 'function') showSug(); }, 0); }); }
