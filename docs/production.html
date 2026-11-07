@@ -449,8 +449,18 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
 <script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js'));}</script>
 </head>
 <body class="booting">
-<style>body.booting > *:not(script):not(style){visibility:hidden!important}</style>
-<script>/* page vide (fond seul) jusqu'au premier onglet dessine ; filet de securite apres 15 s */ setTimeout(function(){document.body.classList.remove('booting')},15000);</script>
+<style>body.booting > *:not(script):not(style):not(#splash){visibility:hidden!important}
+  #splash{position:fixed;inset:0;z-index:2000;display:flex;align-items:center;justify-content:center;pointer-events:none;transition:opacity .35s ease}
+  #splash img{width:120px;height:120px;filter:drop-shadow(0 10px 24px rgba(3,18,35,.45));animation:splashSpin 1.3s cubic-bezier(.45,.05,.25,1) both}
+  @keyframes splashSpin{0%{transform:rotate(0) scale(.86);opacity:0}15%{opacity:1}100%{transform:rotate(360deg) scale(1);opacity:1}}
+  body:not(.booting) #splash{opacity:0}
+  @media (prefers-reduced-motion:reduce){#splash img{animation:none}}</style>
+<div id="splash" aria-hidden="true"><img src="icons/logo.svg?v=orb" alt=""></div>
+<script>/* ecran d'ouverture : le logo fait un tour sur fond vide ; la page apparait au premier onglet dessine, jamais avant la fin du tour ;
+   filet de securite apres 15 s */
+(function () { var t0 = Date.now(), MIN = 1300; window.endBoot = function () { var w = Math.max(0, MIN - (Date.now() - t0));
+  setTimeout(function () { document.body.classList.remove('booting'); setTimeout(function () { var s = document.getElementById('splash'); if (s) s.remove(); }, 400); }, w); };
+  setTimeout(window.endBoot, 15000); })();</script>
 
 <h1>Annual Comparison by Production Area (PO)</h1>
 <div class="subtitle">Cumulative total from January through the selected month, year N vs the same period in year N-1. Salmon only.</div>
@@ -7329,7 +7339,7 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     document.querySelectorAll('#viewToggle button').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentView = btn.dataset.v;
-    if (document.body.classList.contains('booting')) requestAnimationFrame(() => requestAnimationFrame(() => document.body.classList.remove('booting')));
+    if (document.body.classList.contains('booting')) requestAnimationFrame(() => requestAnimationFrame(() => window.endBoot ? window.endBoot() : document.body.classList.remove('booting')));
     // le bandeau qualite (mortalite / aliment du registre) ne concerne que les vues qui en affichent ; elles le reaffichent elles-memes
     document.getElementById('dataQualityBanner').style.display = 'none';
     document.getElementById('metricRow').style.display = currentView === 'po' ? 'flex' : 'none';
