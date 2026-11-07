@@ -12,6 +12,7 @@
 //   top                   "This week in five" (les sujets à plus fort impact de la semaine)
 //   chile                 estimation de la récolte chilienne (wellboats)
 //   top+news:CL           les deux, l'un sous l'autre
+//   news titles           titres seuls (plus de sujets) ; par defaut chaque titre a son resume (moyen et grand format)
 // Codes de bassin : NO CL GB FO IS CA AU IE NZ US global FEED
 //
 // Un appui sur une ligne ouvre l'article (la première source gratuite) ; un appui ailleurs ouvre le dashboard.
@@ -58,18 +59,25 @@ function header(w, txt, sub) {
   w.addSpacer(4);
 }
 
-function storyRow(w, s, small) {
+function storyRow(w, s, small, sum) {
   const row = w.addStack(); row.layoutVertically(); row.url = bestLink(s);
   const meta = row.addText(`${BASIN[s.basin] || s.basin}${s.who && s.who !== 'Sector' ? ' · ' + s.who : ''} · ${day(s.last)}`);
   meta.font = Font.mediumSystemFont(9.5); meta.textColor = C.muted; meta.lineLimit = 1;
   const t = row.addText(s.title || ''); t.font = Font.semiboldSystemFont(small ? 12 : 13); t.textColor = C.ink; t.lineLimit = small ? 3 : 2;
-  w.addSpacer(small ? 4 : 6);
+  if (sum && s.summary) {   // resume ecrit pour la page (titres et descriptions des editeurs, jamais de texte payant)
+    row.addSpacer(2);
+    const d = row.addText(s.summary); d.font = Font.systemFont(11.5); d.textColor = new Color('#b8c7d1'); d.lineLimit = sum;
+  }
+  w.addSpacer(small ? 4 : (sum ? 9 : 6));
 }
 
 async function build() {
   const fam = config.widgetFamily || 'large';
-  const room = { small: 2, medium: 3, large: 7, extraLarge: 9 }[fam] || 7, small = fam === 'small';
-  const blocks = parse(args.widgetParameter);
+  const room = { small: 3, medium: 4, large: 9, extraLarge: 11 }[fam] || 9, small = fam === 'small';
+  const raw = (args.widgetParameter || '').trim(), titles = /\btitles?\b/i.test(raw);
+  const blocks = parse(raw.replace(/\btitles?\b/ig, '').trim());
+  const sum = small || titles ? 0 : (fam === 'medium' ? 3 : 2);   // lignes de resume par sujet
+  const cost = sum ? 2 : 1;
   const w = new ListWidget(); w.backgroundColor = C.bg; w.url = DASH; w.setPadding(12, 14, 12, 14);
   w.refreshAfterDate = new Date(Date.now() + 60 * 60 * 1000);   // iOS rafraichit au plus a peu pres toutes les heures
   let left = room;
@@ -86,10 +94,11 @@ async function build() {
         S = S.slice().sort((x, y) => (x.last < y.last ? 1 : x.last > y.last ? -1 : 0) || (+x.priority || 9) - (+y.priority || 9));
         header(w, b.f ? b.f.map(f => BASIN[f] || f).join(' · ') : 'Latest salmon news', small ? '' : 'to ' + day((ST.meta || {}).news_generated));
       }
-      const n = Math.min(left, b.k === 'top' ? Math.min(5, left) : left, S.length);
-      S.slice(0, n).forEach(s => storyRow(w, s, small));
+      const fit = Math.max(1, Math.floor((left - 1) / cost));
+      const n = Math.min(fit, b.k === 'top' ? 5 : fit, S.length);
+      S.slice(0, n).forEach(s => storyRow(w, s, small, sum));
       if (!n) { const t = w.addText('Nothing this week.'); t.font = Font.systemFont(12); t.textColor = C.muted; }
-      left -= Math.max(1, n) + 1;
+      left -= Math.max(1, n) * cost + 1;
     } else if (b.k === 'chile') {
       const J = await getJSON('chile_wellboats.json');
       header(w, 'Chile · wellboat watch', '');
