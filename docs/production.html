@@ -12798,7 +12798,19 @@ loadRemoteData().then(live => {
   #gsQ:focus{border-color:#4fc3f7}
   #gsBox:before{content:"⌕";position:absolute;left:10px;top:5px;color:#8fa4b0;font-size:17px}
   #gsPanel{display:none;position:fixed;top:0;right:0;bottom:0;left:244px;z-index:870;background:#08141c;overflow-y:auto;padding:22px 28px 60px}
-  @media (max-width:900px){#gsPanel{left:0;padding:60px 14px 60px}}
+  @media (max-width:900px){#gsPanel{left:0;padding:60px 12px 60px}
+    #gsPanel .gs-card{padding:10px 10px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+    #gsPanel .gs-h input{font-size:16px}  /* 16 px : iOS ne zoome pas sur la case */
+    #gsPanel table th,#gsPanel table td{white-space:nowrap}}
+  /* telephone : chaque tableau defile de gauche a droite dans sa propre bande, la page ne deborde plus */
+  @media (max-width:900px){
+    html,body{overflow-x:clip;max-width:100%}
+    table{display:block;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+    table td.name,table th.name{position:sticky;left:0;z-index:1;background:var(--panel,#0d1a24)}
+    .panel{overflow-x:visible}
+    svg{max-width:100%}
+    pre,code{white-space:pre-wrap;word-break:break-word}
+  }
   #gsPanel .gs-h{display:flex;align-items:center;gap:12px;margin-bottom:6px}
   #gsPanel .gs-h input{flex:1;background:#0d1a24;border:1px solid #4fc3f7;border-radius:8px;color:#e7eef2;padding:10px 12px;font-size:15px;outline:none}
   #gsPanel .gs-x{background:none;border:1px solid #2a4352;color:#cfdde4;border-radius:8px;padding:8px 12px;cursor:pointer}
@@ -12856,12 +12868,18 @@ loadRemoteData().then(live => {
   P.innerHTML = '<div class="gs-h"><input id="gsQ2" type="search" autocomplete="off"><button class="gs-x" type="button">Close ✕</button></div><div class="gs-hint">A company and/or a subject, in English, French or Norwegian: <i>Lerøy lice</i>, <i>Mowi mortalité</i>, <i>SalMar 6+</i>, <i>Chine export</i>, <i>Kaldvík</i>. Results follow your typing; Esc to close.</div><div id="gsOut"></div>';
   document.body.appendChild(P);
   const q1 = document.getElementById('gsQ'), q2 = document.getElementById('gsQ2'), out = document.getElementById('gsOut');
-  const open = v => { P.style.display = 'block'; q2.value = v; run(v); setTimeout(() => q2.focus(), 30); };
+  const open = v => { P.style.display = 'block'; q2.value = v; run(v); q2.focus(); };
   const close = () => { P.style.display = 'none'; };
   P.querySelector('.gs-x').onclick = close;
-  // recherche en direct : des la 2e lettre dans le menu, le panneau s'ouvre et les resultats suivent la frappe
-  q1.addEventListener('input', () => { const v = q1.value; if (v.trim().length >= 2) { q1.value = ''; open(v); const n = v.length; setTimeout(() => { q2.focus(); q2.setSelectionRange(n, n); }, 0); } });
-  q1.addEventListener('keydown', e => { if (e.key === 'Enter' && q1.value.trim()) { open(q1.value.trim()); q1.value = ''; } });
+  // la case du menu ne sert que de porte d'entree : au premier toucher (ou clic, ou tabulation) le panneau s'ouvre et la saisie se fait
+  // directement dans sa grande case, focus donne dans le meme geste (sinon iOS n'ouvre pas le clavier) ; le menu mobile se referme
+  const enter = () => { const v = q1.value; q1.value = ''; document.body.classList.remove('sn-open'); const bg = document.getElementById('snBurger'); if (bg) bg.textContent = '☰';
+    if (P.style.display !== 'block') { P.style.display = 'block'; q2.value = v; if (v.trim()) run(v); }
+    q2.focus(); try { q2.setSelectionRange(q2.value.length, q2.value.length); } catch (e) {} };
+  q1.addEventListener('touchend', e => { e.preventDefault(); enter(); });
+  q1.addEventListener('mousedown', e => { e.preventDefault(); enter(); });
+  q1.addEventListener('focus', enter);
+  q1.addEventListener('input', enter);
   load();                                   // donnees chargees en avance : les resultats arrivent sans attente
   let tm = null; q2.addEventListener('input', () => { clearTimeout(tm); tm = setTimeout(() => run(q2.value), 220); });
   q2.addEventListener('keydown', e => { if (e.key === 'Enter') run(q2.value); if (e.key === 'Escape') close(); });
@@ -13037,7 +13055,7 @@ loadRemoteData().then(live => {
   }
   function lev(a, b) { const d = Array.from({ length: a.length + 1 }, (_, i) => [i]); for (let j = 1; j <= b.length; j++) d[0][j] = j;
     for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); return d[a.length][b.length]; }
-  function marketCard(mk, prods) {
+  function marketCard(mk, prods, per) {
     const S = (typeof DATA_RAW !== 'undefined' && DATA_RAW ? DATA_RAW : {}).ssb_exports; if (!S || !mk) return '';
     const P = Object.values(S.meta.products);   // 0 entier frais, 1 filet frais, 2 filet congele, 3 entier congele
     let idx = [0, 1, 2, 3];
@@ -13048,6 +13066,9 @@ loadRemoteData().then(live => {
     const rows = S.rows, last = Math.max(...rows.map(r => r[0])), ks = []; for (let i = 11; i >= 0; i--) { let y = Math.floor(last / 100), m = last % 100 - i; while (m < 1) { m += 12; y--; } ks.push(y * 100 + m); }
     const ml = x => `${MONTHS_FR[x % 100 - 1].slice(0, 3)} ${String(Math.floor(x / 100)).slice(2)}`;
     const agg = (iso, k, ii) => { let kg = 0, nok = 0; rows.forEach(r => { if (r[0] === k && ii.includes(r[1]) && (!iso || r[2] === iso)) { kg += r[3]; nok += r[4]; } }); return [kg, nok]; };
+    if (per) { const G = {}; rows.forEach(r => { if (r[2] !== mk.iso || !idx.includes(r[1])) return; const g = G[r[0]] = G[r[0]] || {}; const b = g[r[1]] = g[r[1]] || [0, 0]; b[0] += r[3]; b[1] += r[4]; });
+      return `<div class="gs-card"><h4>Norwegian salmon exports to ${esc(mk.name)}</h4><div class="s">Statistics Norway, monthly customs exports (FOB, NOK), by product.</div>` +
+        perHtml(per, k => G[k], { last, t: v => v / 1000, p: (q, v) => (v / q).toFixed(1), cur: 'NOK', nm: i => P[i], col: 'Product', head: 'Norway → ' + mk.name, always: true }) + `</div>`; }
     const blocks = idx.map(i => {
       const c = ks.map(k => agg(mk.iso, k, [i])), p = ks.map(k => agg(mk.iso, k - 100, [i])), all = ks.map(k => agg(null, k, [i]));
       const tot = a => a.reduce((x, y) => [x[0] + y[0], x[1] + y[1]], [0, 0]); const T = tot(c), Tp = tot(p), Ta = tot(all);
@@ -13062,10 +13083,52 @@ loadRemoteData().then(live => {
       `<div class="s" style="margin-top:6px"><span class="gs-go" onclick="gsGoTab('markets')">→ Markets, exports by market</span>${mk.iso === 'PL' || mk.iso === 'NL' || mk.iso === 'DK' ? ` · <span class="gs-go" onclick="gsGoTab('poland')">→ EU processing hubs</span>` : ''}</div></div>`;
   }
 
+
+  // ---- periode demandee (trimestre, semestre, mois, annee) : chiffres de cette periode seulement, contre la meme periode un an plus tot
+  function parsePeriod(rest) {
+    let ms = null, lab = '', m;
+    const ORD = { first: 1, premier: 1, '1er': 1, second: 2, deuxieme: 2, third: 3, troisieme: 3, fourth: 4, quatrieme: 4 };
+    if ((m = rest.match(/\b(?:q|t|k)([1-4])\b/)) || (m = rest.match(/\b([1-4])(?:st|nd|rd|th|er|e|eme|re|\.)?\s*(?:quarter|trimestre|kvartal)\b/)) || (m = rest.match(/\b(first|premier|1er|second|deuxieme|third|troisieme|fourth|quatrieme)\s+(?:quarter|trimestre)\b/))) {
+      const n = ORD[m[1]] || +m[1]; ms = [3 * n - 2, 3 * n - 1, 3 * n]; lab = 'Q' + n; }
+    else if ((m = rest.match(/\b(?:h|s)([12])\b/)) || (m = rest.match(/\b(first|premier|1er|second|deuxieme)\s+(?:half|semestre)\b/))) { const n = ORD[m[1]] || +m[1]; ms = n === 1 ? [1, 2, 3, 4, 5, 6] : [7, 8, 9, 10, 11, 12]; lab = 'H' + n; }
+    if (m) rest = rest.replace(m[0], ' ');
+    let year = null; const y = rest.match(/\b(20[1-3]\d)\b/); if (y) { year = +y[1]; rest = rest.replace(y[0], ' '); }
+    if (!ms && /\b(ytd|year to date|depuis janvier|cumul\w*)\b/.test(rest)) { ms = 'ytd'; lab = 'Jan–'; rest = rest.replace(/\b(ytd|year to date|depuis janvier|cumul\w*)\b/, ' '); }
+    if (!ms && year) { ms = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]; lab = ''; }
+    return { per: ms ? { ms, year, lab } : null, rest };
+  }
+  // get(k) -> { cle: [quantite, valeur] } pour le mois k (aaaamm) ; opt : last, t (quantite -> tonnes), p (quantite, valeur -> prix), cur, nm, head, total(k) facultatif
+  function perHtml(per, get, opt) {
+    const last = opt.last, LY = Math.floor(last / 100), LM = last % 100, ML = MONTHS_FR.map(x => x.slice(0, 3));
+    let ms = per.ms === 'ytd' ? Array.from({ length: (per.year && per.year < LY ? 12 : LM) }, (_, i) => i + 1) : per.ms;
+    let Y = per.year || (ms[ms.length - 1] <= LM ? LY : LY - 1), note = '';
+    const done = ms.filter(mo => Y * 100 + mo <= last);
+    if (!done.length) { note = `${per.lab || ''} ${Y} is not published yet (latest month: ${MONTHS_FR[LM - 1]} ${LY}); showing ${Y - 1}. `; Y--; }
+    else if (done.length < ms.length) { note = `${Y} so far covers ${ML[done[0] - 1]}–${ML[done[done.length - 1] - 1]} only (latest month published: ${MONTHS_FR[LM - 1]} ${LY}); compared with the same months a year earlier. `; ms = done; }
+    const lab = per.ms === 'ytd' ? `Jan–${ML[ms[ms.length - 1] - 1]}` : per.lab ? (ms.length < per.ms.length ? `${per.lab} (${ML[ms[0] - 1]}–${ML[ms[ms.length - 1] - 1]})` : per.lab) : ms.length === 12 ? '' : ms.length === 1 ? MONTHS_FR[ms[0] - 1] : `${ML[ms[0] - 1]}–${ML[ms[ms.length - 1] - 1]}`;
+    const L = y => `${lab ? lab + ' ' : ''}${y}`;
+    const agg = y => { const o = {}, T = [0, 0]; ms.forEach(mo => { const g = get(y * 100 + mo) || {}; Object.entries(g).forEach(([k, v]) => { const b = o[k] = o[k] || [0, 0]; b[0] += v[0]; b[1] += v[1]; });
+        const tt = opt.total ? opt.total(y * 100 + mo) : null; if (tt) { T[0] += tt[0]; T[1] += tt[1]; } else Object.values(g).forEach(v => { T[0] += v[0]; T[1] += v[1]; }); }); return { o, T }; };
+    const A = agg(Y), B = agg(Y - 1); if (!A.T[0] && !B.T[0]) return ''; const t0 = v => v ? Math.round(opt.t(v)).toLocaleString('en-US') : '—', pr = a => a && a[0] ? opt.p(a[0], a[1]) : '—';
+    const chg = (a, b) => a && b ? `<span class="${a >= b ? 'good' : 'bad'}">${a >= b ? '+' : '−'}${Math.abs(Math.round(100 * (a / b - 1)))} %</span>` : '—';
+    const keys = Object.keys({ ...A.o, ...B.o }).filter(k => (A.o[k] || [0])[0] || (B.o[k] || [0])[0]).sort((a, b) => (A.o[b] || [0])[0] - (A.o[a] || [0])[0] || (B.o[b] || [0])[0] - (B.o[a] || [0])[0]);
+    const hist = []; for (let y = Y - 4; y <= Y; y++) { const h = agg(y); if (h.T[0]) hist.push([y, h.T]); }
+    return `<div class="s" style="margin-top:8px">${note}<b>${opt.head} — ${L(Y)}: ${t0(A.T[0])} t</b> (${chg(A.T[0], B.T[0])} on ${L(Y - 1)}: ${t0(B.T[0])} t), average <b>${pr(A.T)} ${opt.cur}/kg</b> against ${pr(B.T)} a year earlier.</div>` +
+      (keys.length > 1 || opt.always ? `<table><tr><th>${opt.col}</th><th>${L(Y)} (t)</th><th>Share</th><th>${L(Y - 1)} (t)</th><th>Change</th><th>${opt.cur}/kg ${Y}</th><th>${opt.cur}/kg ${Y - 1}</th></tr>` +
+        keys.slice(0, 12).map(k => { const a = A.o[k] || [0, 0], b = B.o[k] || [0, 0]; return `<tr><td>${esc(opt.nm(k))}</td><td><b>${t0(a[0])}</b></td><td>${A.T[0] ? (100 * a[0] / A.T[0]).toFixed(0) + ' %' : ''}</td><td>${t0(b[0])}</td><td>${chg(a[0], b[0])}</td><td>${pr(a)}</td><td>${pr(b)}</td></tr>`; }).join('') +
+        `<tr><td><b>Total</b></td><td><b>${t0(A.T[0])}</b></td><td>100 %</td><td>${t0(B.T[0])}</td><td>${chg(A.T[0], B.T[0])}</td><td>${pr(A.T)}</td><td>${pr(B.T)}</td></tr></table>` : '') +
+      (ms.length > 1 ? `<table style="margin-top:4px"><tr><th>Month</th>${ms.map(mo => `<th>${ML[mo - 1]}</th>`).join('')}</tr>` +
+        [[Y, 'b'], [Y - 1, '']].map(([y]) => `<tr><td>${y} (t)</td>${ms.map(mo => { const g = agg2(y * 100 + mo); return `<td>${t0(g[0])}</td>`; }).join('')}</tr>`).join('') +
+        `<tr><td>Change</td>${ms.map(mo => `<td>${chg(agg2(Y * 100 + mo)[0], agg2((Y - 1) * 100 + mo)[0])}</td>`).join('')}</tr><tr><td>${opt.cur}/kg ${Y}</td>${ms.map(mo => `<td>${pr(agg2(Y * 100 + mo))}</td>`).join('')}</tr></table>` : '') +
+      (hist.length > 2 ? `<table style="margin-top:4px"><tr><th>${lab || 'Year'}</th>${hist.map(([y]) => `<th>${y}</th>`).join('')}</tr><tr><td>Tonnes</td>${hist.map(([, T]) => `<td>${t0(T[0])}</td>`).join('')}</tr><tr><td>${opt.cur}/kg</td>${hist.map(([, T]) => `<td>${pr(T)}</td>`).join('')}</tr></table>` : '');
+    function agg2(k) { const tt = opt.total ? opt.total(k) : null; if (tt) return tt; return Object.values(get(k) || {}).reduce((a, v) => [a[0] + v[0], a[1] + v[1]], [0, 0]); }
+  }
+
   // ---- marche de l'UE : importations par origine et exportations par destination (Eurostat Comext, mensuel)
   let EUS = null;
   const EU_EXTRA = { ZZ: 'Others (small partners)', NO: 'Norway', SE: 'Sweden', FO: 'Faroe Islands', IS: 'Iceland', CL: 'Chile', GB: 'United Kingdom', DK: 'Denmark', DE: 'Germany', NL: 'Netherlands', PL: 'Poland', FR: 'France', IT: 'Italy', ES: 'Spain', US: 'United States', CN: 'China', VN: 'Vietnam', AU: 'Australia', CH: 'Switzerland', CZ: 'Czechia', LT: 'Lithuania', BE: 'Belgium', AT: 'Austria', TR: 'Türkiye', CA: 'Canada', UA: 'Ukraine', PE: 'Peru', BR: 'Brazil', MX: 'Mexico', AR: 'Argentina', CO: 'Colombia', UY: 'Uruguay', RU: 'Russia', JP: 'Japan', KR: 'South Korea', IL: 'Israel', TH: 'Thailand', TW: 'Taiwan', SG: 'Singapore', HK: 'Hong Kong', AE: 'United Arab Emirates', EC: 'Ecuador', CR: 'Costa Rica', DO: 'Dominican Republic', PA: 'Panama', BO: 'Bolivia', PY: 'Paraguay', MY: 'Malaysia', PH: 'Philippines', ID: 'Indonesia' };
-  function euCard(mk, prods) {
+  let gsFlow = 0;   // 1 = importations seulement, 2 = exportations seulement (mot de la recherche)
+  function euCard(mk, prods, per) {
     const E = D['eurostat.json']; if (!E || !(E.meta.reporters_up || []).includes(mk.iso)) return '';
     const P = E.meta.products; // 0 Fresh whole, 1 Frozen whole, 2 Fresh fillets, 3 Frozen fillets, 4 Other fresh meat, 5 Smoked, 6 Prepared
     let idx = [0, 1, 2, 3, 4, 5, 6];
@@ -13083,6 +13146,9 @@ loadRemoteData().then(live => {
     const t0 = v => v ? Math.round(v).toLocaleString('en-US') : '—', ep = (kg, eur) => kg ? (eur / kg).toFixed(2) : '—';
     const chg = (a, b) => a && b ? `<span class="${a >= b ? 'good' : 'bad'}">${a >= b ? '+' : '−'}${Math.abs(Math.round(100 * (a / b - 1)))} %</span>` : '—';
     const block = (flow, lab) => {
+      if (gsFlow && flow !== gsFlow) return '';
+      if (per) { const G = {}; R0.filter(r => r[4] === flow).forEach(r => { const g = G[r[0]] = G[r[0]] || {}; const b = g[r[2]] = g[r[2]] || [0, 0]; b[0] += r[5]; b[1] += r[6]; });
+        return perHtml(per, k => G[k], { last, t: v => v, p: (q, v) => (v / q).toFixed(2), cur: '€', nm, col: flow === 1 ? 'Origin' : 'Destination', head: lab }); }
       const by = {}, mon = {}, monP = {};
       R0.filter(r => r[4] === flow).forEach(r => { const b = by[r[2]] = by[r[2]] || [0, 0, 0, 0]; if (K.has(r[0])) { b[0] += r[5]; b[1] += r[6]; (mon[r[0]] = mon[r[0]] || [0, 0]); mon[r[0]][0] += r[5]; mon[r[0]][1] += r[6]; }
         if (Kp.has(r[0])) { b[2] += r[5]; b[3] += r[6]; (monP[r[0] + 100] = monP[r[0] + 100] || [0, 0]); monP[r[0] + 100][0] += r[5]; } });
@@ -13094,7 +13160,7 @@ loadRemoteData().then(live => {
         `<table style="margin-top:4px"><tr><th>Month</th>${ks.map(k => `<th>${ml(k)}</th>`).join('')}</tr><tr><td>Tonnes</td>${ks.map(k => `<td>${t0((mon[k] || [])[0])}</td>`).join('')}</tr>` +
         `<tr><td>a year earlier</td>${ks.map(k => `<td>${t0((monP[k] || [])[0])}</td>`).join('')}</tr>${(() => { const lv = (mon[ks[11]] || [0])[0], av = ks.slice(0, 11).reduce((a, k) => a + ((mon[k] || [0])[0]), 0) / 11; return lv < av * 0.4 ? `<tr><td colspan="13" style="color:#ffb74d;white-space:normal">${ml(ks[11])} looks incomplete (Eurostat often revises the latest month upward).</td></tr>` : ''; })()}<tr><td>€/kg</td>${ks.map(k => `<td>${mon[k] ? ep(mon[k][0], mon[k][1]) : '—'}</td>`).join('')}</tr></table>`; };
     const pl = idx.map(i => P[i].toLowerCase()).join(', ');
-    return `<div class="gs-card"><h4>${esc(mk.name)} — salmon trade (${esc(pl)}) to ${ml(last)}</h4><div class="s">Eurostat Comext, monthly, every origin and destination. Customs values: imports CIF, exports FOB, in € per kg of product.` +
+    return `<div class="gs-card"><h4>${esc(mk.name)} — salmon trade (${esc(pl)})${per ? '' : ' to ' + ml(last)}</h4><div class="s">Eurostat Comext, monthly, every origin and destination. Customs values: imports CIF, exports FOB, in € per kg of product.` +
       (mk.iso === 'PL' || mk.iso === 'DK' ? ' Imports "from Sweden" or "from Denmark" are mostly Norwegian salmon trucked through those countries.' : '') + `</div>` +
       block(2, `Exports from ${mk.name}, by destination`) + block(1, `Imports into ${mk.name}, by origin`) +
       `<div class="s" style="margin-top:6px"><span class="gs-go" onclick="gsGoTab('poland')">→ EU processing hubs</span> · <span class="gs-go" onclick="gsGoTab('euflows')">→ EU flows</span></div></div>`;
@@ -13103,7 +13169,7 @@ loadRemoteData().then(live => {
   // ---- pays producteur : exportations par destination (statistiques nationales ; Norvege = SSB)
   const MONTH_W = [/\b(january|janvier|januar|enero|jan)\b/, /\b(february|fevrier|februar|febrero|feb)\b/, /\b(march|mars|marzo|mar)\b/, /\b(april|avril|abril|apr)\b/, /\b(may|mai|mayo)\b/, /\b(june|juin|juni|junio|jun)\b/,
     /\b(july|juillet|juli|julio|jul)\b/, /\b(august|aout|agosto|aug)\b/, /\b(september|septembre|septiembre|sept?)\b/, /\b(october|octobre|oktober|octubre|oct|okt)\b/, /\b(november|novembre|noviembre|nov)\b/, /\b(december|decembre|desember|diciembre|dec|des)\b/];
-  function producerCard(org, prods, mon) {
+  function producerCard(org, prods, mon, per) {
     let rows, cur, P;
     const forms = { 0: 'Fresh whole', 1: 'Frozen whole', 2: 'Fresh fillets', 3: 'Frozen fillets', 5: 'Smoked', 6: 'Prepared / preserved' };
     if (org === 'NO') { const S = (typeof DATA_RAW !== 'undefined' && DATA_RAW ? DATA_RAW : {}).ssb_exports; if (!S) return ''; const map = [0, 2, 3, 1];
@@ -13118,6 +13184,11 @@ loadRemoteData().then(live => {
     if (prods.includes('frozen')) F = F.filter(i => i === 1 || i === 3);
     const R0 = rows.filter(r => F.includes(r[2])), last = Math.max(...rows.map(r => r[0]));
     if (!R0.length) return `<div class="gs-card"><h4>Exports from ${esc({ NO: 'Norway', FO: 'Faroe Islands', IS: 'Iceland', GB: 'United Kingdom', CL: 'Chile', CA: 'Canada', AU: 'Australia' }[org] || org)}</h4><div class="s">This product is not in the monthly export data of this country${org === 'NO' ? ' (SSB monthly data here: fresh and frozen whole fish and fillets only)' : ''}.</div></div>`;
+    const C0 = (((typeof DATA_RAW !== 'undefined' && DATA_RAW ? DATA_RAW : {}).ssb_exports || {}).meta || {}).countries || {};
+    if (per && !(per.ms !== 'ytd' && per.ms.length === 1 && !per.year)) { const G = {}; R0.forEach(r => { const g = G[r[0]] = G[r[0]] || {}; const b = g[r[1]] = g[r[1]] || [0, 0]; b[0] += r[3]; b[1] += r[4]; });
+      const nm0 = { NO: 'Norway', FO: 'Faroe Islands', IS: 'Iceland', GB: 'United Kingdom (Scotland)', CL: 'Chile', CA: 'Canada', AU: 'Australia' }[org] || org;
+      return `<div class="gs-card"><h4>Exports from ${esc(nm0)} — ${esc(F.map(f => forms[f].toLowerCase()).join(', '))}</h4><div class="s">Source: ${org === 'NO' ? 'Statistics Norway (SSB), FOB in NOK' : 'national statistics office, export value in €'}.</div>` +
+        perHtml(per, k => G[k], { last, t: v => v, p: (q, v) => (v / q).toFixed(2), cur, nm: c => EU_EXTRA[c] || (C0[c] || {}).name || c, col: 'Destination', head: 'Exports' }) + `</div>`; }
     let ref = last, note = '';
     if (mon) { const c = [...new Set(rows.map(r => r[0]))].filter(k => k % 100 === mon).sort((a, b) => b - a);
       if (c.length && Math.floor(c[0] / 100) === Math.floor(last / 100)) ref = c[0];
@@ -13196,7 +13267,7 @@ loadRemoteData().then(live => {
   }
 
   // ---- pays importateur hors UE : importations par origine (UN Comtrade, declarees par le pays importateur)
-  function worldCard(mk, prods) {
+  function worldCard(mk, prods, per) {
     const W = D['world_imports.json']; if (!W) return '';
     const I3 = { US: 'USA', JP: 'JPN', CN: 'CHN', HK: 'HKG', KR: 'KOR', BR: 'BRA', CA: 'CAN', AU: 'AUS', IL: 'ISR', TH: 'THA', VN: 'VNM', SG: 'SGP', TW: 'TWN', AE: 'ARE', MX: 'MEX', RU: 'RUS', TR: 'TUR', CH: 'CHE', GB: 'GBR', NO: 'NOR', UA: 'UKR', SA: 'SAU', EG: 'EGY', IN: 'IND', ID: 'IDN', MY: 'MYS', PH: 'PHL', CL: 'CHL', AR: 'ARG', PE: 'PER', CO: 'COL', ZA: 'ZAF', NZ: 'NZL', QA: 'QAT', KZ: 'KAZ', BY: 'BLR', RS: 'SRB', GE: 'GEO', UY: 'URY' };
     const NM = W.meta.names || {}, iso3 = (NM[I3[mk.iso]] && I3[mk.iso]) || Object.keys(NM).find(k => norm(NM[k]) === norm(mk.name) || norm(NM[k]).startsWith(norm(mk.name))); if (!iso3) return '';
@@ -13209,6 +13280,10 @@ loadRemoteData().then(live => {
     const K = new Set(ks), Kp = new Set(ks.map(k => k - 100)), ml = x => `${MONTHS_FR[x % 100 - 1].slice(0, 3)} ${String(Math.floor(x / 100)).slice(2)}`;
     const nm = c => NM[c] || EU_EXTRA[c] || c, t0 = v => v ? Math.round(v).toLocaleString('en-US') : '—', pr = (kg, usd) => kg ? (usd / kg).toFixed(2) : '—';
     const chg = (a, b) => a && b ? `<span class="${a >= b ? 'good' : 'bad'}">${a >= b ? '+' : '−'}${Math.abs(Math.round(100 * (a / b - 1)))} %</span>` : '—';
+    if (per) { const G = {}, TW = {}; R0.forEach(r => { if (r[3] === 'W') { const t = TW[r[0]] = TW[r[0]] || [0, 0]; t[0] += r[4]; t[1] += r[5]; return; } const g = G[r[0]] = G[r[0]] || {}; const b = g[r[3]] = g[r[3]] || [0, 0]; b[0] += r[4]; b[1] += r[5]; });
+      return `<div class="gs-card"><h4>${esc(mk.name)} — salmon imports (${esc(keep.map(h => H[h].toLowerCase()).join(', '))})</h4><div class="s">UN Comtrade, imports declared by ${esc(mk.name)}, every origin (CIF, US dollars).</div>` +
+        perHtml(per, k => G[k], { last, total: k => TW[k], t: v => v / 1000, p: (q, v) => (v / q).toFixed(2), cur: 'USD', nm, col: 'Origin', head: 'Imports' }) +
+        `<div class="s" style="margin-top:6px"><span class="gs-go" onclick="gsGoTab('world')">→ World imports</span>${mk.iso === 'US' ? ` · <span class="gs-go" onclick="gsGoTab('usa')">→ USA focus</span>` : mk.iso === 'CN' || mk.iso === 'HK' ? ` · <span class="gs-go" onclick="gsGoTab('china')">→ China focus</span>` : ''}</div></div>`; }
     const by = {}, mon = {}, monP = {};
     R0.forEach(r => { const isW = r[3] === 'W';
       if (isW) { if (K.has(r[0])) { (mon[r[0]] = mon[r[0]] || [0, 0]); mon[r[0]][0] += r[4]; mon[r[0]][1] += r[5]; } if (Kp.has(r[0])) { (monP[r[0] + 100] = monP[r[0] + 100] || [0, 0]); monP[r[0] + 100][0] += r[4]; } return; }
@@ -13271,14 +13346,17 @@ loadRemoteData().then(live => {
     const prods = Object.keys(PROD).filter(k => PROD[k].test(rest)); prods.forEach(k => rest = rest.replace(new RegExp(PROD[k].source, 'g'), ' '));
     const wantTrade = /\b(exports?|exportations?|eksport|exportacion\w*|imports?|trade|commerce)\b/.test(rest) || prods.length > 0;
     rest = rest.replace(/\b(exports?|exportations?|eksport|exportacion\w*|imports?|market|marche|marked|trade|commerce)\b/g, ' ');
+    gsFlow = /\b(imports?|importations?|import\w*)\b/.test(nq) && !/\bexport/.test(nq) ? 1 : /\bexport\w*\b|\beksport/.test(nq) && !/\bimport/.test(nq) ? 2 : 0;
+    const pp = parsePeriod(rest); rest = pp.rest; let per = pp.per;
     let mon = null; MONTH_W.forEach((rx, i) => { if (mon === null && rx.test(rest)) { mon = i + 1; rest = rest.replace(rx, ' '); } });
+    if (mon && !per) per = { ms: [mon], year: null, lab: '' }; if (mon && per && per.year && per.ms.length === 12) per.ms = [mon];
     const mk = (!bas || bas === 'NO') ? findMarket(rest) : null; if (mk) rest = rest.replace(mk.word, ' ');
     const words = rest.split(/\s+/).filter(w => w.length > 1);
     let html = '';
-    if (bas && wantTrade && !po) { const pcd = producerCard(bas, prods, mon); if (pcd) html += `<div class="gs-sec">From the dashboard's data · exports from ${BAS_NAME[bas]}</div>` + pcd; }
-    if (mk) { const eu = euCard(mk, prods) || worldCard(mk, prods);
+    if (bas && wantTrade && !po) { const pcd = producerCard(bas, prods, mon, per); if (pcd) html += `<div class="gs-sec">From the dashboard's data · exports from ${BAS_NAME[bas]}</div>` + pcd; }
+    if (mk) { const eu = euCard(mk, prods, per) || worldCard(mk, prods, per);
       html += `<div class="gs-sec">From the dashboard's data · ${esc(mk.name)}${prods.length ? ' · ' + prods.join(', ') : ''}</div>` + eu +
-        (eu ? `<details class="gs-card"><summary style="cursor:pointer;color:#a9bfcc;font-size:13px">Norway's own figures: Norwegian exports to ${esc(mk.name)} (Statistics Norway, usually one month fresher)</summary>${marketCard(mk, prods).replace(/^<div class="gs-card">|<\/div>$/g, '')}</details>` : marketCard(mk, prods)); }
+        (eu ? `<details class="gs-card"><summary style="cursor:pointer;color:#a9bfcc;font-size:13px">Norway's own figures: Norwegian exports to ${esc(mk.name)} (Statistics Norway, usually one month fresher)</summary>${marketCard(mk, prods, per).replace(/^<div class="gs-card">|<\/div>$/g, '')}</details>` : marketCard(mk, prods, per)); }
     if (po) {
       const want = t => !topics.length || topics.includes(t);
       const cards = [want('mort') ? zoneMort(po) : '', want('mort') ? zoneEv(po) : '', want('lice') || want('dis') ? zoneLice(po) : '', want('dis') || want('mort') || want('lice') ? zoneDis(po) : '', want('big') || want('harv') ? zoneBig(po) : '', want('tas') ? zoneTas(po) : ''].filter(Boolean);

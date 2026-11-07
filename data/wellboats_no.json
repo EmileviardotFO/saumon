@@ -631,6 +631,41 @@
 "town": "Forsand",
 "county": "Rogaland",
 "valid_to": ""
+},
+"JXQQ": {
+"name": "Frøy Saga",
+"owner": "MS FRØY SAGA AS",
+"town": "Rørvik",
+"county": "Trøndelag",
+"valid_to": "2030-11-10"
+},
+"JXMO": {
+"name": "Njord Kya",
+"owner": "NJORD KYA AS",
+"town": "Sistranda",
+"county": "Trøndelag",
+"valid_to": "2030-10-18"
+},
+"JXMA": {
+"name": "Veidnes",
+"owner": "NORSK FISKETRANSPORT AS",
+"town": "Dønna",
+"county": "Nordland",
+"valid_to": "2030-08-22"
+},
+"JXTT": {
+"name": "Ronja Spirit",
+"owner": "SØLVTRANS REDERI AS",
+"town": "Ålesund",
+"county": "Møre og Romsdal",
+"valid_to": "2027-01-17"
+},
+"JXTR": {
+"name": "Ronja Follafoss",
+"owner": "SØLVTRANS REDERI AS",
+"town": "Ålesund",
+"county": "Møre og Romsdal",
+"valid_to": "2026-12-10"
 }
 }
 }
