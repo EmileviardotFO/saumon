@@ -38,22 +38,28 @@ def pdf_text(url):
         return '\n'.join((p.extract_text() or '') for p in pdf.pages)
 
 
-def species_rows(text):
-    """Lignes de tableau « Espece  N-1  N  [ecart]  variation% » ; une ligne n'est gardee que si la variation imprimee
-    correspond aux deux chiffres (evite de lire une autre serie)."""
-    out = {}
+def species_rows(text, want=None):
+    """Lignes de tableau « Espece  N-1  N  [ecart]  variation% », rangees selon le dernier titre lu au-dessus :
+    'harvest' (cosecha des centres de culture) ou 'processing' (production des usines). Une ligne n'est gardee que si
+    la variation imprimee correspond aux deux chiffres (evite de lire une autre serie). want = contexte voulu."""
+    out, ctx = {}, None
     for line in text.splitlines():
         f = flat(line)
+        if re.search(r'cosecha', f): ctx = 'harvest'
+        elif re.search(r'elaboraci|plantas?de|produccionpesquerayacuicola|lineadeelaboracion|lineas', f): ctx = 'processing'
         for k, pat in SP:
-            if k in out or not re.match(r'(' + pat + r')-?\d', f): continue
+            if not re.match(r'(' + pat + r')-?\d', f): continue
             nums = re.findall(r'-?(?<![\d,])\d{1,3}(?:\.\d{3})*(?:,\d+)?(?![\d])', line)
             if len(nums) < 3: continue
             try:
                 a, b = num(nums[0]), num(nums[1])
                 var = 100 * (b / a - 1) if a else None
-                if var is not None and any(abs(num(v) - var) <= 0.35 for v in nums[2:5]): out[k] = [a, b]
+                if var is not None and any(abs(num(v) - var) <= 0.35 for v in nums[2:5]):
+                    out.setdefault(ctx or 'other', {}).setdefault(k, [a, b])
             except (ValueError, ZeroDivisionError):
                 pass
+    if want:
+        return out.get(want) or {}
     return out
 
 
@@ -96,8 +102,10 @@ def main():
     # liens publies sur les pages (avec leur jeton de version) : essayes en premier
     extra = {'los_lagos': page_links('/los-lagos/estadisticas-regionales/economia/agricultura-agroindustria-y-pesca/industria-pesquera-acuicola'),
              'magallanes': page_links('/magallanes/estadisticas-regionales/economia/agricultura-agroindustria-y-pesca/pesca')}
+    WANT = {'los_lagos': None, 'magallanes': 'harvest', 'aysen': 'harvest'}
     def put(region, key, text, url, what):
-        rows = species_rows(text)
+        rows = species_rows(text, WANT[region])
+        if region == 'los_lagos': rows = next(iter(rows.values()), {}) if rows else {}
         if not rows: return False
         y, p = key.split('-')
         prev = f'{int(y) - 1}-{p}'
