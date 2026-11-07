@@ -1,0 +1,88 @@
+{
+ "updated": "2026-11-07",
+ "note": "Company statements, not a census. Context: Nofima's 2023 survey put the average smolt at about 200 g (spring) and 180 g (autumn), with about 20 % of farmers releasing smolts above 250 g.",
+ "rows": [
+  {
+   "co": "Mowi",
+   "volume": "About 50 M post-smolts planned for 2026; target 75 % of Norwegian releases by 2029",
+   "weight": "about 700 g target",
+   "facilities": "Haukå RAS (6.4 M a year at about 700 g); Steinsvik, Kjerringvik",
+   "d": "Q4 2025 / CMD Sep 2024",
+   "u": "https://www.fishfarmingexpert.com/economy-and-market-mowi-mowi-capital-markets-day/how-mowi-plans-to-grow-by-100000-tonnes-in-five-years/1827656"
+  },
+  {
+   "co": "Grieg Seafood (Rogaland)",
+   "volume": "Almost all releases: 2.9 M smolts in H1 2026",
+   "weight": "1.1–1.3 kg (above 1 kg in 2025)",
+   "facilities": "Tytlandsvik Aqua RAS (with Bremnes and Vest Havbruk), Årdal Aqua, FishGLOBE closed units",
+   "d": "27 Aug 2026",
+   "u": "https://www.fishfarmingexpert.com/biological-challenges-financial-losses-grieg-seafood/grieg-seafood-lost-321m-in-first-half-of-2026/2173285"
+  },
+  {
+   "co": "Cermaq (incl. ex-Grieg Finnmark)",
+   "volume": "Ex-Grieg post-smolt unit planned at 4,800 t a year, first fish to sea in 2026; Sørøya RAS signed 2023",
+   "weight": "not disclosed",
+   "facilities": "Adamselv (ex-Grieg), Sørøya / Hasvik RAS",
+   "d": "2023–2025",
+   "u": "https://www.fishfarmermagazine.com/news/breaking-cermaq-and-akva-sign-nok-700m-post-smolt-plant-deal",
+   "old": true
+  },
+  {
+   "co": "SalMar",
+   "volume": "Share not disclosed; strategy built on closed sea units",
+   "weight": "about 350 g at Tjuin, possibly 500–650 g later",
+   "facilities": "Tjuin, Senja RAS hatchery, Neptun 4, Marine Donut",
+   "d": "Nov 2025",
+   "u": "https://ilaks.no/salmar-sikter-pa-378-000-tonn-laks-innen-to-ar-uten-tunge-nyinvesteringer/"
+  },
+  {
+   "co": "Lerøy",
+   "volume": "Not quantified (\"intensive investment cycle in smolt capacity\")",
+   "weight": "not disclosed",
+   "facilities": "Laksefjord post-smolt plant (Finnmark)",
+   "d": "CMD Mar 2026",
+   "u": "https://www.inderes.dk/releases/leroy-seafood-group-asa-cmd-2026-increased-returns-driven-by-sustainable-growth-with-cost-and-capital-discipline"
+  },
+  {
+   "co": "Bremnes Seashore",
+   "volume": "Large smolts across its releases",
+   "weight": "up to about 500 g, goal 1 kg average by 2025",
+   "facilities": "Tytlandsvik Aqua (partner)",
+   "d": "Nov 2021",
+   "u": "https://ilaks.no/?p=160709",
+   "old": true
+  },
+  {
+   "co": "SinkabergHansen",
+   "volume": "Closed pen at Mulingen",
+   "weight": "from 100 g to 1.5 kg",
+   "facilities": "Botngaard closed pen (10,000 m³)",
+   "d": "2019",
+   "u": "https://ilaks.no/?p=112626",
+   "old": true
+  },
+  {
+   "co": "Eidsfjord Sjøfarm (via Andfjord Salmon)",
+   "volume": "450,000 post-smolts bought from Andfjord",
+   "weight": "not disclosed",
+   "facilities": "Andfjord land-based basins",
+   "d": "Jul 2026",
+   "u": "https://ilaks.no/andfjord-leverte-450-000-postsmolt-til-eidsfjord-sjofarm/"
+  },
+  {
+   "co": "Bakkafrost (Faroe Islands)",
+   "volume": "20.7 M smolts in 2026, all from land-based post-smolt units",
+   "weight": "440 g average (Scotland: 179 g)",
+   "facilities": "Faroese RAS units; Applecross ramping up in Scotland",
+   "d": "Nov 2026",
+   "u": "https://www.fishfarmingexpert.com/bakkafrost-faroe-islands-financial-results/bakkafrost-profit-improved-in-q3-as-scotland-losses-lessened/2204501"
+  },
+  {
+   "co": "Måsøval, Nova Sea, Kvarøy, Eide",
+   "volume": "No post-smolt figures published",
+   "weight": "—",
+   "facilities": "—",
+   "d": "2026"
+  }
+ ]
+}

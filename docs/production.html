@@ -629,6 +629,12 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
         <tfoot id="tfootSize"></tfoot>
       </table>
       <div class="note" id="sizeNote" style="margin-top:14px; text-align:left; max-width:none;"></div>
+      <div class="sig-title" style="margin-top:26px">How smolt sizes changed, zone by zone</div>
+      <div class="sig-sub" id="szEvoSub"></div>
+      <div id="szEvo"></div>
+      <div class="sig-title" style="margin-top:26px">Who puts big smolts (post-smolts, 500 g and more) to sea</div>
+      <div class="sig-sub">No official statistic counts fish released above 500 g: the register stops at 250–500 g, and the Veterinary Institute's yearly count covers fish under 500 g only. What follows is what each company says in its own reports; old statements are flagged.</div>
+      <div id="szCo"></div>
     </div>
     <table id="poStdTable">
       <thead>
@@ -7163,6 +7169,29 @@ function renderSmoltSize() {
 
   updateMapValues(mapVals, v => v.toFixed(0) + '%', `Share ≥ 250 g · ${year}`);
   lastMapValues.html = mapHtml;
+
+  // ---- evolution par zone : memes mois chaque annee (janvier -> mois choisi), part de >= 250 g et de > 500 g estime
+  { const Y0 = 2019, YS = []; for (let y = Y0; y <= year; y++) YS.push(y);
+    const C = {}; YS.forEach(y => { C[y] = computeForYear(y, startMonth, endMonth); });
+    const sh = (y, po) => { const t = po ? sizeSplit(C[y][po] || {}) : (() => { const n = { smolt: 0, smoltmid: 0, gap: 0 }; for (let z = 1; z <= 13; z++) { const q = sizeSplit(C[y][z] || {}); if (q.ok) { n.smolt += q.a; n.smoltmid += q.b; n.gap += q.c; } } return sizeSplit(n); })(); return t; };
+    const cellBar = q => q.ok && q.t > 0 ? `<div title="&lt;250 g ${P(q.sa)} · 250–500 g ${P(q.sb)} · &gt;500 g est. ${P(q.sc)}" style="display:flex;flex-direction:column;align-items:center;gap:3px">` +
+        `<div style="width:26px;height:46px;border-radius:6px;overflow:hidden;display:flex;flex-direction:column-reverse;background:rgba(255,255,255,.08)">` +
+        `<span style="height:${q.sa}%;background:var(--sz1)"></span><span style="height:${q.sb}%;background:var(--sz2)"></span><span class="size-est" style="height:${q.sc}%;display:block"></span></div>` +
+        `<small style="font-size:10.5px;color:#eef5f9">${(q.sb + q.sc).toFixed(0)}%</small></div>` : '<span style="color:var(--muted)">—</span>';
+    const rows = [['Norway', 0]].concat([...Array(13)].map((_, i) => [`${13 - i}. ${PO_NAMES[13 - i]}`, 13 - i]));
+    document.getElementById('szEvoSub').innerHTML = `Smolt released ${label} of each year, ${Y0}–${year}, same months every year. Each column stacks &lt; 250 g (bottom), 250–500 g and the &gt; 500 g estimate (top); the figure under it is the share released at 250 g or more. ` +
+      `<span class="warn">2022 is distorted</span> by the December 2022 over-declaration.`;
+    document.getElementById('szEvo').innerHTML = `<div style="overflow-x:auto"><table class="sig-table" style="min-width:720px"><thead><tr><th class="name">Zone</th>${YS.map(y => `<th style="text-align:center">${y}</th>`).join('')}<th>Δ share ≥ 250 g, ${Y0} → ${year}</th></tr></thead><tbody>` +
+      rows.map(([n, po]) => { const a = sh(Y0, po), z = sh(year, po), d = a.ok && z.ok ? (z.sb + z.sc) - (a.sb + a.sc) : NaN;
+        return `<tr${po ? '' : ' style="font-weight:700"'}><td class="name" style="white-space:normal">${n}</td>${YS.map(y => `<td style="text-align:center">${cellBar(sh(y, po))}</td>`).join('')}` +
+          `<td style="color:#eef5f9;font-weight:600">${isFinite(d) ? (d >= 0 ? '+' : '') + d.toFixed(0) + ' pp' : '—'}</td></tr>`; }).join('') + `</tbody></table></div>`; }
+  // ---- entreprises : strategies de post-smolt, d'apres leurs rapports (data/postsmolt.json, mis a jour a la main)
+  if (!window.PSM) { window.PSM = 'loading'; fetch(DATA_URL.replace('data.json', 'postsmolt.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null).then(j => { window.PSM = j || {}; if (document.getElementById('poSizeView').style.display !== 'none') renderSmoltSize(); }); }
+  if (window.PSM && window.PSM.rows) { const e = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    document.getElementById('szCo').innerHTML = `<div style="overflow-x:auto"><table class="sig-table" style="min-width:720px"><thead><tr><th class="name">Company</th><th style="text-align:left">Post-smolt to sea</th><th style="text-align:left">Release weight</th><th style="text-align:left">Facilities</th><th>As of</th></tr></thead><tbody>` +
+      window.PSM.rows.map(r => `<tr><td class="name">${e(r.co)}</td><td style="text-align:left;white-space:normal">${e(r.volume)}</td><td style="text-align:left;white-space:normal">${e(r.weight)}</td><td style="text-align:left;white-space:normal">${e(r.facilities)}</td>` +
+        `<td style="white-space:nowrap">${r.u ? `<a href="${e(r.u)}" target="_blank" rel="noopener" style="color:var(--accent)">${e(r.d)}</a>` : e(r.d)}${r.old ? ' <span class="warn" title="old statement">old</span>' : ''}</td></tr>`).join('') + `</tbody></table></div>` +
+      `<div class="sig-sub" style="margin-top:6px">${e(window.PSM.note || '')}</div>`; }
 
   document.getElementById('sizeNote').innerHTML =
     `<b>Reading.</b> &lt; 250 g and 250–500 g are declared releases (Biomasseregisteret). <i>&gt; 500 g</i> is not reported anywhere: it is the ` +
