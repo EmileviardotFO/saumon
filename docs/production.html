@@ -13125,7 +13125,7 @@ loadRemoteData().then(live => {
   #gsSug button.on,#gsSug button:hover{border-color:#4fc3f7;background:#12304a}
   #gsSug button small{color:#8fa4b0;margin-left:5px;font-size:11px}
   #gsSug button.tab{border-style:dashed}
-  @media (max-width:900px){#gsSug{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}#gsSug button{font-size:14px;padding:8px 12px}}
+  @media (max-width:900px){#gsPanel .gs-hint{display:none}#gsSug{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}#gsSug button{font-size:14px;padding:8px 12px}}
   #gsPanel .gs-sec{font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#4fc3f7;margin:18px 0 8px}
   #gsPanel .gs-card{background:#10202c;border:1px solid #223642;border-radius:10px;padding:12px 14px;margin-bottom:10px;max-width:1100px}
   #gsPanel .gs-card h4{margin:0 0 6px;font-size:14px;color:#e7eef2}
@@ -13179,6 +13179,10 @@ loadRemoteData().then(live => {
   P.innerHTML = '<div class="gs-h"><input id="gsQ2" type="search" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"><button class="gs-x" type="button">Close ✕</button></div><div id="gsSug" role="listbox"></div><div class="gs-hint">A company and/or a subject, in English, French or Norwegian: <i>Lerøy lice</i>, <i>Mowi mortalité</i>, <i>SalMar 6+</i>, <i>Chine export</i>, <i>Kaldvík</i>. Results follow your typing; Esc to close.</div><div id="gsOut"></div>';
   document.body.appendChild(P);
   const q1 = document.getElementById('gsQ'), q2 = document.getElementById('gsQ2'), out = document.getElementById('gsOut');
+  { const fb = document.createElement('button'); fb.id = 'gsFab'; fb.type = 'button'; fb.setAttribute('aria-label', 'Search'); fb.textContent = '⌕'; document.body.appendChild(fb);
+    const st = document.createElement('style'); st.textContent = '#gsFab{display:none;position:fixed;left:62px;top:calc(10px + env(safe-area-inset-top,0px));z-index:950;padding:5px 12px;border-radius:8px;border:1px solid #2a4352;background:#0d1a24;color:#e7eef2;font-size:20px;line-height:1.2;cursor:pointer}@media (max-width:900px){#gsFab{display:block}body.sn-open #gsFab{display:none}}';
+    document.head.appendChild(st);
+    fb.addEventListener('click', () => { if (P.style.display === 'block') { close(); return; } document.body.classList.remove('sn-open'); P.style.display = 'block'; q2.focus(); setTimeout(() => { if (typeof showSug === 'function') showSug(); }, 0); }); }
   const open = v => { P.style.display = 'block'; q2.value = v; run(v); q2.focus(); if (typeof showSug === 'function') setTimeout(showSug, 0); };
   const close = () => { P.style.display = 'none'; };
   P.querySelector('.gs-x').onclick = close;
@@ -13220,7 +13224,9 @@ loadRemoteData().then(live => {
       market: ['import', 'export', 'fresh fillets', 'Q3'], trade: ['Q1', 'Q2', 'Q3', 'H1', '2026'], product: ['Q3', '2026', 'YTD'], topic: [], period: [] };
     const tokens = q => q.trim().split(/\s+/).filter(Boolean);
     const known = q => { const nq = norm(q); return V.filter(([l]) => new RegExp('(^|\\s)' + norm(l).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '($|\\s)').test(nq)); };
+    const START = ['supply 2027', 'Lerøy lice', 'Mowi 6+', 'zone 3 mortality', 'USA import Q3', 'Canada export', 'Chile harvest', 'Poland export'];
     return q => {
+      if (!q.trim()) return START.map(x => ({ q: x, lab: x, t: 'next' }));
       const out = [], T = tokens(q), endsSpace = /\s$/.test(q), last = endsSpace ? '' : norm(T[T.length - 1] || ''), head = endsSpace ? q.trim() : T.slice(0, -1).join(' ');
       const K = known(q), kinds = new Set(K.map(k => k[1]));
       if (last) {
