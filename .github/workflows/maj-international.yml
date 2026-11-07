@@ -31,7 +31,7 @@ jobs:
       with:
         python-version: '3.11'
     - name: Installer les dependances Python
-      run: pip install pandas openpyxl playwright pycountry
+      run: pip install pandas openpyxl playwright pycountry requests pdfplumber
     - name: Islande - acces aux donnees de MAST (serveur cartographique, tableau de bord de l'aquaculture)
       id: iceland
       continue-on-error: true
