@@ -5238,10 +5238,10 @@ function clSubpesca() {
   { const hf = d => d.slice(0, 4) + (+d.slice(5, 7) <= 6 ? ' H1' : ' H2'), REG = ['Los Lagos', 'Aysén', 'Magallanes'], P = {};
     F.forEach(f => { if (f.sp !== 'salar' && f.sp !== 'coho') return; const r = REG.find(x => (f.reg || '').startsWith(x)) || 'other', k = hf(f.date), o = P[k] = P[k] || {}; o[f.sp + '|' + r] = (o[f.sp + '|' + r] || 0) + f.fish; });
     const hs = Object.keys(P).sort().filter(k => k >= '2024'), sh = (k, m) => { let y = +k.slice(0, 4), h = k.endsWith('H2') ? 1 : 0; h += m; y += Math.floor(h / 2); return y + (h % 2 ? ' H2' : ' H1'); };
-    const surv = 0.85, wS = CL_W || 5.0, wC = 3.0, h25 = (P['2025 H1'] || {}), a25 = REG.concat('other').reduce((t, r) => t + (h25['salar|' + r] || 0), 0);
+    const surv = 0.85, wS = 5.0, wC = 3.0, h25 = (P['2025 H1'] || {}), a25 = REG.concat('other').reduce((t, r) => t + (h25['salar|' + r] || 0), 0);
     window.CL_PROJ = { P, hs, surv, wS, wC };
     const el = $c('clProj'); if (el) { $c('clProjSub').innerHTML = `The same resolutions, summed by region and half-year, with the harvest they point to: Atlantic salmon stocked about 1–3 months after its resolution and harvested 14–20 months later; coho about 10 months later. ` +
-      `Tonnes are only an order of magnitude: ${(surv * 100).toFixed(0)} % of the fish reach harvest, at ${wS.toFixed(1)} kg live for Atlantic${CL_W ? ' (the export weight classes, below)' : ''} and ${wC.toFixed(1)} kg for coho. ` +
+      `Tonnes are only an order of magnitude: ${(surv * 100).toFixed(0)} % of the fish reach harvest, at ${wS.toFixed(1)} kg live for Atlantic and ${wC.toFixed(1)} kg for coho. ` +
       `<b>Authorised is a ceiling, not what goes to sea</b>: ${a25 ? `${(a25 / 1e6).toFixed(0)} M Atlantic fish were authorised by resolutions of H1 2025, when the Salmon Council counts 84 M Atlantic smolts actually put to sea in that half-year` : 'the Salmon Council counts 84 M Atlantic smolts actually put to sea in H1 2025'}; and the unreadable scanned resolutions (above) leave late 2024 and most of 2025 short.`;
       el.innerHTML = `<thead><tr><th class="name">Resolutions of</th>${REG.map(r => `<th>Atlantic<br>${r} (M)</th>`).join('')}<th>Atlantic<br>all (M)</th><th>Harvest<br>window</th><th>Implied<br>Atlantic (kt)</th><th>Coho<br>all (M)</th><th>Coho<br>harvest</th></tr></thead><tbody>` +
         hs.slice().reverse().map(k => { const o = P[k], sa = REG.concat('other').reduce((t, r) => t + (o['salar|' + r] || 0), 0), co = REG.concat('other').reduce((t, r) => t + (o['coho|' + r] || 0), 0);
@@ -5491,7 +5491,8 @@ function clW() {   // poids : calibres exportes (douanes), poids moyen en mer (S
     const yo = ks.slice(-18, -12).map(k => z(k, S[0][0])), tw0 = yo.reduce((a, q) => a + (q.t_sized || 0), 0), mean0 = tw0 ? yo.reduce((a, q) => a + (q.mean_kg || 0) * (q.t_sized || 0), 0) / tw0 : null;
     sub = `Exporters often write the weight class of whole fish in the declaration (« calibre 12-14 lb », « 6-7 kg »): the average of those classes, month by month, tracks the size of the fish being harvested — gutted head-on weight for most fresh whole fish (×${HON} for live weight). ` +
       (mean6 ? `Last 6 months, Atlantic fresh whole: <b>${mean6.toFixed(2)} kg gutted ≈ ${(mean6 * HON).toFixed(1)} kg live</b>${mean0 ? ` (a year earlier ${mean0.toFixed(2)} kg)` : ''}, from the ${(100 * tw / Math.max(tt, 1)).toFixed(0)} % of tonnes that state a class. ` : '') +
-      `A month with less than 150 t stating a class is left out. This is the size of what is <i>exported whole</i>; fish filleted in Chile are not in it, and they tend to be the larger ones.`;
+      `A month with less than 150 t stating a class is left out. <b>Read the trend, not the level</b>: fish exported whole and fresh are the premium sizes sold by weight class to the US and Brazil, larger than the average Chilean harvest (smaller fish go to frozen and to processing), so this runs above the national harvest weight. ` +
+      `A drop of the classes means smaller fish coming out of the water — early harvests forced by disease, algae or sea lice.`;
     html += scSvg(k36, S.map(([s, lab, col, w]) => ({ v: k36.map(k => ok(k, s)), col, w, dots: w > 2, lab: lab + ', kg (as declared)' })),
       { lab: ml, xl: k => k % 100 === 1 || k === k36[0] ? ml(k) : MON[k % 100 - 1].slice(0, 1), fmt: v => v.toFixed(1), min: 1, H: 200 });
     // classes : 3 derniers mois contre les memes un an plus tot
@@ -5500,13 +5501,12 @@ function clW() {   // poids : calibres exportes (douanes), poids moyen en mer (S
     const l3 = ks.slice(-3), p3 = l3.map(k => k - 100).filter(k => CM[k]), a = hs(l3), b = hs(p3);
     html += `<div class="sig-sub" style="margin-top:8px"><b>Atlantic fresh whole by weight class (kg gutted), ${ml(l3[0])}–${ml(l3[l3.length - 1])} against a year earlier</b> — share of tonnes</div><div style="overflow-x:auto"><table class="sig-table"><thead><tr><th class="name"></th>${labs.map(l => `<th>${l} kg</th>`).join('')}</tr></thead><tbody>` +
       `<tr><td class="name">${Math.floor(l3[l3.length - 1] / 100)}</td>${a.map(v => `<td><b>${v.toFixed(0)} %</b></td>`).join('')}</tr>` + (p3.length ? `<tr><td class="name">a year earlier</td>${b.map(v => `<td>${v.toFixed(0)} %</td>`).join('')}</tr>` : '') + `</tbody></table></div>`;
-    if ((prevW === null) !== (CL_W === null) || (prevW && CL_W && Math.abs(prevW - CL_W) > 0.01)) setTimeout(clSubpesca, 0);
   } else sub = `The weight classes written in the export declarations are being read (first run under way): they will show, month by month, the size of the Atlantic salmon and coho exported whole. `;
   html += `<div class="sig-sub" style="margin-top:10px"><b>Average weight of the fish at sea</b> (all sizes, from Salmon Outlook's biomass and fish numbers): ${sea.length ? sea.join(' · ') : '—'}. ` +
-    `<b>Smolts and time at sea:</b> Chile does not publish smolt weights; companies put Atlantic smolts to sea at roughly 100–250 g (larger, post-smolts, increasingly) and harvest after about 14–20 months at sea, coho after about 10 months — ` +
+    `<b>Smolts and time at sea:</b> no public source gives the weight of the smolts put to sea in Chile (companies mention it now and then in their reports, which will be read each quarter). Atlantic salmon usually spends about 14–20 months at sea, coho about 10 — ` +
     `each group of concessions (ACS) stocks within one window and must leave a fallow of at least 3 months, so the cycle is set by the area's calendar. The Salmon Council counts the smolts actually put to sea each half-year (84 M Atlantic, 51 M coho, 11 M trout in H1 2025).</div>`;
   $c('clWSub').innerHTML = sub; el.innerHTML = html;
-  const s2 = $c('clS2Sum'); if (s2 && CL_W) s2.textContent = (s2.textContent ? s2.textContent.replace(/ · harvest weight.*$/, '') : '') + ` · harvest weight ≈ ${CL_W.toFixed(1)} kg live`;
+  const s2 = $c('clS2Sum'); if (s2 && CL_W) s2.textContent = (s2.textContent ? s2.textContent.replace(/ · fresh whole exported.*$/, '') : '') + ` · fresh whole exported at ${(CL_W / HON).toFixed(1)} kg on average`;
 }
 const CL_COM = { 10101: 'Puerto Montt', 10102: 'Calbuco', 10103: 'Cochamó', 10104: 'Fresia', 10105: 'Frutillar', 10106: 'Los Muermos', 10107: 'Llanquihue', 10108: 'Maullín', 10109: 'Puerto Varas',
   10201: 'Castro', 10202: 'Ancud', 10203: 'Chonchi', 10204: 'Curaco de Vélez', 10205: 'Dalcahue', 10206: 'Puqueldón', 10207: 'Queilén', 10208: 'Quellón', 10209: 'Quemchi', 10210: 'Quinchao', 10301: 'Osorno', 10401: 'Chaitén',
