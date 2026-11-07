@@ -1128,7 +1128,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
   </div>
 
   <div class="panel" id="scotlandView" style="flex:1; min-width:0; max-width:1400px; display:none;">
-    <div class="sig-title">Scotland — fish at sea, deaths and feed, farm by farm (SEPA monthly reports)</div>
+    <div class="sig-title">Scotland — salmon farming at a glance (SEPA, Marine Directorate, company reports)</div>
     <div class="sig-sub" id="scSub"></div>
     <div id="scCards" class="pr-cards"></div>
     <div class="sig-title" style="margin-top:18px">Mortality and feed conversion, year by year</div>
@@ -1205,7 +1205,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
   </div>
 
   <div class="panel" id="isView" style="flex:1; min-width:0; max-width:1400px; display:none;">
-    <div class="sig-title">Iceland — fish at sea, cycles, licences, farmers, exports and news</div>
+    <div class="sig-title">Iceland — salmon farming at a glance (MAST, Statistics Iceland, company reports)</div>
     <div class="sig-sub" id="isSub"></div>
     <div class="pr-cards" id="isMastCards"></div>
     <div class="sig-title" style="margin-top:14px;font-size:15px">Map — farming fjords, licences and limits</div>
@@ -1333,7 +1333,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
   </div>
 
   <div class="panel" id="faroeView" style="flex:1; min-width:0; max-width:1400px; display:none;">
-    <div class="sig-title">Faroe Islands — fish at sea farm by farm, harvest and biology</div>
+    <div class="sig-title">Faroe Islands — salmon farming at a glance (Bakkafrost, Landsverk, Hagstova)</div>
     <div class="sig-sub" id="foSub"></div>
     <div id="foCards" class="pr-cards"></div>
     <div class="sig-title" style="margin-top:18px">Farming areas and fish at each Bakkafrost farm</div>
@@ -1355,7 +1355,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
   </div>
 
   <div class="panel" id="canadaView" style="flex:1; min-width:0; max-width:1400px; display:none;">
-    <div class="sig-title">Canada — volumes by coast, BC farm cycles, mortality, sea lice and sea temperature (DFO, US Census)</div>
+    <div class="sig-title">Canada — salmon farming at a glance (DFO, provinces, Statistics Canada, US Census)</div>
     <div class="sig-sub" id="caSub"></div>
     <div id="caCards" class="pr-cards"></div>
     <div id="caxCards" class="pr-cards"></div>
@@ -1456,7 +1456,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
   </div>
 
   <div class="panel" id="australiaView" style="flex:1; min-width:0; max-width:1400px; display:none;">
-    <div class="sig-title">Australia (Tasmania) — salmon deaths and harvest by company (EPA Tasmania, NRE)</div>
+    <div class="sig-title">Australia (Tasmania) — salmon farming at a glance (EPA Tasmania, NRE)</div>
     <div class="sig-sub" id="auSub"></div>
     <div id="auCards" class="pr-cards"></div>
     <div class="sig-title" style="margin-top:18px">Salmon farm leases and the companies operating them</div>
@@ -1479,7 +1479,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
   </div>
 
   <div class="panel" id="chileView" style="flex:1; min-width:0; max-width:1400px; display:none;">
-    <div class="sig-title">Chile — fish at sea, deaths, harvest and exports (Sernapesca, Subpesca, customs)</div>
+    <div class="sig-title">Chile — salmon farming at a glance (Sernapesca, Subpesca, customs)</div>
     <div class="sig-sub" id="clSub"></div>
     <div id="clCards" class="pr-cards"></div>
     <div class="sig-title" style="margin-top:18px">Mortality by company — closed cycles, year by year</div>
@@ -13788,6 +13788,30 @@ function renderSupply() {
     `<div class="sup-sec">Words used on this page</div><table class="sig-table"><tbody>${(SUP.glossary || []).map(([k, v]) => `<tr><td class="name"><b>${e(k)}</b></td><td style="text-align:left;white-space:normal">${e(v)}</td></tr>`).join('')}</tbody></table>` +
     `<div class="sup-sec">Sources</div>${((SUP.meta || {}).sources || []).map(x => `<div class="sup-art"><a href="${e(x.u)}" target="_blank" rel="noopener">${e(x.t)}</a></div>`).join('')}`;
 }
+</script>
+
+<style>
+.bs-glance{display:flex;gap:14px;align-items:flex-start;margin:10px 0 12px;padding:12px 14px;border:1px solid #2a4352;border-radius:12px;background:linear-gradient(90deg,rgba(79,195,247,.07),rgba(79,195,247,0))}
+.bs-glance .ar{flex:none;display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:50%;font-size:22px;font-weight:700}
+.bs-glance .ar.up{background:rgba(126,217,143,.15);color:#7ed98f;border:1px solid #7ed98f}.bs-glance .ar.flat{background:rgba(143,164,176,.15);color:#cfdde4;border:1px solid #8fa4b0}.bs-glance .ar.down{background:rgba(255,138,101,.15);color:#ff8a65;border:1px solid #ff8a65}
+.bs-glance .tx{font-size:14px;line-height:1.5;color:#e7eef2}.bs-glance .tx small{display:block;color:#a9bfcc;font-size:12.5px;margin-top:3px}
+.bs-glance .go{color:#4fc3f7;cursor:pointer;white-space:nowrap}
+</style>
+<script>
+// En tete commun des onglets bassins : sens attendu pour 2027, la phrase de synthese et 2026 a ce jour (data/global_supply.json)
+(function () {
+  const MAP = { scotlandView: 'GB', faroeView: 'FO', isView: 'IS', chileView: 'CL', canadaView: 'CA', australiaView: 'AU' };
+  let G = null; const e = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const draw = vid => { const P = document.getElementById(vid); if (!P || !G) return; const b = (G.basins || []).find(x => x.id === MAP[vid]); if (!b) return;
+    let box = P.querySelector('.bs-glance'); if (!box) { box = document.createElement('div'); box.className = 'bs-glance'; const t1 = P.querySelector('.sig-title'); t1 ? t1.after(box) : P.prepend(box); }
+    const ar = { up: '↑', flat: '→', down: '↓' }[b.dir] || '→';
+    box.innerHTML = `<span class="ar ${b.dir}" title="2027">${ar}</span><div class="tx"><b>2027: ${e(b.y2027)}.</b> ${e(b.oneliner)}<small>2026 so far: ${e(b.y2026)} · <span class="go" onclick="gsGoTab('supply')">Global supply 2027 →</span> <span style="color:var(--muted)">(summary of ${e((G.meta || {}).written)})</span></small></div>`; };
+  Object.keys(MAP).forEach(vid => { const P = document.getElementById(vid); if (!P) return;
+    new MutationObserver(() => { if (P.style.display !== 'block') return;
+      if (G) return draw(vid);
+      fetch(DATA_URL.replace('data.json', 'global_supply.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null).then(j => { G = j; draw(vid); }); })
+      .observe(P, { attributes: true, attributeFilter: ['style'] }); });
+})();
 </script>
 </body>
 </html>
