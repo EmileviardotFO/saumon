@@ -31,6 +31,9 @@ jobs:
           BW_CLIENT_ID: ${{ secrets.BW_CLIENT_ID }}
           BW_CLIENT_SECRET: ${{ secrets.BW_CLIENT_SECRET }}
           AISSTREAM_KEY: ${{ secrets.AISSTREAM_KEY || secrets.AISTREAM_KEY }}
+          # tous les secrets du depot (valeurs masquees dans les logs) : les sondes
+          # n'en affichent que les NOMS, pour retrouver une cle sans connaitre son nom
+          REPO_SECRETS_JSON: ${{ toJSON(secrets) }}
         run: |
           mkdir -p sonde_out
           python3 "scripts/sondes/${{ inputs.script }}" 2>&1 | tee sonde_out/log.txt
