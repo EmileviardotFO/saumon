@@ -72,7 +72,7 @@ jobs:
       env:
         COMTRADE_KEY: ${{ secrets.COMTRADE_KEY }}
       run: python3 scripts/update_world_imports.py
-    - name: Ecosse - biomasse, mortalites et aliment par site (SEPA, export CSV depose dans xlsx/scotland/)
+    - name: Ecosse - biomasse, mortalites et aliment par site (SEPA, export CSV telecharge)
       id: scotland
       continue-on-error: true
       timeout-minutes: 5

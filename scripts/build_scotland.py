@@ -47,9 +47,25 @@ def osgb_to_latlon(E, N):
         nu2 = a2 / math.sqrt(1 - e22 * math.sin(phi2) ** 2); phi2 = math.atan2(Z2 + e22 * nu2 * math.sin(phi2), p)
     return math.degrees(phi2), math.degrees(math.atan2(Y2, X2))
 
+URL = 'https://aquaculture.scotland.gov.uk/csv/se_monthly_reports.csv'
+
+
+def fetch():
+    """Telecharge l'export CSV complet (environ 20 Mo) ; None si le site ne repond pas."""
+    try:
+        import requests, tempfile
+        r = requests.get(URL, headers={'User-Agent': 'Mozilla/5.0 (salmon-dashboard; github.com/EmileviardotFO/saumon)'}, timeout=600)
+        r.raise_for_status()
+        if not r.content.lstrip(b'\xef\xbb\xbf').startswith(b'Monthly Report ID'): raise ValueError('unexpected content')
+        t = tempfile.NamedTemporaryFile(suffix='.csv', delete=False); t.write(r.content); t.close()
+        print(f'scotland: downloaded {len(r.content) // 1024} KB from {URL}'); return t.name
+    except Exception as e:  # noqa: BLE001
+        print('scotland: download failed', e); return None
+
+
 def main():
-    if not RAW: print('scotland: no raw file in xlsx/scotland/, nothing to do'); return
-    f = RAW[-1]
+    f = fetch() or (RAW[-1] if RAW else None)
+    if not f: print('scotland: no data (download failed and no file in xlsx/scotland/), nothing to do'); return
     df = pd.read_csv(f, low_memory=False)
     df['k'] = pd.to_datetime(df['Year'], format='%d-%b-%Y').dt.strftime('%Y%m').astype(int)
     df = df[df['Water Type'].fillna('Seawater').str.lower().str.startswith('sea')]
@@ -98,7 +114,7 @@ def main():
     out_sites = {'months': [int(k) for k in months], 'operators': opl, 'sites': sites}
 
     out = {'site_data': out_sites, 'meta': {'generated': dt.date.today().isoformat(), 'source': 'SEPA monthly biomass and treatment reports (Scotland\'s Aquaculture)',
-                    'url': 'https://aquaculture.scotland.gov.uk/Data/FishFarmMonthlyBiomassAndTreatmentReports', 'raw': os.path.basename(f),
+                    'url': 'https://aquaculture.scotland.gov.uk/Data/FishFarmMonthlyBiomassAndTreatmentReports', 'raw': 'se_monthly_reports.csv',
                     'first': int(df['k'].min()), 'last': int(df['k'].max()), 'sites': int(df['SEPA Site'].nunique()),
                     'cols': ['biomass_t_live', 'mortalities_t', 'feed_t', 'active_sites', 'max_biomass_allowed_t'],
                     'note': 'biomass on site at month end (live weight, t); mortalities and feed over the month; regions = local authorities'},
