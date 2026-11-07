@@ -31,6 +31,8 @@ jobs:
           BW_CLIENT_ID: ${{ secrets.BW_CLIENT_ID }}
           BW_CLIENT_SECRET: ${{ secrets.BW_CLIENT_SECRET }}
           AISSTREAM_KEY: ${{ secrets.AISSTREAM_KEY || secrets.AISTREAM_KEY }}
+          S_GGLOBALFISHING_KEY: ${{ secrets.GGLOBALFISHING_KEY }}
+          S_GLOBALFISHING_KEY: ${{ secrets.GLOBALFISHING_KEY }}
           S_GFW_TOKEN: ${{ secrets.GFW_TOKEN }}
           S_GFW_API_KEY: ${{ secrets.GFW_API_KEY }}
           S_GFW_API_TOKEN: ${{ secrets.GFW_API_TOKEN }}
