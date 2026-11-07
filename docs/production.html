@@ -387,6 +387,17 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
 .nw-top .nw-rank { display:inline-block; min-width:18px; color:var(--accent); font-weight:700; }
 .nw-rel summary { cursor:pointer; color:var(--accent); display:inline; list-style:none; }
 .nw-rel summary::-webkit-details-marker { display:none; }
+
+  .cl-sec{border:1px solid var(--border);border-radius:10px;margin:12px 0;padding:0 14px;background:rgba(255,255,255,.015)}
+  .cl-sec>summary{cursor:pointer;list-style:none;padding:12px 0;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px}
+  .cl-sec>summary::-webkit-details-marker{display:none}
+  .cl-sec>summary::before{content:'▸';color:#4fc3f7;font-size:13px;width:12px;transition:transform .15s}
+  .cl-sec[open]>summary::before{transform:rotate(90deg)}
+  .cl-sec[open]>summary{border-bottom:1px solid var(--border);margin-bottom:4px}
+  .cl-st{font-weight:700;font-size:14px;color:var(--ink)}
+  .cl-ss{font-size:12px;color:var(--muted);flex:1 1 260px}
+  .cl-sec>:last-child{margin-bottom:14px}
+  .cl-flag{color:#ffb74d}
 .nw-rel ul { margin:4px 0 2px; padding-left:16px; }
 .nw-rel li { margin:2px 0; font-size:11.5px; }
 .nw-rel li a { font-weight:normal !important; color:#c9d6de; }
@@ -1505,47 +1516,81 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
   </div>
 
   <div class="panel" id="chileView" style="flex:1; min-width:0; max-width:1400px; display:none;">
-    <div class="sig-title">Chile — salmon farming at a glance (Sernapesca, Subpesca, customs)</div>
+    <div class="sig-title">Chile — salmon farming, from the whole country down to the farm</div>
     <div class="sig-sub" id="clSub"></div>
     <div id="clCards" class="pr-cards"></div>
-    <div class="sig-title" style="margin-top:18px">Mortality by company — closed cycles, year by year</div>
+    <div class="sig-sub" id="clAlerts" style="margin-top:6px"></div>
+    <details class="cl-sec" id="clS1" open><summary><span class="cl-st">1 · Harvest and exports — the whole country</span><span class="cl-ss" id="clS1Sum"></span></summary>
+    <div class="sig-title" style="margin-top:14px">Harvest month by month — Atlantic, coho, trout (Subpesca monthly report)</div>
+    <div class="sig-sub" id="clMonSub"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="clMon"></table></div>
+    <div class="sig-title" style="margin-top:14px">Harvest, year to date by region</div>
+    <div class="sig-sub" id="clHarvSub"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="clHarv"></table></div>
+    <div class="sig-title" style="margin-top:14px">Exports month by month — customs declarations</div>
+    <div class="sig-sub" id="clCusSub"></div>
+    <div id="clCus"></div>
+    <div class="sig-title" style="margin-top:14px">Exports by product form (UN Comtrade)</div>
+    <div class="sig-sub" id="clExpSub"></div>
+    <div id="clExp"></div>
+    </details>
+    <details class="cl-sec" id="clS2"><summary><span class="cl-st">2 · Stock at sea and what is coming</span><span class="cl-ss" id="clS2Sum"></span></summary>
+    <div class="sig-title" style="margin-top:14px">Biomass at sea, farms in use, fish in freshwater</div>
+    <div class="sig-sub" id="clBioSub"></div>
+    <div id="clBio"></div>
+    <div class="sig-title" style="margin-top:14px">Harvest weight and time at sea</div>
+    <div class="sig-sub" id="clWSub"></div>
+    <div id="clW"></div>
+    <div class="sig-title" style="margin-top:14px">Biomass by company — Salmon Outlook (Salmonexpert / Skills), when published</div>
+    <div class="sig-sub" id="clOutSub"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="clOut"></table></div>
+    <div class="sig-title" style="margin-top:14px">Smolts to put to sea, company by company — Subpesca stocking resolutions</div>
+    <div class="sig-sub" id="clStkSub"></div>
+    <div id="clStkChart"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="clStk"></table></div>
+    <div class="sig-title" style="margin-top:14px">What the stocking points to — fish authorised by region and the harvest window</div>
+    <div class="sig-sub" id="clProjSub"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="clProj"></table></div>
+    </details>
+    <details class="cl-sec" id="clS3"><summary><span class="cl-st">3 · Regions — Los Lagos, Aysén, Magallanes</span><span class="cl-ss" id="clS3Sum"></span></summary>
+    <div class="sig-sub" id="clRegSub"></div>
+    <div id="clReg"></div>
+    </details>
+    <details class="cl-sec" id="clS4"><summary><span class="cl-st">4 · Fish health — sea lice, mortality, algae</span><span class="cl-ss" id="clS4Sum"></span></summary>
+    <div class="sig-title" style="margin-top:14px">Sea lice — farms listed as high-dissemination centres (CAD)</div>
+    <div class="sig-sub" id="clCadSub"></div>
+    <div id="clCad"></div>
+    <div class="sig-title" style="margin-top:14px">Mortality: causes, species, regions, health programmes</div>
+    <div class="sig-sub" id="clHealthSub"></div>
+    <div id="clHealth"></div>
+    </details>
+    <details class="cl-sec" id="clS5"><summary><span class="cl-st">5 · Companies</span><span class="cl-ss" id="clS5Sum"></span></summary>
+    <div class="sig-title" style="margin-top:14px">Mortality by company — closed cycles, year by year</div>
     <div class="sig-sub" id="clAnnSub"></div>
     <div style="overflow-x:auto"><table class="sig-table" id="clAnn"></table></div>
-    <div class="sig-title" style="margin-top:18px">Farms and companies</div>
+    <div class="sig-title" style="margin-top:14px">Exporters followed month by month (customs, anonymised)</div>
+    <div class="sig-sub" id="clExpoSub"></div>
+    <div style="overflow-x:auto"><table class="sig-table" id="clExpo"></table></div>
+    </details>
+    <details class="cl-sec" id="clS6"><summary><span class="cl-st">6 · Farms and processing plants</span><span class="cl-ss" id="clS6Sum"></span></summary>
+    <div class="sig-title" style="margin-top:14px">Farms and companies</div>
     <div class="sig-sub" id="clMapSub"></div>
     <div class="sc-mapgrid">
       <div id="clOpList"></div>
       <div id="clMap" style="height:620px;border:1px solid var(--border);border-radius:8px;background:#0d1a24"></div>
     </div>
     <div id="clSel" style="margin-top:14px"></div>
-    <div class="sig-title" style="margin-top:18px">Processing plants — slaughter and processing of salmonids (Sernapesca)</div>
+    <div class="sig-title" style="margin-top:14px">Processing plants — slaughter and processing of salmonids (Sernapesca)</div>
     <div class="sig-sub" id="plClSub"></div>
     <div style="overflow-x:auto"><table class="sig-table" id="plClTab"></table></div>
-    <div class="sig-title" style="margin-top:18px">Biomass at sea, farms in use, fish in freshwater</div>
-    <div class="sig-sub" id="clBioSub"></div>
-    <div id="clBio"></div>
-    <div class="sig-title" style="margin-top:18px">Harvest</div>
-    <div class="sig-sub" id="clHarvSub"></div>
-    <div style="overflow-x:auto"><table class="sig-table" id="clHarv"></table></div>
-    <div class="sig-title" style="margin-top:18px">Harvest month by month — Atlantic, coho, trout (Subpesca monthly report)</div>
-    <div class="sig-sub" id="clMonSub"></div>
-    <div style="overflow-x:auto"><table class="sig-table" id="clMon"></table></div>
-    <div class="sig-title" style="margin-top:18px">Biomass by company — Salmon Outlook (Salmonexpert / Skills), when published</div>
-    <div class="sig-sub" id="clOutSub"></div>
-    <div style="overflow-x:auto"><table class="sig-table" id="clOut"></table></div>
-    <div class="sig-title" style="margin-top:18px">Smolts to put to sea, company by company — Subpesca stocking resolutions</div>
-    <div class="sig-sub" id="clStkSub"></div>
-    <div id="clStkChart"></div>
-    <div style="overflow-x:auto"><table class="sig-table" id="clStk"></table></div>
-    <div class="sig-title" style="margin-top:18px">Exports by product form</div>
-    <div class="sig-sub" id="clExpSub"></div>
-    <div id="clExp"></div>
-    <div class="sig-title" style="margin-top:18px">Mortality: causes, species, regions, health programmes</div>
-    <div class="sig-sub" id="clHealthSub"></div>
-    <div id="clHealth"></div>
-    <div class="sig-title" style="margin-top:18px">Chile in brief — production by year, export value, US tariff, events, sources</div>
-    <div class="sig-sub">Brought over from the first Chile page (chili.html) so that nothing is lost: yearly production by species, what Chile earns per product, the US tariff, dated events, and how late each Chilean source publishes. Destinations month by month are in <span class="gs-go" onclick="gsGoTab('producers')">Producing countries</span>; the tariff in detail in the <span class="gs-go" onclick="gsGoTab('usa')">USA</span> tab.</div>
+    </details>
+    <details class="cl-sec" id="clS7"><summary><span class="cl-st">7 · Background — yearly figures, US tariff, events, sources</span><span class="cl-ss" id="clS7Sum"></span></summary>
+    <div class="sig-sub" style="margin-top:10px">Brought over from the first Chile page (chili.html) so that nothing is lost. Destinations month by month are also in <span class="gs-go" onclick="gsGoTab('producers')">Producing countries</span>; the tariff in detail in the <span class="gs-go" onclick="gsGoTab('usa')">USA</span> tab.</div>
     <div id="clBrief"></div>
+    </details>
+    <details class="cl-sec" id="clS8"><summary><span class="cl-st">8 · News</span><span class="cl-ss" id="clS8Sum">the week's Chilean stories, grouped and summarised</span></summary>
+    <div class="bs-news" id="chileView-newsbox"></div>
+    </details>
   </div>
 
   <div class="panel" id="producersView" style="flex:1; min-width:0; max-width:1600px; display:none;">
@@ -5134,11 +5179,11 @@ function renderAustralia() {
 }
 
 // ---- Subpesca : recoltes mensuelles et mises a l'eau prevues (data/chile_subpesca.json <- scripts/build_chile_subpesca.py)
-let CLP = undefined;
+let CLP = undefined, CL_W = null;   // CL_W : poids vif moyen de recolte deduit des calibres exportes (kg)
 function clSubpesca() {
   const $c = id => document.getElementById(id);
   if (CLP === undefined) { CLP = null; fetch(DATA_URL.replace('data.json', 'chile_subpesca.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
-    .then(j => { CLP = j || false; if (currentView === 'chile') clSubpesca(); }); return; }
+    .then(j => { CLP = j || false; if (currentView === 'chile') { clSubpesca(); if (CLX) clMore(); } }); return; }
   if (!CLP) { $c('clMonSub').innerHTML = 'The Subpesca reader has not run yet.'; return; }
   const e = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), f0 = v => v === null || v === undefined || !isFinite(v) ? '—' : Math.round(v).toLocaleString('en-US');
   const pc = v => v === null || v === undefined || !isFinite(v) ? '—' : `<span class="${v >= 0 ? 'delta-good' : 'delta-bad'}">${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(0)} %</span>`;
@@ -5165,7 +5210,10 @@ function clSubpesca() {
   const F = Object.values(farm), last = RES.reduce((a, r) => r.date > a ? r.date : a, ''), first = RES.reduce((a, r) => r.date < a ? r.date : a, '9');
   if (!F.length) { $c('clStkSub').innerHTML = `No stocking resolution read yet — the first full read of Subpesca's documents (since January 2024) is under way.`; $c('clStk').innerHTML = ''; $c('clStkChart').innerHTML = ''; return; }
   const L = new Date(last + 'T00:00:00Z'), cut1 = new Date(L.getTime() - 365 * 864e5).toISOString().slice(0, 10), cut2 = new Date(L.getTime() - 730 * 864e5).toISOString().slice(0, 10);
-  const grp = x => ({ 'Empresas Aquachile S.A': 'AquaChile', 'Aquachile Magallanes SpA': 'AquaChile' })[x] || x.replace(/\s+(S\.?A\.?|SpA\.?|Limitada|Ltda\.?)\b.*$/i, '').replace(/^Empresas\s+/i, '');
+  const GRP = [[/aqua ?chile/, 'AquaChile'], [/multi ?x|multiexport/, 'Multi X'], [/[sd]outhern cross/, 'Southern Cross Seafoods'], [/yadr[aá]n/, 'Cultivos Yadrán'], [/tornagaleones/, 'Granja Marina Tornagaleones'],
+    [/ventisqueros/, 'Ventisqueros'], [/los fiordos/, 'Los Fiordos'], [/camanchaca/, 'Camanchaca'], [/blumar/, 'Blumar'], [/australis/, 'Australis'], [/aquainn?ovo/, 'Aquainnovo'], [/cooke/, 'Cooke Chile'], [/mowi|marine harvest/, 'Mowi Chile'],
+    [/cermaq/, 'Cermaq Chile'], [/salmones austral/, 'Salmones Austral'], [/invermar/, 'Invermar'], [/nova austral/, 'Nova Austral'], [/ant[aá]rtica/, 'Salmones Antártica'], [/cail[ií]n/, 'Procesadora Cailín'], [/caleta bay/, 'Caleta Bay']];
+  const grp = x => { const l = String(x || '?').toLowerCase(); const g = GRP.find(([re]) => re.test(l)); return g ? g[1] : x.replace(/\s+(S\.?A\.?|SpA\.?|Limitada|Ltda\.?)\b.*$/i, '').replace(/^Empresas\s+/i, '').replace(/\b([A-ZÁÉÍÓÚÑ])([A-ZÁÉÍÓÚÑ]+)\b/g, (m, a, b) => a + b.toLowerCase()); };
   const T = {}; F.forEach(f => { const per = f.date > cut1 ? 'n' : f.date > cut2 ? 'p' : null; if (!per) return; const o = (T[grp(f.co)] = T[grp(f.co)] || { n: {}, p: {} }); o[per][f.sp || '?'] = (o[per][f.sp || '?'] || 0) + f.fish; });
   const tot = (per, sp) => Object.values(T).reduce((a, o) => a + (o[per][sp] || 0), 0), all = (o, per) => Object.values(o[per]).reduce((a, v) => a + v, 0);
   const full = first <= cut2;
@@ -5180,12 +5228,24 @@ function clSubpesca() {
   $c('clStk').innerHTML = `<thead><tr><th class="name">Company</th><th>Atlantic<br>last 12 m (M)</th><th>12 m<br>before</th><th>Coho<br>last 12 m</th><th>12 m<br>before</th><th>Trout<br>last 12 m</th><th>All species<br>change</th></tr></thead><tbody>` +
     `<tr style="font-weight:700"><td class="name">All companies</td><td>${(tot('n', 'salar') / 1e6).toFixed(1)}</td><td>${(tot('p', 'salar') / 1e6).toFixed(1)}</td><td>${(tot('n', 'coho') / 1e6).toFixed(1)}</td><td>${(tot('p', 'coho') / 1e6).toFixed(1)}</td><td>${(tot('n', 'trucha') / 1e6).toFixed(1)}</td>` +
     `<td>${full ? pc(100 * ((tot('n', 'salar') + tot('n', 'coho') + tot('n', 'trucha')) / (tot('p', 'salar') + tot('p', 'coho') + tot('p', 'trucha')) - 1)) : '—'}</td></tr>` +
-    Object.entries(T).sort((a, b) => all(b[1], 'n') - all(a[1], 'n')).map(([c, o]) => `<tr><td class="name">${e(c)}</td><td>${o.n.salar ? (o.n.salar / 1e6).toFixed(2) : '—'}</td><td>${o.p.salar ? (o.p.salar / 1e6).toFixed(2) : '—'}</td>` +
+    Object.entries(T).filter(([, o]) => all(o, 'n') + all(o, 'p') >= 1e6).sort((a, b) => all(b[1], 'n') - all(a[1], 'n')).map(([c, o]) => `<tr><td class="name">${e(c)}</td><td>${o.n.salar ? (o.n.salar / 1e6).toFixed(2) : '—'}</td><td>${o.p.salar ? (o.p.salar / 1e6).toFixed(2) : '—'}</td>` +
       `<td>${o.n.coho ? (o.n.coho / 1e6).toFixed(2) : '—'}</td><td>${o.p.coho ? (o.p.coho / 1e6).toFixed(2) : '—'}</td><td>${o.n.trucha ? (o.n.trucha / 1e6).toFixed(2) : '—'}</td><td>${full && all(o, 'p') ? pc(100 * (all(o, 'n') / all(o, 'p') - 1)) : '—'}</td></tr>`).join('') + `</tbody>`;
   // graphique : poissons a mettre a l'eau par trimestre de resolution, par espece
   const qk = d => +d.slice(0, 4) * 100 + (Math.ceil(+d.slice(5, 7) / 3) - 1) * 3 + 1, qs = [...new Set(F.map(f => qk(f.date)))].sort((a, b) => a - b);
   const st = [['salar', 'Atlantic salmon', '#4fc3f7'], ['coho', 'Coho', '#ffb74d'], ['trucha', 'Rainbow trout', '#81c784']].map(([sp, lab, col]) => ({ lab, col, vals: qs.map(q => F.filter(f => f.sp === sp && qk(f.date) === q).reduce((a, f) => a + f.fish, 0) / 1e6) }));
   $c('clStkChart').innerHTML = typeof vzStack === 'function' ? vzStack(qs, st, { axis: 'Million fish (quarter of the resolution)', unit: 'M fish', H: 210 }) + vzLegend(st.map(x => [x.lab, x.col, false, true])) : '';
+  // ce que les mises a l'eau annoncent : poissons autorises par region et semestre -> fenetre de recolte et tonnage implicite
+  { const hf = d => d.slice(0, 4) + (+d.slice(5, 7) <= 6 ? ' H1' : ' H2'), REG = ['Los Lagos', 'Aysén', 'Magallanes'], P = {};
+    F.forEach(f => { if (f.sp !== 'salar' && f.sp !== 'coho') return; const r = REG.find(x => (f.reg || '').startsWith(x)) || 'other', k = hf(f.date), o = P[k] = P[k] || {}; o[f.sp + '|' + r] = (o[f.sp + '|' + r] || 0) + f.fish; });
+    const hs = Object.keys(P).sort().filter(k => k >= '2024'), sh = (k, m) => { let y = +k.slice(0, 4), h = k.endsWith('H2') ? 1 : 0; h += m; y += Math.floor(h / 2); return y + (h % 2 ? ' H2' : ' H1'); };
+    const surv = 0.85, wS = CL_W || 5.0, wC = 3.0, h25 = (P['2025 H1'] || {}), a25 = REG.concat('other').reduce((t, r) => t + (h25['salar|' + r] || 0), 0);
+    window.CL_PROJ = { P, hs, surv, wS, wC };
+    const el = $c('clProj'); if (el) { $c('clProjSub').innerHTML = `The same resolutions, summed by region and half-year, with the harvest they point to: Atlantic salmon stocked about 1–3 months after its resolution and harvested 14–20 months later; coho about 10 months later. ` +
+      `Tonnes are only an order of magnitude: ${(surv * 100).toFixed(0)} % of the fish reach harvest, at ${wS.toFixed(1)} kg live for Atlantic${CL_W ? ' (the export weight classes, below)' : ''} and ${wC.toFixed(1)} kg for coho. ` +
+      `<b>Authorised is a ceiling, not what goes to sea</b>: ${a25 ? `${(a25 / 1e6).toFixed(0)} M Atlantic fish were authorised by resolutions of H1 2025, when the Salmon Council counts 84 M Atlantic smolts actually put to sea in that half-year` : 'the Salmon Council counts 84 M Atlantic smolts actually put to sea in H1 2025'}; and the unreadable scanned resolutions (above) leave late 2024 and most of 2025 short.`;
+      el.innerHTML = `<thead><tr><th class="name">Resolutions of</th>${REG.map(r => `<th>Atlantic<br>${r} (M)</th>`).join('')}<th>Atlantic<br>all (M)</th><th>Harvest<br>window</th><th>Implied<br>Atlantic (kt)</th><th>Coho<br>all (M)</th><th>Coho<br>harvest</th></tr></thead><tbody>` +
+        hs.slice().reverse().map(k => { const o = P[k], sa = REG.concat('other').reduce((t, r) => t + (o['salar|' + r] || 0), 0), co = REG.concat('other').reduce((t, r) => t + (o['coho|' + r] || 0), 0);
+          return `<tr><td class="name">${k}</td>${REG.map(r => `<td>${o['salar|' + r] ? (o['salar|' + r] / 1e6).toFixed(1) : '—'}</td>`).join('')}<td><b>${(sa / 1e6).toFixed(1)}</b></td><td>${sh(k, 2)} – ${sh(k, 3)}</td><td>${f0(sa * surv * wS / 1e6)}</td><td>${co ? (co / 1e6).toFixed(1) : '—'}</td><td>${co ? sh(k, 1) + ' – ' + sh(k, 2) : '—'}</td></tr>`; }).join('') + `</tbody>`; } }
 }
 function clBrief(D) {
   const el = document.getElementById('clBrief'); if (!el || !D) return;
@@ -5214,12 +5274,14 @@ function renderChile() {
   if (!MEV && !MEV_LOADING) { MEV_LOADING = true; fetch(DATA_URL.replace('data.json', 'events.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
     .then(j => { MEV = j || { manual: [], news: [] }; MEV_LOADING = false; if (currentView === 'chile') renderChile(); }); }
   clBrief(CLD);
+  clSecInit(); clMore();
   const B = (CLD.biologie || {}), S = B.sanitaire || {}, C = S.cycle_ferme || {}, M = S.mortalite || {};
   const f0 = v => v === null || v === undefined || !isFinite(v) ? '—' : Math.round(v).toLocaleString('en-US'), f1 = v => v === null || v === undefined || !isFinite(v) ? '—' : (+v).toFixed(1);
   const vt = (a, b, badUp) => a && b ? (v => `<span class="${(v >= 0) !== !!badUp ? 'delta-good' : 'delta-bad'}" style="font-size:12px">${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(1)}%</span>`)(100 * (a / b - 1)) : '';
   const MON = MONTHS_FR.map(m => m.slice(0, 3)), avg = a => a.reduce((x, y) => x + y, 0) / a.length;
   document.getElementById('clSub').innerHTML = `Chile has no public farm-by-farm register like Norway's or Scotland's SEPA reports. This tab pulls together what exists: Sernapesca's yearly health report (monthly biomass at sea, mortality by company and cause), ` +
-    `Subpesca's monthly harvest totals, customs exports by product form, and Subpesca's map of aquaculture concessions. Figures are live weight unless stated.`;
+    `Subpesca's monthly harvest totals and stocking resolutions, every customs export declaration, the regional statistics offices (INE), Sernapesca's sea-lice list and the map of concessions. ` +
+    `Sections go from the whole country down to the farm; click a title to open it (the page remembers which ones you keep open). Figures are live weight unless stated.`;
   // cartes
   const bm = S.biomasse_mer_t || {}, b5 = bm['2025'] || [], b4 = bm['2024'] || [], cum = (B.cosecha_cumul || []).filter(r => r.espece === 'salar').sort((a, b) => b.fin - a.fin)[0];
   const card = (lab, big, sub, col) => `<div class="pr-card" style="cursor:default"><div class="nm"><i style="background:${col}"></i>${lab}</div><div class="big">${big}</div><div class="ln">${sub}</div></div>`;
@@ -5285,7 +5347,7 @@ function renderChile() {
       `Salmonexpert publishes it in a free article now and then; the figures of those articles are kept here (harvest-weight thousand tonnes). Not every month, so read the levels rather than a monthly trend. ` +
       O.filter(p => p.note).map(p => `${ml(p.k)}: ${p.note}.`).join(' ') : '';
     document.getElementById('clOut').innerHTML = O.length ? `<thead><tr><th class="name">Month of the data</th><th>All species<br>(kt)</th><th>Atlantic<br>(kt)</th><th>Atlantic<br>fish (M)</th><th>Coho<br>(kt)</th><th>Trout<br>(kt)</th><th>Active<br>farms</th>${cos.map(c => `<th>${c}<br>(kt)</th>`).join('')}</tr></thead><tbody>` +
-      O.slice().reverse().map(p => `<tr><td class="name"><a href="${p.url}" target="_blank" rel="noopener">${ml(p.k)}</a></td><td><b>${kt(p.total_t)}</b></td><td>${kt(p.species.salar.t)}</td><td>${p.species.salar.fish_m || '—'}</td><td>${kt(p.species.coho.t)}</td><td>${kt(p.species.trucha.t)}</td><td>${p.centres || '—'}</td>` +
+      O.slice().reverse().map(p => `<tr><td class="name"><a href="${p.url}" target="_blank" rel="noopener" style="color:var(--accent)">${ml(p.k)}</a></td><td><b>${kt(p.total_t)}</b></td><td>${kt(p.species.salar.t)}</td><td>${p.species.salar.fish_m || '—'}</td><td>${kt(p.species.coho.t)}</td><td>${kt(p.species.trucha.t)}</td><td>${p.centres || '—'}</td>` +
         cos.map(c => `<td>${p.companies[c] ? kt(p.companies[c].t) : '—'}</td>`).join('') + `</tr>`).join('') + `</tbody>` : ''; }
   document.getElementById('clHealth').innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px">` +
     `<div><div class="sig-sub"><b>Causes of death, Atlantic salmon 2025</b></div>` + Object.entries(CA.primaire_pct || {}).map(([k, v]) => `<div style="display:flex;align-items:center;gap:8px;font-size:12px;margin:3px 0"><span style="width:140px;color:var(--muted)">${({ 'Infectieuse': 'Infectious', 'Dommage mécanique': 'Mechanical damage', 'Élimination': 'Culled', 'Autres': 'Other', 'Sans cause apparente': 'No visible cause' })[k] || k}</span><div style="height:9px;width:${Math.round(150 * v / mx)}px;background:#ff8a65;border-radius:2px"></div><span>${f1(v)} %</span></div>`).join('') +
@@ -5296,6 +5358,169 @@ function renderChile() {
       `<b>ISA:</b> no case of the virulent variant for the second year running. <b>SRS:</b> Los Lagos 6.5 % of farms on alert per week (falling), Aysén 9.0 % (slightly up).</div></div></div>` +
     (ev.length ? `<div class="sig-sub" style="margin-top:12px"><b>Mass mortality events on record</b>: ` + ev.map(e => `<b>${e.date}</b> ${e.region} — ${e.agent}${e.tonnes ? `, ${f0(e.tonnes)} t` : ''}${e.company ? ` (${e.company.split(',')[0]})` : ''}`).join(' · ') + ` — see Mortality events in the Fish health tab.</div>` : '');
 }
+let CLX = undefined;   // { cus, reg, cad } : douanes, bulletins INE, liste caligus CAD
+function clMore() {
+  const $c = id => document.getElementById(id);
+  if (CLX === undefined) { CLX = null; const g = n => fetch(DATA_URL.replace('data.json', n), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
+    Promise.all([g('chile_customs.json'), g('chile_regional.json'), g('chile_caligus.json')]).then(([a, b, c]) => { CLX = { cus: a, reg: b, cad: c }; if (currentView === 'chile') clMore(); }); return; }
+  if (!CLX) return;
+  const e = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), f0 = v => v === null || v === undefined || !isFinite(v) ? '—' : Math.round(v).toLocaleString('en-US');
+  const f1 = v => v === null || v === undefined || !isFinite(v) ? '—' : (+v).toFixed(1), MON = MONTHS_FR.map(m => m.slice(0, 3));
+  const pc = (a, b, badUp) => a && b ? (v => `<span class="${(v >= 0) !== !!badUp ? 'delta-good' : 'delta-bad'}">${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(0)} %</span>`)(100 * (a / b - 1)) : '—';
+  const ml = k => `${MON[k % 100 - 1]} ${Math.floor(k / 100)}`, SUM = {};
+  // ---------- douanes : mois par mois ----------
+  const C = CLX.cus, CM = (C && C.months) || {}, ks = Object.keys(CM).map(Number).sort((a, b) => a - b);
+  if (ks.length) {
+    const last = ks[ks.length - 1], y = Math.floor(last / 100), lm = last % 100, k24 = ks.slice(-24);
+    const get = (k, f) => { const m = CM[k]; if (!m) return null; return f(m); };
+    const sf = (m, re) => Object.entries(m.species_form || {}).filter(([k]) => re.test(k)).reduce((a, [, v]) => a + v[0], 0);
+    $c('clCus').innerHTML = scSvg(k24, [
+      { v: k24.map(k => CM[k].t_kusd[0] / 1000), col: '#4fc3f7', w: 2.6, dots: true, lab: 'all salmonids, kt' },
+      { v: k24.map(k => get(k - 100, m => m.t_kusd[0] / 1000)), col: '#8fa4b0', w: 1.4, dash: '4 3', lab: 'same month a year earlier' },
+      { v: k24.map(k => sf(CM[k], /^atlantic\|fresh/) / 1000), col: '#81c784', w: 1.8, lab: 'Atlantic, fresh (whole + fillets)' },
+      { v: k24.map(k => sf(CM[k], /^coho\|/) / 1000), col: '#ffb74d', w: 1.8, lab: 'coho' }],
+      { lab: ml, xl: k => k % 100 === 1 || k === k24[0] ? ml(k) : MON[k % 100 - 1].slice(0, 1), fmt: v => v.toFixed(0), H: 220 }) +
+      `<div style="overflow-x:auto;margin-top:8px"><table class="sig-table"><thead><tr><th class="name">Month</th><th>Tonnes</th><th>vs a year<br>earlier</th><th>FOB<br>$/kg</th><th>by air</th><th>USA</th><th>Brazil</th><th>Japan</th><th>China</th><th>Russia</th><th>Mexico</th></tr></thead><tbody>` +
+      ks.slice(-13).reverse().map(k => { const m = CM[k], t = m.t_kusd[0], d = m.dest || {}, sh = n => d[n] ? (100 * d[n][0] / t).toFixed(0) + ' %' : '—';
+        return `<tr><td class="name">${ml(k)}</td><td><b>${f0(t)}</b></td><td>${pc(t, get(k - 100, x => x.t_kusd[0]))}</td><td>${(m.t_kusd[1] / t).toFixed(2)}</td><td>${m.via && m.via.air ? (100 * m.via.air[0] / t).toFixed(0) + ' %' : '—'}</td>` +
+          `<td>${sh('U.S.A.')}</td><td>${sh('Brasil')}</td><td>${sh('Japon')}</td><td>${sh('China')}</td><td>${sh('Rusia')}</td><td>${sh('Mexico')}</td></tr>`; }).join('') + `</tbody></table></div>`;
+    // cumul de l'annee par produit
+    const ytd = (yy, fn) => ks.filter(k => Math.floor(k / 100) === yy && k % 100 <= lm).reduce((a, k) => { Object.entries(fn(CM[k]) || {}).forEach(([n, v]) => { const o = a[n] = a[n] || [0, 0]; o[0] += v[0]; o[1] += v[1]; }); return a; }, {});
+    const P1 = ytd(y, m => m.species_form), P0 = ytd(y - 1, m => m.species_form), T1 = Object.values(P1).reduce((a, v) => a + v[0], 0), T0 = Object.values(P0).reduce((a, v) => a + v[0], 0);
+    const lab = k => { const [s, f] = k.split('|'); return ({ atlantic: 'Atlantic', coho: 'Coho', trout: 'Trout', salmon: 'Salmon (species not stated)' })[s] + ', ' + f; };
+    $c('clCus').innerHTML += `<div class="sig-sub" style="margin-top:12px"><b>Jan–${MON[lm - 1]} ${y} against Jan–${MON[lm - 1]} ${y - 1}, by product</b> (net product weight; a fillet weighs about half the fish it comes from)</div>` +
+      `<div style="overflow-x:auto"><table class="sig-table"><thead><tr><th class="name">Product</th><th>${y} (t)</th><th>${y - 1} (t)</th><th>Change</th><th>${y} $/kg</th><th>${y - 1} $/kg</th></tr></thead><tbody>` +
+      `<tr style="font-weight:700"><td class="name">All</td><td>${f0(T1)}</td><td>${f0(T0)}</td><td>${pc(T1, T0)}</td><td>—</td><td>—</td></tr>` +
+      Object.entries(P1).filter(([, v]) => v[0] >= 2000).sort((a, b) => b[1][0] - a[1][0]).map(([k, v]) => { const o = P0[k] || [0, 0];
+        return `<tr><td class="name">${lab(k)}</td><td>${f0(v[0])}</td><td>${f0(o[0])}</td><td>${pc(v[0], o[0])}</td><td>${(v[1] / v[0]).toFixed(2)}</td><td>${o[0] ? (o[1] / o[0]).toFixed(2) : '—'}</td></tr>`; }).join('') + `</tbody></table></div>`;
+    $c('clCusSub').innerHTML = `Every export declaration, summed by month (Chilean customs open data, published about a month after the month; last: <b>${ml(last)}</b>). Net product weight and FOB value in US dollars. ` +
+      `Faster and finer than UN Comtrade: by product, destination, region of shipment and transport (fresh fish to the Americas goes by air or by road to Argentina and Brazil).`;
+    SUM.clS1 = (SP0 => SP0 ? `Atlantic harvest Jan–${MON[SP0.k % 100 - 1]} ${f0(SP0.species.salar.cum_kt)} kt (${SP0.species.salar.var_pct >= 0 ? '+' : '−'}${Math.abs(SP0.species.salar.var_pct).toFixed(0)} %) · ` : '')((CLP && (CLP.reports || []).filter(r => r && r.k && !r.unread && r.species && r.species.salar).sort((a, b) => b.k - a.k)[0]) || null) + `exports ${ml(last)}: ${f0(CM[last].t_kusd[0] / 1000)} kt (${pc(CM[last].t_kusd[0], get(last - 100, x => x.t_kusd[0])).replace(/<[^>]+>/g, '')} on a year earlier) · Jan–${MON[lm - 1]} ${pc(T1, T0).replace(/<[^>]+>/g, '')}`;
+    // exportateurs suivis
+    const X = (C.exporters || []).map(x => { const ms = Object.entries(x.months || {}), s12 = ms.filter(([k]) => +k > last - 100).reduce((a, [, v]) => a + v[0], 0), s0 = ms.filter(([k]) => +k <= last - 100 && +k > last - 200).reduce((a, [, v]) => a + v[0], 0);
+      return { ...x, s12, s0, n: ms.length }; }).filter(x => x.s12 > 0).sort((a, b) => b.s12 - a.s12), tot12 = ks.filter(k => k > last - 100).reduce((a, k) => a + CM[k].t_kusd[0], 0);
+    $c('clExpoSub').innerHTML = `Customs files carry no exporter name and renumber exporters every month. Each exporter is followed from month to month by its own product codes, town, products and markets (${C.meta.linked_share_pct} % of the volume could be followed over several months). ` +
+      `The name is not known, but the exporter's registered town (often its head office: Santiago districts, Rancagua, Puerto Montt) and its product mix often tell which company it is. A chain can break when an exporter changes its codes: read it as likely, not certain. Last 12 months to ${ml(last)}.`;
+    $c('clExpo').innerHTML = `<thead><tr><th class="name">Exporter</th><th>Last 12 m (t)</th><th>Share</th><th>12 m before</th><th>Change</th><th style="text-align:left">Town</th><th style="text-align:left">Main products</th><th style="text-align:left">Main markets</th><th>Months seen</th></tr></thead><tbody>` +
+      X.slice(0, 20).map(x => `<tr><td class="name">${x.id}</td><td><b>${f0(x.s12)}</b></td><td>${(100 * x.s12 / tot12).toFixed(1)} %</td><td>${x.s0 ? f0(x.s0) : '—'}</td><td>${x.s0 ? pc(x.s12, x.s0) : '—'}</td>` +
+        `<td style="text-align:left">${e(CL_COM[+x.comuna] || x.comuna || '')}</td><td style="text-align:left;font-size:12px">${Object.entries(x.mix || {}).slice(0, 2).map(([k, v]) => `${lab(k)} ${v.toFixed(0)} %`).join(', ')}</td>` +
+        `<td style="text-align:left;font-size:12px">${Object.entries(x.dest || {}).slice(0, 3).map(([k, v]) => `${e(k.replace('U.S.A.', 'USA').replace('Brasil', 'Brazil').replace('Japon', 'Japan').replace('Rusia', 'Russia'))} ${v.toFixed(0)} %`).join(', ')}</td><td>${x.n}</td></tr>`).join('') + `</tbody>`;
+    SUM.clS5 = `${X.length} exporters followed; the 5 largest ship ${(100 * X.slice(0, 5).reduce((a, x) => a + x.s12, 0) / tot12).toFixed(0)} % · mortality by company`;
+  } else { $c('clCusSub').innerHTML = 'Customs reader has not run yet.'; }
+  // cartes du haut : remplacer les chiffres saisis a la main par les plus frais (Subpesca, douanes)
+  { const card = (lab, big, sub, col) => `<div class="pr-card" style="cursor:default"><div class="nm"><i style="background:${col}"></i>${lab}</div><div class="big">${big}</div><div class="ln">${sub}</div></div>`;
+    const swap = (re, html) => { const c = [...$c('clCards').children].find(x => re.test(x.textContent)); if (c && html) c.outerHTML = html; };
+    const sp = (CLP && (CLP.reports || []).filter(r => r && r.k && !r.unread && r.species && r.species.salar && r.species.salar.cum_kt).sort((a, b) => b.k - a.k)[0]) || null;
+    if (sp) { const v = sp.species.salar; swap(/^Atlantic salmon harvest/, card(`Atlantic salmon harvest · Jan–${MON[sp.k % 100 - 1]} ${Math.floor(sp.k / 100)}`, `${f1(v.cum_kt)} kt <span class="${v.var_pct >= 0 ? 'delta-good' : 'delta-bad'}" style="font-size:12px">${v.var_pct >= 0 ? '+' : '−'}${Math.abs(v.var_pct).toFixed(1)}%</span>`, 'Subpesca monthly report, cumulative from January', '#81c784')); }
+    if (ks.length) { const last = ks[ks.length - 1], y = Math.floor(last / 100), lm = last % 100, sm = yy => ks.filter(k => Math.floor(k / 100) === yy && k % 100 <= lm).reduce((a, k) => [a[0] + CM[k].t_kusd[0], a[1] + CM[k].t_kusd[1]], [0, 0]);
+      const a1 = sm(y), a0 = sm(y - 1), pv = (a, b) => `<span class="${a >= b ? 'delta-good' : 'delta-bad'}" style="font-size:12px">${a >= b ? '+' : '−'}${Math.abs(100 * (a / b - 1)).toFixed(1)}%</span>`;
+      swap(/^Exports/, card(`Exports · Jan–${MON[lm - 1]} ${y}`, `${f0(a1[0] / 1000)} kt ${pv(a1[0], a0[0])}`, `$${f0(a1[1] / 1000)} M (${pv(a1[1], a0[1])}) · all salmonids, product weight · customs`, '#ffd54f')); } }
+  // ---------- regions ----------
+  const R = CLX.reg || {}, LL = R.los_lagos || {}, MG = R.magallanes || {}, AY = R.aysen || {};
+  const lastOf = o => Object.keys(o).sort().slice(-1)[0], yago = k => k.replace(/^(\d{4})/, (m, a) => String(+a - 1));
+  const cell = (o, k, sp) => { const v = o[k] && o[k].t[sp], p = o[yago(k)] && o[yago(k)].t[sp]; return v ? `<b>${f1(v / 1000)}</b> <span style="font-size:11px">${p && p >= 1000 ? pc(v, p) : ''}</span>` : '—'; };
+  const mks = [...new Set([...Object.keys(LL), ...Object.keys(MG)])].sort().reverse().slice(0, 12);
+  const SP = (CLP && (CLP.reports || []).filter(r => r && r.k && !r.unread && r.species && r.species.salar).sort((a, b) => b.k - a.k)[0]) || null;
+  const cadR = {}, cadW = new Date(Date.now() - 56 * 864e5);
+  const wk = w => { const [yy, ww] = w.split('-W').map(Number); return new Date(Date.UTC(yy, 0, 4 + (ww - 1) * 7)); };
+  ((CLX.cad && CLX.cad.entries) || []).forEach(x => { if (wk(x.week) >= cadW) cadR[x.region] = (cadR[x.region] || 0) + 1; });
+  const cusR = (() => { if (!ks.length) return {}; const last = ks[ks.length - 1], o = {}; ks.filter(k => Math.floor(k / 100) === Math.floor(last / 100)).forEach(k => Object.entries(CM[k].region || {}).forEach(([n, v]) => o[n] = (o[n] || 0) + v[0])); return o; })();
+  const cusT = Object.values(cusR).reduce((a, v) => a + v, 0), mr = Object.fromEntries(((CLD && CLD.mortalite_region) || []).map(r => [r.region.replace('Aysen', 'Aysén'), r.pct_mensuel_moyen]));
+  const regs = ['Los Lagos', 'Aysén', 'Magallanes'];
+  const harv = (r, sp) => { if (!SP || !SP.species[sp]) return null; const o = SP.species[sp].regions_kt || {}; if (o[r] !== undefined) return o[r]; const known = Object.values(o).reduce((a, v) => a + v, 0); return r === 'Magallanes' && SP.species[sp].cum_kt ? SP.species[sp].cum_kt - known : null; };
+  $c('clRegSub').innerHTML = `Three regions hold almost all the farms: Los Lagos (Chiloé, the oldest area, Atlantic and coho), Aysén (the largest Atlantic salmon area today) and Magallanes (far south, Atlantic only, lowest mortality). ` +
+    `Careful with the region of an export: it is where the fish was processed and shipped from, not where it grew — much of Aysén's fish is processed in Los Lagos plants.`;
+  $c('clReg').innerHTML = `<div style="overflow-x:auto"><table class="sig-table"><thead><tr><th class="name">Region</th><th>Atlantic harvest<br>${SP ? 'Jan–' + MON[SP.k % 100 - 1] + ' ' + Math.floor(SP.k / 100) : ''} (kt)</th><th>Coho harvest<br>same period (kt)</th><th>Exports shipped<br>from the region, ${ks.length ? Math.floor(ks[ks.length - 1] / 100) : ''}</th><th>Farms listed for<br>sea lice, 8 weeks</th><th>Monthly mortality<br>2025</th></tr></thead><tbody>` +
+    regs.map(r => `<tr><td class="name">${r}</td><td>${f1(harv(r, 'salar'))}${r === 'Magallanes' ? '<span style="font-size:11px;color:var(--muted)"> (rest of Chile)</span>' : ''}</td><td>${f1(harv(r, 'coho'))}</td><td>${cusR[r] ? f0(cusR[r]) + ' t (' + (100 * cusR[r] / cusT).toFixed(0) + ' %)' : '—'}</td><td>${cadR[r] || 0}</td><td>${mr[r] !== undefined ? f1(mr[r]) + ' %' : '—'}</td></tr>`).join('') + `</tbody></table></div>` +
+    `<div class="sig-sub" style="margin-top:12px"><b>Month by month, from the regional statistics offices (INE bulletins, Sernapesca's provisional figures)</b> — thousand tonnes, change on a year earlier. ` +
+    `Los Lagos gives what its <i>processing plants</i> turned out (fish from Aysén included); Magallanes gives the <i>harvest at its farms</i>; Aysén publishes its farm harvest only by quarter, below.</div>` +
+    `<div style="overflow-x:auto"><table class="sig-table"><thead><tr><th class="name">Month</th><th>Los Lagos plants<br>Atlantic</th><th>Los Lagos plants<br>coho</th><th>Los Lagos plants<br>trout</th><th>Magallanes farms<br>Atlantic</th></tr></thead><tbody>` +
+    mks.map(k => `<tr><td class="name">${ml(+k.replace('-', ''))}</td><td>${cell(LL, k, 'atlantic')}</td><td>${cell(LL, k, 'coho')}</td><td>${cell(LL, k, 'trout')}</td><td>${cell(MG, k, 'atlantic')}</td></tr>`).join('') + `</tbody></table></div>` +
+    `<div style="overflow-x:auto;margin-top:8px"><table class="sig-table"><thead><tr><th class="name">Aysén farms, quarter</th><th>Atlantic</th><th>Coho</th><th>Trout</th></tr></thead><tbody>` +
+    Object.keys(AY).sort().reverse().slice(0, 6).map(k => `<tr><td class="name">${k.replace('-', ' ')}</td><td>${cell(AY, k, 'atlantic')}</td><td>${cell(AY, k, 'coho')}</td><td>${cell(AY, k, 'trout')}</td></tr>`).join('') + `</tbody></table></div>`;
+  { const kL = lastOf(LL), kM = lastOf(MG); SUM.clS3 = `${kL ? `Los Lagos plants ${ml(+kL.replace('-', ''))}: ${f1(LL[kL].t.atlantic / 1000)} kt Atlantic` : ''}${kM ? ` · Magallanes farms ${f1(MG[kM].t.atlantic / 1000)} kt` : ''} · Aysén ${lastOf(AY) || ''}`; }
+  // ---------- caligus CAD ----------
+  const D = CLX.cad;
+  if (D && (D.entries || []).length) {
+    const E = D.entries.slice().sort((a, b) => b.week.localeCompare(a.week) || a.region.localeCompare(b.region)), wks = [...new Set(E.map(x => x.week))].sort();
+    const q = w => w.slice(0, 4) + ' Q' + Math.min(4, Math.ceil(+w.slice(6) / 13)), qs = [...new Set(E.map(x => q(x.week)))].sort();
+    const byQ = {}; E.forEach(x => { const o = byQ[q(x.week)] = byQ[q(x.week)] || {}; o[x.region] = (o[x.region] || 0) + 1; });
+    const recent = E.filter(x => wk(x.week) >= cadW), co = {}; E.filter(x => wk(x.week) >= new Date(Date.now() - 182 * 864e5)).forEach(x => co[x.company] = (co[x.company] || 0) + 1);
+    const cn = s => s.replace(/,?\s*(S\.A\.|SPA|LTDA\.?|LIMITADA)\b.*$/i, '').replace(/\b\w+/g, w => w[0] + w.slice(1).toLowerCase());
+    const vs = D.versions || [], nv = vs.length > 1 ? vs[vs.length - 1].new : 0;
+    // alerte : le dernier trimestre complet au-dessus de la moyenne des precedents
+    const tq = qs.map(k => Object.values(byQ[k]).reduce((a, v) => a + v, 0)), cur = tq[tq.length - 1], prevAvg = tq.length > 2 ? tq.slice(0, -1).reduce((a, v) => a + v, 0) / (tq.length - 1) : null;
+    $c('clCadSub').innerHTML = `Sernapesca lists every farm whose weekly count, after the official treatment window of its area, shows 3 or more egg-bearing female lice per fish on average: it becomes a <i>high-dissemination centre</i> (CAD) and must treat or harvest early. ` +
+      `<i>Caligus rogercresseyi</i> is the Chilean sea louse — the counterpart of the Norwegian salmon louse. List of ${e(vs.length ? vs[vs.length - 1].version : '')}, read every Monday; a new farm on the list raises an alert here and on GitHub. ` +
+      `<a href="${e(D.meta.page)}" target="_blank" rel="noopener" style="color:var(--accent)">Sernapesca list</a>.`;
+    $c('clCad').innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px">` +
+      `<div><table class="sig-table"><thead><tr><th class="name">Quarter listed</th><th>Los Lagos</th><th>Aysén</th><th>Magallanes</th><th>All</th></tr></thead><tbody>` +
+        qs.slice().reverse().map((k, i) => { const o = byQ[k], t = Object.values(o).reduce((a, v) => a + v, 0); return `<tr><td class="name">${k}${i === 0 ? ' <span style="font-size:11px;color:var(--muted)">(so far)</span>' : ''}</td><td>${o['Los Lagos'] || 0}</td><td>${o['Aysén'] || 0}</td><td>${o['Magallanes'] || 0}</td><td><b>${t}</b></td></tr>`; }).join('') + `</tbody></table></div>` +
+      `<div><div class="sig-sub"><b>Companies with the most farms listed, last 6 months</b></div>` + Object.entries(co).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([c, n]) => `<div style="display:flex;align-items:center;gap:8px;font-size:12px;margin:3px 0"><span style="width:170px">${e(cn(c))}</span><span style="height:9px;width:${n * 9}px;background:#ffb74d;border-radius:2px"></span><b>${n}</b></div>`).join('') + `</div></div>` +
+      `<div class="sig-sub" style="margin-top:10px"><b>Listed in the last 8 weeks (${recent.length} farms)</b></div><div style="overflow-x:auto"><table class="sig-table"><thead><tr><th class="name">Week</th><th style="text-align:left">Farm</th><th style="text-align:left">Company</th><th>Region</th><th>Area (ACS)</th><th>Species</th></tr></thead><tbody>` +
+      recent.slice(0, 40).map(x => `<tr><td class="name">${x.week}</td><td style="text-align:left">${e(x.site)} <span style="color:var(--muted);font-size:11px">${x.code}</span></td><td style="text-align:left">${e(cn(x.company))}</td><td>${x.region}</td><td>${x.acs}</td><td>${({ SA: 'atlantic', SS: 'atlantic', OK: 'coho', OM: 'trout' })[x.sp] || x.sp}</td></tr>`).join('') + `</tbody></table></div>`;
+    SUM.clS4 = `${recent.length} farms listed for sea lice in the last 8 weeks (${Object.entries(cadR).map(([r, n]) => r + ' ' + n).join(', ')})`;
+    const al = [];
+    if (nv) al.push(`${nv} farm${nv > 1 ? 's' : ''} newly listed for sea lice in the latest Sernapesca list`);
+    if (prevAvg && tq.length > 2 && tq[tq.length - 2] > 1.3 * prevAvg) al.push(`sea-lice listings in ${qs[qs.length - 2]} (${tq[tq.length - 2]}) well above the usual quarter (${prevAvg.toFixed(0)})`);
+    $c('clAlerts').innerHTML = al.length ? `<span class="cl-flag">⚠ ${al.join(' · ')}</span> — <span class="gs-go" onclick="clOpen('clS4')">see Fish health</span>` : '';
+  }
+  // ---------- resumes des sections ----------
+  const B = (CLD && CLD.biologie && CLD.biologie.sanitaire) || {}, b5 = (B.biomasse_mer_t || {})['2025'] || [];
+  if (!SUM.clS2 && b5.length) SUM.clS2 = `biomass at sea Dec 2025 ${f0(b5[11] / 1000)} kt · weights, Salmon Outlook, smolts authorised`;
+  SUM.clS6 = `${((CLS && CLS.sites) || []).length.toLocaleString('en-US')} concessions on the map · processing plants`;
+  { const T = (CLD && CLD.tarif) || {}; SUM.clS7 = `US tariff ${T.taux_apres_pct ?? '—'} % · production by year · dated events · how late each source publishes`; }
+  Object.entries(SUM).forEach(([k, v]) => { const el = $c(k + 'Sum'); if (el) el.textContent = v; });
+  clW();
+}
+function clW() {   // poids : calibres exportes (douanes), poids moyen en mer (Salmon Outlook), smolts et temps en mer
+  const $c = id => document.getElementById(id), el = $c('clW'); if (!el) return;
+  const CM = (CLX && CLX.cus && CLX.cus.months) || {}, ks = Object.keys(CM).map(Number).sort((a, b) => a - b).filter(k => CM[k].sizes);
+  const MON = MONTHS_FR.map(m => m.slice(0, 3)), ml = k => `${MON[k % 100 - 1]} ${Math.floor(k / 100)}`, HON = 1.12;
+  const O = ((CLD && CLD.salmon_outlook) || {}).points || [];
+  const sea = O.filter(p => p.species && p.species.salar && p.species.salar.fish_m).map(p => `${ml(p.k)}: ${(p.species.salar.t / p.species.salar.fish_m / 1000).toFixed(2)} kg`);
+  let html = '', sub = '';
+  if (ks.length) {
+    const S = [['atlantic|fresh whole', 'Atlantic, fresh whole', '#4fc3f7', 2.6], ['atlantic|frozen whole', 'Atlantic, frozen whole', '#90caf9', 1.6], ['coho|frozen whole', 'Coho, frozen whole', '#ffb74d', 1.8]];
+    const k36 = ks.slice(-36), z = (k, s) => (CM[k].sizes || {})[s] || {};
+    const ok = (k, s) => { const q = z(k, s); return q.mean_kg && q.t_sized >= 150 ? q.mean_kg : null; };
+    // poids vif moyen des 6 derniers mois (Atlantique frais entier, ponderation tonnes avec calibre)
+    const l6 = ks.slice(-6).map(k => z(k, S[0][0])), tw = l6.reduce((a, q) => a + (q.t_sized || 0), 0), tt = l6.reduce((a, q) => a + (q.t || 0), 0);
+    const mean6 = tw ? l6.reduce((a, q) => a + (q.mean_kg || 0) * (q.t_sized || 0), 0) / tw : null;
+    const prevW = CL_W; CL_W = mean6 && tw >= 1000 ? mean6 * HON : null;
+    const yo = ks.slice(-18, -12).map(k => z(k, S[0][0])), tw0 = yo.reduce((a, q) => a + (q.t_sized || 0), 0), mean0 = tw0 ? yo.reduce((a, q) => a + (q.mean_kg || 0) * (q.t_sized || 0), 0) / tw0 : null;
+    sub = `Exporters often write the weight class of whole fish in the declaration (« calibre 12-14 lb », « 6-7 kg »): the average of those classes, month by month, tracks the size of the fish being harvested — gutted head-on weight for most fresh whole fish (×${HON} for live weight). ` +
+      (mean6 ? `Last 6 months, Atlantic fresh whole: <b>${mean6.toFixed(2)} kg gutted ≈ ${(mean6 * HON).toFixed(1)} kg live</b>${mean0 ? ` (a year earlier ${mean0.toFixed(2)} kg)` : ''}, from the ${(100 * tw / Math.max(tt, 1)).toFixed(0)} % of tonnes that state a class. ` : '') +
+      `A month with less than 150 t stating a class is left out. This is the size of what is <i>exported whole</i>; fish filleted in Chile are not in it, and they tend to be the larger ones.`;
+    html += scSvg(k36, S.map(([s, lab, col, w]) => ({ v: k36.map(k => ok(k, s)), col, w, dots: w > 2, lab: lab + ', kg (as declared)' })),
+      { lab: ml, xl: k => k % 100 === 1 || k === k36[0] ? ml(k) : MON[k % 100 - 1].slice(0, 1), fmt: v => v.toFixed(1), min: 1, H: 200 });
+    // classes : 3 derniers mois contre les memes un an plus tot
+    const cls = (CLX.cus.meta || {}).size_classes_kg || [2, 3, 4, 5, 6, 7], labs = ['< ' + cls[0]].concat(cls.slice(0, -1).map((b, i) => `${b}–${cls[i + 1]}`), [cls[cls.length - 1] + ' +']);
+    const hs = kk => { const h = labs.map(() => 0); kk.forEach(k => (z(k, S[0][0]).hist_t || []).forEach((v, i) => h[i] += v)); const t = h.reduce((a, v) => a + v, 0) || 1; return h.map(v => 100 * v / t); };
+    const l3 = ks.slice(-3), p3 = l3.map(k => k - 100).filter(k => CM[k]), a = hs(l3), b = hs(p3);
+    html += `<div class="sig-sub" style="margin-top:8px"><b>Atlantic fresh whole by weight class (kg gutted), ${ml(l3[0])}–${ml(l3[l3.length - 1])} against a year earlier</b> — share of tonnes</div><div style="overflow-x:auto"><table class="sig-table"><thead><tr><th class="name"></th>${labs.map(l => `<th>${l} kg</th>`).join('')}</tr></thead><tbody>` +
+      `<tr><td class="name">${Math.floor(l3[l3.length - 1] / 100)}</td>${a.map(v => `<td><b>${v.toFixed(0)} %</b></td>`).join('')}</tr>` + (p3.length ? `<tr><td class="name">a year earlier</td>${b.map(v => `<td>${v.toFixed(0)} %</td>`).join('')}</tr>` : '') + `</tbody></table></div>`;
+    if ((prevW === null) !== (CL_W === null) || (prevW && CL_W && Math.abs(prevW - CL_W) > 0.01)) setTimeout(clSubpesca, 0);
+  } else sub = `The weight classes written in the export declarations are being read (first run under way): they will show, month by month, the size of the Atlantic salmon and coho exported whole. `;
+  html += `<div class="sig-sub" style="margin-top:10px"><b>Average weight of the fish at sea</b> (all sizes, from Salmon Outlook's biomass and fish numbers): ${sea.length ? sea.join(' · ') : '—'}. ` +
+    `<b>Smolts and time at sea:</b> Chile does not publish smolt weights; companies put Atlantic smolts to sea at roughly 100–250 g (larger, post-smolts, increasingly) and harvest after about 14–20 months at sea, coho after about 10 months — ` +
+    `each group of concessions (ACS) stocks within one window and must leave a fallow of at least 3 months, so the cycle is set by the area's calendar. The Salmon Council counts the smolts actually put to sea each half-year (84 M Atlantic, 51 M coho, 11 M trout in H1 2025).</div>`;
+  $c('clWSub').innerHTML = sub; el.innerHTML = html;
+  const s2 = $c('clS2Sum'); if (s2 && CL_W) s2.textContent = (s2.textContent ? s2.textContent.replace(/ · harvest weight.*$/, '') : '') + ` · harvest weight ≈ ${CL_W.toFixed(1)} kg live`;
+}
+const CL_COM = { 10101: 'Puerto Montt', 10102: 'Calbuco', 10103: 'Cochamó', 10104: 'Fresia', 10105: 'Frutillar', 10106: 'Los Muermos', 10107: 'Llanquihue', 10108: 'Maullín', 10109: 'Puerto Varas',
+  10201: 'Castro', 10202: 'Ancud', 10203: 'Chonchi', 10204: 'Curaco de Vélez', 10205: 'Dalcahue', 10206: 'Puqueldón', 10207: 'Queilén', 10208: 'Quellón', 10209: 'Quemchi', 10210: 'Quinchao', 10301: 'Osorno', 10401: 'Chaitén',
+  11101: 'Coyhaique', 11201: 'Aysén', 11202: 'Cisnes', 12101: 'Punta Arenas', 12401: 'Natales', 13101: 'Santiago', 13114: 'Las Condes', 13123: 'Providencia', 13132: 'Vitacura', 13120: 'Ñuñoa', 13113: 'La Reina', 13115: 'Lo Barnechea',
+  14101: 'Valdivia', 8101: 'Concepción', 8110: 'Talcahuano', 6101: 'Rancagua', 5101: 'Valparaíso', 5109: 'Viña del Mar' };
+function clOpen(id) { const d = document.getElementById(id); if (!d) return; d.open = true; d.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+function clSecInit() {   // memorise les sections ouvertes ; recale la carte a l'ouverture
+  const ds = [...document.querySelectorAll('#chileView details.cl-sec')]; if (!ds.length || ds[0].dataset.init) return;
+  let saved = null; try { saved = JSON.parse(localStorage.getItem('clOpen') || 'null'); } catch (_) {}
+  ds.forEach(d => { d.dataset.init = 1; if (saved) d.open = saved.includes(d.id);
+    d.addEventListener('toggle', () => { try { localStorage.setItem('clOpen', JSON.stringify(ds.filter(x => x.open).map(x => x.id))); } catch (_) {}
+      if (d.open && d.querySelector('#clMap') && typeof CL_MAP !== 'undefined' && CL_MAP) setTimeout(() => { CL_MAP.invalidateSize(); try { const b = L.featureGroup(CL_LAYER.getLayers()).getBounds(); if (b.isValid()) CL_MAP.fitBounds(b, { padding: [24, 24], maxZoom: 9 }); } catch (_) {} }, 60); }); });
+}
+
 function renderChileMap(H5, H4) {
   const sub = document.getElementById('clMapSub'), list = document.getElementById('clOpList'), sel = document.getElementById('clSel');
   const sites = (CLS && CLS.sites) || [], f1 = v => v === null || v === undefined || !isFinite(v) ? '—' : (+v).toFixed(1);
@@ -6203,7 +6428,7 @@ function plNoFocus(id, local) {
 function plClFocus(code) {
   if (window.gsGoTab) window.gsGoTab('chile'); PL_CL_ON = true;
   let n = 0; const t = setInterval(() => { const mk = PL_CL_MK[code];
-    if (mk && typeof CL_MAP !== 'undefined' && CL_MAP) { clearInterval(t); document.getElementById(CL_MAP.getContainer().id).scrollIntoView({ behavior: 'smooth', block: 'center' }); CL_MAP.setView(mk.getLatLng(), 11); setTimeout(() => mk.openPopup(), 300); }
+    if (mk && typeof CL_MAP !== 'undefined' && CL_MAP) { clearInterval(t); { const dd = CL_MAP.getContainer().closest('details'); if (dd && !dd.open) { dd.open = true; CL_MAP.invalidateSize(); } } document.getElementById(CL_MAP.getContainer().id).scrollIntoView({ behavior: 'smooth', block: 'center' }); CL_MAP.setView(mk.getLatLng(), 11); setTimeout(() => mk.openPopup(), 300); }
     else if (++n > 30) clearInterval(t); }, 300);
 }
 function plChile() {
@@ -13168,7 +13393,7 @@ loadRemoteData().then(live => {
     new MutationObserver(() => { if (P.style.display === 'block') fillNews(vid); }).observe(P, { attributes: true, attributeFilter: ['style'] }); });
   const NAMES = { scotlandView: 'Scotland', faroeView: 'the Faroe Islands', isView: 'Iceland', chileView: 'Chile', canadaView: 'Canada', australiaView: 'Tasmania' };
   Object.keys(NAMES).forEach(vid => {
-    const P = document.getElementById(vid); if (!P || P.dataset.bs) return; P.dataset.bs = 1;
+    const P = document.getElementById(vid); if (!P || P.dataset.bs || P.querySelector('details.cl-sec')) return; P.dataset.bs = 1;
     const kids = [...P.children]; let i = 1;                       // en-tete : titre, sous-titre, chiffres cles
     while (i < kids.length && !kids[i].classList.contains('sig-title')) i++;
     const head = kids.slice(0, i), groups = {}, notes = []; let cur = null;
