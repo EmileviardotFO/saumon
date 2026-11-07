@@ -1342,6 +1342,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
       #prTab thead th{position:sticky;top:0;background:rgb(27,63,93);z-index:2}
       #prTab .pr-y{position:sticky;left:0;z-index:3;min-width:132px;max-width:132px;background:rgb(27,63,93);text-align:center!important}
       #prTab .pr-a{position:sticky;left:132px;z-index:3;min-width:58px;background:rgb(27,63,93);border-right:2px solid rgba(255,255,255,.45);font-weight:700}
+      @media (max-width:700px){#prTab .pr-y{min-width:68px!important;max-width:68px!important;padding:5px 4px!important;font-size:11px!important;word-break:normal!important;overflow-wrap:normal!important;white-space:normal!important}#prTab .pr-a{left:68px!important;min-width:46px!important;padding:5px 4px!important}#prTab td,#prTab th{padding:5px 5px!important;font-size:12px}}
       #prTab thead .pr-y,#prTab thead .pr-a{z-index:4;background:rgb(27,63,93)}
       #prTabWrap{border-color:rgba(255,255,255,.25)!important;border-radius:14px!important}
     </style>
@@ -1634,7 +1635,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="sig-title" style="font-size:15px">Harvest processed in Los Lagos plants, kt per month</div>
     <div id="clWbNow"></div><div class="sig-sub" id="clWbNowSub"></div>
     <div class="sig-title" style="font-size:15px;margin-top:18px">Wellboat stops by region, per month</div>
-    <div id="clWbReg" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(560px,1fr));gap:14px"></div>
+    <div id="clWbReg" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,560px),1fr));gap:14px"></div>
     <div class="sig-title" style="font-size:15px;margin-top:18px">Weekly pulse, Los Lagos — last 12 weeks against the same weeks a year earlier</div>
     <div id="clWbWk"></div>
     <div class="sig-title" style="font-size:15px;margin-top:18px">Where the boats are working — last 30 days against the same 30 days a year earlier</div>
@@ -2524,7 +2525,7 @@ function showDataBanner(live) {
   b.addEventListener('click', tg); b.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tg(); } });
   document.addEventListener('click', e => { if (pnl.style.display !== 'none' && !pnl.contains(e.target) && !b.contains(e.target)) pnl.style.display = 'none'; });
 }
-const PO_NAMES = {"0": "Outside production zones (land-based and inland farms, offshore development licences, broodstock, research)", "1": "Svenskegrensen til Jæren", "2": "Ryfylket", "3": "Karmøy til Sotra", "4": "Nordhordland til Stadt", "5": "Stadt til Hustadvika", "6": "Nordmøre og Sør-Trøndelag", "7": "Nord-Trøndelag med Bindal", "8": "Helgeland til Bodø", "9": "Vestfjorden og Vesterålen", "10": "Andøya til Senja", "11": "Kvaløya til Loppa", "12": "Vest-Finnmark", "13": "Øst-Finnmark"};
+const PO_NAMES = {"0": "Outside production zones (special-purpose licences at sea: broodstock, research, education, display)", "1": "Svenskegrensen til Jæren", "2": "Ryfylket", "3": "Karmøy til Sotra", "4": "Nordhordland til Stadt", "5": "Stadt til Hustadvika", "6": "Nordmøre og Sør-Trøndelag", "7": "Nord-Trøndelag med Bindal", "8": "Helgeland til Bodø", "9": "Vestfjorden og Vesterålen", "10": "Andøya til Senja", "11": "Kvaløya til Loppa", "12": "Vest-Finnmark", "13": "Øst-Finnmark"};
 // toutes les "zones" de donnees : 0 = licences sans zone de production (code (null) du Biomasseregisteret, gardees depuis novembre 2026)
 const ALL_PO = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
 let YEARS = [];   // annees presentes dans data.json, remplies au chargement (fillYearSelectors)
@@ -5819,7 +5820,7 @@ function renderDisease() {
   if (M.world_2025) { const W = M.world_2025, R = W.rows.slice().sort((a, b) => b.dead_kt - a.dead_kt), D = R.reduce((t, x) => t + x.dead_kt, 0), LO = R.reduce((t, x) => t + x.lo, 0), HI = R.reduce((t, x) => t + x.hi, 0), P = R.reduce((t, x) => t + x.prod_kt, 0) / 0.888, mx = R[0].dead_kt;
     h += box(`<div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px"><span style="font-size:13px;font-weight:700">World losses in 2025</span><span style="font-size:26px;font-weight:800">≈ ${f0(D)} kt</span>` +
       `<span style="font-size:13px;color:var(--muted)">of salmon died at sea (range ${f0(LO)}–${f0(HI)} kt) — <b style="color:#ff8a65">${(100 * D / P).toFixed(1)} %</b> of the ${f0(P)} kt harvested (live weight, seven basins, about 95 % of farmed Atlantic salmon)</span></div>` +
-      `<div style="margin-top:8px">${R.map(x => `<div style="display:grid;grid-template-columns:120px minmax(0,1fr) 220px;gap:10px;align-items:center;font-size:12px;margin:3px 0"><span>${e(x.name)}</span>` +
+      `<div style="margin-top:8px">${R.map(x => `<div style="display:grid;grid-template-columns:minmax(70px,120px) minmax(40px,1fr) minmax(0,220px);gap:10px;align-items:center;font-size:12px;margin:3px 0"><span>${e(x.name)}</span>` +
         `<div style="height:10px;border-radius:999px;background:rgba(255,255,255,.10)"><div style="height:100%;width:${(100 * x.dead_kt / mx).toFixed(1)}%;border-radius:999px;background:${x.basis === 'measured' ? 'linear-gradient(90deg,rgba(159,227,255,.75),#e9f8ff)' : 'repeating-linear-gradient(90deg,rgba(233,248,255,.85) 0 6px,rgba(233,248,255,.25) 6px 10px)'};box-shadow:0 0 10px rgba(159,227,255,.3)" title="${e(x.how)}"></div></div>` +
         `<span><b>${f1(x.dead_kt)} kt</b> · ${(100 * x.dead_kt / (x.prod_kt / 0.888)).toFixed(1)} % of its harvest <span style="color:var(--muted)">${x.basis === 'measured' ? '' : '(estimate)'}</span></span></div>`).join('')}</div>` +
       `<div class="sig-sub" style="margin-top:6px">${e(W.note)} Solid bars are weighed by the country; dashed bars are our estimates (hover for the method). Norway is half of the world's losses by weight but one of the lowest rates; Tasmania, Iceland and Scotland lose the most per tonne produced.</div>`, 'margin-top:12px;background:rgba(255,138,101,.04)'); }
@@ -15346,6 +15347,13 @@ function renderWellboats() {
     color:#fff3dc!important;font-size:12.5px!important;padding:10px 16px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.3)!important;line-height:1.5}
   .gl-sticky{background:rgb(27,63,93)!important}
   #tabIndex:empty{display:none!important}
+  @media (max-width:700px){
+    .sig-sub span[style*="white-space:nowrap"]{white-space:normal!important}
+    .top-controls.tc-one .field{flex:1 1 100%!important;min-width:0}
+    .pseg,.gdd,.gdd-btn{max-width:100%}
+    .hs-on td[colspan],.hs-on th[colspan]{position:static!important;max-width:none!important;white-space:normal!important}
+  }
+  .hs-on td[colspan]:first-child{position:static!important;max-width:none!important;white-space:normal!important;background:transparent!important;box-shadow:none!important}
   .hs-on th:first-child,.hs-on td:first-child{white-space:nowrap;padding-right:18px!important}
   @media (max-width:900px){.hs-on th:first-child,.hs-on td:first-child{white-space:normal!important;max-width:46vw;min-width:110px;overflow-wrap:break-word;word-break:normal;hyphens:manual}}
   .hs-on thead th,.gl-stk{background:rgb(27,63,93)!important}
@@ -15358,7 +15366,7 @@ function renderWellboats() {
   .hs-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
   .hs-on th:first-child,.hs-on td:first-child{position:sticky;left:0;z-index:2;background:rgb(27,63,93)!important;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:6px 0 10px -6px rgba(3,18,35,.55)}
   /* graphiques qui defilent : l'echelle des valeurs reste fixe a gauche */
-  .ax-fix{position:sticky;left:0;z-index:3;overflow:hidden;pointer-events:none;background:linear-gradient(90deg,rgba(26,64,95,.96) 80%,rgba(26,64,95,0))}
+  .ax-fix{position:sticky;left:0;z-index:3;overflow:hidden;pointer-events:none;background:linear-gradient(90deg,rgba(27,63,93,.55) 65%,rgba(27,63,93,0));-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
   .ax-fix svg{display:block;max-width:none!important}
 </style>
 <script id="glassSweepJs">
@@ -15433,7 +15441,12 @@ function renderWellboats() {
       let ax = 0; svg.querySelectorAll('text').forEach(tx => { const b = tx.getBoundingClientRect(); if (b.left - r.left < r.width * .2 && (tx.getAttribute('text-anchor') === 'end')) ax = Math.max(ax, b.right - r.left); });
       if (ax < 12) { if (old) old.remove(); return; } ax = Math.ceil(ax + 6);
       const key = svg.outerHTML.length + ':' + Math.round(r.width) + ':' + ax; if (old && old.dataset.k === key) return; if (old) old.remove();
-      const f = document.createElement('div'); f.className = 'ax-fix'; f.dataset.k = key; const c = svg.cloneNode(true); c.removeAttribute('id'); c.style.width = r.width + 'px'; c.style.height = r.height + 'px'; f.appendChild(c);
+      const f = document.createElement('div'); f.className = 'ax-fix'; f.dataset.k = key; const c = svg.cloneNode(true); c.removeAttribute('id'); c.style.width = r.width + 'px'; c.style.height = r.height + 'px';
+      // dans la copie, seules restent les etiquettes de l'echelle (textes a gauche) : ni courbes, ni barres, ni grille
+      const vbw = (svg.viewBox && svg.viewBox.baseVal && svg.viewBox.baseVal.width) || r.width, lim = ax * vbw / r.width;
+      c.querySelectorAll('*').forEach(n => { if (n.tagName === 'text' || n.tagName === 'tspan' || n.tagName === 'g' || n.tagName === 'defs' || n.tagName === 'title') return; n.remove(); });
+      c.querySelectorAll('text').forEach(tx => { const b = tx.getBBox ? null : null; const xx = parseFloat(tx.getAttribute('x') || '0'); if (xx > lim && !/rotate/.test(tx.getAttribute('transform') || '')) tx.remove(); });
+      f.appendChild(c);
       f.style.width = ax + 'px'; f.style.height = r.height + 'px'; f.style.marginBottom = -r.height + 'px'; w.insertBefore(f, svg); });
   }
   let t = null;
