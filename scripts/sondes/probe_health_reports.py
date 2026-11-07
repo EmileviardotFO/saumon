@@ -7,7 +7,7 @@ DOCS = {
     'cl_sernapesca_2025': 'https://www.sernapesca.cl/app/uploads/2026/03/Informe-Situacion-Sanitaria-Salmonicultura-Ano-2025.pdf',
     'no_fhr_2025': 'https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fish-health-report-2025/_/attachment/inline/4e7d310d-0620-439c-a2cf-caac02253620:b124880858959e1f6b61fbe45e1137e7e31fc0f9/Fish%20Health%20Report%202025.pdf',
 }
-want = sys.argv[1:] or list(DOCS)
+want = sys.argv[1:] or [k for k in DOCS if not k.startswith('no_')]
 for name in want:
     url = DOCS[name]
     try:
