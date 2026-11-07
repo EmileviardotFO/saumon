@@ -89,7 +89,7 @@
   table.size-table td.dist { text-align:left; }
   tr.subrow td:not(.name) { font-size: 11px; }
   td.name.strong { font-weight: 900; color: var(--accent); }
-  tr:hover td { background: #0d1a24; }
+  tr:hover td { background: rgba(255,255,255,.07); }
   .delta-pos { color: var(--up); }
   .delta-good { color: var(--good); }
   /* --- Summary page --- */
@@ -433,7 +433,8 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
   .wide-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
   .wide-wrap > svg { min-width: 680px; }
 }
-#multiTable th.name, #multiTable td.name { position: sticky; left: 0; z-index: 2; background: #12222c; box-shadow: 2px 0 0 #223642; }
+#multiTable th.name, #multiTable td.name { position: sticky; left: 0; z-index: 2; background: rgb(27,63,93); box-shadow: 6px 0 10px -6px rgba(3,18,35,.55); white-space: nowrap; padding-right: 22px; }
+#multiTable { width: auto !important; }
 #multiTable thead th.name { z-index: 3; }
 @media (max-width: 760px) { #multiView { min-width: 0 !important; } #multiTable td.name, #multiTable th.name { max-width: 150px; white-space: normal; } }
 </style>
@@ -1338,10 +1339,11 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
       #prTabWrap{overflow-x:auto;border:1px solid var(--border);border-radius:6px}
       #prTab{border-collapse:separate;border-spacing:0;font-size:12px;margin:0}
       #prTab th,#prTab td{border-right:1px solid rgba(143,164,176,.28);border-bottom:1px solid rgba(143,164,176,.28);padding:5px 7px;white-space:nowrap}
-      #prTab thead th{position:sticky;top:0;background:#132230;z-index:2}
-      #prTab .pr-y{position:sticky;left:0;z-index:3;min-width:132px;max-width:132px;background:#101d27;text-align:center!important}
-      #prTab .pr-a{position:sticky;left:132px;z-index:3;min-width:58px;background:#101d27;border-right:2px solid rgba(143,164,176,.6);font-weight:700}
-      #prTab thead .pr-y,#prTab thead .pr-a{z-index:4;background:#132230}
+      #prTab thead th{position:sticky;top:0;background:rgb(27,63,93);z-index:2}
+      #prTab .pr-y{position:sticky;left:0;z-index:3;min-width:132px;max-width:132px;background:rgb(27,63,93);text-align:center!important}
+      #prTab .pr-a{position:sticky;left:132px;z-index:3;min-width:58px;background:rgb(27,63,93);border-right:2px solid rgba(255,255,255,.45);font-weight:700}
+      #prTab thead .pr-y,#prTab thead .pr-a{z-index:4;background:rgb(27,63,93)}
+      #prTabWrap{border-color:rgba(255,255,255,.25)!important;border-radius:14px!important}
     </style>
     <div id="prTabWrap"><table class="sig-table" id="prTab"></table></div>
     <div class="sig-title" style="margin-top:14px;font-size:15px">SSB export price against the spot index, week by week</div>
@@ -7647,7 +7649,7 @@ function computeNationalTotals(year, startMonth, endMonth, poFilter) {
   const smolt = sum('smolt');
   const smoltmid = sum('smoltmid');            // NaN if any month unknown
   const smolt500 = sum('smolt500');
-  const gap = sum('gap');
+  const gap = selected.reduce((s, p) => s + (isFinite(p.gap) ? Math.max(0, p.gap) : NaN), 0);   // plancher a zero par zone, comme dans la repartition par taille
   const feed = sum('feed');
   const uttak_kg_sum = sum('uttak_kg_sum');
   const uttak_stk_sum = sum('uttak_stk_sum');
@@ -14191,7 +14193,7 @@ loadRemoteData().then(live => {
   @media (max-width:900px){
     html,body{overflow-x:clip;max-width:100%}
     table{display:block;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
-    table td.name,table th.name{position:sticky;left:0;z-index:1;background:var(--panel,#0d1a24)}
+    table td.name,table th.name{position:sticky;left:0;z-index:1;background:rgb(27,63,93)}
     .panel{overflow-x:visible}
     svg{max-width:100%}
     pre,code{white-space:pre-wrap;word-break:break-word}
@@ -14212,7 +14214,15 @@ loadRemoteData().then(live => {
   @media (max-width:900px){#gsPanel .gs-hint{display:none}#gsSug{flex-direction:column;flex-wrap:nowrap;gap:8px;margin:10px 0 14px}#gsSug button{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;white-space:normal;font-size:16px;padding:13px 16px;border-radius:20px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 6px 18px rgba(0,0,0,.25);-webkit-backdrop-filter:blur(16px) saturate(160%);backdrop-filter:blur(16px) saturate(160%)}#gsSug button small{font-size:12px;margin-left:12px;flex:0 0 auto}#gsSug button.pop{animation:gsPop .42s cubic-bezier(.2,.9,.25,1.25) both;animation-delay:calc(var(--i) * 55ms)}}@keyframes gsPop{0%{opacity:0;transform:translateY(14px) scale(.86)}60%{opacity:1}100%{opacity:1;transform:none}}@media (prefers-reduced-motion:reduce){#gsSug button.pop{animation:none}}
   #gsPanel .gs-sec{font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#4fc3f7;margin:18px 0 8px}
   #gsPanel .gs-card{background:#10202c;border:1px solid #223642;border-radius:10px;padding:12px 14px;margin-bottom:10px;max-width:1100px}
-  #gsPanel .gs-card h4{margin:0 0 6px;font-size:14px;color:#e7eef2}
+  #gsPanel .gs-card h4{margin:0 0 8px;font-size:19px;font-weight:800;color:#fff;letter-spacing:-.01em;line-height:1.25}
+  #gsPanel .gs-card.gs-list h4{text-transform:none;font-size:19px}
+  #gsPanel .gs-card.gs-list .gs-n:last-child{border-bottom:0}
+  #gsPanel .gs-sec{font-size:12.5px!important;margin:24px 0 10px!important;color:#bfeaff!important}
+  #gsPanel .gs-card{border-radius:20px!important;padding:16px 18px!important;background:linear-gradient(140deg,rgba(255,255,255,.16),rgba(255,255,255,.05))!important;border:1px solid rgba(255,255,255,.24)!important}
+  tr.gs-hit td{animation:gsHit 3.2s ease-out}
+  @keyframes gsHit{0%,35%{background:rgba(159,227,255,.45);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),inset 0 -1px 0 rgba(255,255,255,.7)}100%{background:transparent}}
+  tr.gs-hit td.gl-stk,tr.gs-hit td:first-child{animation:gsHit 3.2s ease-out}
+  #marketsView td.name,#marketsView th.name{white-space:nowrap;padding-right:18px}
   #gsPanel .gs-card .s{font-size:12.5px;color:#a9bfcc;line-height:1.5}
   #gsPanel .gs-card table{border-collapse:collapse;font-size:12px;margin-top:6px}
   #gsPanel .gs-card td,#gsPanel .gs-card th{padding:3px 10px 3px 0;text-align:left;color:#cfdde4;white-space:nowrap}
@@ -14297,7 +14307,16 @@ loadRemoteData().then(live => {
   const PANEL_TAB = { eu: 'euflows', tas: 'timeatsea', pl: 'poland', pr: 'prices', is: 'iceland', up: 'usaprices', wb: 'wellboats' }, TAB_PANEL = {}; Object.entries(PANEL_TAB).forEach(([a, b]) => TAB_PANEL[b] = a);
   const goTab = (v, title) => { close(); v = PANEL_TAB[v] || v; const b = document.querySelector(`#sideNav .sn-item[data-v="${v}"]`) || document.querySelector(`#viewToggle button[data-v="${v}"]`); if (b) b.click();
     if (title) setTimeout(() => { const pid = document.getElementById(v + 'View') ? v : (TAB_PANEL[v] || v); const t = [...document.querySelectorAll('#' + pid + 'View .sig-title, #' + v + 'View .gm-t, #' + v + 'View .gm-h1')].find(x => x.textContent.trim() === title); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 900); };
-  window.gsGoTab = goTab;
+  // la ligne du tableau qui concerne la recherche (societe, marche, usine) ressort a l'arrivee : surlignee, centree, quelques secondes
+  const hiRow = (v, txt) => { if (!txt) return; const k = norm(txt).split(' ')[0]; if (k.length < 3) return; let n = 0;
+    const tick = () => { const pid = (document.getElementById(v + 'View') ? v : (TAB_PANEL[v] || v)) + 'View', root = document.getElementById(pid) || document.querySelector('#mainContent');
+      const rows = root ? [...root.querySelectorAll('tr')].filter(tr => tr.offsetParent !== null && norm(tr.textContent).includes(k) && !tr.querySelector('th')) : [];
+      if (!rows.length) { if (++n < 25) setTimeout(tick, 200); return; }
+      rows.slice(0, 6).forEach(tr => { tr.classList.remove('gs-hit'); void tr.offsetWidth; tr.classList.add('gs-hit'); });
+      rows[0].scrollIntoView({ behavior: 'smooth', block: 'center' }); };
+    setTimeout(tick, 350); };
+  window.GS_HL = null;
+  window.gsGoTab = (v, title, hl) => { goTab(v, title); hiRow(PANEL_TAB[v] || v, hl === undefined ? window.GS_HL : hl); };
   if (nav) nav.addEventListener('click', e => { if (e.target.closest('.sn-item, button[data-v], a') && P.style.display === 'block') close(); }, true);
   document.addEventListener('click', e => { if (e.target.closest('#viewToggle button, #tabIndex a, #tabIndex button') && P.style.display === 'block') close(); }, true);
 
@@ -14909,6 +14928,7 @@ loadRemoteData().then(live => {
     if (!D['search_index.json']) out.innerHTML = '<div class="gs-hint">Loading…</div>';
     await load(); if (id !== runId) return;          // une frappe plus recente a pris le relais
     const nq = norm(q), co = (COS.find(([, rx]) => rx.test(nq)) || [])[0];
+    window.GS_HL = co || null;
     const topics = Object.keys(TOP).filter(k => TOP[k].test(nq));
     let rest = nq; if (co) rest = rest.replace(COS.find(c => c[0] === co)[1], ' '); topics.forEach(k => rest = rest.replace(new RegExp(TOP[k].source, 'g'), ' '));
     gsProv = null;
@@ -14986,6 +15006,16 @@ loadRemoteData().then(live => {
     const S = ih ? [] : sections(nw.concat(topics.map(t => norm(TOP_WORDS[t]))).concat(po ? ['zone'] : []), co, bas);
     if (S.length) html += `<div class="gs-sec">In the dashboard</div>` + S.map(s => `<div class="gs-go" onclick="gsGoTab('${s.v}', ${JSON.stringify(s.T).replace(/"/g, '&quot;')})">${esc(s.T)}<small>${esc((document.querySelector(`#sideNav .sn-item[data-v="${PANEL_TAB[s.v] || s.v}"]`) || {}).textContent || s.v)}</small></div>`).join('');
     out.innerHTML = (gsPred && html ? `<div class="gs-pred">Showing <b>${esc(gsPred)}</b> — keep typing, or pick a suggestion above.</div>` : '') + (html || '<div class="gs-hint">Nothing found.</div>'); gsPred = '';
+    bubble(out);
+  }
+  // chaque rubrique devient une bulle : une rubrique faite d'une liste (presse, methodes, onglets) est regroupee dans une carte,
+  // avec son intitule en titre ; les rubriques deja en cartes gardent leur intitule au-dessus
+  function bubble(root) {
+    [...root.querySelectorAll(':scope > .gs-sec')].forEach(sec => { const items = []; let n = sec.nextElementSibling;
+      while (n && !n.classList.contains('gs-sec')) { items.push(n); n = n.nextElementSibling; }
+      if (!items.length || items.some(x => x.classList.contains('gs-card'))) return;
+      const card = document.createElement('div'); card.className = 'gs-card gs-list'; const h = document.createElement('h4'); h.innerHTML = sec.innerHTML; card.appendChild(h);
+      sec.before(card); items.forEach(x => card.appendChild(x)); sec.remove(); });
   }
 })();
 </script>
@@ -15314,12 +15344,19 @@ function renderWellboats() {
   .gdd-panel .gdd-act button{font:inherit;font-size:12px;padding:4px 12px;border-radius:999px;cursor:pointer;color:#fff;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.12)}
   #dataQualityBanner{background:linear-gradient(140deg,rgba(255,210,138,.20),rgba(255,210,138,.08))!important;border:1px solid rgba(255,210,138,.45)!important;border-radius:16px!important;
     color:#fff3dc!important;font-size:12.5px!important;padding:10px 16px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.3)!important;line-height:1.5}
-  .gl-sticky{background:rgba(24,62,92,.92)!important;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+  .gl-sticky{background:rgb(27,63,93)!important}
   #tabIndex:empty{display:none!important}
-  .hs-on th:first-child,.hs-on td:first-child{white-space:normal!important;max-width:min(44vw,260px);min-width:108px;overflow-wrap:break-word;word-break:normal;hyphens:auto}
+  .hs-on th:first-child,.hs-on td:first-child{white-space:nowrap;padding-right:18px!important}
+  @media (max-width:900px){.hs-on th:first-child,.hs-on td:first-child{white-space:normal!important;max-width:46vw;min-width:110px;overflow-wrap:break-word;word-break:normal;hyphens:manual}}
+  .hs-on thead th,.gl-stk{background:rgb(27,63,93)!important}
+  th,td{hyphens:manual!important}
+  #prYears{display:inline-flex!important;gap:2px!important;padding:4px;border-radius:22px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.26);box-shadow:inset 0 1px 0 rgba(255,255,255,.45)}
+  #prYears label{cursor:pointer;padding:6px 12px;border-radius:999px;font-size:12.5px!important;color:#eef5f9}
+  #prYears label:has(input:checked){background:linear-gradient(180deg,#fff,#dcecf5);color:#0d2a40;font-weight:600}
+  #prYears input{display:none}
   /* defilement horizontal : seules les colonnes de chiffres bougent, la premiere colonne reste en place */
   .hs-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
-  .hs-on th:first-child,.hs-on td:first-child{position:sticky;left:0;z-index:2;background:rgba(26,64,95,.96)!important;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:6px 0 10px -6px rgba(3,18,35,.55)}
+  .hs-on th:first-child,.hs-on td:first-child{position:sticky;left:0;z-index:2;background:rgb(27,63,93)!important;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:6px 0 10px -6px rgba(3,18,35,.55)}
   /* graphiques qui defilent : l'echelle des valeurs reste fixe a gauche */
   .ax-fix{position:sticky;left:0;z-index:3;overflow:hidden;pointer-events:none;background:linear-gradient(90deg,rgba(26,64,95,.96) 80%,rgba(26,64,95,0))}
   .ax-fix svg{display:block;max-width:none!important}
@@ -15380,7 +15417,8 @@ function renderWellboats() {
       let sc = t; const csT = getComputedStyle(t);
       if (!/(auto|scroll)/.test(csT.overflowX)) { const p = t.parentElement; if (p && /(auto|scroll)/.test(getComputedStyle(p).overflowX) && p.children.length === 1) sc = p;
         else if (t.scrollWidth > (p ? p.clientWidth : 0) + 4) { const w = document.createElement('div'); w.className = 'hs-scroll'; t.before(w); w.appendChild(t); sc = w; } else sc = p; }
-      const on = sc && sc.scrollWidth > sc.clientWidth + 4; t.classList.toggle('hs-on', !!on); });
+      const on = sc && sc.scrollWidth > sc.clientWidth + 4; t.classList.toggle('hs-on', !!on);
+      t.querySelectorAll('th,td').forEach(c => { if (getComputedStyle(c).position === 'sticky') c.classList.add('gl-stk'); }); });
     // panneaux entiers qui defilaient (texte, filtres et carte avec le tableau) : seul le tableau defile maintenant
     document.querySelectorAll('.panel').forEach(p => { if (p.offsetParent === null) return; const cs = getComputedStyle(p); if (/(auto|scroll)/.test(cs.overflowX) && p.querySelector('table')) { p.style.overflowX = 'visible';
       p.querySelectorAll('table').forEach(t => { if (!t.parentElement.classList.contains('hs-scroll') && t.scrollWidth > p.clientWidth - 30) { const w = document.createElement('div'); w.className = 'hs-scroll'; t.before(w); w.appendChild(t); } }); } });
@@ -15402,7 +15440,9 @@ function renderWellboats() {
   const run = () => { t = null; document.querySelectorAll('select[multiple]').forEach(multi); document.querySelectorAll('.metric-toggle').forEach(longRow);
     document.querySelectorAll('body *').forEach(el => { if (el.offsetParent !== null || el.tagName === 'TD') fix(el); }); tables(); axes(); };
   const kick = () => { if (!t) t = setTimeout(run, 150); };
-  new MutationObserver(ms => { if (ms.every(m => [...m.addedNodes].every(n => n.nodeType === 1 && n.classList && n.classList.contains('ax-fix')))) return; kick(); }).observe(document.body, { childList: true, subtree: true });
+  // les noeuds ajoutes sont passes au verre tout de suite, avant l'affichage (sinon une case sombre clignote quand un tableau se redessine)
+  const now = n => { if (n.nodeType !== 1 || n.closest(SKIP)) return; fix(n); n.querySelectorAll('*').forEach(fix); };
+  new MutationObserver(ms => { ms.forEach(m => m.addedNodes.forEach(now)); if (ms.every(m => [...m.addedNodes].every(n => n.nodeType === 1 && n.classList && n.classList.contains('ax-fix')))) return; kick(); }).observe(document.body, { childList: true, subtree: true });
   window.addEventListener('load', kick); window.addEventListener('resize', kick); document.addEventListener('click', kick, true); kick();
 })();
 </script>
