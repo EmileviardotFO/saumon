@@ -13038,7 +13038,8 @@ loadRemoteData().then(live => {
   #sideNav:hover{scrollbar-width:thin;scrollbar-color:rgba(127,149,163,.35) transparent}
   #sideNav:hover::-webkit-scrollbar{width:5px}
   #sideNav:hover::-webkit-scrollbar-thumb{background:rgba(127,149,163,.35);border-radius:4px}
-  #sideNav .sn-brand{font-weight:800;font-size:15px;color:#fff;padding:6px 12px 2px}
+  #sideNav .sn-brand{padding:6px 12px 4px;line-height:0}
+  #sideNav .sn-brand img{width:36px;height:36px;border-radius:9px;box-shadow:0 0 0 1px rgba(255,255,255,.14);opacity:.95}
   #sideNav .sn-sub{font-size:11.5px;color:#7f95a3;padding:0 12px 6px}
   #sideNav .sn-cat{display:flex;justify-content:space-between;align-items:center;width:100%;font:inherit;font-size:12.5px;letter-spacing:.07em;text-transform:uppercase;color:#ffffff;
     font-weight:800;padding:16px 12px 5px;background:none;border:0;cursor:pointer;text-align:left}
@@ -13062,7 +13063,10 @@ loadRemoteData().then(live => {
     #tasCo .tas-long{display:none}
     #tasCo th:nth-child(2),#tasCo td:nth-child(2),#tasCo th:nth-child(4),#tasCo td:nth-child(4),#tasCo th:nth-child(7),#tasCo td:nth-child(7){display:none} }
   body.fab-hide #snBurger, body.fab-hide #gsFab{transform:translateY(-80px);opacity:0;pointer-events:none}
-  #snBurger, #gsFab{transition:transform .2s ease, opacity .2s ease}
+  #snBurger, #gsFab, #snLogo{transition:transform .2s ease, opacity .2s ease}
+  #snLogo{display:none;position:fixed;right:12px;top:calc(12px + env(safe-area-inset-top,0px));z-index:950;width:34px;height:34px;border-radius:8px;box-shadow:0 0 0 1px rgba(255,255,255,.14)}
+  body.fab-hide #snLogo{transform:translateY(-80px);opacity:0}
+  @media (max-width:900px){#snLogo{display:block}body.sn-open #snLogo{display:none}}
   #snBurger{display:none;position:fixed;left:10px;top:calc(10px + env(safe-area-inset-top,0px));z-index:950;padding:7px 12px;border-radius:8px;border:1px solid #2a4352;background:#0d1a24;color:#e7eef2;font-size:18px;cursor:pointer}
   #snShade{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:880}
   #viewToggle{display:none!important}
@@ -13085,7 +13089,7 @@ loadRemoteData().then(live => {
   const btn = v => document.querySelector(`#viewToggle button[data-v="${v}"]`);
   const nav = document.createElement('nav'); nav.id = 'sideNav'; nav.setAttribute('aria-label', 'Dashboard sections');
   const closed = JSON.parse((() => { try { return localStorage.getItem('snClosed') || '{}'; } catch (e) { return '{}'; } })());
-  nav.innerHTML = `<div class="sn-brand">Salmon dashboard</div><div class="sn-sub" id="snSub"></div>` +
+  nav.innerHTML = `<div class="sn-brand"><img src="icons/logo.svg" alt="Salmon Outlook" title="Salmon Outlook" width="36" height="36"></div><div class="sn-sub" id="snSub"></div>` +
     CATS.map(([c, L], i) => `<div class="sn-group${closed[i] ? ' closed' : ''}" data-g="${i}"><button type="button" class="sn-cat" aria-expanded="${!closed[i]}">${c}<span>${closed[i] ? '▸' : '▾'}</span></button>` +
       L.filter(btn).map(v => `<button type="button" class="sn-item" data-v="${v}">${btn(v).textContent.trim()}</button>`).join('') + `</div>`).join('');
   document.body.prepend(nav);
@@ -13093,6 +13097,7 @@ loadRemoteData().then(live => {
   { let lastY = 0, tick = false; window.addEventListener('scroll', () => { if (tick) return; tick = true; requestAnimationFrame(() => { const y = window.scrollY, hide = y > 120 && y > lastY + 4 && !document.body.classList.contains('sn-open');
       if (Math.abs(y - lastY) > 4) { document.body.classList.toggle('fab-hide', hide); lastY = y; } tick = false; }); }, { passive: true }); }
   const burger = document.createElement('button'); burger.id = 'snBurger'; burger.type = 'button'; burger.setAttribute('aria-label', 'Open the menu'); burger.textContent = '☰'; document.body.prepend(burger);
+  { const lg = document.createElement('img'); lg.id = 'snLogo'; lg.src = 'icons/logo.svg'; lg.alt = 'Salmon Outlook'; lg.title = 'Salmon Outlook'; document.body.prepend(lg); }
   const shade = document.createElement('div'); shade.id = 'snShade'; document.body.prepend(shade);
   const setOpen = o => { document.body.classList.toggle('sn-open', o); burger.textContent = o ? '✕' : '☰';
     burger.setAttribute('aria-label', o ? 'Close the menu' : 'Open the menu'); };
