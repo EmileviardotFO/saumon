@@ -19,7 +19,7 @@ for ym in sorted(res)[-1:] + [sorted(res)[-7]]:
     print('=====', ym)
     for fo in ('fresh', 'frozen'):
         print('--', fo, 'mots les plus lourds (t)')
-        print(', '.join(f'{w}:{v / 1000:.0f}' for (f, w), v in tok.most_common(400) if f == fo][:120])
+        print(', '.join([f'{w}:{v / 1000:.0f}' for (f, w), v in tok.most_common(400) if f == fo][:120]))
         for (f, k), v in ex.items():
             if f == fo: print('  ', k, '|', ' || '.join(v))
         print('-- descriptions les plus lourdes', fo)
