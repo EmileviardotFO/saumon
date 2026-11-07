@@ -81,6 +81,21 @@ def read_month(url):
     return rows
 
 
+CAL = re.compile(r'(?<![\d])(\d{1,2}(?:[.,]\d)?)\s*(?:-|/|A|TO)\s*(\d{1,2}(?:[.,]\d)?)\s*(LBS?|LIBRAS?|KGS?|KILOS?|KG)\b')
+CLS = [2, 3, 4, 5, 6, 7]   # bornes des classes de calibre (kg)
+
+
+def calibre(text):
+    """Classe de poids ecrite dans la description (« CALIBRE 12-14 LB », « 6-7 KGS ») -> milieu en kg, ou None.
+    Une seule valeur (« CAJA DE 10 KGS ») n'est pas un calibre : on exige un intervalle."""
+    for m in CAL.finditer(text.upper()):
+        a, b = float(m.group(1).replace(',', '.')), float(m.group(2).replace(',', '.'))
+        k = 0.4536 if m.group(3).startswith('L') else 1.0
+        a, b = a * k, b * k
+        if 0.3 <= a < b <= 13 and b - a <= 4: return (a + b) / 2
+    return None
+
+
 def num(v):
     try: return float(v.strip().replace(',', '.') or 0)
     except ValueError: return 0.0
@@ -89,6 +104,7 @@ def num(v):
 def aggregate(rows):
     agg = {'total': [0, 0], 'species_form': collections.defaultdict(lambda: [0, 0]), 'dest': collections.defaultdict(lambda: [0, 0]),
            'region': collections.defaultdict(lambda: [0, 0]), 'via': collections.defaultdict(lambda: [0, 0])}
+    sizes = collections.defaultdict(lambda: {'kg': 0.0, 'kg_sized': 0.0, 'w': 0.0, 'hist': [0.0] * (len(CLS) + 1)})
     ex = {}
     for x in rows:
         kg, fob = num(x[C_QTY]), num(x[C_FOB])
@@ -98,13 +114,18 @@ def aggregate(rows):
         for key, k in (('species_form', f'{sp}|{fo}'), ('dest', dest), ('region', reg), ('via', via)):
             agg[key][k][0] += kg; agg[key][k][1] += fob
         agg['total'][0] += kg; agg['total'][1] += fob
+        if fo in ('fresh whole', 'frozen whole', 'fresh fillets', 'frozen fillets') and sp in ('atlantic', 'coho', 'trout'):
+            z = sizes[f'{sp}|{fo}']; z['kg'] += kg; c = calibre(' '.join(x[C_NOM:C_NOM + 6]))
+            if c: z['kg_sized'] += kg; z['w'] += c * kg; z['hist'][sum(c >= b for b in CLS)] += kg
         e = ex.setdefault(x[C_EXP].strip(), {'kg': 0, 'fob': 0, 'refs': collections.Counter(), 'sp': collections.Counter(), 'reg': collections.Counter(),
                                                'dest': collections.Counter(), 'comuna': collections.Counter()})
         e['kg'] += kg; e['fob'] += fob; e['sp'][f'{sp}|{fo}'] += kg; e['reg'][reg] += kg; e['dest'][dest] += kg; e['comuna'][x[C_COM].strip()] += kg
         if ref and ref.upper() != 'SIN-CODIGO' and len(ref) >= 3: e['refs'][ref] += 1
     r = lambda d: {k: [round(v[0] / 1000, 1), round(v[1] / 1000, 1)] for k, v in sorted(d.items(), key=lambda kv: -kv[1][0])}
     return {'t_kusd': [round(agg['total'][0] / 1000, 1), round(agg['total'][1] / 1000, 1)], 'species_form': r(agg['species_form']), 'dest': r(agg['dest']),
-            'region': r(agg['region']), 'via': r(agg['via'])}, ex
+            'region': r(agg['region']), 'via': r(agg['via']),
+            'sizes': {k: {'t': round(z['kg'] / 1000, 1), 't_sized': round(z['kg_sized'] / 1000, 1), 'mean_kg': round(z['w'] / z['kg_sized'], 2) if z['kg_sized'] else None,
+                          'hist_t': [round(v / 1000, 1) for v in z['hist']]} for k, z in sizes.items()}}, ex
 
 
 def link_exporters(months):
@@ -149,10 +170,11 @@ def main():
     res = resources()
     print('mois publies :', len(res), 'dernier', max(res) if res else None)
     months_agg, months_ex = dict(old.get('months', {})), {}
-    raw_cache = old.get('_exporters_raw', {})
+    CACHE = OUT.replace('.json', '_cache.json')
+    raw_cache = old.get('_exporters_raw') or (json.load(open(CACHE)) if os.path.exists(CACHE) else {})
     for ym in sorted(res):
         key = str(ym)
-        if key in months_agg and key in raw_cache and old.get('mods', {}).get(key) == res[ym]['mod']:
+        if key in months_agg and key in raw_cache and old.get('mods', {}).get(key) == res[ym]['mod'] and ('--relire' not in sys.argv or 'sizes' in months_agg[key]):
             months_ex[ym] = {k: {**v, 'refs': collections.Counter(v['refs']), 'sp': collections.Counter(v['sp']), 'reg': collections.Counter(v['reg']),
                                  'dest': collections.Counter(v['dest']), 'comuna': collections.Counter(v['comuna'])} for k, v in raw_cache[key].items()}
             continue
@@ -181,9 +203,12 @@ def main():
                     'source': 'Servicio Nacional de Aduanas, export declarations (DUS), open data on datos.gob.cl — anonymised: no exporter name',
                     'url': 'https://datos.gob.cl/organization/servicio_nacional_de_aduanas', 'unit': 'tonnes net product weight, thousand USD FOB',
                     'linking': 'exporters are renumbered every month; each one is chained from month to month by its own product reference codes, then by its town, species and forms, destinations, regions of origin and size. A chain may break when an exporter changes its references: read it as a likely continuity, not a certainty.',
+                    'size_classes_kg': CLS, 'sizes_note': 'weight class written in the product description (calibre), mid-point, converted from lb when needed; whole fish are mostly gutted head-on (HON) weight; fillets are fillet weight',
                     'groups': len(G), 'linked_share_pct': round(100 * sum(g['t'] for g in G if len(g['months']) > 1) / max(1, sum(g['t'] for g in G)), 1)},
            'months': dict(sorted(months_agg.items())), 'mods': {str(k): v['mod'] for k, v in res.items()}, 'exporters': [g for g in G if g['t'] >= 50],
-           '_exporters_raw': {str(ym): {k: {**v, 'refs': dict(v['refs'].most_common(30))} for k, v in ex.items()} for ym, ex in months_ex.items()}}
+           }
+    raw = {str(ym): {k: {**v, 'refs': dict(v['refs'].most_common(30))} for k, v in ex.items()} for ym, ex in months_ex.items()}
+    json.dump(raw, open(CACHE, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))   # cache de chainage, lu par le script seulement
     json.dump(out, open(OUT, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
     print(f"ecrit {OUT} ({os.path.getsize(OUT) // 1024} ko) : {len(months_agg)} mois, {len(G)} groupes d'exportateurs, "
           f"{out['meta']['linked_share_pct']} % du volume relie sur plusieurs mois, en {time.time() - t0:.0f} s")

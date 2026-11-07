@@ -40,7 +40,7 @@ jobs:
       - name: Enregistrer
         run: |
           git config user.name "github-actions"; git config user.email "actions@github.com"
-          git add data/chile_customs.json data/chile_regional.json data/chile_caligus.json
+          git add data/chile_customs.json data/chile_customs_cache.json data/chile_regional.json data/chile_caligus.json
           if git diff --staged --quiet; then echo "Aucun changement."; else
             git commit -q -m "Chili : douanes, INE regional, caligus ($(date -u +%Y-%m-%d))"
             for i in 1 2 3; do git pull -q --rebase && git push -q && break; sleep 10; done; fi
