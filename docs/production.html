@@ -312,6 +312,10 @@
   /* ---------- Responsive : tablette et telephone ---------- */
   #viewToggle { }
   .top-controls:has(#viewToggle) { width: 100%; max-width: 1400px; }
+  .top-controls.tc-one { flex-wrap: nowrap !important; align-items: flex-end; gap: 12px !important; }
+  .top-controls.tc-one .field { flex: 0 0 auto; min-width: 0; }
+  .top-controls.tc-one select { min-width: 0 !important; width: auto; }
+  @media (max-width: 900px) { .top-controls.tc-one { flex-wrap: wrap !important; } }
   @media (max-width: 1100px) {
     .panel { min-width: 0 !important; max-width: 100% !important; width: 100%; }
     .content { gap: 14px; }
@@ -451,6 +455,10 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
   <div class="field" id="yearField">
     <label for="yearSel">Year N</label>
     <select id="yearSel"></select>
+  </div>
+  <div class="field" id="cmpYearField" style="display:none;">
+    <label for="cmpYearSel">Compared with</label>
+    <select id="cmpYearSel"></select>
   </div>
   <div class="field" id="yearRangeField" style="display:none;">
     <label for="fromYearSel">From year</label>
@@ -1845,8 +1853,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="chart-controls">
       <span class="cc-label">Period</span>
       <span class="mono" id="mktPeriodLbl" style="color:var(--bone);font-size:13px"></span>
-      <span style="color:var(--muted);font-size:12px">— set with the year and month selectors at the top of the page</span>
-      <label class="cc-check" style="margin-left:14px"><input type="checkbox" id="mktRolling"> 12 months rolling</label>
+      <input id="mktFind" type="search" placeholder="Find a country: France, Spania, Poland…" autocomplete="off" style="margin-left:auto;min-width:230px">
       <span class="cc-label" style="margin-left:14px">Show</span>
       <label class="cc-check"><input type="checkbox" class="mkt-col" data-col="q" checked> Volume</label>
       <label class="cc-check"><input type="checkbox" class="mkt-col" data-col="p" checked> Price</label>
@@ -2551,8 +2558,13 @@ const MONTH_SEL_LABELS = {
   cumul: "Cumulative through end of",
   single: 'Month',
   range: 'To month',
+  '12': 'Ending',
 };
-function topPeriodSeg() { periodSeg(periodTypeSel, [['single', 'Single month'], ['cumul', 'Year to date'], ['range', 'Selected period']]); }
+function topPeriodSeg() {
+  let roll = false; try { roll = currentView === 'markets'; } catch (e) { }
+  if (roll && ![...periodTypeSel.options].some(o => o.value === '12')) periodTypeSel.insertAdjacentHTML('beforeend', '<option value="12">12 months rolling</option>');
+  periodSeg(periodTypeSel, [['single', 'Single month'], ['cumul', 'Year to date'], ...(roll ? [['12', '12 months rolling']] : []), ['range', 'Selected period']]);
+}
 topPeriodSeg();
 periodTypeSel.addEventListener('change', () => {
   topPeriodSeg();
@@ -2648,6 +2660,7 @@ function anomaliesInPeriod(year, startMonth, endMonth, poList) {
 function updateDataQualityBanner(years, startMonth, endMonth, poList) {
   const el = document.getElementById('dataQualityBanner');
   if (!el) return;
+  if (['markets', 'products', 'calibre', 'coprod', 'feed'].includes(currentView)) { el.style.display = 'none'; return; }
   let hits = [];
   years.forEach(y => { hits = hits.concat(anomaliesInPeriod(y, startMonth, endMonth, poList)); });
   if (hits.length === 0) { el.style.display = 'none'; el.innerHTML = ''; return; }
@@ -2773,6 +2786,9 @@ function getEffectivePeriod() {
   if (type === 'single') {
     startMonth = endMonth;
     label = MONTHS_FR[endMonth-1];
+  } else if (type === '12') {
+    startMonth = endMonth;
+    label = `12 months to ${MONTHS_FR[endMonth-1]}`;
   } else if (type === 'range') {
     startMonth = parseInt(startMonthSel.value, 10);
     if (startMonth > endMonth) { const t = startMonth; startMonth = endMonth; /* swap to avoid empty range */ }
@@ -7293,8 +7309,14 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     const mw = document.querySelector('.panel.mapwrap');
     if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'usaprices' || currentView === 'news' || currentView === 'supply' || currentView === 'disease' || currentView === 'wellboats' || currentView === 'coprod' || currentView === 'feed' || currentView === 'genyoy' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
     document.getElementById('poFilterField').style.display = (currentView === 'global' || currentView === 'multi' || currentView === 'outlook') ? 'flex' : 'none';
-    document.getElementById('yearField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'none' : 'flex';
-    document.getElementById('yearRangeField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'flex' : 'none';
+    document.getElementById('yearField').style.display = currentView === 'multi' ? 'none' : 'flex';
+    document.getElementById('yearRangeField').style.display = currentView === 'multi' ? 'flex' : 'none';
+    document.getElementById('cmpYearField').style.display = currentView === 'markets' ? 'flex' : 'none';
+    document.getElementById('periodSummary').style.display = currentView === 'markets' ? 'none' : '';
+    { const sb = document.querySelector('body > .subtitle'); if (sb) sb.style.visibility = currentView === 'markets' ? 'hidden' : ''; if (sb) sb.style.height = currentView === 'markets' ? '0' : ''; if (sb) sb.style.margin = currentView === 'markets' ? '0' : ''; }
+    document.querySelector('body > .top-controls').classList.toggle('tc-one', currentView === 'markets');
+    if (currentView !== 'markets' && periodTypeSel.value === '12') { periodTypeSel.value = 'cumul'; monthSelLabel.textContent = MONTH_SEL_LABELS.cumul; }
+    topPeriodSeg();
     document.getElementById('toYearField').style.display = currentView === 'multi' ? 'flex' : 'none';
     document.getElementById('mapLegendDelta').style.display = currentView === 'po' ? 'block' : 'none';
     document.getElementById('mapLegendSelection').style.display = (currentView === 'global' || currentView === 'cohort' || currentView === 'multi') ? 'block' : 'none';
@@ -8472,6 +8494,16 @@ function mkAgg(byKey, year, m0, m1) {
   return { rows: Object.values(out), found: found, asked: asked };
 }
 
+// noms norvegiens d'Akvafakta -> anglais et francais, pour la recherche d'un pays dans Norway export WFE
+const MKT_ALIAS = { Belgia: 'Belgium Belgique', Danmark: 'Denmark Danemark', 'De Forente Arabiske Emirater': 'United Arab Emirates UAE Emirats', Egypt: 'Egypte', Estland: 'Estonia Estonie',
+  Filippinene: 'Philippines', Frankrike: 'France', Hellas: 'Greece Grece', Hongkong: 'Hong Kong', Irland: 'Ireland Irlande', Italia: 'Italy Italie', Kasakhstan: 'Kazakhstan', Kina: 'China Chine',
+  Kirgisistan: 'Kyrgyzstan Kirghizistan', Kypros: 'Cyprus Chypre', Latvia: 'Lettonie', Libanon: 'Lebanon Liban', Litauen: 'Lithuania Lituanie', Maldivene: 'Maldives', Marokko: 'Morocco Maroc',
+  Mexico: 'Mexique', Mongolia: 'Mongolie', Nederland: 'Netherlands Holland Pays-Bas', Polen: 'Poland Pologne', Romania: 'Roumanie', Russland: 'Russia Russie', 'Saudi-Arabia': 'Saudi Arabia Arabie saoudite',
+  Serbia: 'Serbie', Singapore: 'Singapour', Spania: 'Spain Espagne', Storbritannia: 'United Kingdom UK Britain Royaume-Uni', Sveits: 'Switzerland Suisse', Sverige: 'Sweden Suede',
+  'Sør-Afrika': 'South Africa Afrique du Sud', 'Sør-Korea': 'South Korea Korea Coree', Thailand: 'Thailande', Tsjekkia: 'Czechia Czech Tcheque', Tyrkia: 'Turkey Turkiye Turquie', Tyskland: 'Germany Allemagne',
+  Ukraina: 'Ukraine', Usa: 'United States US America Etats-Unis', Usbekistan: 'Uzbekistan Ouzbekistan', Vietnam: 'Viet Nam', Østerrike: 'Austria Autriche', Japan: 'Japon', Australia: 'Australie',
+  Bulgaria: 'Bulgarie', Belarus: 'Bielorussie', Finland: 'Finlande', Georgia: 'Georgie', Indonesia: 'Indonesie', Israel: 'Israel', Malaysia: 'Malaisie', Taiwan: 'Taiwan', Canada: 'Canada', Portugal: 'Portugal' };
+const mktNorm = t => String(t || '').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/ø/g, 'o').replace(/æ/g, 'ae').replace(/å/g, 'a').trim();
 function renderMarketsView() {
   const C = (typeof COUNTRY !== 'undefined' && COUNTRY.length)
     ? COUNTRY.filter(r => r.pays && r.pays.length) : [];
@@ -8488,7 +8520,13 @@ function renderMarketsView() {
   const per = getEffectivePeriod();
   // annee N du selecteur commun, comparee a la meme periode N-1 (comme les autres onglets ; avant novembre 2026,
   // l'onglet lisait par erreur les selecteurs de Multi-year, d'ou une comparaison avec 2018)
-  const yA = parseInt(yearSel.value, 10), yB = yA - 1;
+  mktRolling = periodTypeSel.value === '12';
+  const yA = parseInt(yearSel.value, 10), cSel = document.getElementById('cmpYearSel');
+  const yrs = [...new Set(C.map(r => r.year))].sort((a, b) => b - a), keep = cSel.value;
+  cSel.innerHTML = `<option value="">${yA - 1} (previous year)</option>` + yrs.filter(y => y !== yA && y !== yA - 1).map(y => `<option value="${y}">${y}</option>`).join('');
+  if ([...cSel.options].some(o => o.value === keep)) cSel.value = keep;
+  if (!cSel.dataset.on) { cSel.dataset.on = 1; cSel.addEventListener('change', renderMarketsView); }
+  const yB = cSel.value ? +cSel.value : yA - 1;
   // Douze mois glissants : option propre a cet onglet, qui n'a de sens que pour
   // des flux. Elle remonte de onze mois avant le mois de fin choisi en haut.
   const win = (y, m0, m1) => {
@@ -8538,6 +8576,8 @@ function renderMarketsView() {
   const aKeys = new Set(rows.map(r => (r.groupe || '') + '||' + r.pays));
   B.rows.forEach(r => { if (!aKeys.has((r.groupe || '') + '||' + r.pays)) rows.push({ pays: r.pays, groupe: r.groupe, q: 0, v: 0 }); });
   if (mktGroup !== 'all') rows = rows.filter(r => r.groupe === mktGroup);
+  const fq = mktNorm((document.getElementById('mktFind') || {}).value || '');
+  if (fq) rows = rows.filter(r => mktNorm(r.pays + ' ' + (MKT_ALIAS[r.pays] || '')).split(/[\s,]+/).some(w => w.startsWith(fq)) || mktNorm(r.pays + ' ' + (MKT_ALIAS[r.pays] || '')).includes(fq));
   rows.sort((a, b) => b.q - a.q);
   const tot = rows.reduce((s, r) => s + r.q, 0);
 
@@ -9355,6 +9395,8 @@ function mktBind() {
       if (currentView === 'markets') renderMarketsView();
     });
   });
+  const fnd = document.getElementById('mktFind');
+  if (fnd) fnd.addEventListener('input', () => { if (currentView === 'markets') renderMarketsView(); });
   const roll = document.getElementById('mktRolling');
   if (roll) roll.addEventListener('change', e => {
     mktRolling = e.target.checked;
@@ -13484,10 +13526,11 @@ function renderEuFlows() {
       const CHD = EU_WI.ch;
       if (CHD) { const T6 = { '0302.14': 0, '0303.13': 1, '0304.41': 2, '0304.81': 3, '0305.41': 5 };
         CHD.rows.forEach(([ym, tn8, part, kg, chf, eur]) => { const pi = T6[tn8.slice(0, 7)]; if (pi === undefined || ym > TM.last || part === 'CH') return;
-          const o = part === 'GB' ? 'GB' : part === 'IE' ? 'IE' : EU27.has(part) ? null : ['NO', 'FO', 'IS', 'CL'].includes(part) ? part : (pi >= 2 && PAC_SRC.has(part)) ? 'PAC' : 'OTH';
+          // origine declaree (regle d'origine suisse) : un pays de l'UE comme origine = saumon fume, filete ou emballe la-bas, pas une origine inconnue
+          const o = part === 'GB' ? 'GB' : part === 'IE' ? 'IE' : EU27.has(part) ? 'EUP' : ['NO', 'FO', 'IS', 'CL'].includes(part) ? part : (pi >= 2 && PAC_SRC.has(part)) ? 'PAC' : 'OTH';
           const A = TM.imp[ym] || (TM.imp[ym] = {}), R = A.CH || (A.CH = {}), C = R[pi] || (R[pi] = { d: {}, h: {} }), box = o ? C.d : C.h, key = o || part;
           const x = box[key] || (box[key] = [0, 0]); x[0] += kg / 1000; x[1] += eur / 1000; });
-        TM.extraRep.push('CH'); TM.chProv = new Set(CHD.meta.provisional || []); }
+        TM.extraRep.push('CH'); TM.chNative = true; TM.chProv = new Set(CHD.meta.provisional || []); }
       if (W && W.rows) W.rows.forEach(([ym, r3, hs, pt, kg, usd]) => { const rep = REP[r3], pi = HS[hs]; if (!rep || pi === undefined || pt === 'W' || ym > TM.last || (CHD && rep === 'CH')) return;
         const part = I3[pt] || pt; if (part === rep) return;
         const o = part === 'GB' ? 'GB' : part === 'IE' ? 'IE' : EU27.has(part) ? null : ['NO', 'FO', 'IS', 'CL'].includes(part) ? part : (pi >= 2 && PAC_SRC.has(part)) ? 'PAC' : 'OTH';
@@ -13524,15 +13567,18 @@ function renderEuFlows() {
     if (SSBX) { const hs = Object.keys(SSBX.meta.products), conv = tmNok();
       SSBX.rows.forEach(([k, h, iso, kg, nok]) => { const pi = SSB_PI[hs[h]]; if (pi === undefined) return; TM.ssbLast = Math.max(TM.ssbLast, k);
         const A = TM.ssbi[iso] || (TM.ssbi[iso] = {}), B = A[k] || (A[k] = {}), x = B[pi] || (B[pi] = [0, 0, 0]); x[0] += kg / 1000; x[1] += nok / 1000; x[2] += conv ? conv(nok / 1000, k) : 0; }); } }
-  const CAT = ['NO', 'GB', 'FO', 'IS', 'IE', 'CL', 'OTH', 'VIA'];
-  const CLAB = Object.assign({}, ORIG_LAB, { VIA: 'Via another EU country — origin not declared', OTH: 'Other origins (declared)' });
-  const CCOL = Object.assign({}, ORIG_COL, { VIA: '#3d5462' });
-  const ssbOK = (pi, k) => pi <= 3 && k <= TM.ssbLast && !!SSBX;
-  const NATO = Object.keys(TM.nati).filter(o => ORIGS.includes(o)), natOK = (g, k) => !!TM.nati[g] && k >= TM.natFirst[g] && k <= TM.natLast[g];
+  const CAT = ['NO', 'GB', 'FO', 'IS', 'IE', 'CL', 'OTH', 'EUP', 'VIA'];
+  const CLAB = Object.assign({}, ORIG_LAB, { VIA: 'Via another EU country — origin not declared', OTH: 'Other origins (declared)', EUP: 'EU countries — smoked, filleted or packed there (origin declared)' });
+  const CCOL = Object.assign({}, ORIG_COL, { VIA: '#3d5462', EUP: '#b39ddb' });
+  // Suisse : les douanes suisses donnent l'origine reelle de chaque lot, on ne les remplace ni par les statistiques norvegiennes ni par les feroiennes
+  const native = rep => rep === 'CH' && TM.chNative;
+  const ssbOK0 = (pi, k) => pi <= 3 && k <= TM.ssbLast && !!SSBX;
+  const NATO = Object.keys(TM.nati).filter(o => ORIGS.includes(o)), natOK0 = (g, k) => !!TM.nati[g] && k >= TM.natFirst[g] && k <= TM.natLast[g];
   // [tonnes, k€ (declares a l'arrivee), k NOK (stat. norvegiennes)] ; o._hub = arrivees brutes par pays d'expedition ; o._over
   const orgSum = (rep, ks) => { const o = { _hub: {}, _over: 0 }, tot = {}, known = {};
     const add = (g, t, v, nok) => { const y = o[g] || (o[g] = [0, 0, 0]); y[0] += t; y[1] += v; y[2] += nok; };
     ks.forEach(k => forms.forEach(pi => {
+      const ssbOK = (p2, k2) => !native(rep) && ssbOK0(p2, k2), natOK = (g2, k2) => !native(rep) && natOK0(g2, k2);
       const C = ((TM.imp[k] || {})[rep] || {})[pi], useSsb = ssbOK(pi, k);
       tot[pi] = tot[pi] || 0; known[pi] = known[pi] || 0;
       if (C) {
@@ -13566,7 +13612,7 @@ function renderEuFlows() {
     (NATO.length ? `<b>${NATO.map(g => ORIG_LAB[g]).join(' and ')}</b> = their own export statistics, by destination declared at export, like Norway. ` : '') +
     `<b>Other origins</b> = what arrives declared with its origin. <b>Grey</b> = arrivals from another EU country whose origin is not declared` +
     (NATO.length === 2 ? ` (mainly Scottish salmon cleared in another EU country, and gaps between the statistics of the two sides).` : ` — this is where Faroese, Icelandic and Scottish salmon sold to this market but cleared in Denmark, the Netherlands or Germany ends up, until their national statistics are added.`) +
-    (euCty === 'CH' && EU_WI && EU_WI.ch ? ` <span class="warn">Switzerland is not in Eurostat: Swiss customs figures (Federal Office for Customs and Border Security, open data, the same as Swiss-Impex), monthly, values in euros as published, by <b>country of origin</b> (salmon smoked or filleted in an EU country counts under that country, shown here as "via another EU country")${TM.chProv && TM.chProv.size ? `; months from ${tmMl(Math.min(...TM.chProv))} are provisional` : ''}.</span>` : '') +
+    (euCty === 'CH' && EU_WI && EU_WI.ch ? ` <span class="warn">Switzerland is not in Eurostat: Swiss customs figures (Federal Office for Customs and Border Security, open data, the same as Swiss-Impex), monthly, values in euros as published, by <b>country of origin</b> (salmon smoked or filleted in an EU country counts under that country, shown as "EU countries"; Norway is taken from these Swiss figures, not from Norway's export statistics)${TM.chProv && TM.chProv.size ? `; months from ${tmMl(Math.min(...TM.chProv))} are provisional` : ''}.</span>` : '') +
     ((euCty === 'CH' && !(EU_WI && EU_WI.ch)) || euCty === 'GB' ? ` <span class="warn">${euName(euCty)} is not in Eurostat: its own import declarations to the UN (Comtrade), by country of origin as declared (fish smoked or processed in an EU country counts under that country, shown here as "via another EU country"); prices converted from US dollars.</span>` : '') +
     vzLegend(shown.map(g => [CLAB[g], CCOL[g], false, true]).concat([['Total, a year earlier', '#e7eef2', true]]));
   document.getElementById('euCtyChart').innerHTML = vzStack(k24, shown.map(g => ({ lab: CLAB[g], col: CCOL[g], vals: mon.map(o => o[g] ? o[g][0] : 0) })),
@@ -13576,12 +13622,15 @@ function renderEuFlows() {
   document.getElementById('tbodyEuCty').innerHTML = CAT.concat(['PAC']).filter(g => (N[g] && N[g][0] > 0.5) || (Pv[g] && Pv[g][0] > 5)).map(g => {
     const a = N[g] || [0, 0, 0], b = Pv[g] || [0, 0, 0], pac = g === 'PAC', via = g === 'VIA';
     const price = g === 'NO' && a[2] > 0 && !(a[1] > 0) ? `${(a[2] / a[0]).toFixed(2)} NOK` : (!via && !pac && a[0] >= 20 && a[1] > 0) ? `${(a[1] / a[0]).toFixed(2)} €` : '—';
-    const src = g === 'NO' ? (noSsb ? 'Norwegian statistics (whole, fillets) + direct arrivals' : 'Norwegian export statistics') : TM.nati[g] ? `${(NAT_NAME[g] || [g])[0]} export statistics (destination declared at export)` : via ? 'Shipping country only (see below)' : pac ? 'US, China, Russia — excluded' : 'Declared on arrival';
+    const src = euCty === 'CH' && TM.chNative && !pac ? (g === 'EUP' ? 'Swiss customs, origin = EU country of processing' : 'Swiss customs, by country of origin') : g === 'NO' ? (noSsb ? 'Norwegian statistics (whole, fillets) + direct arrivals' : 'Norwegian export statistics') : TM.nati[g] ? `${(NAT_NAME[g] || [g])[0]} export statistics (destination declared at export)` : via ? 'Shipping country only (see below)' : pac ? 'US, China, Russia — excluded' : 'Declared on arrival';
     return `<tr${pac ? ' style="opacity:.55"' : ''}><td class="name"><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${CCOL[g]};margin-right:6px"></i>${pac ? ORIG_LAB.PAC : CLAB[g]}</td><td><b>${tmF0(a[0])}</b></td>` +
       `<td>${pac ? '—' : tN ? (100 * a[0] / tN).toFixed(1) + '%' : '—'}</td><td class="${tmCls(a[0] - b[0], 50)}">${tmSg(a[0] - b[0])}</td>${tmPct(a[0], b[0])}` +
       `<td class="sep-left">${price}</td><td class="sep-left" style="text-align:left;font-size:11px">${src}</td></tr>`; }).join('') +
     `<tr><td class="name" style="color:var(--accent)">Total Atlantic salmon</td><td><b>${tmF0(tN)}</b></td><td>100%</td><td class="${tmCls(tN - tP, 50)}">${tmSg(tN - tP)}</td>${tmPct(tN, tP)}<td class="sep-left"></td><td class="sep-left"></td></tr>` +
-    `<tr><td colspan="7" class="name" style="font-weight:normal;color:var(--muted);font-size:11px;white-space:normal">All arrivals from other EU countries, gross (they include Norwegian salmon already counted under Norway): ${hubTxt || '—'}.</td></tr>` +
+    (euCty === 'CH' && TM.chNative ? `<tr><td colspan="7" class="name" style="font-weight:normal;color:var(--muted);font-size:11px;white-space:normal">EU countries of origin: ${(() => { const T6 = { '0302.14': 0, '0303.13': 1, '0304.41': 2, '0304.81': 3, '0305.41': 5 }, ks = new Set(keys), fs = new Set(forms), EU27 = new Set(EU.meta.reporters_up), g = {};
+        EU_WI.ch.rows.forEach(([ym, tn, c, kg]) => { const pi = T6[tn.slice(0, 7)]; if (!ks.has(ym) || !fs.has(pi) || !EU27.has(c) || c === 'IE') return; g[c] = (g[c] || 0) + kg / 1000; });
+        return Object.entries(g).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([c, t]) => `${euName(c)} ${tmF0(t)} t`).join(' · ') || '—'; })()}. Under Swiss origin rules, Norwegian salmon smoked or filleted in Poland or Germany becomes Polish or German; whole fish only trucked through the EU keeps its Norwegian origin.</td></tr>`
+    : `<tr><td colspan="7" class="name" style="font-weight:normal;color:var(--muted);font-size:11px;white-space:normal">All arrivals from other EU countries, gross (they include Norwegian salmon already counted under Norway): ${hubTxt || '—'}.</td></tr>`) +
     (N._over > 1 ? `<tr><td colspan="7" class="name" style="font-weight:normal;color:#ffb74d;font-size:11px">The producing countries' export statistics (${['Norway'].concat(NATO.map(g => ORIG_LAB[g])).join(', ')}) declare ${tmF0(N._over)} t more for ${euName(euCty)} than ${euName(euCty)} records as imports over the period — small importers exempt from EU-internal trade declarations, timing, or salmon re-sold before arrival. The total shown is the higher figure.</td></tr>` : '');
 
   // ---------- 2. croissance ou substitution ----------
@@ -14882,6 +14931,52 @@ loadRemoteData().then(live => {
 #supplyView .sup-art a:hover{color:#4fc3f7}
 #supplyView .sup-art small{color:#8fa4b0;margin-left:6px}
 #supplyView .sup-go{color:#4fc3f7;cursor:pointer;font-size:13px}
+#supplyView .sup-nums span i{white-space:nowrap}
+#mktFind{padding:8px 14px 8px 34px!important;border-radius:999px!important;border:1px solid rgba(255,255,255,.30)!important;background:rgba(255,255,255,.14) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23d6e3ea' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") no-repeat 13px 50%!important;
+  color:#fff!important;font-size:13px!important;outline:none!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.4)}
+#mktFind:focus{border-color:rgba(159,227,255,.8)!important;box-shadow:0 0 0 3px rgba(159,227,255,.25)!important}
+#mktFind::placeholder{color:#c8d8e3}
+.verdict{background:linear-gradient(140deg,rgba(255,255,255,.14),rgba(255,255,255,.05))!important;border:1px solid rgba(255,255,255,.22)!important;border-left-width:3px!important;border-radius:16px!important;color:#e3edf3!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}
+#supplyView .sb-chart{display:flex;flex-direction:column;gap:9px;margin:6px 0 10px}
+#supplyView .sb-r{display:grid;grid-template-columns:minmax(110px,190px) minmax(0,1fr) 78px 22px;align-items:center;gap:12px}
+#supplyView .sb-n{text-align:right;font-size:14px;color:#eef5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#supplyView .sb-t{height:12px;border-radius:999px;background:rgba(255,255,255,.10);overflow:hidden}
+#supplyView .sb-t i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,rgba(159,227,255,.75),#e9f8ff);box-shadow:0 0 12px rgba(159,227,255,.35)}
+#supplyView .sb-v{font-size:13px;color:#dbe8ef;font-variant-numeric:tabular-nums;text-align:right}
+#supplyView .sb-a{font-size:15px;font-weight:700;text-align:center}
+#supplyView .sb-up{color:#8be3b0}#supplyView .sb-down{color:#ff9b7a}#supplyView .sb-flat{color:#d6e3ea}
+#supplyView .sr-chart{display:flex;flex-direction:column;gap:10px;margin:6px 0 10px}
+#supplyView .sr-r{display:grid;grid-template-columns:minmax(110px,190px) minmax(0,1fr) 92px;align-items:center;gap:12px}
+#supplyView .sr-n{text-align:right;font-size:14px;color:#eef5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#supplyView .sr-w .sr-n{font-weight:700}
+#supplyView .sr-t{position:relative;height:18px}
+#supplyView .sr-t b{position:absolute;top:-6px;bottom:-6px;width:0;border-left:1px dashed rgba(255,255,255,.18)}
+#supplyView .sr-t b.z{border-left:1px solid rgba(255,255,255,.5)}
+#supplyView .sr-t i{position:absolute;top:5px;height:8px;border-radius:999px;opacity:.9}
+#supplyView .sr-t em{position:absolute;top:2px;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:#fff;box-shadow:0 1px 6px rgba(3,18,35,.45)}
+#supplyView .sr-v{font-size:12.5px;color:#dbe8ef;font-variant-numeric:tabular-nums;white-space:nowrap}
+#supplyView .sr-ax .sr-t{height:16px}#supplyView .sr-ax u{position:absolute;transform:translateX(-50%);text-decoration:none;font-size:11.5px;color:#bcd0dc;white-space:nowrap}
+@media (max-width:700px){#supplyView .sb-r{grid-template-columns:92px minmax(0,1fr) 64px 16px;gap:8px}#supplyView .sr-r{grid-template-columns:92px minmax(0,1fr) 70px;gap:8px}#supplyView .sb-n,#supplyView .sr-n{font-size:12.5px}}
+#supplyView .pr-cards{grid-template-columns:repeat(4,minmax(0,1fr))!important;align-items:stretch}
+@media (max-width:900px){#supplyView .pr-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+#supplyView .pr-cards .pr-card .big{font-size:24px!important}
+#supplyView .pr-cards .pr-card .ln{font-size:12px!important;line-height:1.45;color:#dbe8ef}
+#supplyView .sup-b,#supplyView .sup-r{background:linear-gradient(140deg,rgba(255,255,255,.16),rgba(255,255,255,.05))!important;border:1px solid rgba(255,255,255,.24)!important;border-radius:22px!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 12px 30px rgba(3,18,35,.18);-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%)}
+#supplyView .sup-r{border-left:3px solid #ffd28a!important}
+#supplyView .sup-nums span{background:rgba(255,255,255,.10)!important;border:1px solid rgba(255,255,255,.18)!important;border-radius:12px!important}
+#supplyView .sup-nums span i{color:#ffd28a}
+#supplyView .sup-y,#supplyView .sup-kv,#supplyView .sup-nums small{color:#d3e2ea!important}
+#supplyView .sup-tag{background:rgba(255,255,255,.16)!important;color:#fff!important}
+#supplyView .sup-sec{color:#bfeaff!important}
+#supplyView details.gs-card{padding:0!important;border-radius:18px!important;overflow:hidden}
+#supplyView details.gs-card>summary{list-style:none;cursor:pointer;padding:11px 16px;font-size:14px;color:#eef5f9;display:flex;align-items:center;gap:8px}
+#supplyView details.gs-card>summary::-webkit-details-marker{display:none}
+#supplyView details.gs-card>summary::before{content:'›';font-size:18px;line-height:1;color:#bfeaff;transition:transform .2s}
+#supplyView details.gs-card[open]>summary::before{transform:rotate(90deg)}
+#supplyView details.gs-card>.sup-art{margin:0 16px}
+#supplyView .sup-art{border-bottom:1px solid rgba(255,255,255,.12)!important}
 @media (max-width:700px){#supplyView .sup-grid,#supplyView .sup-risk{grid-template-columns:1fr} #supplyView .sup-hero h2{font-size:19px} #supplyView .sup-lead{font-size:14px}}
 </style>
 <script>
@@ -14900,27 +14995,20 @@ function renderSupply() {
   const OW = (SUP.own || {}).basins || {}, OT = (SUP.own || {}).tracked || null;
   const rows = OT ? B.filter(b => OW[b.id] && OW[b.id].v2025).map(b => [b.name, OW[b.id].v2025, b.dir, b.id]).sort((a, b) => b[1] - a[1])
     : B.filter(b => b.v2025).map(b => [b.name === 'Canada' ? 'North America' : b.name, b.v2025, b.dir, b.id]).concat([['Other Europe (Iceland, Ireland)', 63, 'flat', 'IS'], ['Other (incl. Australia)', 107, 'up', 'AU']]);
-  const NAR = window.innerWidth < 700, FS = NAR ? 20 : 15;   // telephone : dessin plus etroit, textes plus gros (le SVG est mis a l'echelle)
-  const mx = Math.max(...rows.map(r => r[1])), Wd = NAR ? 560 : 1000, rh = NAR ? 44 : 38, H = rows.length * rh + 30, L = NAR ? 175 : 230;
-  const col = d => d === 'up' ? '#7ed98f' : d === 'down' ? '#ff8a65' : '#8fa4b0';
-  let g = '';
-  rows.forEach((r, i) => { const y = 10 + i * rh, w = Math.max(4, (Wd - L - 150) * r[1] / mx);
-    g += `<text x="${L - 10}" y="${y + 21}" text-anchor="end" fill="#e7eef2" font-size="${FS}">${e(NAR ? r[0].replace(/ \(.*\)/, '').replace('North America', 'N. America').replace('Other Europe', 'Other Eur.') : r[0])}</text>` +
-      `<rect x="${L}" y="${y + 5}" width="${w.toFixed(1)}" height="24" rx="4" fill="#4fc3f7" fill-opacity=".75"><title>${e(r[0])}: ${f0(r[1])} kt gutted weight in 2025</title></rect>` +
-      `<text x="${L + w + 8}" y="${y + 22}" fill="#cfdde4" font-size="${FS - 1}">${f0(r[1])} kt</text>` +
-      `<text x="${L + w + (NAR ? 92 : 78)}" y="${y + 23}" fill="${col(r[2])}" font-size="${FS + 4}" font-weight="bold">${AR[r[2]][1]}</text>`; });
-  const chart = `<svg viewBox="0 0 ${Wd} ${H}" style="width:100%;height:auto;display:block">${g}</svg>` +
+  const mx = Math.max(...rows.map(r => r[1])), DC = { up: 'sb-up', down: 'sb-down', flat: 'sb-flat' };
+  // HTML fluide (plus de SVG a l'echelle) : barres fines, la valeur et la fleche dans leurs propres colonnes, rien ne deborde
+  const chart = `<div class="sb-chart">${rows.map(r => `<div class="sb-r" title="${e(r[0])}: ${f0(r[1])} kt gutted weight in 2025"><span class="sb-n">${e(r[0])}</span>` +
+      `<span class="sb-t"><i style="width:${(100 * r[1] / mx).toFixed(1)}%"></i></span><span class="sb-v">${f0(r[1])} kt</span><span class="sb-a ${DC[r[2]] || 'sb-flat'}">${AR[r[2]][1]}</span></div>`).join('')}</div>` +
     `<div class="sig-sub">Bars: 2025 harvest in thousand tonnes gutted weight, ${OT ? 'our own count from each country\'s official data (registers, monthly harvest, exports)' : 'Kontali, via Mowi'}. Arrow: direction expected for 2027 (<b style="color:#7ed98f">↑ up</b>, <b>→ flat</b>, <b style="color:#ff8a65">↓ down</b>), from the basin summaries below.</div>`;
+  const col = d => d === 'up' ? '#7ed98f' : d === 'down' ? '#ff9b7a' : '#d6e3ea';
   // ---- graphique 2 : variation attendue en 2027, fourchette par bassin (lecture des syntheses ci-dessous)
   const RG = [[OT ? 'All seven basins' : 'World', (W.r2027 || [0, 0]), 'world', W.c2027], ...B.filter(b => b.r2027).map(b => [b.name, b.r2027, b.dir, b.c2027])];
-  const xmin = -20, xmax = 20, L2 = NAR ? 175 : 230, W2 = NAR ? 560 : 1000, X = v => L2 + (W2 - L2 - (NAR ? 70 : 40)) * (v - xmin) / (xmax - xmin), rh2 = NAR ? 40 : 34, H2 = RG.length * rh2 + 50;
-  let g2 = [-20, -10, 0, 10, 20].map(v => `<line x1="${X(v)}" x2="${X(v)}" y1="8" y2="${H2 - 30}" stroke="${v ? '#1e3442' : '#5d7685'}" stroke-dasharray="${v ? '3 4' : ''}"/><text x="${X(v)}" y="${H2 - 12}" text-anchor="middle" fill="#8fa4b0" font-size="${FS - 2}">${v > 0 ? '+' : ''}${v} %</text>`).join('');
-  RG.forEach(([n, r, d, cc], i) => { const y = 14 + i * rh2, c = d === 'world' ? '#e7eef2' : col(d), a = Math.max(xmin, r[0]), z = Math.min(xmax, r[1]);
-    g2 += `<text x="${L2 - 10}" y="${y + 15}" text-anchor="end" fill="${d === 'world' ? '#fff' : '#e7eef2'}" font-size="${FS}"${d === 'world' ? ' font-weight="bold"' : ''}>${e(NAR ? n.replace(/ \(.*\)/, '') : n)}</text>` +
-      `<rect x="${X(a)}" y="${y + 3}" width="${Math.max(6, X(z) - X(a)).toFixed(1)}" height="16" rx="8" fill="${c}" fill-opacity=".8"><title>${e(n)}: ${r[0] > 0 ? '+' : ''}${r[0]} % to ${r[1] > 0 ? '+' : ''}${r[1]} % in 2027</title></rect>` +
-      (cc !== undefined && cc !== null ? `<circle cx="${X(Math.max(xmin, Math.min(xmax, cc)))}" cy="${y + 11}" r="${NAR ? 7 : 6}" fill="#fff" stroke="#0b1620" stroke-width="2"><title>central: ${cc > 0 ? '+' : ''}${cc} %</title></circle>` : '') +
-      `<text x="${X(z) + 10}" y="${y + 16}" fill="#cfdde4" font-size="${FS - 2}">${r[0] === r[1] ? '' : (r[0] > 0 ? '+' : '') + r[0] + ' to '}${r[1] > 0 ? '+' : ''}${r[1]} %</text>`; });
-  const chart2 = `<svg viewBox="0 0 ${W2} ${H2}" style="width:100%;height:auto;display:block">${g2}</svg>` +
+  const xmin = -20, xmax = 20, P = v => (100 * (Math.max(xmin, Math.min(xmax, v)) - xmin) / (xmax - xmin)).toFixed(2), TK = [-20, -10, 0, 10, 20], sg = v => (v > 0 ? '+' : '') + v;
+  const grid = TK.map(v => `<b class="${v ? '' : 'z'}" style="left:${P(v)}%"></b>`).join('');
+  const chart2 = `<div class="sr-chart">${RG.map(([n, r, d, cc]) => `<div class="sr-r${d === 'world' ? ' sr-w' : ''}"><span class="sr-n">${e(n)}</span><span class="sr-t">${grid}` +
+      `<i style="left:${P(r[0])}%;width:${Math.max(1.5, P(r[1]) - P(r[0]))}%;background:${d === 'world' ? 'rgba(255,255,255,.85)' : col(d)}" title="${e(n)}: ${sg(r[0])} % to ${sg(r[1])} % in 2027"></i>` +
+      (cc !== undefined && cc !== null ? `<em style="left:${P(cc)}%" title="central: ${sg(cc)} %"></em>` : '') + `</span><span class="sr-v">${r[0] === r[1] ? '' : sg(r[0]) + ' to '}${sg(r[1])} %</span></div>`).join('')}` +
+    `<div class="sr-r sr-ax"><span class="sr-n"></span><span class="sr-t">${TK.map(v => `<u style="left:${P(v)}%">${sg(v)} %</u>`).join('')}</span><span class="sr-v"></span></div></div>` +
     `<div class="sig-sub">Change in volume expected for 2027 against our 2026 estimate: the bar is the range, the white dot our central projection — computed from each country's own data and our models (method in each basin card). The wider the bar, the more uncertain the basin.</div>`;
   // ---- articles relatifs aux projections, par bassin
   const KW = /2027|guidance|forecast|outlook|supply|harvest (volume|guidance|forecast|estimate|record|cut|down|up)|harvest|biomass|smolt|capacity|licen[cs]e|quota|\bban\b|tariff|mortalit|el ni[ñn]o|alga|bloom|\bISA\b|\bcut\b|growth|prognos|slaktevolum|cosecha|siembra|producci[óo]n|production|lice/i;
