@@ -1,6 +1,6 @@
 // Service worker — dashboard saumon
 // Change VERSION à chaque modification de ce fichier pour forcer la mise à jour.
-const VERSION = 'saumon-v2';
+const VERSION = 'saumon-v3';
 
 const SHELL = [
   'production.html',

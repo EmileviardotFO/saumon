@@ -8731,8 +8731,11 @@ function drawMktMap(rows, bAt, per, yA, yB) {
   // europeennes se chevauchent sur une carte mondiale et deviennent illisibles.
   // Sur le planisphere l'UE27 est donc reduite a une seule bulle agregee, et la
   // place gagnee va a l'encart, ou le detail est lisible.
-  const W = 560, H = 500, mB = 26;
-  const sx = W / 2.08, sy = (H - mB) / 2.35, ox = W / 2, oy = (H - mB) / 2 + 6;
+  // monde en pleine largeur, Europe en dessous (novembre 2026) ; vraies proportions de Robinson (0.8487 pi en x, 1.3523 en y)
+  const W = 980, H = 500, mB = 6;
+  const sx = 470, sy = 470 * 1.3523 / (0.8487 * Math.PI), ox = W / 2, oy = H / 2 + 4;
+  const EW0 = 980, EH0 = 636, GAP = 22;
+  S.setAttribute('viewBox', `0 0 ${W} ${H + GAP + EH0}`);
   const PX = (lat, lon) => { const p = robinson(lat, lon); return [ox + p[0] * sx, oy - p[1] * sy]; };
 
   // Infobulle commune aux deux panneaux : niveau et variation, en relatif comme
@@ -8745,7 +8748,7 @@ function drawMktMap(rows, bAt, per, yA, yB) {
     const dq = (prevQ ? r.q - prevQ : null);
     const dp = (px !== null && ppx !== null) ? px - ppx : null;
     const sg = (x, d, u) => (x === null || x === undefined) ? ''
-      : `<span style="color:${x >= 0 ? '#F2A65A' : '#5FD3C4'}">${x >= 0 ? '+' : ''}${x.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })}${u}</span>`;
+      : `<span style="color:${x >= 0 ? '#8be3b0' : '#ff9b7a'}">${x >= 0 ? '+' : ''}${x.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })}${u}</span>`;
     const pctq = prevQ ? (r.q - prevQ) / prevQ * 100 : null;
     const pctp = (px !== null && ppx) ? (px - ppx) / ppx * 100 : null;
     tt.innerHTML = `<b>${r.agg ? r.pays : mkEn(r.pays)}</b>`
@@ -8791,7 +8794,7 @@ function drawMktMap(rows, bAt, per, yA, yB) {
   const colFor = p => {
     // teintes opaques (une transparence sur le fond bleu virait au brun) : blanc casse -> peche si le volume monte, -> menthe s'il baisse
     if (p === null) return '#e6eef3';
-    const c = Math.max(-40, Math.min(40, p)) / 40, t = Math.min(1, .35 + .65 * Math.abs(c)), A = [236, 243, 247], Z = c >= 0 ? [255, 179, 120] : [111, 214, 192];
+    const c = Math.max(-40, Math.min(40, p)) / 40, t = Math.min(1, .35 + .65 * Math.abs(c)), A = [236, 243, 247], Z = c >= 0 ? [110, 214, 150] : [255, 138, 110];
     return `rgb(${A.map((v, i) => Math.round(v + (Z[i] - v) * t)).join(',')})`;
   };
   const no = PX(61, 8.5);
@@ -8804,7 +8807,7 @@ function drawMktMap(rows, bAt, per, yA, yB) {
   worldRows.slice().sort((a, b) => b.q - a.q).forEach(r => {
     const c = r.agg ? [r.lat, r.lon] : CENTROIDS[r.pays]; if (!c) return;
     const p = PX(c[0], c[1]);
-    const rad = 3 + 24 * Math.sqrt(r.q / maxQ);
+    const rad = 4 + 34 * Math.sqrt(r.q / maxQ);
     const prevQ = r.agg ? r.pq : (bAt(r) || {}).q;
     const prevV = r.agg ? r.pv : (bAt(r) || {}).v;
     const pct = pcOf(r.q, prevQ);
@@ -8813,9 +8816,9 @@ function drawMktMap(rows, bAt, per, yA, yB) {
     ci.addEventListener('mousemove', e => showTip(e, r, prevQ, prevV));
     ci.addEventListener('mouseleave', hideTip);
     S.appendChild(ci);
-    if (rad > 12) {
+    if (rad > 11) {
       const lb = mkEl('text', { x: p[0], y: p[1] + 4, 'text-anchor': 'middle', fill: '#0d2a40', 'pointer-events': 'none',
-        'font-size': Math.min(12, rad * .62), 'font-family': '-apple-system, system-ui, sans-serif', 'font-weight': 700 });
+        'font-size': Math.min(14, rad * .62), 'font-family': '-apple-system, system-ui, sans-serif', 'font-weight': 700 });
       // L'agregat garde son nom entier : 'EU2' ne voudrait rien dire.
       lb.textContent = r.agg ? r.pays : mkIso(r.pays);
       S.appendChild(lb);
@@ -8826,12 +8829,14 @@ function drawMktMap(rows, bAt, per, yA, yB) {
   wt.textContent = 'WORLD'; S.appendChild(wt);
 
   // ---- encart Europe, projection equirectangulaire sur la seule zone utile
-  const EX = 572, EW = 408, EH = H - mB;
-  const LA = [72, 33], LO = [-14, 33];
-  const eg = mkEl('g', { transform: `translate(${EX},0)` });
+  const EW = EW0, EH = EH0;
+  const LA = [71, 35], LO = [-30, 60], CK = Math.cos(53 * Math.PI / 180);
+  const eg = mkEl('g', { transform: `translate(0,${H + GAP})` });
   eg.appendChild(mkEl('rect', { x: 0.5, y: 0.5, width: EW - 1, height: EH - 1, fill: 'rgba(255,255,255,.07)', stroke: 'rgba(255,255,255,.28)', rx: 20, class: 'mk-glass' }));
+  // equirectangulaire corrigee de la latitude (cos 53°), cadre aux bonnes proportions : l'Europe n'est plus etiree en hauteur
   const EPX = (lat, lon) => [(lon - LO[0]) / (LO[1] - LO[0]) * EW,
                              (LA[0] - lat) / (LA[0] - LA[1]) * EH];
+  void CK;
   const cp = mkEl('clipPath', { id: 'euclip' });
   cp.appendChild(mkEl('rect', { x: 0, y: 0, width: EW, height: EH, rx: 20 }));
   eg.appendChild(cp);
@@ -8857,7 +8862,7 @@ function drawMktMap(rows, bAt, per, yA, yB) {
   rows.slice().sort((a, b) => b.q - a.q).forEach(r => {
     if (!inEu(r)) return;
     const c = CENTROIDS[r.pays], p = EPX(c[0], c[1]);
-    const rad = 3 + 22 * Math.sqrt(r.q / maxE);
+    const rad = 4 + 30 * Math.sqrt(r.q / maxE);
     const pct = pcOf(r.q, (bAt(r) || {}).q);
     const ci = mkEl('circle', { cx: p[0], cy: p[1], r: rad, fill: colFor(pct), stroke: 'rgba(255,255,255,.95)', 'stroke-width': 1.5, filter: 'url(#mkSh)' });
     ci.style.cursor = 'pointer';
@@ -8867,7 +8872,7 @@ function drawMktMap(rows, bAt, per, yA, yB) {
     ein.appendChild(ci);
     if (rad > 8) {
       const lb = mkEl('text', { x: p[0], y: p[1] + 4, 'text-anchor': 'middle', fill: '#0d2a40', 'pointer-events': 'none',
-        'font-size': Math.min(12, rad * .66), 'font-family': '-apple-system, system-ui, sans-serif', 'font-weight': 700 });
+        'font-size': Math.min(14, rad * .66), 'font-family': '-apple-system, system-ui, sans-serif', 'font-weight': 700 });
       lb.textContent = mkIso(r.pays); ein.appendChild(lb);
     }
   });
@@ -8878,8 +8883,8 @@ function drawMktMap(rows, bAt, per, yA, yB) {
   S.appendChild(eg);
 
   document.getElementById('mktMapLegend').innerHTML =
-    `<span style="display:inline-flex;align-items:center;gap:6px;margin-right:14px"><i style="display:inline-block;width:11px;height:11px;border-radius:50%;background:rgb(255,179,120);border:1.5px solid #fff"></i>volume up vs ${yB}</span>`
-    + `<span style="display:inline-flex;align-items:center;gap:6px;margin-right:14px"><i style="display:inline-block;width:11px;height:11px;border-radius:50%;background:rgb(111,214,192);border:1.5px solid #fff"></i>volume down</span>`
+    `<span style="display:inline-flex;align-items:center;gap:6px;margin-right:14px"><i style="display:inline-block;width:11px;height:11px;border-radius:50%;background:rgb(110,214,150);border:1.5px solid #fff"></i>volume up vs ${yB}</span>`
+    + `<span style="display:inline-flex;align-items:center;gap:6px;margin-right:14px"><i style="display:inline-block;width:11px;height:11px;border-radius:50%;background:rgb(255,138,110);border:1.5px solid #fff"></i>volume down</span>`
     + `<span style="color:var(--muted)">circle area proportional to volume · hover for detail · `
     + `each panel is scaled separately, so bubble sizes are not comparable between them</span>`;
 }
@@ -13755,7 +13760,7 @@ loadRemoteData().then(live => {
   #sideNav:hover::-webkit-scrollbar{width:5px}
   #sideNav:hover::-webkit-scrollbar-thumb{background:rgba(127,149,163,.35);border-radius:4px}
   #sideNav .sn-brand{padding:14px 12px 10px;line-height:0;display:flex;justify-content:center}
-  #sideNav .sn-brand img{width:76px;height:76px;border-radius:18px;box-shadow:0 8px 22px rgba(3,18,35,.30);opacity:1}
+  #sideNav .sn-brand img{width:84px;height:84px;filter:drop-shadow(0 6px 14px rgba(3,18,35,.35));opacity:1}
   #sideNav .sn-sub{display:none!important}
   #sideNav .sn-sub{font-size:11.5px;color:#7f95a3;padding:0 12px 6px}
   #sideNav .sn-cat{display:flex;justify-content:space-between;align-items:center;width:100%;font:inherit;font-size:12.5px;letter-spacing:.07em;text-transform:uppercase;color:#ffffff;
@@ -13781,7 +13786,7 @@ loadRemoteData().then(live => {
     #tasCo th:nth-child(2),#tasCo td:nth-child(2),#tasCo th:nth-child(4),#tasCo td:nth-child(4),#tasCo th:nth-child(7),#tasCo td:nth-child(7){display:none} }
   body.fab-hide #snBurger, body.fab-hide #gsFab{transform:translateY(-80px);opacity:0;pointer-events:none}
   #snBurger, #gsFab, #snLogo{transition:transform .2s ease, opacity .2s ease}
-  #snLogo{display:none;position:fixed;right:12px;top:calc(12px + env(safe-area-inset-top,0px));z-index:950;width:34px;height:34px;border-radius:8px;box-shadow:0 0 0 1px rgba(255,255,255,.14)}
+  #snLogo{display:none;position:fixed;right:12px;top:calc(12px + env(safe-area-inset-top,0px));z-index:950;width:38px;height:38px;filter:drop-shadow(0 3px 8px rgba(3,18,35,.35))}
   body.fab-hide #snLogo{transform:translateY(-80px);opacity:0}
   @media (max-width:900px){#snLogo{display:block}body.sn-open #snLogo{display:none}}
   #snBurger{display:none;position:fixed;left:10px;top:calc(10px + env(safe-area-inset-top,0px));z-index:950;padding:7px 12px;border-radius:8px;border:1px solid #2a4352;background:#0d1a24;color:#e7eef2;font-size:18px;cursor:pointer}
@@ -14958,6 +14963,7 @@ loadRemoteData().then(live => {
 #mktFind::placeholder{color:#c8d8e3}
 .verdict{background:linear-gradient(140deg,rgba(255,255,255,.14),rgba(255,255,255,.05))!important;border:1px solid rgba(255,255,255,.22)!important;border-left-width:3px!important;border-radius:16px!important;color:#e3edf3!important;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}
+#marketsView .delta-pos{color:#8be3b0!important}#marketsView .delta-neg{color:#ff9b7a!important}
 #supplyView .sb-chart{display:flex;flex-direction:column;gap:9px;margin:6px 0 10px}
 #supplyView .sb-r{display:grid;grid-template-columns:minmax(110px,190px) minmax(0,1fr) 78px 22px;align-items:center;gap:12px}
 #supplyView .sb-n{text-align:right;font-size:14px;color:#eef5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
