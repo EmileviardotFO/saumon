@@ -108,25 +108,38 @@ def aggregate(rows):
 
 
 def link_exporters(months):
-    """Union-find : exportateurs-mois relies quand ils partagent une reference produit (references propres a un seul exportateur dans le mois)."""
-    parent = {}
-    def find(a):
-        while parent.setdefault(a, a) != a: parent[a] = parent[parent[a]]; a = parent[a]
-        return a
-    owner = collections.defaultdict(set)
-    for ym, ex in months.items():
-        cnt = collections.Counter(r for e in ex.values() for r in e['refs'])
-        for eid, e in ex.items():
-            find((ym, eid))
-            for ref in e['refs']:
-                if cnt[ref] == 1: owner[ref].add((ym, eid))     # reference utilisee par un seul exportateur ce mois-la
-    for ref, nodes in owner.items():
-        nodes = sorted(nodes)
-        if len({n[0] for n in nodes}) != len(nodes): continue  # meme reference chez deux exportateurs d'un meme mois : ambigue
-        for n in nodes[1:]: parent[find(n)] = find(nodes[0])
+    """Chainage mois apres mois (pas de fusion transitive) : chaque exportateur-mois est rattache a la chaine la plus
+    ressemblante des deux mois precedents — references produits communes surtout, puis commune, especes/formes,
+    destinations, regions d'origine et volume. Une chaine = un exportateur suivi dans le temps."""
+    import math
+    def norm(c):
+        t = sum(c.values()) or 1; return {k: v / t for k, v in c.items()}
+    def cos(a, b):
+        n = sum(a.get(k, 0) * b.get(k, 0) for k in set(a) | set(b)); da = math.sqrt(sum(v * v for v in a.values())); db = math.sqrt(sum(v * v for v in b.values()))
+        return n / (da * db) if da and db else 0
+    F = {ym: {k: {'refs': {r for r in e['refs'] if len(r) >= 4}, 'kg': e['kg'], 'sp': norm(e['sp']), 'dest': norm(e['dest']), 'reg': norm(e['reg']),
+                  'com': max(e['comuna'], key=e['comuna'].get) if e['comuna'] else ''} for k, e in ex.items() if e['kg'] > 0} for ym, ex in months.items()}
+    def score(a, b):
+        jr = len(a['refs'] & b['refs']) / len(a['refs'] | b['refs']) if a['refs'] and b['refs'] else 0
+        s = 4 * jr + (0.6 if a['com'] == b['com'] else 0) + cos(a['sp'], b['sp']) + cos(a['dest'], b['dest']) + 0.5 * cos(a['reg'], b['reg']) \
+            - 0.35 * abs(math.log(max(a['kg'], 1) / max(b['kg'], 1)))
+        return s, jr
+    order = sorted(F); chain, last, nid = {}, {}, 0
+    for i, ym in enumerate(order):
+        active = [c for c, (lm, _) in last.items() if order.index(lm) >= i - 2]
+        cands = []
+        for eid, fe in F[ym].items():
+            for c in active:
+                lm, le = last[c]; s, jr = score(fe, F[lm][le])
+                if jr >= 0.15 or (s >= 3.3 and not (fe['refs'] and F[lm][le]['refs'] and jr == 0)): cands.append((s + 2 * jr, eid, c))
+        ue, uc = set(), set()
+        for s, eid, c in sorted(cands, reverse=True):
+            if eid in ue or c in uc: continue
+            chain[(ym, eid)] = c; last[c] = (ym, eid); ue.add(eid); uc.add(c)
+        for eid in F[ym]:
+            if eid not in ue: nid += 1; chain[(ym, eid)] = f'n{nid}'; last[f'n{nid}'] = (ym, eid)
     groups = collections.defaultdict(list)
-    for ym, ex in months.items():
-        for eid in ex: groups[find((ym, eid))].append((ym, eid))
+    for node, c in chain.items(): groups[c].append(node)
     return groups
 
 
@@ -167,7 +180,7 @@ def main():
     out = {'meta': {'built': time.strftime('%Y-%m-%d'), 'last': max(res) if res else None, 'first': min(res) if res else None,
                     'source': 'Servicio Nacional de Aduanas, export declarations (DUS), open data on datos.gob.cl — anonymised: no exporter name',
                     'url': 'https://datos.gob.cl/organization/servicio_nacional_de_aduanas', 'unit': 'tonnes net product weight, thousand USD FOB',
-                    'linking': 'exporters renumbered every month; linked across months by their own product reference codes',
+                    'linking': 'exporters are renumbered every month; each one is chained from month to month by its own product reference codes, then by its town, species and forms, destinations, regions of origin and size. A chain may break when an exporter changes its references: read it as a likely continuity, not a certainty.',
                     'groups': len(G), 'linked_share_pct': round(100 * sum(g['t'] for g in G if len(g['months']) > 1) / max(1, sum(g['t'] for g in G)), 1)},
            'months': dict(sorted(months_agg.items())), 'mods': {str(k): v['mod'] for k, v in res.items()}, 'exporters': [g for g in G if g['t'] >= 50],
            '_exporters_raw': {str(ym): {k: {**v, 'refs': dict(v['refs'].most_common(30))} for k, v in ex.items()} for ym, ex in months_ex.items()}}
