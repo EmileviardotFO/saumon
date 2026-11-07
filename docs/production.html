@@ -5770,11 +5770,16 @@ function renderDisease() {
           { l: `Harvest, Jan–${MON[lm - 1]}`, v: f0(S(Y, 'harvest_t')) + ' t', d: `${sg(pct(S(Y, 'harvest_t'), S(Y - 1, 'harvest_t')))} on a year earlier`, k: 'good' },
           { l: `${MONTHS_FR[lm - 1]} alone`, v: f0(c[lk].mortality_t) + ' t', d: `${c[lk - 100] ? f0(c[lk - 100].mortality_t) : '—'} t a year earlier`, k: c[lk - 100] && c[lk].mortality_t > c[lk - 100].mortality_t ? 'bad' : 'good' }] }; } }
   { const F = ((DZ.ev || {}).scotland_fhi || {}).monthly || {}, ks = Object.keys(F).sort(), lk = ks[ks.length - 1];
-    if (lk) { const Y = +lk.slice(0, 4), lm = +lk.slice(5), n = y => ks.filter(k => +k.slice(0, 4) === y && +k.slice(5) <= lm).reduce((a, k) => a + F[k].reports, 0);
-      const gill = y => { let g = 0, t = 0; ks.filter(k => +k.slice(0, 4) === y && +k.slice(5) <= lm).forEach(k => Object.entries(F[k].causes || {}).forEach(([c, v]) => { t += v; if (c === 'gill') g += v; })); return t ? 100 * g / t : null; };
+    if (lk) { const Y = +lk.slice(0, 4), lm = +lk.slice(5);
+      // comparaison a date egale : les declarations s'arretent souvent en milieu de mois (14 octobre 2026), on compare au meme jour de l'annee precedente
+      const RP = (((DZ.ev || {}).scotland_fhi || {}).reports || []), LD = RP.reduce((a, r) => r.date > a ? r.date : a, ''), md = LD.slice(5);
+      const sel = y => RP.filter(r => r.date.startsWith(String(y)) && r.date.slice(5) <= md), n = y => sel(y).length;
+      const gill = y => { let g = 0, t = 0; sel(y).forEach(r => (r.causes || ['unspecified']).forEach(c => { t++; if (c === 'gill') g++; })); return t ? 100 * g / t : null; };
+      const dl = LD ? `${+LD.slice(8)} ${MONTHS_FR[+LD.slice(5, 7) - 1].slice(0, 3)}` : MON[lm - 1];
       SF.GB = { lab: 'Mortality reports to the Fish Health Inspectorate each month', years: [Y - 2, Y - 1, Y], val: (y, m) => { const q = F[`${y}-${String(m).padStart(2, '0')}`]; return q ? q.reports : null; }, fmt: v => f0(v),
-        kpis: [{ l: `Reports, Jan–${MON[lm - 1]} ${Y}`, v: f0(n(Y)), d: `${f0(n(Y - 1))} a year earlier (${sg(pct(n(Y), n(Y - 1)))})`, k: n(Y) <= n(Y - 1) ? 'good' : 'bad' },
-          { l: 'Gills among the causes named', v: f1(gill(Y)) + ' %', d: `${f1(gill(Y - 1))} % a year earlier`, k: gill(Y) > gill(Y - 1) ? 'bad' : 'good' }] }; } }
+        kpis: [{ l: `Mortality reports to the FHI, 1 Jan – ${dl} ${Y}`, v: f0(n(Y)), d: `${f0(n(Y - 1))} by the same date of ${Y - 1} (${sg(pct(n(Y), n(Y - 1)))}). One report = one farm whose mortality went above the agreed threshold; it counts incidents, not fish.`, k: n(Y) <= n(Y - 1) ? 'good' : 'bad' },
+          { l: 'Gills among the causes named', v: f1(gill(Y)) + ' %', d: `${f1(gill(Y - 1))} % by the same date of ${Y - 1}`, k: gill(Y) > gill(Y - 1) ? 'bad' : 'good' }],
+        partial: LD && +LD.slice(8) < 25 ? { y: Y, m: +LD.slice(5, 7), to: LD } : null }; } }
   { const C = ((DZ.ca && DZ.ca.carcass) || {}).months || [], c = {}; C.forEach(r => c[r.m] = r); const ks = Object.keys(c).map(Number).sort((a, b) => a - b), lk = ks[ks.length - 1];
     if (lk) { const Y = Math.floor(lk / 100), lm = lk % 100, cum = y => 100 * (1 - ks.filter(k => Math.floor(k / 100) === y && k % 100 <= lm).reduce((a, k) => a * (1 - (c[k].mort || 0) / 100), 1));
       const I = ((DZ.cat || {}).isa || []).filter(r => /new brunswick/i.test(r.prov)), mo = d => MONTHS_FR.findIndex(m => m.toLowerCase().startsWith(String(d).slice(0, 3).toLowerCase())) + 1;
@@ -5938,7 +5943,8 @@ function renderDisease() {
       const hits = (B.events || []).map(x => ({ x, sp: span(x.d) })).filter(o => o.sp && o.sp[0] === y && m >= o.sp[1] && m <= o.sp[2]).sort((a, b) => (a.sp[2] - a.sp[1]) - (b.sp[2] - b.sp[1]));
       // d'abord les evenements de ce mois ou de ce trimestre (hors simples publications), puis ceux de l'annee entiere
       const cause = hits.filter(o => o.x.k !== 'info'), exact = cause.filter(o => o.sp[2] - o.sp[1] < 11), why = exact.length ? exact : cause.length ? cause.slice(0, 2) : hits.slice(0, 1);
-      hov.innerHTML = `<b>${MONTHS_FR[m - 1]} ${y}: ${sf.fmt(v)}</b>${pv !== null && pv !== undefined && isFinite(pv) && pv ? ` <span style="color:${v > pv ? '#ff9b7a' : '#8be3b0'}">(${v >= pv ? '+' : ''}${Math.round(100 * (v / pv - 1))} % on ${MONTHS_FR[m - 1]} ${y - 1})</span>` : ''}<br>` +
+      const part = sf.partial && sf.partial.y === y && sf.partial.m === m ? ` <span style="color:#ffd28a">(month not complete: reports up to ${sf.partial.to})</span>` : '';
+      hov.innerHTML = `<b>${MONTHS_FR[m - 1]} ${y}: ${sf.fmt(v)}</b>${part}${!part && pv !== null && pv !== undefined && isFinite(pv) && pv ? ` <span style="color:${v > pv ? '#ff9b7a' : '#8be3b0'}">(${v >= pv ? '+' : ''}${Math.round(100 * (v / pv - 1))} % on ${MONTHS_FR[m - 1]} ${y - 1})</span>` : ''}<br>` +
         (why.length ? why.slice(0, 3).map(o => `<span style="color:${KC[o.x.k] || '#d6e3ea'}">●</span> ${e(o.x.t)}`).join('<br>') : '') +
         (extra(y, m) ? `${why.length ? '<br>' : ''}${extra(y, m)}` : '') + (!why.length && !extra(y, m) ? '<span style="color:var(--muted)">No event recorded for this month in our sources.</span>' : ''); }); }
   // interactions
