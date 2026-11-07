@@ -1,0 +1,130 @@
+{
+  "meta": {
+    "written": "2026-11-07",
+    "unit_note": "Volumes in thousand tonnes gutted weight (kt GWT) unless stated. 2025 volumes by region: Kontali via Mowi's Q4 2025 presentation (11 Feb 2026). Recent changes: Kontali via Mowi's Q3 2026 report (4 Nov 2026).",
+    "sources": [
+      {"t": "Mowi Q4 2025 presentation — industry supply 2025 and 2026E by region (11 Feb 2026)", "u": "https://mowi.com/wp-content/uploads/2025/05/Mowi_Q4_2025_Presentation.pdf"},
+      {"t": "Mowi Q3 2026 report — supply by region in Q3 2026 and outlook (4 Nov 2026)", "u": "https://ml-eu.globenewswire.com/Resource/Download/fae3a302-ecb6-4668-8baf-51e06eaeef94"},
+      {"t": "SEB raises salmon price forecasts as global supply outlook tightens (SalmonBusiness, 28 Oct 2026)", "u": "https://www.salmonbusiness.com/seb-raises-salmon-price-forecasts-as-global-supply-outlook-tightens/"},
+      {"t": "Bakkafrost Q3 2026 report — guidance 2026-2027 and market outlook (2 Nov 2026)", "u": "https://mfn.se/ob/a/bakkafrost/bakka-strong-faroese-performance-progress-in-scotland-and-tight-market-ahead-41d40cf4.iframe"}
+    ]
+  },
+  "world": {
+    "v2025": 2841,
+    "y2026": "about +4 %",
+    "y2026_note": "Kontali's estimate in November (Mowi Q3 report); it was +1 % in February. Q1 2026 alone was +14 %, Q3 +4.8 %, and Q4 is expected at about −3 %.",
+    "y2027": "0 to +1 %",
+    "y2027_note": "Kontali (via Mowi, 4 Nov 2026): around +1 %. SEB (28 Oct 2026): −1 %. Bakkafrost (2 Nov 2026): first half flat, second half about +2 %.",
+    "summary": "After a very strong 2026 — +4 % with a record first quarter — the world will have almost no more farmed salmon in 2027. Norway, by far the largest producer, has hit its legal biomass ceilings; Chile enters 2027 with 7 % less fish in the sea and an extraordinary El Niño; Canada's British Columbia is winding down towards its 2029 ban. The few gains come from Scotland's recovery, Australia and Iceland's ups and downs. With demand still growing (China especially), a flat supply means a tight market.",
+    "risks": [
+      {"k": "Climate", "t": "El Niño: Peru's ENFEN expects an extraordinary coastal El Niño to last until autumn 2027. For salmon it means warmer water and a higher risk of harmful algal blooms in Chile (an eight-month algae emergency was declared in November 2026), and dearer fishmeal and fish oil for feed everywhere. Mowi calls it the main downside risk to 2027 volumes."},
+      {"k": "Regulation", "t": "Norway: the government proposes a 6 % capacity cut in 'red' production zones and to replace the traffic-light system with tradable sea lice quotas or a lice tax; the opposition and the industry push back. The price of new capacity rises to NOK 270,000 per tonne. None of this lowers 2027 volumes much, but it caps growth for years."},
+      {"k": "Regulation", "t": "British Columbia: open net-pen salmon farming must end by 30 June 2029; farms are not being restocked, so BC volumes fall from 2027–2028. The ban is being challenged (a 'national security' test)."},
+      {"k": "Trade", "t": "United States tariffs reshape who sells where; Chilean salmon is reported to avoid the 12.5 % US tariff. China's fast-growing demand could pull fish away from other markets as supply stalls in 2027 (Undercurrent News, 4 Nov 2026)."},
+      {"k": "Biology", "t": "Biology decides every year: sea lice, gill disease, algae and jellyfish. 2026 was unusually good in Norway and the Faroes, poor in Scotland and in parts of Chile and Tasmania. A normal year in Norway would mean less fish than 2026's pace."}
+    ]
+  },
+  "basins": [
+    {
+      "id": "NO", "name": "Norway", "tab": "outlook", "v2025": 1534, "share": 54,
+      "dir": "flat", "y2027": "0 to +2 %",
+      "y2026": "+5.2 % over the last 12 months, +8.8 % in Q3 2026 (Kontali). Mowi raised its 2026 harvest guidance to 620,000 t.",
+      "oneliner": "Volume cannot grow much — farmers are at their legal biomass ceiling — but the fish are getting bigger: expect a flat year with more large salmon (5 kg+) in 2027.",
+      "drivers": [
+        {"k": "Ceiling", "t": "Norwegian farmers reached their maximum allowed biomass (MAB) in Q3 2026 (Kontali). New capacity is scarce and expensive (NOK 270,000 per tonne from 2026; the latest auction of 7,755 t sold slowly). So total tonnage in 2027 can only move a little: Kontali says Norwegian growth will be 'limited'."},
+        {"k": "Bigger fish", "t": "Why more large fish? The generation being harvested (G2025) has 12 % fewer fish than a year earlier but they weigh 3.67 kg against 3.43; its stock of fish over 5 kg is 52 kt against 39 (+34 %). They grew 18 % faster (temperature-corrected) in cooler water and died about 40 % less often (0.85 % of the fish a month against 1.43 %). Fewer disease and lice crises means fewer emergency harvests of small fish. Under a biomass cap, farmers keep fewer fish longer and harvest them heavier."},
+        {"k": "Next generation", "t": "G2026, which takes over in spring 2027, has 2 % fewer fish but they are 7 % heavier and growing 9 % faster: our scenarios give spring–summer 2027 total harvest between −5 % and +7 %, and fish over 5 kg between −3 % and +23 % (central +15 %) against the same months of 2026 — no shortage of big fish in sight, possibly a wave of 6 kg+."},
+        {"k": "Companies", "t": "SalMar guides 347,000 t in 2026 and 348,000 t in 2027 (flat); Mowi (all countries) 620,000 t in 2026 and 630,000 t in 2027."},
+        {"k": "Politics", "t": "Proposed 6 % capacity cut in red zones, and a possible switch to lice quotas or a lice tax (a Menon report proposes a five-year phase-in). These weigh on 2028+ rather than 2027."}
+      ],
+      "watch": "Monthly biomass (Fiskeridirektoratet), sea temperature this winter, lice levels in spring, the government's decision on the 6 % cut."
+    },
+    {
+      "id": "CL", "name": "Chile", "tab": "chile", "v2025": 726, "share": 26,
+      "dir": "down", "y2027": "flat to down, with downside risk",
+      "y2026": "Record 2025 (1.15 Mt all species). Q3 2026 −2.1 %; Q4 2026 expected about −10 % (Mowi). Standing biomass −7 % year on year.",
+      "oneliner": "Chile starts 2027 with less fish in the water and an extraordinary El Niño: the risk is mostly on the downside.",
+      "drivers": [
+        {"k": "Biomass", "t": "Standing biomass is about 7 % lower than a year ago after biological problems forced earlier harvests and raised mortality (Mowi Q3 2026). Less fish at sea today means less to harvest in the first half of 2027. Arctic Securities expects Chilean supply to stay tight into 2027; SEB cut its Chilean production estimates."},
+        {"k": "Climate", "t": "El Niño: Peru's ENFEN expects an extraordinary event until autumn 2027. Warm water favours harmful algal blooms — the cause of Chile's large mortality events of 2016 and 2021. Chile declared an eight-month algae emergency in November 2026, and AquaChile warns a big bloom can overwhelm any prevention."},
+        {"k": "Regulation", "t": "Growth is blocked by permits: farming concessions are frozen in many areas, relocations are slow, and the industry asks the authorities to unlock stalled projects. Volume growth therefore comes from better survival, not new sites."},
+        {"k": "Trade", "t": "Chilean salmon reportedly avoids the 12.5 % US tariff, which keeps the US market (its first destination for fillets) open."},
+        {"k": "Companies", "t": "Mowi expects 88,000 t from Chile in 2027."}
+      ],
+      "watch": "Algal blooms (Sernapesca alerts) and sea temperature in Los Lagos and Aysén this summer; monthly biomass in the Salmon Outlook; smolt stocking by quarter (Subpesca resolutions in the Chile tab)."
+    },
+    {
+      "id": "GB", "name": "Scotland", "tab": "scotland", "v2025": 168, "share": 6,
+      "dir": "up", "y2027": "up — our reading +5 to +15 %, if biology allows",
+      "y2026": "Q3 2026 +3.2 % but −6.2 % over 12 months. Biology was poor: Mowi Scotland harvested 33 % less in Q3; Scottish Sea Farms cut its 2026 forecast from 43,000 to 40,000 t.",
+      "oneliner": "Scotland should recover in 2027 — there is 9 % more fish in its pens — but it has disappointed several years in a row.",
+      "drivers": [
+        {"k": "Biomass", "t": "Standing biomass is about 9 % higher than a year ago, 'a basis for some harvest growth in the coming quarters' (Mowi Q3 2026)."},
+        {"k": "Companies", "t": "Bakkafrost Scotland expects about 28,000 t in 2027 against 20,000 t in 2026 (+40 %), but stops buying smolts from outside after biological setbacks. Scottish Sea Farms: 40,000 t in 2026."},
+        {"k": "Biology", "t": "Mortality from gill disease, jellyfish and treatments is Scotland's recurring problem; 2025 and 2026 harvests fell short of plans."},
+        {"k": "Regulation", "t": "In November 2026 farmers won their appeal against SEPA's tougher sea lice licence conditions, which removes a constraint for now; wild-salmon campaigners ask ministers to act."}
+      ],
+      "watch": "Monthly fish health reports (FHI), company quarterly harvests, the government's response to the SEPA ruling."
+    },
+    {
+      "id": "FO", "name": "Faroe Islands", "tab": "faroe", "v2025": 116, "share": 4,
+      "dir": "flat", "y2027": "about 0 %",
+      "y2026": "+22.5 % over 12 months but −5 % in Q3 2026. Bakkafrost raised its Faroese 2026 harvest to 97,000 t (from 92,000).",
+      "oneliner": "A stable, healthy basin: the leading farmer plans the same volume in 2027 as in 2026.",
+      "drivers": [
+        {"k": "Companies", "t": "Bakkafrost (most of Faroese salmon) guides 97,000 t in the Faroes in both 2026 and 2027, with 20.7 million smolts in 2026 and 21.0 million in 2027, all of about 440 g."},
+        {"k": "Biology", "t": "Bakkafrost's mortality fell to 4.3 % in 2025, its lowest since at least 2016, and sea lice stay low (Bakkafrost farm data). Large smolts shorten the time at sea."},
+        {"k": "Ceiling", "t": "Licences and fjord capacity are fixed by law, so the Faroes grow by better biology and bigger smolts, not by more sites."}
+      ],
+      "watch": "Bakkafrost's monthly harvest in its quarterly updates and farm-by-farm data; any disease alert (ISA)."
+    },
+    {
+      "id": "CA", "name": "Canada", "tab": "canada", "v2025": 126, "share": 4, "v_note": "North America (Canada and a small US volume)",
+      "dir": "flat", "y2027": "about 0 %, then down",
+      "y2026": "North America −15.2 % in Q3 2026 but +7.6 % over 12 months. Canadian exports January–September: British Columbia +40 %, Atlantic provinces −9 % (Statistics Canada).",
+      "oneliner": "British Columbia had a big 2026 and should hold in 2027, before its 2029 ban bites; the Atlantic is under pressure from ISA.",
+      "drivers": [
+        {"k": "British Columbia", "t": "BC exported 40 % more in January–September 2026. The cycle of every BC farm (smolts in, harvest out) points to about +3 % in 2027 (±13 % on past years); Mowi guides 23,000 t from BC in 2027, the same as in 2026. After that, volumes fall: open net-pen farming must end on 30 June 2029, and farms are not being restocked."},
+        {"k": "Atlantic", "t": "New Brunswick, Nova Scotia and Newfoundland exported 9 % less in January–September. Infectious salmon anaemia (ISA) was confirmed on 14 sites in New Brunswick in 2026 (10 in 2025): infected sites are harvested early or emptied, which adds fish now and removes it later."},
+        {"k": "Companies", "t": "Mowi is selling its Atlantic farms (Mowi Canada East) to Cooke, closing expected at the end of 2026. Cermaq bought Grieg's BC and Newfoundland farms in 2025."},
+        {"k": "Politics", "t": "The BC ban is being tested on national security grounds; a reversal would change the outlook from 2028."}
+      ],
+      "watch": "Monthly exports by province (Canada tab), BC farm cycles and smolt transfers, ISA confirmations (CFIA)."
+    },
+    {
+      "id": "AU", "name": "Australia (Tasmania)", "tab": "australia", "v2025": null, "v_local": "74 kt in 2025/26 (Tasmanian production, NRE)", "share": null,
+      "dir": "up", "y2027": "up — our reading 0 to +10 %, depending on mortality",
+      "y2026": "Q3 2026 +10 %, +7.7 % over 12 months (Kontali). Tasmanian production 74,200 t in 2025/26 against 68,000 t in 2024/25 (+9 %).",
+      "oneliner": "Tasmania loses a lot of fish to disease in summer; if mortality keeps falling, volumes could rise by up to about 10,000 t.",
+      "drivers": [
+        {"k": "Mortality", "t": "Tasmanian farms disposed of about 20,100 t of dead fish in 2025 (EPA Tasmania), more than a quarter of what they harvested, after a bacterial outbreak (Piscirickettsia) in the D'Entrecasteaux Channel in early 2025. January–September 2026: 14,900 t, 16 % less than a year earlier."},
+        {"k": "Upside", "t": "Rough order of magnitude: if mortality fell back to half of the 2025 level, some 10,000 t more could reach harvest (less in practice, since dead fish are smaller than harvested ones). The summer of 2027 (January–March) is the test."},
+        {"k": "Politics", "t": "Macquarie Harbour farms (endangered Maugean skate) remain politically exposed; the federal government moved in 2025 to protect the industry there, and Tasmanian state politics weigh on expansion."}
+      ],
+      "watch": "Monthly mortality disposal (EPA, Australia tab) in January–March 2027; company results of Tassal and Huon."
+    },
+    {
+      "id": "IS", "name": "Iceland", "tab": "iceland", "v2025": null, "v_local": "55 kt harvested in 2025 (MAST farm reports)", "share": null,
+      "dir": "down", "y2027": "about −5 to −15 % after a record 2026",
+      "y2026": "January–September 2026: 51,200 t harvested against 35,200 t a year earlier (+46 %) — a record year.",
+      "oneliner": "After a record 2026 Iceland has fewer big fish in the sea: 2027 should be lower, before new licences and land-based farms add volume later.",
+      "drivers": [
+        {"k": "Fish at sea", "t": "At the end of September 2026, fish over 4 kg weigh 13,800 t against 19,800 t a year earlier (−30 %), and fish over 3 kg 24,200 t against 29,600 t (−18 %): the next six months should bring about 34,000 t against 39,300 t a year earlier (−12 %, ±29 %)."},
+        {"k": "Simulation", "t": "Our site-by-site simulation (growth curve, harvest weights, Icelandic mortality) gives about 60,000 t for 2027 in the central case, 56,000–60,000 t across scenarios, against about 64,000 t in 2026 (actual to September plus projection). The simulation has run high in past tests: read the direction more than the level."},
+        {"k": "Companies", "t": "Icelandic Salmon (Arnarlax) returned to profit in Q3 on higher volumes; Arctic Fish (Mowi) harvested less this summer. Land-based farms on the south-west coast are adding volume in the coming years."},
+        {"k": "Regulation", "t": "Sea-farming licences are capped by fjord carrying capacity and escape rules; growth comes mostly from land-based farming."}
+      ],
+      "watch": "Monthly MAST site reports (Iceland tab): stock of fish over 4 kg, smolts stocked, harvest per quarter."
+    }
+  ],
+  "glossary": [
+    ["GWT / WFE", "Gutted weight (fish bled and gutted, head on) / whole-fish equivalent. 1 kg gutted ≈ 1.12 kg live (round) weight."],
+    ["MAB", "Maximum allowed biomass: the legal ceiling on the tonnes of fish a Norwegian farmer may have at sea at any time."],
+    ["Smolt", "Young salmon moved from freshwater hatcheries to sea pens; harvested 12–24 months later."],
+    ["Generation (G2025…)", "All the fish put to sea in the same year; in Norway one generation is harvested while the next grows."],
+    ["Standing biomass", "Tonnes of live fish in the sea at a given date: today's biomass is next months' harvest."],
+    ["El Niño", "Warming of the eastern Pacific every few years; raises sea temperatures and algal bloom risks in Chile and cuts Peru's anchovy catch (feed)."],
+    ["ISA", "Infectious salmon anaemia, a virus disease; infected farms must be emptied."],
+    ["Traffic-light system", "Norway's rule since 2017: production zones rated green, yellow or red by sea lice impact on wild salmon; red zones must cut capacity, green may grow."]
+  ]
+}

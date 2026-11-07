@@ -469,6 +469,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
   <div class="view-toggle" id="viewToggle">
     <div class="vt-row"><span class="vt-lab">News<small>weekly digest</small></span><div class="vt-btns">
       <button data-v="news" class="active">This week</button>
+      <button data-v="supply">Global supply 2027</button>
     </div></div>
     <div class="vt-row"><span class="vt-lab">Norway<small>production &amp; stock</small></span><div class="vt-btns">
       <button data-v="summary">Summary</button>
@@ -1170,6 +1171,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div style="overflow-x:auto"><table class="sig-table" id="scFlags"></table></div>
   </div>
 
+  <div class="panel" id="supplyView" style="flex:1; min-width:0; max-width:1400px; display:none;"><div id="supRoot">Loading…</div></div>
   <div class="panel" id="newsView" style="flex:1; min-width:0; max-width:1400px; display:none;">
     <div class="sig-title">This week in salmon — news by basin and company, and coming dates</div>
     <style>#newsView a{color:var(--ink);text-decoration:underline;text-decoration-color:rgba(160,180,195,.55);text-underline-offset:2px}
@@ -6540,17 +6542,18 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     document.getElementById('isView').style.display = currentView === 'iceland' ? 'block' : 'none';
     document.getElementById('upView').style.display = currentView === 'usaprices' ? 'block' : 'none';
     document.getElementById('newsView').style.display = currentView === 'news' ? 'block' : 'none';
+    document.getElementById('supplyView').style.display = currentView === 'supply' ? 'block' : 'none';
     document.getElementById('coprodView').style.display = currentView === 'coprod' ? 'block' : 'none';
     document.getElementById('feedView').style.display = currentView === 'feed' ? 'block' : 'none';
     document.getElementById('generationsView').style.display = currentView === 'generations' ? 'block' : 'none';
     document.getElementById('genmapView').style.display = currentView === 'genmap' ? 'block' : 'none';
     document.getElementById('genyoyView').style.display = currentView === 'genyoy' ? 'block' : 'none';
     // The year / period selectors do not apply to the weekly fish-health view.
-    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'usaprices' || currentView === 'news' || currentView === 'coprod' || currentView === 'feed' || currentView === 'genyoy' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
+    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'usaprices' || currentView === 'news' || currentView === 'supply' || currentView === 'coprod' || currentView === 'feed' || currentView === 'genyoy' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
     // La carte des zones ne sert qu'aux vues qui raisonnent par PO. Les onglets
     // Markets et Calibre sont nationaux, elle n'y afficherait rien d'utile.
     const mw = document.querySelector('.panel.mapwrap');
-    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'usaprices' || currentView === 'news' || currentView === 'coprod' || currentView === 'feed' || currentView === 'genyoy' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
+    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'usaprices' || currentView === 'news' || currentView === 'supply' || currentView === 'coprod' || currentView === 'feed' || currentView === 'genyoy' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
     document.getElementById('poFilterField').style.display = (currentView === 'global' || currentView === 'multi' || currentView === 'outlook') ? 'flex' : 'none';
     document.getElementById('yearField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'none' : 'flex';
     document.getElementById('yearRangeField').style.display = (currentView === 'multi' || currentView === 'markets') ? 'flex' : 'none';
@@ -6584,6 +6587,7 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     else if (currentView === 'feed') { renderFeed(); }
     else if (currentView === 'usaprices') { renderUsaPrices(); }
     else if (currentView === 'news') { renderNews(); }
+    else if (currentView === 'supply') { renderSupply(); }
     else if (currentView === 'coprod') { renderCoprod(); }
     else if (currentView === 'generations') { renderGenerations(); }
     else if (currentView === 'genmap') { renderGenMap(); renderBigFish(); }
@@ -12938,7 +12942,7 @@ loadRemoteData().then(live => {
 <script>
 // Menu lateral : les cinq rubriques, construit a partir des boutons existants (qui restent la mecanique d'affichage des onglets)
 (function () {
-  const CATS = [['Front page', ['news', 'summary']],
+  const CATS = [['Front page', ['news', 'supply', 'summary']],
     ['Norway — production', ['global', 'po', 'multi', 'outlook', 'generations', 'genmap', 'genyoy', 'timeatsea', 'health', 'register']],
     ['Other basins', ['scotland', 'faroe', 'iceland', 'chile', 'canada', 'australia']],
     ['Prices & products', ['prices', 'calibre', 'products', 'coprod', 'feed']],
@@ -13692,6 +13696,98 @@ loadRemoteData().then(live => {
     out.innerHTML = html || '<div class="gs-hint">Nothing found.</div>';
   }
 })();
+</script>
+
+<style>
+#supplyView .sup-hero{padding:4px 0 10px}
+#supplyView .sup-hero h2{margin:0 0 6px;font-size:22px;color:#e7eef2}
+#supplyView .sup-lead{font-size:14.5px;line-height:1.55;color:#cfdde4;max-width:980px}
+#supplyView .sup-sec{margin:26px 0 10px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#4fc3f7;font-weight:700}
+#supplyView .sup-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px}
+#supplyView .sup-b{background:#10202c;border:1px solid #223642;border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+#supplyView .sup-b h3{margin:0;font-size:17px;display:flex;align-items:center;gap:10px;color:#e7eef2}
+#supplyView .sup-arrow{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;font-size:19px;font-weight:700;flex:none}
+#supplyView .sup-up{background:rgba(126,217,143,.15);color:#7ed98f;border:1px solid #7ed98f}
+#supplyView .sup-flat{background:rgba(143,164,176,.15);color:#cfdde4;border:1px solid #8fa4b0}
+#supplyView .sup-down{background:rgba(255,138,101,.15);color:#ff8a65;border:1px solid #ff8a65}
+#supplyView .sup-y{font-size:13px;color:#a9bfcc}
+#supplyView .sup-one{font-size:14.5px;line-height:1.5;color:#e7eef2}
+#supplyView .sup-kv{font-size:12.5px;color:#a9bfcc;line-height:1.5}
+#supplyView details{border-top:1px solid #223642;padding-top:6px}
+#supplyView summary{cursor:pointer;color:#4fc3f7;font-size:13px}
+#supplyView .sup-d{font-size:13px;line-height:1.5;color:#cfdde4;margin:6px 0}
+#supplyView .sup-d b{color:#ffb74d}
+#supplyView .sup-tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:9px;background:#1c3a4a;color:#cfdde4;margin-right:6px}
+#supplyView .sup-risk{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+#supplyView .sup-r{background:#0d1a24;border-left:3px solid #ffb74d;border-radius:6px;padding:10px 12px;font-size:13px;line-height:1.5;color:#cfdde4}
+#supplyView .sup-art{font-size:13px;line-height:1.45;padding:6px 0;border-bottom:1px solid #1a2c38}
+#supplyView .sup-art a{color:#e7eef2;text-decoration:none}
+#supplyView .sup-art a:hover{color:#4fc3f7}
+#supplyView .sup-art small{color:#8fa4b0;margin-left:6px}
+#supplyView .sup-go{color:#4fc3f7;cursor:pointer;font-size:13px}
+@media (max-width:700px){#supplyView .sup-grid,#supplyView .sup-risk{grid-template-columns:1fr} #supplyView .sup-hero h2{font-size:19px} #supplyView .sup-lead{font-size:14px}}
+</style>
+<script>
+// ---- Global supply : synthese par bassin et projections 2027 (data/global_supply.json, ecrit a la main et date ; articles relus de la presse)
+let SUP = null, SUP_LOADING = false, SUP_NEWS = null;
+function renderSupply() {
+  const root = document.getElementById('supRoot'); if (!root) return;
+  const get = f => fetch(DATA_URL.replace('data.json', f), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
+  if (!SUP) { if (!SUP_LOADING) { SUP_LOADING = true; Promise.all(['global_supply.json', 'news.json', 'news_archive.json', 'stories.json'].map(get)).then(([g, n, a, st]) => {
+      SUP = g || { basins: [] }; SUP_NEWS = { n, a, st }; SUP_LOADING = false; if (currentView === 'supply') renderSupply(); }); }
+    root.innerHTML = 'Loading…'; return; }
+  const e = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), f0 = v => v === null || v === undefined ? '—' : Math.round(v).toLocaleString('en-US');
+  const W = SUP.world || {}, B = SUP.basins || [], AR = { up: ['sup-up', '↑', 'Up'], flat: ['sup-flat', '→', 'Flat'], down: ['sup-down', '↓', 'Down'] };
+  const card = (lab, big, sub, c) => `<div class="pr-card" style="cursor:default"><div class="nm"><i style="background:${c}"></i>${lab}</div><div class="big">${big}</div><div class="ln">${sub}</div></div>`;
+  // ---- graphique : volume 2025 par bassin et sens attendu pour 2027
+  const rows = B.filter(b => b.v2025).map(b => [b.name === 'Canada' ? 'North America' : b.name, b.v2025, b.dir, b.id]).concat([['Other Europe (Iceland, Ireland)', 63, 'flat', 'IS'], ['Other (incl. Australia)', 107, 'up', 'AU']]);
+  const mx = Math.max(...rows.map(r => r[1])), Wd = 1000, rh = 38, H = rows.length * rh + 30, L = 230;
+  const col = d => d === 'up' ? '#7ed98f' : d === 'down' ? '#ff8a65' : '#8fa4b0';
+  let g = '';
+  rows.forEach((r, i) => { const y = 10 + i * rh, w = Math.max(4, (Wd - L - 150) * r[1] / mx);
+    g += `<text x="${L - 10}" y="${y + 21}" text-anchor="end" fill="#e7eef2" font-size="15">${e(r[0])}</text>` +
+      `<rect x="${L}" y="${y + 5}" width="${w.toFixed(1)}" height="24" rx="4" fill="#4fc3f7" fill-opacity=".75"><title>${e(r[0])}: ${f0(r[1])} kt gutted weight in 2025</title></rect>` +
+      `<text x="${L + w + 8}" y="${y + 22}" fill="#cfdde4" font-size="14">${f0(r[1])} kt</text>` +
+      `<text x="${L + w + 78}" y="${y + 23}" fill="${col(r[2])}" font-size="18" font-weight="bold">${AR[r[2]][1]}</text>`; });
+  const chart = `<svg viewBox="0 0 ${Wd} ${H}" style="width:100%;height:auto;display:block">${g}</svg>` +
+    `<div class="sig-sub">Bars: 2025 supply in thousand tonnes gutted weight (Kontali, via Mowi). Arrow: direction expected for 2027 (<b style="color:#7ed98f">↑ up</b>, <b>→ flat</b>, <b style="color:#ff8a65">↓ down</b>), from the basin summaries below.</div>`;
+  // ---- articles relatifs aux projections, par bassin
+  const KW = /2027|guidance|forecast|outlook|supply|harvest (volume|guidance|forecast|estimate|record|cut|down|up)|harvest|biomass|smolt|capacity|licen[cs]e|quota|\bban\b|tariff|mortalit|el ni[ñn]o|alga|bloom|\bISA\b|\bcut\b|growth|prognos|slaktevolum|cosecha|siembra|producci[óo]n|production|lice/i;
+  const SAL = /salmon|laks|salm[óo]n|lax|salmo|trout|aquacult|fish farm/i;
+  const N = SUP_NEWS || {}, seen = new Set(), A = [];
+  const add = (d, t, u, src, b, sum) => { if (!t || !d) return; const k = t.toLowerCase().replace(/\W+/g, ' ').slice(0, 70); if (seen.has(k)) return; seen.add(k);
+    const bs = [].concat(b || []).filter(Boolean); if (!KW.test(t + ' ' + (sum || ''))) return; if (bs.some(x => /FEED/.test(x)) && !SAL.test(t)) return; if ((!bs.length || bs.includes('global')) && !SAL.test(t + ' ' + (sum || ''))) return;
+    A.push({ d: String(d).slice(0, 10), t, u, src, b: bs.length ? bs : ['global'], sum }); };
+  ((N.st || {}).stories || []).forEach(s => { const a = s.arts || []; const best = a.find(x => x.access === 'free') || a[0] || {}; add(s.last || best.date, s.title, best.url, (best.source ? best.source + ' · ' : '') + `summary of ${a.length} article${a.length === 1 ? '' : 's'}`, s.basin, s.summary); });
+  ((N.a || {}).stories || []).forEach(s => { const a = s.a || []; const best = a.find(x => x.x === 'free') || a[0] || {}; add(s.z || s.f || (a[0] || {}).d, s.t, best.u, best.s, s.b, s.m); });
+  ((N.n || {}).items || []).forEach(i => add(i.date, i.title, i.link || i.url, i.source, i.basins, i.summary));
+  ((N.a || {}).headlines || []).forEach(h => add(h.d, h.t, h.u, h.s, h.b));
+  A.sort((a, b) => a.d < b.d ? 1 : -1);
+  const art = id => A.filter(a => a.b.includes(id));
+  const artHtml = L => L.slice(0, 40).map(a => `<div class="sup-art">${a.u ? `<a href="${e(a.u)}" target="_blank" rel="noopener">${e(a.t)}</a>` : e(a.t)}<small>${e(a.d)} · ${e(a.src || '')}</small></div>`).join('') || '<div class="sup-art" style="color:var(--muted)">No article yet.</div>';
+  // ---- page
+  const bcard = b => { const a = AR[b.dir] || AR.flat, na = art(b.id).length;
+    return `<div class="sup-b" id="sup-${b.id}"><h3><span class="sup-arrow ${a[0]}" title="${a[2]} in 2027">${a[1]}</span>${e(b.name)}</h3>` +
+      `<div class="sup-y"><b style="color:#e7eef2">2027: ${e(b.y2027)}</b>${b.v2025 ? ` · 2025: ${f0(b.v2025)} kt gutted${b.share ? `, ${b.share} % of world supply` : ''}` : b.v_local ? ` · ${e(b.v_local)}` : ''}${b.v_note ? ` <span style="color:var(--muted)">(${e(b.v_note)})</span>` : ''}</div>` +
+      `<div class="sup-one">${e(b.oneliner)}</div>` +
+      `<div class="sup-kv"><b>2026 so far:</b> ${e(b.y2026)}</div>` +
+      `<details><summary>Why — ${(b.drivers || []).length} reasons</summary>${(b.drivers || []).map(d => `<div class="sup-d"><span class="sup-tag">${e(d.k)}</span>${e(d.t)}</div>`).join('')}` +
+      (b.watch ? `<div class="sup-d"><span class="sup-tag" style="background:#3a2c12">To watch</span>${e(b.watch)}</div>` : '') + `</details>` +
+      `<div style="display:flex;gap:14px;flex-wrap:wrap"><span class="sup-go" onclick="gsGoTab('${b.tab}')">→ ${e(b.name.split(' (')[0])} tab</span>${na ? `<span class="sup-go" onclick="document.getElementById('supArt-${b.id}').open=true;document.getElementById('supArt-${b.id}').scrollIntoView({behavior:'smooth',block:'start'})">${na} related articles ↓</span>` : ''}</div></div>`; };
+  const ORDER = { up: 0, flat: 1, down: 2 };
+  root.innerHTML = `<div class="sup-hero"><h2>Global salmon supply — where volumes are heading in 2027</h2>` +
+    `<div class="sup-lead">${e(W.summary)}</div><div class="sig-sub" style="margin-top:6px">Written ${e((SUP.meta || {}).written)} from the dashboard's data and the latest company reports and analysts; the articles at the bottom update every day. ${e((SUP.meta || {}).unit_note || '')}</div></div>` +
+    `<div class="pr-cards">${card('World supply 2025', `${(W.v2025 / 1000).toFixed(2)} Mt`, 'gutted weight, all farming countries (Kontali)', '#4fc3f7')}` +
+      card('2026', e(W.y2026), e(W.y2026_note), '#81c784') + card('2027', e(W.y2027), e(W.y2027_note), '#ffb74d') +
+      card('Basins up / flat / down in 2027', `${B.filter(b => b.dir === 'up').length} · ${B.filter(b => b.dir === 'flat').length} · ${B.filter(b => b.dir === 'down').length}`, B.map(b => `${e(b.name.split(' (')[0])} ${AR[b.dir][1]}`).join(' · '), '#ce93d8') + `</div>` +
+    `<div class="sup-sec">Who produces the salmon, and where it is going</div>${chart}` +
+    `<div class="sup-sec">Basin by basin</div><div class="sup-grid">${[...B].sort((a, b) => (b.v2025 || 50) - (a.v2025 || 50)).map(bcard).join('')}</div>` +
+    `<div class="sup-sec">What could change the picture in 2027</div><div class="sup-risk">${(W.risks || []).map(r => `<div class="sup-r"><span class="sup-tag">${e(r.k)}</span>${e(r.t)}</div>`).join('')}</div>` +
+    `<div class="sup-sec">Articles on supply, volumes and regulation — by basin</div><div class="sig-sub">Every press article of the dashboard that talks about harvest, guidance, biomass, smolts, capacity, licences, tariffs, mortality or the 2027 outlook, newest first; unsorted for now.</div>` +
+    [...B.map(b => [b.id, b.name]), ['global', 'World and markets']].map(([id, nm]) => { const L = art(id); return `<details id="supArt-${id}" class="gs-card" style="margin:6px 0"><summary><b>${e(nm)}</b> — ${L.length} article${L.length === 1 ? '' : 's'}</summary>${artHtml(L)}</details>`; }).join('') +
+    `<div class="sup-sec">Words used on this page</div><table class="sig-table"><tbody>${(SUP.glossary || []).map(([k, v]) => `<tr><td class="name"><b>${e(k)}</b></td><td style="text-align:left;white-space:normal">${e(v)}</td></tr>`).join('')}</tbody></table>` +
+    `<div class="sup-sec">Sources</div>${((SUP.meta || {}).sources || []).map(x => `<div class="sup-art"><a href="${e(x.u)}" target="_blank" rel="noopener">${e(x.t)}</a></div>`).join('')}`;
+}
 </script>
 </body>
 </html>
