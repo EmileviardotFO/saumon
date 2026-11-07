@@ -1,8 +1,8 @@
 """Sonde : la cle Global Fishing Watch est-elle bien connectee ? N'affiche jamais sa valeur."""
 import json, os, requests
 
-sec = json.loads(os.environ.get('REPO_SECRETS_JSON') or '{}')
-print('Secrets du depot (noms seulement) :', sorted(k for k in sec if k != 'github_token'))
+sec = {k[2:]: v for k, v in os.environ.items() if k.startswith('S_') and v}
+print('Secrets GFW trouves (noms seulement) :', sorted(sec))
 cand = [k for k in sec if any(w in k.upper() for w in ('GFW', 'FISHING', 'GLOBAL'))]
 print('Candidats GFW :', cand)
 if not cand:

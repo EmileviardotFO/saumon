@@ -31,9 +31,20 @@ jobs:
           BW_CLIENT_ID: ${{ secrets.BW_CLIENT_ID }}
           BW_CLIENT_SECRET: ${{ secrets.BW_CLIENT_SECRET }}
           AISSTREAM_KEY: ${{ secrets.AISSTREAM_KEY || secrets.AISTREAM_KEY }}
-          # tous les secrets du depot (valeurs masquees dans les logs) : les sondes
-          # n'en affichent que les NOMS, pour retrouver une cle sans connaitre son nom
-          REPO_SECRETS_JSON: ${{ toJSON(secrets) }}
+          S_GFW_TOKEN: ${{ secrets.GFW_TOKEN }}
+          S_GFW_API_KEY: ${{ secrets.GFW_API_KEY }}
+          S_GFW_API_TOKEN: ${{ secrets.GFW_API_TOKEN }}
+          S_GFW_KEY: ${{ secrets.GFW_KEY }}
+          S_GFW_API: ${{ secrets.GFW_API }}
+          S_GFW: ${{ secrets.GFW }}
+          S_GLOBAL_FISHING_WATCH: ${{ secrets.GLOBAL_FISHING_WATCH }}
+          S_GLOBAL_FISHING_WATCH_TOKEN: ${{ secrets.GLOBAL_FISHING_WATCH_TOKEN }}
+          S_GLOBAL_FISHING_WATCH_API_KEY: ${{ secrets.GLOBAL_FISHING_WATCH_API_KEY }}
+          S_GLOBALFISHINGWATCH: ${{ secrets.GLOBALFISHINGWATCH }}
+          S_FISHING_WATCH_TOKEN: ${{ secrets.FISHING_WATCH_TOKEN }}
+          S_GFW_ACCESS_TOKEN: ${{ secrets.GFW_ACCESS_TOKEN }}
+          S_API_GFW: ${{ secrets.API_GFW }}
+          S_GFW_APIKEY: ${{ secrets.GFW_APIKEY }}
         run: |
           mkdir -p sonde_out
           python3 "scripts/sondes/${{ inputs.script }}" 2>&1 | tee sonde_out/log.txt
