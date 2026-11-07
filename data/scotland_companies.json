@@ -28,9 +28,25 @@
     "2026": 74000,
     "2027": 76000
    },
-   "notes": "Record first half 2026 harvested early to cut biomass before the summer risk, so little was left for Q3. Standing biomass end of September 2026 about 9 % above a year earlier. Incident-based mortality cost EUR 4.2 m in Q3 (EUR 2.9 m a year earlier).",
+   "notes": "Record first half 2026 harvested early to cut biomass before the summer risk, so little was left for Q3. Standing biomass end of September 2026 about 9 % above a year earlier. Incident-based mortality cost EUR 4.2 m in Q3 (EUR 2.9 m a year earlier). Q3 2026 operating EBIT EUR 19.6 m (EUR 1.69/kg; Q3 2025 EUR 26.8 m, 1.54/kg); seawater temperatures high; contract share 45 % (51 %).",
    "src": "Mowi Q3 2026 report (4 Nov 2026)",
-   "url": "https://www.globenewswire.com/news-release/2026/10/19/3382969/0/en/mowi-asa-ose-mowi-q3-2026-trading-update.html"
+   "url": "https://www.globenewswire.com/news-release/2026/10/19/3382969/0/en/mowi-asa-ose-mowi-q3-2026-trading-update.html",
+   "ebit_kg_eur": {
+    "2025Q3": 1.54,
+    "2026Q3": 1.69
+   },
+   "ebit_m_eur": {
+    "2025Q3": 26.8,
+    "2026Q3": 19.6
+   },
+   "incident_mortality_m_eur": {
+    "2025Q3": 2.9,
+    "2026Q3": 4.2
+   },
+   "contract_share_pct": {
+    "2025Q3": 51,
+    "2026Q3": 45
+   }
   },
   "Scottish Sea Farms": {
    "share_2025_pct": 19,
