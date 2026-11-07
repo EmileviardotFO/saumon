@@ -81,18 +81,72 @@ def read_month(url):
     return rows
 
 
-CAL = re.compile(r'(?<![\d])(\d{1,2}(?:[.,]\d)?)\s*(?:-|/|A|TO)\s*(\d{1,2}(?:[.,]\d)?)\s*(LBS?|LIBRAS?|KGS?|KILOS?|KG)\b')
+CAL = re.compile(r'(?<![\d])(\d{1,2}(?:[.,]\d)?)\s*(?:-|/|A|TO)\s*(\d{1,2}(?:[.,]\d)?)\s*(LBS?|LIBRAS?|K(?:GS?|ILOS?)?)\b')
+CALG = re.compile(r'(?<![\d.,])(\d{3,4})\s*(?:-|/|A|TO)\s*(\d{3,4})\s*(?:GRS?|GRAMOS|G)\b')
+LB_BINS = ['1-2', '2-3', '3-4', '4-5', '5-6', '6+']   # classes de filets en livres (milieu de la classe declaree)
+# producteur nomme dans la description (« AQUACHILE-F », « MULTI X S.A.-F » : F = fabricant) ; du plus precis au plus general
+PRODUCERS = [('AQUACHILE', 'AquaChile'), ('MULTI X', 'Multi X'), ('MULTIX', 'Multi X'), ('MULTIEXPORT', 'Multi X'), ('CERMAQ', 'Cermaq'), ('MOWI', 'Mowi'),
+             ('MARINE HARVEST', 'Mowi'), ('CAMANCHACA', 'Camanchaca'), ('BLUMAR', 'Blumar'), ('LOS FIORDOS', 'Los Fiordos'), ('VENTISQUEROS', 'Ventisqueros'),
+             ('AUSTRALIS', 'Australis'), ('NOVA AUSTRAL', 'Nova Austral'), ('SALMONES AUSTRAL', 'Salmones Austral'), ('YADRAN', 'Yadrán'), ('TRUSAL', 'Trusal'),
+             ('INVERMAR', 'Invermar'), ('TORNAGALEONES', 'Tornagaleones'), ('SALMONES AYSEN', 'Salmones Aysén'), ('PACIFIC STAR', 'Pacific Star'),
+             ('ANTARTICA', 'Salmones Antártica'), ('CALETA BAY', 'Caleta Bay'), ('COOKE', 'Cooke'), ('HUMBOLDT', 'Humboldt'), ('SOUTHERN CROSS', 'Southern Cross'),
+             ('MARINE FARM', 'Marine Farm'), ('SALMONES DE CHILE', 'Salmones de Chile'), ('CHILOE', 'Cultivos Marinos Chiloé'), ('ACUIMAG', 'Acuimag'),
+             ('CUPQUELAN', 'Cupquelan'), ('ICH-F', 'ICH'), ('ICH -F', 'ICH'), ('ACME', 'ACME'), ('AQUALINK', 'Aqualink'), ('SALMONOIL', 'Salmonoil'),
+             ('PURE NATURE', 'Pure Nature'), ('OCEAN TRADE', 'Ocean Trade'), ('LA SIRENA', 'La Sirena'), (' NOVA ', 'Nova (brand)')]
+FAB = re.compile(r'([A-Z][A-Z0-9 .&]{2,40}?)\s*-\s*F\b')
+
+
+def producer(t1, t2):
+    for k, v in PRODUCERS:
+        if k in t1 or k.replace(' ', '') in t2.replace(' ', ''): return v
+    m = FAB.search(t1)
+    if m:
+        w = re.sub(r'\b(S\.?A\.?|SPA|LTDA\.?|LIMITADA)\b', ' ', t1[:m.end() - 1].rstrip(' -')).replace('~', ' ').split()
+        STOP = {'FILETE', 'FILETES', 'DE', 'DEL', 'SALMON', 'ATLANTICO', 'COHO', 'PLATEADO', 'O', 'TRUCHA', 'ARCOIRIS', 'FRESCO', 'CONGELADO', 'ENTERO', 'HON',
+                'PORCIONES', 'CRUDO', 'IQF', 'HG', 'SIN', 'CABEZA', 'LOMO', 'LOMOS', 'PULPA', 'CARNE'}
+        i = max([j for j, x in enumerate(w) if x.strip('.,') in STOP] + [-1])
+        n = ' '.join(w[i + 1:][-4:]).strip(' .,')
+        if len(n) >= 3: return n.title()
+    return 'not stated'
+
+
+def grade(t):
+    if 'SUPER PREMIUM' in t or 'SUPERPREMIUM' in t: return 'super premium'
+    if 'INDUSTRIAL' in t: return 'premium/industrial' if 'PREMIUM' in t else 'industrial'
+    if re.search(r'PRODUCC?I[OÓ]N|PRODUCTION', t): return 'production'
+    if 'STANDARD' in t or 'ESTANDAR' in t: return 'standard'
+    if 'SUPERIOR' in t: return 'superior'
+    if 'PREMIU' in t: return 'premium'
+    m = re.search(r'GRAD[OE]\s*([A-C1-3])\b', t)
+    if m: return 'grade ' + m.group(1)
+    return 'not stated'
+
+
+def trim(t):
+    m = re.search(r'TRIM\s*-?\s*([A-E])\b', t)
+    return m.group(1) if m else ('E' if 'SIN PIEL' in t and 'FILETE' in t else 'not stated')
+
+
+def kind(t):
+    if 'PORCION' in t: return 'portions'
+    if 'PULPA' in t or 'BLOQUE' in t or 'CARNE' in t: return 'blocks, minced'
+    if 'LOMO' in t: return 'loins'
+    return 'fillets'
 CLS = [2, 3, 4, 5, 6, 7]   # bornes des classes de calibre (kg)
 
 
 def calibre(text):
     """Classe de poids ecrite dans la description (« CALIBRE 12-14 LB », « 6-7 KGS ») -> milieu en kg, ou None.
     Une seule valeur (« CAJA DE 10 KGS ») n'est pas un calibre : on exige un intervalle."""
-    for m in CAL.finditer(text.upper()):
+    t = text.upper()
+    for m in CAL.finditer(t):
         a, b = float(m.group(1).replace(',', '.')), float(m.group(2).replace(',', '.'))
         k = 0.4536 if m.group(3).startswith('L') else 1.0
         a, b = a * k, b * k
         if 0.3 <= a < b <= 13 and b - a <= 4: return (a + b) / 2
+    for m in CALG.finditer(t):   # « 800-2200 GRS », « 1500-2000 GRAMOS » ; les portions (60-85 g) sont exclues par le minimum
+        a, b = int(m.group(1)) / 1000, int(m.group(2)) / 1000
+        if 0.3 <= a < b <= 4: return (a + b) / 2
     return None
 
 
@@ -105,27 +159,40 @@ def aggregate(rows):
     agg = {'total': [0, 0], 'species_form': collections.defaultdict(lambda: [0, 0]), 'dest': collections.defaultdict(lambda: [0, 0]),
            'region': collections.defaultdict(lambda: [0, 0]), 'via': collections.defaultdict(lambda: [0, 0])}
     sizes = collections.defaultdict(lambda: {'kg': 0.0, 'kg_sized': 0.0, 'w': 0.0, 'hist': [0.0] * (len(CLS) + 1)})
+    fil = collections.defaultdict(lambda: {'grade': collections.Counter(), 'trim': collections.Counter(), 'kind': collections.Counter(), 'lb': [0.0] * len(LB_BINS),
+                                           'grade_usd': collections.Counter()})
+    prod = collections.defaultdict(lambda: collections.defaultdict(lambda: [0.0, 0.0]))
     ex = {}
     for x in rows:
         kg, fob = num(x[C_QTY]), num(x[C_FOB])
         nom = x[C_NOM]; ref, _, desc = nom.partition('~'); ref = ref.strip()
         sp, fo = species(desc, x[C_HS].strip()), form(x[C_HS].strip(), desc)
+        t1 = ' '.join(c.strip() for c in x[C_NOM:C_NOM + 6]).upper(); t2 = ''.join(x[C_NOM:C_NOM + 6]).upper()
         reg = REG.get(x[C_REG].strip(), 'other'); dest = x[C_DEST].strip().title(); via = VIA.get(x[C_VIA].strip(), 'other')
         for key, k in (('species_form', f'{sp}|{fo}'), ('dest', dest), ('region', reg), ('via', via)):
             agg[key][k][0] += kg; agg[key][k][1] += fob
         agg['total'][0] += kg; agg['total'][1] += fob
         if fo in ('fresh whole', 'frozen whole', 'fresh fillets', 'frozen fillets') and sp in ('atlantic', 'coho', 'trout'):
-            z = sizes[f'{sp}|{fo}']; z['kg'] += kg; c = calibre(' '.join(x[C_NOM:C_NOM + 6]))
+            z = sizes[f'{sp}|{fo}']; z['kg'] += kg; c = calibre(t1)
             if c: z['kg_sized'] += kg; z['w'] += c * kg; z['hist'][sum(c >= b for b in CLS)] += kg
+            if 'fillets' in fo:
+                f = fil[f'{sp}|{fo}']; g = grade(t1); f['grade'][g] += kg; f['grade_usd'][g] += fob; f['trim'][trim(t1)] += kg; f['kind'][kind(t1)] += kg
+                if c: lb = c / 0.4536; f['lb'][min(len(LB_BINS) - 1, max(0, int(lb) - 1))] += kg
+        pr = producer(t1, t2); prod[pr][f'{sp}|{fo}'][0] += kg; prod[pr][f'{sp}|{fo}'][1] += fob
         e = ex.setdefault(x[C_EXP].strip(), {'kg': 0, 'fob': 0, 'refs': collections.Counter(), 'sp': collections.Counter(), 'reg': collections.Counter(),
-                                               'dest': collections.Counter(), 'comuna': collections.Counter()})
-        e['kg'] += kg; e['fob'] += fob; e['sp'][f'{sp}|{fo}'] += kg; e['reg'][reg] += kg; e['dest'][dest] += kg; e['comuna'][x[C_COM].strip()] += kg
+                                               'dest': collections.Counter(), 'comuna': collections.Counter(), 'prod': collections.Counter()})
+        e['kg'] += kg; e['fob'] += fob; e['sp'][f'{sp}|{fo}'] += kg; e['reg'][reg] += kg; e['dest'][dest] += kg; e['comuna'][x[C_COM].strip()] += kg; e['prod'][pr] += kg
         if ref and ref.upper() != 'SIN-CODIGO' and len(ref) >= 3: e['refs'][ref] += 1
     r = lambda d: {k: [round(v[0] / 1000, 1), round(v[1] / 1000, 1)] for k, v in sorted(d.items(), key=lambda kv: -kv[1][0])}
     return {'t_kusd': [round(agg['total'][0] / 1000, 1), round(agg['total'][1] / 1000, 1)], 'species_form': r(agg['species_form']), 'dest': r(agg['dest']),
             'region': r(agg['region']), 'via': r(agg['via']),
             'sizes': {k: {'t': round(z['kg'] / 1000, 1), 't_sized': round(z['kg_sized'] / 1000, 1), 'mean_kg': round(z['w'] / z['kg_sized'], 2) if z['kg_sized'] else None,
-                          'hist_t': [round(v / 1000, 1) for v in z['hist']]} for k, z in sizes.items()}}, ex
+                          'hist_t': [round(v / 1000, 1) for v in z['hist']]} for k, z in sizes.items()},
+            'fillets': {k: {'grade': {g: [round(v / 1000, 1), round(f['grade_usd'][g] / 1000, 1)] for g, v in f['grade'].most_common()},
+                            'trim': {g: round(v / 1000, 1) for g, v in f['trim'].most_common()}, 'kind': {g: round(v / 1000, 1) for g, v in f['kind'].most_common()},
+                            'lb_t': [round(v / 1000, 1) for v in f['lb']]} for k, f in fil.items()},
+            'producers': {n: {k: [round(v[0] / 1000, 1), round(v[1] / 1000, 1)] for k, v in sorted(d.items(), key=lambda kv: -kv[1][0]) if v[0] >= 500}
+                          for n, d in sorted(prod.items(), key=lambda kv: -sum(v[0] for v in kv[1].values())) if sum(v[0] for v in d.values()) >= 5000}}, ex
 
 
 def link_exporters(months):
@@ -174,9 +241,9 @@ def main():
     raw_cache = old.get('_exporters_raw') or (json.load(open(CACHE)) if os.path.exists(CACHE) else {})
     for ym in sorted(res):
         key = str(ym)
-        if key in months_agg and key in raw_cache and old.get('mods', {}).get(key) == res[ym]['mod'] and ('--relire' not in sys.argv or 'sizes' in months_agg[key]):
+        if key in months_agg and key in raw_cache and old.get('mods', {}).get(key) == res[ym]['mod'] and ('--relire' not in sys.argv or 'producers' in months_agg[key]):
             months_ex[ym] = {k: {**v, 'refs': collections.Counter(v['refs']), 'sp': collections.Counter(v['sp']), 'reg': collections.Counter(v['reg']),
-                                 'dest': collections.Counter(v['dest']), 'comuna': collections.Counter(v['comuna'])} for k, v in raw_cache[key].items()}
+                                 'dest': collections.Counter(v['dest']), 'comuna': collections.Counter(v['comuna']), 'prod': collections.Counter(v.get('prod', {}))} for k, v in raw_cache[key].items()}
             continue
         try:
             rows = read_month(res[ym]['url'])
@@ -188,15 +255,16 @@ def main():
     # identifiants stables : par taille totale
     G = []
     for nodes in groups.values():
-        series = collections.defaultdict(lambda: [0, 0]); refs, sp, reg, dest, com = collections.Counter(), collections.Counter(), collections.Counter(), collections.Counter(), collections.Counter()
+        series = collections.defaultdict(lambda: [0, 0]); refs, sp, reg, dest, com, prd = (collections.Counter() for _ in range(6))
         for ym, eid in nodes:
             e = months_ex[ym][eid]; series[str(ym)][0] += e['kg']; series[str(ym)][1] += e['fob']
-            refs.update(e['refs']); sp.update(e['sp']); reg.update(e['reg']); dest.update(e['dest']); com.update(e['comuna'])
+            refs.update(e['refs']); sp.update(e['sp']); reg.update(e['reg']); dest.update(e['dest']); com.update(e['comuna']); prd.update(e.get('prod', {}))
         tot = sum(v[0] for v in series.values())
         G.append({'kg': tot, 'months': {k: [round(v[0] / 1000, 1), round(v[1] / 1000, 1)] for k, v in sorted(series.items())},
                   'refs': [r for r, _ in refs.most_common(8)], 'mix': {k: round(100 * v / tot, 1) for k, v in sp.most_common(6)} if tot else {},
                   'regions': {k: round(100 * v / tot, 1) for k, v in reg.most_common(3)} if tot else {},
-                  'dest': {k: round(100 * v / tot, 1) for k, v in dest.most_common(5)} if tot else {}, 'comuna': com.most_common(1)[0][0] if com else ''})
+                  'dest': {k: round(100 * v / tot, 1) for k, v in dest.most_common(5)} if tot else {}, 'comuna': com.most_common(1)[0][0] if com else '',
+                  'producers': {k: round(100 * v / tot, 1) for k, v in prd.most_common(3)} if tot else {}})
     G.sort(key=lambda g: -g['kg'])
     for i, g in enumerate(G): g['id'] = f'EXP-{i + 1:03d}'; g['t'] = round(g.pop('kg') / 1000)
     out = {'meta': {'built': time.strftime('%Y-%m-%d'), 'last': max(res) if res else None, 'first': min(res) if res else None,
