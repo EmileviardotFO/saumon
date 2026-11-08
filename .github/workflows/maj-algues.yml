@@ -1,0 +1,29 @@
+name: Veille algues (HI, Sernapesca, conditions de bloom au Chili)
+
+on:
+  schedule:
+  - cron: 23 6 * * *
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  algae:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    - name: Bulletin HI, communiques Sernapesca, conditions au Chili
+      run: python3 -u scripts/build_algae_watch.py
+    - name: Enregistrer
+      if: always()
+      run: |
+        git config user.name "github-actions"; git config user.email "actions@github.com"
+        [ -f data/algae_watch.json ] && git add data/algae_watch.json
+        git diff --cached --quiet && exit 0
+        git commit -m "Veille algues ($(date -u +%Y-%m-%d))"
+        for i in 1 2 3; do git pull --rebase -q origin main && git push -q origin HEAD:main && break; sleep 5; done
