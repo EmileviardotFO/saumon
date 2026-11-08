@@ -6,10 +6,10 @@ Temperature de la mer par bassin producteur de saumon, et jours de chaleur.
 
 Pour chaque bassin, quelques points en mer pres des fermes (un par grande region de production). Pour chaque point :
 temperature de surface journaliere (moyenne des heures), puis
-  - moyenne mensuelle et ecart a la moyenne 2016-2025 du meme mois ;
+  - moyenne mensuelle et ecart a la normale du meme mois (annees completes disponibles, 2023 et suivantes) ;
   - jours de chaleur par annee et mois : jours au-dessus de 16,5 / 17 / 18 °C (seuils de risque de mortalite cites par
     Canepa et al., Reviews in Aquaculture 2026, « Turning Up the Heat » ; optimum de croissance 12-16 °C, limite haute ~20 °C).
-Premier passage (ou SST_FULL=1) : historique complet depuis 2016 ; ensuite chaque jour seuls les 3 derniers mois sont relus
+Premier passage (ou SST_FULL=1) : historique complet (fin 2022 a hier) ; ensuite chaque jour seuls les 3 derniers mois sont relus
 (le quota gratuit d'Open-Meteo se compte au volume de donnees demande).
 Norvege : la temperature declaree chaque semaine par les sites (BarentsWatch) reste la reference par zone dans le tableau de bord ;
 les points Open-Meteo servent a comparer les bassins sur la meme base.
@@ -28,7 +28,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'data', 'sea_temp.json')
 UA = {'User-Agent': 'Mozilla/5.0 (salmon-outlook sea temperature)'}
 SEUILS = (16.5, 17.0, 18.0)
-DEBUT = '2016-01-01'
+DEBUT = '2022-01-01'     # la serie SST d'Open-Meteo Marine ne commence qu'a fin 2022 (constate : ~1 430 jours au 7/11/2026)
 
 # bassin, identifiant, libelle, latitude, longitude (point en mer, au large immediat des fermes)
 POINTS = [
@@ -105,7 +105,7 @@ def journalier(la, lo, debut, fin):
 
 
 def resume(jours, old=None):
-    """Moyennes mensuelles, normales 2016-2025 et jours de chaleur par mois.
+    """Moyennes mensuelles, normales et jours de chaleur par mois.
     old : point deja en fichier ; ses mois anterieurs a la periode relue sont conserves (mise a jour incrementale)."""
     mois = defaultdict(list)
     for d, v in jours.items():
@@ -116,9 +116,9 @@ def resume(jours, old=None):
         mm = {**{k: v for k, v in (old.get('monthly') or {}).items() if k < d0}, **mm}
     norm = defaultdict(list)
     for k, v in mm.items():
-        if '2016' <= k[:4] <= '2025':
+        if k[:4] < str(dt.date.today().year):      # normale = annees completes disponibles (2023-2025 au depart)
             norm[int(k[5:])].append(v)
-    normal = {m: round(sum(v) / len(v), 2) for m, v in norm.items() if len(v) >= 5}
+    normal = {m: round(sum(v) / len(v), 2) for m, v in norm.items() if len(v) >= 2}
     chaud = {k: v for k, v in ((old or {}).get('hot_days') or {}).items() if k < (min(mois) if mois else '9999')}
     for k, L in sorted(mois.items()):
         chaud[k] = [sum(1 for v in L if v > s) for s in SEUILS]
@@ -128,10 +128,10 @@ def resume(jours, old=None):
 
 
 def climato(jours):
-    """Normale journaliere 2016-2025 par jour de l'annee (fenetre glissante de 15 jours), {doy: °C}."""
+    """Normale journaliere (annees completes) par jour de l'annee (fenetre glissante de 15 jours), {doy: °C}."""
     par = defaultdict(list)
     for d, v in jours.items():
-        if '2016' <= d[:4] <= '2025':
+        if d[:4] < str(dt.date.today().year):
             par[min(365, dt.date.fromisoformat(d).timetuple().tm_yday)].append(v)
     out = {}
     for j in range(1, 366):
@@ -173,7 +173,7 @@ def main():
                 jours = journalier(la, lo, t.isoformat(), hier)
             else:
                 old = None
-                for a0 in range(int(DEBUT[:4]), dt.date.today().year + 1, 2):     # historique complet, par blocs de 2 ans
+                for a0 in range(int(DEBUT[:4]), dt.date.today().year + 1, 2):     # historique complet (depuis fin 2022), par blocs de 2 ans
                     d0, d1 = f'{a0}-01-01', min(f'{a0 + 1}-12-31', hier)
                     jours.update(journalier(la, lo, d0, d1))
                     time.sleep(2)
@@ -194,7 +194,7 @@ def main():
         print('sea_temp : rien de lu, fichier inchange', erreurs)
         return
     out = {'meta': {'generated': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'), 'source': 'Open-Meteo Marine API (modelled sea surface temperature, daily mean of hourly values)',
-                    'url': 'https://open-meteo.com/en/docs/marine-weather-api', 'thresholds': list(SEUILS), 'normal': '2016-2025',
+                    'url': 'https://open-meteo.com/en/docs/marine-weather-api', 'thresholds': list(SEUILS), 'normal': f'2023-{dt.date.today().year - 1} (Open-Meteo series starts late 2022)',
                     'note': 'Risk thresholds 16.5 / 17 / 18 °C from Canepa et al., Reviews in Aquaculture 2026 (Tasmania); growth optimum 12-16 °C.',
                     'basins': BASSINS, 'errors': erreurs,
                     'alerts': [{'id': p['id'], 'basin': p['basin'], 'label': p['label'], **p['alert']} for p in pts if (p.get('alert') or {}).get('level')]},
