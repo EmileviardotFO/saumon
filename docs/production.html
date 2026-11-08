@@ -5301,7 +5301,7 @@ function clSubpesca() {
   const pc = v => v === null || v === undefined || !isFinite(v) ? '—' : `<span class="${v >= 0 ? 'delta-good' : 'delta-bad'}">${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(Math.abs(v) < 0.95 ? 1 : 0)} %</span>`;
   const ml = k => `${MONTHS_FR[k % 100 - 1].slice(0, 3)} ${Math.floor(k / 100)}`;
   // recoltes : mois = difference de deux cumuls ; l'an dernier = cumul / (1 + variation)
-  const R = Object.values(Object.fromEntries((CLP.reports || []).filter(r => r && r.species && r.k && !r.unread).map(r => [r.k, r]))), SP = [['salar', 'Atlantic salmon'], ['coho', 'Coho'], ['trucha', 'Rainbow trout']];
+  const R = Object.values(Object.fromEntries((CLP.reports || []).filter(r => r && r.species && r.k && !r.unread).map(r => [r.k, r]))), SP = [['salar', 'Atlantic salmon'], ['coho', 'Coho'], ['trucha', 'Rainbow trout']].filter(([sp]) => R.some(r => r.species[sp]));   // truite absente des rapports lus : pas de colonnes vides
   const byK = {}; R.forEach(r => byK[r.k] = r);
   // mois sans rapport (aout 2026) : le rapport suivant est compare au dernier rapport de la meme annee, et la ligne couvre les deux mois (« Aug–Sep 2026 »)
   const prevK = k => { if (k % 100 === 1) return null; for (let j = k - 1; j > Math.floor(k / 100) * 100; j--) if (byK[j]) return j; return null; };
