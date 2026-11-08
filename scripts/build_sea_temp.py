@@ -373,12 +373,12 @@ def enso(ancien):
         st, raw = http(CPC + '/data/indices/wksst9120.for', timeout=60)
         wk = []
         for ligne in raw.decode('utf-8', 'replace').splitlines():
-            m = re.match(r'\s*(\d{2})([A-Z]{3})(\d{4})\s+([-\d. ]+)$', ligne)
+            m = re.match(r'\s*(\d{2})([A-Z]{3})(\d{4})', ligne)
             if not m: continue
-            v = re.findall(r'(-?\d+\.\d)(-?\d+\.\d)', ligne[10:])      # colonnes collees : temperature puis ecart, par region
-            if len(v) >= 3:
+            v = re.findall(r'-?\d+\.\d', ligne[m.end():])                  # Nino1+2, 3, 3.4, 4 : temperature puis ecart (colonnes parfois collees)
+            if len(v) >= 6:
                 d = dt.datetime.strptime(m.group(1) + m.group(2) + m.group(3), '%d%b%Y').date()
-                wk.append([d.isoformat(), float(v[2][0]), float(v[2][1])])   # 3e region = Niño 3.4
+                wk.append([d.isoformat(), float(v[4]), float(v[5])])
         if wk: out['weekly_nino34'] = wk[-104:]
     except Exception as e:  # noqa: BLE001
         print('  ENSO hebdo :', str(e)[:120])
@@ -393,7 +393,8 @@ def enso(ancien):
         print('  ONI :', str(e)[:120])
     try:
         st, raw = http(CPC + '/products/analysis_monitoring/enso_advisory/ensodisc.shtml', timeout=60)
-        t = re.sub(r'<[^>]+>', ' ', raw.decode('utf-8', 'replace')); t = re.sub(r'\s+', ' ', t)
+        import html as H
+        t = H.unescape(re.sub(r'<[^>]+>', ' ', raw.decode('utf-8', 'replace'))).replace('\xa0', ' '); t = re.sub(r'\s+', ' ', t)
         m = re.search(r'ENSO Alert System Status:\s*(.{3,80}?)\s{1,3}(?:Synopsis|Synopsis:)', t)
         sy = re.search(r'Synopsis:\s*(.{20,400}?\.)\s', t)
         dd = re.search(r'issued by CLIMATE PREDICTION CENTER.{0,120}?(\d{1,2} [A-Z][a-z]+ \d{4})', t)
@@ -415,6 +416,7 @@ PRESSE_Q = [   # titres seulement (Google News), gardes s'ils parlent de tempera
     ('("marine heatwave" OR "water temperature") (Tasmania OR Macquarie) salmon', 'en', 'AU', 'AU:en'),
 ]
 CLIMAT = re.compile(r'el ni[ñn]o|la ni[ñn]a|heatwave|hetebølge|kuldebølge|temperat|ola de calor|warm(ing|er) (water|sea|ocean)|sjøtemp|havtemp|cold (water|spell)|algal bloom|floraci|\bFAN\b|\bENSO\b', re.I)
+MER = re.compile(r'pesca|fish|seafood|marisc|anchov|harina|sardin|ocean|oc[eé]ano|\bmar\b|sea\b|chile|aysén|los lagos', re.I)
 ELEVAGE = re.compile(r'salm|laks|oppdrett|havbruk|aquacult|acuicult|fish farm|fiskeoppdrett|trucha|trout', re.I)
 BASSIN_RX = [('NO', r'norw|norg|norsk|noreg'), ('CL', r'chile|chilen|ays[eé]n|los lagos|magallanes|chilo[eé]'), ('GB', r'scotl|escoc|skott'), ('FO', r'faroe|føroy|færø'),
              ('IS', r'iceland|island'), ('CA', r'canad|british columbia|newfoundland|new brunswick'), ('AU', r'tasmania|australia|macquarie'), ('IE', r'ireland|irlan')]
@@ -430,7 +432,7 @@ def presse(ancien):
                 t = re.search(r'<title>(.*?)</title>', it, re.S); u = re.search(r'<link>(.*?)</link>', it, re.S); d = re.search(r'<pubDate>(.*?)</pubDate>', it, re.S); sname = re.search(r'<source[^>]*>(.*?)</source>', it, re.S)
                 if not (t and u and d): continue
                 titre = re.sub(r'<!\[CDATA\[|\]\]>', '', t.group(1)).replace('&amp;', '&').replace('&quot;', '"').replace('&#39;', "'").strip()
-                if not CLIMAT.search(titre) or not (ELEVAGE.search(titre) or re.search(r'el ni[ñn]o', titre, re.I)): continue
+                if not CLIMAT.search(titre) or not (ELEVAGE.search(titre) or (re.search(r'el ni[ñn]o', titre, re.I) and MER.search(titre))): continue
                 try: dd = dt.datetime.strptime(d.group(1).strip()[:25], '%a, %d %b %Y %H:%M:%S').date().isoformat()
                 except ValueError: continue
                 b = next((k for k, r in BASSIN_RX if re.search(r, titre, re.I)), 'ALL')
@@ -440,7 +442,8 @@ def presse(ancien):
             print('  presse :', q[:40], str(e)[:80])
         time.sleep(1)
     lim = (dt.date.today() - dt.timedelta(days=90)).isoformat()
-    return sorted([i for i in items.values() if i['d'] >= lim], key=lambda i: i['d'], reverse=True)[:60]
+    ok = lambda t: CLIMAT.search(t) and (ELEVAGE.search(t) or (re.search(r'el ni[ñn]o', t, re.I) and MER.search(t)))
+    return sorted([i for i in items.values() if i['d'] >= lim and ok(i['t'])], key=lambda i: i['d'], reverse=True)[:60]
 
 
 if __name__ == '__main__':

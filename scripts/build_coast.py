@@ -78,9 +78,12 @@ def main():
             if max(xs) < b[0] or min(xs) > b[2] or max(ys) < b[1] or min(ys) > b[3]: continue
             c = clip(ring, b)
             if len(c) < 3: continue
-            c = dp(c + [c[0]], TOL)
+            if c[0] == c[-1]: c = c[:-1]
+            # anneau ferme : on coupe au point le plus eloigne du premier, puis on simplifie les deux moities (sinon tout s'efface)
+            j = max(range(len(c)), key=lambda i: (c[i][0] - c[0][0]) ** 2 + (c[i][1] - c[0][1]) ** 2)
+            c = dp(c[:j + 1], TOL)[:-1] + dp(c[j:] + [c[0]], TOL)[:-1]
             c = [[round(x, 3), round(y, 3)] for x, y in c]
-            if len(c) >= 4: L.append(c); npts += len(c)
+            if len(c) >= 3: L.append(c); npts += len(c)
         out[k] = {'box': b, 'rings': L}
         print(k, len(L), 'polygones')
     io.open(OUT, 'w', encoding='utf-8').write(json.dumps({'meta': {'source': 'Natural Earth 1:10m land and minor islands (public domain)', 'tolerance_deg': TOL}, 'areas': out}, separators=(',', ':')))
