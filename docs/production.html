@@ -3322,7 +3322,10 @@ function renderMortEvents() {
     return `<div class="sig-title" style="margin-top:20px;font-size:14px;">Scotland — mortalities reported to the Fish Health Inspectorate</div>` +
       `<div class="sig-sub">Monthly reports of mortality above the reporting threshold, one month in arrears, by the cause given (sorted from the words used). <a href="${S.source}" target="_blank" rel="noopener" style="color:#4fc3f7">Source file</a>.</div>` +
       `<table class="sig-table"><thead><tr><th class="name">Month</th><th>Reports</th><th style="text-align:left">By cause</th></tr></thead><tbody>` +
-      ks.reverse().map(k => { const m = S.monthly[k]; return `<tr><td class="name">${k}</td><td><div style="display:inline-block;width:${Math.round(60 * m.reports / mx)}px;height:8px;background:#4fc3f7;border-radius:2px;margin-right:6px"></div>${m.reports}</td>` +
+      ks.reverse().map(k => { const m = S.monthly[k];
+        // dernier mois : declarations lues jusqu'au jour de la derniere (14 octobre 2026), pas un mois entier
+        const LD = (S.reports || []).reduce((a, r) => r.date > a ? r.date : a, ''), part = LD && LD.slice(0, 7) === k && +LD.slice(8) < 28 ? ` <span style="color:#ffb74d;font-size:11px;font-weight:normal">to ${+LD.slice(8)} ${MONTHS_FR[+LD.slice(5, 7) - 1].slice(0, 3)}</span>` : '';
+        return `<tr><td class="name">${k}${part}</td><td><div style="display:inline-block;width:${Math.round(60 * m.reports / mx)}px;height:8px;background:#4fc3f7;border-radius:2px;margin-right:6px"></div>${m.reports}</td>` +
         `<td style="text-align:left">${Object.entries(m.causes).sort((a, b) => b[1] - a[1]).map(([c, n]) => `${mevChip(c)}${n}`).join(' ')}</td></tr>`; }).join('') + '</tbody></table>'; })() : '';
 }
 
@@ -13858,7 +13861,7 @@ loadRemoteData().then(live => {
     if (!(vb[2] >= 800) || s.closest('.gen-mini') || s.closest('.ax-fix')) return;   // la copie de l'echelle fixe n'est pas un graphique a envelopper (sinon cadres imbriques et echelle vide)
     const d = document.createElement('div'); d.className = 'wide-wrap'; s.parentNode.insertBefore(d, s); d.appendChild(s);
     // series temporelles : la periode la plus recente d'abord ; graphiques par categorie (bassins, causes...) : le debut, sinon les premieres barres sont cachees
-    const isTime = s.dataset.start !== 'left' && [...s.querySelectorAll('text')].some(t => /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|W ?\d|Q[1-4]|(19|20)\d\d|'\d\d)/.test(t.textContent.trim()));
+    const isTime = () => s.dataset.start !== 'left' && [...s.querySelectorAll('text')].some(t => /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|W ?\d|Q[1-4]|(19|20)\d\d|'\d\d)/.test(t.textContent.trim()));
     // graphique saisonnier (Jan..Dec, 2-3 annees groupees) : l'annee en cours s'arrete avant decembre ; on centre sur sa derniere barre
     // (sinon l'ouverture a droite montrait Jul-Dec et cachait les mois 2026 : Canada, smolts)
     const seasonal = () => { const tx = [...s.querySelectorAll('text')].map(t => t.textContent.trim());
@@ -13867,7 +13870,13 @@ loadRemoteData().then(live => {
       s.querySelectorAll('rect').forEach(r => { const b = r.getBoundingClientRect(), f = r.getAttribute('fill') || ''; if (b.height < 1 || b.width > 60 || !f || f === 'none') return; (G[f] = G[f] || []).push(b.right - sr.left); });
       const ends = Object.values(G).filter(v => v.length >= 2).map(v => Math.max(...v)); if (ends.length < 2 || ends.length > 4) return null;
       const lo = Math.min(...ends), hi = Math.max(...ends); return hi - lo > 20 ? lo : null; };
-    if (isTime) requestAnimationFrame(() => { const x = seasonal(); d.scrollLeft = x === null ? d.scrollWidth : Math.max(0, x - d.clientWidth * 0.7); });
+    // le graphique peut etre dessine dans un onglet encore cache (largeur nulle) : la position est appliquee quand il devient visible
+    const go = () => { if (!d.clientWidth) return false; const x = seasonal(); d.scrollLeft = x === null ? d.scrollWidth : Math.max(0, x - d.clientWidth * 0.7); return true; };
+    const place = () => { if (!isTime()) return; if (go()) return; if (!window.IntersectionObserver) return;
+      const io = new IntersectionObserver(es => { if (es.some(x => x.isIntersecting) && go()) io.disconnect(); }); io.observe(d); };
+    // svg vide a l'enveloppe (dessine plus tard, ex. tendance hebdomadaire de Fish health) : on attend son premier dessin
+    if (s.querySelector('text')) requestAnimationFrame(place);
+    else { const mo = new MutationObserver(() => { if (s.querySelector('text')) { mo.disconnect(); requestAnimationFrame(place); } }); mo.observe(s, { childList: true, subtree: true }); }
   });
   let t = null; new MutationObserver(() => { clearTimeout(t); t = setTimeout(wrap, 60); }).observe(document.documentElement, { childList: true, subtree: true });
   document.addEventListener('DOMContentLoaded', wrap);
