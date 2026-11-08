@@ -153,7 +153,7 @@ def classify(rows, site_po, site_org, T):
     for r in (json.load(open(os.path.join(ROOT, 'data', 'data.json'), encoding='utf-8')).get('records') or []):
         k = f"{r['year']}-{r['month']:02d}"
         for key in ('NO', f"PO{r['po']}"):
-            rec.setdefault(key, {})[k] = rec.get(key, {}).get(k, 0) + (r.get('smolt_stk') or 0)
+            rec.setdefault(key, {})[k] = rec.get(key, {}).get(k, 0) + (r.get('smolt500_stk') or 0)   # tous les poissons mis en mer sous 500 g, comme le reste du tableau de bord (la colonne < 250 g en oubliait un quart)
     last_full = (dt.date.today().replace(day=1) - dt.timedelta(days=1)).strftime('%Y-%m')
     smolt = {}
     for key in ['NO'] + [f'PO{i}' for i in range(1, 14)]:
