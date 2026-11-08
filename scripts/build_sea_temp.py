@@ -127,6 +127,35 @@ def resume(jours, old=None):
             'hot_days': {k: v for k, v in sorted(chaud.items()) if any(v)}, 'days': (old or {}).get('days') or len(jours), 'last_day': max(jours) if jours else None}
 
 
+def climato(jours):
+    """Normale journaliere 2016-2025 par jour de l'annee (fenetre glissante de 15 jours), {doy: °C}."""
+    par = defaultdict(list)
+    for d, v in jours.items():
+        if '2016' <= d[:4] <= '2025':
+            par[min(365, dt.date.fromisoformat(d).timetuple().tm_yday)].append(v)
+    out = {}
+    for j in range(1, 366):
+        L = [v for o in range(-7, 8) for v in par.get((j - 1 + o) % 365 + 1, [])]
+        if len(L) >= 30:
+            out[str(j)] = round(sum(L) / len(L), 2)
+    return out
+
+
+def alerte(recent, clim):
+    """Ecart moyen des 7 derniers jours a la normale du jour ; alerte au-dela de ±1 °C ou si un jour depasse 16,5 °C."""
+    if not recent or not clim:
+        return None
+    jours = sorted(recent)[-7:]
+    ec = [recent[d] - clim[str(min(365, dt.date.fromisoformat(d).timetuple().tm_yday))] for d in jours
+          if str(min(365, dt.date.fromisoformat(d).timetuple().tm_yday)) in clim]
+    if len(ec) < 5:
+        return None
+    a7 = round(sum(ec) / len(ec), 2)
+    chaud = sum(1 for d in jours if recent[d] > SEUILS[0])
+    niveau = 'warm' if a7 >= 1 else 'cold' if a7 <= -1 else 'heat' if chaud else None
+    return {'until': jours[-1], 'anom7': a7, 'hot7': chaud, 'level': niveau}
+
+
 def main():
     hier = (dt.date.today() - dt.timedelta(days=1)).isoformat()
     ancien = json.load(io.open(OUT, encoding='utf-8')) if os.path.exists(OUT) else {}
@@ -134,7 +163,7 @@ def main():
     complet = os.environ.get('SST_FULL') == '1'
     for b, pid, lab, la, lo in POINTS:
         try:
-            old = next((p for p in ancien.get('points', []) if p.get('id') == pid and p.get('monthly')), None)
+            old = next((p for p in ancien.get('points', []) if p.get('id') == pid and p.get('monthly') and p.get('clim')), None)
             jours = {}
             if old and not complet:
                 # passage quotidien : on ne relit que les 3 derniers mois (le quota gratuit d'Open-Meteo compte au volume)
@@ -151,6 +180,9 @@ def main():
             if not jours:
                 raise RuntimeError('aucune donnee')
             r = resume(jours, old)
+            r['clim'] = old['clim'] if old else climato(jours)
+            r['recent'] = {d: round(v, 2) for d, v in sorted(jours.items())[-45:]}
+            r['alert'] = alerte(r['recent'], r['clim'])
             pts.append({'basin': b, 'id': pid, 'label': lab, 'lat': la, 'lon': lo, **r})
             print(f'  {pid:14s} {r["days"]} jours, dernier mois {max(r["monthly"]) if r["monthly"] else "-"}')
         except Exception as e:  # noqa: BLE001
@@ -164,7 +196,8 @@ def main():
     out = {'meta': {'generated': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'), 'source': 'Open-Meteo Marine API (modelled sea surface temperature, daily mean of hourly values)',
                     'url': 'https://open-meteo.com/en/docs/marine-weather-api', 'thresholds': list(SEUILS), 'normal': '2016-2025',
                     'note': 'Risk thresholds 16.5 / 17 / 18 °C from Canepa et al., Reviews in Aquaculture 2026 (Tasmania); growth optimum 12-16 °C.',
-                    'basins': BASSINS, 'errors': erreurs},
+                    'basins': BASSINS, 'errors': erreurs,
+                    'alerts': [{'id': p['id'], 'basin': p['basin'], 'label': p['label'], **p['alert']} for p in pts if (p.get('alert') or {}).get('level')]},
            'points': pts}
     io.open(OUT, 'w', encoding='utf-8').write(json.dumps(out, ensure_ascii=False, separators=(',', ':')))
     print(f'data/sea_temp.json : {len(pts)} points, {len(erreurs)} erreurs')
