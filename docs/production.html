@@ -13071,7 +13071,7 @@ function renderHarv(po, k) {
     `Forecast = the growth model (growth of the whole generation × the usual gap between harvested fish and the generation's average at that stage of its harvest, corrected by the model's error over the last 12 months), ` +
     `combined with the <b>weight actually harvested at the same time at sea</b> in this zone (learnt from every generation harvested since 2019) and, when the generation is already being harvested, with this month's harvested weight. ` +
     `Tested 2021–2026: off by about 5–11 % at 1 month, 7–12 % at 2, 9–16 % at 3, and the old under-estimate of advanced generations is about a third smaller.`;
-  $('gm_zHarv').innerHTML = `<tr><th style="text-align:left">Gener&shy;ation</th><th>Fish left</th><th>Harvested so far</th><th>Average now</th><th>Harvested ${MON_GM[k % 100 - 1]}</th>${kk.map(x => `<th>Forecast ${ml(x)}</th>`).join('')}</tr>` +
+  $('gm_zHarv').innerHTML = `<tr><th style="text-align:left">Generation</th><th>Fish left</th><th>Harvested so far</th><th>Average now</th><th>Harvested ${MON_GM[k % 100 - 1]}</th>${kk.map(x => `<th>Forecast ${ml(x)}</th>`).join('')}</tr>` +
     gens.map(([g, ser]) => { const c = ser[k], cf = cumFrac(ser, k), wh = c.harv_stk > 0.01 * c.stock ? c.harv_kg / c.harv_stk : null, F = harvForeMix(po, +g, k);
       const cell = v => v ? `${f2(v * GUT)} kg<small>6 kg+: ${Math.round(100 * above(v, 6))} %</small>` : '<span class="gm-mut">—</span>';
       // devenir des poissons mis en mer : abattus, restants, morts, pertes (evades, comptages) ; le reste = corrections de comptage
@@ -15444,6 +15444,7 @@ function renderWellboats() {
   #prYears input{display:none}
   /* defilement horizontal : seules les colonnes de chiffres bougent, la premiere colonne reste en place */
   .hs-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
+  .cs-note{position:sticky;left:8px;max-width:min(100%,calc(100vw - 72px));white-space:normal}
   @media (max-width:600px){#regFootNote{text-align:left;padding:0 12px}}
   /* telephone : la colonne figee ne prend jamais plus de ~42 % de l'ecran ; le libelle passe a la ligne entre les mots */
   @media (max-width:600px){.hs-on th:first-child:not([colspan]),.hs-on td:first-child:not([colspan]){max-width:42vw!important;min-width:0!important;white-space:normal!important;word-break:normal!important;overflow-wrap:normal!important;hyphens:manual!important}}
@@ -15517,6 +15518,9 @@ function renderWellboats() {
       if (!/(auto|scroll)/.test(csT.overflowX)) { const p = t.parentElement; if (p && /(auto|scroll)/.test(getComputedStyle(p).overflowX) && p.children.length === 1) sc = p;
         else if (t.scrollWidth > (p ? p.clientWidth : 0) + 4) { const w = document.createElement('div'); w.className = 'hs-scroll'; t.before(w); w.appendChild(t); sc = w; } else sc = p; }
       const on = sc && sc.scrollWidth > sc.clientWidth + 4; t.classList.toggle('hs-on', !!on);
+      // notes sur toute la largeur (cellule fusionnee) d'un tableau qui defile : le texte reste dans l'ecran au lieu d'etre coupe a droite
+      if (on) t.querySelectorAll('td[colspan]').forEach(c => { if (c.dataset.csn || c.textContent.trim().length < 50 || c.querySelector('table,svg')) return; c.dataset.csn = 1;
+        const d = document.createElement('div'); d.className = 'cs-note'; while (c.firstChild) d.appendChild(c.firstChild); c.appendChild(d); c.style.whiteSpace = 'normal'; });
       t.querySelectorAll('th,td').forEach(c => { if (getComputedStyle(c).position === 'sticky') c.classList.add('gl-stk'); }); });
     // panneaux entiers qui defilaient (texte, filtres et carte avec le tableau) : seul le tableau defile maintenant
     document.querySelectorAll('.panel').forEach(p => { if (p.offsetParent === null) return; const cs = getComputedStyle(p); if (/(auto|scroll)/.test(cs.overflowX) && p.querySelector('table')) { p.style.overflowX = 'visible';
