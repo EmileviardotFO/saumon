@@ -13505,7 +13505,7 @@ function renderFocus(k) {
     return `<div class="pr-card${total ? ' pr-total' : ''}${!total && C.sel === g ? ' active' : ''}"${total || g === 'OTH' ? '' : ` data-o="${g}" title="Click for the monthly detail (volumes and prices)"`}>${total ? '' : `<span class="pr-wm">${FLAG(g, 0, true)}</span>`}<div class="nm">${total ? '<i style="background:#e7eef2"></i>' : FLAG(g, 18)}${total ? `All origins — ${C.title}` : US_LAB[g]}</div>` +
       `<div class="ln">${PER.lab}${total ? ' · ' + formsTxt : ''}</div>` +
       `<div class="big">${lost && !a[0] ? '—' : tmKt(a[0])} <span>${lost ? '' : tmVar(tmPc(a[0], b[0]))}</span> <span style="font-size:10px;color:var(--muted);font-weight:normal">${lost ? '' : 'vs N-1'}</span></div>` +
-      (one && !lost ? `<div class="ln">vs previous month: ${tmVar(tmPc(a[0], m1[0]))}</div>` : '') +
+      (one && !lost ? `<div class="ln">vs previous month: ${m1[0] >= 20 ? tmVar(tmPc(a[0], m1[0])) : `<span style="color:var(--muted)">${tmKt(m1[0] || 0)} then</span>`}</div>` : '') +   // base sous 20 t : un % (« +1 983 % » pour 3 t) ne veut rien dire
       priceLn + src +
       (g === 'OTH' && !total ? (() => { let dn; try { dn = new Intl.DisplayNames(['en'], { type: 'region' }); } catch (e) { dn = null; }
         const L = Object.entries(othD).map(([o, d]) => [o, PER.keys.reduce((s2, kk) => s2 + (d[kk] || 0), 0)]).filter(([, t]) => t > 0).sort((p, q) => q[1] - p[1]);
