@@ -15445,6 +15445,8 @@ function renderWellboats() {
   #prYears input{display:none}
   /* defilement horizontal : seules les colonnes de chiffres bougent, la premiere colonne reste en place */
   .hs-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
+  /* telephone : les 7 prix des matieres premieres en deux colonnes (7 tuiles pleine largeur avant) */
+  @media (max-width:600px){#fdCards.pr-cards{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px}#fdCards .pr-card{min-width:0!important;padding:10px 12px!important}#fdCards .pr-card .ln{font-size:11px}}
   .cs-note{position:sticky;left:8px;max-width:min(100%,calc(100vw - 72px));white-space:normal}
   @media (max-width:600px){#regFootNote{text-align:left;padding:0 12px}}
   /* telephone : la colonne figee ne prend jamais plus de ~42 % de l'ecran ; le libelle passe a la ligne entre les mots */
