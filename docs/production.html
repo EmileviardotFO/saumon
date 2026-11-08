@@ -14069,16 +14069,24 @@ loadRemoteData().then(live => {
     /* le menu ouvert : son haut reste fixe sous le bouton de fermeture, le reste defile dessous */
     #sideNav{padding-top:0!important;background:linear-gradient(170deg,rgba(32,84,120,.88),rgba(24,58,96,.86))!important}
     #sideNav .sn-brand{display:none}
-    #sideNav #gsBox{position:sticky!important;top:calc(9px + env(safe-area-inset-top,0px));z-index:3;margin:calc(-49px - env(safe-area-inset-top,0px)) 12px 14px 62px!important}
     #sideNav #gsBox input{height:40px;border-radius:999px!important}
-    #sideNav .sn-top{display:block;position:sticky;top:0;z-index:2;height:calc(58px + env(safe-area-inset-top,0px));margin:0 -12px 4px;
+    #sideNav{display:flex!important;flex-direction:column;overflow:hidden!important;overscroll-behavior:contain}
+    #sideNav .sn-scroll{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;padding:10px 8px calc(28px + env(safe-area-inset-bottom,0px))}
+    #sideNav .sn-top #gsBox{position:relative!important;top:auto!important;left:auto!important;transform:none!important;width:auto!important;flex:1 1 auto;margin:0!important}
+    #sideNav .sn-top{display:flex!important;align-items:center;flex:0 0 auto;position:relative!important;z-index:2;height:auto!important;margin:0!important;padding:calc(8px + env(safe-area-inset-top,0px)) 10px 8px 60px;
       background:linear-gradient(180deg,rgba(24,62,92,.92),rgba(24,62,92,.70));-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.14)}
   }
+  #sideNav .sn-scroll{display:contents}
+  @media (max-width:900px){#sideNav .sn-scroll{display:block}}
   /* pas de retour arriere du navigateur par glissement horizontal */
   html,body{overscroll-behavior-x:none}
 </style>
 <script>
 // Menu lateral : les cinq rubriques, construit a partir des boutons existants (qui restent la mecanique d'affichage des onglets)
+// icones du bouton de menu en dessin (le caractere ☰ de la police systeme n'est pas centre verticalement sur iPhone)
+window.SN_BURGER = '<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" style="display:block"><path d="M3 5.5h14M3 10h14M3 14.5h14" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
+window.SN_CLOSE = '<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" style="display:block"><path d="M5 5l10 10M15 5L5 15" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
+const SN_BURGER = window.SN_BURGER, SN_CLOSE = window.SN_CLOSE;
 (function () {
   const SVG = d => `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
   const SN_ICONS = [   // une icone par grande categorie du menu
@@ -14102,10 +14110,10 @@ loadRemoteData().then(live => {
   // telephone : les boutons fixes (menu, loupe) s'effacent quand on descend dans la page et reviennent des qu'on remonte
   { let lastY = 0, tick = false; window.addEventListener('scroll', () => { if (tick) return; tick = true; requestAnimationFrame(() => { const y = window.scrollY, hide = y > 120 && y > lastY + 4 && !document.body.classList.contains('sn-open');
       if (Math.abs(y - lastY) > 4) { document.body.classList.toggle('fab-hide', false && hide); lastY = y; } tick = false; }); }, { passive: true }); }
-  const burger = document.createElement('button'); burger.id = 'snBurger'; burger.type = 'button'; burger.setAttribute('aria-label', 'Open the menu'); burger.textContent = '☰'; document.body.prepend(burger);
+  const burger = document.createElement('button'); burger.id = 'snBurger'; burger.type = 'button'; burger.setAttribute('aria-label', 'Open the menu'); burger.innerHTML = SN_BURGER; document.body.prepend(burger);
   { const lg = document.createElement('img'); lg.id = 'snLogo'; lg.src = 'icons/logo.svg?v=orb'; lg.alt = 'Salmon Outlook'; lg.title = 'Salmon Outlook'; document.body.prepend(lg); }
   const shade = document.createElement('div'); shade.id = 'snShade'; document.body.prepend(shade);
-  const setOpen = o => { document.body.classList.toggle('sn-open', o); burger.textContent = o ? '✕' : '☰';
+  const setOpen = o => { document.body.classList.toggle('sn-open', o); burger.innerHTML = o ? SN_CLOSE : SN_BURGER;
     burger.setAttribute('aria-label', o ? 'Close the menu' : 'Open the menu'); };
   const close = () => setOpen(false);
   burger.onclick = () => setOpen(!document.body.classList.contains('sn-open')); shade.onclick = close;
@@ -14358,7 +14366,12 @@ loadRemoteData().then(live => {
   // telephone : dans le menu, collee en haut a cote du bouton de fermeture, elle reste accessible quand on fait defiler le menu
   const placeBox = () => { const wide = matchMedia('(min-width:901px)').matches;
     if (wide) { if (box.parentNode !== document.body) document.body.appendChild(box); }
-    else if (nav) { const top = nav.querySelector('.sn-top'); if (box.previousElementSibling !== top) (top ? top.after(box) : nav.prepend(box)); } };
+    else if (nav) { const top = nav.querySelector('.sn-top');
+      // telephone : en-tete fixe du menu (bouton de fermeture + recherche) ; seule la liste en dessous defile, verticalement uniquement
+      if (top) { if (box.parentNode !== top) top.appendChild(box);
+        let sc = nav.querySelector(':scope > .sn-scroll'); if (!sc) { sc = document.createElement('div'); sc.className = 'sn-scroll'; [...nav.children].filter(c => c !== top).forEach(c => sc.appendChild(c)); nav.appendChild(sc); } }
+      else if (box.parentNode !== nav) nav.prepend(box);
+      const qi = box.querySelector('input'); if (qi) qi.placeholder = 'Search the dashboard…'; } };
   placeBox(); matchMedia('(min-width:901px)').addEventListener('change', placeBox);
   const P = document.createElement('div'); P.id = 'gsPanel';
   P.innerHTML = '<div class="gs-h"><input id="gsQ2" type="search" placeholder="Company, subject, zone…" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"><button class="gs-x" type="button">Close ✕</button></div><div id="gsSug" role="listbox"></div><div class="gs-hint">A company and/or a subject, in English, French or Norwegian: <i>Lerøy lice</i>, <i>Mowi mortalité</i>, <i>SalMar 6+</i>, <i>Chine export</i>, <i>Kaldvík</i>. Results follow your typing; Esc to close.</div><div id="gsOut"></div>';
@@ -14373,7 +14386,7 @@ loadRemoteData().then(live => {
   P.querySelector('.gs-x').onclick = close;
   // la case du menu ne sert que de porte d'entree : au premier toucher (ou clic, ou tabulation) le panneau s'ouvre et la saisie se fait
   // directement dans sa grande case, focus donne dans le meme geste (sinon iOS n'ouvre pas le clavier) ; le menu mobile se referme
-  const enter = () => { const v = q1.value; q1.value = ''; document.body.classList.remove('sn-open'); const bg = document.getElementById('snBurger'); if (bg) bg.textContent = '☰';
+  const enter = () => { const v = q1.value; q1.value = ''; document.body.classList.remove('sn-open'); const bg = document.getElementById('snBurger'); if (bg) bg.innerHTML = window.SN_BURGER || '☰';
     if (P.style.display !== 'block') { P.style.display = 'block'; q2.value = v; if (v.trim()) run(v); }
     q2.focus(); try { q2.setSelectionRange(q2.value.length, q2.value.length); } catch (e) {} setTimeout(() => { if (typeof showSug === 'function') showSug(); }, 0); };
   q1.addEventListener('touchend', e => { e.preventDefault(); enter(); });
