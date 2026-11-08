@@ -15726,8 +15726,24 @@ function renderWellboats() {
     body.ui-bar #sideNav .sn-top{padding-left:10px!important}
     body.ui-bar #sideNav .sn-scroll{padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))!important}
     #tabBar button{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 0 6px;border:0;border-radius:24px;background:none;color:#e6f0f6;font:inherit;font-size:10.5px;cursor:pointer;-webkit-tap-highlight-color:transparent}
-    #tabBar button.on{background:rgba(255,255,255,.24);color:#fff;font-weight:600}
+    #tabBar button.on{color:#fff;font-weight:600}
     #tabBar svg,#tabBar img{width:22px;height:22px;display:block}
+    /* lentille « liquid glass » (comme la barre d'iOS 26) : au repos une pastille de verre sous l'onglet actif ; au toucher elle grossit,
+       deborde de la barre, grossit ce qu'elle survole (copie agrandie et teintee des onglets), suit le doigt en s'etirant selon la vitesse,
+       puis se pose sur l'onglet le plus proche avec un rebond */
+    #tabBar .tb-lens{position:absolute;top:6px;left:0;height:calc(100% - 12px);border-radius:24px;pointer-events:none;overflow:hidden;z-index:2;
+      background:rgba(255,255,255,.2);box-shadow:inset 0 1px 0 rgba(255,255,255,.55),inset 0 0 0 1px rgba(255,255,255,.22);
+      transition:left .5s cubic-bezier(.34,1.45,.64,1),width .5s cubic-bezier(.34,1.45,.64,1),top .35s cubic-bezier(.34,1.45,.64,1),height .35s cubic-bezier(.34,1.45,.64,1),border-radius .35s,background .3s,box-shadow .3s,transform .45s cubic-bezier(.34,1.45,.64,1);will-change:left,transform}
+    #tabBar .tb-lens.big{z-index:4;top:-9px;height:calc(100% + 18px);border-radius:40px;background:radial-gradient(120% 90% at 50% 30%,rgba(255,255,255,.34),rgba(255,255,255,.08) 60%,rgba(255,255,255,.16));
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.7),inset 3px 0 7px rgba(255,90,210,.45),inset -3px 0 7px rgba(70,200,255,.55),inset 0 -3px 8px rgba(255,225,110,.4),inset 0 3px 6px rgba(255,255,255,.6),0 10px 28px rgba(3,18,35,.35);
+      -webkit-backdrop-filter:blur(7px) saturate(170%) brightness(1.15);backdrop-filter:blur(7px) saturate(170%) brightness(1.15)}
+    #tabBar .tb-lens.drag{transition:top .3s cubic-bezier(.34,1.45,.64,1),height .3s cubic-bezier(.34,1.45,.64,1),border-radius .3s,background .3s,box-shadow .3s}
+    #tabBar .tb-mag{position:absolute;top:0;display:flex;justify-content:space-between;gap:2px;opacity:0;transition:opacity .25s;transform-origin:0 50%}
+    #tabBar .tb-lens.big .tb-mag{opacity:1}
+    #tabBar .tb-mag div{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 0 6px;font-size:10.5px;font-weight:700;color:#8fe0ff;text-shadow:0 0 6px rgba(79,195,247,.5)}
+    #tabBar .tb-mag svg{stroke:#8fe0ff}
+    #tabBar > button{position:relative;z-index:3}
+    #tabBar.lensing > button{opacity:.55;transition:opacity .2s}
   }
 </style>
 <script id="uiBarJs">
@@ -15745,8 +15761,62 @@ function renderWellboats() {
   const bar = document.createElement('nav'); bar.id = 'tabBar';
   bar.innerHTML = T.map(([k, l, ic]) => `<button type="button" data-k="${k}">${ic}<span>${l}</span></button>`).join('');
   document.body.appendChild(bar);
+  // ---- lentille de verre ----
+  const lens = document.createElement('div'); lens.className = 'tb-lens';
+  const mag = document.createElement('div'); mag.className = 'tb-mag';
+  mag.innerHTML = T.map(([k, l, ic]) => `<div>${ic}<span>${l}</span></div>`).join('');
+  lens.appendChild(mag); bar.insertBefore(lens, bar.firstChild);
+  const B = () => [...bar.querySelectorAll(':scope > button')];
+  const ZOOM = 1.22;
+  let lastOn = null, cx = null, held = false, lastX = 0, lastT = 0, vel = 0, tmo = null;
+  function place(x, w, big) {                       // x = centre de la lentille, en px depuis le bord gauche de la barre
+    const bw = bar.clientWidth, W = big ? w + 22 : w;
+    const left = Math.max(big ? -8 : 6, Math.min(bw - W - (big ? -8 : 6), x - W / 2));
+    lens.style.left = left + 'px'; lens.style.width = W + 'px';
+    // copie agrandie des onglets, alignee sur la barre et grossie autour du centre de la lentille
+    const pad = parseFloat(getComputedStyle(bar).paddingLeft) || 6;
+    mag.style.width = (bw - 2 * pad) + 'px'; mag.style.left = (pad - left) + 'px'; mag.style.height = (bar.clientHeight - 12) + 'px';
+    mag.style.top = (big ? 9 : 0) + 'px';
+    mag.style.transformOrigin = `${left + W / 2 - pad}px 50%`; mag.style.transform = `scale(${big ? ZOOM : 1})`;
+    cx = x;
+  }
+  function stretch(v) {                             // etirement selon la vitesse (px/ms), comme une goutte
+    const k = Math.min(.28, Math.abs(v) * .22);
+    lens.style.transform = `scaleX(${1 + k}) scaleY(${1 - k * .45})`;
+  }
+  function toTab(b, animate) {
+    const r = b.getBoundingClientRect(), rb = bar.getBoundingClientRect();
+    const x = r.left - rb.left + r.width / 2;
+    if (animate && cx !== null && Math.abs(x - cx) > 4) {      // trajet : la lentille grossit, s'etire, puis se pose
+      lens.classList.add('big'); bar.classList.add('lensing'); stretch(.9);
+      place(x, r.width, true);
+      clearTimeout(tmo); tmo = setTimeout(() => { stretch(0); lens.classList.remove('big'); bar.classList.remove('lensing'); place(x, r.width, false); }, 380);
+    } else place(x, r.width, false);
+  }
+  const nearest = x => { const rb = bar.getBoundingClientRect(); let best = null, d = 1e9;
+    B().forEach(b => { const r = b.getBoundingClientRect(), c = r.left - rb.left + r.width / 2; if (Math.abs(c - x) < d) { d = Math.abs(c - x); best = b; } }); return best; };
+  let moved = false, x0 = 0;
+  bar.addEventListener('pointerdown', ev => { held = true; moved = false; x0 = ev.clientX; const rb = bar.getBoundingClientRect(), x = ev.clientX - rb.left;
+    lastX = x; lastT = ev.timeStamp; vel = 0; clearTimeout(tmo);
+    lens.classList.add('big', 'drag'); bar.classList.add('lensing'); place(x, (B()[0] || bar).getBoundingClientRect().width, true);
+    try { bar.setPointerCapture(ev.pointerId); } catch (e) {} });
+  bar.addEventListener('pointermove', ev => { if (!held) return; const rb = bar.getBoundingClientRect(), x = ev.clientX - rb.left;
+    if (Math.abs(ev.clientX - x0) > 6) moved = true;
+    const dt = Math.max(1, ev.timeStamp - lastT); vel = vel * .6 + ((x - lastX) / dt) * .4; lastX = x; lastT = ev.timeStamp;
+    place(x, (B()[0] || bar).getBoundingClientRect().width, true); stretch(vel);
+    clearTimeout(bar._st); bar._st = setTimeout(() => { if (held) { vel = 0; stretch(0); } }, 90); });
+  const lift = ev => { if (!held) return; held = false; lens.classList.remove('drag'); stretch(0);
+    const b = nearest(lastX); if (!b) return;
+    const r = b.getBoundingClientRect(), rb = bar.getBoundingClientRect(); place(r.left - rb.left + r.width / 2, r.width, true);
+    clearTimeout(tmo); tmo = setTimeout(() => { lens.classList.remove('big'); bar.classList.remove('lensing'); const on = bar.querySelector(':scope > button.on') || b; lastOn = on; toTab(on, false); }, 300);
+    if (moved && ev && ev.type === 'pointerup') b.click(); };
+  bar.addEventListener('pointerup', lift); bar.addEventListener('pointercancel', lift);
+  addEventListener('resize', () => { const b = bar.querySelector(':scope > button.on'); if (b) toTab(b, false); });
   const mark = () => { const v = typeof currentView !== 'undefined' ? currentView : ''; const menuOpen = document.body.classList.contains('sn-open');
-    bar.querySelectorAll('button').forEach(b => b.classList.toggle('on', menuOpen ? b.dataset.k === 'menu' : b.dataset.k === v)); };
+    B().forEach(b => b.classList.toggle('on', menuOpen ? b.dataset.k === 'menu' : b.dataset.k === v));
+    const on = bar.querySelector(':scope > button.on');
+    lens.style.opacity = on ? '1' : '0';
+    if (on && on !== lastOn && !held) { toTab(on, lastOn !== null); lastOn = on; } };
   bar.addEventListener('click', ev => { const b = ev.target.closest('button'); if (!b) return; const k = b.dataset.k;
     if (k === 'menu') { const bg = document.getElementById('snBurger'); if (bg) bg.click(); }
     else if (k === 'search') { const f = document.getElementById('gsFab'); if (f) f.click(); }
