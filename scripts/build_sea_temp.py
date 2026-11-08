@@ -235,6 +235,8 @@ def alerte(recent, clim):
     return {'until': jours[-1], 'anom7': a7, 'hot7': chaud, 'level': niveau}
 
 
+import threading
+VERROU = threading.Lock()
 NCEI = 'https://www.ncei.noaa.gov/data/sea-surface-temperature-optimum-interpolation/v2.1/access/avhrr/{ym}/'
 
 
@@ -261,8 +263,9 @@ def ncei_lire(urls, mailles):
         for k in range(3):
             try:
                 st, raw = http(u, tries=2, timeout=120)
-                with netCDF4.Dataset('x', memory=raw) as nc:
-                    v = np.ma.filled(nc.variables['sst'][0, 0, :, :].astype(float), np.nan)
+                with VERROU:                                     # la bibliotheque HDF5 n'accepte qu'un fil a la fois (sinon plantage)
+                    with netCDF4.Dataset(f'm{d}', memory=raw) as nc:
+                        v = np.ma.filled(nc.variables['sst'][0, 0, :, :].astype(float), np.nan)
                 return d, {m: (None if np.isnan(v[m]) else round(float(v[m]), 2)) for m in mailles}
             except Exception as e:  # noqa: BLE001
                 err = e; time.sleep(3)
@@ -281,7 +284,7 @@ def mailles_mer(premier):
     import netCDF4
     import numpy as np
     st, raw = http(premier, timeout=120)
-    with netCDF4.Dataset('x', memory=raw) as nc:
+    with VERROU, netCDF4.Dataset('premier', memory=raw) as nc:
         v = np.ma.filled(nc.variables['sst'][0, 0, :, :].astype(float), np.nan)
     res = {}
     for b, pid, lab, la, lo in POINTS:
