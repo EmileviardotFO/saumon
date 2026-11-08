@@ -4363,7 +4363,7 @@ function renderBigFish() {
     N.map(x => line(ML(x.month), x.harvest_t * x.f, x.t56 * x.f, x.t6 * x.f, x.ly_share56, x.ly_share6)).join('') +
     line('Both months', tot.h, tot.t56, tot.t6, tot.lh ? 100 * tot.l56 / tot.lh : 0, tot.lh ? 100 * tot.l6 / tot.lh : 0, true) + `</tbody>`;
   const CK = (RK.checks || []).slice(-4), TS = RK.test_sizes || {}, TF = RK.test_farmers || {};
-  const tsRow = (k, lab) => TS[k] ? `<tr${k === 'G' ? ' style="font-weight:600"' : ''}><td class="name">${lab}</td><td>${TS[k].nat6} pt</td><td>${TS[k].nat56} pt</td><td>${TS[k].z6} pt</td><td>${TS[k].z56} pt</td><td>${TS[k].bias6 > 0 ? '+' : ''}${TS[k].bias6} pt</td></tr>` : '';
+  const tsRow = (k, lab) => TS[k] ? `<tr${k === 'G' ? ' style="font-weight:600"' : ''}><td class="name">${lab}</td><td>${(+TS[k].nat6).toFixed(1)} pt</td><td>${(+TS[k].nat56).toFixed(1)} pt</td><td>${(+TS[k].z6).toFixed(1)} pt</td><td>${(+TS[k].z56).toFixed(1)} pt</td><td>${TS[k].bias6 > 0 ? '+' : ''}${(+TS[k].bias6).toFixed(1)} pt</td></tr>` : '';
   const testHtml = TS.G ? `<div class="gm-sec" style="margin-top:12px">How good is it — tested on the last 24 months, 1 and 2 months ahead</div>` +
     `<div class="gm-tw"><table class="gm-mini" style="max-width:900px"><thead><tr><th class="name">Size-mix method (average gap with the register)</th><th>Norway 6 kg+</th><th>Norway 5–6 kg</th><th>Zone 6 kg+</th><th>Zone 5–6 kg</th><th>Bias 6 kg+</th></tr></thead><tbody>` +
     tsRow('G', 'Used here: half last month, half last month + last year\'s seasonal change') + tsRow('D', 'Last month as it is') + tsRow('A', 'Same months last year at this year\'s weights (earlier version)') + `</tbody></table></div>` +
