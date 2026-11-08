@@ -184,12 +184,19 @@ def main():
             r['recent'] = {d: round(v, 2) for d, v in sorted(jours.items())[-45:]}
             r['alert'] = alerte(r['recent'], r['clim'])
             pts.append({'basin': b, 'id': pid, 'label': lab, 'lat': la, 'lon': lo, **r})
-            print(f'  {pid:14s} {r["days"]} jours, dernier mois {max(r["monthly"]) if r["monthly"] else "-"}')
+            print(f'  {pid:14s} {r["days"]} jours, dernier mois {max(r["monthly"]) if r["monthly"] else "-"}', flush=True)
+            if len(pts) % 4 == 0:
+                # quota a la minute d'Open-Meteo : le premier passage dure ~40 min ; on ecrit au fur et a mesure (points deja lus + anciens)
+                ecrire(pts + [p for p in ancien.get('points', []) if p.get('id') not in {q['id'] for q in pts}], erreurs)
         except Exception as e:  # noqa: BLE001
             erreurs.append(f'{pid}: {str(e)[:120]}')
             old = next((p for p in ancien.get('points', []) if p.get('id') == pid), None)
             if old:
                 pts.append(old)          # on garde la serie precedente plutot qu'un trou
+    ecrire(pts, erreurs)
+
+
+def ecrire(pts, erreurs):
     if not pts:
         print('sea_temp : rien de lu, fichier inchange', erreurs)
         return
