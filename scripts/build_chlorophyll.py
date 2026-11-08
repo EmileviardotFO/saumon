@@ -87,10 +87,10 @@ def axes(did):
     return dims, var
 
 
-def serie(did, dims, var, la, lo, debut):
+def serie(did, dims, var, la, lo, debut, fin='last'):
     sel = []
     for d in dims:
-        if d == 'time': sel.append(f'[({debut}T00:00:00Z):1:(last)]')
+        if d == 'time': sel.append(f'[({debut}T00:00:00Z):1:(' + (fin if fin == 'last' else fin + 'T00:00:00Z') + ')]')
         elif d in ('latitude', 'lat'): sel.append(f'[({la})]')
         elif d in ('longitude', 'lon'): sel.append(f'[({lo})]')
         else: sel.append('[0]')
@@ -135,30 +135,33 @@ def main():
         print('chlorophylle : aucun jeu utilisable', err); return
     did, title, dims, var = used
     print('jeu retenu :', did, '|', title, dims, var, BASE.get(did), flush=True)
-    debut = (dt.date.today() - dt.timedelta(days=365 * 6)).isoformat()
+    # le serveur refuse les longues series (404) : on lit les 60 derniers jours, puis la meme fenetre de 14 jours
+    # pour chacune des 6 annees precedentes
+    debut = (dt.date.today() - dt.timedelta(days=60)).isoformat()
     for b, bn, pid, lab, la, lo in POINTS:
         try:
-            s, pe = {}, ''
+            s, pe, cell = {}, '', None
             for a, o in DEC:
                 try:
                     s = serie(did, dims, var, round(la + a, 3), round(lo + o, 3), debut)
                 except Exception as e:  # noqa: BLE001
                     pe = str(e)[:300]; s = {}
-                    if 'No data' not in pe and 'no matching' not in pe.lower(): break
-                if len(s) > 30: break
-                time.sleep(1)
-            if len(s) < 30: raise RuntimeError(pe or 'pas de donnees (maille terrestre ou nuages)')
+                if len(s) >= 4: cell = (round(la + a, 3), round(lo + o, 3)); break
+                time.sleep(.5)
+            if not cell: raise RuntimeError(pe or 'pas de donnees recentes (nuages ou maille terrestre)')
             jours = sorted(s); last = jours[-1]; l0 = (dt.date.fromisoformat(last) - dt.timedelta(days=13)).isoformat()
             rec = [s[d] for d in jours if d >= l0]
-            # normale : meme fenetre de 14 jours les annees precedentes (moyenne des valeurs disponibles)
             hist = []
             for y in range(1, 7):
                 a0 = (dt.date.fromisoformat(l0) - dt.timedelta(days=365 * y)).isoformat(); a1 = (dt.date.fromisoformat(last) - dt.timedelta(days=365 * y)).isoformat()
-                v = [s[d] for d in jours if a0 <= d <= a1]
-                if v: hist.append(S.median(v))
+                try:
+                    v = list(serie(did, dims, var, cell[0], cell[1], a0, a1).values())
+                except Exception:  # noqa: BLE001
+                    v = []
+                if len(v) >= 2: hist.append(S.median(v))
             now = S.median(rec) if rec else None
             norm = S.median(hist) if len(hist) >= 2 else None
-            pts.append({'basin': b, 'basin_name': bn, 'id': pid, 'label': lab, 'lat': la, 'lon': lo, 'last': last, 'period': f'{l0} to {last}', 'now': round(now, 2) if now else None,
+            pts.append({'basin': b, 'basin_name': bn, 'id': pid, 'label': lab, 'lat': cell[0], 'lon': cell[1], 'n_recent': len(rec), 'last': last, 'period': f'{l0} to {last}', 'now': round(now, 2) if now else None,
                         'normal': round(norm, 2) if norm else None, 'years': len(hist), 'anom_pct': round(100 * (now / norm - 1)) if now and norm else None,
                         'recent': [[d, round(s[d], 2)] for d in jours[-60:]]})
             print(f'  {pid:14s} {now} mg/m3, normale {norm}, ecart {pts[-1]["anom_pct"]} %', flush=True)
