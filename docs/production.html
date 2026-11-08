@@ -15728,22 +15728,24 @@ function renderWellboats() {
     #tabBar button{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 0 6px;border:0;border-radius:24px;background:none;color:#e6f0f6;font:inherit;font-size:10.5px;cursor:pointer;-webkit-tap-highlight-color:transparent}
     #tabBar button.on{color:#fff;font-weight:600}
     #tabBar svg,#tabBar img{width:22px;height:22px;display:block}
-    /* lentille « liquid glass » (comme la barre d'iOS 26) : au repos une pastille de verre sous l'onglet actif ; au toucher elle grossit,
-       deborde de la barre, grossit ce qu'elle survole (copie agrandie et teintee des onglets), suit le doigt en s'etirant selon la vitesse,
-       puis se pose sur l'onglet le plus proche avec un rebond */
+    /* lentille « liquid glass » (barre d'iOS 26) : au repos une pastille sous l'onglet actif ; au toucher elle grossit, deborde de la barre,
+       grossit l'onglet survole et suit le doigt ; au lacher, l'onglet sous la lentille s'ouvre. Uniquement des transformations (pas de
+       flou en arriere-plan, pas d'animation de largeur) pour rester fluide sur telephone. */
+    body.ui-bar #tabBar{touch-action:none;-webkit-user-select:none;user-select:none}
     #tabBar .tb-lens{position:absolute;top:6px;left:0;height:calc(100% - 12px);border-radius:24px;pointer-events:none;overflow:hidden;z-index:2;
       background:rgba(255,255,255,.2);box-shadow:inset 0 1px 0 rgba(255,255,255,.55),inset 0 0 0 1px rgba(255,255,255,.22);
-      transition:left .5s cubic-bezier(.34,1.45,.64,1),width .5s cubic-bezier(.34,1.45,.64,1),top .35s cubic-bezier(.34,1.45,.64,1),height .35s cubic-bezier(.34,1.45,.64,1),border-radius .35s,background .3s,box-shadow .3s,transform .45s cubic-bezier(.34,1.45,.64,1);will-change:left,transform}
-    #tabBar .tb-lens.big{z-index:4;top:-9px;height:calc(100% + 18px);border-radius:40px;background:radial-gradient(120% 90% at 50% 30%,rgba(255,255,255,.34),rgba(255,255,255,.08) 60%,rgba(255,255,255,.16));
-      box-shadow:inset 0 0 0 1px rgba(255,255,255,.7),inset 3px 0 7px rgba(255,90,210,.45),inset -3px 0 7px rgba(70,200,255,.55),inset 0 -3px 8px rgba(255,225,110,.4),inset 0 3px 6px rgba(255,255,255,.6),0 10px 28px rgba(3,18,35,.35);
-      -webkit-backdrop-filter:blur(7px) saturate(170%) brightness(1.15);backdrop-filter:blur(7px) saturate(170%) brightness(1.15)}
-    #tabBar .tb-lens.drag{transition:top .3s cubic-bezier(.34,1.45,.64,1),height .3s cubic-bezier(.34,1.45,.64,1),border-radius .3s,background .3s,box-shadow .3s}
-    #tabBar .tb-mag{position:absolute;top:0;display:flex;justify-content:space-between;gap:2px;opacity:0;transition:opacity .25s;transform-origin:0 50%}
+      transform:translate3d(var(--x,0px),0,0) scale(var(--sx,1),var(--sy,1));transition:transform .42s cubic-bezier(.3,1.35,.6,1);will-change:transform}
+    #tabBar .tb-lens::after{content:"";position:absolute;inset:0;border-radius:inherit;opacity:0;transition:opacity .2s;
+      background:radial-gradient(120% 90% at 50% 25%,rgba(255,255,255,.35),rgba(255,255,255,.06) 60%,rgba(255,255,255,.14));
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.75),inset 3px 0 6px rgba(255,90,210,.5),inset -3px 0 6px rgba(70,200,255,.6),inset 0 -3px 7px rgba(255,225,110,.45),inset 0 3px 5px rgba(255,255,255,.6)}
+    #tabBar .tb-lens.big{z-index:4;background:rgba(40,90,140,.92)}
+    #tabBar .tb-lens.big::after{opacity:1}
+    #tabBar .tb-lens.drag{transition:transform .08s linear}
+    #tabBar .tb-mag{position:absolute;top:0;left:0;transform-origin:0 0;display:flex;justify-content:space-between;gap:2px;opacity:0;transition:opacity .15s;will-change:transform}
     #tabBar .tb-lens.big .tb-mag{opacity:1}
-    #tabBar .tb-mag div{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 0 6px;font-size:10.5px;font-weight:700;color:#8fe0ff;text-shadow:0 0 6px rgba(79,195,247,.5)}
+    #tabBar .tb-mag div{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 0 6px;font-size:10.5px;font-weight:700;color:#8fe0ff}
     #tabBar .tb-mag svg{stroke:#8fe0ff}
     #tabBar > button{position:relative;z-index:3}
-    #tabBar.lensing > button{opacity:.55;transition:opacity .2s}
   }
 </style>
 <script id="uiBarJs">
@@ -15767,62 +15769,52 @@ function renderWellboats() {
   mag.innerHTML = T.map(([k, l, ic]) => `<div>${ic}<span>${l}</span></div>`).join('');
   lens.appendChild(mag); bar.insertBefore(lens, bar.firstChild);
   const B = () => [...bar.querySelectorAll(':scope > button')];
-  const ZOOM = 1.22;
-  let lastOn = null, cx = null, held = false, lastX = 0, lastT = 0, vel = 0, tmo = null;
-  function place(x, w, big) {                       // x = centre de la lentille, en px depuis le bord gauche de la barre
-    const bw = bar.clientWidth, W = big ? w + 22 : w;
-    const left = Math.max(big ? -8 : 6, Math.min(bw - W - (big ? -8 : 6), x - W / 2));
-    lens.style.left = left + 'px'; lens.style.width = W + 'px';
-    // copie agrandie des onglets, alignee sur la barre et grossie autour du centre de la lentille
-    const pad = parseFloat(getComputedStyle(bar).paddingLeft) || 6;
-    mag.style.width = (bw - 2 * pad) + 'px'; mag.style.left = (pad - left) + 'px'; mag.style.height = (bar.clientHeight - 12) + 'px';
-    mag.style.top = (big ? 9 : 0) + 'px';
-    mag.style.transformOrigin = `${left + W / 2 - pad}px 50%`; mag.style.transform = `scale(${big ? ZOOM : 1})`;
-    cx = x;
+  let geo = null;                                     // mesures faites une fois (et au redimensionnement) : rien de lu pendant le glisser
+  const measure = () => { const rb = bar.getBoundingClientRect(), bs = B().map(b => b.getBoundingClientRect());
+    geo = { w: bs[0].width, h: bs[0].height, pad: bs[0].left - rb.left, bw: rb.width, left: rb.left, c: bs.map(r => r.left - rb.left + r.width / 2) };
+    lens.style.width = geo.w + 'px'; mag.style.width = (geo.c[geo.c.length - 1] - geo.c[0] + geo.w) + 'px'; mag.style.height = geo.h + 'px'; };
+  const ZOOM = 1.25;
+  function place(x, big, sx) {                        // x = centre de la lentille depuis le bord gauche de la barre
+    if (!geo) measure();
+    const lx = Math.max(geo.pad, Math.min(geo.bw - geo.pad - geo.w, x - geo.w / 2));
+    const k = big ? 1.32 : 1, s1 = (sx || 1) * k, s2 = (big ? 1.28 : 1) / Math.sqrt(sx || 1);
+    lens.style.setProperty('--x', lx + 'px'); lens.style.setProperty('--sx', s1.toFixed(3)); lens.style.setProperty('--sy', s2.toFixed(3));
+    // copie des onglets vue a travers la lentille : position ecran = centre + ZOOM x (position dans la barre - centre), en compensant
+    // l'echelle de la lentille (s1, s2) ; mag est un enfant de la lentille, origine de transformation en haut a gauche
+    const C = lx + geo.w / 2, cyL = geo.h / 2, a = ZOOM / s1, ay = ZOOM / s2;
+    const tx = geo.w / 2 + ZOOM * (geo.pad - C) / s1, ty = cyL - ay * cyL;
+    mag.style.transform = `translate3d(${tx.toFixed(1)}px,${ty.toFixed(1)}px,0) scale(${a.toFixed(3)},${ay.toFixed(3)})`;
   }
-  function stretch(v) {                             // etirement selon la vitesse (px/ms), comme une goutte
-    const k = Math.min(.28, Math.abs(v) * .22);
-    lens.style.transform = `scaleX(${1 + k}) scaleY(${1 - k * .45})`;
-  }
-  function toTab(b, animate) {
-    const r = b.getBoundingClientRect(), rb = bar.getBoundingClientRect();
-    const x = r.left - rb.left + r.width / 2;
-    if (animate && cx !== null && Math.abs(x - cx) > 4) {      // trajet : la lentille grossit, s'etire, puis se pose
-      lens.classList.add('big'); bar.classList.add('lensing'); stretch(.9);
-      place(x, r.width, true);
-      clearTimeout(tmo); tmo = setTimeout(() => { stretch(0); lens.classList.remove('big'); bar.classList.remove('lensing'); place(x, r.width, false); }, 380);
-    } else place(x, r.width, false);
-  }
-  const nearest = x => { const rb = bar.getBoundingClientRect(); let best = null, d = 1e9;
-    B().forEach(b => { const r = b.getBoundingClientRect(), c = r.left - rb.left + r.width / 2; if (Math.abs(c - x) < d) { d = Math.abs(c - x); best = b; } }); return best; };
-  let moved = false, x0 = 0;
-  bar.addEventListener('pointerdown', ev => { held = true; moved = false; x0 = ev.clientX; const rb = bar.getBoundingClientRect(), x = ev.clientX - rb.left;
-    lastX = x; lastT = ev.timeStamp; vel = 0; clearTimeout(tmo);
-    lens.classList.add('big', 'drag'); bar.classList.add('lensing'); place(x, (B()[0] || bar).getBoundingClientRect().width, true);
-    try { bar.setPointerCapture(ev.pointerId); } catch (e) {} });
-  bar.addEventListener('pointermove', ev => { if (!held) return; const rb = bar.getBoundingClientRect(), x = ev.clientX - rb.left;
-    if (Math.abs(ev.clientX - x0) > 6) moved = true;
-    const dt = Math.max(1, ev.timeStamp - lastT); vel = vel * .6 + ((x - lastX) / dt) * .4; lastX = x; lastT = ev.timeStamp;
-    place(x, (B()[0] || bar).getBoundingClientRect().width, true); stretch(vel);
-    clearTimeout(bar._st); bar._st = setTimeout(() => { if (held) { vel = 0; stretch(0); } }, 90); });
-  const lift = ev => { if (!held) return; held = false; lens.classList.remove('drag'); stretch(0);
-    const b = nearest(lastX); if (!b) return;
-    const r = b.getBoundingClientRect(), rb = bar.getBoundingClientRect(); place(r.left - rb.left + r.width / 2, r.width, true);
-    clearTimeout(tmo); tmo = setTimeout(() => { lens.classList.remove('big'); bar.classList.remove('lensing'); const on = bar.querySelector(':scope > button.on') || b; lastOn = on; toTab(on, false); }, 300);
-    if (moved && ev && ev.type === 'pointerup') b.click(); };
-  bar.addEventListener('pointerup', lift); bar.addEventListener('pointercancel', lift);
-  addEventListener('resize', () => { const b = bar.querySelector(':scope > button.on'); if (b) toTab(b, false); });
-  const mark = () => { const v = typeof currentView !== 'undefined' ? currentView : ''; const menuOpen = document.body.classList.contains('sn-open');
-    B().forEach(b => b.classList.toggle('on', menuOpen ? b.dataset.k === 'menu' : b.dataset.k === v));
-    const on = bar.querySelector(':scope > button.on');
-    lens.style.opacity = on ? '1' : '0';
-    if (on && on !== lastOn && !held) { toTab(on, lastOn !== null); lastOn = on; } };
-  bar.addEventListener('click', ev => { const b = ev.target.closest('button'); if (!b) return; const k = b.dataset.k;
+  const nearest = x => { let best = 0, d = 1e9; geo.c.forEach((c, i) => { if (Math.abs(c - x) < d) { d = Math.abs(c - x); best = i; } }); return B()[best]; };
+  let held = false, lastX = 0, lastT = 0, vel = 0, raf = 0, pend = null, lastOn = null, swallow = 0;
+  const frame = () => { raf = 0; if (pend !== null) place(pend, true, 1 + Math.min(.25, Math.abs(vel) * .18)); };
+  bar.addEventListener('pointerdown', ev => { measure(); held = true; const x = ev.clientX - geo.left; lastX = x; lastT = ev.timeStamp; vel = 0;
+    lens.classList.add('big', 'drag'); pend = x; if (!raf) raf = requestAnimationFrame(frame);
+    try { bar.setPointerCapture(ev.pointerId); } catch (e) {} ev.preventDefault(); });
+  bar.addEventListener('pointermove', ev => { if (!held) return; const x = ev.clientX - geo.left, dt = Math.max(8, ev.timeStamp - lastT);
+    vel = vel * .5 + ((x - lastX) / dt) * .5; lastX = x; lastT = ev.timeStamp; pend = x; if (!raf) raf = requestAnimationFrame(frame); });
+  function go(b) {                                    // ouvre l'onglet (meme action que le clic)
+    const k = b.dataset.k;
     if (k === 'menu') { const bg = document.getElementById('snBurger'); if (bg) bg.click(); }
     else if (k === 'search') { const f = document.getElementById('gsFab'); if (f) f.click(); }
     else { if (document.body.classList.contains('sn-open')) { const bg = document.getElementById('snBurger'); if (bg) bg.click(); }
       const t = document.querySelector(`#viewToggle button[data-v="${k}"]`); if (t) t.click(); window.scrollTo({ top: 0 }); }
-    setTimeout(mark, 50); });
+    setTimeout(mark, 50);
+  }
+  const lift = ev => { if (!held) return; held = false; cancelAnimationFrame(raf); raf = 0; pend = null;
+    lens.classList.remove('drag');
+    const b = nearest(lastX), i = B().indexOf(b);
+    place(geo.c[i], true, 1);                         // la lentille se pose sur l'onglet choisi, puis redevient pastille
+    setTimeout(() => { lens.classList.remove('big'); const on = bar.querySelector(':scope > button.on') || b; lastOn = on; place(geo.c[B().indexOf(on)], false, 1); }, 220);
+    if (ev.type === 'pointerup') { swallow = Date.now(); go(b); } };
+  bar.addEventListener('pointerup', lift); bar.addEventListener('pointercancel', lift);
+  addEventListener('resize', () => { geo = null; const b = bar.querySelector(':scope > button.on'); if (b) { measure(); place(geo.c[B().indexOf(b)], false, 1); } });
+  const mark = () => { const v = typeof currentView !== 'undefined' ? currentView : ''; const menuOpen = document.body.classList.contains('sn-open');
+    B().forEach(b => b.classList.toggle('on', menuOpen ? b.dataset.k === 'menu' : b.dataset.k === v));
+    const on = bar.querySelector(':scope > button.on');
+    lens.style.opacity = on ? '1' : '0';
+    if (on && on !== lastOn && !held) { if (!geo) measure(); place(geo.c[B().indexOf(on)], false, 1); lastOn = on; } };
+  bar.addEventListener('click', ev => { if (Date.now() - swallow < 600) return; const b = ev.target.closest('button'); if (b) go(b); });
   document.addEventListener('click', () => setTimeout(mark, 60), true);
   new MutationObserver(mark).observe(document.body, { attributes: true, attributeFilter: ['class'] });
   setTimeout(mark, 500);
