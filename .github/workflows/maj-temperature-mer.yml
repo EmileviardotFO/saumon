@@ -18,7 +18,9 @@ jobs:
       with:
         python-version: '3.12'
     - name: Temperature de la mer et jours de chaleur par bassin
-      run: python3 scripts/build_sea_temp.py
+      run: |
+        curl -sS -m 30 -o /dev/null -w 'sonde Open-Meteo : %{http_code} en %{time_total}s\n' 'https://marine-api.open-meteo.com/v1/marine?latitude=62&longitude=5&hourly=sea_surface_temperature&past_days=2&forecast_days=1' || true
+        python3 -u scripts/build_sea_temp.py
     - name: Enregistrer
       run: |
         git config user.name "github-actions"; git config user.email "actions@github.com"

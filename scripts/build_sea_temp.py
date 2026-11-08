@@ -69,7 +69,7 @@ POINTS = [
 BASSINS = {'NO': 'Norway', 'FO': 'Faroe Islands', 'IS': 'Iceland', 'GB': 'Scotland', 'IE': 'Ireland', 'CA': 'Canada', 'CL': 'Chile', 'AU': 'Tasmania'}
 
 
-def http(url, tries=4, timeout=90):
+def http(url, tries=3, timeout=60):
     last = None
     for i in range(tries):
         try:
@@ -91,7 +91,9 @@ def http(url, tries=4, timeout=90):
 def journalier(la, lo, debut, fin):
     """Temperature de surface journaliere (moyenne des heures disponibles), {date: °C}."""
     q = {'latitude': la, 'longitude': lo, 'hourly': 'sea_surface_temperature', 'start_date': debut, 'end_date': fin, 'timezone': 'UTC'}
+    t0 = time.time()
     st, raw = http('https://marine-api.open-meteo.com/v1/marine?' + urllib.parse.urlencode(q))
+    print(f'    {la},{lo} {debut}..{fin} -> {st}, {len(raw or b"") // 1024} ko, {time.time() - t0:.1f} s', flush=True)
     if st != 200 or not raw:
         return {}
     h = (json.loads(raw).get('hourly') or {})
@@ -142,8 +144,8 @@ def main():
                 jours = journalier(la, lo, t.isoformat(), hier)
             else:
                 old = None
-                for a0 in range(int(DEBUT[:4]), dt.date.today().year + 1, 4):     # historique complet, par blocs de 4 ans
-                    d0, d1 = f'{a0}-01-01', min(f'{a0 + 3}-12-31', hier)
+                for a0 in range(int(DEBUT[:4]), dt.date.today().year + 1, 2):     # historique complet, par blocs de 2 ans
+                    d0, d1 = f'{a0}-01-01', min(f'{a0 + 1}-12-31', hier)
                     jours.update(journalier(la, lo, d0, d1))
                     time.sleep(2)
             if not jours:
