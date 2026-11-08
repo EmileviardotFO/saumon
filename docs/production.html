@@ -4042,7 +4042,7 @@ function renderSeaTemp() {
       `<line x1="40" x2="590" y1="${Yv(.5)}" y2="${Yv(.5)}" stroke="rgba(255,213,79,.55)" stroke-dasharray="4 3"/><text x="590" y="${Yv(.5) - 3}" font-size="8.5" fill="#ffd27a" text-anchor="end">El Niño threshold +0.5</text>` +
       `<rect x="${Xw(35)}" y="8" width="${Xw(44) - Xw(35)}" height="102" fill="rgba(255,90,46,.10)"/><text x="${(Xw(35) + Xw(44)) / 2}" y="18" font-size="8.5" fill="#ffb27a" text-anchor="middle">2016 Chile bloom</text>` +
       SER.map(([n, L, c], j) => L.length ? `<polyline fill="none" stroke="${c}" stroke-width="${j === 2 ? 2.6 : 1.6}" points="${L.map(v => Xw(wkx(v[0])).toFixed(1) + ',' + Yv(v[1]).toFixed(1)).join(' ')}"/>` +
-        `<text x="${Math.min(585, Xw(wkx(L[L.length - 1][0])) + 4)}" y="${Yv(L[L.length - 1][1]) + 3}" font-size="9.5" font-weight="700" fill="${c}">${n}</text>` : '').join('') +
+        `<text x="${Math.min(548, Xw(wkx(L[L.length - 1][0])) + 4)}" y="${Yv(L[L.length - 1][1]) - (j === 0 ? 6 : j === 1 ? -10 : 3)}" font-size="9.5" font-weight="700" fill="${c}">${n}</text>` : '').join('') +
       MS.map((m, i) => `<text x="${Xw(i * 52 / 12 + 2)}" y="128" font-size="9" fill="#cfe0ea" text-anchor="middle">${m}</text>`).join('') + `</svg>` : '';
     // veille des algues au Chili : temperature de surface mois par mois, 2015-16 (annee du bloom) contre la saison en cours, seuil de 15 °C
     const clp = ['cl_loslagos', 'cl_aysen'].map(id => P.find(p => p.id === id)).filter(Boolean);
