@@ -243,6 +243,10 @@ def main():
         print(f'  {Y - 2} : {len(hist["years"][str(Y - 2)])} passages en {time.time() - t0:.0f} s')
     for old_y in [y for y in hist.get('years', {}) if int(y) < Y - 2]:
         del hist['years'][old_y]
+    # annee en cours, passage par passage (ferme, semaine, navire, type, debut, heures) : sert a l'estimation hebdomadaire des
+    # poids abattus entre deux registres (scripts/build_big_fish.py) ; reecrite chaque jour
+    hist['current'] = {'year': Y, 'built': now.isoformat(), 'rows': cur}
+    json.dump(hist, open(HIST, 'w', encoding='utf-8'), separators=(',', ':'))
     rows = hist['years'].get(str(Y - 1), []) + cur
     harvest_pulse(hist, reg, Y, T, kinds, rows)
     kinds_out = classify(hist['years'].get(str(Y - 2), []) + rows, site_po, site_org, T)
