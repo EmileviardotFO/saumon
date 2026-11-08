@@ -24,7 +24,8 @@ import urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'data', 'chlorophyll.json')
-ERD = 'https://coastwatch.noaa.gov/erddap'
+SERVEURS = ['https://coastwatch.noaa.gov/erddap', 'https://polarwatch.noaa.gov/erddap', 'https://oceanwatch.pifsc.noaa.gov/erddap', 'https://erddap.marine.ie/erddap']
+ERD = SERVEURS[0]
 BASE = {}
 UA = {'User-Agent': 'salmon-outlook (chlorophyll)'}
 # points en mer interieure / fjords exposes aux blooms (2016 Reloncavi-Chiloe, 2021 Comau, 2019 Nord-Norge)
@@ -51,7 +52,9 @@ def http(url, timeout=120):
             with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=timeout) as r:
                 return r.read()
         except urllib.error.HTTPError as e:
-            last = f'{e.code} {e.read()[:300].decode("utf-8", "replace")}'
+            body = re.sub(r'<[^>]+>|\s+', ' ', e.read()[:4000].decode('utf-8', 'replace'))
+            m = re.search(r'message="?([^"]{0,200})', body)
+            last = f'{e.code} {m.group(1) if m else body[-200:]}'
             if e.code in (400, 404, 413): break
             time.sleep(4 * (i + 1))
         except Exception as e:  # noqa: BLE001
@@ -60,9 +63,9 @@ def http(url, timeout=120):
     raise RuntimeError(f'{last} <- {url[-90:]}')
 
 
-def catalogue():
+def catalogue(ERD):
     """Jeux de donnees chlorophylle mondiaux du catalogue, du plus utile au moins utile."""
-    raw = http(ERD + '/search/index.json?' + urllib.parse.urlencode({'page': 1, 'itemsPerPage': 300, 'searchFor': 'chlorophyll global VIIRS'}))
+    raw = http(ERD + '/search/index.json?' + urllib.parse.urlencode({'page': 1, 'itemsPerPage': 300, 'searchFor': 'chlorophyll VIIRS'}))
     t = json.loads(raw)['table']; c = t['columnNames']; rows = [dict(zip(c, r)) for r in t['rows']]
     ok = [r for r in rows if r.get('griddap') and re.search(r'chl', r['Dataset ID'], re.I)]
     def rang(r):
@@ -71,12 +74,12 @@ def catalogue():
                 0 if re.search(r'NPPN20|N20|multi', i, re.I) else 1, 0 if re.search(r'9km|4km', i + ti, re.I) else 1)
     for r in ok: BASE[r['Dataset ID']] = r['griddap']
     ok.sort(key=rang)
-    print('catalogue chlorophylle :', [r['Dataset ID'] for r in ok[:12]], flush=True)
+    print(ERD, 'catalogue chlorophylle :', [r['Dataset ID'] for r in ok[:8]], flush=True)
     return ok
 
 
 def axes(did):
-    raw = json.loads(http(f'{ERD}/info/{did}/index.json'))
+    raw = json.loads(http(BASE[did].replace('/griddap/', '/info/') + '/index.json'))
     t = raw['table']; dims, var = [], None
     for row in t['rows']:
         if row[0] == 'dimension': dims.append(row[1])
@@ -92,7 +95,7 @@ def serie(did, dims, var, la, lo, debut):
         elif d in ('longitude', 'lon'): sel.append(f'[({lo})]')
         else: sel.append('[0]')
     # requete entierement encodee (certains frontaux renvoient 404 sur les crochets bruts)
-    base = BASE.get(did) or f'{ERD}/griddap/{did}'
+    base = BASE[did]
     q = base + '.csv?' + urllib.parse.quote(var + ''.join(sel), safe='')
     raw = http(q, timeout=180).decode('utf-8', 'replace').splitlines()[2:]
     out = {}
@@ -107,18 +110,27 @@ def serie(did, dims, var, la, lo, debut):
 
 def main():
     ancien = json.load(io.open(OUT, encoding='utf-8')) if os.path.exists(OUT) else {}
-    try:
-        cands = catalogue()
-    except Exception as e:  # noqa: BLE001
-        print('chlorophylle : catalogue illisible,', str(e)[:200]); return
     pts, err, used = [], [], None
-    for c in cands[:4]:
+    essai = (dt.date.today() - dt.timedelta(days=20)).isoformat()
+    for srv in SERVEURS:
         try:
-            dims, var = axes(c['Dataset ID'])
-            if not var or 'time' not in dims: continue
-            used = (c['Dataset ID'], c.get('Title', ''), dims, var); break
+            cands = catalogue(srv)
         except Exception as e:  # noqa: BLE001
-            err.append(f'{c["Dataset ID"]}: {str(e)[:100]}')
+            err.append(f'{srv}: catalogue {str(e)[:120]}'); print(err[-1], flush=True); continue
+        for c in cands[:6]:
+            did = c['Dataset ID']
+            try:
+                dims, var = axes(did)
+                if not var or 'time' not in dims: continue
+                # essai sur la mer de Chiloe, 20 derniers jours : le serveur sert-il vraiment les donnees ?
+                serie(did, dims, var, -42.6, -73.25, essai)
+                used = (did, c.get('Title', ''), dims, var); break
+            except Exception as e:  # noqa: BLE001
+                msg = str(e)[:160].replace('\n', ' ')
+                print(f'  {did}: {msg}', flush=True)
+                if 'No data' in msg or 'nothing' in msg.lower():
+                    used = (did, c.get('Title', ''), dims, var); break
+        if used: break
     if not used:
         print('chlorophylle : aucun jeu utilisable', err); return
     did, title, dims, var = used
@@ -157,7 +169,7 @@ def main():
     if not pts:
         print('chlorophylle : rien de lu', err); return
     io.open(OUT, 'w', encoding='utf-8').write(json.dumps({'meta': {'generated': dt.datetime.now(dt.timezone.utc).isoformat(timespec='minutes'), 'dataset': did, 'title': title,
-        'source': 'NOAA CoastWatch ERDDAP, VIIRS ocean colour chlorophyll-a (public domain)', 'unit': 'mg/m3',
+        'source': 'NOAA ERDDAP (' + BASE[did].split('/erddap')[0] + '), VIIRS ocean colour chlorophyll-a (public domain)', 'unit': 'mg/m3',
         'note': 'Chlorophyll measures the amount of algae, not their toxicity. A level far above the same weeks of past years is a sign to watch, not a harmful bloom.', 'errors': err},
         'points': pts}, ensure_ascii=False, separators=(',', ':')))
     print(f'data/chlorophyll.json : {len(pts)} points, {len(err)} erreurs')
