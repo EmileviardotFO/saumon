@@ -100,7 +100,7 @@ def lecon(abstract):
 
 def epmc(q, depuis):
     query = f'TITLE_ABS:{q} AND (TITLE_ABS:salmon OR TITLE_ABS:"Salmo salar" OR TITLE_ABS:salmonid) AND OPEN_ACCESS:y AND FIRST_PDATE:[{depuis} TO 3000-01-01]'
-    u = 'https://www.ebi.ac.uk/europepmc/webservices/rest/search?' + urllib.parse.urlencode({'query': query, 'format': 'json', 'pageSize': 40, 'resultType': 'core', 'sort': 'FIRST_PDATE desc'})
+    u = 'https://www.ebi.ac.uk/europepmc/webservices/rest/search?' + urllib.parse.urlencode({'query': query, 'format': 'json', 'pageSize': 40, 'resultType': 'core'})
     out = []
     for r in json.loads(get(u))['resultList']['result']:
         doi = (r.get('doi') or '').lower()
