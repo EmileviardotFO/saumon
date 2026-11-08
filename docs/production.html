@@ -6735,8 +6735,8 @@ function renderEstablishments() {
         : `<br><span style="color:var(--muted)">China (GACC) list not collected yet — it arrives with the next update.</span>`);
   const LIM = 60, shown = esAll ? list : list.slice(0, LIM);
   tb.innerHTML = shown.map(r => `<tr><td class="name">${r[0]}</td><td style="text-align:left">${r[1]}</td><td style="text-align:left">${r[5]}</td>` +
-    `<td style="text-align:left;font-size:11.5px">${r[6].map(c => `<span title="${ES_CODES[c] || ''}" style="display:inline-block;padding:1px 6px;margin:1px 3px 1px 0;border:1px solid var(--border);border-radius:4px;${c === code ? 'color:var(--accent);border-color:var(--accent)' : ''}">${c}</span>`).join('')}</td>` +
-    `<td style="text-align:left;font-size:11.5px">${(() => { const c = cn && cn.byApproval[cnKey(r[0])]; return c ? `<span class="delta-good" title="${(c[3] || '') + (c[5] ? ' · registered ' + c[5] : '')}">✓ ${c[1] || 'registered'}</span>${c[4] && !/有效|valid|R$/i.test(c[4]) ? ` <span class="delta-bad">${c[4]}</span>` : ''}` : '<span style="color:var(--muted)">—</span>'; })()}</td>` +
+    `<td style="text-align:left;font-size:11.5px;min-width:150px">${r[6].map(c => `<span title="${ES_CODES[c] || ''}" style="display:inline-block;white-space:nowrap;padding:1px 6px;margin:1px 3px 1px 0;border:1px solid var(--border);border-radius:4px;${c === code ? 'color:var(--accent);border-color:var(--accent)' : ''}">${c}</span>`).join('')}</td>` +
+    `<td style="text-align:left;font-size:11.5px">${(() => { const c = cn && cn.byApproval[cnKey(r[0])]; return c ? `<span class="delta-good" style="white-space:nowrap" title="${(c[3] || '') + (c[5] ? ' · registered ' + c[5] : '')}">✓ ${c[1] || 'registered'}</span>${c[4] && !/有效|valid|R$/i.test(c[4]) ? ` <span class="delta-bad">${c[4]}</span>` : ''}` : '<span style="color:var(--muted)">—</span>'; })()}</td>` +
     `<td style="color:var(--muted)">${r[2]}</td></tr>`).join('');
   document.getElementById('esMore').innerHTML = list.length > LIM
     ? `<button type="button" id="esBtn" style="padding:6px 12px;background:#0d1a24;color:var(--muted);border:1px solid var(--border);border-radius:6px;cursor:pointer;">${esAll ? 'Show first ' + LIM + ' only' : 'Show all ' + list.length}</button>` : '';
@@ -6884,7 +6884,7 @@ function plNorway() {
     const PLR = [...land, ...ves].sort((a, b) => a.group.localeCompare(b.group, 'nb') || (b.slaughter - a.slaughter) || a.city.localeCompare(b.city, 'nb'));
     $p('plNoTab').innerHTML = `<thead><tr><th class="name">Operator</th><th style="text-align:left">Establishment</th><th style="text-align:left">Town</th><th style="text-align:left">Activity</th><th>Approval no.</th><th>Holding cages ≤ 12 km (t)</th></tr></thead><tbody>` +
       PLR.map(x => { const hc = plCages(x, cages); return `<tr><td class="name">${e(x.group)}</td><td style="text-align:left;white-space:normal">${e(x.name)}</td><td style="text-align:left">${e(x.city)}</td>` +
-        `<td style="text-align:left">${x.vessel ? 'vessel' : (x.slaughter ? 'slaughter' : '') + (x.slaughter && x.processing ? ' + ' : '') + (x.processing ? 'processing' : '')}</td>` +
+        `<td style="text-align:left;white-space:nowrap">${x.vessel ? 'vessel' : (x.slaughter ? 'slaughter' : '') + (x.slaughter && x.processing ? ' + ' : '') + (x.processing ? 'processing' : '')}</td>` +
         `<td>${x.lat && !x.vessel ? `<a href="#" onclick="plNoFocus('${e(x.id)}', true);return false" style="color:#4fc3f7">${e(x.id)}</a>` : e(x.id)}</td>` +
         `<td>${hc ? `<span title="${e(hc.names.join(', '))}">${Math.round(hc.cap).toLocaleString('en-US')}${hc.n > 1 ? ` <span style="color:var(--muted)">(${hc.n})</span>` : ''}</span>` : '—'}</td></tr>`; }).join('') + `</tbody>`;
     $p('plNoSub').innerHTML = `Every establishment Mattilsynet has approved to <b>slaughter farmed fish</b> (activity code FFPP-SA, round markers), plus the <b>processing plants</b> (filleting, FFPP-P) of salmon groups (diamonds). ` +
