@@ -13838,7 +13838,7 @@ loadRemoteData().then(live => {
   const wrap = () => document.querySelectorAll('svg[viewBox]').forEach(s => {
     if (s.parentElement && s.parentElement.classList.contains('wide-wrap')) return;
     const vb = (s.getAttribute('viewBox') || '').trim().split(/[\s,]+/).map(Number);
-    if (!(vb[2] >= 800) || s.closest('.gen-mini')) return;
+    if (!(vb[2] >= 800) || s.closest('.gen-mini') || s.closest('.ax-fix')) return;   // la copie de l'echelle fixe n'est pas un graphique a envelopper (sinon cadres imbriques et echelle vide)
     const d = document.createElement('div'); d.className = 'wide-wrap'; s.parentNode.insertBefore(d, s); d.appendChild(s);
     // series temporelles : la periode la plus recente d'abord ; graphiques par categorie (bassins, causes...) : le debut, sinon les premieres barres sont cachees
     const isTime = s.dataset.start !== 'left' && [...s.querySelectorAll('text')].some(t => /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|W ?\d|Q[1-4]|(19|20)\d\d|'\d\d)/.test(t.textContent.trim()));
@@ -15479,7 +15479,7 @@ function renderWellboats() {
   }
   // graphiques qui defilent : copie de la bande de l'axe des valeurs, collee a gauche
   function axes() {
-    document.querySelectorAll('.wide-wrap').forEach(w => { const svg = [...w.children].find(x => x.tagName === 'svg' || x.tagName === 'SVG'); if (!svg) return;
+    document.querySelectorAll('.wide-wrap').forEach(w => { if (w.closest('.ax-fix')) return; const svg = [...w.children].find(x => x.tagName === 'svg' || x.tagName === 'SVG'); if (!svg) return;
       const old = w.querySelector(':scope > .ax-fix'), need = w.scrollWidth > w.clientWidth + 4;
       if (!need) { if (old) old.remove(); return; }
       const r = svg.getBoundingClientRect(); if (!r.width) return;
