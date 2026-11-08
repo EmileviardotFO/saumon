@@ -15617,5 +15617,53 @@ function renderWellboats() {
   window.addEventListener('load', kick); window.addEventListener('resize', kick); document.addEventListener('click', kick, true); kick();
 })();
 </script>
+<style id="uiBarCss">
+  /* Essai « barre d'onglets en bas » (telephone) : ?ui=bar pour l'activer, ?ui=classic pour revenir ; le choix est garde sur l'appareil */
+  #tabBar{display:none}
+  @media (max-width:900px){
+    body.ui-bar::before{display:none!important}
+    body.ui-bar #snBurger,body.ui-bar #gsFab,body.ui-bar #snLogo{display:none!important}
+    body.ui-bar{padding-top:calc(4px + env(safe-area-inset-top,0px))!important;padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))!important}
+    body.ui-bar .db-pill{position:absolute!important;top:calc(14px + env(safe-area-inset-top,0px))!important;right:14px!important;left:auto!important;background:none!important;border:0!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;padding:2px 0!important;font-size:12px!important;color:#cfe0ea!important}
+    body.ui-bar > h1{padding-right:110px!important;margin-top:8px!important}
+    body.ui-bar #tabBar{display:flex;position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:960;gap:2px;padding:6px;border-radius:30px;
+      width:min(calc(100vw - 24px),420px);justify-content:space-between;
+      background:linear-gradient(150deg,rgba(64,112,150,.95),rgba(26,60,96,.96));border:1px solid rgba(255,255,255,.32);   /* assez opaque : le texte de la page ne doit pas se lire a travers */
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 8px 24px rgba(3,18,35,.35);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%)}
+    body.ui-bar #sideNav .sn-top{padding-left:10px!important}
+    body.ui-bar #sideNav .sn-scroll{padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))!important}
+    #tabBar button{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 0 6px;border:0;border-radius:24px;background:none;color:#e6f0f6;font:inherit;font-size:10.5px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+    #tabBar button.on{background:rgba(255,255,255,.24);color:#fff;font-weight:600}
+    #tabBar svg,#tabBar img{width:22px;height:22px;display:block}
+  }
+</style>
+<script id="uiBarJs">
+(function () {
+  try { const q = new URLSearchParams(location.search).get('ui'); if (q) localStorage.setItem('ui', q); } catch (e) {}
+  let ui = ''; try { ui = localStorage.getItem('ui') || ''; } catch (e) {}
+  if (ui !== 'bar') return;
+  document.body.classList.add('ui-bar');
+  const I = d => `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+  const T = [['menu', 'Menu', I('<path d="M4 6.5h16M4 12h16M4 17.5h16"/>')],
+             ['news', 'This week', I('<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/>')],
+             ['genmap', 'Norway', '<img src="icons/logo.svg?v=orb" alt="">'],
+             ['prices', 'Prices', I('<path d="M4 19V5M4 19h16"/><path d="M7 15l4-4 3 3 5-6"/>')],
+             ['search', 'Search', I('<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>')]];
+  const bar = document.createElement('nav'); bar.id = 'tabBar';
+  bar.innerHTML = T.map(([k, l, ic]) => `<button type="button" data-k="${k}">${ic}<span>${l}</span></button>`).join('');
+  document.body.appendChild(bar);
+  const mark = () => { const v = typeof currentView !== 'undefined' ? currentView : ''; const menuOpen = document.body.classList.contains('sn-open');
+    bar.querySelectorAll('button').forEach(b => b.classList.toggle('on', menuOpen ? b.dataset.k === 'menu' : b.dataset.k === v)); };
+  bar.addEventListener('click', ev => { const b = ev.target.closest('button'); if (!b) return; const k = b.dataset.k;
+    if (k === 'menu') { const bg = document.getElementById('snBurger'); if (bg) bg.click(); }
+    else if (k === 'search') { const f = document.getElementById('gsFab'); if (f) f.click(); }
+    else { if (document.body.classList.contains('sn-open')) { const bg = document.getElementById('snBurger'); if (bg) bg.click(); }
+      const t = document.querySelector(`#viewToggle button[data-v="${k}"]`); if (t) t.click(); window.scrollTo({ top: 0 }); }
+    setTimeout(mark, 50); });
+  document.addEventListener('click', () => setTimeout(mark, 60), true);
+  new MutationObserver(mark).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+  setTimeout(mark, 500);
+})();
+</script>
 </body>
 </html>
