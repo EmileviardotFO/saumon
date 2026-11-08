@@ -460,6 +460,48 @@ def main():
         if L is None: return LT
         if LT is None or LO is None: return L
         return tuple(min(95.0, max(0.0, L[i] + (LT[i] - LO[i]) / 2)) for i in range(2))
+    # ---- estimation hebdomadaire entre deux registres (passages de bateaux de recolte x poids estime du site) ----
+    # Chaque passage d'un bateau d'abattage, ou d'un wellboat hors semaine de traitement anti-poux, sur un site d'au moins 10 mois en
+    # mer = une recolte ; poids du site selon son temps en mer (courbe des poids abattus de la zone), recale par le rapport
+    # « poids reellement abattu / poids estime » de la zone sur les 3 derniers mois publies (suit le nouveau rythme de croissance).
+    # Moitie-moitie avec la methode G pour la part de 6 kg+. Test (zones de plus de 1 500 t, prevision faite a la fin du mois vise avec
+    # le registre de 2 mois avant) : 2026, zones 9-10 : 8,4 points d'erreur moyenne contre 10,9 ; toutes zones 8,0 contre 9,4 ;
+    # 2024-2025 : 6,6 contre 7,2. A 1 mois : 6,1 contre 6,8 en 2026, 5,2 contre 5,5 en 2024-2025.
+    WBH = os.path.join(ROOT, 'data', 'wellboats_hist.json'); TRF = os.path.join(ROOT, 'data', 'bw_treatments.json')
+    nowcast_ev = collections.defaultdict(list)
+    if os.path.exists(WBH) and os.path.exists(TRF) and not ASOF:
+        hb = json.load(io.open(WBH, encoding='utf-8')); TRT = json.load(io.open(TRF, encoding='utf-8')).get('site_week', {})
+        rows_ = [r for L in (hb.get('years') or {}).values() for r in L] + ((hb.get('current') or {}).get('rows') or [])
+        wi_ = {(w.isocalendar()[0], w.isocalendar()[1]): i for i, w in enumerate(weeks)}
+        for site, yy, ww, mm, typ, ts, hrs in rows_:
+            site = str(site); po = R['site_po'].get(site)
+            if not po or not ts or not commercial(site): continue
+            if typ != 'S' and any(f'{site}|{yy}|{ww + d}' in TRT for d in (-1, 0, 1)): continue
+            i = wi_.get((yy, ww)); s_ = st['sites'].get(site, '')
+            if i is None or i >= len(s_): continue
+            j = debut(s_, i)
+            if j is None: continue
+            age = ((weeks[i] - weeks[j]).days / 30.44 + DECALAGE.get(site, 0.0)) * rythme.get((po, R['site_org'].get(site)), 1.0)
+            if age < 10: continue
+            w_ = poids(po, age)
+            if w_: nowcast_ev[(int(ts[:4]) * 100 + int(ts[5:7]), po)].append(w_)
+    def poids_reel(ym, po):
+        h = sum(c['harv_stk'] or 0 for c in C if c['po'] == po and c['year'] * 100 + c['month'] == ym)
+        k = sum(c['harv_kg'] or 0 for c in C if c['po'] == po and c['year'] * 100 + c['month'] == ym)
+        return k / h if h else None
+    def recale(po):
+        num = den = 0.0; o = dern
+        for _ in range(3):
+            a, L = poids_reel(o, po), nowcast_ev.get((o, po), [])
+            if a and len(L) >= 3: num += a; den += sum(L) / len(L)
+            o = o - 1 if o % 100 > 1 else (o // 100 - 1) * 100 + 12
+        return num / den if den else 1.0
+    def nowcast6(ym, po):
+        L = nowcast_ev.get((ym, po), [])
+        if len(L) < 3: return None, len(L)
+        r = recale(po)
+        return 100 * sum(part_t(w_ * r, 6) for w_ in L) / len(L), len(L)
+    nowcast_out = {}
     prev = {}
     for ym in cibles:
         ly = recolte(ym - 100)
@@ -467,6 +509,15 @@ def main():
         Z = {po: methode_G(dern, ym, po) for po in V}
         Z = {po: z for po, z in Z.items() if z}
         N = methode_G(dern, ym)                                                  # part nationale (la mieux testee)
+        nc = {po: nowcast6(ym, po) for po in Z}
+        nowcast_out[ym] = {str(po): {'visits': n, 'share6_visits': round(v, 1) if v is not None else None, 'share6_G': round(Z[po][1], 1)} for po, (v, n) in nc.items()}
+        if any(v is not None for v, n in nc.values()):
+            Zb = {po: (z[0], (z[1] + nc[po][0]) / 2 if nc[po][0] is not None else z[1]) for po, z in Z.items()}
+            tvz = sum(V[po] for po in Z)
+            nat_g, nat_b = (sum(V[po] * Z[po][1] for po in Z) / tvz, sum(V[po] * Zb[po][1] for po in Z) / tvz) if tvz else (0, 0)
+            N = (N[0], max(0.0, min(95.0, N[1] + nat_b - nat_g)))              # la part nationale suit l'ecart apporte par les passages
+            Z = Zb
+            for po in Z: nowcast_out[ym][str(po)]['share6_blend'] = round(Z[po][1], 1)
         tv = sum(V[po] for po in Z)
         k = [N[i] * tv / sum(V[po] * Z[po][i] for po in Z) if sum(V[po] * Z[po][i] for po in Z) else 1 for i in range(2)]
         prev[ym] = {po: [V[po], V[po] * min(95, Z[po][0] * k[0]) / 100, V[po] * min(95, Z[po][1] * k[1]) / 100] for po in Z}
@@ -668,7 +719,7 @@ def main():
                     'method': 'site age from fallow history (BarentsWatch) x zone growth curve (biomass register) x measured harvest chance by age'},
            'zones': zones,
            'ranking': {'months': cibles, 'register_month': dern, 'farmers': classement, 'norway': resume, 'ytd': ytd_share,
-                       'zone_share': part_zones, 'gut': GUT, 'checks': controles, 'farmer_checks': bilan, 'reservoir': {'register_month': max(res_hist) if res_hist else None, 'week': now.isoformat(), 'farmers': reservoir_eleveurs}, 'test_sizes': test_calibres, 'test_farmers': test_eleveurs,
+                       'zone_share': part_zones, 'gut': GUT, 'checks': controles, 'farmer_checks': bilan, 'reservoir': {'register_month': max(res_hist) if res_hist else None, 'week': now.isoformat(), 'farmers': reservoir_eleveurs}, 'test_sizes': test_calibres, 'nowcast': nowcast_out, 'test_farmers': test_eleveurs,
                        'method': 'size mix: half the last reported month, half the last month plus last year\'s seasonal change (tested best); '
                                  'shared between farmers by site capacity x harvest chance x size mix at the estimated weight; ILA and PD adjust timing and weight'},
            'cycles': {'since': '2023-01-01', 'min_cycles': 3, 'farmers': sorted(cyc, key=lambda c: (c['po'], -c['cycles'])),
