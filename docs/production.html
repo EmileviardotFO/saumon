@@ -6170,11 +6170,89 @@ function clSecInit() {   // memorise les sections ouvertes ; recale la carte a l
 
 // ---------- Disease overview : mortalite et maladies, bassin par bassin (rapports officiels + nos series) ----------
 let DZ = null, DZ_LOADING = false, DZ_B = null, DZ_SF = { b: 'all', t: 'all' };
+// ===================== Maladies : alertes de la semaine et maladie par maladie (data/algae_watch.json, disease_knowledge.json, disease_research.json) =====================
+let DZ_D = null, DZ_PF = 'all';
+function dzEsc(t) { return String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
+function dzLiveHtml(h2, box) {
+  const A = DZ.aw || {}, e = dzEsc, H = A.norway_hi || {}, W = H.weekly, SN = (A.chile_sernapesca || {}).items || [], CC = A.chile_conditions || {};
+  const LC = { 0: '#a9bfcc', 1: '#81c784', 2: '#ffd54f', 3: '#ff8a65' }, pill = (l, t) => `<span style="display:inline-block;padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:700;color:#0b1a26;background:${LC[l] || LC[0]}">${e(t)}</span>`;
+  const MON = MONTHS_FR.map(m => m.slice(0, 3)), dd = d => d ? `${+d.slice(8)} ${MON[+d.slice(5, 7) - 1]} ${d.slice(0, 4)}` : '';
+  let h = h2('E · Alerts this week — official sources');
+  // Norvege : bulletin HI
+  let no = '';
+  if (W) { const ev = (H.events || []).filter(x => x.date && x.level).slice(0, 6);
+    no = `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b>Norway · harmful algae, week ${W.week}</b>${pill(W.level, 'risk ' + W.level_en)}${H.ongoing ? pill(3, 'bloom ongoing') : ''}</div>` +
+      `<div class="sig-sub" style="margin-top:4px">${e(W.summary_en)} <a href="${e(W.url)}" target="_blank" rel="noopener" style="color:#4fc3f7">HI weekly status (Norwegian)</a></div>` +
+      (ev.length ? `<div class="sig-sub" style="margin-top:8px"><b>Last bloom reports</b><br>${ev.map(x => `${dd(x.date)} · ${pill(x.level, x.level_en)} ${Object.entries(x.po || {}).map(([k, v]) => `PO${k} ${['', 'low', 'moderate', 'high'][v]}`).join(', ')}${x.species && x.species.length ? ' · ' + e(x.species.join(', ')) : ''} · <a href="${e(x.url)}" target="_blank" rel="noopener" style="color:#4fc3f7">report</a>`).join('<br>')}</div>` : '') +
+      `<div class="sig-sub" style="margin-top:6px">Source: Institute of Marine Research (HI), national monitoring of harmful algae — sampling stations, farmers' reports and drift modelling. Risk = chance of behaviour change and higher mortality in farmed fish.</div>`; }
+  // Chili : communiques Sernapesca
+  const rel = SN.filter(x => !/^Res\.?\s?Ex/i.test(x.title)).slice(0, 8);
+  const cl = rel.length ? `<b>Chile · Sernapesca releases on mortality, algae and disease</b><div style="margin-top:6px">${rel.map(x => `<div style="display:grid;grid-template-columns:96px 1fr;gap:10px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12.5px"><span style="color:var(--muted)">${dd(x.date)}</span>` +
+      `<span><a href="${e(x.url)}" target="_blank" rel="noopener" style="color:#e7eef2">${e(x.title)}</a>${x.region && x.region.length ? ` <span class="sig-sub">· ${e(x.region.join(', '))}</span>` : ''}${x.cause ? ` <span class="sig-sub">· ${e(x.cause)}</span>` : ''}</span></div>`).join('')}</div>` +
+      `<div class="sig-sub" style="margin-top:6px">Sernapesca announces mass-mortality contingencies, their tonnage and their end in press releases (Spanish); companies declare mortality to Sernapesca weekly, but those declarations are not published farm by farm.</div>` : '';
+  // Chili : conditions de bloom (publiees seulement si confirmees)
+  const cc = CC.published ? `<div style="margin-top:10px;padding:10px 12px;border-radius:10px;border:1px solid #ff8a65;background:rgba(255,138,101,.08)"><b style="color:#ffab91">Chile · bloom-prone conditions confirmed</b><div class="sig-sub" style="margin-top:4px">` +
+      (CC.points || []).filter(p => p.confirmed).map(p => `${e(p.label)}: rain over 60 days ${Math.round(100 * p.now.rain_ratio)} % of normal, sea ${p.now.sst_anom > 0 ? '+' : ''}${p.now.sst_anom} °C, sunshine ${Math.round(100 * p.now.sun_ratio)} % and wind ${Math.round(100 * p.now.wind_ratio)} % of normal`).join('<br>') +
+      `<br>${e(CC.rule)} These conditions preceded the 2016 bloom; they do not make one certain.</div></div>` : '';
+  h += `<div class="gs-two" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:12px">${box(no || '<span class="sig-sub">Norwegian algae bulletin not collected yet.</span>')}${box((cl || '<span class="sig-sub">Sernapesca releases not collected yet.</span>') + cc)}</div>`;
+  return h;
+}
+function dzDiseaseHtml(h2, box) {
+  const K = DZ.kn || {}, R = ((DZ.rs || {}).diseases) || {}, e = dzEsc, D = K.diseases || [];
+  if (!D.length) return '';
+  if (!DZ_D) { try { DZ_D = localStorage.getItem('dzDisease') || 'lice'; } catch (_) { DZ_D = 'lice'; } }
+  const d = D.find(x => x.id === DZ_D) || D[0], RS = R[d.id] || { papers: [], news: [] };
+  const MON = MONTHS_FR.map(m => m.slice(0, 3)), dd = s => s ? `${+s.slice(8) || ''} ${MON[+s.slice(5, 7) - 1] || ''} ${s.slice(0, 4)}`.trim() : '';
+  const BN = { NO: 'Norway', CL: 'Chile', GB: 'Scotland', FO: 'Faroes', IS: 'Iceland', CA: 'Canada', AU: 'Tasmania', IE: 'Ireland' };
+  const recent = x => { const n = (R[x.id] || {}).papers || [], cut = new Date(Date.now() - 90 * 864e5).toISOString().slice(0, 10); return n.filter(p => (p.date || '') >= cut).length; };
+  let h = `<div id="dzDis">` + h2('F · Disease by disease — counts, what we know, and what research and the press say');
+  h += `<div class="sig-sub" style="margin-bottom:8px">Pick a disease. The evidence card is kept by hand from free-to-read reports and studies, each line with its source; the publication and press lists below it refresh every morning (Europe PMC, OpenAlex, Google News). Number on each button: open-access papers in the last 90 days.</div>`;
+  h += `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">${D.map(x => `<button type="button" class="dz-tab${x.id === d.id ? ' on' : ''}" data-dzd="${x.id}">${e(x.name.split(' (')[0].split(':')[0])} <span style="opacity:.7">${recent(x)}</span></button>`).join('')}</div>`;
+  // comptages par bassin (Norvege : sites sous restriction ILA / PD chaque semaine, BarentsWatch)
+  const cnt = dzCountsHtml(d.id);
+  // fiche
+  const SEC = [['mortality', 'Mortality'], ['growth', 'Growth and harvest weight'], ['cost', 'Cost'], ['quality', 'Quality and downgrading'], ['trend', 'Latest trend'], ['new_research', 'What is new in research']];
+  const fact = f => `<li style="margin:4px 0">${e(f.fact)} <a href="${e(f.url)}" target="_blank" rel="noopener" style="color:#4fc3f7">${e(f.source || 'source')}</a>${f.level === 'snippet-level' ? ' <span class="sig-sub">(seen in a search result only)</span>' : ''}</li>`;
+  const card = `<div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:8px"><b style="font-size:16px">${e(d.name)}</b><span class="sig-sub">${e(d.agent || '')}</span></div>` +
+    `<div style="margin:6px 0 8px;line-height:1.55">${e(d.what || '')}</div><div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px">${(d.basins || []).map(b => `<span class="dz-chip">${e(BN[b] || b)}</span>`).join('')}</div>` +
+    `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:4px 22px">${SEC.filter(([k]) => (d[k] || []).length).map(([k, n]) => `<div><div style="font-weight:700;margin-top:10px;font-size:13px">${n}</div><ul style="margin:4px 0 0;padding-left:18px;font-size:12.5px;line-height:1.5;color:#d6e3ea">${d[k].map(fact).join('')}</ul></div>`).join('')}</div>`;
+  h += (cnt ? box(cnt, 'margin-bottom:12px') : '') + box(card);
+  // publications
+  const P = (RS.papers || []).filter(p => DZ_PF === 'all' || (DZ_PF === 'peer' ? p.type !== 'preprint' : p.type === 'preprint'));
+  h += `<div id="dzPubs" style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:16px 0 6px"><b>Latest open-access publications</b>${(RS.papers || []).length ? `<span class="sig-sub">${(RS.papers || []).length} in the last ${Math.round(((Date.now() - new Date(((DZ.rs || {}).meta || {}).since || Date.now())) / 864e5) / 30)} months</span>` : ''}` +
+    [['all', 'All'], ['peer', 'Journals'], ['pre', 'Preprints']].map(([k, n]) => `<button type="button" class="dz-tab${DZ_PF === k ? ' on' : ''}" data-dzpf="${k}" style="padding:3px 10px">${n}</button>`).join('') + `</div>`;
+  h += box(P.length ? P.slice(0, 14).map(p => `<div style="padding:8px 0;border-bottom:1px solid var(--border)"><div style="font-size:12px;color:var(--muted)">${dd(p.date)} · ${e(p.journal || p.src)}${p.type === 'preprint' ? ' · <span style="color:#ffd54f">preprint, not peer-reviewed</span>' : ''}</div>` +
+      `<a href="${e(p.url)}" target="_blank" rel="noopener" style="color:#e7eef2;font-weight:600;font-size:13.5px">${e(p.title)}</a>${p.finding ? `<div class="sig-sub" style="margin-top:3px;line-height:1.5"><b>What we learn:</b> ${e(p.finding)}</div>` : ''}</div>`).join('') +
+    `<div class="sig-sub" style="margin-top:6px">${e(((DZ.rs || {}).meta || {}).note || '')}</div>` : '<span class="sig-sub">No open-access publication found yet for this disease (the feed refreshes every morning).</span>');
+  const N = RS.news || [];
+  h += `<div style="margin:16px 0 6px"><b>In the press</b> <span class="sig-sub">last ${((DZ.rs || {}).meta || {}).news_days || 60} days, English, Norwegian and Spanish</span></div>` +
+    box(N.length ? N.slice(0, 12).map(n => `<div style="display:grid;grid-template-columns:92px 1fr;gap:10px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12.5px"><span style="color:var(--muted)">${dd(n.date)}</span><span><a href="${e(n.url)}" target="_blank" rel="noopener" style="color:#e7eef2">${e(n.title)}</a> <span class="sig-sub">· ${e(n.source)} · ${e(n.lang)}</span></span></div>`).join('') : '<span class="sig-sub">No article in the last weeks.</span>');
+  return h + `</div>`;
+}
+// comptages par bassin pour la maladie choisie : series vivantes quand elles existent, sinon chiffres des rapports annuels (fiche)
+function dzCountsHtml(id) {
+  const e = dzEsc, MON = MONTHS_FR.map(m => m.slice(0, 3));
+  if (id === 'isa' || id === 'pd') {
+    const W = ((DZ.bwd || {}).weeks) || {}, code = id === 'isa' ? 'ILA' : 'PD', ks = Object.keys(W).sort(); if (!ks.length) return '';
+    const n = k => Object.values(W[k] || {}).filter(v => v.includes(code)).length, last = ks[ks.length - 1], [Y, w] = last.split('-').map(Number);
+    const same = y => { const k = `${y}-${String(w).padStart(2, '0')}`; return W[k] ? n(k) : null; };
+    // nombre de sites a la derniere semaine de chaque mois, 3 annees cote a cote
+    const mk = {}; ks.forEach(k => { const [y, ww] = k.split('-').map(Number), d = new Date(Date.UTC(y, 0, 4 + (ww - 1) * 7)), m = d.getUTCMonth() + 1; mk[y * 100 + m] = n(k); });
+    const ys = [Y - 2, Y - 1, Y], chart = scSvg(Array.from({ length: 12 }, (_, i) => String(i + 1)), ys.map((y, i) => ({ v: Array.from({ length: 12 }, (_, m) => mk[y * 100 + m + 1] ?? null), col: ['#c3ced6', '#ffc38a', '#3fb8f0'][i], bar: true, lab: String(y) })), { lab: k => MON[k - 1], fmt: v => Math.round(v) });
+    return `<b>Norway · farms under ${id === 'isa' ? 'ISA' : 'PD'} restrictions, week ${w} of ${Y}: ${n(last)}</b> <span class="sig-sub">(${same(Y - 1) ?? '—'} the same week of ${Y - 1}, ${same(Y - 2) ?? '—'} in ${Y - 2})</span>` +
+      `<div class="sig-sub" style="margin:4px 0">Farms listed with ${id === 'isa' ? 'ISA (ILA)' : 'PD'} by the Norwegian Food Safety Authority, as published weekly by BarentsWatch; count at the last week of each month.</div>${chart}`;
+  }
+  if (id === 'lice') { const E = ((DZ.cad || {}).entries || []); if (!E.length) return '';
+    const q = {}; E.forEach(x => { const [y, n] = x.week.split('-W').map(Number), t = new Date(Date.UTC(y, 0, 4)); t.setUTCDate(t.getUTCDate() - ((t.getUTCDay() + 6) % 7) + 3 + (n - 1) * 7); const k = `${t.getUTCFullYear()} Q${Math.floor(t.getUTCMonth() / 3) + 1}`; q[k] = (q[k] || 0) + 1; });
+    const L = Object.entries(q).sort().slice(-8);
+    return `<b>Chile · farms listed for sea lice above the threshold (high-dissemination centres), by quarter</b><div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:6px">${L.map(([k, v]) => `<div style="text-align:center"><div style="font-size:18px;font-weight:700">${v}</div><div class="sig-sub">${k}</div></div>`).join('')}</div><div class="sig-sub" style="margin-top:4px">Sernapesca list; Norway's farm-by-farm lice counts are in the Fish health tab.</div>`; }
+  return '';
+}
 function renderDisease() {
   const root = document.getElementById('dzRoot'); if (!root) return;
   if (!DZ) { if (!DZ_LOADING) { DZ_LOADING = true; const g = n => fetch(DATA_URL.replace('data.json', n), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
-      Promise.all(['disease_manual.json', 'scotland.json', 'iceland_mast.json', 'canada_extra.json', 'australia.json', 'faroe.json', 'chili.json', 'events.json', 'canada_atl.json', 'own_supply.json', 'chile_caligus.json', 'chile_subpesca.json', 'sea_temp.json'].map(g))
-        .then(([m, sc, is, ca, au, fo, cl, ev, cat, sup, cad, sub, st]) => { DZ = { m: m || {}, sc, is, ca, au, fo, cl, ev, cat, sup, cad, sub, st }; DZ_LOADING = false; if (currentView === 'disease') renderDisease(); }); }
+      Promise.all(['disease_manual.json', 'scotland.json', 'iceland_mast.json', 'canada_extra.json', 'australia.json', 'faroe.json', 'chili.json', 'events.json', 'canada_atl.json', 'own_supply.json', 'chile_caligus.json', 'chile_subpesca.json', 'sea_temp.json', 'disease_knowledge.json', 'disease_research.json', 'algae_watch.json', 'bw_disease_sites.json'].map(g))
+        .then(([m, sc, is, ca, au, fo, cl, ev, cat, sup, cad, sub, st, kn, rs, aw, bwd]) => { DZ = { m: m || {}, sc, is, ca, au, fo, cl, ev, cat, sup, cad, sub, st, kn, rs, aw, bwd }; DZ_LOADING = false; if (currentView === 'disease') renderDisease(); }); }
     root.innerHTML = 'Loading…'; return; }
   if (!DZ_B) { try { DZ_B = localStorage.getItem('dzBasin') || 'NO'; } catch (_) { DZ_B = 'NO'; } }
   const M = DZ.m, e = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), f0 = v => v === null || v === undefined || !isFinite(v) ? '—' : Math.round(v).toLocaleString('en-US');
@@ -6398,7 +6476,8 @@ function renderDisease() {
         `<div style="display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 6px">${P.map(p => `<button type="button" class="dz-sub" style="${p === pick ? 'background:rgba(255,255,255,.28)' : ''}" onclick="window.ST_PT='${p.id}';renderDisease()">${e(p.label)}</button>`).join('')}</div>` +
         `<div style="font-size:13px;font-weight:600">${e(pick.label)} — monthly sea temperature, ${ys.join(', ')}</div>` + chart) + `</div>`;
     } }
-  h += `<div style="margin-top:28px;padding-top:18px;border-top:1px solid var(--border)">` + h2('E · Source library — every document this tab is built on') +
+  h += dzLiveHtml(h2, box) + dzDiseaseHtml(h2, box);
+  h += `<div style="margin-top:28px;padding-top:18px;border-top:1px solid var(--border)">` + h2('G · Source library — every document this tab is built on') +
     `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">${[['all', 'All basins'], ...ORDER].map(([b, n]) => `<button type="button" class="dz-tab${DZ_SF.b === b ? ' on' : ''}" data-sfb="${b}">${n}</button>`).join('')}` +
     `<span style="width:12px"></span>${[['all', 'All types'], ['rep', 'Official reports'], ['data', 'Data'], ['press', 'Press'], ['co', 'Company']].map(([t, n]) => `<button type="button" class="dz-tab${DZ_SF.t === t ? ' on' : ''}" data-sft="${t}">${n}</button>`).join('')}` +
     `<button type="button" class="dz-tab" id="dzCsv">Download the list (CSV)</button></div>` + box(srcRows(FL)) + `</div>`;
@@ -6439,6 +6518,8 @@ function renderDisease() {
   root.querySelectorAll('[data-dzb]').forEach(x => x.onclick = () => pick(x.dataset.dzb));
   root.querySelectorAll('[data-sfb]').forEach(x => x.onclick = () => { DZ_SF.b = x.dataset.sfb; renderDisease(); });
   root.querySelectorAll('[data-sft]').forEach(x => x.onclick = () => { DZ_SF.t = x.dataset.sft; renderDisease(); });
+  root.querySelectorAll('[data-dzd]').forEach(x => x.onclick = () => { DZ_D = x.dataset.dzd; try { localStorage.setItem('dzDisease', DZ_D); } catch (_) {} renderDisease(); setTimeout(() => { const y = document.getElementById('dzDis'); if (y) y.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 30); });
+  root.querySelectorAll('[data-dzpf]').forEach(x => x.onclick = () => { DZ_PF = x.dataset.dzpf; renderDisease(); setTimeout(() => { const y = document.getElementById('dzPubs'); if (y) y.scrollIntoView({ block: 'start' }); }, 30); });
   const cb = document.getElementById('dzCsv'); if (cb) cb.onclick = () => { const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
     const csv = ['basin,date,type,document,url,what we use'].concat(ALL.map(x => [x.b, x.d, (TY[x.ty] || TY.data)[0], x.n, x.u, x.w].map(q).join(','))).join('\n');
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'disease-overview-sources.csv'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); };

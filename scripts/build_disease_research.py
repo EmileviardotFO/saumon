@@ -53,18 +53,33 @@ DIS = {
     'nonin': ('("Salmo salar") AND (hypoxia OR "marine heatwave" OR "handling stress" OR "smolt quality" OR "thermal delousing" OR "mechanical delousing")', 'Atlantic salmon hypoxia heatwave smolt mortality',
               [('salmon mortality oxygen heat farm', 'en'), ('dødelighet laks oksygen', 'no')]),
 }
+# filtre de pertinence (titre + resume, ou titre de presse) : la recherche plein texte d'OpenAlex ramene des voisins
+MUST = {
+    'lice': r'lice|lus\b|lusen|Lepeophtheirus|Caligus|delous|avlus|piojo',
+    'pd': r'pancrea|alphavirus|\bSAV\d?\b|\bPD\b|pankreas',
+    'isa': r'infectious salmon an(a)?emia|\bISAV?\b|\bILA\b|lakseanemi|anemia infecciosa',
+    'cms': r'cardiomyopath|myocarditis|PMCV|\bCMS\b|kardiomyopat|hjertesprekk',
+    'hsmi': r'heart and skeletal|orthoreovirus|\bPRV|\bHSMI\b|\bHSMB\b|melanin',
+    'gill': r'gill|gjelle|Paramoeba|AGD|branqui',
+    'srs': r'Piscirickettsi|\bSRS\b|rickettsia',
+    'bkd': r'kidney disease|Renibacterium|\bBKD\b|nyresyke',
+    'ulcers': r'Moritella|ulcer|Tenacibacul|mouthrot|yellow mouth|vintersår|munnråte|úlcera',
+    'hab': r'alga|bloom|Pseudochattonella|Heterosigma|Chrysochromulina|jellyfish|manet|floraci|\bFAN\b|plankton',
+    'pasteurellosis': r'Pasteurell|Phocoenobacter|orthomyxovirus|POMV|Tasmania|Macquarie',
+    'nonin': r'hypox|oxygen|oksygen|ox[ií]geno|heatwave|temperature|handling|smolt|delous|welfare|mortalit|dødelighet',
+}
 CLE = re.compile(r'mortalit|surviv|death|died|dead|growth|weight|harvest|feed conversion|FCR|cost|loss|economic|yield|downgrad|quality|prevalen|incidence|outbreak|efficac|protect|reduc', re.I)
 NUM = re.compile(r'\d')
 
 
 def get(url, timeout=60):
     last = None
-    for i in range(3):
+    for i in range(4):
         try:
             with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=timeout) as r:
                 return r.read().decode('utf-8', 'replace')
         except Exception as e:  # noqa: BLE001
-            last = e; time.sleep(3 * (i + 1))
+            last = e; time.sleep(8 * (i + 1))
     raise RuntimeError(f'{url[:120]}: {last}')
 
 
@@ -94,7 +109,7 @@ def epmc(q, depuis):
         for f in ((r.get('fullTextUrlList') or {}).get('fullTextUrl') or []):
             if f.get('availabilityCode') == 'OA' and f.get('documentStyle') in ('html', 'pdf'): url = f['url']; break
         out.append({'title': propre(r.get('title')), 'date': r.get('firstPublicationDate'), 'journal': (r.get('journalInfo') or {}).get('journal', {}).get('title') or r.get('bookOrReportDetails', {}).get('publisher') or r.get('source'),
-                    'doi': doi, 'url': url, 'type': 'preprint' if r.get('source') == 'PPR' else 'paper', 'finding': lecon(ab), 'src': 'Europe PMC'})
+                    'doi': doi, 'url': url, 'type': 'preprint' if r.get('source') == 'PPR' else 'paper', 'finding': lecon(ab), 'src': 'Europe PMC', '_ab': ab[:3000]})
     return out
 
 
@@ -112,7 +127,7 @@ def openalex(q, depuis):
         src = ((r.get('primary_location') or {}).get('source') or {}).get('display_name')
         out.append({'title': propre(t), 'date': r.get('publication_date'), 'journal': src, 'doi': doi,
                     'url': (r.get('open_access') or {}).get('oa_url') or (f'https://doi.org/{doi}' if doi else r.get('id')),
-                    'type': 'preprint' if r.get('type') == 'preprint' or (src and re.search(r'rxiv', src, re.I)) else (r.get('type') or 'paper'), 'finding': lecon(ab), 'src': 'OpenAlex'})
+                    'type': 'preprint' if r.get('type') == 'preprint' or (src and re.search(r'rxiv', src, re.I)) else (r.get('type') or 'paper'), 'finding': lecon(ab), 'src': 'OpenAlex', '_ab': ab[:3000]})
     return out
 
 
@@ -148,7 +163,7 @@ def main():
                     pubs[key] = p
             except Exception as e:  # noqa: BLE001
                 err.append(f'{k} {f.__name__}: {str(e)[:150]}')
-            time.sleep(1)
+            time.sleep(3)
         for q, lang in qp:
             try:
                 for n in presse(q, lang):
@@ -157,6 +172,10 @@ def main():
             except Exception as e:  # noqa: BLE001
                 err.append(f'{k} presse {lang}: {str(e)[:150]}')
             time.sleep(1.5)
+        mk = re.compile(MUST[k], re.I)
+        pubs = {a: b for a, b in pubs.items() if mk.search(b['title'] + ' ' + (b.get('_ab') or ''))}
+        news = {a: b for a, b in news.items() if mk.search(b['title'])}
+        for b in pubs.values(): b.pop('_ab', None)
         P = sorted(pubs.values(), key=lambda p: p['date'] or '', reverse=True)[:30]
         N = sorted(news.values(), key=lambda n: n['date'] or '', reverse=True)[:20]
         if not P and k in (old.get('diseases') or {}): P = old['diseases'][k].get('papers', [])
