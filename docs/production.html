@@ -6996,7 +6996,7 @@ function renderRegister() {
   document.getElementById('rgThUm').textContent = `vs ${mlabM}`;
   document.getElementById('rgPoSub').innerHTML =
     `Standing salmon biomass at the end of ${mlab} (Biomasseregisteret) divided by the licensed maximum (MTB) of the zone — ` +
-    `<b>biomass divided by MTB</b>, i.e. how full the zone is. MTB here counts every sea-based salmon licence, including research, display, education and slaughter-cage licences, placed in the zone of their sites. The register, however, reports the fish of research, display, education and broodstock licences outside the zones (row 0, about 4–5 % of Norway's biomass), so a zone's use of capacity reads a few points low; the Norway line adds row 0 and is exact. ` +
+    `<b>biomass divided by MTB</b>, i.e. how full the zone is. MTB here is the official one: commercial and development licences (green, converted and 5 % increases included), the base Fiskeridirektoratet uses. The fish of research, display, education and broodstock licences are reported outside the zones (row 0, about 4–5 % of Norway's biomass) and their licences are left out of the MTB, so both sides match; the Norway line shows all the biomass but its use of capacity is zones 1–13 against the official MTB — the same figure as Supply outlook, Generations map and the weekly brief. ` +
     `MTB is enforced per company and per county, not per zone, so a zone can read slightly above 100% when a company keeps more fish there and less in a neighbouring zone of the same county (zones 3 and 7 typically). ` +
     `Above ~85–90% farmers are close to the ceiling and must harvest; low values leave room to grow fish on. ` +
     `Set the month with the selectors at the top.`;
@@ -7004,10 +7004,10 @@ function renderRegister() {
   const up = (b, mtb) => mtb > 0 && isFinite(b) ? 100 * b / mtb : NaN;
   const ucls = u => !isFinite(u) ? '' : u >= 90 ? 'delta-bad' : u >= 80 ? '' : 'delta-good';
   const bar = u => isFinite(u) ? `<div class="pm-vbar"><div class="a" style="width:${Math.min(100, u)}%;background:${u >= 90 ? '#ff8a65' : u >= 80 ? '#ffb74d' : '#2fb8a6'}"></div></div>` : '';
-  let html = '', tm = 0, tb = 0, tbp = 0, tf = 0, tfp = 0, tbm = 0;
+  let html = '', tm = 0, tb = 0, tbp = 0, tf = 0, tfp = 0, tbm = 0, tb0 = 0, tbp0 = 0, tbm0 = 0;
   const mapVals = {}, mapHtml = {};
   for (let po = 13; po >= 1; po--) {
-    const mtb = (BWR.mtb_po_all || BWR.mtb_po)[String(po)] || 0, a = bN[po], b = bP[po];
+    const mtb = (BWR.mtb_po || BWR.mtb_po_all)[String(po)] || 0, a = bN[po], b = bP[po];
     const u = up(a, mtb), uP = up(b, mtb);
     tm += mtb; tb += a || 0; tbp += b || 0; tf += fN[po] || 0; tfp += fP[po] || 0; tbm += bM[po] || 0;
     html += `<tr data-po="${po}" class="rg-zrow${rgZoneOpen === po ? ' pm-open' : ''}" style="cursor:pointer" title="Click for the operators of this zone"><td class="name">${po}. ${PO_NAMES[po]}${rgZoneOpen === po ? ' ▾' : ''}</td><td>${f0(mtb)}</td>` +
@@ -7020,9 +7020,9 @@ function renderRegister() {
     mapHtml[po] = `MTB ${f0(mtb)} t<br>Biomass ${mlab}: ${f0(a)} t · ${f1m(fN[po])} M fish<br>Use of capacity: ${isFinite(u) ? u.toFixed(0) + '%' : '—'} (${mlabP}: ${isFinite(uP) ? uP.toFixed(0) + '%' : '—'})`;
   }
   // zone 0 : biomasse des licences speciales (recherche, vitrine, enseignement, geniteurs) declaree hors zone ; leur MTB est deja dans les zones ci-dessus (site par site)
-  if (bN[0] || bP[0]) { const mtb0 = +((BWR.mtb_po_all || BWR.mtb_po)['0'] || 0);
-    tm += mtb0; tb += bN[0] || 0; tbp += bP[0] || 0; tf += fN[0] || 0; tfp += fP[0] || 0; tbm += bM[0] || 0;
-    html += `<tr title="Fish of research, display, education and broodstock licences, reported outside the zones by the register"><td class="name">0. ${PO_NAMES[0]}</td><td style="color:var(--muted)" title="The MTB of research, display, education and broodstock licences is counted in the zones of their sites; ${mtb0 ? f0(mtb0) + ' t = development licences with no zone (Smart Fish Farm, fallow)' : ''}">${mtb0 ? f0(mtb0) + '<small style="display:block;font-size:10px">no-zone dev. licences</small>' : 'in zones'}</td>` +
+  if (bN[0] || bP[0]) { const mtb0 = +((BWR.mtb_po || BWR.mtb_po_all)['0'] || 0);
+    tm += mtb0; tb0 = bN[0] || 0; tbp0 = bP[0] || 0; tbm0 = bM[0] || 0; tb += tb0; tbp += tbp0; tf += fN[0] || 0; tfp += fP[0] || 0;
+    html += `<tr title="Fish of research, display, education and broodstock licences, reported outside the zones by the register"><td class="name">0. ${PO_NAMES[0]}</td><td style="color:var(--muted)" title="Research, display, education and broodstock licences are left out of the MTB, like their fish; ${mtb0 ? f0(mtb0) + ' t = development licences with no zone (Smart Fish Farm, fallow), part of the official total' : ''}">${mtb0 ? f0(mtb0) + '<small style="display:block;font-size:10px">no-zone dev. licences</small>' : 'in zones'}</td>` +
       `<td class="sep-left">${f0(bN[0])}</td><td style="color:var(--muted)">${f0(bP[0])}</td><td class="sep-left">${f1m(fN[0])}</td><td style="color:var(--muted)">${f1m(fP[0])}</td>` +
       `<td class="sep-left barcell"></td><td>—</td><td class="delta-zero">—</td><td style="color:var(--muted)">—</td></tr>`; }
   const tbz = document.getElementById('tbodyRgPo');
@@ -7035,16 +7035,16 @@ function renderRegister() {
     if (zr) {
       const dr = document.createElement('tr');
       dr.className = 'pm-chart-row hl-detail-row';
-      dr.innerHTML = `<td colspan="10">${rgZoneDetail(rgZoneOpen, bN[rgZoneOpen], fN[rgZoneOpen], mlab, (BWR.mtb_po_all || BWR.mtb_po)[String(rgZoneOpen)] || 0)}</td>`;
+      dr.innerHTML = `<td colspan="10">${rgZoneDetail(rgZoneOpen, bN[rgZoneOpen], fN[rgZoneOpen], mlab, (BWR.mtb_po || BWR.mtb_po_all)[String(rgZoneOpen)] || 0)}</td>`;
       zr.after(dr);
       const x = dr.querySelector('.rg-zclose');
       if (x) x.addEventListener('click', ev => { ev.stopPropagation(); rgZoneOpen = null; renderRegister(); });
     }
   }
-  const U = up(tb, tm), UP = up(tbp, tm);
+  const U = up(tb - tb0, tm), UP = up(tbp - tbp0, tm);   // taux de Norvege : biomasse des zones 1-13 / MTB officielle (la ligne Norway affiche la biomasse totale)
   document.getElementById('tfootRgPo').innerHTML = `<tr><td class="name">Norway</td><td>${f0(tm)}</td><td class="sep-left">${f0(tb)}</td><td>${f0(tbp)}</td>` +
     `<td class="sep-left">${f1m(tf)}</td><td>${f1m(tfp)}</td>` +
-    `<td class="sep-left barcell">${bar(U)}</td><td>${isFinite(U) ? U.toFixed(0) + '%' : '—'}</td>` + mCell(U, up(tbm, tm), tb, tbm) +
+    `<td class="sep-left barcell">${bar(U)}</td><td>${isFinite(U) ? U.toFixed(0) + '%' : '—'}</td>` + mCell(U, up(tbm, tm), tb - tb0, tbm) +
     `<td>${isFinite(UP) ? UP.toFixed(0) + '%' : '—'}</td></tr>`;
   updateMapValues(mapVals, v => v.toFixed(0) + '%', `Biomass / MTB · ${mlab}`);
   lastMapValues.html = mapHtml;
@@ -12522,7 +12522,9 @@ function prepare(d) {
   Object.entries(tw).forEach(([key, v]) => { const [po, k] = key.split('_').map(Number); (T[po] || (T[po] = {}))[k] = avg(v); });
   Object.entries(lw).forEach(([key, v]) => { const [po, k] = key.split('_').map(Number); (L[po] || (L[po] = {}))[k] = avg(v); });
   const months = [...new Set(d.records.map(r => r.year * 100 + r.month))].filter(k => k >= 201901).sort((a, b) => a - b);
-  const MTB = (d.bw_register && (d.bw_register.mtb_po_all || d.bw_register.mtb_po)) || {};
+  // MTB = licences commerciales et de developpement (perimetre officiel de Fiskeridirektoratet) : les poissons des licences de recherche,
+  // vitrine, enseignement et geniteurs sont declares hors zone (zone 0), on les laisse donc des deux cotes du rapport biomasse / MTB
+  const MTB = (d.bw_register && (d.bw_register.mtb_po || d.bw_register.mtb_po_all)) || {};
   // lignes "propres" pour apprendre la croissance : pas d'abattage notable ni d'arrivee de smolts dans le mois
   const rows = [], hrows = [];
   Object.entries(COH).forEach(([po, gens]) => Object.entries(gens).forEach(([g, ser]) => Object.entries(ser).forEach(([k, c]) => {
@@ -12553,8 +12555,9 @@ function prepare(d) {
     a.harv_stk += c.harv_stk || 0; a.harv_kg += c.harv_kg || 0; a.dead_stk += c.dead_stk || 0; a.loss_stk += c.loss_stk || 0; })));
   Object.values(cN).forEach(ser => Object.values(ser).forEach(a => { a.weight_kg = a.wn ? a.ws / a.wn : null; }));
   Object.entries(REC).forEach(([po, R]) => Object.entries(R).forEach(([k, r]) => {
-    const a = rN[k] || (rN[k] = { biomasse_kg: 0, uttak_kg: 0, uttak_stk: 0, feed_kg: 0, dodfisk_stk: 0, behfisk_stk: 0, mw: 0, mn: 0, aw: 0, an: 0 });
+    const a = rN[k] || (rN[k] = { biomasse_kg: 0, bioZ: 0, uttak_kg: 0, uttak_stk: 0, feed_kg: 0, dodfisk_stk: 0, behfisk_stk: 0, mw: 0, mn: 0, aw: 0, an: 0 });
     ['biomasse_kg', 'uttak_kg', 'uttak_stk', 'feed_kg', 'dodfisk_stk', 'behfisk_stk'].forEach(f => { a[f] += r[f] || 0; });
+    if (+po >= 1) a.bioZ += r.biomasse_kg || 0;   // zones 1-13 : la biomasse comparee a la MTB
     if (r.mortality_pct !== null && r.mortality_pct !== undefined) { a.mw += r.mortality_pct * (r.behfisk_stk || 0); a.mn += r.behfisk_stk || 0; }
     if (r.age_months) { a.aw += r.age_months * (r.uttak_stk || 0); a.an += r.uttak_stk || 0; }
     const b = r.biomasse_kg || 0, w = wt[k] || (wt[k] = { t: 0, tn: 0, l: 0, ln: 0 });
@@ -12563,7 +12566,7 @@ function prepare(d) {
   Object.entries(rN).forEach(([k, a]) => { a.mortality_pct = a.mn ? a.mw / a.mn : null; a.age_months = a.an ? a.aw / a.an : null; });
   Object.entries(wt).forEach(([k, w]) => { if (w.tn) tN[k] = w.t / w.tn; if (w.ln) lN[k] = w.l / w.ln; });
   COH[NOR] = cN; REC[NOR] = rN; T[NOR] = tN; L[NOR] = lN;
-  const MTB2 = Object.assign({}, MTB); MTB2[NOR] = Object.entries(MTB).filter(([p]) => +p >= 0 && +p <= 13).reduce((t, [, v]) => t + v, 0);
+  const MTB2 = Object.assign({}, MTB); MTB2[NOR] = Object.entries(MTB).filter(([p]) => +p >= 0 && +p <= 13).reduce((t, [, v]) => t + v, 0); delete MTB2['0'];
   return { d, REC, COH, T, L, DIS, months, MTB: MTB2, rows, hrows, fits: {} };
 }
 // modele : ln(W1/W0) = a + b.lnW + c.T + e.T.lnW + mois ; appris en marche avant (uniquement le passe)
@@ -12828,7 +12831,7 @@ function zoneStat(po, k, gen) {
   return { put, left: put && c ? c.stock / 1e6 / put : null, w: c && c.weight_kg ? c.weight_kg * GUT : null, n: c ? c.stock / 1e6 : 0, gain: c && p && c.weight_kg && p.weight_kg ? (c.weight_kg - p.weight_kg) * GUT : null,
     t: (G.T[po] || {})[k], ta: tAnom(po, k), mort: r ? r.mortality_pct : null, age: r ? r.age_months : null, lice: (G.L[po] || {})[k],
     feed: r ? r.feed_kg / 1e6 : null, feedP: rp ? rp.feed_kg / 1e6 : null, fytd: ytd(Math.floor(k / 100)), fytdP: ytd(Math.floor(k / 100) - 1), fcr: f3.length === 3 ? avg(f3) : null,
-    bio: r ? r.biomasse_kg / 1e6 : null, mtb: (G.MTB[String(po)] || 0) / 1000, ila: dis.INFEKSIOES_LAKSEANEMI || 0, pd: dis.PANKREASSYKDOM || 0,
+    bio: r ? r.biomasse_kg / 1e6 : null, bioM: r ? (r.bioZ !== undefined ? r.bioZ : r.biomasse_kg) / 1e6 : null, mtb: (G.MTB[String(po)] || 0) / 1000, ila: dis.INFEKSIOES_LAKSEANEMI || 0, pd: dis.PANKREASSYKDOM || 0,
     w3: proj ? proj[2] * GUT : null, w3sim: c && c.weight_kg ? simulate(po, c.weight_kg, k, 3, inHarv(c)) : null };
 }
 const METS = {
@@ -12839,7 +12842,7 @@ const METS = {
   age: { lab: 'Time at sea at harvest', v: z => z.age, lo: 10, hi: 20, c: [[201, 242, 233], [255, 213, 79]], fmt: v => f1(v) + ' m', unit: 'months, fish harvested this month' },
   feed: { lab: 'Feed used', v: z => z.feed, lo: 0, hi: 40, c: [[201, 242, 233], [206, 147, 216]], fmt: v => f1(v) + ' kt', unit: 'thousand tonnes in the month' },
   fcr: { lab: 'Feed conversion (FCR)', v: z => z.fcr, lo: 0.9, hi: 1.8, c: [[47, 214, 180], [255, 138, 101]], fmt: v => f2(v), unit: 'kg feed per kg gained, 3-month average' },
-  mtbp: { lab: 'Biomass vs MTB', v: z => z.mtb ? 100 * z.bio / z.mtb : null, lo: 60, hi: 110, c: [[201, 242, 233], [255, 138, 101]], fmt: v => f1(v) + ' %', unit: '% of the licensed capacity of the zone' },
+  mtbp: { lab: 'Biomass vs MTB', v: z => z.mtb ? 100 * z.bioM / z.mtb : null, lo: 60, hi: 110, c: [[201, 242, 233], [255, 138, 101]], fmt: v => f1(v) + ' %', unit: '% of the licensed capacity of the zone' },
   mort: { lab: 'Mortality', v: z => z.mort, lo: 0.3, hi: 2.5, c: [[201, 242, 233], [229, 115, 115]], fmt: v => f1(v) + ' %', unit: '% of the stock in the month' },
   lice: { lab: 'Lice', v: z => z.lice, lo: 0, hi: 0.5, c: [[201, 242, 233], [186, 104, 200]], fmt: v => f2(v), unit: 'adult female lice per fish' },
 };
@@ -12923,7 +12926,7 @@ function renderZone(z) {
   const vp = (a, b, good = true) => a === null || b === null || !b || !isFinite(a / b) ? '—' : `${dc(a - b, good)}${sg(100 * (a / b - 1), 0)} %</b>`;
   const vd = (a, b, d, u, good = true) => a === null || b === null || !isFinite(a - b) ? '—' : `${dc(Math.round((a - b) * 10 ** d), good)}${sg(a - b, d)}${u}</b>`;
   const cmp = (txt) => `<em>vs ${ref}: ${txt}</em>`;
-  const pM = z1.mtb ? 100 * z1.bio / z1.mtb : null, pN = z.mtb ? 100 * z.bio / z.mtb : null;
+  const pM = z1.mtb ? 100 * z1.bioM / z1.mtb : null, pN = z.mtb ? 100 * z.bioM / z.mtb : null;
   $('gm_zKpi').innerHTML = [
     [z.w === null ? '—' : f1(z.n) + ' M', `fish of generation ${gen}` + (z.left !== null ? ` · ${Math.round(100 * z.left)} % of the ${f1(z.put)} M put to sea` : ''),
       cmp(`${z1.w === null ? '—' : f1(z1.n) + ' M'} (${vp(z.n, z1.w === null ? null : z1.n)})` + (z1.left !== null ? `, ${Math.round(100 * z1.left)} % left` : ''))],
@@ -12931,7 +12934,7 @@ function renderZone(z) {
     [z.gain === null ? '—' : sg(z.gain, 2) + ' kg', `gained in ${MON_GM[k % 100 - 1]}`, cmp(`${z1.gain === null ? '—' : sg(z1.gain, 2) + ' kg'} (${vd(z.gain, z1.gain, 2, ' kg')})`)],
     [f1(z.t) + ' °C', z.ta === null ? 'water temperature' : `${sg(z.ta)}° vs normal ${MON_GM[k % 100 - 1]}`, `<em>vs ${ml(sh(k, -12))}: ${f1(z1.t)} °C (<b>${isFinite(z.t - z1.t) ? sg(z.t - z1.t, 1) + '°' : '—'}</b>)</em>`],
     [f1(z.mort) + ' %', po === NOR ? 'mortality in the month (Norway)' : 'mortality in the month (zone)', `<em>vs ${ml(sh(k, -12))}: ${f1(z1.mort)} % (${vd(z.mort, z1.mort, 1, ' pt', false)})</em>`],
-    [pN !== null ? f1(pN) + ' %' : '—', `biomass vs MTB (${Math.round(z.bio)} / ${Math.round(z.mtb)} kt, live)`, `<em>vs ${ml(sh(k, -12))}: ${pM !== null ? f1(pM) + ' %' : '—'} (${vd(pN, pM, 1, ' pt')})</em>`]]
+    [pN !== null ? f1(pN) + ' %' : '—', `biomass vs MTB (${Math.round(z.bioM)} / ${Math.round(z.mtb)} kt, live${po === NOR ? ', zones 1–13' : ''})`, `<em>vs ${ml(sh(k, -12))}: ${pM !== null ? f1(pM) + ' %' : '—'} (${vd(pN, pM, 1, ' pt')})</em>`]]
     .map(([a, b, c]) => `<div class="gm-kpi"><b>${a}</b><span>${b}</span>${c || ''}</div>`).join('');
   // croissance : 18 mois d'historique + 3 mois projetes. Deux notions, toujours affichees cote a cote :
   //  - la croissance des poissons (generation entiere, poissons abattus compris) : ce que les poissons prennent reellement ;
@@ -13093,7 +13096,7 @@ function renderHarv(po, k) {
 }
 // biomasse projetee vs MTB : poids projetes par generation x effectif qui evolue comme les memes mois l'an dernier
 function renderMtb(po, k) {
-  const mtb = (G.MTB[String(po)] || 0) / 1000, R = G.REC[po] || {}, now = R[k];
+  const mtb = (G.MTB[String(po)] || 0) / 1000, R = G.REC[po] || {}, now = R[k], BM = x => x.bioZ !== undefined ? x.bioZ : x.biomasse_kg;
   if (!now || !mtb) { $('gm_zMtbSub').innerHTML = 'No licensed capacity (MTB) for this zone.'; $('gm_zMtb').innerHTML = ''; return; }
   const gens = Object.entries(G.COH[po] || {}).filter(([, s]) => s[k] && s[k].stock > 1e5 && s[k].weight_kg);
   // biomasse de la zone x evolution de la biomasse norvegienne sur les memes mois l'an dernier (teste 2021-2026 : 9,7 % d'erreur
@@ -13102,7 +13105,7 @@ function renderMtb(po, k) {
   const natB = kk => Object.entries(G.REC).reduce((t, [p, Rp]) => t + (+p !== NOR && Rp[kk] ? Rp[kk].biomasse_kg : 0), 0);
   const wf = (h, shift) => { let a = 0; gens.forEach(([, s]) => { const p = project(po, s[k].weight_kg, k, h, shift); if (p) a += s[k].stock * p[h - 1]; }); return a; };
   const scen = shift => [1, 2, 3].map(h => { const n0 = natB(sh(k, -12)), n1 = natB(sh(k, h - 12)); if (!n0 || !n1) return null;
-    const base = now.biomasse_kg / 1e6 * n1 / n0, w0 = wf(h, 0); return shift && w0 ? base * wf(h, shift) / w0 : base; });
+    const base = BM(now) / 1e6 * n1 / n0, w0 = wf(h, 0); return shift && w0 ? base * wf(h, shift) / w0 : base; });
   const base = scen(0), cold = scen(-1), mild = scen(1);
   // scenarios : erreurs passees de cette methode (toutes zones, seulement des previsions deja verifiables au mois k) appliquees a la projection
   G.mtbErr = G.mtbErr || {};
@@ -13113,10 +13116,10 @@ function renderMtb(po, k) {
   const qe = (h, p) => { const r = errs[h - 1]; return r.length ? r[Math.min(r.length - 1, Math.floor(p * r.length))] : 1; };
   const pAbove = base[2] !== null && errs[2].length ? 100 * errs[2].filter(x => base[2] * x > mtb).length / errs[2].length : NaN;
   const hist = [-5, -4, -3, -2, -1, 0].map(i => sh(k, i)), keys = hist.concat([1, 2, 3].map(i => sh(k, i)));
-  const bv = keys.map((kk, i) => i < 6 ? (R[kk] ? 100 * R[kk].biomasse_kg / 1e6 / mtb : null) : (base[i - 6] !== null ? 100 * base[i - 6] / mtb : null));
-  const lastY = keys.map(kk => R[sh(kk, -12)] ? 100 * R[sh(kk, -12)].biomasse_kg / 1e6 / mtb : null);
+  const bv = keys.map((kk, i) => i < 6 ? (R[kk] ? 100 * BM(R[kk]) / 1e6 / mtb : null) : (base[i - 6] !== null ? 100 * base[i - 6] / mtb : null));
+  const lastY = keys.map(kk => R[sh(kk, -12)] ? 100 * BM(R[sh(kk, -12)]) / 1e6 / mtb : null);
   const mx = Math.max(110, ...bv.filter(v => v !== null), ...lastY.filter(v => v !== null), base[2] !== null ? 100 * base[2] * qe(3, .9) / mtb : 0) * 1.05;
-  $('gm_zMtbSub').innerHTML = `Biomass in the sea as a share of ${po === NOR ? "Norway's" : "the zone's"} licensed capacity (MTB ${Math.round(mtb)} kt, all licences attached to ${po === NOR ? 'the 13 zones' : 'the zone'}). Projection to <b>${ml(sh(k, 3))}: ${f1(100 * base[2] / mtb)} %</b> ` +
+  $('gm_zMtbSub').innerHTML = `Biomass in the sea as a share of ${po === NOR ? "Norway's" : "the zone's"} licensed capacity (MTB ${Math.round(mtb)} kt, commercial and development licences${po === NOR ? ', official total; biomass of zones 1–13' : ''}). Projection to <b>${ml(sh(k, 3))}: ${f1(100 * base[2] / mtb)} %</b> ` +
     `(${Math.round(base[2])} kt; 8 chances in 10 between ${f1(100 * base[2] * qe(3, .1) / mtb)} and ${f1(100 * base[2] * qe(3, .9) / mtb)} %; ` +
     `<b>probability of being above 100 % of MTB: ${isFinite(pAbove) ? Math.round(pAbove) + ' %' : '—'}</b>; colder winter ${f1(100 * cold[2] / mtb)} %, milder ${f1(100 * mild[2] / mtb)} %). Scenarios: this method's past errors, all zones, applied to today's projection. Method: the zone's biomass today × how Norway's biomass changed over the same months last year ` +
     `(tested 2021–2026: about 10 % off at 3 months; projecting generation by generation did worse, because harvest moves biomass more than growth does); the colder/milder band applies the temperature effect on the fish's weight. ` +
@@ -13277,9 +13280,9 @@ function renderStrategy() {
   const above = (w, lo) => { const s2 = Math.log(1 + 0.27 * 0.27), s = Math.sqrt(s2); return 1 - Phi((Math.log(lo / GUT) - (Math.log(w) - s2 / 2)) / s); };
   const Y = {};
   G.d.records.forEach(r => { if (r.year < 2018 || r.month > lm) return; const a = Y[r.year] || (Y[r.year] = { kg: 0, n: 0, age: 0, feed: 0, sm: 0, sm5: 0, bio: 0, nb: 0, n5: 0, n6: 0, dead: 0, stk: 0 });
-    a.kg += r.uttak_kg; a.n += r.uttak_stk; a.age += (r.age_months || 0) * r.uttak_stk; a.feed += r.feed_kg; a.sm += r.smolt_stk || 0; a.sm5 += r.smolt500_stk || 0; a.bio += r.biomasse_kg; a.nb++; a.dead += r.dodfisk_stk || 0; a.stk += r.behfisk_stk || 0; });
+    a.kg += r.uttak_kg; a.n += r.uttak_stk; a.age += (r.age_months || 0) * r.uttak_stk; a.feed += r.feed_kg; a.sm += r.smolt_stk || 0; a.sm5 += r.smolt500_stk || 0; a.bio += r.po >= 1 ? r.biomasse_kg : 0; if (r.po >= 1) a.nb++;   /* nb / 13 = nombre de mois : la zone 0 ne doit pas compter */ a.dead += r.dodfisk_stk || 0; a.stk += r.behfisk_stk || 0; });
   G.d.cohort.forEach(c => { if (c.year < 2018 || c.month > lm || !c.harv_stk || !c.harv_kg || !Y[c.year]) return; const w = c.harv_kg / c.harv_stk; Y[c.year].n5 += c.harv_stk * above(w, 5); Y[c.year].n6 += c.harv_stk * above(w, 6); });
-  const mtb = Object.entries(G.MTB).filter(([k]) => k !== '0' && +k !== NOR).reduce((s, [, v]) => s + v, 0) / 1000;
+  const mtb = (G.MTB[NOR] || 0) / 1000;   // total officiel (licences commerciales et de developpement)
   const ys = Object.keys(Y).map(Number).sort();
   // gros poissons abattus plus lourds que prevu : ecart moyen entre le poids abattu et la prevision faite 1-3 mois avant
   // (croissance + ordre d'abattage habituel, appris sur le passe uniquement), generations de 4 kg+ vif, mois janvier..lm
@@ -13340,7 +13343,7 @@ function renderBrief() {
   // recolte du mois, biomasse
   const r = (G.REC[NOR] || {})[k], ry = (G.REC[NOR] || {})[ky];
   if (r && ry) li.push(`<b>Harvest in ${ml(k)}</b>: ${f0(r.uttak_kg * GUT / 1e6)} kt gutted (${pct(pc(r.uttak_kg, ry.uttak_kg))} vs ${ml(ky)}), average fish ${f2(r.uttak_kg / r.uttak_stk * GUT)} kg (${f2(ry.uttak_kg / ry.uttak_stk * GUT)} a year earlier). ` +
-    `<b>Biomass at sea</b>: ${f0(r.biomasse_kg * GUT / 1e6)} kt gutted (${pct(pc(r.biomasse_kg, ry.biomasse_kg))})${G.MTB[NOR] ? `, ${f0(100 * r.biomasse_kg / G.MTB[NOR] / 1000)} % of MTB` : ''}.`);
+    `<b>Biomass at sea</b>: ${f0(r.biomasse_kg * GUT / 1e6)} kt gutted (${pct(pc(r.biomasse_kg, ry.biomasse_kg))})${G.MTB[NOR] ? `, ${f0(100 * (r.bioZ !== undefined ? r.bioZ : r.biomasse_kg) / G.MTB[NOR] / 1000)} % of MTB (zones 1–13)` : ''}.`);
   // 6+ attendus
   // calibres attendus le mois M+2 : 5-6 kg et 6 kg+, part de tous les poissons abattus en Norvege (registre, toutes generations),
   // puis part dans la recolte de chacune des deux generations (poids d'abattage prevu + dispersion 0,27, comme Generations map)

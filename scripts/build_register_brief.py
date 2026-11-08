@@ -41,11 +41,13 @@ def main():
     hw = sum_(cur, lambda c: c['harv_kg']) / (sum_(cur, lambda c: c['harv_stk']) or 1) * GUT
     hwl = sum_(ly, lambda c: c['harv_kg']) / (sum_(ly, lambda c: c['harv_stk']) or 1) * GUT
     b, bl = sum_(cur, lambda c: (c['stock'] or 0) * (c['weight_kg'] or 0)) * GUT / 1e6, sum_(ly, lambda c: (c['stock'] or 0) * (c['weight_kg'] or 0)) * GUT / 1e6
-    # meme base que la page (Generations map, Registre) : toutes les licences en mer, zone 0 comprise, puisque la biomasse b comprend la zone 0
+    # meme base partout (Supply outlook, Generations map, Registre) : biomasse des zones 1-13 / MTB officielle (licences commerciales et de
+    # developpement). Les poissons des licences de recherche, vitrine, enseignement et geniteurs sont declares en zone 0 : exclus des deux cotes.
     R = d.get('bw_register') or {}
-    mtb = sum((R.get('mtb_po_all') or R.get('mtb_po') or {}).values()) / 1000
+    mtb = sum((R.get('mtb_po') or R.get('mtb_po_all') or {}).values()) / 1000
+    bz = sum_([c for c in cur if (c.get('po') or 0) >= 1], lambda c: (c['stock'] or 0) * (c['weight_kg'] or 0)) / 1e6   # kt vif, zones 1-13
     lines.append(f"Harvest in {ml(k)}: {h:,.0f} kt gutted ({sg(pc(h, hl))} % on {ml(k - 100)}), average fish {hw:.2f} kg ({hwl:.2f} a year earlier). "
-                 f"Biomass at sea {b:,.0f} kt gutted ({sg(pc(b, bl))} %)" + (f", {100 * b / GUT / mtb:.0f} % of the sea MTB (all licences, live weight)." if mtb else '.'))
+                 f"Biomass at sea {b:,.0f} kt gutted ({sg(pc(b, bl))} %)" + (f", {100 * bz / mtb:.0f} % of the MTB (zones 1–13, live weight)." if mtb else '.'))
     # 2) generations : celle qu'on recolte et la suivante, contre les memes generations les 5 annees passees au meme mois
     def gen(g, yy, mm):
         L = [c for c in M(yy, mm) if c['cohort'] == g]
