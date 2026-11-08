@@ -1,6 +1,6 @@
 // Service worker — dashboard saumon
 // Change VERSION à chaque modification de ce fichier pour forcer la mise à jour.
-const VERSION = 'saumon-v3';
+const VERSION = 'saumon-v4';
 
 const SHELL = [
   'production.html',
@@ -38,7 +38,7 @@ self.addEventListener('fetch', (event) => {
     // Pages et données du site : réseau d'abord (données toujours fraîches),
     // cache en secours quand il n'y a pas de connexion.
     event.respondWith(
-      fetch(req)
+      fetch(req, { cache: 'no-cache' })   // revalide aupres de GitHub Pages : plus de page vieille de 10 minutes
         .then((res) => {
           if (res.ok) {
             const copy = res.clone();

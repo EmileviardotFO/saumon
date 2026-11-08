@@ -446,7 +446,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Salmon Outlook">
-<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js'));}</script>
+<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{}));}</script>
 </head>
 <body class="booting">
 <style>body.booting > *:not(script):not(style):not(#splash){visibility:hidden!important}
@@ -14360,7 +14360,13 @@ const SN_BURGER = window.SN_BURGER, SN_CLOSE = window.SN_CLOSE;
   .sup-nums{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0}.sup-nums span{background:#0d1a24;border:1px solid #223642;border-radius:8px;padding:6px 8px;font-weight:bold;color:#e7eef2;font-size:14px}
   .sup-nums small{display:block;font-weight:normal;color:#8fa4b0;font-size:11px;margin-bottom:2px}.sup-nums i{font-style:normal;color:#ffb74d;font-size:12px;margin-left:3px}
   @media (max-width:700px){.sup-nums{grid-template-columns:1fr 1fr}}
-  @media (max-width:900px){#gsPanel .gs-hint{display:none}#gsSug{flex-direction:column;flex-wrap:nowrap;gap:8px;margin:10px 0 14px}#gsSug button{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;white-space:normal;font-size:16px;padding:13px 16px;border-radius:20px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 6px 18px rgba(0,0,0,.25);-webkit-backdrop-filter:blur(16px) saturate(160%);backdrop-filter:blur(16px) saturate(160%)}#gsSug button small{font-size:12px;margin-left:12px;flex:0 0 auto}#gsSug button.pop{animation:gsPop .42s cubic-bezier(.2,.9,.25,1.25) both;animation-delay:calc(var(--i) * 55ms)}}@keyframes gsPop{0%{opacity:0;transform:translateY(14px) scale(.86)}60%{opacity:1}100%{opacity:1;transform:none}}@media (prefers-reduced-motion:reduce){#gsSug button.pop{animation:none}}
+  @media (max-width:900px){#gsPanel .gs-hint{display:none}#gsSug{flex-direction:column;flex-wrap:nowrap;gap:8px;margin:10px 0 14px}#gsSug button{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;white-space:normal;font-size:16px;padding:13px 16px;border-radius:20px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 6px 18px rgba(0,0,0,.25);-webkit-backdrop-filter:blur(16px) saturate(160%);backdrop-filter:blur(16px) saturate(160%)}#gsSug button small{font-size:12px;margin-left:12px;flex:0 0 auto}#gsSug button.pop{animation:gsPop .42s cubic-bezier(.2,.9,.25,1.25) both;animation-delay:calc(var(--i) * 55ms)}}@keyframes gsPop{0%{opacity:0;transform:translateY(14px) scale(.86)}60%{opacity:1}100%{opacity:1;transform:none}}
+  /* ouverture de la recherche : meme effet « bulle » que l'etat des mises a jour (panneau qui gonfle, propositions qui apparaissent une a une) */
+  #gsPanel.gs-in{animation:sbIn .3s cubic-bezier(.2,.9,.3,1.2);transform-origin:top left}
+  #gsPanel.gs-in .gs-h{animation:gsPop .4s cubic-bezier(.2,.9,.25,1.25) both}
+  #gsSug button.pop{animation:gsPop .42s cubic-bezier(.2,.9,.25,1.25) both;animation-delay:calc(80ms + var(--i) * 60ms)}
+  @keyframes sbIn{from{opacity:0;transform:scale(.85) translateY(-6px)}to{opacity:1;transform:none}}
+  @keyframes gsPop{0%{opacity:0;transform:translateY(14px) scale(.86)}60%{opacity:1}100%{opacity:1;transform:none}}
   #gsPanel .gs-sec{font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#4fc3f7;margin:18px 0 8px}
   #gsPanel .gs-card{background:#10202c;border:1px solid #223642;border-radius:10px;padding:12px 14px;margin-bottom:10px;max-width:1100px}
   #gsPanel .gs-card h4{margin:0 0 8px;font-size:19px;font-weight:800;color:#fff;letter-spacing:-.01em;line-height:1.25}
@@ -14518,9 +14524,12 @@ const SN_BURGER = window.SN_BURGER, SN_CLOSE = window.SN_CLOSE;
   })();
   const sugBox = document.getElementById('gsSug'); let sugI = -1, sugL = [];
   const TYPE_LAB = { company: 'company', basin: 'country', zone: 'Norway zone', topic: 'subject', trade: 'trade', product: 'product', period: 'period', market: 'market', next: '', tab: 'open tab' };
-  let sugPrev = new Set();
+  let sugPrev = new Set(), popUntil = 0;
+  { let was = false; new MutationObserver(() => { const on = P.style.display === 'block';
+      if (on && !was) { sugPrev = new Set(); popUntil = Date.now() + 700; P.classList.remove('gs-in'); void P.offsetWidth; P.classList.add('gs-in'); if (typeof showSug === 'function') setTimeout(showSug, 0); }
+      was = on; }).observe(P, { attributes: true, attributeFilter: ['style'] }); }
   function showSug() { sugL = SUG(q2.value); sugI = -1; let k = 0;
-    sugBox.innerHTML = sugL.map((o, i) => { const fresh = !sugPrev.has(o.lab);   // seules les nouvelles propositions apparaissent en bulle, l'une apres l'autre
+    sugBox.innerHTML = sugL.map((o, i) => { const fresh = Date.now() < popUntil || !sugPrev.has(o.lab);   // seules les nouvelles propositions apparaissent en bulle, l'une apres l'autre
       return `<button type="button" data-i="${i}" class="${o.tab ? 'tab' : ''}${fresh ? ' pop' : ''}" style="--i:${fresh ? k++ : 0}">${esc(o.lab)}${TYPE_LAB[o.t] ? `<small>${TYPE_LAB[o.t]}</small>` : ''}</button>`; }).join('');
     sugPrev = new Set(sugL.map(o => o.lab));
     sugBox.querySelectorAll('button').forEach(b => { b.onmousedown = ev => ev.preventDefault(); b.onclick = () => pickSug(+b.dataset.i); }); }
