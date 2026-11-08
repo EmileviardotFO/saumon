@@ -12291,7 +12291,7 @@ function renderGenYoy() {
     card(`G${H} · biomass`, `${KT(now.H.bio)} kt`, `${dl(now.H.bio, ly.H.bio, true)} · ${KG(now.H.w)} kg vs ${KG(ly.H.w)}`) +
     card(`G${H} · fish 5 kg+ gutted`, `${M(now.H.n5)} M`, `${dl(now.H.n5, ly.H.n5, true, 5e4)} · ${KT(now.H.b5)} kt`) +
     card(`G${N} · fish at sea`, `${M(now.N.fish)} M`, `${dl(now.N.fish, ly.N.fish, true)} vs G${N - 1} · ${KG(now.N.w)} kg vs ${KG(ly.N.w)}`) +
-    card(`All generations · biomass`, `${KT(tot(now, 'bio'))} kt`, `${dl(tot(now, 'bio'), tot(ly, 'bio'), true)} · fish ${dl(tot(now, 'fish'), tot(ly, 'fish'), true)}`) +
+    card(`All generations, zones 1–13 · biomass`, `${KT(tot(now, 'bio'))} kt`, `${dl(tot(now, 'bio'), tot(ly, 'bio'), true)} · fish ${dl(tot(now, 'fish'), tot(ly, 'fish'), true)}`) +
     card(`All · fish 5 kg+ / 6 kg+`, `${M(tot(now, 'n5'))} / ${M(tot(now, 'n6'))} M`, `${dl(tot(now, 'n5'), tot(ly, 'n5'), true)} / ${dl(tot(now, 'n6'), tot(ly, 'n6'), true)}`);
   // ---- lecture : d'ou vient l'ecart de poissons restants de la generation recoltee
   const sv = x => x.start - x.cumD - x.cumL, hp = x => x.start ? 100 * x.cumH / x.start : 0, su = x => x.start ? 100 * sv(x) / x.start : 0;
