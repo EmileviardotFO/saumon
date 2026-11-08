@@ -1,0 +1,24 @@
+{
+ "meta": {
+  "note": "Hand-kept. Topics pinned at the top of the home-screen widget (docs/widget/salmon-outlook-widget.js) until their 'until' date, whatever the week's news. Each event carries its source. Stories in data/stories.json matching a topic's keywords are listed under it.",
+  "updated": "2026-11-08"
+ },
+ "topics": [
+  {
+   "id": "florfenicol",
+   "label": "Tasmania · florfenicol",
+   "basin": "AU",
+   "kw": ["florfenicol", "antibiotic permit", "emergency antibiotic", "abbey labs"],
+   "until": "2027-04-30",
+   "status": "Not re-authorised yet — 2 applications before the APVMA, decision on the industry's permit expected late November",
+   "timeline": [
+    {"d": "2025-11", "t": "APVMA grants an emergency use permit (no. 96499) for the antibiotic florfenicol against the summer disease outbreak (10–20 mg/kg of fish a day for 10 days, no re-treatment).", "u": "https://nre.tas.gov.au/aquaculture/salmon/fish-health/regulator-statement-florfenicol-monitoring-and-research"},
+    {"d": "2026-02-18", "t": "Tasmanian regulator statement: traces found in wild fish (up to 0.06 mg/kg, as far as 10.6 km from the pens); the APVMA suspends the permit later in February.", "u": "https://nre.tas.gov.au/aquaculture/salmon/florfenicol-antibiotic-use-for-salmon-in-tasmania/regulator-statement-18-february-2026"},
+    {"d": "2026-03-05", "t": "APVMA revokes the permit over an 'unacceptable risk of residue exposure to non-target species'.", "u": "https://www.abc.net.au/news/2026-03-05/tasmania-salmon-florfenicol-antibiotics-licence-revoked/106404606"},
+    {"d": "2026-06-30", "t": "Salmon Tasmania: 5.4 t used against the outbreak that killed about 9,000 t of salmon; the industry applies again.", "u": "https://www.abc.net.au/news/2026-06-30/tas-florfenicol-salmon-antibiotic-amount-confirmed/106860194"},
+    {"d": "2026-10-30", "t": "Abbey Labs applies for a 'minor use' permit with a higher dose and treatment regime, extended from the south-east to the eastern biosecurity zone; dose rates not disclosed.", "u": "https://www.abc.net.au/news/2026-10-30/tasmanian-salmon-increased-florfenicol-use-request/107321996"},
+    {"d": "2026-11-04", "t": "Salmon Tasmania's emergency application (same dose as the revoked permit; D'Entrecasteaux Channel and Storm Bay only, on vet advice) comes with wild-fishery closures of up to six weeks and compensation; rock lobster fishers refuse it. APVMA decision expected later this month.", "u": "https://www.abc.net.au/news/2026-11-04/lobster-fishers-against-tas-salmon-industry-antibiotic-plans/107344468"}
+   ]
+  }
+ ]
+}
