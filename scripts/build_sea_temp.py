@@ -9,7 +9,8 @@ temperature de surface journaliere (moyenne des heures), puis
   - moyenne mensuelle et ecart a la moyenne 2016-2025 du meme mois ;
   - jours de chaleur par annee et mois : jours au-dessus de 16,5 / 17 / 18 °C (seuils de risque de mortalite cites par
     Canepa et al., Reviews in Aquaculture 2026, « Turning Up the Heat » ; optimum de croissance 12-16 °C, limite haute ~20 °C).
-Le fichier est relu en entier a chaque passage (2016 a hier) : les series modelisees d'Open-Meteo peuvent etre revisees.
+Premier passage (ou SST_FULL=1) : historique complet depuis 2016 ; ensuite chaque jour seuls les 3 derniers mois sont relus
+(le quota gratuit d'Open-Meteo se compte au volume de donnees demande).
 Norvege : la temperature declaree chaque semaine par les sites (BarentsWatch) reste la reference par zone dans le tableau de bord ;
 les points Open-Meteo servent a comparer les bassins sur la meme base.
 """
@@ -18,6 +19,7 @@ import io
 import json
 import os
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from collections import defaultdict
@@ -67,15 +69,22 @@ POINTS = [
 BASSINS = {'NO': 'Norway', 'FO': 'Faroe Islands', 'IS': 'Iceland', 'GB': 'Scotland', 'IE': 'Ireland', 'CA': 'Canada', 'CL': 'Chile', 'AU': 'Tasmania'}
 
 
-def http(url, tries=3, timeout=120):
+def http(url, tries=4, timeout=90):
     last = None
     for i in range(tries):
         try:
             with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=timeout) as r:
                 return r.status, r.read()
+        except urllib.error.HTTPError as e:
+            last = e
+            if e.code == 429:            # quota a la minute d'Open-Meteo : on patiente
+                time.sleep(65)
+                continue
+            if 400 <= e.code < 500:
+                break
         except Exception as e:  # noqa: BLE001
             last = e
-        time.sleep(3 * (i + 1))
+        time.sleep(5 * (i + 1))
     raise RuntimeError(f'{url[:120]} : {last}')
 
 
@@ -93,38 +102,53 @@ def journalier(la, lo, debut, fin):
     return {d: sum(v) / len(v) for d, v in j.items() if len(v) >= 12}
 
 
-def resume(jours):
-    """Moyennes mensuelles, normales 2016-2025 et jours de chaleur par mois."""
+def resume(jours, old=None):
+    """Moyennes mensuelles, normales 2016-2025 et jours de chaleur par mois.
+    old : point deja en fichier ; ses mois anterieurs a la periode relue sont conserves (mise a jour incrementale)."""
     mois = defaultdict(list)
     for d, v in jours.items():
         mois[d[:7]].append(v)
     mm = {k: round(sum(v) / len(v), 2) for k, v in sorted(mois.items()) if len(v) >= 20}
+    if old:
+        d0 = min(mois) if mois else '9999'
+        mm = {**{k: v for k, v in (old.get('monthly') or {}).items() if k < d0}, **mm}
     norm = defaultdict(list)
     for k, v in mm.items():
         if '2016' <= k[:4] <= '2025':
             norm[int(k[5:])].append(v)
     normal = {m: round(sum(v) / len(v), 2) for m, v in norm.items() if len(v) >= 5}
-    chaud = {}
+    chaud = {k: v for k, v in ((old or {}).get('hot_days') or {}).items() if k < (min(mois) if mois else '9999')}
     for k, L in sorted(mois.items()):
         chaud[k] = [sum(1 for v in L if v > s) for s in SEUILS]
     return {'monthly': mm, 'normal': {str(m): v for m, v in sorted(normal.items())},
             'anomaly': {k: round(v - normal[int(k[5:])], 2) for k, v in mm.items() if int(k[5:]) in normal},
-            'hot_days': {k: v for k, v in chaud.items() if any(v)}, 'days': len(jours)}
+            'hot_days': {k: v for k, v in sorted(chaud.items()) if any(v)}, 'days': (old or {}).get('days') or len(jours), 'last_day': max(jours) if jours else None}
 
 
 def main():
     hier = (dt.date.today() - dt.timedelta(days=1)).isoformat()
     ancien = json.load(io.open(OUT, encoding='utf-8')) if os.path.exists(OUT) else {}
     pts, erreurs = [], []
+    complet = os.environ.get('SST_FULL') == '1'
     for b, pid, lab, la, lo in POINTS:
         try:
+            old = next((p for p in ancien.get('points', []) if p.get('id') == pid and p.get('monthly')), None)
             jours = {}
-            for a0 in range(int(DEBUT[:4]), dt.date.today().year + 1, 4):     # par blocs de 4 ans (reponses plus legeres)
-                d0, d1 = f'{a0}-01-01', min(f'{a0 + 3}-12-31', hier)
-                jours.update(journalier(la, lo, d0, d1))
+            if old and not complet:
+                # passage quotidien : on ne relit que les 3 derniers mois (le quota gratuit d'Open-Meteo compte au volume)
+                t = dt.date.today().replace(day=1)
+                for _ in range(2):
+                    t = (t - dt.timedelta(days=1)).replace(day=1)
+                jours = journalier(la, lo, t.isoformat(), hier)
+            else:
+                old = None
+                for a0 in range(int(DEBUT[:4]), dt.date.today().year + 1, 4):     # historique complet, par blocs de 4 ans
+                    d0, d1 = f'{a0}-01-01', min(f'{a0 + 3}-12-31', hier)
+                    jours.update(journalier(la, lo, d0, d1))
+                    time.sleep(2)
             if not jours:
                 raise RuntimeError('aucune donnee')
-            r = resume(jours)
+            r = resume(jours, old)
             pts.append({'basin': b, 'id': pid, 'label': lab, 'lat': la, 'lon': lo, **r})
             print(f'  {pid:14s} {r["days"]} jours, dernier mois {max(r["monthly"]) if r["monthly"] else "-"}')
         except Exception as e:  # noqa: BLE001
