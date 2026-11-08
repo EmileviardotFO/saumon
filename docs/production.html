@@ -6981,7 +6981,7 @@ function renderRegister() {
   document.getElementById('rgThUm').textContent = `vs ${mlabM}`;
   document.getElementById('rgPoSub').innerHTML =
     `Standing salmon biomass at the end of ${mlab} (Biomasseregisteret) divided by the licensed maximum (MTB) of the zone — ` +
-    `<b>biomass divided by MTB</b>, i.e. how full the zone is. MTB here counts every sea-based salmon licence, including research, display, education and slaughter-cage licences, since their fish are in the biomass. ` +
+    `<b>biomass divided by MTB</b>, i.e. how full the zone is. MTB here counts every sea-based salmon licence, including research, display, education and slaughter-cage licences, placed in the zone of their sites. The register, however, reports the fish of research, display, education and broodstock licences outside the zones (row 0, about 4–5 % of Norway's biomass), so a zone's use of capacity reads a few points low; the Norway line adds row 0 and is exact. ` +
     `MTB is enforced per company and per county, not per zone, so a zone can read slightly above 100% when a company keeps more fish there and less in a neighbouring zone of the same county (zones 3 and 7 typically). ` +
     `Above ~85–90% farmers are close to the ceiling and must harvest; low values leave room to grow fish on. ` +
     `Set the month with the selectors at the top.`;
@@ -7004,6 +7004,12 @@ function renderRegister() {
     mapVals[po] = u;
     mapHtml[po] = `MTB ${f0(mtb)} t<br>Biomass ${mlab}: ${f0(a)} t · ${f1m(fN[po])} M fish<br>Use of capacity: ${isFinite(u) ? u.toFixed(0) + '%' : '—'} (${mlabP}: ${isFinite(uP) ? uP.toFixed(0) + '%' : '—'})`;
   }
+  // zone 0 : biomasse des licences speciales (recherche, vitrine, enseignement, geniteurs) declaree hors zone ; leur MTB est deja dans les zones ci-dessus (site par site)
+  if (bN[0] || bP[0]) { const mtb0 = +((BWR.mtb_po_all || BWR.mtb_po)['0'] || 0);
+    tm += mtb0; tb += bN[0] || 0; tbp += bP[0] || 0; tf += fN[0] || 0; tfp += fP[0] || 0; tbm += bM[0] || 0;
+    html += `<tr title="Fish of research, display, education and broodstock licences, reported outside the zones by the register"><td class="name">0. ${PO_NAMES[0]}</td><td style="color:var(--muted)">${mtb0 ? f0(mtb0) : 'in zones'}</td>` +
+      `<td class="sep-left">${f0(bN[0])}</td><td style="color:var(--muted)">${f0(bP[0])}</td><td class="sep-left">${f1m(fN[0])}</td><td style="color:var(--muted)">${f1m(fP[0])}</td>` +
+      `<td class="sep-left barcell"></td><td>—</td><td class="delta-zero">—</td><td style="color:var(--muted)">—</td></tr>`; }
   const tbz = document.getElementById('tbodyRgPo');
   tbz.innerHTML = html;
   tbz.querySelectorAll('tr.rg-zrow').forEach(tr => tr.addEventListener('click', () => {
