@@ -19,7 +19,7 @@ jobs:
         python-version: '3.12'
     - name: Temperature de la mer et jours de chaleur par bassin
       run: |
-        curl -sS -g -m 60 'https://psl.noaa.gov/thredds/dodsC/Datasets/noaa.oisst.v2.highres/sst.day.mean.2026.nc.ascii?sst[0:1:2][608][1412]' | tail -6 || true
+        pip install -q netCDF4 numpy
         python3 -u scripts/build_sea_temp.py
     - name: Enregistrer
       if: always()

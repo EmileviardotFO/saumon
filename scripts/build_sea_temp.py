@@ -235,48 +235,103 @@ def alerte(recent, clim):
     return {'until': jours[-1], 'anom7': a7, 'hot7': chaud, 'level': niveau}
 
 
-def main():
-    hier = (dt.date.today() - dt.timedelta(days=1)).isoformat()
-    ancien = json.load(io.open(OUT, encoding='utf-8')) if os.path.exists(OUT) else {}
-    pts, erreurs = [], []
-    complet = os.environ.get('SST_FULL') == '1'
+NCEI = 'https://www.ncei.noaa.gov/data/sea-surface-temperature-optimum-interpolation/v2.1/access/avhrr/{ym}/'
+
+
+def ncei_fichiers(d0, d1):
+    """Fichiers quotidiens OISST (NCEI) entre d0 et d1 : {date: url}, version definitive sinon provisoire (2 dernieres semaines)."""
+    out = {}
+    ms = sorted({(d0 + dt.timedelta(days=i)).strftime('%Y%m') for i in range((d1 - d0).days + 1)})
+    for ym in ms:
+        st, raw = http(NCEI.format(ym=ym))
+        for nom in set(re.findall(r'oisst-avhrr-v02r01\.(\d{8})(_preliminary)?\.nc', raw.decode('utf-8', 'replace'))):
+            d = dt.date(int(nom[0][:4]), int(nom[0][4:6]), int(nom[0][6:]))
+            if d0 <= d <= d1 and (d.isoformat() not in out or not nom[1]):
+                out[d.isoformat()] = NCEI.format(ym=ym) + f'oisst-avhrr-v02r01.{nom[0]}{nom[1]}.nc'
+    return out
+
+
+def ncei_lire(urls, mailles):
+    """Telecharge les fichiers quotidiens en parallele et lit la temperature des mailles voulues : {date: {(ia, io): °C}}."""
+    import concurrent.futures as cf
+    import netCDF4                                               # pip install netCDF4 numpy
+    import numpy as np
+    def un(item):
+        d, u = item
+        for k in range(3):
+            try:
+                st, raw = http(u, tries=2, timeout=120)
+                with netCDF4.Dataset('x', memory=raw) as nc:
+                    v = np.ma.filled(nc.variables['sst'][0, 0, :, :].astype(float), np.nan)
+                return d, {m: (None if np.isnan(v[m]) else round(float(v[m]), 2)) for m in mailles}
+            except Exception as e:  # noqa: BLE001
+                err = e; time.sleep(3)
+        print(f'    {d} : {str(err)[:100]}', flush=True)
+        return d, None
+    out = {}
+    with cf.ThreadPoolExecutor(8) as ex:
+        for i, (d, vals) in enumerate(ex.map(un, sorted(urls.items()))):
+            if vals: out[d] = vals
+            if i % 200 == 0: print(f'    {i}/{len(urls)} fichiers lus', flush=True)
+    return out
+
+
+def mailles_mer(premier):
+    """Pour chaque point, la maille de mer OISST la plus proche (a moins de 1 degre), a partir d'un fichier quotidien complet."""
+    import netCDF4
+    import numpy as np
+    st, raw = http(premier, timeout=120)
+    with netCDF4.Dataset('x', memory=raw) as nc:
+        v = np.ma.filled(nc.variables['sst'][0, 0, :, :].astype(float), np.nan)
+    res = {}
     for b, pid, lab, la, lo in POINTS:
-        try:
-            old = next((p for p in ancien.get('points', []) if p.get('id') == pid and p.get('monthly') and p.get('clim') and p.get('cell')), None)
-            jours = {}
-            # OISST publie avec ~1-2 jours de retard (provisoire, remplace par le definitif apres ~2 semaines) : fin = dernier jour publie
-            fin = None
-            cell = old['cell'] if old else maille(la, lo)
-            if not cell:
-                raise RuntimeError('aucune maille de mer a moins de 1 degre')
-            if old and not complet:
-                # passage quotidien : on ne relit que les 3 derniers mois
-                t = dt.date.today().replace(day=1)
-                for _ in range(2):
-                    t = (t - dt.timedelta(days=1)).replace(day=1)
-                jours = journalier(cell[0], cell[1], t.isoformat(), fin)
-            else:
-                old = None
-                for a0 in range(int(DEBUT[:4]), dt.date.today().year + 1, 4):     # historique complet depuis 2016, par blocs de 4 ans
-                    d0, d1 = f'{a0}-01-01', (f'{a0 + 3}-12-31' if a0 + 3 < dt.date.today().year else None)
-                    jours.update(journalier(cell[0], cell[1], d0, d1))
-                    time.sleep(1)
-            if not jours:
-                raise RuntimeError('aucune donnee')
-            r = resume(jours, old)
-            r['clim'] = old['clim'] if old else climato(jours)
-            r['recent'] = {d: round(v, 2) for d, v in sorted(jours.items())[-45:]}
-            r['alert'] = alerte(r['recent'], r['clim'])
-            pts.append({'basin': b, 'id': pid, 'label': lab, 'lat': la, 'lon': lo, 'cell': list(cell), **r})
-            print(f'  {pid:14s} {r["days"]} jours, dernier mois {max(r["monthly"]) if r["monthly"] else "-"}', flush=True)
-            if len(pts) % 4 == 0:
-                # premier passage long : on ecrit au fur et a mesure (points deja lus + anciens)
-                ecrire(pts + [p for p in ancien.get('points', []) if p.get('id') not in {q['id'] for q in pts}], erreurs)
-        except Exception as e:  # noqa: BLE001
-            erreurs.append(f'{pid}: {str(e)[:120]}')
-            old = next((p for p in ancien.get('points', []) if p.get('id') == pid), None)
-            if old:
-                pts.append(old)          # on garde la serie precedente plutot qu'un trou
+        best = None
+        for a_, b_ in DECALAGES:
+            ia, io_ = round((la + a_ + 89.875) / .25), round((((lo + b_) % 360) - .125) / .25)
+            if not np.isnan(v[ia, io_]):
+                best = (ia, io_); break
+        res[pid] = best
+    return res
+
+
+def main():
+    ancien = json.load(io.open(OUT, encoding='utf-8')) if os.path.exists(OUT) else {}
+    complet = os.environ.get('SST_FULL') == '1'
+    olds = {p['id']: p for p in ancien.get('points', []) if p.get('monthly') and p.get('clim') and p.get('cell') and p.get('src') == 'ncei'}
+    fin = dt.date.today() - dt.timedelta(days=1)
+    plein = complet or len(olds) < 0.8 * len(POINTS)     # un point sans maille de mer ne doit pas relancer tout l'historique chaque jour
+    if plein:
+        d0 = dt.date.fromisoformat(DEBUT)
+    else:                                   # passage quotidien : les 3 derniers mois (provisoire -> definitif apres ~2 semaines)
+        d0 = dt.date.today().replace(day=1)
+        for _ in range(2):
+            d0 = (d0 - dt.timedelta(days=1)).replace(day=1)
+    t0 = time.time()
+    urls = ncei_fichiers(d0, fin)
+    print(f'NCEI : {len(urls)} fichiers quotidiens de {d0} a {fin} ({time.time() - t0:.0f} s)', flush=True)
+    if not urls:
+        print('sea_temp : NCEI ne repond pas, fichier inchange'); return
+    cells = {pid: tuple(p['cell_idx']) for pid, p in olds.items()} if not plein else mailles_mer(urls[max(urls)])
+    mailles = sorted({c for c in cells.values() if c})
+    lu = ncei_lire(urls, mailles)
+    print(f'NCEI : {len(lu)} jours lus en {time.time() - t0:.0f} s', flush=True)
+    pts, erreurs = [], []
+    for b, pid, lab, la, lo in POINTS:
+        c = cells.get(pid)
+        old = None if plein else olds.get(pid)
+        jours = {d: v[c] for d, v in lu.items() if c and v.get(c) is not None and -5 < v[c] < 40}
+        if not jours:
+            erreurs.append(f'{pid}: aucune maille de mer a moins de 1 degre' if not c else f'{pid}: aucune donnee')
+            if pid in olds: pts.append(olds[pid])
+            continue
+        r = resume(jours, old)
+        r['clim'] = old['clim'] if old else climato(jours)
+        recent = {**((old or {}).get('recent') or {}), **{d: round(v, 2) for d, v in jours.items()}}
+        r['recent'] = dict(sorted(recent.items())[-45:])
+        r['alert'] = alerte(r['recent'], r['clim'])
+        pts.append({'basin': b, 'id': pid, 'label': lab, 'lat': la, 'lon': lo, 'cell': [round(c[0] * .25 - 89.875, 3), round(c[1] * .25 + .125 - (360 if c[1] * .25 + .125 > 180 else 0), 3)],
+                    'cell_idx': list(c), 'src': 'ncei', **r})
+        print(f'  {pid:14s} {len(jours)} jours, dernier mois {max(r["monthly"]) if r["monthly"] else "-"}', flush=True)
     ecrire(pts, erreurs)
 
 
@@ -284,8 +339,8 @@ def ecrire(pts, erreurs):
     if not pts:
         print('sea_temp : rien de lu, fichier inchange', erreurs)
         return
-    src = {'oisst' if p.get('cell') else 'open-meteo' for p in pts}
-    out = {'meta': {'generated': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'), 'source': 'NOAA OISST v2.1 (daily optimum interpolation sea surface temperature, satellites + buoys + ships, 0.25° grid), via NOAA PSL; public domain' if src == {'oisst'} else 'Open-Meteo Marine API (modelled sea surface temperature), being replaced by NOAA OISST v2.1',
+    src = {'oisst' if p.get('src') == 'ncei' else 'open-meteo' for p in pts}
+    out = {'meta': {'generated': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'), 'source': 'NOAA OISST v2.1 (daily optimum interpolation sea surface temperature, satellites + buoys + ships, 0.25° grid), via NOAA NCEI daily files; public domain' if src == {'oisst'} else 'Open-Meteo Marine API (modelled sea surface temperature), being replaced by NOAA OISST v2.1',
                     'url': 'https://www.ncei.noaa.gov/products/optimum-interpolation-sst', 'thresholds': list(SEUILS), 'normal': f'2016-{dt.date.today().year - 1}' if src == {'oisst'} else f'2023-{dt.date.today().year - 1}',
                     'note': 'Risk thresholds 16.5 / 17 / 18 °C from Canepa et al., Reviews in Aquaculture 2026 (Tasmania); growth optimum 12-16 °C.',
                     'basins': BASSINS, 'errors': erreurs,
