@@ -1316,6 +1316,10 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     #stView .st-seg button.on{background:linear-gradient(180deg,#fff,#dcecf5);color:#0d2a40;font-weight:700}
     #stView .st-sl{display:flex;align-items:center;gap:10px;font-size:13px;padding:7px 14px;border-radius:999px;background:linear-gradient(150deg,rgba(255,255,255,.2),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.28)}
     #stView .st-sl input{width:200px}
+    #stView .st-ar{width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.14);color:#fff;font-size:18px;line-height:1;cursor:pointer;padding:0}
+    #stView .st-ar:hover{background:rgba(255,255,255,.3)}
+    #stView .st-enso{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px;padding:14px 16px;margin:6px 0 12px;border-radius:20px;background:linear-gradient(150deg,rgba(255,213,79,.16),rgba(255,255,255,.05));border:1px solid rgba(255,213,79,.4)}
+    @media (max-width:760px){#stView .st-enso{grid-template-columns:1fr}}
     #stView .st-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
     #stView .st-chips button{border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#fff;border-radius:999px;padding:6px 12px;font:inherit;font-size:12.5px;cursor:pointer}
     #stView .st-chips button.on{background:rgba(255,255,255,.32)}
@@ -3918,7 +3922,7 @@ function renderSeaTemp() {
     root.innerHTML = `<div class="sig-sub" id="stIntro"></div>` +
       `<div class="st-bar"><div class="st-seg" id="stMode"><button data-m="h" class="on">History</button><button data-m="p">Projected</button></div>` +
       `<div class="st-seg" id="stLay"><button data-l="anom" class="on">vs normal</button><button data-l="temp">°C</button><button data-l="hot">Heat days</button></div>` +
-      `<div class="st-sl"><span id="stLab"></span><input type="range" id="stK"></div></div>` +
+      `<div class="st-sl"><button class="st-ar" id="stPrev" title="Previous month">‹</button><span id="stLab" style="min-width:118px;text-align:center"></span><button class="st-ar" id="stNext" title="Next month">›</button><input type="range" id="stK"></div></div>` +
       `<div class="st-chips" id="stBas"></div>` +
       `<div class="st-stage" id="stStage"><div class="st-map" id="stMap"><svg id="stSvg" viewBox="0 0 1000 520"></svg>` +
       `<div class="st-zoom"><button id="stZi" title="Zoom in">+</button><button id="stZo" title="Zoom out">−</button><button id="stZr" title="Whole world" style="font-size:13px">⤢</button></div>` +
@@ -3927,6 +3931,10 @@ function renderSeaTemp() {
     const mb = document.getElementById('stMap');
     document.querySelectorAll('#stMode button').forEach(b => b.onclick = () => { STV.mode = b.dataset.m; document.querySelectorAll('#stMode button').forEach(x => x.classList.toggle('on', x === b)); STV.k = STV.mode === 'p' ? addM(last, 1) : last; renderSeaTemp(); });
     document.querySelectorAll('#stLay button').forEach(b => b.onclick = () => { STV.layer = b.dataset.l; document.querySelectorAll('#stLay button').forEach(x => x.classList.toggle('on', x === b)); renderSeaTemp(); });
+    const step = d => { if (STV.mode === 'p') { const n = Math.max(1, Math.min(3, ahead(STV.k) + d)); STV.k = addM(last, n); } else { const i = Math.max(0, Math.min(hist.length - 1, hist.indexOf(STV.k) + d)); STV.k = hist[i]; } renderSeaTemp(); };
+    document.getElementById('stPrev').onclick = () => step(-1); document.getElementById('stNext').onclick = () => step(1);
+    document.addEventListener('keydown', ev => { if (currentView !== 'seatemp' || /INPUT|TEXTAREA/.test((document.activeElement || {}).tagName || '') && document.activeElement.id !== 'stK') return;
+      if (ev.key === 'ArrowLeft') { step(-1); ev.preventDefault(); } if (ev.key === 'ArrowRight') { step(1); ev.preventDefault(); } });
     document.getElementById('stK').oninput = ev => { STV.k = STV.mode === 'p' ? addM(last, +ev.target.value) : hist[+ev.target.value]; renderSeaTemp(); };
     const zoom = (f, cx, cy) => { const v = STV.vb; cx = cx ?? v[0] + v[2] / 2; cy = cy ?? v[1] + v[3] / 2; STV.vb = [cx - (cx - v[0]) * f, cy - (cy - v[1]) * f, v[2] * f, v[3] * f]; renderSeaTemp(); };
     document.getElementById('stZi').onclick = () => zoom(.6); document.getElementById('stZo').onclick = () => zoom(1 / .6); document.getElementById('stZr').onclick = () => window.stClose();
@@ -3956,7 +3964,14 @@ function renderSeaTemp() {
   function stDraw() {
     const sv = document.getElementById('stSvg'); if (!sv) return; const v = STV.vb, zf = 1000 / v[2];
     sv.setAttribute('viewBox', v.map(x => x.toFixed(2)).join(' '));
-    let s = `<path d="${STV.land}" fill="rgba(255,255,255,.15)" stroke="rgba(255,255,255,.3)" stroke-width="${.5 / zf}"/>`;
+    // trait de cote fin (Natural Earth 1:10m, data/coast_hd.json) des qu'on zoome : la carte grossiere est masquee dans ces cadres
+    if (zf > 2.2 && STV.hd === undefined) { STV.hd = null; fetch(DATA_URL.replace('data.json', 'coast_hd.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
+      .then(j => { if (!j) { STV.hd = false; return; } let d = '', m = ''; Object.values(j.areas || {}).forEach(a => { const b = a.box; m += `<rect x="${X(b[0])}" y="${Y(b[3])}" width="${X(b[2]) - X(b[0])}" height="${Y(b[1]) - Y(b[3])}" fill="#000"/>`;
+        a.rings.forEach(r => { d += 'M' + r.map(q => X(q[0]).toFixed(2) + ',' + Y(q[1]).toFixed(2)).join('L') + 'Z'; }); }); STV.hd = { d, m }; if (currentView === 'seatemp') stDraw(); }); }
+    const HD = zf > 2.2 && STV.hd;
+    let s = HD ? `<defs><mask id="stMask"><rect x="-500" y="-500" width="2000" height="1600" fill="#fff"/>${STV.hd.m}</mask></defs><path d="${STV.land}" mask="url(#stMask)" fill="rgba(255,255,255,.15)" stroke="rgba(255,255,255,.3)" stroke-width="${.5 / zf}"/>` +
+      `<path d="${STV.hd.d}" fill="rgba(255,255,255,.16)" stroke="rgba(255,255,255,.35)" stroke-width="${.4 / zf}" stroke-linejoin="round"/>` :
+      `<path d="${STV.land}" fill="rgba(255,255,255,.15)" stroke="rgba(255,255,255,.3)" stroke-width="${.5 / zf}"/>`;
     P.forEach(p => { const w = val(p, STV.k); if (!w) return; const [t, a, hd] = w, dim = STV.bas !== 'ALL' && !inB(p, STV.bas);
       const c = STV.layer === 'anom' ? col(a) : STV.layer === 'temp' ? colT(t) : (hd ? colT(16 + hd / 20) : '#cfd8de');
       const r = (STV.layer === 'hot' ? 6 + Math.min(18, Math.sqrt(hd || 0) * 3) : (p.basin === 'NO' ? 7 : 9)) / zf, b = p.basin === 'IE' ? 'GB' : p.basin;
@@ -4002,13 +4017,36 @@ function renderSeaTemp() {
   // ---- rubrique news climat : alertes automatiques (7 derniers jours) + presse ----
   function stNews() { const A = (M.alerts || []).map(a => ({ d: a.until, b: a.basin, lvl: a.level === 'cold' ? -1 : 1, ty: 'alert',
       t: `${a.label}: ${a.level === 'heat' ? `${a.hot7} day(s) above 16.5 °C this week` : `${sg(a.anom7)} °C vs normal over the last 7 days`}`, s: 'Automatic alert from the daily sea temperature (NOAA OISST): 7-day gap beyond ±1 °C, or a day above 16.5 °C.' }));
-    return A.concat(((STV.news || {}).items || []).map(n => ({ ...n, ty: 'press' }))).sort((x, y) => (y.d || '').localeCompare(x.d || '')); }
-  function stNewsHtml(n) { return `<div class="st-ni"><span class="dot" style="background:${n.lvl > 0 ? '#ff7a45' : '#5fa8ff'}"></span><div><b style="font-size:13.5px">${n.u ? `<a href="${e(n.u)}" target="_blank" rel="noopener" style="color:#fff">${e(n.t)}</a>` : e(n.t)}</b><span class="st-pill">${n.ty === 'alert' ? 'Auto alert' : 'Press'}</span><span class="st-pill">${n.b === 'ALL' ? 'All basins' : NAME[n.b] || n.b}</span><div class="sig-sub" style="margin-top:2px">${e(n.d)} · ${e(n.s)}</div></div></div>`; }
+    const seen = new Set(), PR = (((STV.news || {}).items) || []).map(n => ({ ...n, ty: 'press', enso: /el ni[ñn]o|enso/i.test(n.t + ' ' + n.s) }))
+      .concat((STV.data.press || []).map(n => ({ d: n.d, b: n.b, lvl: /cold|kulde|fr[ií]o|la ni[ñn]a/i.test(n.t) ? -1 : 1, t: n.t, s: n.src || 'press', u: n.u, ty: 'press', enso: n.enso })));
+    return A.concat(PR.filter(n => { const k = (n.t || '').toLowerCase().slice(0, 60); if (seen.has(k)) return false; seen.add(k); return true; })).sort((x, y) => (y.d || '').localeCompare(x.d || '')); }
+  function stNewsHtml(n) { return `<div class="st-ni"><span class="dot" style="background:${n.lvl > 0 ? '#ff7a45' : '#5fa8ff'}"></span><div><b style="font-size:13.5px">${n.u ? `<a href="${e(n.u)}" target="_blank" rel="noopener" style="color:#fff">${e(n.t)}</a>` : e(n.t)}</b><span class="st-pill">${n.ty === 'alert' ? 'Auto alert' : 'Press'}</span>${n.enso ? '<span class="st-pill" style="background:rgba(255,213,79,.35)">El Niño</span>' : ''}<span class="st-pill">${n.b === 'ALL' ? 'All basins' : NAME[n.b] || n.b}</span><div class="sig-sub" style="margin-top:2px">${e(n.d)} · ${e(n.s)}</div></div></div>`; }
   window.stNewsHtml = stNewsHtml;
-  const NL = stNews(), types = ['ALL', 'alert', 'press'];
-  document.getElementById('stNf').innerHTML = types.map(x => `<button class="${STV.nf === x ? 'on' : ''}" data-n="${x}">${x === 'ALL' ? 'All' : x === 'alert' ? 'Auto alerts' : 'Press'}</button>`).join('');
+  const NL = stNews(), types = ['ALL', 'enso', 'alert', 'press'];
+  document.getElementById('stNf').innerHTML = types.map(x => `<button class="${STV.nf === x ? 'on' : ''}" data-n="${x}">${{ ALL: 'All', enso: 'El Niño focus', alert: 'Auto alerts', press: 'Press' }[x]}</button>`).join('');
   document.querySelectorAll('#stNf button').forEach(b => b.onclick = () => { STV.nf = b.dataset.n; renderSeaTemp(); });
-  document.getElementById('stNl').innerHTML = NL.filter(n => STV.nf === 'ALL' || n.ty === STV.nf).map(stNewsHtml).join('') || '<div class="sig-sub">No alert this week.</div>';
+  // ---- focus El Niño : statut officiel NOAA, indice Niño 3.4 semaine par semaine, et ce que ca change pour les bassins ----
+  const EN = STV.data.enso || {}, W = (EN.weekly_nino34 || []).slice(-52);
+  let ensoHtml = '';
+  if (STV.nf === 'enso' || STV.nf === 'ALL') {
+    const lastW = W[W.length - 1], bw = 560 / Math.max(1, W.length), mx = Math.max(1, ...W.map(x => Math.abs(x[2])));
+    const yv = v => 60 - v / mx * 52;
+    const svg = W.length ? `<svg viewBox="0 0 600 130" style="width:100%;height:auto"><line x1="34" x2="600" y1="60" y2="60" stroke="rgba(255,255,255,.3)"/>` +
+      [0.5, -0.5].map(t => `<line x1="34" x2="600" y1="${yv(t)}" y2="${yv(t)}" stroke="rgba(255,213,79,.35)" stroke-dasharray="4 3"/><text x="30" y="${yv(t) + 3}" font-size="9" fill="#cfe0ea" text-anchor="end">${t > 0 ? '+' : '−'}0.5</text>`).join('') +
+      W.map((x, i) => `<rect x="${36 + i * bw}" y="${Math.min(60, yv(x[2]))}" width="${bw * .8}" height="${Math.max(1, Math.abs(yv(x[2]) - 60))}" fill="${x[2] >= .5 ? '#ff8a50' : x[2] <= -.5 ? '#5fa8ff' : '#cfd8de'}"><title>week of ${x[0]}: Niño 3.4 ${x[1].toFixed(1)} °C, ${sg(x[2])} °C vs 1991–2020</title></rect>`).join('') +
+      `<text x="36" y="126" font-size="9" fill="#cfe0ea">${e((W[0] || [''])[0])}</text><text x="600" y="126" font-size="9" fill="#cfe0ea" text-anchor="end">${e(lastW[0])}</text></svg>` : '';
+    const oni = (EN.oni || []).slice(-6).map(o => `${o[0]} ${o[1]}: ${sg(o[2])}`).join(' · ');
+    const anoms = b => { const L = P.filter(p => p.basin === b), v = L.map(p => (p.anomaly || {})[last]).filter(x => x !== undefined); return v.length ? rng(v, sg) + ' °C' : '—'; };
+    ensoHtml = `<div class="st-enso"><div><div style="font-weight:800;font-size:16px">El Niño focus — ${e(EN.status || 'status not read yet')}</div>` +
+      `<div class="sig-sub" style="margin:4px 0 6px">${e(EN.synopsis || '')} ${EN.issued ? `<span style="opacity:.8">(NOAA Climate Prediction Center, ${e(EN.issued)} — <a href="${e(EN.url || '#')}" target="_blank" rel="noopener" style="color:#ffd27a">bulletin</a>)</span>` : ''}</div>` +
+      `${lastW ? `<div><b>Niño 3.4, week of ${e(lastW[0])}: ${sg(lastW[2])} °C</b> vs 1991–2020 (El Niño from +0.5 °C held for several months).</div>` : ''}${oni ? `<div class="sig-sub">3-month index (ONI): ${e(oni)}</div>` : ''}${svg}</div>` +
+      `<div><div style="font-weight:700;margin-bottom:4px">What it means for salmon</div><div class="sig-sub" style="line-height:1.55">` +
+      `<b>Chile</b> (${last.slice(5) * 1 ? lab(last) : ''}: ${anoms('CL')} vs normal): warmer water raises the risk of harmful algal blooms (the 2016 bloom, about 40,000 t of salmon lost, came during a strong El Niño), sea lice and SRS. ` +
+      `<b>Tasmania</b> (${anoms('AU')}): the link is weaker; its marine heatwaves come mostly from the East Australian Current, and mortality rises above 18 °C. ` +
+      `<b>Norway, Scotland, Faroes, Iceland</b>: little direct link; their summers depend on North Atlantic weather. ` +
+      `<b>Feed</b>: El Niño cuts the Peruvian anchovy catch, so fishmeal and fish oil prices.</div></div></div>`;
+  }
+  document.getElementById('stNl').innerHTML = ensoHtml + (NL.filter(n => STV.nf === 'ALL' || (STV.nf === 'enso' ? n.enso : n.ty === STV.nf)).map(stNewsHtml).join('') || '<div class="sig-sub">Nothing in this filter yet.</div>');
   // ---- textes ----
   const L1 = STV.layer;
   document.getElementById('stLeg').innerHTML = L1 === 'anom' ? `Gap to the ${e((M.normal || '').replace('-', '–'))} normal (same month)<div class="sc"></div>−2 °C · normal · +2 °C` : L1 === 'temp' ? 'Sea °C: <span style="color:#7fb8ff">&lt;10</span> · <span style="color:#cfe9d8">10–14</span> · <span style="color:#ffd27a">14–16.5</span> · <span style="color:#ff9a52">16.5–18</span> · <span style="color:#ff4a2a">&gt;18</span>' : 'Days above 16.5 °C in the month (size)';

@@ -335,7 +335,12 @@ def main():
         pts.append({'basin': b, 'id': pid, 'label': lab, 'lat': la, 'lon': lo, 'cell': [round(c[0] * .25 - 89.875, 3), round(c[1] * .25 + .125 - (360 if c[1] * .25 + .125 > 180 else 0), 3)],
                     'cell_idx': list(c), 'src': 'ncei', **r})
         print(f'  {pid:14s} {len(jours)} jours, dernier mois {max(r["monthly"]) if r["monthly"] else "-"}', flush=True)
+    ENSO_CACHE['v'] = enso(ancien.get('enso')); ENSO_CACHE['p'] = presse(ancien.get('press'))
+    print('El Niño :', (ENSO_CACHE['v'] or {}).get('status'), '| presse climat :', len(ENSO_CACHE['p'] or []), 'titres', flush=True)
     ecrire(pts, erreurs)
+
+
+ENSO_CACHE = {}
 
 
 def ecrire(pts, erreurs):
@@ -349,8 +354,93 @@ def ecrire(pts, erreurs):
                     'basins': BASSINS, 'errors': erreurs,
                     'alerts': [{'id': p['id'], 'basin': p['basin'], 'label': p['label'], **p['alert']} for p in pts if (p.get('alert') or {}).get('level')]},
            'points': pts}
+    ancien = json.load(io.open(OUT, encoding='utf-8')) if os.path.exists(OUT) else {}
+    out['enso'] = ENSO_CACHE.get('v') if ENSO_CACHE.get('v') is not None else ancien.get('enso')
+    out['press'] = ENSO_CACHE.get('p') if ENSO_CACHE.get('p') is not None else ancien.get('press')
     io.open(OUT, 'w', encoding='utf-8').write(json.dumps(out, ensure_ascii=False, separators=(',', ':')))
     print(f'data/sea_temp.json : {len(pts)} points, {len(erreurs)} erreurs')
+
+
+# ---------------- El Niño (NOAA Climate Prediction Center) et presse climat ----------------
+CPC = 'https://www.cpc.ncep.noaa.gov'
+
+
+def enso(ancien):
+    """Indice Niño 3.4 hebdomadaire (ecart a la normale 1991-2020), ONI trimestriel et statut officiel du systeme d'alerte ENSO.
+    Donnees du gouvernement americain, domaine public. En cas d'echec, on garde la version precedente."""
+    out = dict(ancien or {})
+    try:
+        st, raw = http(CPC + '/data/indices/wksst9120.for', timeout=60)
+        wk = []
+        for ligne in raw.decode('utf-8', 'replace').splitlines():
+            m = re.match(r'\s*(\d{2})([A-Z]{3})(\d{4})\s+([-\d. ]+)$', ligne)
+            if not m: continue
+            v = re.findall(r'(-?\d+\.\d)(-?\d+\.\d)', ligne[10:])      # colonnes collees : temperature puis ecart, par region
+            if len(v) >= 3:
+                d = dt.datetime.strptime(m.group(1) + m.group(2) + m.group(3), '%d%b%Y').date()
+                wk.append([d.isoformat(), float(v[2][0]), float(v[2][1])])   # 3e region = Niño 3.4
+        if wk: out['weekly_nino34'] = wk[-104:]
+    except Exception as e:  # noqa: BLE001
+        print('  ENSO hebdo :', str(e)[:120])
+    try:
+        st, raw = http(CPC + '/data/indices/oni.ascii.txt', timeout=60)
+        oni = []
+        for ligne in raw.decode('utf-8', 'replace').splitlines()[1:]:
+            c = ligne.split()
+            if len(c) == 4: oni.append([c[0], int(c[1]), float(c[3])])
+        if oni: out['oni'] = oni[-36:]
+    except Exception as e:  # noqa: BLE001
+        print('  ONI :', str(e)[:120])
+    try:
+        st, raw = http(CPC + '/products/analysis_monitoring/enso_advisory/ensodisc.shtml', timeout=60)
+        t = re.sub(r'<[^>]+>', ' ', raw.decode('utf-8', 'replace')); t = re.sub(r'\s+', ' ', t)
+        m = re.search(r'ENSO Alert System Status:\s*(.{3,80}?)\s{1,3}(?:Synopsis|Synopsis:)', t)
+        sy = re.search(r'Synopsis:\s*(.{20,400}?\.)\s', t)
+        dd = re.search(r'issued by CLIMATE PREDICTION CENTER.{0,120}?(\d{1,2} [A-Z][a-z]+ \d{4})', t)
+        if m: out['status'] = m.group(1).strip()
+        if sy: out['synopsis'] = sy.group(1).strip()
+        if dd: out['issued'] = dd.group(1)
+        out['url'] = CPC + '/products/analysis_monitoring/enso_advisory/ensodisc.shtml'
+    except Exception as e:  # noqa: BLE001
+        print('  ENSO statut :', str(e)[:120])
+    return out
+
+
+PRESSE_Q = [   # titres seulement (Google News), gardes s'ils parlent de temperature de la mer ET d'elevage de salmonides, ou d'El Niño
+    ('"El Niño" (salmon OR salmón OR aquaculture OR acuicultura)', 'en', 'US', 'US:en'),
+    ('"El Niño" (salmonicultura OR salmón OR "floraciones de algas" OR FAN) Chile', 'es-419', 'CL', 'CL:es-419'),
+    ('("marine heatwave" OR "sea temperature" OR "water temperature") salmon farm', 'en', 'GB', 'GB:en'),
+    ('(sjøtemperatur OR "marin hetebølge" OR "marin kuldebølge" OR havtemperatur) (laks OR oppdrett OR havbruk)', 'no', 'NO', 'NO:no'),
+    ('("temperatura del mar" OR "ola de calor marina") (salmón OR salmonicultura)', 'es-419', 'CL', 'CL:es-419'),
+    ('("marine heatwave" OR "water temperature") (Tasmania OR Macquarie) salmon', 'en', 'AU', 'AU:en'),
+]
+CLIMAT = re.compile(r'el ni[ñn]o|la ni[ñn]a|heatwave|hetebølge|kuldebølge|temperat|ola de calor|warm(ing|er) (water|sea|ocean)|sjøtemp|havtemp|cold (water|spell)|algal bloom|floraci|\bFAN\b|\bENSO\b', re.I)
+ELEVAGE = re.compile(r'salm|laks|oppdrett|havbruk|aquacult|acuicult|fish farm|fiskeoppdrett|trucha|trout', re.I)
+BASSIN_RX = [('NO', r'norw|norg|norsk|noreg'), ('CL', r'chile|chilen|ays[eé]n|los lagos|magallanes|chilo[eé]'), ('GB', r'scotl|escoc|skott'), ('FO', r'faroe|føroy|færø'),
+             ('IS', r'iceland|island'), ('CA', r'canad|british columbia|newfoundland|new brunswick'), ('AU', r'tasmania|australia|macquarie'), ('IE', r'ireland|irlan')]
+
+
+def presse(ancien):
+    """Titres de presse sur la temperature de la mer, les vagues de chaleur marines et El Niño en lien avec l'elevage : 90 derniers jours."""
+    items = {i['u']: i for i in (ancien or []) if i.get('u')}
+    for q, hl, gl, ceid in PRESSE_Q:
+        try:
+            st, raw = http('https://news.google.com/rss/search?' + urllib.parse.urlencode({'q': q + ' when:30d', 'hl': hl, 'gl': gl, 'ceid': ceid}), timeout=40)
+            for it in re.findall(r'<item>(.*?)</item>', raw.decode('utf-8', 'replace'), re.S):
+                t = re.search(r'<title>(.*?)</title>', it, re.S); u = re.search(r'<link>(.*?)</link>', it, re.S); d = re.search(r'<pubDate>(.*?)</pubDate>', it, re.S); sname = re.search(r'<source[^>]*>(.*?)</source>', it, re.S)
+                if not (t and u and d): continue
+                titre = re.sub(r'<!\[CDATA\[|\]\]>', '', t.group(1)).replace('&amp;', '&').replace('&quot;', '"').replace('&#39;', "'").strip()
+                if not CLIMAT.search(titre) or not (ELEVAGE.search(titre) or re.search(r'el ni[ñn]o', titre, re.I)): continue
+                try: dd = dt.datetime.strptime(d.group(1).strip()[:25], '%a, %d %b %Y %H:%M:%S').date().isoformat()
+                except ValueError: continue
+                b = next((k for k, r in BASSIN_RX if re.search(r, titre, re.I)), 'ALL')
+                items[u.group(1).strip()] = {'d': dd, 't': titre, 'src': (sname.group(1).strip() if sname else ''), 'u': u.group(1).strip(), 'b': b,
+                                             'enso': bool(re.search(r'el ni[ñn]o|la ni[ñn]a|enso', titre, re.I))}
+        except Exception as e:  # noqa: BLE001
+            print('  presse :', q[:40], str(e)[:80])
+        time.sleep(1)
+    lim = (dt.date.today() - dt.timedelta(days=90)).isoformat()
+    return sorted([i for i in items.values() if i['d'] >= lim], key=lambda i: i['d'], reverse=True)[:60]
 
 
 if __name__ == '__main__':

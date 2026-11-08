@@ -21,11 +21,12 @@ jobs:
       run: |
         pip install -q netCDF4 numpy
         python3 -u scripts/build_sea_temp.py
+        if [ ! -f data/coast_hd.json ]; then python3 scripts/build_coast.py || true; fi
     - name: Enregistrer
       if: always()
       run: |
         git config user.name "github-actions"; git config user.email "actions@github.com"
-        git add data/sea_temp.json
+        git add data/sea_temp.json data/coast_hd.json 2>/dev/null || git add data/sea_temp.json
         git diff --cached --quiet && exit 0
         git commit -m "Temperature de la mer ($(date -u +%Y-%m-%d))"
         for i in 1 2 3; do git pull --rebase -q origin main && git push -q origin HEAD:main && break; sleep 5; done
