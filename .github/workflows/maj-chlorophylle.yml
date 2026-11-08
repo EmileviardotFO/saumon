@@ -1,0 +1,29 @@
+name: Chlorophylle (satellite, alerte algues)
+
+on:
+  schedule:
+  - cron: 37 6 * * *
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  chl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    - name: Chlorophylle VIIRS (NOAA CoastWatch)
+      run: python3 -u scripts/build_chlorophyll.py
+    - name: Enregistrer
+      if: always()
+      run: |
+        git config user.name "github-actions"; git config user.email "actions@github.com"
+        [ -f data/chlorophyll.json ] && git add data/chlorophyll.json
+        git diff --cached --quiet && exit 0
+        git commit -m "Chlorophylle ($(date -u +%Y-%m-%d))"
+        for i in 1 2 3; do git pull --rebase -q origin main && git push -q origin HEAD:main && break; sleep 5; done
