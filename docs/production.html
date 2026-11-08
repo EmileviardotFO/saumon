@@ -15444,6 +15444,7 @@ function renderWellboats() {
   #prYears input{display:none}
   /* defilement horizontal : seules les colonnes de chiffres bougent, la premiere colonne reste en place */
   .hs-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
+  @media (max-width:600px){#regFootNote{text-align:left;padding:0 12px}}
   /* telephone : la colonne figee ne prend jamais plus de ~42 % de l'ecran ; le libelle passe a la ligne entre les mots */
   @media (max-width:600px){.hs-on th:first-child:not([colspan]),.hs-on td:first-child:not([colspan]){max-width:42vw!important;min-width:0!important;white-space:normal!important;word-break:normal!important;overflow-wrap:normal!important;hyphens:manual!important}}
   /* listes de sources sur telephone : une carte par document (date, type, bassin, puis le titre sur toute la largeur), plus de colonne de 30 px */
