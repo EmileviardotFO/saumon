@@ -25,6 +25,7 @@ import urllib.request
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'data', 'chlorophyll.json')
 ERD = 'https://coastwatch.noaa.gov/erddap'
+BASE = {}
 UA = {'User-Agent': 'salmon-outlook (chlorophyll)'}
 # points en mer interieure / fjords exposes aux blooms (2016 Reloncavi-Chiloe, 2021 Comau, 2019 Nord-Norge)
 POINTS = [
@@ -68,6 +69,7 @@ def catalogue():
         i, ti = r['Dataset ID'], r.get('Title', '')
         return (0 if re.search(r'DINEOF', i + ti, re.I) and re.search(r'daily', i + ti, re.I) else 1 if re.search(r'8.?day', i + ti, re.I) else 2 if re.search(r'daily', i + ti, re.I) else 3,
                 0 if re.search(r'NPPN20|N20|multi', i, re.I) else 1, 0 if re.search(r'9km|4km', i + ti, re.I) else 1)
+    for r in ok: BASE[r['Dataset ID']] = r['griddap']
     ok.sort(key=rang)
     print('catalogue chlorophylle :', [r['Dataset ID'] for r in ok[:12]], flush=True)
     return ok
@@ -89,8 +91,10 @@ def serie(did, dims, var, la, lo, debut):
         elif d in ('latitude', 'lat'): sel.append(f'[({la})]')
         elif d in ('longitude', 'lon'): sel.append(f'[({lo})]')
         else: sel.append('[0]')
-    q = f'{ERD}/griddap/{did}.csv?{var}' + ''.join(sel)
-    raw = http(urllib.parse.quote(q, safe=':/?[]():,.=-'), timeout=180).decode('utf-8', 'replace').splitlines()[2:]
+    # requete entierement encodee (certains frontaux renvoient 404 sur les crochets bruts)
+    base = BASE.get(did) or f'{ERD}/griddap/{did}'
+    q = base + '.csv?' + urllib.parse.quote(var + ''.join(sel), safe='')
+    raw = http(q, timeout=180).decode('utf-8', 'replace').splitlines()[2:]
     out = {}
     for l in raw:
         c = l.split(',')
@@ -118,7 +122,7 @@ def main():
     if not used:
         print('chlorophylle : aucun jeu utilisable', err); return
     did, title, dims, var = used
-    print('jeu retenu :', did, '|', title, dims, var, flush=True)
+    print('jeu retenu :', did, '|', title, dims, var, BASE.get(did), flush=True)
     debut = (dt.date.today() - dt.timedelta(days=365 * 6)).isoformat()
     for b, bn, pid, lab, la, lo in POINTS:
         try:
