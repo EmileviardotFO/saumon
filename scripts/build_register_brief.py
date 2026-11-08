@@ -21,7 +21,7 @@ GUT = 0.888
 MOIS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 ml = lambda k: f'{MOIS[k % 100 - 1]} {k // 100}'
 pc = lambda a, b: 100 * (a / b - 1) if b else None
-sg = lambda v, d=0: ('+' if v >= 0 else '−') + f'{abs(v):.{d}f}'
+sg = lambda v, d=None: ('+' if v >= 0 else '−') + f'{abs(v):.{(1 if abs(v) < 0.95 else 0) if d is None else d}f}'   # une decimale sous 1 % (pas de « −0 % »)
 
 
 def main():
@@ -41,9 +41,11 @@ def main():
     hw = sum_(cur, lambda c: c['harv_kg']) / (sum_(cur, lambda c: c['harv_stk']) or 1) * GUT
     hwl = sum_(ly, lambda c: c['harv_kg']) / (sum_(ly, lambda c: c['harv_stk']) or 1) * GUT
     b, bl = sum_(cur, lambda c: (c['stock'] or 0) * (c['weight_kg'] or 0)) * GUT / 1e6, sum_(ly, lambda c: (c['stock'] or 0) * (c['weight_kg'] or 0)) * GUT / 1e6
-    mtb = sum(v for po, v in ((d.get('bw_register') or {}).get('mtb_po') or {}).items() if po != '0') / 1000
+    # meme base que la page (Generations map, Registre) : toutes les licences en mer, zone 0 comprise, puisque la biomasse b comprend la zone 0
+    R = d.get('bw_register') or {}
+    mtb = sum((R.get('mtb_po_all') or R.get('mtb_po') or {}).values()) / 1000
     lines.append(f"Harvest in {ml(k)}: {h:,.0f} kt gutted ({sg(pc(h, hl))} % on {ml(k - 100)}), average fish {hw:.2f} kg ({hwl:.2f} a year earlier). "
-                 f"Biomass at sea {b:,.0f} kt gutted ({sg(pc(b, bl))} %)" + (f", {100 * b / GUT / mtb:.0f} % of the sea MTB." if mtb else '.'))
+                 f"Biomass at sea {b:,.0f} kt gutted ({sg(pc(b, bl))} %)" + (f", {100 * b / GUT / mtb:.0f} % of the sea MTB (all licences, live weight)." if mtb else '.'))
     # 2) generations : celle qu'on recolte et la suivante, contre les memes generations les 5 annees passees au meme mois
     def gen(g, yy, mm):
         L = [c for c in M(yy, mm) if c['cohort'] == g]

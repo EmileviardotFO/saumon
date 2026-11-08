@@ -13295,7 +13295,7 @@ function renderBrief() {
   const k = G.months[G.months.length - 1], kp = sh(k, -1), ky = sh(k, -12), SP = supplyProj(k);
   $('gm_brT').textContent = `This month — what the ${ml(k)} register says`;
   const pc = (a, b) => a === null || b === null || !b ? null : 100 * (a / b - 1);
-  const pct = v => v === null || !isFinite(v) ? '—' : sg(v, 0) + ' %';
+  const pct = v => v === null || !isFinite(v) ? '—' : sg(v, Math.abs(v) < 0.95 ? 1 : 0) + ' %';   // « −0 % » illisible : une decimale sous 1 %
   // previsions de l'offre archivees les mois precedents
   const E = (ARC && ARC.entries) || [], byK = {}; E.forEach(e => { if (e.supply) byK[e.k] = e.supply; });
   const prevOf = kk => byK[kk] ? Object.fromEntries(byK[kk].map(x => [x[0], x[1]])) : null;
