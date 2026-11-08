@@ -16092,5 +16092,62 @@ function renderWellboats() {
   setTimeout(mark, 500);
 })();
 </script>
+<style id="pcBCss">
+/* Version PC « bulles vivantes » (au-dela de 900 px, pointeur fin) : reflet doux qui suit la souris sur les panneaux et les cartes,
+   cartes qui gonflent au survol, menu lateral avec bulle animee au survol et lentille de verre sur l'onglet actif, titres retravailles.
+   Lisibilite d'abord : le reflet reste tres leger (12 % de blanc) et passe SOUS le texte ; les bulles du fond ne vivent que dans la
+   colonne du menu et dans les marges, jamais derriere un panneau de lecture. */
+@media (min-width:901px) and (hover:hover){
+  .panel,.pr-card{position:relative;isolation:isolate}
+  .panel::before,.pr-card::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;opacity:var(--hl,0);transition:opacity .35s;
+    background:radial-gradient(420px circle at var(--mx,50%) var(--my,0px),rgba(255,255,255,.12),rgba(255,255,255,0) 65%)}
+  .pr-card{transition:transform .5s cubic-bezier(.3,1.5,.55,1),box-shadow .3s!important}
+  .pr-card:hover{transform:translateY(-3px) scale(1.012);box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 18px 38px rgba(3,18,35,.38)!important}
+  /* menu lateral : bulle qui gonfle depuis la souris, oscille un instant, puis se pose */
+  #sideNav .sn-item{position:relative;overflow:visible;isolation:isolate;transition:color .2s,transform .45s cubic-bezier(.3,1.6,.55,1)!important;background:none!important}
+  #sideNav .sn-item::before{content:"";position:absolute;inset:1px 4px;border-radius:999px;z-index:-1;pointer-events:none;
+    background:radial-gradient(120% 100% at var(--bx,30%) 30%,rgba(255,255,255,.34),rgba(255,255,255,.08) 60%,rgba(255,255,255,.14));
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.45),inset 2px 0 6px rgba(255,110,220,.28),inset -2px 0 6px rgba(80,210,255,.35);
+    transform:scale(.2,.6);opacity:0;transform-origin:var(--bx,30%) 50%;transition:transform .5s cubic-bezier(.3,1.7,.5,1),opacity .25s}
+  #sideNav .sn-item:hover{transform:translateX(3px)}
+  #sideNav .sn-item:hover::before{transform:scale(1);opacity:1;animation:snWob 1.1s ease-out .15s}
+  @keyframes snWob{0%{transform:scale(1,1)}25%{transform:scale(1.04,.94)}50%{transform:scale(.98,1.04)}75%{transform:scale(1.01,.99)}100%{transform:scale(1)}}
+  #sideNav .sn-item.on{color:#fff!important;font-weight:700!important;box-shadow:none!important}
+  #sideNav .sn-item.on::before{transform:scale(1);opacity:1;background:radial-gradient(120% 90% at 50% 25%,rgba(255,255,255,.46),rgba(255,255,255,.12) 60%,rgba(255,255,255,.22));
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.8),inset 3px 0 7px rgba(255,90,210,.45),inset -3px 0 7px rgba(70,200,255,.55),inset 0 -3px 8px rgba(255,225,110,.35),0 6px 16px rgba(3,18,35,.3)}
+  /* titres : grand titre en degrade, sections avec une perle lumineuse, sous-titres plus lisibles */
+  body > h1 .h1-t{font-size:30px!important;font-weight:900!important;letter-spacing:-.02em!important;text-transform:none!important;
+    background:linear-gradient(90deg,#fff,#a8e8ff 60%,#cdbdff);-webkit-background-clip:text;background-clip:text;color:transparent!important}
+  .sig-title,.sup-sec{letter-spacing:-.005em!important;text-transform:none!important}
+  .sig-title::before,.sup-sec::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;margin:0 9px 1px 0;vertical-align:middle;
+    background:radial-gradient(circle at 35% 35%,#fff,#4fc3f7 55%,#1e88c8);box-shadow:0 0 8px rgba(79,195,247,.9)}
+  .sig-sub{line-height:1.55}
+  /* bulles du fond : seulement dans la colonne du menu (sous son verre) */
+  .bgBub{position:fixed;bottom:-60px;border-radius:50%;pointer-events:none;z-index:0;border:1.2px solid rgba(255,255,255,.4);
+    background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.5),rgba(255,255,255,.05) 45%,rgba(120,220,255,.07));animation:bgUp linear infinite}
+  @keyframes bgUp{0%{transform:translateY(0) translateX(0);opacity:0}10%{opacity:.55}50%{transform:translateY(-55vh) translateX(10px)}90%{opacity:.4}100%{transform:translateY(-112vh) translateX(-6px);opacity:0}}
+}
+@media (prefers-reduced-motion:reduce){.bgBub{display:none}#sideNav .sn-item:hover::before{animation:none}}
+</style>
+<script id="pcBJs">
+(function () {
+  if (!matchMedia('(min-width:901px) and (hover:hover)').matches) return;
+  // reflet qui suit la souris (une seule ecoute, sur le document)
+  let raf = 0, last = null;
+  document.addEventListener('pointermove', ev => { const c = ev.target.closest && ev.target.closest('.pr-card,.panel'); if (raf) return;
+    raf = requestAnimationFrame(() => { raf = 0; if (last && last !== c) last.style.setProperty('--hl', 0);
+      if (c) { const r = c.getBoundingClientRect(); c.style.setProperty('--mx', (ev.clientX - r.left) + 'px'); c.style.setProperty('--my', (ev.clientY - r.top) + 'px'); c.style.setProperty('--hl', 1); }
+      last = c; }); }, { passive: true });
+  // bulle du menu : nait la ou entre la souris
+  document.addEventListener('pointerover', ev => { const b = ev.target.closest && ev.target.closest('#sideNav .sn-item'); if (!b) return;
+    const r = b.getBoundingClientRect(); b.style.setProperty('--bx', Math.max(5, Math.min(95, 100 * (ev.clientX - r.left) / r.width)) + '%'); }, { passive: true });
+  // bulles qui montent, dans la colonne du menu seulement
+  const add = () => { const nav = document.getElementById('sideNav'); if (!nav) return setTimeout(add, 500); const w = nav.getBoundingClientRect().width || 230;
+    for (let i = 0; i < 9; i++) { const d = document.createElement('div'), sz = 6 + Math.random() * 22; d.className = 'bgBub';
+      d.style.cssText = `width:${sz}px;height:${sz}px;left:${8 + Math.random() * (w - 30)}px;animation-duration:${18 + Math.random() * 20}s;animation-delay:${-Math.random() * 30}s`;
+      document.body.appendChild(d); } };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', add); else add();
+})();
+</script>
 </body>
 </html>
