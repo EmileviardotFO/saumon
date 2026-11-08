@@ -29,7 +29,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'data', 'sea_temp.json')
 UA = {'User-Agent': 'Mozilla/5.0 (salmon-outlook sea temperature)'}
 SEUILS = (16.5, 17.0, 18.0)
-DEBUT = '2016-01-01'
+DEBUT = '2015-06-01'     # depuis juin 2015 pour comparer l'ete chilien 2015-16 (El Niño fort, bloom de 2016) ; normale 2016 et apres
+VERSION = 2
 # NOAA OISST v2.1 (satellites + bouees + navires, grille 0,25°, quotidien depuis 1981) via ERDDAP : donnees du gouvernement americain,
 # libres de droits y compris pour un usage commercial, sans cle ni quota declare. Open-Meteo (utilise d'abord) n'autorise son API
 # gratuite qu'en usage non commercial et sa serie de temperature de mer ne commence qu'a fin 2022.
@@ -195,7 +196,7 @@ def resume(jours, old=None):
         mm = {**{k: v for k, v in (old.get('monthly') or {}).items() if k < d0}, **mm}
     norm = defaultdict(list)
     for k, v in mm.items():
-        if k[:4] < str(dt.date.today().year):      # normale = annees completes depuis 2016
+        if '2016' <= k[:4] < str(dt.date.today().year):      # normale = annees completes depuis 2016
             norm[int(k[5:])].append(v)
     normal = {m: round(sum(v) / len(v), 2) for m, v in norm.items() if len(v) >= 2}
     chaud = {k: v for k, v in ((old or {}).get('hot_days') or {}).items() if k < (min(mois) if mois else '9999')}
@@ -210,7 +211,7 @@ def climato(jours):
     """Normale journaliere (annees completes) par jour de l'annee (fenetre glissante de 15 jours), {doy: °C}."""
     par = defaultdict(list)
     for d, v in jours.items():
-        if d[:4] < str(dt.date.today().year):
+        if '2016' <= d[:4] < str(dt.date.today().year):
             par[min(365, dt.date.fromisoformat(d).timetuple().tm_yday)].append(v)
     out = {}
     for j in range(1, 366):
@@ -300,7 +301,7 @@ def mailles_mer(premier):
 def main():
     ancien = json.load(io.open(OUT, encoding='utf-8')) if os.path.exists(OUT) else {}
     complet = os.environ.get('SST_FULL') == '1'
-    olds = {p['id']: p for p in ancien.get('points', []) if p.get('monthly') and p.get('clim') and p.get('cell') and p.get('src') == 'ncei'}
+    olds = {p['id']: p for p in ancien.get('points', []) if p.get('monthly') and p.get('clim') and p.get('cell') and p.get('src') == 'ncei' and p.get('v') == VERSION}
     fin = dt.date.today() - dt.timedelta(days=1)
     plein = complet or len(olds) < 0.8 * len(POINTS)     # un point sans maille de mer ne doit pas relancer tout l'historique chaque jour
     if plein:
@@ -333,7 +334,7 @@ def main():
         r['recent'] = dict(sorted(recent.items())[-45:])
         r['alert'] = alerte(r['recent'], r['clim'])
         pts.append({'basin': b, 'id': pid, 'label': lab, 'lat': la, 'lon': lo, 'cell': [round(c[0] * .25 - 89.875, 3), round(c[1] * .25 + .125 - (360 if c[1] * .25 + .125 > 180 else 0), 3)],
-                    'cell_idx': list(c), 'src': 'ncei', **r})
+                    'cell_idx': list(c), 'src': 'ncei', 'v': VERSION, **r})
         print(f'  {pid:14s} {len(jours)} jours, dernier mois {max(r["monthly"]) if r["monthly"] else "-"}', flush=True)
     ENSO_CACHE['v'] = enso(ancien.get('enso')); ENSO_CACHE['p'] = presse(ancien.get('press'))
     print('El Niño :', (ENSO_CACHE['v'] or {}).get('status'), '| presse climat :', len(ENSO_CACHE['p'] or []), 'titres', flush=True)
@@ -379,7 +380,10 @@ def enso(ancien):
             if len(v) >= 6:
                 d = dt.datetime.strptime(m.group(1) + m.group(2) + m.group(3), '%d%b%Y').date()
                 wk.append([d.isoformat(), float(v[4]), float(v[5])])
-        if wk: out['weekly_nino34'] = wk[-104:]
+        if wk:
+            out['weekly_nino34'] = wk[-104:]
+            # memes semaines lors des deux plus grands El Niño connus, de juin a mai, pour comparer la vague en cours
+            out['analogs'] = {f'{y}-{str(y + 1)[2:]}': [[d, a] for d, t, a in wk if f'{y}-06-01' <= d < f'{y + 1}-06-01'] for y in (1997, 2015)}
     except Exception as e:  # noqa: BLE001
         print('  ENSO hebdo :', str(e)[:120])
     try:

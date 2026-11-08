@@ -4029,22 +4029,44 @@ function renderSeaTemp() {
   const EN = STV.data.enso || {}, W = (EN.weekly_nino34 || []).slice(-52);
   let ensoHtml = '';
   if (STV.nf === 'enso' || STV.nf === 'ALL') {
-    const lastW = W[W.length - 1], bw = 560 / Math.max(1, W.length), mx = Math.max(1, ...W.map(x => Math.abs(x[2])));
-    const yv = v => 60 - v / mx * 52;
-    const svg = W.length ? `<svg viewBox="0 0 600 130" style="width:100%;height:auto"><line x1="34" x2="600" y1="60" y2="60" stroke="rgba(255,255,255,.3)"/>` +
-      [0.5, -0.5].map(t => `<line x1="34" x2="600" y1="${yv(t)}" y2="${yv(t)}" stroke="rgba(255,213,79,.35)" stroke-dasharray="4 3"/><text x="30" y="${yv(t) + 3}" font-size="9" fill="#cfe0ea" text-anchor="end">${t > 0 ? '+' : '−'}0.5</text>`).join('') +
-      W.map((x, i) => `<rect x="${36 + i * bw}" y="${Math.min(60, yv(x[2]))}" width="${bw * .8}" height="${Math.max(1, Math.abs(yv(x[2]) - 60))}" fill="${x[2] >= .5 ? '#ff8a50' : x[2] <= -.5 ? '#5fa8ff' : '#cfd8de'}"><title>week of ${x[0]}: Niño 3.4 ${x[1].toFixed(1)} °C, ${sg(x[2])} °C vs 1991–2020</title></rect>`).join('') +
-      `<text x="36" y="126" font-size="9" fill="#cfe0ea">${e((W[0] || [''])[0])}</text><text x="600" y="126" font-size="9" fill="#cfe0ea" text-anchor="end">${e(lastW[0])}</text></svg>` : '';
+    const lastW = W[W.length - 1];
+    // la vague : Niño 3.4 semaine par semaine de juin a mai, l'episode en cours contre 1997-98 et 2015-16 (les deux plus forts connus)
+    const y0 = lastW ? (+lastW[0].slice(5, 7) >= 6 ? +lastW[0].slice(0, 4) : +lastW[0].slice(0, 4) - 1) : 0;
+    const cur = (EN.weekly_nino34 || []).filter(x => x[0] >= `${y0}-06-01`).map(x => [x[0], x[2]]);
+    const AN = EN.analogs || {}, wkx = d => { const t0 = Date.UTC(+d.slice(0, 4) - (+d.slice(5, 7) >= 6 ? 0 : 1), 5, 1); return (Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10)) - t0) / 6048e5; };
+    const SER = [['1997–98', AN['1997-98'] || [], '#c3ced6'], ['2015–16', AN['2015-16'] || [], '#ffb27a'], [`${y0}–${String(y0 + 1).slice(2)}`, cur, '#ff5a2e']];
+    const vmax = Math.max(3, ...SER.flatMap(x => x[1].map(v => v[1]))), Xw = w => 40 + w / 52 * 550, Yv = v => 110 - (v + .5) / (vmax + .5) * 100;
+    const MS = ['Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May'];
+    const svg = W.length ? `<svg viewBox="0 0 600 132" style="width:100%;height:auto">` +
+      [0, 1, 2, 3].filter(t => t <= vmax).map(t => `<line x1="40" x2="590" y1="${Yv(t)}" y2="${Yv(t)}" stroke="rgba(255,255,255,${t ? .12 : .35})"/><text x="36" y="${Yv(t) + 3}" font-size="9" fill="#cfe0ea" text-anchor="end">${t ? '+' + t : '0'} °C</text>`).join('') +
+      `<line x1="40" x2="590" y1="${Yv(.5)}" y2="${Yv(.5)}" stroke="rgba(255,213,79,.55)" stroke-dasharray="4 3"/><text x="590" y="${Yv(.5) - 3}" font-size="8.5" fill="#ffd27a" text-anchor="end">El Niño threshold +0.5</text>` +
+      `<rect x="${Xw(35)}" y="8" width="${Xw(44) - Xw(35)}" height="102" fill="rgba(255,90,46,.10)"/><text x="${(Xw(35) + Xw(44)) / 2}" y="18" font-size="8.5" fill="#ffb27a" text-anchor="middle">2016 Chile bloom</text>` +
+      SER.map(([n, L, c], j) => L.length ? `<polyline fill="none" stroke="${c}" stroke-width="${j === 2 ? 2.6 : 1.6}" points="${L.map(v => Xw(wkx(v[0])).toFixed(1) + ',' + Yv(v[1]).toFixed(1)).join(' ')}"/>` +
+        `<text x="${Math.min(585, Xw(wkx(L[L.length - 1][0])) + 4)}" y="${Yv(L[L.length - 1][1]) + 3}" font-size="9.5" font-weight="700" fill="${c}">${n}</text>` : '').join('') +
+      MS.map((m, i) => `<text x="${Xw(i * 52 / 12 + 2)}" y="128" font-size="9" fill="#cfe0ea" text-anchor="middle">${m}</text>`).join('') + `</svg>` : '';
+    // veille des algues au Chili : temperature de surface mois par mois, 2015-16 (annee du bloom) contre la saison en cours, seuil de 15 °C
+    const clp = ['cl_loslagos', 'cl_aysen'].map(id => P.find(p => p.id === id)).filter(Boolean);
+    const seas = (p, y) => [6, 7, 8, 9, 10, 11, 12, 1, 2, 3, 4, 5].map(m => (p.monthly || {})[`${m >= 6 ? y : y + 1}-${String(m).padStart(2, '0')}`]);
+    const Ym = v => 104 - (v - 7) / 12 * 96, Xm = i => 40 + i * 50;
+    const clsvg = clp.length ? `<svg viewBox="0 0 600 118" style="width:100%;height:auto">` + [8, 12, 16].map(t => `<line x1="40" x2="590" y1="${Ym(t)}" y2="${Ym(t)}" stroke="rgba(255,255,255,.12)"/><text x="36" y="${Ym(t) + 3}" font-size="9" fill="#cfe0ea" text-anchor="end">${t} °C</text>`).join('') +
+      `<rect x="40" y="${Ym(18)}" width="550" height="${Ym(15) - Ym(18)}" fill="rgba(255,90,46,.12)"/><text x="588" y="${Ym(18) + 10}" font-size="8.5" fill="#ffb27a" text-anchor="end">15–18 °C: Pseudochattonella, Heterosigma bloom range</text>` +
+      clp.flatMap((p, k) => [[seas(p, 2015), k ? '#ffd27a' : '#ffb27a', `${p.label.split(' · ')[1]} 2015–16`, '4 3'], [seas(p, y0), k ? '#7fd4ff' : '#ff5a2e', `${p.label.split(' · ')[1]} ${y0}–${String(y0 + 1).slice(2)}`, '']]).map(([L, c, n, dash]) => {
+        const pts = L.map((v, i) => v === undefined ? null : Xm(i).toFixed(1) + ',' + Ym(v).toFixed(1)).filter(Boolean); return pts.length ? `<polyline fill="none" stroke="${c}" stroke-width="2" ${dash ? `stroke-dasharray="${dash}"` : ''} points="${pts.join(' ')}"><title>${e(n)}</title></polyline>` : ''; }).join('') +
+      MS.map((m, i) => `<text x="${Xm(i)}" y="115" font-size="9" fill="#cfe0ea" text-anchor="middle">${m}</text>`).join('') + `</svg>` +
+      `<div class="sig-sub">${clp.map((p, k) => `<span style="color:${k ? '#ffd27a' : '#ffb27a'}">- - ${e(p.label.split(' · ')[1])} 2015–16</span> · <span style="color:${k ? '#7fd4ff' : '#ff5a2e'}">— ${e(p.label.split(' · ')[1])} ${y0}–${String(y0 + 1).slice(2)}</span>`).join(' · ')} (monthly mean, NOAA OISST nearest open-sea cell)</div>` : '';
     const oni = (EN.oni || []).slice(-6).map(o => `${o[0]} ${o[1]}: ${sg(o[2])}`).join(' · ');
     const anoms = b => { const L = P.filter(p => p.basin === b), v = L.map(p => (p.anomaly || {})[last]).filter(x => x !== undefined); return v.length ? rng(v, sg) + ' °C' : '—'; };
     ensoHtml = `<div class="st-enso"><div><div style="font-weight:800;font-size:16px">El Niño focus — ${e(EN.status || 'status not read yet')}</div>` +
       `<div class="sig-sub" style="margin:4px 0 6px">${e(EN.synopsis || '')} ${EN.issued ? `<span style="opacity:.8">(NOAA Climate Prediction Center, ${e(EN.issued)} — <a href="${e(EN.url || '#')}" target="_blank" rel="noopener" style="color:#ffd27a">bulletin</a>)</span>` : ''}</div>` +
-      `${lastW ? `<div><b>Niño 3.4, week of ${e(lastW[0])}: ${sg(lastW[2])} °C</b> vs 1991–2020 (El Niño from +0.5 °C held for several months).</div>` : ''}${oni ? `<div class="sig-sub">3-month index (ONI): ${e(oni)}</div>` : ''}${svg}</div>` +
+      `${lastW ? `<div><b>Niño 3.4, week of ${e(lastW[0])}: ${sg(lastW[2])} °C</b> vs 1991–2020 — the surface of the central-eastern equatorial Pacific (5° N–5° S, 170°–120° W) is that much warmer than usual. El Niño from +0.5 °C held for months, strong from +1.5, very strong from +2.</div>` : ''}${oni ? `<div class="sig-sub">3-month index (ONI): ${e(oni)}</div>` : ''}` +
+      `<div style="margin-top:6px;font-weight:700;font-size:12.5px">The wave, week by week (June to May), against the two strongest El Niños on record</div>${svg}</div>` +
       `<div><div style="font-weight:700;margin-bottom:4px">What it means for salmon</div><div class="sig-sub" style="line-height:1.55">` +
       `<b>Chile</b> (${last.slice(5) * 1 ? lab(last) : ''}: ${anoms('CL')} vs normal): warmer water raises the risk of harmful algal blooms (the 2016 bloom, about 40,000 t of salmon lost, came during a strong El Niño), sea lice and SRS. ` +
       `<b>Tasmania</b> (${anoms('AU')}): the link is weaker; its marine heatwaves come mostly from the East Australian Current, and mortality rises above 18 °C. ` +
       `<b>Norway, Scotland, Faroes, Iceland</b>: little direct link; their summers depend on North Atlantic weather. ` +
-      `<b>Feed</b>: El Niño cuts the Peruvian anchovy catch, so fishmeal and fish oil prices.</div></div></div>`;
+      `<b>Feed</b>: El Niño cuts the Peruvian anchovy catch, so fishmeal and fish oil prices.</div>` +
+      `<div style="margin-top:10px;font-weight:700;font-size:12.5px">Chile algae watch — sea temperature now vs 2015–16</div>${clsvg}` +
+      `<div class="sig-sub" style="margin-top:4px;line-height:1.5">The 2016 bloom (<i>Pseudochattonella verruculosa</i>) hit Reloncaví and Chiloé from late January to mid-March 2016, peaking 29 Feb–13 Mar, in surface water of 15–16 °C (19 °C in January in inner Reloncaví) under drought, weak winds and strong sunshine; about 40,000 t of salmon died. The 2021 <i>Heterosigma</i> bloom (Comau, late March) came in 15.5–17.5 °C water. Temperature is not enough on its own: low rain, stratified water and sunshine matter as much (IFOP). Chile has declared a preventive algae emergency from 1 Nov 2026 to 30 Jun 2027.</div></div></div>`;
   }
   document.getElementById('stNl').innerHTML = ensoHtml + (NL.filter(n => STV.nf === 'ALL' || (STV.nf === 'enso' ? n.enso : n.ty === STV.nf)).map(stNewsHtml).join('') || '<div class="sig-sub">Nothing in this filter yet.</div>');
   // ---- textes ----
