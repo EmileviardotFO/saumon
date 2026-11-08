@@ -1270,7 +1270,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="nw-grid" id="nwThemes"></div>
     <div class="sig-title" style="margin-top:18px">Coming dates</div>
     <div class="sig-sub">Entered by hand in data/news.json (key "calendar"); past dates drop off after a week.</div>
-    <div style="overflow-x:auto"><table class="sig-table" id="nwCal"></table></div>
+    <div style="overflow-x:auto"><table class="sig-table src-cards cal-cards" id="nwCal"></table></div>
     <details style="margin-top:14px;font-size:11.5px;color:var(--muted)"><summary style="cursor:pointer">Sources and last collection</summary><div id="nwSrc" style="margin-top:6px;line-height:1.6"></div></details>
   </div>
 
@@ -15439,7 +15439,7 @@ function renderWellboats() {
   @media (max-width:600px){table.src-cards,table.src-cards tbody{display:block;width:100%}table.src-cards thead{display:none}
     table.src-cards tr{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;padding:10px 2px;border-bottom:1px solid rgba(255,255,255,.12)}
     table.src-cards td{display:block;border:0!important;padding:0!important;position:static!important;background:none!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;width:auto!important;min-width:0!important;text-align:left!important;font-size:12.5px}
-    table.src-cards td:nth-last-child(2),table.src-cards td:last-child{flex-basis:100%}table.src-cards td:last-child{font-size:11.5px}}
+    table.src-cards td:nth-last-child(2),table.src-cards td:last-child{flex-basis:100%}table.cal-cards td:nth-last-child(2){flex-basis:auto}table.cal-cards td:last-child{font-size:13px!important;color:var(--ink,#fff)!important}table.src-cards td:last-child{font-size:11.5px}}
   @media (max-width:430px){#globalView table th,#globalView table td{padding:6px 4px!important;font-size:11.5px!important}#globalView table th:first-child,#globalView table td:first-child{white-space:normal!important;width:104px;max-width:104px}#globalView table th:nth-child(4),#globalView table td:nth-child(4){display:none}#globalView table{width:100%}}
   .hs-on th:first-child,.hs-on td:first-child{position:sticky;left:0;z-index:2;background:rgb(27,63,93)!important;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:6px 0 10px -6px rgba(3,18,35,.55)}
   /* graphiques qui defilent : l'echelle des valeurs reste fixe a gauche */
