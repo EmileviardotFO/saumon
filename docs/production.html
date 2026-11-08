@@ -6183,7 +6183,7 @@ function renderScotlandResults() {
     `Each figure is kept only if it is written in the report. Costs and EBIT are in each group's reporting currency, so compare a company with itself over time rather than across companies.`;
   T.innerHTML = `<thead><tr><th class="name">Company</th><th>Quarter</th><th>Harvest (t)</th><th>Cost per kg</th><th>EBIT per kg</th><th>Guidance</th><th>Price achievement</th><th style="text-align:left">Cost drivers, biology, market</th></tr></thead><tbody>` +
     rows.map(({ r, g }) => { const d = g.guidance_prev_t !== undefined && g.guidance_t !== undefined ? g.guidance_t - g.guidance_prev_t : null;
-      return `<tr><td class="name"><b>${e(g.segment === 'Scotland' ? r.company + ' Scotland' : g.segment)}</b></td><td>${e(r.quarter.replace('-', ' '))}</td>` +
+      return `<tr><td class="name"><b>${e(g.segment === 'Scotland' ? (/scotland/i.test(r.company) ? r.company : r.company + ' Scotland') : g.segment)}</b></td><td>${e(r.quarter.replace('-', ' '))}</td>` +
         `<td>${f(g.harvest_t)}${ly(g.harvest_t, g.harvest_t_ly)}</td><td>${g.cost_per_kg !== undefined ? f(g.cost_per_kg, 2) + ' ' + e(g.currency) : '—'}${ly(g.cost_per_kg, g.cost_per_kg_ly, 2)}</td>` +
         `<td>${g.ebit_per_kg !== undefined ? f(g.ebit_per_kg, 2) + ' ' + e(g.currency) : '—'}${ly(g.ebit_per_kg, g.ebit_per_kg_ly, 2)}</td>` +
         `<td>${g.guidance_t !== undefined ? `${g.guidance_year || ''} ${f(g.guidance_t)} t${d ? ` <span class="${d > 0 ? 'delta-good' : 'delta-bad'}">${d > 0 ? '+' : '−'}${f(Math.abs(d))}</span>` : ''}` : '—'}</td>` +
@@ -13862,7 +13862,8 @@ loadRemoteData().then(live => {
     if (!(vb[2] >= 800) || s.closest('.gen-mini') || s.closest('.ax-fix')) return;   // la copie de l'echelle fixe n'est pas un graphique a envelopper (sinon cadres imbriques et echelle vide)
     const d = document.createElement('div'); d.className = 'wide-wrap'; s.parentNode.insertBefore(d, s); d.appendChild(s);
     // series temporelles : la periode la plus recente d'abord ; graphiques par categorie (bassins, causes...) : le debut, sinon les premieres barres sont cachees
-    const isTime = () => s.dataset.start !== 'left' && [...s.querySelectorAll('text')].some(t => /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|W ?\d|Q[1-4]|(19|20)\d\d|'\d\d)/.test(t.textContent.trim()));
+    const isTime = () => s.dataset.start !== 'left' && ([...s.querySelectorAll('text')].filter(t => /^(0\d|[1-9]\d)$/.test(t.textContent.trim())).length >= 5   // annees sur deux chiffres (95, 97 ... 09 : Ecosse)
+      || [...s.querySelectorAll('text')].some(t => /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|W ?\d|Q[1-4]|(19|20)\d\d|'\d\d)/.test(t.textContent.trim())));
     // graphique saisonnier (Jan..Dec, 2-3 annees groupees) : l'annee en cours s'arrete avant decembre ; on centre sur sa derniere barre
     // (sinon l'ouverture a droite montrait Jul-Dec et cachait les mois 2026 : Canada, smolts)
     const seasonal = () => { const tx = [...s.querySelectorAll('text')].map(t => t.textContent.trim());
