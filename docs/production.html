@@ -13249,12 +13249,15 @@ function renderArchive() {
   const NN = [{ x: showP ? 400 : 50, y: 28, col: '#e7eef2', txt: showP ? '··· all Norway, actual' : '— all Norway, actual' }, { x: showP ? 545 : 200, y: 28, col: '#ffb74d', txt: '- - all Norway, forecast 2 months before' }];
   $('gm_arcChart').innerHTML = '<div style="max-width:1100px">' + chart(ks, { lmax: mx, ld: 0, lcol: '#e7eef2', H: 220,
     lines: [...(showP ? LP : []), ...(showN ? LN : [])], notes: [...(showP ? NP : []), ...(showN ? NN : [])] }) + '</div>';
+  // « pas encore connu » : le registre du mois vise sort environ cinq semaines apres la fin du mois (septembre -> debut novembre)
+  const due = t => `<span class="gm-mut">out early ${MONTHS_FR[(t % 100 + 1) % 12].slice(0, 3)}</span>`;
   const nk = '<span class="gm-mut">not yet known</span>', bt = (v, u, a) => a === null || v === null ? '' : Math.abs(v - a) <= Math.abs(u - a) ? ' <span class="gm-good">✓</span>' : ' <span class="gm-bad">✗</span>';
-  $('gm_arcTab').innerHTML = `<tr><th rowspan="2">Register month (forecast made)</th><th rowspan="2">For</th>${showN ? '<th colspan="3" style="text-align:center">All Norway (register)</th>' : ''}${showP ? '<th colspan="3" style="text-align:center">Akvafakta panel (sales)</th>' : ''}</tr>` +
-    `<tr>${'<th>Forecast</th><th>Actual</th><th>Error</th>'.repeat((showN ? 1 : 0) + (showP ? 1 : 0))}</tr>` +
+  // une seule ligne d'en-tete : avec deux lignes, la 2e (« Forecast ») prenait le style de la colonne figee et paraissait decalee
+  const GH = (lab, on) => on ? `<th>${lab}<br>forecast</th><th>actual</th><th>error</th>` : '';
+  $('gm_arcTab').innerHTML = `<tr><th>Forecast made with the register of</th><th>For the month of</th>${GH('All Norway (register)', showN)}${GH('Akvafakta panel', showP)}</tr>` +
     rows.slice(-12).reverse().map(r => `<tr><td>${ml(r.k)} <span class="gm-mut" style="font-size:10px">${r.kind === 'live' ? 'live' : 'reconstructed'}</span></td><td>${ml(r.t)}</td>` +
-      (showN ? `<td>${r.nv === null ? '—' : f1(r.nv) + ' %'}</td><td>${r.na === null ? nk : f1(r.na) + ' %'}</td><td>${r.na === null || r.nv === null ? '' : sg(r.nv - r.na) + ' pt' + bt(r.nv, r.nu, r.na)}</td>` : '') +
-      (showP ? `<td>${f1(r.v)} %</td><td>${r.a === null ? nk : f1(r.a) + ' %'}</td><td>${r.a === null ? '' : sg(r.v - r.a) + ' pt' + bt(r.v, r.u, r.a)}</td>` : '') + `</tr>`).join('') +
+      (showN ? `<td>${r.nv === null ? '—' : f1(r.nv) + ' %'}</td><td>${r.na === null ? due(r.t) : f1(r.na) + ' %'}</td><td>${r.na === null || r.nv === null ? '' : sg(r.nv - r.na) + ' pt' + bt(r.nv, r.nu, r.na)}</td>` : '') +
+      (showP ? `<td>${f1(r.v)} %</td><td>${r.a === null ? '<span class="gm-mut">month not complete</span>' : f1(r.a) + ' %'}</td><td>${r.a === null ? '' : sg(r.v - r.a) + ' pt' + bt(r.v, r.u, r.a)}</td>` : '') + `</tr>`).join('') +
     `<tr><td colspan="8" class="gm-mut" style="font-size:11px">✓ = closer to the actual figure than the seasonal calendar alone.</td></tr>`;
   // zone choisie : biomasse prevue 3 mois avant vs reelle
   const po = S.po, R = G.REC[po] || {};
@@ -13271,7 +13274,7 @@ function renderArchive() {
   $('gm_arcZoneSub').innerHTML = (zd.length ? `Average error <b>${f1(100 * ze)} %</b> over ${zd.length} months. Click another zone on the map, or the Norway box, to see it. ` : 'Nothing to compare yet. ') +
     (cn ? `<br><b>Are the simulated ranges honest?</b> Weights 3 months ahead, all zones and generations, months without heavy harvest: <b>${Math.round(100 * cin / cn)} %</b> of the actual weights fell inside the 80 % range (${cn} cases) — it should be close to 80 %; well below means the fans are too narrow.` : '');
   $('gm_arcZone').innerHTML = `<tr><th>Forecast made</th><th>For</th><th>Forecast (kt)</th><th>Actual (kt)</th><th>Error</th><th>Forecast, % of MTB</th></tr>` +
-    zr.slice(-8).reverse().map(r => `<tr><td>${ml(r.k)} <span class="gm-mut" style="font-size:10px">${r.kind}</span></td><td>${ml(r.t)}</td><td>${f1(r.f)}</td><td>${r.a === null ? '<span class="gm-mut">not yet known</span>' : f1(r.a)}</td><td>${r.a === null ? '' : sg(100 * (r.f / r.a - 1)) + ' %'}</td><td>${r.mtb ? f1(100 * r.f / r.mtb) + ' %' : '—'}</td></tr>`).join('');
+    zr.slice(-8).reverse().map(r => `<tr><td>${ml(r.k)} <span class="gm-mut" style="font-size:10px">${r.kind}</span></td><td>${ml(r.t)}</td><td>${f1(r.f)}</td><td>${r.a === null ? `<span class="gm-mut">out early ${MONTHS_FR[(r.t % 100 + 1) % 12].slice(0, 3)}</span>` : f1(r.a)}</td><td>${r.a === null ? '' : sg(100 * (r.f / r.a - 1)) + ' %'}</td><td>${r.mtb ? f1(100 * r.f / r.mtb) + ' %' : '—'}</td></tr>`).join('');
 }
 
 // strategie norvegienne : chaque annee, de janvier au dernier mois publie (comparaison a periode egale)
