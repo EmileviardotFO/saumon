@@ -18,6 +18,7 @@ import io
 import json
 import math
 import os
+import re
 import time
 import urllib.error
 import urllib.parse
@@ -94,16 +95,69 @@ def http(url, tries=3, timeout=60):
     raise RuntimeError(f'{url[:120]} : {last}')
 
 
+PSL = 'https://psl.noaa.gov/thredds/dodsC/Datasets/noaa.oisst.v2.highres/sst.day.mean.{y}.nc'
+_LONG = {}
+
+
+def psl_jours(y):
+    """Nombre de jours publies dans le fichier annuel OISST de NOAA PSL (l'annee en cours grandit chaque jour)."""
+    if y not in _LONG:
+        st, raw = http(PSL.format(y=y) + '.dds')
+        m = re.search(r'sst\[time = (\d+)\]', raw.decode('utf-8', 'replace'))
+        _LONG[y] = int(m.group(1)) if m else 0
+    return _LONG[y]
+
+
+def psl(la, lo, y, i0=0, i1=None):
+    """Temperature journaliere OISST a la maille (la, lo) pour l'annee y, par OPeNDAP (NOAA PSL), {date: °C}."""
+    n = psl_jours(y)
+    if not n:
+        return {}
+    i1 = n - 1 if i1 is None else min(i1, n - 1)
+    if i0 > i1:
+        return {}
+    ia, io_ = round((la + 89.875) / .25), round(((lo % 360) - .125) / .25)
+    st, raw = http(PSL.format(y=y) + f'.ascii?sst[{i0}:1:{i1}][{ia}][{io_}]')
+    out, d0 = {}, dt.date(y, 1, 1)
+    for ligne in raw.decode('utf-8', 'replace').splitlines():
+        m = re.match(r'^\[(\d+)\](?:\[\d+\])*,\s*(\S+)', ligne.strip())
+        if m:
+            v = float(m.group(2))
+            if -5 < v < 40:                                   # valeur de remplissage (terre) : -9.97e36
+                out[(d0 + dt.timedelta(days=i0 + int(m.group(1)))).isoformat()] = v
+    return out
+
+
 def oisst(la, lo, debut, fin):
-    """Temperature de surface journaliere NOAA OISST a la maille (la, lo), {date: °C} (vide si maille terrestre)."""
+    """Temperature de surface journaliere NOAA OISST v2.1 a la maille (la, lo), {date: °C} (vide si maille terrestre).
+    Source 1 : NOAA PSL (OPeNDAP, fichiers annuels) ; source 2 : NOAA CoastWatch ERDDAP (qui met parfois sur liste noire les
+    adresses des serveurs GitHub partages)."""
+    t0 = time.time()
+    try:
+        out = {}
+        if debut == 'probe':
+            y = dt.date.today().year
+            n = psl_jours(y) or psl_jours(y - 1)
+            if not psl_jours(y): y -= 1
+            out = psl(la, lo, y, max(0, n - 20), n - 1)
+        else:
+            y0, y1 = int(debut[:4]), int(fin[:4]) if fin else dt.date.today().year
+            for y in range(y0, y1 + 1):
+                i0 = (dt.date.fromisoformat(debut) - dt.date(y, 1, 1)).days if y == y0 else 0
+                i1 = (dt.date.fromisoformat(fin) - dt.date(y, 1, 1)).days if fin and y == y1 else None
+                out.update(psl(la, lo, y, max(0, i0), i1))
+                time.sleep(.3)
+        print(f'    PSL {la},{lo} {debut}..{fin} -> {len(out)} jours, {time.time() - t0:.1f} s', flush=True)
+        return out
+    except Exception as e:  # noqa: BLE001
+        print(f'    PSL indisponible ({str(e)[:100]}), essai ERDDAP', flush=True)
     t1 = 'last' if fin is None else f'{fin}T12:00:00Z'
     tq = '[last-20:1:last]' if debut == 'probe' else f'[({debut}T12:00:00Z):1:({t1})]'
     q = f'?sst{tq}[(0.0)][({la})][({lo})]'
-    t0 = time.time()
     try:
         st, raw = http(ERDDAP + urllib.parse.quote(q, safe='?[]():,'))
     except RuntimeError as e:
-        if 'HTTP Error 404' in str(e) or 'HTTP Error 400' in str(e):   # periode hors serie (ex. derniers jours pas encore publies)
+        if 'HTTP Error 404' in str(e) or 'HTTP Error 400' in str(e):
             return {}
         raise
     out = {}
@@ -111,7 +165,7 @@ def oisst(la, lo, debut, fin):
         c = ligne.split(',')
         if len(c) >= 5 and c[4] not in ('', 'NaN'):
             out[c[0][:10]] = float(c[4])
-    print(f'    {la},{lo} {debut}..{fin} -> {len(out)} jours, {time.time() - t0:.1f} s', flush=True)
+    print(f'    ERDDAP {la},{lo} {debut}..{fin} -> {len(out)} jours, {time.time() - t0:.1f} s', flush=True)
     return out
 
 
@@ -230,8 +284,9 @@ def ecrire(pts, erreurs):
     if not pts:
         print('sea_temp : rien de lu, fichier inchange', erreurs)
         return
-    out = {'meta': {'generated': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'), 'source': 'NOAA OISST v2.1 (daily optimum interpolation sea surface temperature, satellites + buoys + ships, 0.25° grid), via NOAA CoastWatch ERDDAP; public domain',
-                    'url': 'https://www.ncei.noaa.gov/products/optimum-interpolation-sst', 'thresholds': list(SEUILS), 'normal': f'2016-{dt.date.today().year - 1}',
+    src = {'oisst' if p.get('cell') else 'open-meteo' for p in pts}
+    out = {'meta': {'generated': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'), 'source': 'NOAA OISST v2.1 (daily optimum interpolation sea surface temperature, satellites + buoys + ships, 0.25° grid), via NOAA PSL; public domain' if src == {'oisst'} else 'Open-Meteo Marine API (modelled sea surface temperature), being replaced by NOAA OISST v2.1',
+                    'url': 'https://www.ncei.noaa.gov/products/optimum-interpolation-sst', 'thresholds': list(SEUILS), 'normal': f'2016-{dt.date.today().year - 1}' if src == {'oisst'} else f'2023-{dt.date.today().year - 1}',
                     'note': 'Risk thresholds 16.5 / 17 / 18 °C from Canepa et al., Reviews in Aquaculture 2026 (Tasmania); growth optimum 12-16 °C.',
                     'basins': BASSINS, 'errors': erreurs,
                     'alerts': [{'id': p['id'], 'basin': p['basin'], 'label': p['label'], **p['alert']} for p in pts if (p.get('alert') or {}).get('level')]},
