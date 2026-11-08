@@ -1,6 +1,6 @@
 {
  "meta": {
-  "built": "2026-11-08T19:33+00:00",
+  "built": "2026-11-08T20:25+00:00",
   "note": "Signals ranked by how unusual they are against their own history (score). Effect: supports / weighs on prices, risk, watch."
  },
  "lead": "Supply grows +6 % in 2026 across the seven basins and +0.1 % in 2027. Chile is the main source of change: a record El Niño, sea lice at a high, a slowing harvest and fewer big fish. Norway carries the growth with heavier fish and more 6 kg+. Imports grow fastest in Japan, Brazil, UK; USA and Israel are flat or down.",
@@ -281,6 +281,293 @@
   {
    "d": "2027-01-21",
    "t": "Q4 trading updates: Bakkafrost, Mowi, Lerøy"
+  }
+ ],
+ "prices": {
+  "eu_spot": {
+   "year": 2026,
+   "week": 44,
+   "src": "Sitagri Salmon index, Sjømat Norge",
+   "unit": "NOK/kg",
+   "avg": [
+    69.26,
+    71.24,
+    77.68
+   ],
+   "sizes": [
+    [
+     "2-3",
+     64.84,
+     65.74,
+     67.77
+    ],
+    [
+     "3-4",
+     68.67,
+     69.95,
+     76.95
+    ],
+    [
+     "4-5",
+     69.84,
+     71.6,
+     78.91
+    ],
+    [
+     "5-6",
+     70.5,
+     72.24,
+     79.02
+    ],
+    [
+     "6-7",
+     71.15,
+     75.04,
+     79.6
+    ],
+    [
+     "7-8",
+     75.41,
+     79.99,
+     79.71
+    ]
+   ],
+   "hist": [
+    [
+     202618,
+     80.52
+    ],
+    [
+     202619,
+     77.94
+    ],
+    [
+     202620,
+     72.56
+    ],
+    [
+     202621,
+     70.52
+    ],
+    [
+     202622,
+     72.65
+    ],
+    [
+     202623,
+     68.38
+    ],
+    [
+     202624,
+     66.26
+    ],
+    [
+     202625,
+     66.25
+    ],
+    [
+     202626,
+     63.43
+    ],
+    [
+     202627,
+     62.86
+    ],
+    [
+     202628,
+     64.3
+    ],
+    [
+     202629,
+     65.2
+    ],
+    [
+     202630,
+     67.02
+    ],
+    [
+     202631,
+     70.35
+    ],
+    [
+     202632,
+     70.99
+    ],
+    [
+     202633,
+     68.96
+    ],
+    [
+     202634,
+     68.56
+    ],
+    [
+     202635,
+     66.33
+    ],
+    [
+     202636,
+     65.13
+    ],
+    [
+     202637,
+     65.75
+    ],
+    [
+     202638,
+     65.94
+    ],
+    [
+     202639,
+     68.92
+    ],
+    [
+     202640,
+     69.43
+    ],
+    [
+     202641,
+     68.79
+    ],
+    [
+     202642,
+     70.02
+    ],
+    [
+     202643,
+     71.24
+    ],
+    [
+     202644,
+     69.26
+    ]
+   ]
+  },
+  "ssb": {
+   "yw": 202644,
+   "unit": "NOK/kg",
+   "now": 74.98,
+   "prev": 76.04,
+   "ly": 80.55,
+   "tonnes": 28444,
+   "tonnes_ly": 24875,
+   "src": "Statistics Norway, weekly exports of fresh farmed salmon (table 03024)"
+  }
+ },
+ "news": [
+  {
+   "date": "2026-11-03",
+   "title": "Salmar slo forventningene i tredje kvartal",
+   "url": "https://e24.no/hav-og-sjoemat/i/n9pmA5/salmar-hadde-driftsresultat-paa-1-6-milliarder-kroner-i-tredje-kvartal",
+   "source": "E24",
+   "n_sources": 3,
+   "basins": [
+    "NO"
+   ],
+   "themes": [
+    "companies"
+   ],
+   "lang": "no"
+  },
+  {
+   "date": "2026-11-06",
+   "title": "Urk-Export eyes doubling salmon processing capacity as demand outstrips production",
+   "url": "https://www.undercurrentnews.com/2026/11/06/urk-export-eyes-doubling-salmon-processing-capacity-as-demand-outstrips-production/",
+   "source": "undercurrentnews.com",
+   "n_sources": 2,
+   "basins": [
+    "global"
+   ],
+   "themes": [
+    "market",
+    "regulation"
+   ],
+   "lang": "en"
+  },
+  {
+   "date": "2026-11-05",
+   "title": "Blumar firma acuerdo para vender su negocio salmonicultor a Agrosuper en US$540 millones",
+   "url": "https://www.salmonexpert.cl/adquisicion-agrosuper-aquachile/blumar-firma-acuerdo-para-vender-su-negocio-salmonicultor-a-agrosuper-en-us540-millones/2206341",
+   "source": "salmonexpert.cl",
+   "n_sources": 2,
+   "basins": [
+    "CL"
+   ],
+   "themes": [
+    "companies"
+   ],
+   "lang": "es"
+  },
+  {
+   "date": "2026-11-05",
+   "title": "UCN launches weekly fresh Norwegian Atlantic salmon, DDP Poland price assessments",
+   "url": "https://www.undercurrentnews.com/2026/11/05/ucn-launches-weekly-fresh-norwegian-atlantic-salmon-ddp-poland-price-assessments/",
+   "source": "undercurrentnews.com",
+   "n_sources": 2,
+   "basins": [
+    "NO"
+   ],
+   "themes": [
+    "market"
+   ],
+   "lang": "en"
+  },
+  {
+   "date": "2026-11-05",
+   "title": "US wholesale: Chilean salmon’s frozen squeeze deepens as fresh prices pull further ahead",
+   "url": "https://www.undercurrentnews.com/2026/11/05/us-wholesale-chilean-salmons-frozen-squeeze-deepens-as-fresh-pulls-further-ahead/",
+   "source": "undercurrentnews.com",
+   "n_sources": 2,
+   "basins": [
+    "CL"
+   ],
+   "themes": [
+    "market"
+   ],
+   "lang": "en"
+  },
+  {
+   "date": "2026-11-05",
+   "title": "Mowi crecerá a 630.000 toneladas de salmón: es la mayor empresa de productos del mar en el mundo",
+   "url": "https://www.salmonexpert.cl/cosechas-ebit-ebitda/mowi-crecera-a-630000-toneladas-de-salmon-es-la-mayor-empresa-de-productos-del-mar-en-el-mundo/2206015",
+   "source": "salmonexpert.cl",
+   "n_sources": 2,
+   "basins": [
+    "NO"
+   ],
+   "themes": [
+    "biology",
+    "companies"
+   ],
+   "lang": "es"
+  },
+  {
+   "date": "2026-11-03",
+   "title": "Scottish Sea Farms cuts 2026 harvest guidance by 3,000 tonnes",
+   "url": "https://www.fishfarmingexpert.com/fish-mortality-gill-health-harvest-guidance/scottish-sea-farms-cuts-2026-harvest-guidance-by-3000-tonnes/2205124",
+   "source": "fishfarmingexpert.com",
+   "n_sources": 2,
+   "basins": [
+    "GB"
+   ],
+   "themes": [
+    "companies"
+   ],
+   "lang": "en"
+  },
+  {
+   "date": "2026-11-03",
+   "title": "Icelandic Salmon - Third quarter 2026 results",
+   "url": "https://finance.yahoo.com/markets/stocks/articles/icelandic-salmon-third-quarter-2026-063000093.html",
+   "source": "The Manila Times",
+   "n_sources": 2,
+   "basins": [
+    "IS"
+   ],
+   "themes": [
+    "companies"
+   ],
+   "lang": "en"
   }
  ]
 }

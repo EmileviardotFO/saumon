@@ -16,6 +16,7 @@ import datetime as dt
 import io
 import json
 import os
+import re
 import statistics as S
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -179,6 +180,30 @@ def main():
         if t.get('until', '9999') >= today:
             sig.append({'basin': {'AU': 'Tasmania', 'CL': 'Chile', 'NO': 'Norway', 'GB': 'Scotland'}.get(t.get('basin'), t.get('basin')), 'title': t['label'].split('·')[-1].strip().capitalize() + ': decision pending',
                         'value': '', 'text': t.get('status', ''), 'effect': 'watch', 'tab': {'AU': 'australia', 'CL': 'chile'}.get(t.get('basin'), 'news'), 'score': 1.2})
+    # ---------------- algues : bulletin HI (Norvege), communiques Sernapesca et conditions de bloom (Chili) ----------------
+    aw = lire('algae_watch.json') or {}
+    H = aw.get('norway_hi') or {}; Wk = H.get('weekly') or {}
+    since = (dt.date.today() - dt.timedelta(days=14)).isoformat()
+    evs = [e for e in (H.get('events') or []) if (e.get('date') or '') >= since and e.get('level', 0) >= 2]
+    lv = max([Wk.get('level', 0)] + [e['level'] for e in evs])
+    if lv >= 2:
+        src = max(evs, key=lambda e: e['date']) if evs else Wk
+        po = ', '.join(f'PO{k} {["", "low", "moderate", "high"][v]}' for k, v in (src.get('po') or {}).items())
+        sig.append({'basin': 'Norway · Algae', 'title': f'Harmful algae: {"high" if lv == 3 else "moderate"} risk for farmed fish', 'value': 'PO ' + ', '.join((src.get('po') or {}).keys()) if src.get('po') else '',
+                    'text': f'Institute of Marine Research status ({src.get("date") or "week " + str(Wk.get("week"))}): {po or src.get("summary_en", "")}' + (f'; {", ".join(src.get("species") or [])}' if src.get('species') else '') + '.',
+                    'effect': 'risk', 'tab': 'disease', 'score': 2.2 if lv == 2 else 3.6})
+    since21 = (dt.date.today() - dt.timedelta(days=21)).isoformat()
+    cont = [x for x in ((aw.get('chile_sernapesca') or {}).get('items') or []) if x.get('date', '') >= since21 and re.search(r'mortalidad|contingencia', x['title'], re.I) and x.get('cause')]
+    if cont:
+        x = cont[0]
+        sig.append({'basin': 'Chile · ' + (', '.join(x.get('region') or []) or 'Sernapesca'), 'title': 'Mass mortality contingency (' + x['cause'] + ')', 'value': (f'{x["tonnes"][0]:,.0f} t'.replace(',', ' ') if x.get('tonnes') else ''),
+                    'text': f'Sernapesca, {x["date"]}: {x["title"]}' + (f' ({len(cont)} releases in three weeks)' if len(cont) > 1 else '') + '.', 'effect': 'risk', 'tab': 'disease', 'score': 3.0})
+    CC = aw.get('chile_conditions') or {}
+    if CC.get('published'):
+        pts = [p for p in CC.get('points') or [] if p.get('confirmed')]
+        sig.append({'basin': 'Chile · Algae', 'title': 'Bloom-prone weather confirmed (drought, warm sea)', 'value': f'{len(pts)} area' + ('s' if len(pts) > 1 else ''),
+                    'text': '; '.join(f'{p["label"]}: rain {round(100 * p["now"]["rain_ratio"])} % of normal over 60 days, sea {sg(p["now"]["sst_anom"], 1, " °C")}' for p in pts) + '. The same mix preceded the 2016 bloom; it does not make one certain.',
+                    'effect': 'risk', 'tab': 'disease', 'score': 3.8})
     sig.sort(key=lambda s: -s['score'])
     for s in sig: s['score'] = round(s['score'], 2)
     # ---------------- producteurs et consommateurs ----------------
@@ -231,8 +256,43 @@ def main():
     if dem and dem.get('markets'):
         fast = [n for n, v in sorted(dem['markets'], key=lambda x: -x[1]) if v > dem['world']][:3]; slow = [n for n, v in dem['markets'] if v < 2][:2]
         lead.append(f'Imports grow fastest in {", ".join(fast)}' + (f'; {" and ".join(slow)} {"is" if len(slow) == 1 else "are"} flat or down.' if slow else '.'))
+    # ---------------- prix : spot europeen par calibre (indice Sitagri, rapport hebdomadaire) et prix a l'export norvegien (SSB) ----------------
+    prices = {}
+    dd = lire('data.json') or {}
+    Wr = [r for r in dd.get('weekly') or [] if r.get('p_avg') and r.get('price_week')]
+    def yw(r):  # semaine du prix (le rapport de la semaine N donne les prix de la semaine N-1)
+        return (r['report_year'] - (1 if r['price_week'] > r['report_week'] else 0)) * 100 + r['price_week']
+    PX = {yw(r): r for r in Wr}
+    if PX:
+        k = max(PX); r = PX[k]; y, w = divmod(k, 100)
+        prv = PX.get(k - 1) or PX.get(max([x for x in PX if x < k], default=0)); ly = PX.get(k - 100)
+        SZ = ['2-3', '3-4', '4-5', '5-6', '6-7', '7-8']
+        prices['eu_spot'] = {'year': y, 'week': w, 'src': r.get('src') or 'Sitagri salmon index', 'unit': 'NOK/kg',
+                             'avg': [r['p_avg'], prv and prv.get('p_avg'), ly and ly.get('p_avg')],
+                             'sizes': [[z, r.get('p_' + z), prv and prv.get('p_' + z), ly and ly.get('p_' + z)] for z in SZ if r.get('p_' + z)],
+                             'hist': [[kk, PX[kk]['p_avg']] for kk in sorted(PX)[-27:]]}
+    sw = (dd.get('ssb_weekly') or {}).get('rows') or []
+    fr = {r[0]: r for r in sw if r[1] == 0 and r[3]}   # produit 0 = frais ou refrigere
+    if fr:
+        k = max(fr); prices['ssb'] = {'yw': k, 'unit': 'NOK/kg', 'now': fr[k][3], 'prev': (fr.get(k - 1) or [0, 0, 0, None])[3], 'ly': (fr.get(k - 100) or [0, 0, 0, None])[3],
+                                      'tonnes': fr[k][2], 'tonnes_ly': (fr.get(k - 100) or [0, 0, None])[2], 'src': 'Statistics Norway, weekly exports of fresh farmed salmon (table 03024)'}
+    # ---------------- presse : les sujets de la semaine les plus repris ----------------
+    nw = (lire('news.json') or {}).get('items') or []
+    cut = (dt.date.today() - dt.timedelta(days=8)).isoformat()
+    cand = [n for n in nw if n.get('date', '') >= cut and 'other' not in (n.get('themes') or [])]
+    cand.sort(key=lambda n: n.get('date', ''), reverse=True)
+    cand.sort(key=lambda n: -len(n.get('srcs') or [n.get('source')]))
+    cand = [n for n in cand if re.search(r'salm|laks|lakse|oppdrett|aquacult|acuicul|salmon|fish|fisk|smolt|feed|fôr|El Niño|algae|alge|lice|lus|harvest|slakt|price|pris|precio|export', n['title'], re.I)]
+    news, seen = [], collections.Counter()
+    for n in cand:
+        b = (n.get('basins') or ['—'])[0]
+        if seen[b] >= 3: continue
+        seen[b] += 1
+        news.append({'date': n['date'], 'title': n['title'], 'url': n.get('link') or n.get('url'), 'source': n.get('source'), 'n_sources': len(n.get('srcs') or []) or 1,
+                     'basins': n.get('basins') or [], 'themes': n.get('themes') or [], 'lang': n.get('lang')})
+        if len(news) >= 8: break
     out = {'meta': {'built': dt.datetime.now(dt.timezone.utc).isoformat(timespec='minutes'), 'note': 'Signals ranked by how unusual they are against their own history (score). Effect: supports / weighs on prices, risk, watch.'},
-           'lead': ' '.join(lead), 'signals': sig[:9], 'supply': sup, 'demand': dem, 'basins': B, 'agenda': ag[:8]}
+           'lead': ' '.join(lead), 'signals': sig[:9], 'supply': sup, 'demand': dem, 'basins': B, 'agenda': ag[:8], 'prices': prices, 'news': news}
     io.open(OUT, 'w', encoding='utf-8').write(json.dumps(out, ensure_ascii=False, indent=1))
     print(f'data/summary.json : {len(sig)} signaux ;', ' | '.join(f'{s["basin"]}: {s["title"]} ({s["score"]})' for s in sig[:9]))
 

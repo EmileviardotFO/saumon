@@ -3905,7 +3905,17 @@ function isMap() {
     setTimeout(() => IS_MAP.invalidateSize(), 50); });
 }
 // chlorophylle par satellite pres des fermes (data/chlorophyll.json <- scripts/build_chlorophyll.py) : quantite d'algues, pas toxicite
-function stChlHtml() {
+function stChlHtml() { return stHiHtml() + stChlTab(); }
+// bulletin hebdomadaire de l'Institut de recherche marine (Norvege) et rapports d'episode
+function stHiHtml() {
+  const H = (STV.aw || {}).norway_hi, W = H && H.weekly; if (!W) return '';
+  const e = s => String(s == null ? '' : s).replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[m]);
+  const C = { 0: '#a9bfcc', 1: '#81c784', 2: '#ffd54f', 3: '#ff8a65' }, ev = (H.events || []).filter(x => x.date && x.level >= 2).slice(0, 3);
+  return `<div style="margin-top:12px;font-weight:700;font-size:12.5px">Norway algae watch — Institute of Marine Research, week ${W.week}: <span style="color:${C[W.level]}">risk ${e(W.level_en)}</span></div>` +
+    `<div class="sig-sub" style="margin-top:3px;line-height:1.5">${e(W.summary_en)} ${ev.length ? `Last bloom: ${ev.map(x => `${e(x.date)} ${e(x.level_en)} (${Object.keys(x.po || {}).map(k => 'PO' + k).join(', ')}${x.species && x.species.length ? ', ' + e(x.species.join(', ')) : ''})`).join('; ')}. ` : ''}` +
+    `<a href="${e(W.url)}" target="_blank" rel="noopener" style="color:#4fc3f7">HI status (Norwegian)</a> · alerts and Chile's Sernapesca releases in the Disease overview tab.</div>`;
+}
+function stChlTab() {
   const C = STV.chl; if (!C || !(C.points || []).length) return '';
   const e = s => String(s == null ? '' : s).replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[m]);
   const P = C.points.filter(p => p.now != null).sort((a, b) => (b.anom_pct ?? -1e9) - (a.anom_pct ?? -1e9));
@@ -3924,7 +3934,7 @@ const STV = { mode: 'h', layer: 'anom', bas: 'ALL', k: null, vb: [0, 0, 1000, 52
 function renderSeaTemp() {
   const root = document.getElementById('stRoot'); if (!root) return;
   const g = n => fetch(DATA_URL.replace('data.json', n), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
-  if (STV.data === null) { STV.data = false; Promise.all([g('sea_temp.json'), g('climate_news.json'), g('chlorophyll.json')]).then(([a, b, c]) => { STV.data = a || { points: [] }; STV.news = b || { items: [] }; STV.chl = c; if (currentView === 'seatemp') renderSeaTemp(); });
+  if (STV.data === null) { STV.data = false; Promise.all([g('sea_temp.json'), g('climate_news.json'), g('chlorophyll.json'), g('algae_watch.json')]).then(([a, b, c, d]) => { STV.data = a || { points: [] }; STV.news = b || { items: [] }; STV.chl = c; STV.aw = d; if (currentView === 'seatemp') renderSeaTemp(); });
     root.innerHTML = '<div class="sig-sub">Loading…</div>'; return; }
   if (!STV.data) return;
   const P = STV.data.points || [], M = STV.data.meta || {};
@@ -10949,6 +10959,57 @@ pmBind();
 //  precedent et contre la meme periode N-1, fleche, et phrase quand il se
 //  passe quelque chose de notable (record, bascule contre N-1, foyer...).
 // ===========================================================================
+// Summary : prix (spot europeen, export norvegien), echanges USA et Chine par origine (meme calcul que les onglets USA focus / China focus), presse
+function gsPricesHtml(G) {
+  const P = G.prices || {}, E = P.eu_spot, B = P.ssb, e = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  if (!E && !B) return '';
+  const f2 = v => v === null || v === undefined ? '—' : (+v).toFixed(2), ch = (a, b) => { if (!a || !b) return '<td>—</td>'; const v = 100 * (a / b - 1); return `<td class="${v >= 0 ? 'delta-good' : 'delta-bad'}">${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(1)} %</td>`; };
+  const sp = E && E.hist ? (() => { const v = E.hist.map(x => x[1]), mn = Math.min(...v), mx = Math.max(...v), W = 220, Hh = 44; const pts = v.map((x, i) => `${(i / (v.length - 1) * (W - 4) + 2).toFixed(1)},${(Hh - 4 - (x - mn) / (mx - mn || 1) * (Hh - 8)).toFixed(1)}`).join(' ');
+    return `<svg width="${W}" height="${Hh}" viewBox="0 0 ${W} ${Hh}" style="display:block"><polyline fill="none" stroke="#4fc3f7" stroke-width="1.8" points="${pts}"/><circle cx="${W - 2}" cy="${pts.split(' ').pop().split(',')[1]}" r="3" fill="#4fc3f7"/></svg><div class="sig-sub">spot average, last ${v.length} weeks: ${mn.toFixed(0)}–${mx.toFixed(0)} NOK/kg</div>`; })() : '';
+  let h = `<div class="sig-title" style="margin-top:18px">Prices</div><div class="gs-two">`;
+  if (E) h += `<div class="gs-box"><b>European spot, week ${E.week} ${E.year}</b> <span class="sig-sub">NOK per kg, superior salmon, by size (${e(E.src)})</span>` +
+    `<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:6px 0"><div><div class="gs-num">${f2(E.avg[0])}</div><div class="sig-sub">all sizes · ${E.avg[1] ? `${f2(E.avg[1])} the week before` : ''}${E.avg[2] ? ` · ${f2(E.avg[2])} a year earlier` : ''}</div></div>${sp}</div>` +
+    `<div style="overflow-x:auto"><table class="sig-table"><thead><tr><th class="name">Size (kg)</th><th>Week ${E.week}</th><th>vs last week</th><th>vs a year earlier</th></tr></thead><tbody>` +
+    E.sizes.map(([z, a, b, c]) => `<tr><td class="name">${e(z)}</td><td>${f2(a)}</td>${ch(a, b)}${ch(a, c)}</tr>`).join('') + `</tbody></table></div>` +
+    (E.sizes.length > 2 ? `<div class="sig-sub" style="margin-top:6px">Premium of 6–7 kg over 3–4 kg: ${f2((E.sizes.find(x => x[0] === '6-7') || [])[1] - (E.sizes.find(x => x[0] === '3-4') || [])[1])} NOK/kg (${f2((E.sizes.find(x => x[0] === '6-7') || [])[3] - (E.sizes.find(x => x[0] === '3-4') || [])[3])} a year earlier).</div>` : '') + `</div>`;
+  if (B) { const w = B.yw % 100; h += `<div class="gs-box"><b>Norwegian export price, week ${w}</b> <span class="sig-sub">fresh salmon, all sizes and contracts (${e(B.src)})</span>` +
+    `<div class="gs-num" style="margin-top:6px">${f2(B.now)} <span style="font-size:14px">NOK/kg</span></div><div class="sig-sub">${f2(B.prev)} the week before · ${f2(B.ly)} a year earlier (${B.ly ? (B.now >= B.ly ? '+' : '−') + Math.abs(100 * (B.now / B.ly - 1)).toFixed(1) + ' %' : '—'})</div>` +
+    `<div style="margin-top:8px">Volume: <b>${(+B.tonnes).toLocaleString('en-US')} t</b> <span class="sig-sub">(${B.tonnes_ly ? (+B.tonnes_ly).toLocaleString('en-US') + ' t a year earlier, ' + (B.tonnes >= B.tonnes_ly ? '+' : '−') + Math.abs(100 * (B.tonnes / B.tonnes_ly - 1)).toFixed(0) + ' %' : '—'})</span></div>` +
+    `<div class="sig-sub" style="margin-top:8px">The export price mixes spot and contract sales and every size, so it lags the spot index. US and Chinese prices below come from customs and are monthly.</div></div>`; }
+  return h + `</div>`;
+}
+function gsTradeHtml() {
+  if (typeof EU === 'undefined' || !EU) { if (typeof loadEurostat === 'function') loadEurostat(); return `<div class="sig-title" style="margin-top:18px">USA and China — imports by origin</div><div class="gs-box sig-sub">Loading customs data…</div>`; }
+  try { tmBuild(); } catch (_) {}
+  const e = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), MON = MONTHS_FR.map(m => m.slice(0, 3)), ml = k => `${MON[k % 100 - 1]} ${Math.floor(k / 100)}`;
+  const back = (k, n) => { let y = Math.floor(k / 100), m = k % 100 - n; while (m < 1) { m += 12; y--; } return y * 100 + m; };
+  const pc = (a, b) => a && b ? 100 * (a / b - 1) : null, cell = v => v === null ? '<td>—</td>' : `<td class="${v >= 0 ? 'delta-good' : 'delta-bad'}">${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(0)} %</td>`;
+  const block = (k, forms, cur, title, note) => {
+    const FR = focusRows(k, true); if (!FR) return '';
+    const END = FR.END, ks = [back(END, 2), back(END, 1), END], ly = ks.map(x => x - 100), C = FOCUS[k];
+    const agg = (o, keys, f) => FR.rowsN.reduce((a, r) => { if (r[1] === o && r[2] === f && keys.includes(r[0])) { a[0] += r[3]; a[1] += cur === '$' ? r[4] : r[5]; } return a; }, [0, 0]);
+    const ORG = C.orig.filter(o => forms.some(f => agg(o, ks, f)[0] > 0 || agg(o, ly, f)[0] > 0));
+    const lab = o => (typeof US_LAB !== 'undefined' && US_LAB[o]) || o;
+    const rows = ORG.map(o => `<tr><td class="name">${e(lab(o))}</td>` + forms.map(f => { const a = agg(o, ks, f), b = agg(o, ly, f), pa = a[0] ? a[1] / a[0] : null, pb = b[0] ? b[1] / b[0] : null;
+      const ok = b[0] >= 20 && a[0] >= 20; return `<td>${a[0] ? Math.round(a[0]).toLocaleString('en-US') : '—'}</td>${cell(ok ? pc(a[0], b[0]) : null)}<td>${pa && a[0] >= 5 ? pa.toFixed(2) : '—'}</td>${cell(ok ? pc(pa, pb) : null)}`; }).join('') + `</tr>`).join('');
+    const tot = forms.map(f => { const t = ORG.reduce((s, o) => s + agg(o, ks, f)[0], 0), u = ORG.reduce((s, o) => s + agg(o, ly, f)[0], 0); return [t, u]; });
+    const FN = { 0: 'Fresh whole', 2: 'Fresh fillets' };
+    return `<div class="gs-box"><b>${title}</b> <span class="sig-sub">${ml(ks[0])}–${ml(END)} against the same months a year earlier · tonnes and ${cur === '$' ? 'US$' : '€'} per kg</span>` +
+      `<div style="overflow-x:auto;margin-top:6px"><table class="sig-table"><thead><tr><th class="name" rowspan="2">Origin</th>${forms.map(f => `<th colspan="4" style="text-align:center">${FN[f]}</th>`).join('')}</tr><tr>${forms.map(() => `<th>t</th><th>vs y-1</th><th>${cur}/kg</th><th>vs y-1</th>`).join('')}</tr></thead><tbody>${rows}` +
+      `<tr style="font-weight:700"><td class="name">All origins shown</td>${tot.map(([t, u]) => `<td>${Math.round(t).toLocaleString('en-US')}</td>${cell(pc(t, u))}<td></td><td></td>`).join('')}</tr></tbody></table></div><div class="sig-sub" style="margin-top:6px">${note}</div></div>`; };
+  const us = block('us', [2, 0], '$', 'USA — imports by origin', 'US Census, customs value (before freight and duty). Fresh fillets are the main US product; Chile leads them, Norway leads whole fish. Monthly, about five weeks late.');
+  const cn = block('cn', [0], '€', 'China (with Hong Kong) — fresh whole salmon by origin', 'UN Comtrade while China and Hong Kong report, then what each exporting country declares for China (FOB, in euros); origins without export statistics drop out after that. Monthly, one to three months late.');
+  return `<div class="sig-title" style="margin-top:18px">USA and China — imports by origin</div><div style="display:grid;gap:12px">${us}${cn}</div>`;
+}
+function gsNewsHtml(G) {
+  const N = G.news || [], e = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), MON = MONTHS_FR.map(m => m.slice(0, 3));
+  if (!N.length) return '';
+  const BN = { NO: 'Norway', CL: 'Chile', GB: 'Scotland', FO: 'Faroes', IS: 'Iceland', CA: 'Canada', AU: 'Tasmania', global: 'World' };
+  return `<div class="sig-title" style="margin-top:18px">News of the week <span class="sig-sub">the stories picked up by the most outlets</span></div><div class="gs-box">` +
+    N.map(n => `<div style="display:grid;grid-template-columns:70px 1fr;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.12);font-size:13px"><span class="sig-sub">${+n.date.slice(8)} ${MON[+n.date.slice(5, 7) - 1]}</span>` +
+      `<span><a href="${e(n.url)}" target="_blank" rel="noopener" style="color:#e7eef2">${e(n.title)}</a> <span class="sig-sub">· ${e(n.source)}${n.n_sources > 1 ? ` and ${n.n_sources - 1} more` : ''} · ${e((n.basins || []).map(b => BN[b] || b).join(', '))}</span></span></div>`).join('') +
+    `<div class="sig-sub" style="margin-top:6px">Full list and filters in the This week tab.</div></div>`;
+}
 // ===================== Summary « What matters this week » (data/summary.json <- scripts/build_summary.py) =====================
 let GSUM;
 function renderGSum() {
@@ -10956,8 +11017,8 @@ function renderGSum() {
   if (GSUM === undefined) { GSUM = null; fetch(DATA_URL.replace('data.json', 'summary.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null).then(j => { GSUM = j || false; if (currentView === 'summary') renderGSum(); }); el.innerHTML = '<div class="sig-sub">Loading…</div>'; return; }
   if (!GSUM) { el.innerHTML = ''; return; }
   const G = GSUM, e = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), MON = MONTHS_FR.map(m => m.slice(0, 3));
-  const EF = { supports: '▲ supports prices', weighs: '▼ weighs on prices', risk: '▲ risk to supply', price: 'price', watch: 'watch' };
-  const TABN = { outlook: 'Supply outlook', prices: 'Prices', genmap: 'Generations map', chile: 'Chile', seatemp: 'Sea temperature', australia: 'Australia', news: 'This week' };
+  const EF = { supports: '▲ supports prices', weighs: '▼ weighs on prices', risk: '▲ risk to supply', price: 'price', watch: 'watch', algae: '! algae watch' };
+  const TABN = { outlook: 'Supply outlook', prices: 'Prices', genmap: 'Generations map', chile: 'Chile', seatemp: 'Sea temperature', australia: 'Australia', news: 'This week', disease: 'Disease overview' };
   const bars = (L, avg) => { const mx = Math.max(...L.map(x => Math.abs(x[1])), Math.abs(avg)) * 1.1;
     return L.map(([n, v]) => `<div class="gs-hb"><span>${e(n)}</span><div class="gs-tr"><div style="position:absolute;left:${v < 0 ? 50 + 50 * v / mx : 50}%;width:${50 * Math.abs(v) / mx}%;top:0;bottom:0;border-radius:7px;background:${v >= avg ? '#81c784' : '#ffab91'}"></div>` +
       `<div style="position:absolute;left:${50 + 50 * avg / mx}%;top:-3px;bottom:-3px;border-left:2px dashed #ffd54f"></div><div style="position:absolute;left:50%;top:0;bottom:0;border-left:1px solid rgba(255,255,255,.4)"></div></div><span style="text-align:right;font-weight:700">${v > 0 ? '+' : ''}${(+v).toFixed(1)} %</span></div>`).join('') +
@@ -10969,6 +11030,7 @@ function renderGSum() {
     `<div class="sig-title" style="margin-top:6px">The signals, ranked by how unusual they are</div><div class="gs-sig">` +
     S.map(x => `<div class="gs-card" onclick="(document.querySelector('#viewToggle button[data-v=&quot;${e(x.tab)}&quot;]')||{click(){}}).click();scrollTo(0,0)"><div class="gs-bas">${e(x.basin)}</div><h4>${e(x.title)}</h4>${x.value ? `<div class="gs-num">${e(x.value)}</div>` : ''}<div class="sig-sub">${e(x.text)}</div>` +
       `<div style="margin-top:8px"><span class="gs-badge b-${x.effect}">${EF[x.effect] || x.effect}</span><span class="sig-sub" style="color:#9fd0ff">→ ${e(TABN[x.tab] || x.tab)}</span></div></div>`).join('') + `</div>` +
+    gsPricesHtml(G) + gsTradeHtml() + gsNewsHtml(G) +
     `<div class="sig-title" style="margin-top:18px">Producers and consumers — faster or slower than the world?</div><div class="gs-two">` +
     (SU.basins ? `<div class="gs-box"><b>Supply 2026 by basin vs the world (${SU.world > 0 ? '+' : ''}${SU.world} %)</b>${bars(SU.basins, SU.world)}<div class="sig-sub">Our estimates from official data (Global supply tab), ${(+SU.world_kt).toLocaleString('en-US')} kt for the seven basins. 2027: ${SU.world_next > 0 ? '+' : ''}${SU.world_next} %.</div></div>` : '') +
     (DE.markets ? `<div class="gs-box"><b>Imports this year by market vs the world (${DE.world > 0 ? '+' : ''}${DE.world} %)</b>${bars(DE.markets, DE.world)}<div class="sig-sub">Atlantic salmon, fresh and frozen, whole and fillets, tonnes (UN Comtrade, each country's own declarations, same months both years). China, Korea and Vietnam do not report monthly.</div></div>` : '') + `</div>` +
@@ -11326,6 +11388,7 @@ async function loadEurostat() {
   if (currentView === 'usa') renderUSA();
   if (currentView === 'china') renderChina();
   if (currentView === 'coprod') renderCoprod();
+  if (currentView === 'summary') renderGSum();
 }
 // ===================== Salmon trade model (Eurostat + SSB) =====================
 // Codes douaniers : l'entier frais (0302 14) et l'entier congele (0303 13) ne couvrent
