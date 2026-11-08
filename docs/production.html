@@ -3484,7 +3484,9 @@ function qrStrip(found, basin) {
   if (!found) return ''; const segs = found.segs.filter(g => !basin || g.basin === basin || g.segment === 'Group');
   const fmt = (v, d = 1) => v === undefined || v === null ? null : (Math.abs(v) >= 1000 ? Math.round(v).toLocaleString('en-US') : (+v).toFixed(d).replace(/\.0$/, ''));
   const chg = (a, b, lowerIsGood) => (a === undefined || b === undefined || a === null || b === null || !b) ? '' :
-    (() => { const p = 100 * (a / b - 1), good = lowerIsGood ? p < 0 : p > 0; return ` <span class="${good ? 'delta-good' : 'delta-bad'}">${p >= 0 ? '+' : '−'}${Math.abs(p).toFixed(0)}%</span>`; })();
+    (() => { // base negative ou nulle (EBIT en perte) : un % n'a pas de sens (−0,34 contre −1,13 donnait « −70 % » en rouge) ; on montre l'ecart en valeur
+      if (a <= 0 || b <= 0) { const d = a - b, good = lowerIsGood ? d < 0 : d > 0; return ` <span class="${good ? 'delta-good' : 'delta-bad'}">${d >= 0 ? '+' : '−'}${fmt(Math.abs(d), 2)}</span>`; }
+      const p = 100 * (a / b - 1), good = lowerIsGood ? p < 0 : p > 0; return ` <span class="${good ? 'delta-good' : 'delta-bad'}">${p >= 0 ? '+' : '−'}${Math.abs(p).toFixed(0)}%</span>`; })();
   const rows = segs.map(g => { const c = g.currency || '', parts = [];
     if (g.cost_per_kg !== undefined) parts.push(`<b>Cost</b> ${fmt(g.cost_per_kg, 2)} ${c}/kg${g.cost_per_kg_ly !== undefined ? ` (${fmt(g.cost_per_kg_ly, 2)})` : ''}${chg(g.cost_per_kg, g.cost_per_kg_ly, true)}${(g.cost_drivers || []).length ? ` — ${nwEsc(g.cost_drivers.join('; '))}` : ''}`);
     if (g.ebit_per_kg !== undefined) parts.push(`<b>EBIT</b> ${fmt(g.ebit_per_kg, 2)} ${c}/kg${g.ebit_per_kg_ly !== undefined ? ` (${fmt(g.ebit_per_kg_ly, 2)})` : ''}${chg(g.ebit_per_kg, g.ebit_per_kg_ly, false)}`);
