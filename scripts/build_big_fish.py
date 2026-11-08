@@ -61,13 +61,13 @@ def main():
     weeks = [dt.date.fromisocalendar(y0, w0, 1) + dt.timedelta(weeks=i) for i in range(n)]
     C_tout, st_tout, weeks_tout = C, {k: v for k, v in st['sites'].items()}, list(weeks)      # donnees completes, pour le controle apres coup
     # Simulation « comme a l'epoque » (BF_ASOF=AAAAMM, mois du registre) : registre jusqu'a ce mois, statut des sites jusqu'a la
-    # publication de ce registre (environ le 5 du 2e mois suivant). Les licences (titulaires, capacites) restent celles d'aujourd'hui.
+    # publication de ce registre (vers le 20 du mois suivant). Les licences (titulaires, capacites) restent celles d'aujourd'hui.
     ASOF = int(os.environ.get('BF_ASOF') or 0)
     if ASOF:
         C = [c for c in C if c['year'] * 100 + c['month'] <= ASOF]; d['cohort'] = C
-        y_, m_ = divmod(ASOF, 100); m_ += 2
+        y_, m_ = divmod(ASOF, 100); m_ += 1
         if m_ > 12: y_, m_ = y_ + 1, m_ - 12
-        pub = dt.date(y_, m_, 5)
+        pub = dt.date(y_, m_, 20)
         k_ = sum(1 for w in weeks if w <= pub)
         st['sites'] = {k: v[:k_] for k, v in st['sites'].items()}
         n = k_; weeks = weeks[:n]
@@ -464,9 +464,9 @@ def main():
     # Chaque passage d'un bateau d'abattage, ou d'un wellboat hors semaine de traitement anti-poux, sur un site d'au moins 10 mois en
     # mer = une recolte ; poids du site selon son temps en mer (courbe des poids abattus de la zone), recale par le rapport
     # « poids reellement abattu / poids estime » de la zone sur les 3 derniers mois publies (suit le nouveau rythme de croissance).
-    # Moitie-moitie avec la methode G pour la part de 6 kg+. Test (zones de plus de 1 500 t, prevision faite a la fin du mois vise avec
-    # le registre de 2 mois avant) : 2026, zones 9-10 : 8,4 points d'erreur moyenne contre 10,9 ; toutes zones 8,0 contre 9,4 ;
-    # 2024-2025 : 6,6 contre 7,2. A 1 mois : 6,1 contre 6,8 en 2026, 5,2 contre 5,5 en 2024-2025.
+    # Moitie-moitie avec la methode G pour la part de 6 kg+. Le registre sort vers le 20 du mois suivant : a la fin du mois vise, on
+    # dispose du registre du mois d'avant. Test dans ces conditions (zones de plus de 1 500 t) : 2026, toutes zones 6,1 points d'erreur
+    # moyenne contre 6,8 (zones 9-10 : 6,9 contre 8,6) ; 2024-2025 : 5,2 contre 5,5.
     WBH = os.path.join(ROOT, 'data', 'wellboats_hist.json'); TRF = os.path.join(ROOT, 'data', 'bw_treatments.json')
     nowcast_ev = collections.defaultdict(list)
     if os.path.exists(WBH) and os.path.exists(TRF) and not ASOF:
