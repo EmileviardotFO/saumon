@@ -10279,7 +10279,7 @@ function renderOutlook() {
       2023: { po: [22064, 43100, 92513, 97587, 52626, 145093, 60018, 87692, 92129, 65897, 56625, 93803, 18061], tot: 927208 },
       2024: { tot: 947943 } };
     const allZones = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].every(po => poFilter.includes(po));
-    const mtbReg = (BWR && BWR.mtb_po) ? poFilter.reduce((t, po) => t + (po >= 1 ? BWR.mtb_po[String(po)] || 0 : 0), 0) : null;   // zones 1-13, comme les chiffres officiels
+    const mtbReg = (BWR && BWR.mtb_po) ? poFilter.reduce((t, po) => t + (BWR.mtb_po[String(po)] || 0), 0) : null;   // « zone 0 » de la MTB = licences de developpement sans zone (Smart Fish Farm, 6 240 t), dans le perimetre officiel ; la biomasse de la zone 0 (licences speciales), elle, n'y est pas
     const lastHist = Math.max(...Object.keys(MTB_HIST).map(Number));
     // MTB en vigueur une annee donnee : celle du 31 decembre de l'annee precedente ; au-dela du dernier chiffre publie, le registre actuel
     const mtbAt = y => { if (y - 1 > lastHist) return mtbReg ? { v: mtbReg, src: 'register' } : null;
