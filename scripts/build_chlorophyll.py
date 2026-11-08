@@ -161,7 +161,13 @@ def main():
                 if len(v) >= 2: hist.append(S.median(v))
             now = S.median(rec) if rec else None
             norm = S.median(hist) if len(hist) >= 2 else None
-            pts.append({'basin': b, 'basin_name': bn, 'id': pid, 'label': lab, 'lat': cell[0], 'lon': cell[1], 'n_recent': len(rec), 'last': last, 'period': f'{l0} to {last}', 'now': round(now, 2) if now else None,
+            # fiabilite : lecture recente (< 21 jours), assez de jours clairs, au moins 4 annees de reference, pas d'eau turbide
+            age = (dt.date.today() - dt.date.fromisoformat(last)).days
+            why = ('no clear-sky image for ' + str(age) + ' days (clouds or polar night)' if age > 21 else
+                   'only ' + str(len(hist)) + ' reference years' if len(hist) < 4 else
+                   'too few clear days' if len(rec) < 4 else
+                   'very high value, likely coastal turbidity' if now and now > 20 else '')
+            pts.append({'reliable': not why, 'why': why, 'hist_max': round(max(hist), 2) if hist else None, 'basin': b, 'basin_name': bn, 'id': pid, 'label': lab, 'lat': cell[0], 'lon': cell[1], 'n_recent': len(rec), 'last': last, 'period': f'{l0} to {last}', 'now': round(now, 2) if now else None,
                         'normal': round(norm, 2) if norm else None, 'years': len(hist), 'anom_pct': round(100 * (now / norm - 1)) if now and norm else None,
                         'recent': [[d, round(s[d], 2)] for d in jours[-60:]]})
             print(f'  {pid:14s} {now} mg/m3, normale {norm}, ecart {pts[-1]["anom_pct"]} %', flush=True)

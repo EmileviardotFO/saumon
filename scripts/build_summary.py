@@ -166,10 +166,12 @@ def main():
                     'value': sg(a, 1, ' °C'), 'text': f'Niño 3.4 index (week of {W[-1][0]})' + (f'; Chilean sea {sg(min(cl), 1, "")} to {sg(max(cl), 1, " °C")} vs normal in {MON[int(lastm[5:]) - 1]}' if cl else '') +
                     (f'. NOAA: {en["synopsis"]}' if en.get('synopsis') else '.'), 'effect': 'risk', 'tab': 'seatemp', 'score': abs(a) * 1.3})
     chl = lire('chlorophyll.json') or {}
-    for p in sorted(chl.get('points') or [], key=lambda p: -(p.get('anom_pct') or 0))[:1]:
+    # seulement les lectures fiables, et au-dessus de TOUTES les annees de reference (pas seulement de la mediane)
+    fiables = [p for p in (chl.get('points') or []) if p.get('reliable') and p.get('now') and p.get('hist_max') and p['now'] > p['hist_max']]
+    for p in sorted(fiables, key=lambda p: -(p.get('anom_pct') or 0))[:1]:
         if (p.get('anom_pct') or 0) >= 30:
-            sig.append({'basin': p.get('basin_name', p.get('basin')), 'title': 'Unusually high chlorophyll (algae) in the water', 'value': sg(p['anom_pct'], 0),
-                        'text': f'{p["label"]}: satellite chlorophyll, {p.get("period", "last 8 days")}, vs the same weeks of past years. Algae biomass, not toxicity: a sign to watch for blooms, not a bloom.',
+            sig.append({'basin': p.get('basin_name', p.get('basin')), 'title': 'Chlorophyll above every recent year', 'value': sg(p['anom_pct'], 0),
+                        'text': f'{p["label"]}: {p["now"]} mg/m³ against {p["normal"]} usually and {p["hist_max"]} at most in the same weeks of the last {p["years"]} years (satellite, {p.get("period", "")}). It measures how much algae there is, not toxicity: a sign to watch, not a bloom.',
                         'effect': 'risk', 'tab': 'seatemp', 'score': 1 + p['anom_pct'] / 40})
     # ---------------- sujets suivis (watch.json) ----------------
     today = dt.date.today().isoformat()
