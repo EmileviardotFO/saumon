@@ -5260,7 +5260,7 @@ function renderAustralia() {
   const roll = M.map(r => { const ks = tmRange(r.m, 12); if (!ks.every(k => by[k])) return null; const t = ks.reduce((a, k) => a + by[k].total, 0), p = prodFY(fyOf(r.m)); return p ? { m: r.m, t, pct: 100 * t / p } : null; }).filter(Boolean);
   const rl = roll[roll.length - 1], rlP = rl ? roll.find(x => x.m === rl.m - 100) : null;
   if (rl) document.getElementById('auCards').innerHTML += card(`Dead fish vs harvest · 12 months to ${tmMl(rl.m)}`, `${rl.pct.toFixed(1)}% ${rlP ? `<span class="${rl.pct > rlP.pct ? 'delta-bad' : 'delta-good'}" style="font-size:12px">${rl.pct >= rlP.pct ? '+' : '−'}${Math.abs(rl.pct - rlP.pct).toFixed(1)} pt</span>` : ''}`,
-    `${f0(rl.t)} t of dead fish against ${f0(prodFY(fyOf(rl.m)))} t harvested in FY ${fyLab(fyOf(rl.m))}${rlP ? ` · a year earlier ${rlP.pct.toFixed(1)}%` : ' · no 12-month comparison yet (EPA data start January 2025)'}`, '#e57373');
+    `${f0(rl.t)} t of dead fish against ${f0(prodFY(fyOf(rl.m)))} t harvested in FY ${fyLab(fyT(fyOf(rl.m)) ? fyOf(rl.m) : fyE)}${fyT(fyOf(rl.m)) ? '' : ' (latest financial year published)'}${rlP ? ` · a year earlier ${rlP.pct.toFixed(1)}%` : ' · no 12-month comparison yet (EPA data start January 2025)'}`, '#e57373');
   // colonne supplementaire du tableau mensuel
   const tabEl = document.getElementById('auMortTab');
   if (tabEl.innerHTML) {

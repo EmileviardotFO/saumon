@@ -83,6 +83,7 @@ RECOLTE = [  # entreprise, periode, tonnes, poids moyen, source
     ('Bakkafrost', '2026-08', 7100, 5.0, 'Bakkafrost Q3 2026 trading update'), ('Bakkafrost', '2026-09', 7700, 4.9, 'Bakkafrost Q3 2026 trading update'),
     ('Mowi Faroes', '2025-Q3', 2500, None, 'Mowi Q3 2025 trading update (gutted weight)'),
     ('Mowi Faroes', '2026-Q2', 2500, None, 'Mowi Q2 2026 trading update (gutted weight)'),
+    ('Mowi Faroes', '2026-Q3', 2853, None, 'Mowi Q3 2026 report, 4 Nov 2026 (gutted weight; Q3 2025: 2,367 t)'),
 ]
 SMOLTS = [('Bakkafrost', '2026-Q1', 3.9), ('Bakkafrost', '2026-Q2', 5.6), ('Bakkafrost', '2026-Q3', 4.5)]
 # Indicateurs annuels Bakkafrost Feroe (page Data, releve du 03/11/2026)
