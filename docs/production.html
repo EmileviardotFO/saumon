@@ -5298,20 +5298,22 @@ function clSubpesca() {
     .then(j => { CLP = j || false; if (currentView === 'chile') { clSubpesca(); if (CLX) clMore(); } }); return; }
   if (!CLP) { $c('clMonSub').innerHTML = 'The Subpesca reader has not run yet.'; return; }
   const e = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), f0 = v => v === null || v === undefined || !isFinite(v) ? '—' : Math.round(v).toLocaleString('en-US');
-  const pc = v => v === null || v === undefined || !isFinite(v) ? '—' : `<span class="${v >= 0 ? 'delta-good' : 'delta-bad'}">${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(0)} %</span>`;
+  const pc = v => v === null || v === undefined || !isFinite(v) ? '—' : `<span class="${v >= 0 ? 'delta-good' : 'delta-bad'}">${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(Math.abs(v) < 0.95 ? 1 : 0)} %</span>`;
   const ml = k => `${MONTHS_FR[k % 100 - 1].slice(0, 3)} ${Math.floor(k / 100)}`;
   // recoltes : mois = difference de deux cumuls ; l'an dernier = cumul / (1 + variation)
   const R = Object.values(Object.fromEntries((CLP.reports || []).filter(r => r && r.species && r.k && !r.unread).map(r => [r.k, r]))), SP = [['salar', 'Atlantic salmon'], ['coho', 'Coho'], ['trucha', 'Rainbow trout']];
   const byK = {}; R.forEach(r => byK[r.k] = r);
-  const rows = R.slice().sort((a, b) => b.k - a.k).map(r => { const p = byK[r.k % 100 === 1 ? null : r.k - 1];
-    return { k: r.k, cells: SP.map(([sp]) => { const c = (r.species[sp] || {}), q = p && p.species[sp];
+  // mois sans rapport (aout 2026) : le rapport suivant est compare au dernier rapport de la meme annee, et la ligne couvre les deux mois (« Aug–Sep 2026 »)
+  const prevK = k => { if (k % 100 === 1) return null; for (let j = k - 1; j > Math.floor(k / 100) * 100; j--) if (byK[j]) return j; return null; };
+  const rows = R.slice().sort((a, b) => b.k - a.k).map(r => { const pk = prevK(r.k), p = pk ? byK[pk] : null;
+    return { k: r.k, span: p ? r.k - pk : (r.k % 100 === 1 ? 1 : 0), cells: SP.map(([sp]) => { const c = (r.species[sp] || {}), q = p && p.species[sp];
       const ly = c.cum_kt && c.var_pct !== null && c.var_pct !== undefined ? c.cum_kt / (1 + c.var_pct / 100) : null, lyp = q && q.cum_kt && q.var_pct !== null ? q.cum_kt / (1 + q.var_pct / 100) : null;
-      const mon = r.k % 100 === 1 ? c.cum_kt : (q && c.cum_kt ? c.cum_kt - q.cum_kt : null), monLy = r.k % 100 === 1 ? ly : (ly && lyp ? ly - lyp : null);
-      return { cum: c.cum_kt, var: c.var_pct, mon, monv: mon !== null && monLy ? 100 * (mon / monLy - 1) : null }; }) }; });
+      const mon = r.k % 100 === 1 ? c.cum_kt : (q && c.cum_kt ? c.cum_kt - q.cum_kt : null), monLy = r.k % 100 === 1 ? ly : (ly && lyp ? ly - lyp : null);   // mois seul, ou les deux mois depuis le dernier rapport
+      return { cum: c.cum_kt, var: c.var_pct, mon, monv: mon !== null && monLy > 3 ? 100 * (mon / monLy - 1) : null }; }) }; });   // un an plus tot sous 3 kt : ecart d'arrondi des cumuls, pas un vrai % (coho : +8 167 %)
   $c('clMonSub').innerHTML = R.length ? `Harvest weight, thousand tonnes, from Sernapesca's preliminary figures in Subpesca's monthly sector report (about a month late; last: ${ml(R[R.length - 1].k)}). ` +
     `The month alone is the difference between two consecutive reports, so it needs both; the change on a year earlier for the month is worked out from the year-to-date changes and is less precise than the year-to-date figure.` : 'No monthly report read yet.';
   $c('clMon').innerHTML = R.length ? `<thead><tr><th class="name">Month</th>${SP.map(([, l]) => `<th>${l}<br>month (kt)</th><th>vs a year<br>earlier</th><th>Year to date<br>(kt)</th><th>YTD<br>change</th>`).join('')}</tr></thead><tbody>` +
-    rows.map(r => `<tr><td class="name">${ml(r.k)}</td>` + r.cells.map(c => `<td><b>${c.mon !== null && c.mon !== undefined ? c.mon.toFixed(1) : '—'}</b></td><td>${pc(c.monv)}</td><td>${c.cum ? c.cum.toFixed(1) : '—'}</td><td>${pc(c.var)}</td>`).join('') + `</tr>`).join('') + `</tbody>` : '';
+    rows.map(r => `<tr><td class="name">${r.span > 1 ? `${MONTHS_FR[(r.k - r.span) % 100].slice(0, 3)}–${ml(r.k)}<small style="display:block;color:var(--muted);font-weight:normal">${r.span} months (no report for ${MONTHS_FR[(r.k - r.span) % 100]})</small>` : ml(r.k)}</td>` + r.cells.map(c => `<td><b>${c.mon !== null && c.mon !== undefined ? c.mon.toFixed(1) : '—'}</b></td><td>${pc(c.monv)}</td><td>${c.cum ? c.cum.toFixed(1) : '—'}</td><td>${pc(c.var)}</td>`).join('') + `</tr>`).join('') + `</tbody>` : '';
   // mises a l'eau prevues : 12 derniers mois de resolutions contre les 12 precedents
   const RES = (CLP.resolutions || []).filter(r => r.date && (r.rows || []).length).map(r => ({ ...r, rows: r.rows.filter((x, i, a) => a.findIndex(y => y.centre === x.centre && y.sp === x.sp && y.fish === x.fish) === i) })), farm = {};
   RES.slice().sort((a, b) => a.date < b.date ? -1 : 1).forEach(r => r.rows.forEach(x => { const k = x.centre + '|' + (farm[x.centre + '|' + r.date.slice(0, 4)] ? r.date.slice(0, 4) : '');
