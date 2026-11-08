@@ -186,18 +186,38 @@ def main():
     since = (dt.date.today() - dt.timedelta(days=14)).isoformat()
     evs = [e for e in (H.get('events') or []) if (e.get('date') or '') >= since and e.get('level', 0) >= 2]
     lv = max([Wk.get('level', 0)] + [e['level'] for e in evs])
-    if lv >= 2:
-        src = max(evs, key=lambda e: e['date']) if evs else Wk
+    if lv >= 3:      # seulement un risque eleve (« høy ») ; moderé reste dans les onglets
+        src = max([e for e in evs if e['level'] == 3] or evs, key=lambda e: e['date']) if evs else Wk
         po = ', '.join(f'PO{k} {["", "low", "moderate", "high"][v]}' for k, v in (src.get('po') or {}).items())
-        sig.append({'basin': 'Norway · Algae', 'title': f'Harmful algae: {"high" if lv == 3 else "moderate"} risk for farmed fish', 'value': 'PO ' + ', '.join((src.get('po') or {}).keys()) if src.get('po') else '',
+        sig.append({'basin': 'Norway · Algae', 'title': 'Harmful algae: high risk for farmed fish', 'value': 'PO ' + ', '.join((src.get('po') or {}).keys()) if src.get('po') else '',
                     'text': f'Institute of Marine Research status ({src.get("date") or "week " + str(Wk.get("week"))}): {po or src.get("summary_en", "")}' + (f'; {", ".join(src.get("species") or [])}' if src.get('species') else '') + '.',
-                    'effect': 'risk', 'tab': 'disease', 'score': 2.2 if lv == 2 else 3.6})
+                    'effect': 'risk', 'tab': 'disease', 'score': 3.6})
     since21 = (dt.date.today() - dt.timedelta(days=21)).isoformat()
     cont = [x for x in ((aw.get('chile_sernapesca') or {}).get('items') or []) if x.get('date', '') >= since21 and re.search(r'mortalidad|contingencia', x['title'], re.I) and x.get('cause')]
     if cont:
         x = cont[0]
         sig.append({'basin': 'Chile · ' + (', '.join(x.get('region') or []) or 'Sernapesca'), 'title': 'Mass mortality contingency (' + x['cause'] + ')', 'value': (f'{x["tonnes"][0]:,.0f} t'.replace(',', ' ') if x.get('tonnes') else ''),
                     'text': f'Sernapesca, {x["date"]}: {x["title"]}' + (f' ({len(cont)} releases in three weeks)' if len(cont) > 1 else '') + '.', 'effect': 'risk', 'tab': 'disease', 'score': 3.0})
+    # ---------------- ISA : nouvelles detections au Chili (Sernapesca) et sites sous restriction en Norvege ----------------
+    since30 = (dt.date.today() - dt.timedelta(days=30)).isoformat()
+    isa = [x for x in ((aw.get('chile_sernapesca') or {}).get('items') or []) if x.get('date', '') >= since30 and re.search(r'\bISA\b|anemia infecciosa', x['title'], re.I)]
+    if isa:
+        sig.append({'basin': 'Chile · ' + (', '.join(isa[0].get('region') or []) or 'ISA'), 'title': 'New ISA detection', 'value': f'{len(isa)} release' + ('s' if len(isa) > 1 else ''),
+                    'text': f'Sernapesca, {isa[0]["date"]}: {isa[0]["title"]}. ISA forces the farm to be emptied early (smaller fish, lost volume).', 'effect': 'risk', 'tab': 'disease', 'score': 2.6})
+    bwd = (lire('bw_disease_sites.json') or {}).get('weeks') or {}
+    if bwd:
+        lw = max(bwd); y, w = map(int, lw.split('-')); ly = f'{y - 1}-{w:02d}'
+        n = lambda k: sum('ILA' in v for v in (bwd.get(k) or {}).values())
+        hist = [n(f'{yy}-{w:02d}') for yy in range(y - 6, y) if f'{yy}-{w:02d}' in bwd]
+        if ly in bwd and len(hist) >= 3 and n(lw) > max(hist):     # plus haut que la meme semaine de chacune des dernieres annees
+            sig.append({'basin': 'Norway', 'title': 'More farms under ISA restrictions than a year ago', 'value': f'{n(lw)} farms',
+                        'text': f'week {w} of {y}: {n(lw)} farms listed with ISA (ILA) against {n(ly)} a year earlier and {min(hist)} to {max(hist)} the same week of the last {len(hist)} years (Food Safety Authority via BarentsWatch).',
+                        'effect': 'watch', 'tab': 'disease', 'score': max(1.0, z(n(lw), hist) or 1.0)})
+    # ---------------- Subpesca : documents recents sur l'ISA, les algues, les emergences sanitaires ----------------
+    sub_docs = [x for x in ((lire('chile_subpesca.json') or {}).get('documents') or []) if (x.get('date') or '') >= (dt.date.today() - dt.timedelta(days=14)).isoformat() and set(x.get('themes') or []) & {'isa', 'algae', 'emergency'}]
+    if sub_docs:
+        sig.append({'basin': 'Chile · Subpesca', 'title': 'New rules on ' + ', '.join(sorted({ {'isa': 'ISA', 'algae': 'algal blooms', 'emergency': 'emergencies'}[t] for x in sub_docs for t in x['themes'] if t in ('isa', 'algae', 'emergency')})),
+                    'value': f'{len(sub_docs)} document' + ('s' if len(sub_docs) > 1 else ''), 'text': f'Subpesca, {sub_docs[0]["date"]}: {sub_docs[0]["title"][:220]}.', 'effect': 'watch', 'tab': 'disease', 'score': 1.5})
     CC = aw.get('chile_conditions') or {}
     if CC.get('published'):
         pts = [p for p in CC.get('points') or [] if p.get('confirmed')]

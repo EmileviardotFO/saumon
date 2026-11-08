@@ -353,6 +353,8 @@ def look(aid):
     if r.status_code == 200:
         t = re.search(r'<title>(.*?)</title>', r.text, re.S)
         title = re.sub(r'\s+', ' ', t.group(1)).replace(' - SUBPESCA Normativa', '').strip() if t else ''
+        if aid in KNOWN:      # deja lue (relecture de l'historique pour la liste de tous les documents) : pas de nouvelle lecture du PDF
+            return aid, 'doc', doc(aid, title, r.text, 615)
         if re.search(r'(?i)densidad de cultivo', title) and re.search(r'(?i)\b(fija|modifica)', title):
             p = get(f'{BASE}/615/articles-{aid}_documento.pdf', 90)
             if p is None or p.status_code != 200:
@@ -361,7 +363,7 @@ def look(aid):
                 return aid, 'res', parse_resolution(aid, title, p.content)
             except Exception as ex:  # noqa: BLE001
                 return aid, 'res', {'id': aid, 'title': title, 'error': f'{type(ex).__name__}: {ex}'[:200], 'rows': []}
-        return aid, 'other', None
+        return aid, 'doc', doc(aid, title, r.text, 615)
     # pas de page dans "Normativa" : peut-etre une publication (portail 616), dont l'informe sectorial mensuel
     for host in ('https://source.subpesca.cl/portal', BASE):
         try:
@@ -375,14 +377,33 @@ def look(aid):
             try:
                 texts, _ = pdf_text(p.content, 3)
                 if 'Informe Sectorial de Pesca y Acuicultura' not in ' '.join(texts):
-                    return aid, 'other', None
+                    return aid, 'doc', doc(aid, ' '.join(texts)[:160], '', 616, f'{host}/616/articles-{aid}_documento.pdf')
                 texts, _ = pdf_text(p.content)
                 return aid, 'rep', parse_report(aid, texts) or {'id': aid, 'k': None, 'species': {}, 'unread': True}
             except Exception:
                 return aid, 'other', None
         if h.status_code == 200:
-            return aid, 'other', None
+            w = get(f'{BASE}/616/w3-article-{aid}.html', 30)
+            tt = re.search(r'<title>(.*?)</title>', w.text, re.S) if w is not None and w.status_code == 200 else None
+            return aid, 'doc', doc(aid, re.sub(r'\s+', ' ', tt.group(1)).split(' - SUBPESCA')[0].strip() if tt else f'Document {aid}', w.text if tt else '', 616, f'{host}/616/articles-{aid}_documento.pdf')
     return aid, 'none', None
+
+
+KNOWN = set()
+# themes d'un document : ce qui touche le saumon et sa sante est mis en avant
+THEMES = [('isa', r'\bISA\b|anemia infecciosa|virus ISA'), ('algae', r'FAN\b|floraci[oó]n|algas? nociv|marea roja|microalga'),
+          ('disease', r'sanitari|enfermedad|plaga|piscirickettsi|SRS|caligus|caligidosis|BKD|antimicrob|mortalidad'),
+          ('emergency', r'emergencia|contingencia|catástrofe|catastrofe'), ('density', r'densidad de cultivo|agrupaci[oó]n de concesiones|ACS|barrio'),
+          ('concession', r'concesi[oó]n|relocaliz|caducidad|AAA|acuicultura'), ('report', r'informe|estad[ií]stic|bolet[ií]n|anuario')]
+
+
+def doc(aid, title, html, portal, pdf=None):
+    m = re.search(r'(\d{1,2})[./-](\d{1,2})[./-](20\d\d)', title) or re.search(r'(\d{1,2})[./-](\d{1,2})[./-](20\d\d)', html or '')
+    d = f'{m.group(3)}-{int(m.group(2)):02d}-{int(m.group(1)):02d}' if m and 1 <= int(m.group(2)) <= 12 and 1 <= int(m.group(1)) <= 31 else (es_date(html or '') or None)
+    th = [k for k, rx in THEMES if re.search(rx, title, re.I)]
+    salm = bool(re.search(r'(?i)salm[oó]n|salm[oó]nid|acuicultura|centro de cultivo|ACS|agrupaci', title)) or bool(set(th) & {'isa', 'algae', 'disease', 'density'})
+    return {'id': aid, 'title': title[:300], 'date': d, 'portal': portal, 'url': f'{BASE}/{portal}/w3-article-{aid}.html' if portal == 615 or html else pdf,
+            'pdf': pdf or f'{BASE}/{portal}/articles-{aid}_documento.pdf', 'themes': th, 'aquaculture': salm}
 
 
 def main():
@@ -396,6 +417,8 @@ def main():
     limit = int(os.environ.get('MAX_IDS') or 600)
     stop_after = 250                       # ids vides d'affilee au-dela du dernier document : fin
     R = {x['id']: x for x in st.get('resolutions', [])}
+    DOCS = {x['id']: x for x in st.get('documents', [])}
+    KNOWN.update(R)
     P = {x['id']: x for x in st.get('reports', []) if x}
     last_found, errors, aid, seen = M.get('last_id', start - 1), [], start, 0
     t0 = time.time()
@@ -419,7 +442,9 @@ def main():
             for i, kind, val in ex.map(look, batch):
                 if kind == 'err':
                     errors.append(i)
-                if kind in ('res', 'rep', 'other'):
+                if kind == 'doc' and val:
+                    DOCS[i] = val
+                if kind in ('res', 'rep', 'other', 'doc'):
                     last_found = max(last_found, i)
                 if kind == 'res' and val:
                     R[i] = val
@@ -431,6 +456,12 @@ def main():
               'url': 'https://www.subpesca.cl/portal/615/w3-channel.html', 'errors_last_run': errors[:50],
               'note': 'fish to stock = the number authorised in each density resolution for the next cycle of each farm, after the ACS fallow; a later resolution modifying a farm replaces its figure'})
     st['resolutions'] = sorted(R.values(), key=lambda x: x['id'])
+    # tous les documents publies (titre, date, themes), les plus recents d'abord ; les resolutions de densite et
+    # les informes sectoriaux y figurent aussi
+    for i, v in R.items():
+        if i not in DOCS and v.get('title'):
+            DOCS[i] = {'id': i, 'title': v['title'][:300], 'date': v.get('date'), 'portal': 615, 'url': f'{BASE}/615/w3-article-{i}.html', 'pdf': f'{BASE}/615/articles-{i}_documento.pdf', 'themes': ['density'], 'aquaculture': True}
+    st['documents'] = sorted(DOCS.values(), key=lambda x: (x.get('date') or '', x['id']), reverse=True)[:1500]
     # rapports lus a la main quand le lecteur automatique echoue (ils remplacent une entree « unread », jamais une lecture reussie)
     for i, v in RAPPORTS_MANUELS.items():
         if not P.get(i) or P[i].get('unread') or P[i].get('manual'):

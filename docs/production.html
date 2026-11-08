@@ -6181,7 +6181,7 @@ function clSecInit() {   // memorise les sections ouvertes ; recale la carte a l
 // ---------- Disease overview : mortalite et maladies, bassin par bassin (rapports officiels + nos series) ----------
 let DZ = null, DZ_LOADING = false, DZ_B = null, DZ_SF = { b: 'all', t: 'all' };
 // ===================== Maladies : alertes de la semaine et maladie par maladie (data/algae_watch.json, disease_knowledge.json, disease_research.json) =====================
-let DZ_D = null, DZ_PF = 'all';
+let DZ_D = null, DZ_PF = 'all', DZ_SUBF = 'aqua';
 function dzEsc(t) { return String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
 function dzLiveHtml(h2, box) {
   const A = DZ.aw || {}, e = dzEsc, H = A.norway_hi || {}, W = H.weekly, SN = (A.chile_sernapesca || {}).items || [], CC = A.chile_conditions || {};
@@ -6205,6 +6205,15 @@ function dzLiveHtml(h2, box) {
       (CC.points || []).filter(p => p.confirmed).map(p => `${e(p.label)}: rain over 60 days ${Math.round(100 * p.now.rain_ratio)} % of normal, sea ${p.now.sst_anom > 0 ? '+' : ''}${p.now.sst_anom} °C, sunshine ${Math.round(100 * p.now.sun_ratio)} % and wind ${Math.round(100 * p.now.wind_ratio)} % of normal`).join('<br>') +
       `<br>${e(CC.rule)} These conditions preceded the 2016 bloom; they do not make one certain.</div></div>` : '';
   h += `<div class="gs-two" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:12px">${box(no || '<span class="sig-sub">Norwegian algae bulletin not collected yet.</span>')}${box((cl || '<span class="sig-sub">Sernapesca releases not collected yet.</span>') + cc)}</div>`;
+  // Subpesca : tous les documents publies (resolutions, decrets, rapports), filtres par theme
+  const SD = ((DZ.sub || {}).documents) || [];
+  if (SD.length) { const TH = [['aqua', 'Aquaculture'], ['isa', 'ISA'], ['algae', 'Algal blooms'], ['disease', 'Health'], ['emergency', 'Emergencies'], ['density', 'Stocking (density)'], ['all', 'All documents']];
+    const f = DZ_SUBF, L = SD.filter(x => f === 'all' || (f === 'aqua' ? x.aquaculture : (x.themes || []).includes(f))), TL = { isa: 'ISA', algae: 'algae', disease: 'health', emergency: 'emergency', density: 'density', concession: 'concession', report: 'report' };
+    h += `<div id="dzSub" style="margin-top:12px">` + box(`<div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px"><b>Chile · every document published by Subpesca</b> <span class="sig-sub">${SD.length} since ${e((SD[SD.length - 1] || {}).date || '')}, newest first · read every morning</span></div>` +
+      `<div style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0">${TH.map(([k, n]) => `<button type="button" class="dz-tab${f === k ? ' on' : ''}" data-dzsub="${k}" style="padding:3px 10px">${n} <span style="opacity:.7">${k === 'all' ? SD.length : SD.filter(x => k === 'aqua' ? x.aquaculture : (x.themes || []).includes(k)).length}</span></button>`).join('')}</div>` +
+      `<div style="max-height:420px;overflow:auto">${L.slice(0, 120).map(x => `<div style="display:grid;grid-template-columns:96px 1fr;gap:10px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12.5px"><span style="color:var(--muted)">${dd(x.date) || '—'}</span>` +
+        `<span><a href="${e(x.url)}" target="_blank" rel="noopener" style="color:#e7eef2">${e(x.title)}</a>${(x.themes || []).length ? ` <span class="sig-sub">· ${x.themes.map(t => TL[t] || t).join(', ')}</span>` : ''} <a href="${e(x.pdf)}" target="_blank" rel="noopener" class="sig-sub" style="color:#4fc3f7">PDF</a></span></div>`).join('') || '<span class="sig-sub">Nothing in this filter.</span>'}</div>` +
+      `<div class="sig-sub" style="margin-top:6px">Subpesca (fisheries and aquaculture undersecretariat) publishes resolutions, decrees and reports as numbered documents with no list; the reader goes through every new number each morning. Spanish titles.</div>`) + `</div>`; }
   return h;
 }
 function dzDiseaseHtml(h2, box) {
@@ -6538,6 +6547,7 @@ function renderDisease() {
   root.querySelectorAll('[data-sfb]').forEach(x => x.onclick = () => { DZ_SF.b = x.dataset.sfb; renderDisease(); });
   root.querySelectorAll('[data-sft]').forEach(x => x.onclick = () => { DZ_SF.t = x.dataset.sft; renderDisease(); });
   root.querySelectorAll('[data-dzd]').forEach(x => x.onclick = () => { DZ_D = x.dataset.dzd; try { localStorage.setItem('dzDisease', DZ_D); } catch (_) {} renderDisease(); setTimeout(() => { const y = document.getElementById('dzDis'); if (y) y.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 30); });
+  root.querySelectorAll('[data-dzsub]').forEach(x => x.onclick = () => { DZ_SUBF = x.dataset.dzsub; renderDisease(); setTimeout(() => { const y = document.getElementById('dzSub'); if (y) y.scrollIntoView({ block: 'start' }); }, 30); });
   root.querySelectorAll('[data-dzpf]').forEach(x => x.onclick = () => { DZ_PF = x.dataset.dzpf; renderDisease(); setTimeout(() => { const y = document.getElementById('dzPubs'); if (y) y.scrollIntoView({ block: 'start' }); }, 30); });
   const cb = document.getElementById('dzCsv'); if (cb) cb.onclick = () => { const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
     const csv = ['basin,date,type,document,url,what we use'].concat(ALL.map(x => [x.b, x.d, (TY[x.ty] || TY.data)[0], x.n, x.u, x.w].map(q).join(','))).join('\n');
