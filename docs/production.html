@@ -1601,6 +1601,9 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="sig-title" style="margin-top:14px">Fillets — size class, trim and quality grade (customs declarations)</div>
     <div class="sig-sub" id="clFilSub"></div>
     <div id="clFil"></div>
+    <div class="sig-title" style="margin-top:14px">Fish size by farmer — whole Atlantic salmon exported (customs declarations)</div>
+    <div class="sig-sub" id="clSzSub"></div>
+    <div id="clSz"></div>
     <div class="sig-title" style="margin-top:14px">Exports by product form (UN Comtrade)</div>
     <div class="sig-sub" id="clExpSub"></div>
     <div id="clExp"></div>
@@ -5560,7 +5563,7 @@ let CLX = undefined;   // { cus, reg, cad } : douanes, bulletins INE, liste cali
 function clMore() {
   const $c = id => document.getElementById(id);
   if (CLX === undefined) { CLX = null; const g = n => fetch(DATA_URL.replace('data.json', n), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
-    Promise.all([g('chile_customs.json'), g('chile_regional.json'), g('chile_caligus.json')]).then(([a, b, c]) => { CLX = { cus: a, reg: b, cad: c }; if (currentView === 'chile') clMore(); }); return; }
+    Promise.all([g('chile_customs.json'), g('chile_regional.json'), g('chile_caligus.json'), g('chile_harvest_weights.json')]).then(([a, b, c, w]) => { CLX = { cus: a, reg: b, cad: c, hw: w }; if (currentView === 'chile') clMore(); }); return; }
   if (!CLX) return;
   const e = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), f0 = v => v === null || v === undefined || !isFinite(v) ? '—' : Math.round(v).toLocaleString('en-US');
   const f1 = v => v === null || v === undefined || !isFinite(v) ? '—' : (+v).toFixed(1), MON = MONTHS_FR.map(m => m.slice(0, 3));
@@ -5604,6 +5607,7 @@ function clMore() {
         `<td style="text-align:left">${e(CL_COM[+x.comuna] || x.comuna || '')}</td><td style="text-align:left;font-size:12px">${Object.entries(x.producers || {}).filter(([n]) => n !== 'not stated').slice(0, 2).map(([n, v]) => `${e(n)} ${v.toFixed(0)} %`).join(', ') || '—'}</td><td style="text-align:left;font-size:12px">${Object.entries(x.mix || {}).slice(0, 2).map(([k, v]) => `${lab(k)} ${v.toFixed(0)} %`).join(', ')}</td>` +
         `<td style="text-align:left;font-size:12px">${Object.entries(x.dest || {}).slice(0, 3).map(([k, v]) => `${e(k.replace('U.S.A.', 'USA').replace('Brasil', 'Brazil').replace('Japon', 'Japan').replace('Rusia', 'Russia'))} ${v.toFixed(0)} %`).join(', ')}</td><td>${x.n}</td></tr>`).join('') + `</tbody>`;
     clFilPrd(CM, ks, last, lab);
+    clSizes(CM, ks, last);
     SUM.clS5 = `${X.length} exporters followed; the 5 largest ship ${(100 * X.slice(0, 5).reduce((a, x) => a + x.s12, 0) / tot12).toFixed(0)} % · mortality by company`;
   } else { $c('clCusSub').innerHTML = 'Customs reader has not run yet.'; }
   // cartes du haut : remplacer les chiffres saisis a la main par les plus frais (Subpesca, douanes)
@@ -5672,6 +5676,53 @@ function clMore() {
   Object.entries(SUM).forEach(([k, v]) => { const el = $c(k + 'Sum'); if (el) el.textContent = v; });
   clW();
 }
+// ===================== Chili : calibres des poissons exportes entiers, par eleveur (douanes) =====================
+let CL_SZ = 'Multi X';
+function clSizes(CM, ks, last) {
+  const $c = id => document.getElementById(id); if (!$c('clSz')) return;
+  const e = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), MON = MONTHS_FR.map(m => m.slice(0, 3)), ml = k => `${MON[k % 100 - 1]} ${Math.floor(k / 100)}`;
+  const F = ['atlantic|fresh whole', 'atlantic|frozen whole'];
+  // par eleveur et par mois : tonnes avec calibre, calibre moyen, part 5-6 kg et 6 kg+ (classes de 1 kg, milieu de classe)
+  const one = (k, n) => { const P = ((CM[k] || {}).producer_sizes || {})[n]; if (!P) return null; let t = 0, w = 0; const h = [0, 0, 0, 0, 0, 0, 0];
+    F.forEach(f => { const z = P[f]; if (z && z.mean_kg) { t += z.t_sized; w += z.mean_kg * z.t_sized; z.hist_t.forEach((v, i) => h[i] += v); } });
+    const ht = h.reduce((a, v) => a + v, 0); return t >= 20 ? { t, kg: w / t, p56: 100 * h[4] / ht, p6: 100 * (h[5] + h[6]) / ht } : null; };
+  const agg = (n, K) => { let t = 0, w = 0, a6 = 0, a56 = 0; K.forEach(k => { const o = one(k, n); if (o) { t += o.t; w += o.kg * o.t; a6 += o.p6 * o.t; a56 += o.p56 * o.t; } });
+    return t ? { t, kg: w / t, p6: a6 / t, p56: a56 / t } : null; };
+  if (!ks.some(k => CM[k].producer_sizes)) { $c('clSzSub').innerHTML = 'Size classes by farmer are being read from the declarations (first run under way).'; $c('clSz').innerHTML = ''; return; }
+  const k12 = ks.filter(k => k > last - 100), k3 = ks.slice(-3), k3y = k3.map(k => k - 100);
+  const names = [...new Set(k12.flatMap(k => Object.keys(CM[k].producer_sizes || {})))].filter(n => n !== 'not stated')
+    .map(n => ({ n, y: agg(n, k12) })).filter(x => x.y && x.y.t >= 1000).sort((a, b) => b.y.t - a.y.t);
+  if (!names.some(x => x.n === CL_SZ) && names.length) CL_SZ = names[0].n;
+  // poids moyen de recolte publie (societes cotees) et correlation trimestrielle avec le calibre exporte
+  const HW = (CLX.hw || {}).companies || {}, HWN = { 'Multi X': 'Multi X', 'Camanchaca': 'Salmones Camanchaca', 'Blumar': 'Blumar' };
+  const qk = k => `${Math.floor(k / 100)}Q${Math.floor((k % 100 - 1) / 3) + 1}`;
+  const corr = n => { const L = (HW[HWN[n]] || []).filter(r => r.q); const pts = L.map(r => { const K = ks.filter(k => qk(k) === r.q), a = agg(n, K); return a ? [a.kg, r.kg] : null; }).filter(Boolean);
+    if (pts.length < 6) return null; const mx = pts.reduce((a, p) => a + p[0], 0) / pts.length, my = pts.reduce((a, p) => a + p[1], 0) / pts.length;
+    const sxy = pts.reduce((a, p) => a + (p[0] - mx) * (p[1] - my), 0), sx = Math.sqrt(pts.reduce((a, p) => a + (p[0] - mx) ** 2, 0)), sy = Math.sqrt(pts.reduce((a, p) => a + (p[1] - my) ** 2, 0));
+    const lastR = L[L.length - 1]; return { r: sxy / (sx * sy), n: pts.length, last: lastR }; };
+  const d = (a, b, u) => a === null || b === null || a === undefined || b === undefined ? '—' : `<span class="${a - b >= 0 ? 'delta-good' : 'delta-bad'}">${a - b >= 0 ? '+' : '−'}${Math.abs(a - b).toFixed(u === 'kg' ? 2 : 0)}${u === 'kg' ? ' kg' : ' pt'}</span>`;
+  const rows = names.slice(0, 12).map(({ n, y }) => { const a = agg(n, k3), b = agg(n, k3y), c = corr(n);
+    return `<tr style="cursor:pointer${n === CL_SZ ? ';background:rgba(255,255,255,.08)' : ''}" onclick="CL_SZ='${e(n).replace(/'/g, '')}';clMore()"><td class="name">${e(n)}</td><td>${Math.round(y.t).toLocaleString('en-US')}</td>` +
+      `<td><b>${a ? a.kg.toFixed(2) : '—'}</b></td><td>${d(a && a.kg, b && b.kg, 'kg')}</td><td><b>${a ? a.p6.toFixed(0) + ' %' : '—'}</b></td><td>${d(a && a.p6, b && b.p6)}</td>` +
+      `<td style="font-size:12px">${c ? `${c.last.kg.toFixed(1)} kg (${c.last.q}) · r ${c.r.toFixed(2)} on ${c.n} quarters` : '—'}</td></tr>`; }).join('');
+  // barres groupees : part de 6 kg+ mois par mois, 3 annees
+  const Y = Math.floor(last / 100), yrs = [Y - 2, Y - 1, Y], col = ['#c3ced6', '#ffc38a', '#3fb8f0'], W = 640, H = 170, pl = 30, pb = 18, gw = (W - pl) / 12, bw = gw / 4;
+  const v = (yy, m) => { const o = one(yy * 100 + m, CL_SZ); return o ? o.p6 : null; };
+  const mxv = Math.max(20, ...yrs.flatMap(yy => [...Array(12)].map((_, i) => v(yy, i + 1) || 0)));
+  const yS = x => H - pb - x / mxv * (H - pb - 8);
+  let g = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:760px;height:auto;display:block">`;
+  [0, mxv / 2, mxv].forEach(t => g += `<line x1="${pl}" x2="${W}" y1="${yS(t)}" y2="${yS(t)}" stroke="rgba(255,255,255,.12)"/><text x="${pl - 4}" y="${yS(t) + 3}" font-size="9" fill="#cfe0ea" text-anchor="end">${t.toFixed(0)} %</text>`);
+  yrs.forEach((yy, j) => [...Array(12)].forEach((_, i) => { const x = v(yy, i + 1); if (x === null) return;
+    g += `<rect x="${pl + i * gw + bw * (j + .5)}" y="${yS(x)}" width="${bw * .9}" height="${Math.max(1, H - pb - yS(x))}" rx="2" fill="${col[j]}"><title>${e(CL_SZ)} ${MON[i]} ${yy}: ${x.toFixed(0)} % of whole fish declared 6 kg+ (${one(yy * 100 + i + 1, CL_SZ).kg.toFixed(2)} kg average class)</title></rect>`; }));
+  MON.forEach((m, i) => g += `<text x="${pl + i * gw + gw / 2}" y="${H - 4}" font-size="9" fill="#cfe0ea" text-anchor="middle">${m}</text>`);
+  g += `</svg><div class="sig-sub" style="margin-top:2px">${yrs.map((yy, j) => `<i style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${col[j]};margin:0 4px 0 10px;vertical-align:-1px"></i>${yy}`).join('')}</div>`;
+  $c('clSz').innerHTML = `<div style="overflow-x:auto"><table class="sig-table"><thead><tr><th class="name">Farmer named on the declarations</th><th>Whole fish with a size class, last 12 m (t)</th><th>Average class, last 3 m (kg)</th><th>vs same 3 m a year earlier</th><th>Share 6 kg+, last 3 m</th><th>vs a year earlier</th><th style="text-align:left">Reported harvest weight (latest) · link with the export class</th></tr></thead><tbody>${rows}</tbody></table></div>` +
+    `<div style="margin-top:10px;font-size:14px;font-weight:700">${e(CL_SZ)} — share of whole fish declared 6 kg+, month by month</div>` + g;
+  $c('clSzSub').innerHTML = `The size class written on each export declaration of whole Atlantic salmon (fresh and frozen, mostly gutted head-on), read by the farmer named on it; average of the class mid-points weighted by tonnes, last month ${ml(last)}. ` +
+    `This is the fish a farmer chooses to sell whole, not its whole harvest: the small fish usually go to fillets, which carry no size. It follows the published harvest weight well for farmers that sell a lot whole (Multi X: r 0.73 over 13 quarters) and only roughly for the others ` +
+    `(Camanchaca: r 0.42 — its early harvests in Q1 2026 show as the 6 kg+ share falling from 11–15 % to 0–1 %, but the average class only fell 3 % when its harvest weight fell 10 %). Click a farmer for its months.`;
+}
+
 function clFilPrd(CM, ks, last, lab) {   // filets (classes, trims, grades) et exportations par producteur nomme
   const $c = id => document.getElementById(id), e = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), f0 = v => v === null || v === undefined || !isFinite(v) ? '—' : Math.round(v).toLocaleString('en-US');
   const MON = MONTHS_FR.map(m => m.slice(0, 3)), ml = k => `${MON[k % 100 - 1]} ${Math.floor(k / 100)}`;
