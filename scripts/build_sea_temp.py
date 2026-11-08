@@ -2,21 +2,21 @@
 """
 Temperature de la mer par bassin producteur de saumon, et jours de chaleur.
 
-    python3 scripts/build_sea_temp.py        -> data/sea_temp.json   (gratuit : Open-Meteo Marine, sans cle)
+    python3 scripts/build_sea_temp.py        -> data/sea_temp.json   (NOAA OISST v2.1 via ERDDAP : gratuit, libre de droits, sans cle)
 
 Pour chaque bassin, quelques points en mer pres des fermes (un par grande region de production). Pour chaque point :
-temperature de surface journaliere (moyenne des heures), puis
+temperature de surface journaliere (maille OISST de 0,25° la plus proche en mer), puis
   - moyenne mensuelle et ecart a la normale du meme mois (annees completes disponibles, 2023 et suivantes) ;
   - jours de chaleur par annee et mois : jours au-dessus de 16,5 / 17 / 18 °C (seuils de risque de mortalite cites par
     Canepa et al., Reviews in Aquaculture 2026, « Turning Up the Heat » ; optimum de croissance 12-16 °C, limite haute ~20 °C).
-Premier passage (ou SST_FULL=1) : historique complet (fin 2022 a hier) ; ensuite chaque jour seuls les 3 derniers mois sont relus
-(le quota gratuit d'Open-Meteo se compte au volume de donnees demande).
+Premier passage (ou SST_FULL=1) : historique complet depuis 2016 ; ensuite chaque jour seuls les 3 derniers mois sont relus.
 Norvege : la temperature declaree chaque semaine par les sites (BarentsWatch) reste la reference par zone dans le tableau de bord ;
-les points Open-Meteo servent a comparer les bassins sur la meme base.
+les points OISST servent a comparer les bassins sur la meme base.
 """
 import datetime as dt
 import io
 import json
+import math
 import os
 import time
 import urllib.error
@@ -28,7 +28,13 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'data', 'sea_temp.json')
 UA = {'User-Agent': 'Mozilla/5.0 (salmon-outlook sea temperature)'}
 SEUILS = (16.5, 17.0, 18.0)
-DEBUT = '2022-01-01'     # la serie SST d'Open-Meteo Marine ne commence qu'a fin 2022 (constate : ~1 430 jours au 7/11/2026)
+DEBUT = '2016-01-01'
+# NOAA OISST v2.1 (satellites + bouees + navires, grille 0,25°, quotidien depuis 1981) via ERDDAP : donnees du gouvernement americain,
+# libres de droits y compris pour un usage commercial, sans cle ni quota declare. Open-Meteo (utilise d'abord) n'autorise son API
+# gratuite qu'en usage non commercial et sa serie de temperature de mer ne commence qu'a fin 2022.
+ERDDAP = 'https://coastwatch.pfeg.noaa.gov/erddap/griddap/ncdcOisst21Agg_LonPM180.csv'
+DECALAGES = [(0, 0), (0, -.25), (0, .25), (.25, 0), (-.25, 0), (0, -.5), (0, .5), (.5, 0), (-.5, 0), (.25, -.25), (-.25, -.25), (.25, .25), (-.25, .25),
+             (0, -.75), (0, .75), (.5, -.5), (-.5, -.5), (.5, .5), (-.5, .5), (0, -1), (0, 1), (.75, 0), (-.75, 0)]   # premiere maille de mer proche (OISST masque la cote)
 
 # bassin, identifiant, libelle, latitude, longitude (point en mer, au large immediat des fermes)
 POINTS = [
@@ -77,7 +83,7 @@ def http(url, tries=3, timeout=60):
                 return r.status, r.read()
         except urllib.error.HTTPError as e:
             last = e
-            if e.code == 429:            # quota a la minute d'Open-Meteo : on patiente
+            if e.code == 429:            # trop de requetes : on patiente
                 time.sleep(65)
                 continue
             if 400 <= e.code < 500:
@@ -88,20 +94,39 @@ def http(url, tries=3, timeout=60):
     raise RuntimeError(f'{url[:120]} : {last}')
 
 
-def journalier(la, lo, debut, fin):
-    """Temperature de surface journaliere (moyenne des heures disponibles), {date: °C}."""
-    q = {'latitude': la, 'longitude': lo, 'hourly': 'sea_surface_temperature', 'start_date': debut, 'end_date': fin, 'timezone': 'UTC'}
+def oisst(la, lo, debut, fin):
+    """Temperature de surface journaliere NOAA OISST a la maille (la, lo), {date: °C} (vide si maille terrestre)."""
+    t1 = 'last' if fin is None else f'{fin}T12:00:00Z'
+    tq = '[last-20:1:last]' if debut == 'probe' else f'[({debut}T12:00:00Z):1:({t1})]'
+    q = f'?sst{tq}[(0.0)][({la})][({lo})]'
     t0 = time.time()
-    st, raw = http('https://marine-api.open-meteo.com/v1/marine?' + urllib.parse.urlencode(q))
-    print(f'    {la},{lo} {debut}..{fin} -> {st}, {len(raw or b"") // 1024} ko, {time.time() - t0:.1f} s', flush=True)
-    if st != 200 or not raw:
-        return {}
-    h = (json.loads(raw).get('hourly') or {})
-    j = defaultdict(list)
-    for t, s in zip(h.get('time', []), h.get('sea_surface_temperature', [])):
-        if s is not None:
-            j[t[:10]].append(s)
-    return {d: sum(v) / len(v) for d, v in j.items() if len(v) >= 12}
+    try:
+        st, raw = http(ERDDAP + urllib.parse.quote(q, safe='?[]():,'))
+    except RuntimeError as e:
+        if 'HTTP Error 404' in str(e) or 'HTTP Error 400' in str(e):   # periode hors serie (ex. derniers jours pas encore publies)
+            return {}
+        raise
+    out = {}
+    for ligne in raw.decode('utf-8', 'replace').splitlines()[2:]:
+        c = ligne.split(',')
+        if len(c) >= 5 and c[4] not in ('', 'NaN'):
+            out[c[0][:10]] = float(c[4])
+    print(f'    {la},{lo} {debut}..{fin} -> {len(out)} jours, {time.time() - t0:.1f} s', flush=True)
+    return out
+
+
+def maille(la, lo):
+    """Premiere maille de mer autour du point (OISST n'a pas de valeur sur les mailles touchant la terre)."""
+    for a, b in DECALAGES:
+        c = (math.floor((la + a) * 4) / 4 + .125, math.floor((lo + b) * 4) / 4 + .125)   # centre de maille OISST
+        if oisst(c[0], c[1], 'probe', None):
+            return c
+        time.sleep(1)
+    return None
+
+
+def journalier(la, lo, debut, fin):
+    return oisst(la, lo, debut, fin)
 
 
 def resume(jours, old=None):
@@ -116,7 +141,7 @@ def resume(jours, old=None):
         mm = {**{k: v for k, v in (old.get('monthly') or {}).items() if k < d0}, **mm}
     norm = defaultdict(list)
     for k, v in mm.items():
-        if k[:4] < str(dt.date.today().year):      # normale = annees completes disponibles (2023-2025 au depart)
+        if k[:4] < str(dt.date.today().year):      # normale = annees completes depuis 2016
             norm[int(k[5:])].append(v)
     normal = {m: round(sum(v) / len(v), 2) for m, v in norm.items() if len(v) >= 2}
     chaud = {k: v for k, v in ((old or {}).get('hot_days') or {}).items() if k < (min(mois) if mois else '9999')}
@@ -163,30 +188,35 @@ def main():
     complet = os.environ.get('SST_FULL') == '1'
     for b, pid, lab, la, lo in POINTS:
         try:
-            old = next((p for p in ancien.get('points', []) if p.get('id') == pid and p.get('monthly') and p.get('clim')), None)
+            old = next((p for p in ancien.get('points', []) if p.get('id') == pid and p.get('monthly') and p.get('clim') and p.get('cell')), None)
             jours = {}
+            # OISST publie avec ~1-2 jours de retard (provisoire, remplace par le definitif apres ~2 semaines) : fin = dernier jour publie
+            fin = None
+            cell = old['cell'] if old else maille(la, lo)
+            if not cell:
+                raise RuntimeError('aucune maille de mer a moins de 1 degre')
             if old and not complet:
-                # passage quotidien : on ne relit que les 3 derniers mois (le quota gratuit d'Open-Meteo compte au volume)
+                # passage quotidien : on ne relit que les 3 derniers mois
                 t = dt.date.today().replace(day=1)
                 for _ in range(2):
                     t = (t - dt.timedelta(days=1)).replace(day=1)
-                jours = journalier(la, lo, t.isoformat(), hier)
+                jours = journalier(cell[0], cell[1], t.isoformat(), fin)
             else:
                 old = None
-                for a0 in range(int(DEBUT[:4]), dt.date.today().year + 1, 2):     # historique complet (depuis fin 2022), par blocs de 2 ans
-                    d0, d1 = f'{a0}-01-01', min(f'{a0 + 1}-12-31', hier)
-                    jours.update(journalier(la, lo, d0, d1))
-                    time.sleep(2)
+                for a0 in range(int(DEBUT[:4]), dt.date.today().year + 1, 4):     # historique complet depuis 2016, par blocs de 4 ans
+                    d0, d1 = f'{a0}-01-01', (f'{a0 + 3}-12-31' if a0 + 3 < dt.date.today().year else None)
+                    jours.update(journalier(cell[0], cell[1], d0, d1))
+                    time.sleep(1)
             if not jours:
                 raise RuntimeError('aucune donnee')
             r = resume(jours, old)
             r['clim'] = old['clim'] if old else climato(jours)
             r['recent'] = {d: round(v, 2) for d, v in sorted(jours.items())[-45:]}
             r['alert'] = alerte(r['recent'], r['clim'])
-            pts.append({'basin': b, 'id': pid, 'label': lab, 'lat': la, 'lon': lo, **r})
+            pts.append({'basin': b, 'id': pid, 'label': lab, 'lat': la, 'lon': lo, 'cell': list(cell), **r})
             print(f'  {pid:14s} {r["days"]} jours, dernier mois {max(r["monthly"]) if r["monthly"] else "-"}', flush=True)
             if len(pts) % 4 == 0:
-                # quota a la minute d'Open-Meteo : le premier passage dure ~40 min ; on ecrit au fur et a mesure (points deja lus + anciens)
+                # premier passage long : on ecrit au fur et a mesure (points deja lus + anciens)
                 ecrire(pts + [p for p in ancien.get('points', []) if p.get('id') not in {q['id'] for q in pts}], erreurs)
         except Exception as e:  # noqa: BLE001
             erreurs.append(f'{pid}: {str(e)[:120]}')
@@ -200,8 +230,8 @@ def ecrire(pts, erreurs):
     if not pts:
         print('sea_temp : rien de lu, fichier inchange', erreurs)
         return
-    out = {'meta': {'generated': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'), 'source': 'Open-Meteo Marine API (modelled sea surface temperature, daily mean of hourly values)',
-                    'url': 'https://open-meteo.com/en/docs/marine-weather-api', 'thresholds': list(SEUILS), 'normal': f'2023-{dt.date.today().year - 1} (Open-Meteo series starts late 2022)',
+    out = {'meta': {'generated': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'), 'source': 'NOAA OISST v2.1 (daily optimum interpolation sea surface temperature, satellites + buoys + ships, 0.25° grid), via NOAA CoastWatch ERDDAP; public domain',
+                    'url': 'https://www.ncei.noaa.gov/products/optimum-interpolation-sst', 'thresholds': list(SEUILS), 'normal': f'2016-{dt.date.today().year - 1}',
                     'note': 'Risk thresholds 16.5 / 17 / 18 °C from Canepa et al., Reviews in Aquaculture 2026 (Tasmania); growth optimum 12-16 °C.',
                     'basins': BASSINS, 'errors': erreurs,
                     'alerts': [{'id': p['id'], 'basin': p['basin'], 'label': p['label'], **p['alert']} for p in pts if (p.get('alert') or {}).get('level')]},

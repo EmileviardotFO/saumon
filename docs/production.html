@@ -5100,7 +5100,7 @@ function canadaExtra() {
         const d = v !== undefined && n !== undefined ? v - n : null, a = a3.length ? a3.reduce((x, y) => x + y, 0) / a3.length : null;
         const sg = x => x === null ? '—' : `<span style="color:${x > 0.5 ? '#ff8a65' : x < -0.5 ? '#4fc3f7' : 'inherit'}">${x >= 0 ? '+' : '−'}${Math.abs(x).toFixed(1)} °C</span>`;
         return `<tr><td class="name">${esc(z.lab)}</td><td>${v !== undefined ? v.toFixed(1) + ' °C' : '—'}</td><td>${n !== undefined ? n.toFixed(1) + ' °C' : '—'}</td><td>${sg(d)}</td><td>${p !== undefined ? p.toFixed(1) + ' °C' : '—'}</td><td>${sg(a)}</td></tr>`; }).join('') + `</tbody>`;
-    $i('caSstSub').innerHTML = `Monthly mean sea-surface temperature at a point at sea next to each farming area (Open-Meteo marine model, about 5 km grid; a model, not a farm sensor). ` +
+    $i('caSstSub').innerHTML = `Monthly mean sea-surface temperature in the nearest open-sea cell to each farming area (NOAA OISST v2.1, satellites + buoys + ships, 0.25° grid, about 25 km; not a farm sensor). ` +
       `"Normal" is the average of the same month in ${S[0].clim_years} — the model's history is short, so the normal is only indicative. ` +
       `BC water stays between about 8 and 13 °C all year, which is why its cycles are short; Newfoundland's south coast drops close to 0 °C in late winter, which limits growth and puts fish at risk of superchill.`;
   }
@@ -5228,7 +5228,7 @@ function renderCanada() {
   canadaExtra();
   document.getElementById('caNote').innerHTML = `<b>Sources.</b> Fisheries and Oceans Canada, Pacific region, open data (open.canada.ca): industry sea lice counts at BC marine finfish sites (2011 onward), ` +
     `mortality events at BC marine finfish sites (2011 onward), fish transfer licences (2015 onward). Downloaded again only when DFO updates a dataset. ` +
-    `DFO carcass classification by farm (2013 onward: production status and monthly mortality by cause). US Census Bureau: imports by port of entry (porths, HS 030214) and by country (HTS 0302.14) for the volumes by coast. Open-Meteo marine model for sea temperature. ` +
+    `DFO carcass classification by farm (2013 onward: production status and monthly mortality by cause). US Census Bureau: imports by port of entry (porths, HS 030214) and by country (HTS 0302.14) for the volumes by coast. NOAA OISST v2.1 (public domain) for sea temperature. ` +
     `Former company names are merged (Marine Harvest Canada into MOWI Canada West; Mainstream Canada and Cermaq British Columbia into Cermaq Canada).`;
 }
 
@@ -6032,9 +6032,9 @@ function renderDisease() {
   const ALL = ORDER.flatMap(([b, n]) => ((M[b] || {}).sources || []).map(x => ({ ...x, b: n, code: b }))), FL = ALL.filter(x => (DZ_SF.b === 'all' || x.code === DZ_SF.b) && (DZ_SF.t === 'all' || x.ty === DZ_SF.t));
   // ---------------- temperature de la mer et jours de chaleur, tous bassins (data/sea_temp.json <- scripts/build_sea_temp.py) ----------------
   { const ST = DZ.st, P = (ST && ST.points) || [];
-    if (!P.length) h += `<div id="dzsT">` + h2('D′ · Sea temperature and heat days, basin by basin') + box('<div class="sig-sub">Collected at the next update run (Open-Meteo Marine, daily sea surface temperature at 32 points near the farms, one per Norwegian production zone, from late 2022).</div>') + `</div>`;
+    if (!P.length) h += `<div id="dzsT">` + h2('D′ · Sea temperature and heat days, basin by basin') + box('<div class="sig-sub">Collected at the next update run (NOAA OISST v2.1, daily sea surface temperature from satellites, buoys and ships, at 32 points near the farms, one per Norwegian production zone, 2016 onwards).</div>') + `</div>`;
     else {
-      const NL = String((ST.meta || {}).normal || '2023–2025').split(' ')[0].replace('-', '–'), TH = (ST.meta || {}).thresholds || [16.5, 17, 18], lastM = P.reduce((a, p) => { const k = Object.keys(p.monthly || {}).sort().pop(); return k > a ? k : a; }, '');
+      const NL = String((ST.meta || {}).normal || '2016–2025').split(' ')[0].replace('-', '–'), TH = (ST.meta || {}).thresholds || [16.5, 17, 18], lastM = P.reduce((a, p) => { const k = Object.keys(p.monthly || {}).sort().pop(); return k > a ? k : a; }, '');
       const Y = +lastM.slice(0, 4), LM = +lastM.slice(5), season = p => { const south = p.lat < 0, o = [0, 0, 0], q = [0, 0, 0];   // saison chaude : juin-sept au nord, dec-avril au sud ; derniere saison et la precedente
           Object.entries(p.hot_days || {}).forEach(([k, v]) => { const y = +k.slice(0, 4), m = +k.slice(5), sy = south ? (m >= 12 ? y + 1 : y) : y, inS = south ? (m >= 12 || m <= 4) : (m >= 6 && m <= 9);
             if (!inS) return; const cur = south ? (LM >= 12 ? Y + 1 : Y) : Y; if (sy === cur) v.forEach((d, i) => o[i] += d); if (sy === cur - 1) v.forEach((d, i) => q[i] += d); }); return [o, q]; };
@@ -6065,7 +6065,7 @@ function renderDisease() {
       const ys = [Y - 2, Y - 1, Y], mk = [...Array(12)].map((_, i) => i + 1);
       const chart = grp(mk, ys, (y, m) => (pick.monthly || {})[`${y}-${String(m).padStart(2, '0')}`] ?? null, { fmt: v => v.toFixed(0) + '°', xl: m => MON[m - 1].slice(0, 1), lab: m => MON[m - 1], H: 190 });
       h += `<div id="dzsT">` + h2('D′ · Sea temperature and heat days, basin by basin') + box(map +
-        `<div class="sig-sub" style="margin:14px 0 6px">Sea surface temperature at ${P.length} points near the farms (one per Norwegian production zone, five in Scotland; extended basins show the range across their points — click a basin for its points) (Open-Meteo Marine, modelled, daily mean) — ${MON[LM - 1]} ${Y}, its gap to the ${NL} normal, and the days above ${TH.join(' / ')} °C this warm season (last season in brackets). ` +
+        `<div class="sig-sub" style="margin:14px 0 6px">Sea surface temperature at ${P.length} points near the farms (one per Norwegian production zone, five in Scotland; extended basins show the range across their points — click a basin for its points) (NOAA OISST v2.1, nearest open-sea cell of 0.25°, daily) — ${MON[LM - 1]} ${Y}, its gap to the ${NL} normal, and the days above ${TH.join(' / ')} °C this warm season (last season in brackets). ` +
         `Salmon grow best at 12–16 °C; mortality risk rises after one to three weeks above 16.5–18 °C (Canepa et al., <i>Reviews in Aquaculture</i> 2026, on Tasmania). In Norway the farms' own weekly readings (BarentsWatch) stay the reference by zone.</div>` +
         `<div style="overflow-x:auto"><table class="sig-table"><thead><tr><th class="name">Basin · point</th><th>${MON[LM - 1]} ${Y}, range</th><th>vs normal</th>${TH.map(t => `<th>Days &gt; ${t} °C</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>` +
         `<div style="display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 6px">${P.map(p => `<button type="button" class="dz-sub" style="${p === pick ? 'background:rgba(255,255,255,.28)' : ''}" onclick="window.ST_PT='${p.id}';renderDisease()">${e(p.label)}</button>`).join('')}</div>` +

@@ -8,7 +8,7 @@ Sources (toutes publiques) :
     Les postes routiers ne declarent pas de poids : les tonnes par cote = tonnes du Canada x part de la valeur du poste.
   - DFO Pacifique, classification des carcasses par ferme et par mois (2013 ->) : statut de production
     (mise a l'eau de smolts / croissance / recolte) et mortalite mensuelle en % par cause.
-  - Open-Meteo marine : temperature de surface de la mer, moyenne mensuelle par zone d'elevage.
+  - NOAA OISST v2.1 (ERDDAP) : temperature de surface de la mer, moyenne mensuelle par zone d'elevage.
 
     python3 scripts/build_canada_extra.py              # telecharge puis calcule
     python3 scripts/build_canada_extra.py --cache DIR  # relit / ecrit les donnees brutes dans DIR (mise au point)
@@ -22,6 +22,7 @@ import math
 import os
 import re
 import statistics
+import sys
 import time
 import urllib.parse
 import urllib.request
@@ -119,23 +120,21 @@ def fetch_carcass():
 
 
 def fetch_sst():
+    """Moyennes mensuelles de temperature de surface : NOAA OISST v2.1 (libre de droits, via ERDDAP), maille de mer la plus proche
+    (memes fonctions que scripts/build_sea_temp.py). Open-Meteo, utilise d'abord, n'autorise que l'usage non commercial."""
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import build_sea_temp as BST
     out = {}
-    end = (dt.date.today() - dt.timedelta(days=1)).isoformat()
     for zid, lab, coast, la, lo in SST_ZONES:
-        got = None
-        for start in ('2016-01-01', '2020-01-01', '2022-01-01'):
-            q = {'latitude': la, 'longitude': lo, 'hourly': 'sea_surface_temperature', 'start_date': start, 'end_date': end, 'timezone': 'UTC'}
-            st, raw = http('https://marine-api.open-meteo.com/v1/marine?' + urllib.parse.urlencode(q))
-            if st == 200 and raw:
-                j = json.loads(raw); h = j.get('hourly') or {}
-                m = defaultdict(list)
-                for t, s in zip(h.get('time', []), h.get('sea_surface_temperature', [])):
-                    if s is not None: m[t[:7]].append(s)
-                if m:
-                    got = {str(ym(k)): round(sum(v) / len(v), 2) for k, v in m.items() if len(v) >= 24 * 10}
-                    break
-        out[zid] = got or {}
-        print(f'  SST {zid} : {len(out[zid])} mois')
+        got = {}
+        cell = BST.maille(la, lo)
+        if cell:
+            m = defaultdict(list)
+            for d, v in BST.oisst(cell[0], cell[1], '2016-01-01', None).items():
+                m[d[:7]].append(v)
+            got = {str(ym(k)): round(sum(v) / len(v), 2) for k, v in m.items() if len(v) >= 20}
+        out[zid] = got
+        print(f'  SST {zid} : {len(out[zid])} mois (maille {cell})')
     return out
 
 
