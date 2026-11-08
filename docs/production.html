@@ -6045,7 +6045,9 @@ let SCO = null, SCO_LOADING = false;
 const SC_FCR = 1.2;   // aliment / croissance (vif) : avec 1,2 la recolte deduite retombe a +-5 % de l'enquete officielle 2022-2024
 function scSvg(keys, series, o) {   // petit graphique : barres et lignes sur une echelle, etiquettes de mois
   const W = 900, H = o.H || 220, l = 48, r = 14, t = 12, b = 30, pw = W - l - r, ph = H - t - b, n = keys.length, bw = pw / n;
-  const all = series.flatMap(x => x.v).filter(v => v !== null && isFinite(v)), mx = (o.max || Math.max(...all)) * 1.08, mn = o.min || 0;
+  // barres : l'echelle part de zero (une base tronquee a 100 kt grossissait les ecarts saisonniers de la biomasse ecossaise)
+  const hasBar = series.some(x => x.bar || (x.dots && x.bar === undefined && !o.lines));
+  const all = series.flatMap(x => x.v).filter(v => v !== null && isFinite(v)), mx = (o.max || Math.max(...all)) * 1.08, mn = hasBar ? Math.min(0, o.min || 0) : (o.min || 0);
   const X = i => l + bw * (i + .5), Y = v => t + ph - (v - mn) / (mx - mn) * ph;
   let s = '';
   for (let i = 0; i <= 4; i++) { const v = mn + (mx - mn) * i / 4, y = Y(v); s += `<line x1="${l}" x2="${W - r}" y1="${y}" y2="${y}" stroke="#223642"/><text x="${l - 5}" y="${y + 4}" font-size="10" text-anchor="end" fill="#8fa4b0">${o.fmt ? o.fmt(v) : Math.round(v)}</text>`; }
