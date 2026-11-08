@@ -15505,7 +15505,9 @@ function renderWellboats() {
       // dans la copie, seules restent les etiquettes de l'echelle (textes a gauche) : ni courbes, ni barres, ni grille
       const vbw = (svg.viewBox && svg.viewBox.baseVal && svg.viewBox.baseVal.width) || r.width, lim = ax * vbw / r.width;
       c.querySelectorAll('*').forEach(n => { if (n.tagName === 'text' || n.tagName === 'tspan' || n.tagName === 'g' || n.tagName === 'defs' || n.tagName === 'title') return; n.remove(); });
-      c.querySelectorAll('text').forEach(tx => { const b = tx.getBBox ? null : null; const xx = parseFloat(tx.getAttribute('x') || '0'); if (xx > lim && !/rotate/.test(tx.getAttribute('transform') || '')) tx.remove(); });
+      c.querySelectorAll('text').forEach(tx => { const xx = parseFloat(tx.getAttribute('x') || '0'), rot = /rotate/.test(tx.getAttribute('transform') || '');
+        // seules restent les valeurs de l'echelle (alignees a droite) et le titre vertical : les dates de l'axe horizontal, figees dans la copie, se doublaient (« Sep Sep 24 », « Nov Nov »)
+        if ((xx > lim && !rot) || (!rot && tx.getAttribute('text-anchor') !== 'end' && !(tx.closest('[text-anchor="end"]')))) tx.remove(); });
       f.appendChild(c);
       f.style.width = ax + 'px'; f.style.height = r.height + 'px'; f.style.marginBottom = -r.height + 'px'; w.insertBefore(f, svg); });
   }
