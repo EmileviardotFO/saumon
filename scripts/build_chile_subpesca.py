@@ -52,6 +52,18 @@ def get(url, timeout=40, tries=3):
     return None
 
 
+# Rapports sectoriels lus a la main (texte du PDF), quand le lecteur automatique les laisse « unread ».
+# 131092 : Informe Sectorial de Pesca y Acuicultura, cumul a aout 2026 (p. 14-15), lien fourni par Emile le 8 novembre 2026.
+RAPPORTS_MANUELS = {
+    131092: {'id': 131092, 'k': 202608, 'manual': True,
+             'source': 'https://www.subpesca.cl/portal/618/articles-131092_documento.pdf (read by hand, pages 14-15)',
+             'species': {'salar': {'cum_kt': 523.5, 'var_pct': 4.9, 'regions_kt': {'Aysén': 232.6, 'Los Lagos': 187.5}},
+                         'coho': {'cum_kt': 119.3, 'var_pct': 14.2, 'regions_kt': {'Los Lagos': 76.7, 'Aysén': 42.6}},
+                         'trucha': {'cum_kt': 45.2, 'var_pct': 17.6}},
+             'eggs_m': 485.8},
+}
+
+
 def pdf_text(content, pages=None):
     import pdfplumber
     out = []
@@ -419,6 +431,10 @@ def main():
               'url': 'https://www.subpesca.cl/portal/615/w3-channel.html', 'errors_last_run': errors[:50],
               'note': 'fish to stock = the number authorised in each density resolution for the next cycle of each farm, after the ACS fallow; a later resolution modifying a farm replaces its figure'})
     st['resolutions'] = sorted(R.values(), key=lambda x: x['id'])
+    # rapports lus a la main quand le lecteur automatique echoue (ils remplacent une entree « unread », jamais une lecture reussie)
+    for i, v in RAPPORTS_MANUELS.items():
+        if not P.get(i) or P[i].get('unread') or P[i].get('manual'):
+            P[i] = v
     st['reports'] = sorted(P.values(), key=lambda x: (x['k'] or 0, x['id']))
     st['stocking'] = summarise(st['resolutions'])
     io.open(OUT, 'w', encoding='utf-8').write(json.dumps(st, ensure_ascii=False, separators=(',', ':')))
