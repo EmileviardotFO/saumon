@@ -1,0 +1,277 @@
+{
+ "meta": {
+  "built": "2026-11-08T19:10+00:00",
+  "note": "Signals ranked by how unusual they are against their own history (score). Effect: supports / weighs on prices, risk, watch."
+ },
+ "lead": "Supply grows +6 % in 2026 across the seven basins and +0.1 % in 2027. Chile is the main source of change: a record El Niño, sea lice at a high, a slowing harvest and fewer big fish. Norway carries the growth with heavier fish and more 6 kg+. Imports grow fastest in Japan, Brazil, UK; USA and Israel are flat or down.",
+ "signals": [
+  {
+   "basin": "Chile · El Niño",
+   "title": "Extreme El Niño, warm Chilean water",
+   "value": "+3.4 °C",
+   "text": "Niño 3.4 index (week of 2026-10-28); Chilean sea +1.0 to +2.9 °C vs normal in Oct. NOAA: El Niño continues to strengthen, with a strong-to-very strong El Niño likely through January-March 2027 (remaining greater than an 83% chance).",
+   "effect": "risk",
+   "tab": "seatemp",
+   "score": 4.42
+  },
+  {
+   "basin": "Chile",
+   "title": "Sea lice at a high",
+   "value": "65 farms",
+   "text": "listed as high-dissemination sites in 2026 Q3 (31 to 49 in the other quarters since 2025).",
+   "effect": "supports",
+   "tab": "chile",
+   "score": 3.63
+  },
+  {
+   "basin": "Chile",
+   "title": "Atlantic harvest slowing",
+   "value": "+4.0 %",
+   "text": "Jan–Sep on a year earlier, but month by month: Jul +3 %, Aug −6 %, Sep −2 %.",
+   "effect": "supports",
+   "tab": "chile",
+   "score": 2.43
+  },
+  {
+   "basin": "Norway",
+   "title": "More 6 kg+ than last year in Oct",
+   "value": "14.5 %",
+   "text": "of the harvest in 6 kg+ (13.1 % a year earlier), adjusted with harvest-boat visits: zone 13 42 → 33 %, zone 9 13 → 19 %.",
+   "effect": "weighs",
+   "tab": "genmap",
+   "score": 1.7
+  },
+  {
+   "basin": "Chile",
+   "title": "Fewer big fish exported in the last 6 months",
+   "value": "−9 to −5 pt",
+   "text": "share of 6 kg+ in whole Atlantic exports vs a year earlier (Sep 2026: 45 % vs 50 %). FOB price of 6 kg+ +16 % over the last 3 months (7.39 $/kg).",
+   "effect": "supports",
+   "tab": "chile",
+   "score": 1.68
+  },
+  {
+   "basin": "Norway",
+   "title": "Record harvest, heavier fish",
+   "value": "1,819 kt",
+   "text": "live weight over the 12 months to Sep 2026 (+5.7 %); harvest weight 4.96 kg (4.70 a year earlier).",
+   "effect": "weighs",
+   "tab": "outlook",
+   "score": 1.25
+  },
+  {
+   "basin": "Tasmania",
+   "title": "Florfenicol: decision pending",
+   "value": "",
+   "text": "Not re-authorised yet — 2 applications before the APVMA, decision on the industry's permit expected late November",
+   "effect": "watch",
+   "tab": "australia",
+   "score": 1.2
+  },
+  {
+   "basin": "Market",
+   "title": "Norwegian export price below last year",
+   "value": "75.0 NOK/kg",
+   "text": "fresh salmon, week 44 (80.5 a year earlier, −7 %); export volume since January +13 %.",
+   "effect": "price",
+   "tab": "prices",
+   "score": 0.6
+  }
+ ],
+ "supply": {
+  "world": 6.0,
+  "world_next": 0.1,
+  "world_kt": 2927,
+  "basins": [
+   [
+    "Faroe Islands",
+    18.7
+   ],
+   [
+    "Iceland",
+    18.3
+   ],
+   [
+    "Canada",
+    14.2
+   ],
+   [
+    "Tasmania",
+    9.2
+   ],
+   [
+    "Norway",
+    6.1
+   ],
+   [
+    "Scotland",
+    3.6
+   ],
+   [
+    "Chile",
+    2.2
+   ]
+  ]
+ },
+ "demand": {
+  "world": 7.1,
+  "to": 202609,
+  "markets": [
+   [
+    "Japan",
+    30.0
+   ],
+   [
+    "Brazil",
+    16.9
+   ],
+   [
+    "UK",
+    14.1
+   ],
+   [
+    "EU",
+    7.4
+   ],
+   [
+    "Thailand",
+    6.6
+   ],
+   [
+    "USA",
+    1.2
+   ],
+   [
+    "Israel",
+    -0.6
+   ],
+   [
+    "Canada",
+    -2.1
+   ]
+  ]
+ },
+ "basins": [
+  {
+   "basin": "Norway",
+   "v2026": 1630.1,
+   "chg2026": 6.1,
+   "chg2027": 0.6,
+   "lo": -4.5,
+   "hi": 4.1,
+   "sea": [
+    -0.2,
+    0.7
+   ],
+   "tab": "outlook"
+  },
+  {
+   "basin": "Chile",
+   "v2026": 739.9,
+   "chg2026": 2.2,
+   "chg2027": -2.1,
+   "lo": -9.1,
+   "hi": 0.9,
+   "sea": [
+    1.0,
+    2.9
+   ],
+   "tab": "chile"
+  },
+  {
+   "basin": "Scotland",
+   "v2026": 182.0,
+   "chg2026": 3.6,
+   "chg2027": 4.1,
+   "lo": -4.2,
+   "hi": 9.6,
+   "sea": [
+    0.3,
+    0.7
+   ],
+   "tab": "scotland"
+  },
+  {
+   "basin": "Faroe Islands",
+   "v2026": 136.3,
+   "chg2026": 18.7,
+   "chg2027": 0,
+   "lo": -5,
+   "hi": 5,
+   "sea": [
+    0.5,
+    0.5
+   ],
+   "tab": "faroe"
+  },
+  {
+   "basin": "Iceland",
+   "v2026": 64.5,
+   "chg2026": 18.3,
+   "chg2027": -7.0,
+   "lo": -13.5,
+   "hi": -2.0,
+   "sea": [
+    0.1,
+    0.7
+   ],
+   "tab": "iceland"
+  },
+  {
+   "basin": "Canada",
+   "v2026": 100.0,
+   "chg2026": 14.2,
+   "chg2027": 1.5,
+   "lo": -5.5,
+   "hi": 6.5,
+   "sea": [
+    -1.1,
+    -0.2
+   ],
+   "tab": "canada"
+  },
+  {
+   "basin": "Tasmania",
+   "v2026": 74.2,
+   "chg2026": 9.2,
+   "chg2027": 5,
+   "lo": 0,
+   "hi": 10,
+   "sea": [
+    0.9,
+    1.3
+   ],
+   "tab": "australia"
+  }
+ ],
+ "agenda": [
+  {
+   "d": "2026-11-12",
+   "t": "NOAA El Niño bulletin (strong-to-very strong El Niño expected through January–March 2027)",
+   "u": "https://www.cpc.ncep.noaa.gov/products/analysis_monitoring/enso_advisory/ensodisc.shtml"
+  },
+  {
+   "d": "2026-11-20",
+   "t": "Norwegian biomass register for Oct (around the 20th)"
+  },
+  {
+   "d": "2026-11-21",
+   "t": "Review: big-fish forecasts against the October register (harvest-boat method, first test on an unseen month)"
+  },
+  {
+   "d": "2026-11-30",
+   "t": "APVMA decision expected on Salmon Tasmania's florfenicol emergency permit",
+   "u": "https://www.abc.net.au/news/2026-11-04/lobster-fishers-against-tas-salmon-industry-antibiotic-plans/107344468"
+  },
+  {
+   "d": "2026-12-01",
+   "t": "Chile: critical El Niño period for algal blooms starts (Sernapesca); preventive algae emergency until 30 Jun 2027",
+   "u": "https://www.aqua.cl/los-lagos-entra-en-emergencia-preventiva-ante-riesgo-de-floraciones-algales-nocivas/",
+   "until": "2027-03-31"
+  },
+  {
+   "d": "2027-01-21",
+   "t": "Q4 trading updates: Bakkafrost, Mowi, Lerøy"
+  }
+ ]
+}

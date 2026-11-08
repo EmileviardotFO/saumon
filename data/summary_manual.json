@@ -1,0 +1,10 @@
+{
+ "note": "Hand-kept dates for the Summary agenda (each with its source); past dates disappear on their own.",
+ "agenda": [
+  {"d": "2026-11-12", "t": "NOAA El Niño bulletin (strong-to-very strong El Niño expected through January–March 2027)", "u": "https://www.cpc.ncep.noaa.gov/products/analysis_monitoring/enso_advisory/ensodisc.shtml"},
+  {"d": "2026-11-21", "t": "Review: big-fish forecasts against the October register (harvest-boat method, first test on an unseen month)"},
+  {"d": "2026-11-30", "t": "APVMA decision expected on Salmon Tasmania's florfenicol emergency permit", "u": "https://www.abc.net.au/news/2026-11-04/lobster-fishers-against-tas-salmon-industry-antibiotic-plans/107344468"},
+  {"d": "2026-12-01", "t": "Chile: critical El Niño period for algal blooms starts (Sernapesca); preventive algae emergency until 30 Jun 2027", "u": "https://www.aqua.cl/los-lagos-entra-en-emergencia-preventiva-ante-riesgo-de-floraciones-algales-nocivas/", "until": "2027-03-31"},
+  {"d": "2027-01-21", "t": "Q4 trading updates: Bakkafrost, Mowi, Lerøy"}
+ ]
+}

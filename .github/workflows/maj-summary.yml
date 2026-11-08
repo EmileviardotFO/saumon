@@ -1,0 +1,28 @@
+name: Summary (signaux de la semaine)
+
+on:
+  schedule:
+  - cron: 47 7 * * *
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  summary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    - name: Signaux de la semaine
+      run: python3 scripts/build_summary.py
+    - name: Enregistrer
+      run: |
+        git config user.name "github-actions"; git config user.email "actions@github.com"
+        git add data/summary.json
+        git diff --cached --quiet && exit 0
+        git commit -m "Summary ($(date -u +%Y-%m-%d))"
+        for i in 1 2 3; do git pull --rebase -q origin main && git push -q origin HEAD:main && break; sleep 5; done

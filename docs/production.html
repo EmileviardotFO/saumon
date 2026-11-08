@@ -695,6 +695,24 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
   </div>
 
   <div class="panel" id="summaryView" style="flex:1; min-width:0; max-width:1320px; display:none;">
+    <style>
+      #gsum .gs-lead{color:#dce9f0;font-size:15px;line-height:1.6;max-width:940px;margin:4px 0 14px}
+      #gsum .gs-sig{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:12px}
+      #gsum .gs-card{padding:14px 16px;border-radius:20px;background:linear-gradient(150deg,rgba(255,255,255,.17),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.28);box-shadow:inset 0 1px 0 rgba(255,255,255,.42),0 10px 26px rgba(3,18,35,.22);cursor:pointer;transition:transform .45s cubic-bezier(.3,1.5,.55,1)}
+      #gsum .gs-card:hover{transform:translateY(-3px)}
+      #gsum .gs-bas{font-size:10.5px;color:#cfe0ea;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+      #gsum .gs-card h4{margin:2px 0 4px;font-size:15px;line-height:1.35}
+      #gsum .gs-num{font-size:24px;font-weight:800;margin:2px 0}
+      #gsum .gs-badge{display:inline-block;font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:999px;margin-right:6px}
+      #gsum .b-supports{background:rgba(129,199,132,.25);color:#b9f6ca;border:1px solid rgba(129,199,132,.5)}#gsum .b-weighs,#gsum .b-risk{background:rgba(255,138,80,.22);color:#ffc7a8;border:1px solid rgba(255,138,80,.5)}#gsum .b-price,#gsum .b-watch{background:rgba(255,255,255,.14);color:#e6f0f6;border:1px solid rgba(255,255,255,.3)}
+      #gsum .gs-two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+      #gsum .gs-box{padding:14px 16px;border-radius:20px;background:linear-gradient(150deg,rgba(255,255,255,.14),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.24)}
+      #gsum .gs-hb{display:grid;grid-template-columns:110px 1fr 62px;gap:8px;align-items:center;margin:5px 0;font-size:13px}
+      #gsum .gs-tr{position:relative;height:13px;background:rgba(255,255,255,.08);border-radius:7px}
+      @media (max-width:760px){#gsum .gs-two{grid-template-columns:1fr}#gsum .gs-sig{grid-template-columns:1fr}#gsum .gs-hb{grid-template-columns:90px 1fr 56px}}
+    </style>
+    <div id="gsum"></div>
+    <details class="cl-sec" id="smNoDetail" style="margin-top:18px"><summary><span class="cl-st">Norway — the latest register figures in detail</span></summary>
     <div class="sig-title">Summary — the latest figures at a glance</div>
     <div class="sig-sub" id="smSub"></div>
     <div class="sm-sec">Farming and Biology</div>
@@ -704,6 +722,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div id="smSales"></div>
     <div id="smChina"></div>
     <div class="note" id="smNote" style="text-align:left;max-width:none"></div>
+    </details>
   </div>
 
   <div class="panel" id="globalView" style="flex:1; min-width: 420px; max-width: 620px; display:none;">
@@ -10836,7 +10855,38 @@ pmBind();
 //  precedent et contre la meme periode N-1, fleche, et phrase quand il se
 //  passe quelque chose de notable (record, bascule contre N-1, foyer...).
 // ===========================================================================
+// ===================== Summary « What matters this week » (data/summary.json <- scripts/build_summary.py) =====================
+let GSUM;
+function renderGSum() {
+  const el = document.getElementById('gsum'); if (!el) return;
+  if (GSUM === undefined) { GSUM = null; fetch(DATA_URL.replace('data.json', 'summary.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null).then(j => { GSUM = j || false; if (currentView === 'summary') renderGSum(); }); el.innerHTML = '<div class="sig-sub">Loading…</div>'; return; }
+  if (!GSUM) { el.innerHTML = ''; return; }
+  const G = GSUM, e = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), MON = MONTHS_FR.map(m => m.slice(0, 3));
+  const EF = { supports: '▲ supports prices', weighs: '▼ weighs on prices', risk: '▲ risk to supply', price: 'price', watch: 'watch' };
+  const TABN = { outlook: 'Supply outlook', prices: 'Prices', genmap: 'Generations map', chile: 'Chile', seatemp: 'Sea temperature', australia: 'Australia', news: 'This week' };
+  const bars = (L, avg) => { const mx = Math.max(...L.map(x => Math.abs(x[1])), Math.abs(avg)) * 1.1;
+    return L.map(([n, v]) => `<div class="gs-hb"><span>${e(n)}</span><div class="gs-tr"><div style="position:absolute;left:${v < 0 ? 50 + 50 * v / mx : 50}%;width:${50 * Math.abs(v) / mx}%;top:0;bottom:0;border-radius:7px;background:${v >= avg ? '#81c784' : '#ffab91'}"></div>` +
+      `<div style="position:absolute;left:${50 + 50 * avg / mx}%;top:-3px;bottom:-3px;border-left:2px dashed #ffd54f"></div><div style="position:absolute;left:50%;top:0;bottom:0;border-left:1px solid rgba(255,255,255,.4)"></div></div><span style="text-align:right;font-weight:700">${v > 0 ? '+' : ''}${(+v).toFixed(1)} %</span></div>`).join('') +
+      `<div class="sig-sub"><span style="border-left:2px dashed #ffd54f;padding-left:4px">world average</span> · green faster, orange slower</div>`; };
+  const d = G.meta && G.meta.built ? G.meta.built.slice(0, 10) : '';
+  const S = G.signals || [], SU = G.supply || {}, DE = G.demand || {}, B = G.basins || [];
+  const col = v => v === null || v === undefined ? '' : v >= 1 ? 'color:#ffab91' : v <= -1 ? 'color:#9fd0ff' : '';
+  el.innerHTML = `<div class="sig-title" style="font-size:22px">What matters this week</div><p class="gs-lead">${e(G.lead)} <span class="sig-sub">Updated ${e(d)} · click a card to open its tab.</span></p>` +
+    `<div class="sig-title" style="margin-top:6px">The signals, ranked by how unusual they are</div><div class="gs-sig">` +
+    S.map(x => `<div class="gs-card" onclick="(document.querySelector('#viewToggle button[data-v=&quot;${e(x.tab)}&quot;]')||{click(){}}).click();scrollTo(0,0)"><div class="gs-bas">${e(x.basin)}</div><h4>${e(x.title)}</h4>${x.value ? `<div class="gs-num">${e(x.value)}</div>` : ''}<div class="sig-sub">${e(x.text)}</div>` +
+      `<div style="margin-top:8px"><span class="gs-badge b-${x.effect}">${EF[x.effect] || x.effect}</span><span class="sig-sub" style="color:#9fd0ff">→ ${e(TABN[x.tab] || x.tab)}</span></div></div>`).join('') + `</div>` +
+    `<div class="sig-title" style="margin-top:18px">Producers and consumers — faster or slower than the world?</div><div class="gs-two">` +
+    (SU.basins ? `<div class="gs-box"><b>Supply 2026 by basin vs the world (${SU.world > 0 ? '+' : ''}${SU.world} %)</b>${bars(SU.basins, SU.world)}<div class="sig-sub">Our estimates from official data (Global supply tab), ${(+SU.world_kt).toLocaleString('en-US')} kt for the seven basins. 2027: ${SU.world_next > 0 ? '+' : ''}${SU.world_next} %.</div></div>` : '') +
+    (DE.markets ? `<div class="gs-box"><b>Imports this year by market vs the world (${DE.world > 0 ? '+' : ''}${DE.world} %)</b>${bars(DE.markets, DE.world)}<div class="sig-sub">Atlantic salmon, fresh and frozen, whole and fillets, tonnes (UN Comtrade, each country's own declarations, same months both years). China, Korea and Vietnam do not report monthly.</div></div>` : '') + `</div>` +
+    `<div class="sig-title" style="margin-top:18px">Basin by basin</div><div style="overflow-x:auto"><table class="sig-table"><thead><tr><th class="name">Basin</th><th>2026 (kt gutted)</th><th>vs 2025</th><th>2027</th><th>range 2027</th><th>Sea vs normal (last month)</th></tr></thead><tbody>` +
+    B.map(b => `<tr style="cursor:pointer" onclick="(document.querySelector('#viewToggle button[data-v=&quot;${e(b.tab || '')}&quot;]')||{click(){}}).click()"><td class="name">${e(b.basin)}</td><td>${b.v2026 ? Math.round(b.v2026).toLocaleString('en-US') : '—'}</td>` +
+      `<td class="${b.chg2026 >= 0 ? 'delta-good' : 'delta-bad'}">${b.chg2026 === null || b.chg2026 === undefined ? '—' : (b.chg2026 > 0 ? '+' : '') + b.chg2026.toFixed(1) + ' %'}</td><td class="${b.chg2027 >= 0 ? 'delta-good' : 'delta-bad'}">${b.chg2027 === null || b.chg2027 === undefined ? '—' : (b.chg2027 > 0 ? '+' : '') + (+b.chg2027).toFixed(1) + ' %'}</td>` +
+      `<td>${b.lo !== undefined && b.lo !== null ? `${b.lo > 0 ? '+' : ''}${b.lo} to ${b.hi > 0 ? '+' : ''}${b.hi} %` : '—'}</td><td style="${col(b.sea && Math.max(...b.sea.map(Math.abs)) === Math.abs(b.sea[1]) ? b.sea[1] : b.sea && b.sea[0])}">${b.sea ? (b.sea[0] === b.sea[1] ? `${b.sea[0] > 0 ? '+' : ''}${b.sea[0]} °C` : `${b.sea[0] > 0 ? '+' : ''}${b.sea[0]} to ${b.sea[1] > 0 ? '+' : ''}${b.sea[1]} °C`) : '—'}</td></tr>`).join('') + `</tbody></table></div>` +
+    `<div class="sig-title" style="margin-top:18px">Next weeks</div><div class="gs-box"><ul style="margin:0;padding-left:18px;line-height:1.7">` +
+    (G.agenda || []).map(a => `<li><b>${+a.d.slice(8)} ${MON[+a.d.slice(5, 7) - 1]}</b> · ${a.u ? `<a href="${e(a.u)}" target="_blank" rel="noopener" style="color:#cfe0ea">${e(a.t)}</a>` : e(a.t)}</li>`).join('') + `</ul></div>`;
+}
 function renderSummary() {
+  renderGSum();
   const MS = m => MONTHS_FR[m - 1].slice(0, 3);
   const mlab = (y, m) => `${MS(m)} ${y}`;
   const fmtT = v => Math.abs(v) >= 100000 ? (v / 1000).toFixed(0) + ' kt' : Math.abs(v) >= 1000 ? (v / 1000).toFixed(1) + ' kt' : Math.round(v) + ' t';
