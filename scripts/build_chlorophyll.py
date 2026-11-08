@@ -18,6 +18,7 @@ import os
 import re
 import statistics as S
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 
@@ -48,11 +49,14 @@ def http(url, timeout=120):
         try:
             with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=timeout) as r:
                 return r.read()
+        except urllib.error.HTTPError as e:
+            last = f'{e.code} {e.read()[:300].decode("utf-8", "replace")}'
+            if e.code in (400, 404, 413): break
+            time.sleep(4 * (i + 1))
         except Exception as e:  # noqa: BLE001
             last = e
-            if '404' in str(e) or '400' in str(e): break
             time.sleep(4 * (i + 1))
-    raise RuntimeError(f'{url[:150]} : {last}')
+    raise RuntimeError(f'{last} <- {url[-90:]}')
 
 
 def catalogue():
@@ -118,12 +122,16 @@ def main():
     debut = (dt.date.today() - dt.timedelta(days=365 * 6)).isoformat()
     for b, bn, pid, lab, la, lo in POINTS:
         try:
-            s = {}
+            s, pe = {}, ''
             for a, o in DEC:
-                s = serie(did, dims, var, round(la + a, 3), round(lo + o, 3), debut)
+                try:
+                    s = serie(did, dims, var, round(la + a, 3), round(lo + o, 3), debut)
+                except Exception as e:  # noqa: BLE001
+                    pe = str(e)[:300]; s = {}
+                    if 'No data' not in pe and 'no matching' not in pe.lower(): break
                 if len(s) > 30: break
                 time.sleep(1)
-            if len(s) < 30: raise RuntimeError('pas de donnees (maille terrestre ou nuages)')
+            if len(s) < 30: raise RuntimeError(pe or 'pas de donnees (maille terrestre ou nuages)')
             jours = sorted(s); last = jours[-1]; l0 = (dt.date.fromisoformat(last) - dt.timedelta(days=13)).isoformat()
             rec = [s[d] for d in jours if d >= l0]
             # normale : meme fenetre de 14 jours les annees precedentes (moyenne des valeurs disponibles)
@@ -139,7 +147,7 @@ def main():
                         'recent': [[d, round(s[d], 2)] for d in jours[-60:]]})
             print(f'  {pid:14s} {now} mg/m3, normale {norm}, ecart {pts[-1]["anom_pct"]} %', flush=True)
         except Exception as e:  # noqa: BLE001
-            err.append(f'{pid}: {str(e)[:120]}')
+            err.append(f'{pid}: {str(e)[:300]}')
             o = next((p for p in ancien.get('points', []) if p['id'] == pid), None)
             if o: pts.append(o)
     if not pts:
