@@ -1307,5 +1307,104 @@
     "Sernapesca mortalidad"
    ]
   }
- ]
+ ],
+ "counts": {
+  "norway": {
+   "title": "Norway: farms (sites) with each disease diagnosed in the year",
+   "unit": "sites",
+   "years": [
+    2023,
+    2024,
+    2025
+   ],
+   "rows": [
+    [
+     "Winter ulcers (M. viscosa)",
+     [
+      320,
+      289,
+      246
+     ]
+    ],
+    [
+     "HSMI",
+     [
+      184,
+      115,
+      167
+     ]
+    ],
+    [
+     "CMS",
+     [
+      129,
+      78,
+      114
+     ]
+    ],
+    [
+     "PD",
+     [
+      58,
+      48,
+      44
+     ]
+    ],
+    [
+     "Pasteurellosis",
+     [
+      null,
+      29,
+      34
+     ]
+    ],
+    [
+     "ISA",
+     [
+      null,
+      13,
+      18
+     ]
+    ],
+    [
+     "BKD",
+     [
+      null,
+      8,
+      1
+     ]
+    ]
+   ],
+   "source": "Norwegian Veterinary Institute, Fish Health Report 2025 (Fiskehelserapporten, 2026)",
+   "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fiskehelserapporten-2025/_/attachment/inline/363a7595-e0c3-4ee8-87e6-71ba808b4288:b3c8e9bf1ee7902bdc1ab93334e5219666ceabbd/Fiskehelserapporten%202025.pdf",
+   "note": "Sites where the disease was diagnosed during the year (PD: new cases). Blank: not given in the sources we read."
+  },
+  "chile": {
+   "title": "Chile: share of Atlantic salmon infectious mortality by cause",
+   "unit": "%",
+   "years": [
+    2023,
+    2025
+   ],
+   "rows": [
+    [
+     "SRS (Piscirickettsia)",
+     [
+      44.7,
+      52.8
+     ]
+    ],
+    [
+     "Tenacibaculosis",
+     [
+      37.9,
+      31.5
+     ]
+    ]
+   ],
+   "source": "Sernapesca, health reports, via Salmon Business and WeAreAquaculture (2026)",
+   "url": "https://www.salmonbusiness.com/sernapesca-chiles-overall-salmon-mortality-falls-in-2025-but-tenacibaculosis-rises/?amp=1",
+   "note": "Share of the deaths attributed to infectious disease in Atlantic salmon. Total Chilean salmonid mortality: 9.7 % in 2025, down 1.5 points."
+  }
+ }
 }

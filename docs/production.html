@@ -6217,8 +6217,17 @@ function dzDiseaseHtml(h2, box) {
   const recent = x => { const n = (R[x.id] || {}).papers || [], cut = new Date(Date.now() - 90 * 864e5).toISOString().slice(0, 10); return n.filter(p => (p.date || '') >= cut).length; };
   let h = `<div id="dzDis">` + h2('F · Disease by disease — counts, what we know, and what research and the press say');
   h += `<div class="sig-sub" style="margin-bottom:8px">Pick a disease. The evidence card is kept by hand from free-to-read reports and studies, each line with its source; the publication and press lists below it refresh every morning (Europe PMC, OpenAlex, Google News). Number on each button: open-access papers in the last 90 days.</div>`;
+  // comptages par bassin : Norvege (sites par maladie, 3 annees groupees), Chili (part de la mortalite infectieuse)
+  const CN = K.counts || {}, NO = CN.norway, CLc = CN.chile;
+  let cntAll = '';
+  if (NO) { const ys = NO.years, cols = ['#c3ced6', '#ffc38a', '#3fb8f0'];
+    const chart = scSvg(NO.rows.map(r => r[0]), ys.map((y, i) => ({ v: NO.rows.map(r => r[1][i]), col: cols[i], bar: true, lab: String(y) })), { lab: k => k, fmt: v => Math.round(v) });
+    cntAll = box(`<b>${e(NO.title)}</b> <span class="sig-sub">${ys.join(', ')}</span>${chart}<div class="sig-sub">${e(NO.note)} <a href="${e(NO.url)}" target="_blank" rel="noopener" style="color:#4fc3f7">${e(NO.source)}</a></div>` +
+      (CLc ? `<div style="margin-top:12px"><b>${e(CLc.title)}</b><div style="overflow-x:auto"><table class="sig-table" style="max-width:520px"><thead><tr><th class="name">Cause</th>${CLc.years.map(y => `<th>${y}</th>`).join('')}</tr></thead><tbody>${CLc.rows.map(r => `<tr><td class="name">${e(r[0])}</td>${r[1].map(v => `<td>${v == null ? '—' : v + ' %'}</td>`).join('')}</tr>`).join('')}</tbody></table></div><div class="sig-sub">${e(CLc.note)} <a href="${e(CLc.url)}" target="_blank" rel="noopener" style="color:#4fc3f7">${e(CLc.source)}</a></div></div>` : ''), 'margin-bottom:12px');
+  }
+  h += cntAll;
   h += `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">${D.map(x => `<button type="button" class="dz-tab${x.id === d.id ? ' on' : ''}" data-dzd="${x.id}">${e(x.name.split(' (')[0].split(':')[0])} <span style="opacity:.7">${recent(x)}</span></button>`).join('')}</div>`;
-  // comptages par bassin (Norvege : sites sous restriction ILA / PD chaque semaine, BarentsWatch)
+  // comptages vivants pour la maladie choisie (Norvege : sites sous restriction ILA / PD chaque semaine, BarentsWatch ; Chili : poux)
   const cnt = dzCountsHtml(d.id);
   // fiche
   const SEC = [['mortality', 'Mortality'], ['growth', 'Growth and harvest weight'], ['cost', 'Cost'], ['quality', 'Quality and downgrading'], ['trend', 'Latest trend'], ['new_research', 'What is new in research']];
