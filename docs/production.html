@@ -2658,7 +2658,7 @@ const METRIC_CONF = {
   stockweight: { fmt: v => v.toLocaleString('en-US', {maximumFractionDigits:2}) },
   pma:   { fmt: v => v.toLocaleString('en-US', {maximumFractionDigits:2}) },
   mer:   { fmt: v => v.toLocaleString('en-US', {minimumFractionDigits:1, maximumFractionDigits:1}) },
-  croissance: { fmt: v => v.toLocaleString('en-US', {maximumFractionDigits:3}) },
+  croissance: { fmt: v => v.toLocaleString('en-US', {minimumFractionDigits:3, maximumFractionDigits:3}) },
   smolt: { fmt: v => v.toLocaleString('en-US', {maximumFractionDigits:0}) },
   smolt500:   { fmt: v => !isFinite(v) ? '—' : v.toLocaleString('en-US', {maximumFractionDigits:0}) },
   smoltmid:   { fmt: v => !isFinite(v) ? '—' : v.toLocaleString('en-US', {maximumFractionDigits:0}) },
@@ -5942,7 +5942,7 @@ function renderDisease() {
   if (ar) h += `<div id="dzs3">` + h2('4 · By area') + box(ar) + `</div>`; else h += `<div id="dzs3"></div>`;
   // 5 · sources du bassin
   const TY = { rep: ['Official report', '#16324a', '#90caf9'], data: ['Data', '#183326', '#a5d6a7'], press: ['Press', '#33291a', '#ffd54f'], co: ['Company', '#2a1f33', '#ce93d8'] };
-  const srcRows = L2 => `<div style="overflow-x:auto"><table class="sig-table"><thead><tr><th class="name">Date</th><th style="text-align:left">Type</th>${L2.some(x => x.b) ? '<th style="text-align:left">Basin</th>' : ''}<th style="text-align:left">Document</th><th style="text-align:left">What we use from it</th></tr></thead><tbody>` +
+  const srcRows = L2 => `<div style="overflow-x:auto"><table class="sig-table src-cards"><thead><tr><th class="name">Date</th><th style="text-align:left">Type</th>${L2.some(x => x.b) ? '<th style="text-align:left">Basin</th>' : ''}<th style="text-align:left">Document</th><th style="text-align:left">What we use from it</th></tr></thead><tbody>` +
     L2.map(x => `<tr><td class="name" style="white-space:nowrap;color:var(--muted)">${e(x.d)}</td><td style="text-align:left"><span style="font-size:11px;padding:2px 8px;border-radius:999px;background:${(TY[x.ty] || TY.data)[1]};color:${(TY[x.ty] || TY.data)[2]}">${(TY[x.ty] || TY.data)[0]}</span></td>${x.b ? `<td style="text-align:left">${e(x.b)}</td>` : ''}<td style="text-align:left;white-space:normal"><a href="${x.u}" target="_blank" rel="noopener" style="color:var(--accent)">${e(x.n)}</a></td><td style="text-align:left;white-space:normal;color:var(--muted)">${e(x.w)}</td></tr>`).join('') + `</tbody></table></div>`;
   h += `<div id="dzs4">` + h2('5 · Sources and documents') + box(srcRows(B.sources || [])) + `</div></div>`;
   // E · bibliotheque de sources (tous bassins)
@@ -15402,6 +15402,11 @@ function renderWellboats() {
   #prYears input{display:none}
   /* defilement horizontal : seules les colonnes de chiffres bougent, la premiere colonne reste en place */
   .hs-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
+  /* listes de sources sur telephone : une carte par document (date, type, bassin, puis le titre sur toute la largeur), plus de colonne de 30 px */
+  @media (max-width:600px){table.src-cards,table.src-cards tbody{display:block;width:100%}table.src-cards thead{display:none}
+    table.src-cards tr{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;padding:10px 2px;border-bottom:1px solid rgba(255,255,255,.12)}
+    table.src-cards td{display:block;border:0!important;padding:0!important;position:static!important;background:none!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;width:auto!important;min-width:0!important;text-align:left!important;font-size:12.5px}
+    table.src-cards td:nth-last-child(2),table.src-cards td:last-child{flex-basis:100%}table.src-cards td:last-child{font-size:11.5px}}
   @media (max-width:430px){#globalView table th,#globalView table td{padding:6px 4px!important;font-size:11.5px!important}#globalView table th:first-child,#globalView table td:first-child{white-space:normal!important;width:104px;max-width:104px}#globalView table th:nth-child(4),#globalView table td:nth-child(4){display:none}#globalView table{width:100%}}
   .hs-on th:first-child,.hs-on td:first-child{position:sticky;left:0;z-index:2;background:rgb(27,63,93)!important;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:6px 0 10px -6px rgba(3,18,35,.55)}
   /* graphiques qui defilent : l'echelle des valeurs reste fixe a gauche */
