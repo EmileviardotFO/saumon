@@ -178,6 +178,10 @@ def parse_monthly(path):
         # que d'etre silencieusement perdu.
         pays, groupe, group_totals = [], None, {}
         for l in blk.split('\n'):
+            # nom de groupe coupe sur deux lignes (« Kina og Hong » / « Kong   Kina  12 572 ... », aout 2026) :
+            # la 2e ligne porte la ligne Kina, qui etait jetee avec le fragment « Kong »
+            if re.match(r'^Kong\s{2,}\S', l):
+                groupe = 'Kina og Hong Kong'; l = '    ' + l[4:]
             mm = re.match(pat, l)
             if not mm:
                 continue
@@ -203,7 +207,10 @@ def parse_monthly(path):
                 if groupe and land.lower() != 'grand total':
                     group_totals[groupe] = {'q': v[0], 'v': v[1]}
                 continue
-            pays.append({'groupe': groupe, 'pays': land, 'q': v[0], 'v': v[1]})
+            # pays dont le groupe ne change jamais : l'ordre des lignes du PDF n'est pas fiable (aout 2026 :
+            # Hongkong lu avant l'en-tete « Kina og Hong Kong », donc range sous Japan et compte une 2e fois dans « Autres »)
+            g = {'Hongkong': 'Kina og Hong Kong', 'Kina': 'Kina og Hong Kong', 'Japan': 'Japan'}.get(land, groupe)
+            pays.append({'groupe': g, 'pays': land, 'q': v[0], 'v': v[1]})
         # Combler l'ecart entre chaque total officiel et la somme des pays nommes.
         for g, tot in group_totals.items():
             sel = [p for p in pays if p['groupe'] == g]
