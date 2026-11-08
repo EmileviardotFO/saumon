@@ -4163,7 +4163,7 @@ function renderPoland() {
     const pa = a.t ? a.v / a.t : null, pb = b.t ? b.v / b.t : null;
     return `<tr style="${bold ? 'font-weight:700;font-size:14.5px;border-top:2px solid var(--border)' : 'font-weight:400;font-size:12.5px'}"><td class="name" style="font-weight:${bold ? 700 : 400}">${bold ? lab : '&nbsp;&nbsp;&nbsp;' + lab}</td>` +
       `<td>${t0(a.t)}</td><td>${chg(pc(a.t, b.t))}</td><td>${pa ? pa.toFixed(2) : '—'}</td><td>${chg(pa && pb ? pc(pa, pb) : null)}</td>` +
-      MS.map(m => { const x = agg(f, null, [m]), z = agg(f, null, [m - 100]); return `<td style="border-left:1px solid var(--border)">${x.t >= 1 ? t0(x.t) : '·'}<br><span style="font-size:11px">${chg(pc(x.t, z.t))}</span></td>`; }).join('') + `</tr>`; };
+      MS.map(m => { const x = agg(f, null, [m]), z = agg(f, null, [m - 100]); return `<td style="border-left:1px solid var(--border)">${x.t >= 1 ? t0(x.t) : '·'}<br><span style="font-size:11px">${z.t >= 20 ? chg(pc(x.t, z.t)) : (z.t >= 1 ? `<span style="color:var(--muted)">from ${t0(z.t)}</span>` : '')}</span></td>`; }).join('') + `</tr>`; };
   const forms = fl => Pn.map((n, p) => ({ n, p, t: agg(r => r[4] === fl && r[3] === p, Y).t })).filter(x => x.t >= 1).sort((a, b) => b.t - a.t);
   document.getElementById('hbTab1').innerHTML = `<thead><tr><th class="name"></th><th>Total ${Y} (t)</th><th>vs ${Y - 1}</th><th>€/kg</th><th>vs ${Y - 1}</th>${MS.map(m => `<th style="border-left:1px solid var(--border)">${tmMl(m).split(' ')[0].slice(0, 3)}</th>`).join('')}</tr></thead><tbody>` +
     line('Imports (all forms)', r => r[4] === 1, true) + forms(1).map(x => line(e(x.n), r => r[4] === 1 && r[3] === x.p)).join('') +
