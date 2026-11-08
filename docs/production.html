@@ -6456,7 +6456,7 @@ function renderScotland() {
   // biomasse : annee en cours et 2 precedentes, janvier-decembre
   const yL = Math.floor(L / 100), yrs = [yL - 3, yL - 2, yL - 1, yL], cols = ['#546e7a', '#8fa4b0', '#ffb74d', '#4fc3f7'], mk = [...Array(12)].map((_, i) => i + 1);
   document.getElementById('scBioSub').innerHTML = `Fish on site at the end of each month, all Scottish sea farms, thousand tonnes live weight. The seasonal low comes in spring, after the winter harvest; the high in late autumn.`;
-  document.getElementById('scBio').innerHTML = scSvg(mk, yrs.map((y, i) => ({ v: mk.map(mm => { const v = g(N, y * 100 + mm, 0); return v === null ? null : v / 1000; }), col: cols[i], w: i === 3 ? 2.6 : 1.6, dots: i === 3, lab: String(y) })),
+  document.getElementById('scBio').innerHTML = scSvg(mk, yrs.map((y, i) => ({ v: mk.map(mm => { const v = g(N, y * 100 + mm, 0); return v === null ? null : v / 1000; }), col: cols[i], w: i === 3 ? 2.6 : 1.6, dots: i === 3, bar: i >= 2, lab: String(y) })),   // deux dernieres annees en barres groupees, les plus anciennes en lignes
     { lab: mm => MONTHS_FR[mm - 1], xl: mm => MONTHS_FR[mm - 1].slice(0, 3), fmt: v => v.toFixed(0), min: Math.floor(Math.min(...yrs.flatMap(y => mk.map(mm => g(N, y * 100 + mm, 0)).filter(v => v !== null))) / 10000) * 10 });
   // mortalite mensuelle : 36 derniers mois, barre orange si inhabituelle, ligne = normale du mois
   const k36 = [...Array(36)].map((_, i) => sh(L, i - 35)), yrsAll = [...new Set(ks.map(k => Math.floor(k / 100)))].filter(y => y >= 2015);
