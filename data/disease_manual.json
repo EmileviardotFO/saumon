@@ -1217,7 +1217,7 @@
    "About 20,100 t of salmon died in 2025 — roughly 30 % of the 68,000 t produced in 2024/25; February 2025 alone 6,300 t.",
    "Main trigger: Piscirickettsia salmonis (SRS, the bacterium behind most infectious deaths in Chile), present on the east coast since at least 2021 and in the south-east since 2023, now endemic and not eradicable.",
    "Made worse by marine heatwaves (east Tasmanian waters warm almost four times faster than the world average), algae and jellyfish blooms; vaccine protection is partial; density was ruled out as the cause.",
-   "2026 is not back to normal: 14,900 t from January to September, and March–June 34 % above 2025; the emergency permit for the antibiotic florfenicol was suspended in February 2026.",
+   "2026 is not back to normal: 14,900 t from January to September, and March–June 34 % above 2025; the emergency permit for the antibiotic florfenicol was suspended in February and revoked in March 2026 (5.4 t used); the industry has reapplied.",
    "Risk season is the austral summer (December–April): high losses in early 2027 are the base case."
   ],
   "card": {
@@ -1262,6 +1262,18 @@
     "k": "bad",
     "t": "The emergency permit for florfenicol is suspended by the veterinary medicines authority.",
     "u": "https://pulsetasmania.com.au/news/tasmanian-salmon-deaths-top-9000-tonnes-in-early-2026-epa-figures-show/"
+   },
+   {
+    "d": "Mar 2026",
+    "k": "bad",
+    "t": "The veterinary medicines authority (APVMA) revokes the florfenicol permit after traces are found in wild fish about 10 km from the farms (later 14 km); the area is closed to commercial wild fishing.",
+    "u": "https://www.abc.net.au/news/2026-06-30/tas-florfenicol-salmon-antibiotic-amount-confirmed/106860194"
+   },
+   {
+    "d": "30 Jun 2026",
+    "k": "warn",
+    "t": "Salmon Tasmania: 5.4 t of florfenicol were used against the summer outbreak that killed about 9,000 t of salmon; the industry is applying again for a permit (EPA: low risk to marine ecosystems).",
+    "u": "https://www.abc.net.au/news/2026-06-30/tas-florfenicol-salmon-antibiotic-amount-confirmed/106860194"
    },
    {
     "d": "17 Jul 2026",
