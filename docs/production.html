@@ -13613,7 +13613,7 @@ function renderFocus(k) {
       if (k !== 'us' && isFinite(fr) && fr < 0 && e[0] >= 20) flags.push('<span class="warn">⚠ CIF below FOB (freight negative)</span>'); }
     if (!flags.length) flags.push('<span class="delta-good">✓ consistent</span>');
     return `<tr><td class="name">${FLAG(o, 16)} ${US_LAB[o]}</td><td style="text-align:left">${P[pi]}</td><td class="sep-left">${tmF0(u[0])}</td><td>${isFinite(pu) ? pu.toFixed(2) : '—'}</td>` +
-      `<td class="sep-left">${tmF0(e[0])}</td><td>${isFinite(pe) ? pe.toFixed(2) : (cur !== '€' ? cur : '—')}</td>` +
+      `<td class="sep-left">${!covered && e[0] < 1 ? '<span style="color:var(--muted)" title="not yet published for this period">n/a</span>' : tmF0(e[0])}</td><td>${isFinite(pe) ? pe.toFixed(2) : (cur !== '€' ? cur : '—')}</td>` +   // pas encore publie : « n/a », pas « 0 »
       `<td class="sep-left">${covered && isFinite(gv) ? tmVar(gv, 10) : '—'}</td><td>${covered && isFinite(gp) ? tmVar(gp, 5) : '—'}</td>` +
       (k === 'us' ? '' : `<td>${covered && isFinite(fr) ? fr.toFixed(2) : '—'}</td>`) +
       `<td class="sep-left" style="text-align:left;font-size:11px">${flags.join(' ')}</td></tr>`; }).join('') ||
