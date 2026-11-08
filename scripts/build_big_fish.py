@@ -268,6 +268,62 @@ def main():
                       'cycle_months': round(zone_med.get(po, 0), 1),
                       'sites': sorted([{k: v for k, v in x.items() if k not in ('score', 'score56', 'po')} for x in L if x['score'] + x['score56'] > 0],
                                       key=lambda x: -(x['p_harvest'] * (x['p6'] + x['p56'] / 2)))[:15]})
+    # ---- reservoir de gros poissons par eleveur : ce qui reste en mer, mois apres mois, et ce qui a ete vide depuis le registre ----
+    # Biomasse de chaque site = biomasse reelle de sa zone a la fin du mois (registre), repartie entre les sites qui ont du poisson
+    # selon capacite x poids estime (un site jeune pese peu). Part de 6 kg+ et de 5-6 kg du site : poids estime (age, rythme de
+    # l'eleveur, temperature), repartition log-normale. Apres le dernier registre, les sites vides depuis (statut BarentsWatch de la
+    # semaine) sortent du reservoir, ceux qui restent grossissent ; la biomasse des zones reste celle du dernier registre.
+    def bio_zone(ym):
+        b = collections.defaultdict(float)
+        for c in C:
+            if c['year'] * 100 + c['month'] == ym and c['po'] and c['stock'] and c['weight_kg']: b[c['po']] += c['stock'] * c['weight_kg'] / 1000
+        return b
+    def idx_fin(ym):
+        y_, m_ = divmod(ym, 100); f_ = dt.date(y_ + (m_ == 12), m_ % 12 + 1, 1) - dt.timedelta(days=1)
+        L_ = [i for i, w in enumerate(weeks) if w <= f_]; return L_[-1] if L_ else None
+    def reservoir(i, ym_bio):
+        BZ = bio_zone(ym_bio); raw = []
+        for site, s_ in st['sites'].items():
+            po = R['site_po'].get(site)
+            if not po or not commercial(site) or i >= len(s_): continue
+            j = debut(s_, i)
+            if j is None: continue
+            co = R['site_org'].get(site); f = rythme.get((po, co), 1.0)
+            age = (weeks[i] - weeks[j]).days / 30.44 + DECALAGE.get(site, 0.0)
+            w = poids(po, age * f)
+            if not w: continue
+            w, _, _ = ajuste_temp(site, po, j, w)
+            raw.append((site, po, co, (R['site_cap'].get(site) or 0) * min(1.0, w / 5.5), w))
+        tz = collections.defaultdict(float)
+        for x in raw: tz[x[1]] += x[3]
+        out_ = {}
+        for site, po, co, wt, w in raw:
+            b_ = BZ.get(po, 0) * wt / tz[po] if tz[po] else 0
+            out_[site] = (co, po, b_, b_ * part_t(w, 6), b_ * part_t(w, 5, 6))
+        return out_
+    res_hist = {}
+    try:
+        mois_bio = sorted({c['year'] * 100 + c['month'] for c in C})
+        for ym in mois_bio[-4:]:
+            i_ = idx_fin(ym)
+            if i_ is not None: res_hist[ym] = reservoir(i_, ym)
+        res_now = reservoir(last, mois_bio[-1])
+    except Exception as ex:  # noqa: BLE001  (le reste du fichier ne doit pas tomber pour ce tableau)
+        print('reservoir :', ex); res_hist, res_now = {}, {}
+    reservoir_eleveurs = []
+    if res_hist and res_now:
+        dern_b = max(res_hist); R0 = res_hist[dern_b]
+        agg = lambda D, co, k: sum(v[k] for v in D.values() if v[0] == co)
+        cos_ = sorted({v[0] for v in R0.values()} | {v[0] for v in res_now.values()}, key=lambda co: -agg(R0, co, 3))
+        for co in cos_[:25]:
+            vide_ = [s_ for s_, v in R0.items() if v[0] == co and s_ not in res_now]
+            reservoir_eleveurs.append({'co': co,
+                'hist6': {str(ym): round(agg(D, co, 3)) for ym, D in sorted(res_hist.items())},
+                'hist56': {str(ym): round(agg(D, co, 4)) for ym, D in sorted(res_hist.items())},
+                'now6': round(agg(res_now, co, 3)), 'now56': round(agg(res_now, co, 4)), 'now_bio': round(agg(res_now, co, 2)),
+                'emptied_sites': len(vide_), 'emptied6': round(sum(R0[s_][3] for s_ in vide_)), 'emptied56': round(sum(R0[s_][4] for s_ in vide_)),
+                'emptied_bio': round(sum(R0[s_][2] for s_ in vide_)),
+                'sites_now': sum(1 for v in res_now.values() if v[0] == co)})
     # ---- durees de cycle par eleveur et par zone (cycles termines depuis 2023) ----
     maladie = collections.defaultdict(list)                     # site -> [(debut aaaass, fin aaaass, maladie)]
     for x in (d.get('bw_weekly') or {}).get('site_dis', []):
@@ -612,7 +668,7 @@ def main():
                     'method': 'site age from fallow history (BarentsWatch) x zone growth curve (biomass register) x measured harvest chance by age'},
            'zones': zones,
            'ranking': {'months': cibles, 'register_month': dern, 'farmers': classement, 'norway': resume, 'ytd': ytd_share,
-                       'zone_share': part_zones, 'gut': GUT, 'checks': controles, 'farmer_checks': bilan, 'test_sizes': test_calibres, 'test_farmers': test_eleveurs,
+                       'zone_share': part_zones, 'gut': GUT, 'checks': controles, 'farmer_checks': bilan, 'reservoir': {'register_month': max(res_hist) if res_hist else None, 'week': now.isoformat(), 'farmers': reservoir_eleveurs}, 'test_sizes': test_calibres, 'test_farmers': test_eleveurs,
                        'method': 'size mix: half the last reported month, half the last month plus last year\'s seasonal change (tested best); '
                                  'shared between farmers by site capacity x harvest chance x size mix at the estimated weight; ILA and PD adjust timing and weight'},
            'cycles': {'since': '2023-01-01', 'min_cycles': 3, 'farmers': sorted(cyc, key=lambda c: (c['po'], -c['cycles'])),

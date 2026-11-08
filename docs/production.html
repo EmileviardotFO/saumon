@@ -4354,6 +4354,29 @@ function renderBigFish() {
   document.getElementById('gm_bfCo').innerHTML = `<thead><tr><th class="name">Farmer</th><th>6 kg+ (t gutted)</th><th>% of its harvest</th><th>5–6 kg (t gutted)</th><th>% of its harvest</th><th>5 kg+ (t gutted)</th><th>Expected harvest (t gutted)</th><th>Sites harvesting</th><th>Disease now</th><th>Growth pace</th></tr></thead><tbody>` +
     RK.farmers.slice(0, 25).map(c => row(c) + (BF_OPEN[c.co] ? c.zones.map(z => row(z, true)).join('') : '')).join('') + `</tbody>`;
   document.querySelectorAll('#gm_bfCo tr[data-co]').forEach(tr => tr.onclick = () => { BF_OPEN[tr.dataset.co] = !BF_OPEN[tr.dataset.co]; renderBigFish(); });
+  // ---- reservoir de gros poissons par eleveur : en mer a chaque fin de mois du registre, et maintenant (sites vides depuis, BarentsWatch) ----
+  { const RV = RK.reservoir || {}, FR = RV.farmers || [], box = document.getElementById('gm_bfRes') || (() => { const x = document.createElement('div'); x.id = 'gm_bfRes'; document.getElementById('gm_bfCo').closest('.gm-tw').after(x); return x; })();
+    if (!FR.length) box.innerHTML = '';
+    else {
+      const G = v => v * (RK.gut || 0.888), MS = k => MONTHS_FR[k % 100 - 1].slice(0, 3), ks = Object.keys(FR[0].hist6).map(Number).sort((a, b) => a - b);
+      const wk = RV.week ? new Date(RV.week + 'T00:00:00Z') : null, wkl = wk ? `${wk.getUTCDate()} ${MONTHS_FR[wk.getUTCMonth()].slice(0, 3)}` : 'now';
+      const exp = co => { const f = RK.farmers.find(x => x.co === co); return f ? f.t6 * F2 : null; };   // 6 kg+ attendus sur les 2 prochains mois (t vides)
+      const rows = FR.filter(f => Math.max(f.now6, ...Object.values(f.hist6)) >= 600).slice(0, 15).map(f => {
+        const h = ks.map(k => G(f.hist6[k])), n = G(f.now6), mx = Math.max(...h, n, 1), r0 = h[h.length - 1], x2 = exp(f.co);
+        const bars = h.concat([n]).map((v, i) => `<i title="${i < h.length ? 'end of ' + MONTHS_FR[ks[i] % 100 - 1] : 'week of ' + wkl}: ${t0(v)} t of 6 kg+ at sea" style="height:${Math.max(2, 26 * v / mx).toFixed(0)}px;${i === h.length ? 'background:#ffd54f' : ''}"></i>`).join('');
+        const ch = r0 ? 100 * (n / r0 - 1) : null, left = x2 ? n / (x2 / 2) : null;
+        const rd = (f.emptied_sites ? `${f.emptied_sites} site${f.emptied_sites > 1 ? 's' : ''} emptied since end ${MS(ks[ks.length - 1])} (≈ ${t0(G(f.emptied6))} t of 6 kg+ out); ` : 'no site emptied since the register; ') +
+          (ch === null ? '' : Math.abs(ch) < 5 ? 'reservoir steady' : ch > 0 ? `reservoir still <b>growing</b> (${ch > 0 ? '+' : ''}${ch.toFixed(0)} %): fish growing into 6 kg+ faster than they are harvested` : `reservoir <b>drawn down</b> (${ch.toFixed(0)} %)`) +
+          (left !== null && isFinite(left) ? ` · at the expected pace, ${left < 1.5 ? '<b style="color:#ffb74d">' : ''}${left.toFixed(1)} months${left < 1.5 ? '</b>' : ''} of 6 kg+ left` : '');
+        return `<tr><td class="name"><b>${e(f.co)}</b></td><td><span class="gm-rb">${bars}</span></td>${h.map(v => `<td style="color:var(--muted)">${t0(v)}</td>`).join('')}<td><b>${t0(n)}</b></td>` +
+          `<td>${t0(G(f.now56))}</td><td>${x2 ? t0(x2) : '—'}</td><td style="text-align:left;white-space:normal;min-width:260px;font-size:12px">${rd}</td></tr>`; });
+      box.innerHTML = `<div class="gm-t" style="margin-top:16px;font-size:14px">Big fish still at sea — farmer by farmer, register by register and this week</div>` +
+        `<div class="gm-s">Tonnes of fish of 6 kg+ (gutted) estimated in the sea at the end of each register month, and in the week of ${wkl}: sites emptied since the last register (BarentsWatch weekly status) leave the reservoir, the others keep growing. ` +
+        `Each zone's real biomass (register) is shared between its sites with fish by capacity × estimated weight; each site's weight comes from its age, the farmer's pace and the water temperature. Updated every week between registers. ` +
+        `A reservoir that keeps rising means more big fish to come; one that falls while sites are emptied means the big fish are being harvested out.</div>` +
+        `<div class="gm-tw"><table class="gm-mini"><thead><tr><th class="name">Farmer</th><th></th>${ks.map(k => `<th>End ${MS(k)}</th>`).join('')}<th>Week of ${wkl}</th><th>5–6 kg now</th><th>6 kg+ to harvest, next 2 months</th><th style="text-align:left">Reading</th></tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
+    } }
+  if (!document.getElementById('gmRbCss')) { const st = document.createElement('style'); st.id = 'gmRbCss'; st.textContent = '.gm-rb{display:inline-flex;align-items:flex-end;gap:2px;height:28px}.gm-rb i{display:block;width:7px;background:#4fc3f7;border-radius:2px 2px 0 0}'; document.head.appendChild(st); }
   // ---- bilan eleveur par eleveur : part de 6 kg+ prevue contre constatee, a chaque registre publie ----
   { const FC = RK.farmer_checks || [], box = document.getElementById('gm_bfChk') || (() => { const x = document.createElement('div'); x.id = 'gm_bfChk'; document.getElementById('gm_bfCo').closest('.gm-tw').after(x); return x; })();
     if (!FC.length) box.innerHTML = '';
@@ -4375,13 +4398,13 @@ function renderBigFish() {
             return `<td title="forecast made with the ${MS(x.made_from)} register for ${win(x)}: ${x.forecast_share6} % of its harvest at 6 kg+; found ${x.actual_share6} %">${x.forecast_share6.toFixed(0)} → <b class="${Math.abs(g) < 3 ? '' : g > 0 ? 'delta-good' : 'delta-bad'}">${x.actual_share6.toFixed(0)} %</b></td>`; }).join('') +
           `<td>${(avg(d.map(Math.abs))).toFixed(1)} pt</td><td style="text-align:left;white-space:normal;min-width:220px;font-size:12px">${read(L)}</td></tr>`; });
       const ref = OR.map(o => FC.find(x => x.made_from === o));
-      box.innerHTML = `<div class="gm-t" style="margin-top:16px;font-size:14px">Farmer by farmer — share of 6 kg+ forecast, and what was found</div>` +
+      box.innerHTML = `<details style="margin-top:14px"><summary class="gm-t" style="font-size:14px;cursor:pointer">Check of past forecasts — share of 6 kg+ forecast for each farmer, and what was found</summary>` +
         `<div class="gm-s">Each time a register comes out, the forecast made two months earlier for each farmer (share of its harvest at 6 kg+, gutted) is set against what was found: ` +
         `the real harvest and sizes of each zone that month (register), shared between farmers by the capacity of the sites they really emptied (BarentsWatch). ` +
         `No farmer publishes its sizes, so within a zone each farmer gets the zone's real mix: exact for a farmer that dominates its zone (Nordlaks in zone 9), approximate for the others. ` +
         `Forecasts made before September 2026 are rebuilt with only the data available at the time. Average gap over all checks since August 2025. Green: more big fish than forecast.</div>` +
         `<div class="gm-tw"><table class="gm-mini"><thead><tr><th class="name">Farmer</th>${ref.map(x => `<th>${win(x)}</th>`).join('')}<th>Average gap</th><th style="text-align:left">Reading</th></tr></thead><tbody>${rows.join('')}</tbody></table></div>` +
-        `<div class="gm-note" style="margin-top:6px">Tested: correcting each farmer by its past gap made the forecasts worse (5.6 → 5.7–5.9 points of average error over July 2025 – August 2026), because the gap changes sign with the season — the model is late on the national calendar (too few big fish forecast from September to December, too many from February to August), not wrong about one farmer. Kept as a check; a correction by farmer and by season will be tried once two seasons of checks exist.</div>`;
+        `<div class="gm-note" style="margin-top:6px">Tested: correcting each farmer by its past gap made the forecasts worse (5.6 → 5.7–5.9 points of average error over July 2025 – August 2026), because the gap changes sign with the season — the model is late on the national calendar (too few big fish forecast from September to December, too many from February to August), not wrong about one farmer. Kept as a check; a correction by farmer and by season will be tried once two seasons of checks exist.</div></details>`;
     } }
   const Y = RK.ytd, pts = v => `<span class="${v >= 0 ? 'delta-good' : 'delta-bad'}">${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(1)} pt</span>`;
   const tot = N.reduce((a, x) => ({ h: a.h + x.harvest_t * x.f, t56: a.t56 + x.t56 * x.f, t6: a.t6 + x.t6 * x.f, l56: a.l56 + x.ly_t56, l6: a.l6 + x.ly_t6, lh: a.lh + (x.ly_harvest_t || 0) }), { h: 0, t56: 0, t6: 0, l56: 0, l6: 0, lh: 0 });
