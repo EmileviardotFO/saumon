@@ -171,7 +171,7 @@ def main():
     for p in sorted(fiables, key=lambda p: -(p.get('anom_pct') or 0))[:1]:
         if (p.get('anom_pct') or 0) >= 30:
             sig.append({'basin': p.get('basin_name', p.get('basin')), 'title': 'Chlorophyll above every recent year', 'value': sg(p['anom_pct'], 0),
-                        'text': f'{p["label"]}: {p["now"]} mg/m³ against {p["normal"]} usually and {p["hist_max"]} at most in the same weeks of the last {p["years"]} years (satellite, {p.get("period", "")}). It measures how much algae there is, not toxicity: a sign to watch, not a bloom.',
+                        'text': f'{p["label"]}: {p["now"]} mg/m³ against {p["normal"]} usually and {p["hist_max"]} at most in the same weeks of the last {p["years"]} years (satellite, {p.get("period", "")}){" — " + p["caveat"] if p.get("caveat") else ""}. It measures how much algae there is, not toxicity: a sign to watch, not a bloom.',
                         'effect': 'risk', 'tab': 'seatemp', 'score': 1 + p['anom_pct'] / 40})
     # ---------------- sujets suivis (watch.json) ----------------
     today = dt.date.today().isoformat()
