@@ -19,6 +19,7 @@ code de sortie 1 si un controle echoue, pour que le workflow le signale.
 import datetime as dt
 import json
 import os
+import re
 import sys
 
 from playwright.sync_api import sync_playwright
@@ -63,13 +64,24 @@ def main():
         NTF = os.path.join(ROOT, 'data', 'national_trade.json')
         page.route('**/national_trade.json', lambda route: route.fulfill(path=NTF, content_type='application/json')
                    if os.path.exists(NTF) else route.fulfill(status=404, body='missing'))
+        # tous les autres fichiers de donnees (data/*.json) servis depuis le depot : sinon les onglets qui en dependent restent vides
+        def _local(route):
+            rel = route.request.url.split('emileviardotfo.github.io/saumon/', 1)[1].split('?')[0]
+            f = os.path.join(ROOT, rel)
+            if os.path.isfile(f):
+                route.fulfill(path=f, content_type='application/json' if f.endswith('.json') else None, headers={'access-control-allow-origin': '*'})
+            else:
+                route.fulfill(status=404, body='missing')
+        page.route(re.compile(r'https://emileviardotfo\.github\.io/saumon/(?!data/(data|eurostat|cn_imports|us_imports|national_trade)\.json).*'), _local)
         page.goto('file://' + PAGE)
         page.wait_for_timeout(4000)
 
         n0 = len(errors)
         check('page loads without JavaScript error', n0 == 0, '; '.join(errors[:3]))
         banner = page.evaluate('document.body.firstChild && document.body.firstChild.textContent || ""')
-        check('data.json read by the page', banner.startswith('Donnees a jour'), banner[:120])
+        # bandeau d'etat : « Updated AAAA-MM-JJ » depuis la refonte (anciennement « Donnees a jour »)
+        banner = banner if banner.startswith(('Donnees a jour', 'Updated')) else page.evaluate("(document.body.innerText.match(/Updated \\d{4}-\\d{2}-\\d{2}/) || [''])[0]")
+        check('data.json read by the page', banner.startswith(('Donnees a jour', 'Updated')), banner[:120])
 
         sel = page.evaluate('[+yearSel.value, +monthSel.value]')
         check('default period = latest month in the data',
@@ -80,9 +92,12 @@ def main():
             has = page.evaluate(f'typeof PRICES !== "undefined" && PRICES["{k}"] !== undefined')
             check('latest Akvafakta monthly price used by the page', has, k)
 
-        for t in TABS:
+        # tous les onglets du menu (data-v), quel que soit leur intitule : la liste TABS ne suivait plus les renommages
+        tabs = page.evaluate("[...document.querySelectorAll('#viewToggle button[data-v]')].map(b => b.textContent.trim())") or TABS
+        for t in tabs:
             before = len(errors)
-            found = page.evaluate("""t => { const b = [...document.querySelectorAll('button')].find(x => x.textContent.trim() === t);
+            found = page.evaluate("""t => { const b = [...document.querySelectorAll('#viewToggle button[data-v]')].find(x => x.textContent.trim() === t)
+                                         || [...document.querySelectorAll('button')].find(x => x.textContent.trim() === t);
                                      if (!b) return false; b.click(); return true; }""", t)
             page.wait_for_timeout(2500 if t in ('EU flows', 'EU markets', 'Producers', 'USA focus', 'China focus') else 900)
             if not found:
