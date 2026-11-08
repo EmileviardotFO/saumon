@@ -86,6 +86,52 @@ RECOLTE = [  # entreprise, periode, tonnes, poids moyen, source
     ('Mowi Faroes', '2026-Q3', 2853, None, 'Mowi Q3 2026 report, 4 Nov 2026 (gutted weight; Q3 2025: 2,367 t)'),
 ]
 SMOLTS = [('Bakkafrost', '2026-Q1', 3.9), ('Bakkafrost', '2026-Q2', 5.6), ('Bakkafrost', '2026-Q3', 4.5)]
+
+
+MOIS_EN = {m: i + 1 for i, m in enumerate(['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'])}
+
+
+def auto_trimestriel():
+    """Recoltes et smolts des Feroe repris automatiquement de data/quarterly.json (mises a jour d'activite Bakkafrost,
+    segment Feroe des rapports trimestriels, dont Mowi Faroes) : plus besoin de les saisir a la main a chaque trimestre.
+    Les lignes saisies a la main ci-dessus restent prioritaires ; un trimestre deja couvert mois par mois n'est pas ajoute
+    une seconde fois, et inversement."""
+    f = os.path.join(ROOT, 'data', 'quarterly.json')
+    if not os.path.exists(f):
+        return [], []
+    q = json.load(io.open(f, encoding='utf-8'))
+    rec, smo = [], []
+    for t in q.get('trading_updates') or []:
+        g = (t.get('regions') or {}).get('Faroe Islands')
+        if t.get('company') != 'Bakkafrost' or not g or not re.match(r'\d{4}-Q[1-4]$', t.get('quarter') or ''):
+            continue
+        an, tr = int(t['quarter'][:4]), int(t['quarter'][-1])
+        src = f"Bakkafrost {t['quarter'][-2:]} {an} trading update (read automatically)"
+        mois = [m for m in g.get('months') or [] if m and m[0] in MOIS_EN and m[1] is not None]
+        if mois:
+            rec += [('Bakkafrost', f'{an}-{MOIS_EN[m[0]]:02d}', round(m[1] * 1000), m[2] if len(m) > 2 else None, src) for m in mois]
+        elif g.get('harvest_kt') is not None:
+            rec.append(('Bakkafrost', t['quarter'], round(g['harvest_kt'] * 1000), g.get('avg_kg'), src))
+        if g.get('smolt_m') is not None:
+            smo.append(('Bakkafrost', t['quarter'], g['smolt_m']))
+    for r in q.get('reports') or []:
+        for g in r.get('segments') or []:
+            if (g.get('basin') == 'FO' or 'faroe' in (g.get('segment') or '').lower()) and 'mowi' in (r.get('company') or '').lower() and g.get('harvest_t'):
+                rec.append(('Mowi Faroes', r['quarter'], round(g['harvest_t']), None,
+                            f"Mowi {r['quarter'][-2:]} {r['quarter'][:4]} report (gutted weight; read automatically)"))
+    return rec, smo
+
+
+def fusion(manuel, auto):
+    """Lignes de recolte : manuel d'abord ; une ligne automatique n'est gardee que si sa periode n'est pas deja couverte."""
+    def trim(p):
+        return p if 'Q' in p else f"{p[:4]}-Q{(int(p[5:7]) - 1) // 3 + 1}"
+    out = list(manuel)
+    for c, p, t, w, src in auto:
+        couvert = any(c2 == c and (p2 == p or trim(p2) == trim(p) and ('Q' in p) != ('Q' in p2)) for c2, p2, *_ in out)
+        if not couvert:
+            out.append((c, p, t, w, src))
+    return sorted(out, key=lambda x: (x[0], x[1]))
 # Indicateurs annuels Bakkafrost Feroe (page Data, releve du 03/11/2026)
 ANNUEL = {'mortality_pct': {2016: 6.33, 2017: 8.96, 2018: 11.56, 2019: 4.57, 2020: 10.29, 2021: 8.24, 2022: 4.91, 2023: 7.3, 2024: 6.6, 2025: 4.29},
           'lice_af': {2016: 0.8, 2017: 0.7, 2018: 0.47, 2019: 0.43, 2020: 0.45, 2021: 0.43, 2022: 0.28, 2023: 0.28, 2024: 0.22, 2025: 0.27},
@@ -333,7 +379,10 @@ def main():
     noms = sorted({f for d in data.values() for f in d})
     # fermes Bakkafrost -> zones du registre
     reg = {z: (op, fj) for op, fj, zs in REGISTRE for z in zs}
-    POIDS_RECOLTE = {p: wt for c, p, t, wt, src in RECOLTE if c == 'Bakkafrost' and wt and re.match(r'\d{4}-\d{2}$', p)}
+    a_rec, a_smo = auto_trimestriel()
+    RECOLTES = fusion(RECOLTE, a_rec)
+    SMOLT = SMOLTS + [x for x in a_smo if not any(y[0] == x[0] and y[1] == x[1] for y in SMOLTS)]
+    POIDS_RECOLTE = {p: wt for c, p, t, wt, src in RECOLTES if c == 'Bakkafrost' and wt and re.match(r'\d{4}-\d{2}$', p)}
     sites = []
     for f in noms:
         m = re.match(r'A(\d+)\s*-\s*(.+)', f)
@@ -350,7 +399,7 @@ def main():
     n_inc = sum(x['fish'][L] for x in inconnus)
     # smolts du 1er semestre de l'annee deja places dans des fermes d'age connu (complement deduit) : retires du compte
     deja = sum(x['fish'][L] for x in sites if x['wm'][L].startswith('from stocking (inferred') and x['fish'][L])
-    s1 = sum(m for c, p, m in SMOLTS if c == 'Bakkafrost' and p in (f'{an}-Q1', f'{an}-Q2')) * 1e6
+    s1 = sum(m for c, p, m in SMOLT if c == 'Bakkafrost' and p in (f'{an}-Q1', f'{an}-Q2')) * 1e6
     jeunes = max(0.0, min(n_inc, s1 * 0.97 - deja))           # ~3 % de pertes depuis la mise en mer
     vieux = n_inc - jeunes
     dfin = dt.date.fromisoformat(dates[L])
@@ -366,8 +415,8 @@ def main():
     out = {'meta': {'built': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'), 'dates': dates, 'note': note,
                     'sources': {'farms': BAKKA_URL, 'register': LANDSVERK_URL}},
            'sites': sites, 'register_other': autres,
-           'harvest': [{'co': c, 'p': p, 't': t, 'w': w, 'src': s} for c, p, t, w, s in RECOLTE],
-           'smolts': [{'co': c, 'p': p, 'm': m} for c, p, m in SMOLTS],
+           'harvest': [{'co': c, 'p': p, 't': t, 'w': w, 'src': s} for c, p, t, w, s in RECOLTES],
+           'smolts': [{'co': c, 'p': p, 'm': m} for c, p, m in SMOLT],
            'annual': {k: {str(a): v for a, v in d.items()} for k, d in ANNUEL.items()},
            'cohort': cohorte,
            'model': {'tgc': TGC, 'smolt_kg': SMOLT_KG, 'live_per_hog': VIF_HOG, 'temp': TEMP,
