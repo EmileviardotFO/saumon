@@ -1,0 +1,1311 @@
+{
+ "meta": {
+  "note": "Hand-kept evidence cards: each fact is tied to a free-to-read source (open-access paper, institute or company report, trade press quoting an authority). Facts marked snippet-level were seen in a search result only. Updated by hand; the publication and news feed below each card is automatic (data/disease_research.json).",
+  "updated": "2026-11-08"
+ },
+ "context": [
+  {
+   "fact": "Norway: sea-phase salmon mortality was 14.2% in 2025 (54.8 million fish), down from 15.4% in 2024 (57.8 million). It was highest in PO4 at 20.1%.",
+   "source": "Norwegian Veterinary Institute, Fiskehelserapporten 2025 (2026)",
+   "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fiskehelserapporten-2025/_/attachment/inline/363a7595-e0c3-4ee8-87e6-71ba808b4288:b3c8e9bf1ee7902bdc1ab93334e5219666ceabbd/Fiskehelserapporten%202025.pdf"
+  },
+  {
+   "fact": "Norway 2025, cause of death (AquaCloud data, 408 sea sites): injuries/trauma 33.5%, infectious disease 28.1%, unknown 27.4%.",
+   "source": "Norwegian Veterinary Institute, Fiskehelserapporten 2025 (2026)",
+   "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fiskehelserapporten-2025/_/attachment/inline/363a7595-e0c3-4ee8-87e6-71ba808b4288:b3c8e9bf1ee7902bdc1ab93334e5219666ceabbd/Fiskehelserapporten%202025.pdf"
+  },
+  {
+   "fact": "Norway 2025: 2.67 million salmon were discarded at slaughter ('utkast'), 0.5% of harvest weight (7,218 t). Superior grade share was 86.9%.",
+   "source": "Norwegian Veterinary Institute, Fiskehelserapporten 2025 (2026)",
+   "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fiskehelserapporten-2025/_/attachment/inline/363a7595-e0c3-4ee8-87e6-71ba808b4288:b3c8e9bf1ee7902bdc1ab93334e5219666ceabbd/Fiskehelserapporten%202025.pdf"
+  },
+  {
+   "fact": "Chile: overall salmon farm mortality was 9.7% in 2025, down 1.5 points from 2024. Infectious causes made up 25.7% of Atlantic salmon mortality, led by SRS (52.8%) and tenacibaculosis (31.5%).",
+   "source": "Salmon Business, citing Sernapesca, 31 Mar 2026",
+   "url": "https://www.salmonbusiness.com/sernapesca-chiles-overall-salmon-mortality-falls-in-2025-but-tenacibaculosis-rises/?amp=1"
+  }
+ ],
+ "diseases": [
+  {
+   "id": "lice",
+   "name": "Sea lice",
+   "agent": "Lepeophtheirus salmonis (N. Atlantic), Caligus rogercresseyi (Chile); crustacean ectoparasites",
+   "basins": [
+    "NO",
+    "CL",
+    "GB",
+    "FO",
+    "IS",
+    "CA",
+    "AU"
+   ],
+   "what": "Parasitic copepods graze salmon skin. The main supply hit is the delousing itself (thermal, mechanical, freshwater, chemical), which stresses, injures and kills fish and stops growth.",
+   "mortality": [
+    {
+     "fact": "Norway: elevated mortality followed 31% of thermal treatments, 25% of mechanical, 21% of hydrogen peroxide, and under 14% of azamethiphos, cypermethrin or deltamethrin treatments. Fish of 2 kg or more were more susceptible.",
+     "source": "Overton et al., Reviews in Aquaculture, 2019 (IMR open repository)",
+     "url": "https://openpolar.no/Record/ftimr:oai:imr.brage.unit.no:11250%2F2581471/Details"
+    },
+    {
+     "fact": "Norway 2025: injuries/trauma, driven mainly by mechanical damage from delousing, were the largest recorded cause of sea-phase salmon deaths at 33.5% (AquaCloud, 408 sites).",
+     "source": "Norwegian Veterinary Institute, Fiskehelserapporten 2025 (2026)",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fiskehelserapporten-2025/_/attachment/inline/363a7595-e0c3-4ee8-87e6-71ba808b4288:b3c8e9bf1ee7902bdc1ab93334e5219666ceabbd/Fiskehelserapporten%202025.pdf"
+    },
+    {
+     "fact": "Norway 2025: 653 serious welfare incidents in sea farms (44% of all) were linked to non-medicinal delousing, up from 2024. 1,488 incidents in total, versus 1,385 in 2024.",
+     "source": "Norwegian Veterinary Institute, Fiskehelserapporten 2025 (2026)",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fiskehelserapporten-2025/_/attachment/inline/363a7595-e0c3-4ee8-87e6-71ba808b4288:b3c8e9bf1ee7902bdc1ab93334e5219666ceabbd/Fiskehelserapporten%202025.pdf"
+    },
+    {
+     "fact": "Norway: thermal or mechanical delousing significantly raised the risk of pasteurellosis outbreaks (reported in FHR 2025, unquantified).",
+     "source": "Norwegian Veterinary Institute, Fiskehelserapporten 2025 (2026)",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fiskehelserapporten-2025/_/attachment/inline/363a7595-e0c3-4ee8-87e6-71ba808b4288:b3c8e9bf1ee7902bdc1ab93334e5219666ceabbd/Fiskehelserapporten%202025.pdf"
+    }
+   ],
+   "growth": [
+    {
+     "fact": "Norway (2014-2019 data, 2,530 treatments): every delousing method reduced short-term growth (TGC), and non-medicinal methods did significantly more harm than medicinal ones. Example: one non-medicinal treatment of a 150,000-fish cage at 3 kg and 10 °C cost about 31,200 kg of biomass.",
+     "source": "Røsæg et al., Aquaculture 561, 2022 (Zenodo OA)",
+     "url": "https://zenodo.org/record/7568182"
+    }
+   ],
+   "cost": [
+    {
+     "fact": "Norway: an average lice infestation cost about US$0.46 per kg harvested (about 9% of farm revenue). Total damage was about US$436 million in 2011.",
+     "source": "Abolofia, Wilen & Asche, Marine Resource Economics, 2017 (UiS repository)",
+     "url": "https://uis.brage.unit.no/uis-xmlui/handle/11250/2494032"
+    },
+    {
+     "fact": "Norway: lice cost farmers at least NOK 5.2 billion in 2018, excluding indirect costs (Nofima estimate).",
+     "source": "iLaks, citing Nofima/DN, 2019",
+     "url": "https://ilaks.no/lakselusa-kostet-oppdretterne-minst-52-milliarder-kroner-i-2018/"
+    },
+    {
+     "fact": "Chile: Caligus and its treatments raised unit production cost by about US$1.4/kg on average (farm cycles 2009-2015).",
+     "source": "EfD / Marine Resource Economics, 2019",
+     "url": "https://www.efdinitiative.org/publications/impact-caligus-treatments-unit-costs-heterogenous-salmon-farms-chile"
+    }
+   ],
+   "quality": [
+    {
+     "fact": "Norway 2025: only 24% of fish health staff said external injuries after delousing had improved (29% in 2024), and 53% saw no change. Delousing wounds remain a welfare and quality problem.",
+     "source": "Norwegian Veterinary Institute, Fiskehelserapporten 2025 (2026)",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fiskehelserapporten-2025/_/attachment/inline/363a7595-e0c3-4ee8-87e6-71ba808b4288:b3c8e9bf1ee7902bdc1ab93334e5219666ceabbd/Fiskehelserapporten%202025.pdf"
+    },
+    {
+     "fact": "Context, all causes: in Norway 2025, 0.5% of harvest weight was discarded and 86.9% graded superior. This is not lice-specific.",
+     "source": "Norwegian Veterinary Institute, Fiskehelserapporten 2025 (2026)",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fiskehelserapporten-2025/_/attachment/inline/363a7595-e0c3-4ee8-87e6-71ba808b4288:b3c8e9bf1ee7902bdc1ab93334e5219666ceabbd/Fiskehelserapporten%202025.pdf"
+    }
+   ],
+   "trend": [
+    {
+     "fact": "Norway 2025: record 3,918 non-medicinal delousing treatment-weeks, up 24% from 3,163 in 2024. Mechanical delousing has been the most used method since 2023, and freshwater plus thermal was the most used combination. PO6 averaged about 12 treatment-weeks per site.",
+     "source": "Norwegian Veterinary Institute, Fiskehelserapporten 2025 (2026)",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fiskehelserapporten-2025/_/attachment/inline/363a7595-e0c3-4ee8-87e6-71ba808b4288:b3c8e9bf1ee7902bdc1ab93334e5219666ceabbd/Fiskehelserapporten%202025.pdf"
+    },
+    {
+     "fact": "Norway 2025: 35% of medicated-feed users and 33% of medicinal-bath users reported reduced effect, and azamethiphos sensitivity is declining.",
+     "source": "Norwegian Veterinary Institute, Fiskehelserapporten 2025 (2026)",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fiskehelserapporten-2025/_/attachment/inline/363a7595-e0c3-4ee8-87e6-71ba808b4288:b3c8e9bf1ee7902bdc1ab93334e5219666ceabbd/Fiskehelserapporten%202025.pdf"
+    },
+    {
+     "fact": "Chile: hydrogen peroxide use against Caligus roughly doubled, from 5,150.8 g/t in 2023 to 10,890.3 g/t in 2024 (Sernapesca annual reports).",
+     "source": "Aquafeed.com, citing Sernapesca, 2025",
+     "url": "https://aquafeed.com/newsroom/reports/chile-publishes-annual-reports-on-aquaculture-health-status-and-antimicrobial-use"
+    },
+    {
+     "fact": "Chile rules: a farm must treat at 6 adult Caligus per fish, and is classed 'high dissemination' at 3 or more ovigerous females after treatment (since 2014).",
+     "source": "Bravo et al., Frontiers in Aquaculture, 2025 (introduction)",
+     "url": "https://www.frontiersin.org/journals/aquaculture/articles/10.3389/faquc.2025.1647026/pdf"
+    }
+   ],
+   "new_research": [
+    {
+     "fact": "Norway 2025: Mattilsynet's welfare thresholds for delousing were applied by 78% of surveyed fish health staff, up from 52% in 2024. Exemption sites in PO3/PO4 averaged 3.8 treatment-weeks versus 6.1 at other sites.",
+     "source": "Norwegian Veterinary Institute, Fiskehelserapporten 2025 (2026)",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fiskehelserapporten-2025/_/attachment/inline/363a7595-e0c3-4ee8-87e6-71ba808b4288:b3c8e9bf1ee7902bdc1ab93334e5219666ceabbd/Fiskehelserapporten%202025.pdf"
+    },
+    {
+     "fact": "USA 2025 challenge test of three salmon strains: tank effects explained 44-50% of the variance in copepodid attachment, versus only 1-7% for strain. About 65% of lice attached to fins.",
+     "source": "Pietrak et al., Fishes (MDPI) 10:334, 2025",
+     "url": "https://mdpi.com/2410-3888/10/7/334"
+    },
+    {
+     "fact": "2025 transcriptomics: lice loads were higher at 20 °C than at 10 °C in most salmon families, and skin gene responses were much larger at 20 °C (3,288 versus 562 shared DEGs). Warming seas may raise lice pressure.",
+     "source": "Ghanei-Motlagh et al., Frontiers in Genetics, 2025",
+     "url": "https://www.frontiersin.org/articles/10.3389/fgene.2025.1633603/full"
+    }
+   ],
+   "keywords": [
+    "sea lice",
+    "salmon lice",
+    "Lepeophtheirus salmonis",
+    "Caligus rogercresseyi",
+    "delousing mortality",
+    "thermal delousing",
+    "Thermolicer",
+    "Optilicer",
+    "Hydrolicer",
+    "lakselus",
+    "avlusing",
+    "termisk avlusing",
+    "mekanisk avlusing",
+    "lusegrense",
+    "trafikklys",
+    "piojo de mar",
+    "caligus",
+    "tratamiento antiparasitario",
+    "baños antiparasitarios",
+    "Sernapesca caligus"
+   ]
+  },
+  {
+   "id": "pd",
+   "name": "Pancreas disease (PD)",
+   "agent": "Salmonid alphavirus (SAV2 and SAV3 in Norway; SAV1 in Scotland/Ireland)",
+   "basins": [
+    "NO",
+    "GB",
+    "IE"
+   ],
+   "what": "A viral disease that damages the pancreas, heart and muscle. It cuts appetite and growth, causes runts and lengthens the production cycle. Mortality is low to moderate, but some outbreaks are severe.",
+   "mortality": [
+    {
+     "fact": "Norway field trial in a mixed SAV2/SAV3 outbreak: cumulative mortality was 8.9%, about a quarter of it from PD. Cage-level PD mortality ranged from 1.5% to 41.3%.",
+     "source": "Røsæg, Thorarinsson & Aunsmo, J Fish Dis 44:1911, 2021 (OA)",
+     "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9291808/"
+    },
+    {
+     "fact": "Norway: SAV3 mortality varies from low to moderate but can be high, and SAV2 is generally lower. Deaths start 2-3 weeks after the first signs.",
+     "source": "Norwegian Veterinary Institute, PD disease page",
+     "url": "https://www.vetinst.no/en/diseases/pancreas-disease-pd"
+    },
+    {
+     "fact": "Ireland: PD mortality was 23% in 2007, when about 90% of marine sites were affected, and fell to 2% in 2012. Scotland: PD caused 94% and 86% of disease losses in 2006 and 2007 (older data).",
+     "source": "Fish Farming Expert, 2015",
+     "url": "https://www.fishfarmingexpert.com/scotland-and-ireland-reduced-impact-from-pd-but-crucial-that-measures-stay-in-place/1358967"
+    }
+   ],
+   "growth": [
+    {
+     "fact": "Norway outbreak cage study: normalised harvest weight averaged 5.23 kg against an expected 6.31 kg, about 1.1 kg lower.",
+     "source": "Røsæg et al., J Fish Dis, 2021",
+     "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9291808/"
+    },
+    {
+     "fact": "Norway: one PD vaccine (Clynav, Clm6) raised harvest weight by 0.43-0.51 kg and cut mortality by 1.3 points (4.5% versus 5.8%) against control. Another vaccine (PDm6) showed no significant weight gain.",
+     "source": "Røsæg et al., J Fish Dis, 2021",
+     "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9291808/"
+    },
+    {
+     "fact": "Norway: chronic pancreatic damage lowers growth, raises FCR, creates runts and lengthens the production cycle (qualitative).",
+     "source": "Norwegian Veterinary Institute, PD page",
+     "url": "https://www.vetinst.no/en/diseases/pancreas-disease-pd"
+    }
+   ],
+   "cost": [
+    {
+     "fact": "Norway: a 2013 SAV3 outbreak cost on average NOK 55.4 million for a sea site stocked with 1 million smolts (Pettersen et al. 2015, cited).",
+     "source": "Røsæg et al., J Fish Dis, 2021 (citing Pettersen 2015)",
+     "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9291808/"
+    }
+   ],
+   "quality": [
+    {
+     "fact": "Fish with clinical PD had pale, abnormally firm fillets with more collagen and less protein. SAV-infected fish without PD lesions had normal fillet quality (2012 study).",
+     "source": "Nofima, Aquaculture 330:82, 2012",
+     "url": "https://nofima.com/publication/876251/"
+    },
+    {
+     "fact": "Norway: heart and skeletal-muscle lesions from PD lead to poor slaughter quality.",
+     "source": "Norwegian Veterinary Institute, PD page",
+     "url": "https://www.vetinst.no/en/diseases/pancreas-disease-pd"
+    },
+    {
+     "fact": "Norway field trial: superior grade share was 96-98% across cages after the PD outbreak.",
+     "source": "Røsæg et al., J Fish Dis, 2021",
+     "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9291808/"
+    }
+   ],
+   "trend": [
+    {
+     "fact": "Norway: 44 new PD cases in 2025 (31 SAV3 in PO3-PO4, 13 SAV2 mainly in PO6), down from 48 in 2024, 58 in 2023, 98 in 2022 and 158 in 2020. All 2025 cases were inside the endemic zone.",
+     "source": "Norwegian Veterinary Institute, Fiskehelserapporten 2025 (2026)",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fiskehelserapporten-2025/_/attachment/inline/363a7595-e0c3-4ee8-87e6-71ba808b4288:b3c8e9bf1ee7902bdc1ab93334e5219666ceabbd/Fiskehelserapporten%202025.pdf"
+    },
+    {
+     "fact": "Norway: 198 million PD vaccine doses were sold for salmon in 2025 (194 million in 2024). Of 50 fish health staff, 58% rated vaccine protection good, 28% medium, and none poor.",
+     "source": "Norwegian Veterinary Institute, Fiskehelserapporten 2025 (2026)",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fiskehelserapporten-2025/_/attachment/inline/363a7595-e0c3-4ee8-87e6-71ba808b4288:b3c8e9bf1ee7902bdc1ab93334e5219666ceabbd/Fiskehelserapporten%202025.pdf"
+    }
+   ],
+   "new_research": [
+    {
+     "fact": "PD resistance is strongly heritable: h2 = 0.41 (pedigree). Two QTL on ssa03 and ssa07 explain more than 60% of the additive genetic variance, making marker-assisted selection for PD-resistant strains possible.",
+     "source": "Gonen et al., BMC Genomics 21:388, 2020 (OA)",
+     "url": "https://link.springer.com/article/10.1186/s12864-020-06788-4"
+    },
+    {
+     "fact": "2025: a controlled field trial compared PD vaccines' effects on growth and mortality during an SAV2 outbreak in Norway. Only the title was seen; the full text could not be fetched.",
+     "source": "J Fish Dis, 2025 (jfd.70003)",
+     "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12580492/",
+     "level": "snippet-level"
+    }
+   ],
+   "keywords": [
+    "pancreas disease",
+    "salmonid alphavirus",
+    "SAV2",
+    "SAV3",
+    "PD outbreak salmon",
+    "pankreassykdom",
+    "PD-utbrudd",
+    "PD-sonen",
+    "enfermedad del páncreas",
+    "alfavirus salmónido",
+    "Clynav"
+   ]
+  },
+  {
+   "id": "isa",
+   "name": "Infectious salmon anaemia (ISA)",
+   "agent": "ISA virus (ISAV, orthomyxovirus); HPR-deleted virulent strains, HPR0 low-virulence variant",
+   "basins": [
+    "NO",
+    "CL",
+    "FO",
+    "IS",
+    "GB",
+    "CA"
+   ],
+   "what": "A notifiable viral disease that causes severe anaemia. Confirmed sites face culling or forced early harvest, restriction zones and fallowing, so each outbreak removes biomass from the market early.",
+   "mortality": [
+    {
+     "fact": "Norway, 2017-2022: outbreak mortality ranged from 20% to 90%. There were 93 sites with ISA (86 marine farms), and yearly prevalence was 1-3% of the roughly 800 active farms.",
+     "source": "Oliveira et al., SVEPM 2025 conference paper",
+     "url": "https://svepm.org.uk/wp-content/uploads/2025/05/Oliveira-Inside-the-zone-a-historical-assessment-of-infectious-salmon-anemia-ISA-control-regulations-in-Norway.pdf"
+    },
+    {
+     "fact": "Norway: daily mortality in affected pens is typically low (about 0.5-1 per 1,000), a 'smouldering fire', although very high mortality has been reported. Diseased fish must be destroyed or slaughtered quickly.",
+     "source": "Norwegian Veterinary Institute, ISA page",
+     "url": "https://www.vetinst.no/en/diseases/infectious-salmon-anemia"
+    }
+   ],
+   "growth": [
+    {
+     "fact": "Vaccinated fish may survive long enough to be harvested rather than destroyed, which costs less. The vaccine reduces mortality and symptoms but does not prevent infection (Pharmaq CEO, Jul 2025).",
+     "source": "iLaks, 24 Jul 2025",
+     "url": "https://ilaks.no/flere-ila-utbrudd-blant-vaksinert-laks-forste-gang-vi-har-sett-sier-pharmaq-sjefen/"
+    }
+   ],
+   "cost": [
+    {
+     "fact": "Chile: the 2007 ISA crisis roughly halved production over three years, with estimated losses of US$600 million.",
+     "source": "Salmon Business, 24 Jul 2025",
+     "url": "https://www.salmonbusiness.com/is-this-the-start-of-the-next-big-salmon-farming-crisis/"
+    },
+    {
+     "fact": "Iceland 2022: Ice Fish Farm reported a US$9.5 million biomass write-down from ISA losses (headline only).",
+     "source": "Undercurrent News, 29 Sep 2022",
+     "url": "https://undercurrentnews.com/2022/09/29/ice-fish-farm-reports-9-5m-biomass-write-down-from-isa-losses",
+     "level": "snippet-level"
+    }
+   ],
+   "quality": [],
+   "trend": [
+    {
+     "fact": "Norway: ISA was confirmed at 18 sea sites in 2025 (13 in 2024), with 3 more suspected. Seven of the 18 had vaccinated fish, and HPR0 was detected at 78 sites.",
+     "source": "Norwegian Veterinary Institute, Fiskehelserapporten 2025 (2026)",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fiskehelserapporten-2025/_/attachment/inline/363a7595-e0c3-4ee8-87e6-71ba808b4288:b3c8e9bf1ee7902bdc1ab93334e5219666ceabbd/Fiskehelserapporten%202025.pdf"
+    },
+    {
+     "fact": "Norway, Jan-Jun 2026: 5 confirmed ISA outbreaks (2 in PO6, 2 in PO7, 1 in PO12) plus 2 suspected, versus 11 confirmed in Jan-Jun 2025. The 2025 full-year spread was PO4 1, PO6 2, PO7 4, PO9 6, PO10 1, PO11 2, PO12 2.",
+     "source": "Norwegian Veterinary Institute, monthly ILA update, June 2026",
+     "url": "https://www.vetinst.no/_/attachment/inline/96b77db5-ef27-48ae-8d54-d80b301ca8d0:71023df10fcdd39ba2b58e260649ab10070c9f81/M%C3%A5nedsoppdatering%20ILA%20juni%202026.pdf"
+    },
+    {
+     "fact": "Norway: 2021 was the recent peak with 36 cases. By end-June 2025 there were 14 confirmed outbreaks, mostly in Nordland and Troms.",
+     "source": "Salmon Business, 24 Jul 2025",
+     "url": "https://www.salmonbusiness.com/is-this-the-start-of-the-next-big-salmon-farming-crisis/"
+    },
+    {
+     "fact": "Faroe Islands 2024: ISA was confirmed at Bakkafrost site A-19 Vágur, holding about 1 million fish averaging about 2.6 kg. ISA is rare in the Faroes.",
+     "source": "Fish Farmer Magazine, May 2024",
+     "url": "https://www.fishfarmermagazine.com/2024/05/27/isa-discovered-at-bakkafrost-faroes-site/"
+    }
+   ],
+   "new_research": [
+    {
+     "fact": "Norway: about 190 million ISA-containing vaccine doses were sold in 2025, similar to 2024, when nearly 200 million fish were vaccinated. Pharmaq estimates about 40% of Norwegian salmon are ISA-vaccinated. 2025 was the first time several outbreaks hit vaccinated fish at once.",
+     "source": "FHR 2025 + iLaks Jul 2025",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fiskehelserapporten-2025/_/attachment/inline/363a7595-e0c3-4ee8-87e6-71ba808b4288:b3c8e9bf1ee7902bdc1ab93334e5219666ceabbd/Fiskehelserapporten%202025.pdf"
+    },
+    {
+     "fact": "Risk factors for ISA outbreaks with no known source (Norway 2004-2017): a stocking period longer than 2 months (OR 3.9), prior IPN (OR 3.2), higher latitude, and high fish density. The mean annual probability of a primary outbreak was 0.7%.",
+     "source": "Lyngstad et al., Frontiers in Vet Science, 2018",
+     "url": "https://www.frontiersin.org/journals/veterinary-science/articles/10.3389/fvets.2018.00308/pdf"
+    },
+    {
+     "fact": "Norway 2019-2022: marine farms inside ISA protection or surveillance zones had about 2.2-2.3 times the odds of an outbreak.",
+     "source": "Oliveira et al., SVEPM 2025",
+     "url": "https://svepm.org.uk/wp-content/uploads/2025/05/Oliveira-Inside-the-zone-a-historical-assessment-of-infectious-salmon-anemia-ISA-control-regulations-in-Norway.pdf"
+    }
+   ],
+   "keywords": [
+    "infectious salmon anaemia",
+    "ISA outbreak",
+    "ISAV",
+    "HPR0",
+    "ILA",
+    "ILA-utbrudd",
+    "infeksiøs lakseanemi",
+    "ILA-vaksine",
+    "anemia infecciosa del salmón",
+    "virus ISA",
+    "brote ISA",
+    "Sernapesca ISA"
+   ]
+  },
+  {
+   "id": "cms",
+   "name": "Cardiomyopathy syndrome (CMS)",
+   "agent": "Piscine myocarditis virus (PMCV, totivirus-like)",
+   "basins": [
+    "NO",
+    "GB",
+    "FO",
+    "IE"
+   ],
+   "what": "A viral heart disease ('heart rupture') that mainly kills large, fast-growing salmon late in the sea phase. Losses therefore fall on near-harvest biomass, and stress from handling or delousing can trigger sudden deaths.",
+   "mortality": [
+    {
+     "fact": "Norway: CMS mostly causes low to moderately elevated mortality over weeks or months, with spikes after stress such as storms, algal blooms or handling. Acute high mortality is rare.",
+     "source": "Norwegian Veterinary Institute report 2017-1, CMS hos laks",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2017/kardiomyopatisyndrom-cms-hos-laks/_/attachment/inline/d2d6d7b8-c9bc-4750-9d81-1d0acfd796d4:d44315518b6aae92d6a3657a854823eff5e9807d/2017_1_Kardiomyopatisyndrom_CMS_hos_laks.pdf"
+    },
+    {
+     "fact": "Norway 2025: CMS made up about 16% of infection-category death registrations, up from about 8% in 2024. It was ranked the most important disease in PO1-PO5.",
+     "source": "Norwegian Veterinary Institute, Fiskehelserapporten 2025 (2026)",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fiskehelserapporten-2025/_/attachment/inline/363a7595-e0c3-4ee8-87e6-71ba808b4288:b3c8e9bf1ee7902bdc1ab93334e5219666ceabbd/Fiskehelserapporten%202025.pdf"
+    },
+    {
+     "fact": "Norway, Mar 2025: a CMS outbreak at Mowi's Rønstad site (Volda) killed 5,725 fish in four of five pens, 2,200 of them in one pen.",
+     "source": "iLaks, 27 May 2025",
+     "url": "https://ilaks.no/hjertesprekk-rammet-mowi-lokalitet-over-5-700-fisk-dode/"
+    }
+   ],
+   "growth": [
+    {
+     "fact": "CMS mainly hits large, fast-growing fish, typically in the second year at sea, so each loss is of high-weight biomass. It is now also seen as early as 5 months after sea transfer and in fish of 100-300 g.",
+     "source": "NVI report 2017-1",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2017/kardiomyopatisyndrom-cms-hos-laks/_/attachment/inline/d2d6d7b8-c9bc-4750-9d81-1d0acfd796d4:d44315518b6aae92d6a3657a854823eff5e9807d/2017_1_Kardiomyopatisyndrom_CMS_hos_laks.pdf"
+    }
+   ],
+   "cost": [
+    {
+     "fact": "Norway: direct industry losses were NOK 33.5-66.3 million per year (2003 estimate). In 2007 Marine Harvest lost 1,200 t of biomass to CMS in H1, implying more than NOK 200 million for the sector that year. No newer health-economic estimate existed as of 2017.",
+     "source": "NVI report 2017-1",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2017/kardiomyopatisyndrom-cms-hos-laks/_/attachment/inline/d2d6d7b8-c9bc-4750-9d81-1d0acfd796d4:d44315518b6aae92d6a3657a854823eff5e9807d/2017_1_Kardiomyopatisyndrom_CMS_hos_laks.pdf"
+    }
+   ],
+   "quality": [],
+   "trend": [
+    {
+     "fact": "Norway: CMS was diagnosed at 114 sites in 2025, up from 78 in 2024 (129 in 2023).",
+     "source": "Norwegian Veterinary Institute, Fiskehelserapporten 2025 (2026)",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fiskehelserapporten-2025/_/attachment/inline/363a7595-e0c3-4ee8-87e6-71ba808b4288:b3c8e9bf1ee7902bdc1ab93334e5219666ceabbd/Fiskehelserapporten%202025.pdf"
+    }
+   ],
+   "new_research": [
+    {
+     "fact": "Benchmark Genetics (2026): genomic selection for CMS resistance raised field survival in a natural outbreak from 73.8% (mid-ranked families) to 87.5% (top families). Heritability of resistance was 0.50-0.59 in challenge tests and 0.30 for field survival. Paper: 'From Challenge Tests to Field Survival…', Aquaculture 2026.",
+     "source": "Benchmark Genetics news, 24 Apr 2026",
+     "url": "https://www.bmkgenetics.com/cross-generational-genomic-selection-significantly-boosts-cms-resistance-in-atlantic-salmon/"
+    },
+    {
+     "fact": "There is still no commercial CMS vaccine. The NVI project HSMI-CMS-Vacc worked on vaccine development (page seen only in search results).",
+     "source": "Norwegian Veterinary Institute project page",
+     "url": "https://www.vetinst.no/en/research-and-innovation/past-research-projects/hsmi-cms-vacc-development-of-vaccines-against-hsmi-and-cms-in-atlantic-salmon",
+     "level": "snippet-level"
+    }
+   ],
+   "keywords": [
+    "cardiomyopathy syndrome",
+    "CMS salmon",
+    "piscine myocarditis virus",
+    "PMCV",
+    "heart rupture salmon",
+    "kardiomyopatisyndrom",
+    "hjertesprekk",
+    "CMS-utbrudd",
+    "síndrome de cardiomiopatía",
+    "CMS salmón"
+   ]
+  },
+  {
+   "id": "hsmi",
+   "name": "Heart and skeletal muscle inflammation (HSMI)",
+   "agent": "Piscine orthoreovirus genotype 1 (PRV-1)",
+   "basins": [
+    "NO",
+    "CL",
+    "GB",
+    "IE",
+    "CA"
+   ],
+   "what": "The most widespread viral disease of Norwegian farmed salmon. It inflames heart and red muscle, usually in the first months at sea, causing fish to lose appetite and making them vulnerable to handling stress.",
+   "mortality": [
+    {
+     "fact": "Norway: mortality in affected pens ranges from negligible to about 20%, with high morbidity. Heart inflammation can run for 1-2 months without visible signs.",
+     "source": "Norwegian Veterinary Institute, HSMI page",
+     "url": "https://wwweng.vetinst.no/diseases/heart-and-skeletal-muscle-inflammation"
+    },
+    {
+     "fact": "Norway 2025: HSMI made up about 19% of infection-category death registrations. It was ranked the most important disease in PO6-PO13.",
+     "source": "Norwegian Veterinary Institute, Fiskehelserapporten 2025 (2026)",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fiskehelserapporten-2025/_/attachment/inline/363a7595-e0c3-4ee8-87e6-71ba808b4288:b3c8e9bf1ee7902bdc1ab93334e5219666ceabbd/Fiskehelserapporten%202025.pdf"
+    }
+   ],
+   "growth": [],
+   "cost": [],
+   "quality": [
+    {
+     "fact": "Up to 20% of fillets at Norwegian processing plants were reported to have melanised (dark) spots, which cause downgrading. PRV was found in all red and melanised foci studied and is proposed as a precondition for them.",
+     "source": "Bjørgen et al., Veterinary Research 46:89, 2015 (OA)",
+     "url": "https://link.springer.com/article/10.1186/s13567-015-0244-6"
+    },
+    {
+     "fact": "Caveat: Nofima (2022) found rib fractures may be the main cause of melanin spots, rising from about 4 to 10 rib defects per fish after sea transfer. Dark spots are called the most common quality problem in farmed salmon.",
+     "source": "Nofima, 16 Nov 2022",
+     "url": "https://nofima.com/results/rib-fractures-may-be-the-main-cause-of-melanin-spots/"
+    }
+   ],
+   "trend": [
+    {
+     "fact": "Norway: HSMI was diagnosed at 167 sites in 2025, up from 115 in 2024 (184 in 2023).",
+     "source": "Norwegian Veterinary Institute, Fiskehelserapporten 2025 (2026)",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fiskehelserapporten-2025/_/attachment/inline/363a7595-e0c3-4ee8-87e6-71ba808b4288:b3c8e9bf1ee7902bdc1ab93334e5219666ceabbd/Fiskehelserapporten%202025.pdf"
+    },
+    {
+     "fact": "Norway: PRV-1 is found in almost 90% of sea-phase farmed salmon, and nearly all fish are infected during the cycle. HSMI is also diagnosed in Chile, Scotland and Ireland, and to a lesser extent in western Canada.",
+     "source": "NVI HSMI page; iLaks Feb 2026",
+     "url": "https://wwweng.vetinst.no/diseases/heart-and-skeletal-muscle-inflammation"
+    }
+   ],
+   "new_research": [
+    {
+     "fact": "2025: host genotype mattered more than virus genotype. Heart inflammation after PRV-1 challenge reached 62% in a European Mowi strain versus 29% in a New Brunswick strain, so genetics or breeding could lower HSMI.",
+     "source": "Polinski et al., Viruses 17:285, 2025 (MDPI OA)",
+     "url": "https://www.mdpi.com/1999-4915/17/2/285"
+    },
+    {
+     "fact": "Norway: the FHF-funded PRVariant project (Nov 2025-2027, led by NMBU) is mapping PRV-1 variants with different virulence. There is still no HSMI vaccine on the market.",
+     "source": "iLaks, 9 Feb 2026",
+     "url": "https://ilaks.no/skal-kartlegge-virusvariantene-bak-den-mest-utbredte-virussykdommen-hos-oppdrettslaks/"
+    },
+    {
+     "fact": "An experimental inactivated PRV vaccine protected against HSMI after injection challenge but gave only moderate protection under natural cohabitation.",
+     "source": "J Fish Dis, 2018 (jfd.12835)",
+     "url": "https://openpolar.no/Record/crwiley:10.1111%2Fjfd.12835"
+    }
+   ],
+   "keywords": [
+    "heart and skeletal muscle inflammation",
+    "HSMI",
+    "piscine orthoreovirus",
+    "PRV-1",
+    "melanin spots salmon",
+    "HSMB",
+    "hjerte- og skjelettmuskelbetennelse",
+    "PRV laks",
+    "melaninflekker",
+    "inflamación del músculo esquelético y cardíaco",
+    "HSMI salmón",
+    "orthoreovirus pisciano"
+   ]
+  },
+  {
+   "id": "gill",
+   "name": "Gill disease (complex gill disease, AGD)",
+   "agent": "Multifactorial: Paramoeba (Neoparamoeba) perurans (AGD), Candidatus Branchiomonas cysticola, salmon gill poxvirus (SGPV), Desmozoon lepeophtherii, plus plankton and micro-jellyfish and warm water",
+   "basins": [
+    "NO",
+    "GB",
+    "IE",
+    "AU",
+    "CL",
+    "FO"
+   ],
+   "what": "Damaged gills reduce oxygen uptake, so fish tolerate warm water, handling and delousing poorly. Gill disease is now a leading cause of mass mortality in Norway and Scotland, and AGD needs repeated freshwater or peroxide baths.",
+   "mortality": [
+    {
+     "fact": "Scotland (Shetland), 2025: Scottish Sea Farms reported full-cycle mortality of 69% at East of Papa Little, and monthly mortality of 10.5-13% at Cole Deep and 19.6% at Holms Geo. The cause was AGD and gill problems after record sea temperatures, plankton and micro-jellyfish.",
+     "source": "Fish Farming Expert, 10 Feb 2026",
+     "url": "https://www.fishfarmingexpert.com/amoebic-gill-disease-fish-mortality-salmar/shetland-fish-deaths-plunged-scottish-sea-farms-into-the-red/2067489"
+    },
+    {
+     "fact": "Norway 2025: complex gill disease was ranked the second most important cause of salmon mortality and the fastest-growing problem. It made up about 20% of unknown-cause death registrations nationally (about 30% in PO1-PO4), up from 3-14% in 2021-2024.",
+     "source": "Norwegian Veterinary Institute, Fiskehelserapporten 2025 (2026)",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fiskehelserapporten-2025/_/attachment/inline/363a7595-e0c3-4ee8-87e6-71ba808b4288:b3c8e9bf1ee7902bdc1ab93334e5219666ceabbd/Fiskehelserapporten%202025.pdf"
+    },
+    {
+     "fact": "Norway cohort study (8 sites): gill-related mortality occurred in 10 of 16 sea groups but was low per group (0.04-1.69%). Gill infections were very common: Ca. Branchiomonas in 78% of gills, D. lepeophtherii 82%, P. perurans 20%, SGPV 14%.",
+     "source": "Østevik et al., J Fish Dis, 2022 (FHF PDF)",
+     "url": "https://www.fhf.no/media/4437/ostevik-et-al-2022-a-cohort-study-of-gill-infections-gill-pathology-and-gillrelated-mortality-002.pdf"
+    },
+    {
+     "fact": "Untreated AGD can kill up to about 10% per week (Tasmania). In Norway's first outbreaks in 2006, mortality was 10-20% at three farms and about 80% at one.",
+     "source": "VKM risk assessment of AGD, 2014",
+     "url": "https://vkm.no/download/18.7e19596115dabec04172a6b/1501851063568/Risk%20assessment%20of%20amoebic%20gill%20disease.pdf"
+    }
+   ],
+   "growth": [
+    {
+     "fact": "AGD halved aerobic capacity compared with healthy-gilled salmon (Hvas et al. 2017, cited in FHR 2025). This limits growth and tolerance of handling.",
+     "source": "Norwegian Veterinary Institute, Fiskehelserapporten 2025 (2026)",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fiskehelserapporten-2025/_/attachment/inline/363a7595-e0c3-4ee8-87e6-71ba808b4288:b3c8e9bf1ee7902bdc1ab93334e5219666ceabbd/Fiskehelserapporten%202025.pdf"
+    },
+    {
+     "fact": "2025-26 breeding study: a negative genetic correlation (about −0.17 to −0.21) was found between gill damage score and body weight.",
+     "source": "Preston et al., Frontiers in Aquaculture, 2025/2026",
+     "url": "https://www.frontiersin.org/journals/aquaculture/articles/10.3389/faquc.2025.1541010/full"
+    }
+   ],
+   "cost": [
+    {
+     "fact": "Scotland 2025: gill-driven losses turned Scottish Sea Farms to a full-year operating loss of NOK −128m (versus +NOK 555m in 2024), with Q4 EBIT/kg of NOK −33.8. 2025 harvest was 32,800 t gwt, and 2026 guidance was cut from 45,000 t to 43,000 t.",
+     "source": "Fish Farming Expert, 10 Feb 2026",
+     "url": "https://www.fishfarmingexpert.com/amoebic-gill-disease-fish-mortality-salmar/shetland-fish-deaths-plunged-scottish-sea-farms-into-the-red/2067489"
+    },
+    {
+     "fact": "Scotland 2012: one company estimated its AGD cost at about NOK 45 million, and another lost 4,661 t of salmon in Shetland.",
+     "source": "VKM risk assessment of AGD, 2014",
+     "url": "https://vkm.no/download/18.7e19596115dabec04172a6b/1501851063568/Risk%20assessment%20of%20amoebic%20gill%20disease.pdf"
+    }
+   ],
+   "quality": [],
+   "trend": [
+    {
+     "fact": "Norway 2025: detections of P. perurans (AGD) were 'far higher' than in 2024 (no count given). SGPV was detected at 191 sites, about the same as previous years. Bacterial gill disease fell to about 9% of infection registrations in PO1-PO4 (16% in 2024, 29% in 2023).",
+     "source": "Norwegian Veterinary Institute, Fiskehelserapporten 2025 (2026)",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fiskehelserapporten-2025/_/attachment/inline/363a7595-e0c3-4ee8-87e6-71ba808b4288:b3c8e9bf1ee7902bdc1ab93334e5219666ceabbd/Fiskehelserapporten%202025.pdf"
+    },
+    {
+     "fact": "Scotland: an analysis of mass-mortality events found poor gill health was the most common general cause, in 65% of cases. About 21 million fish from the 2022 smolt year class died prematurely at sea (advocacy-group letter citing Scottish Government data).",
+     "source": "Coastal Communities Network letter to Scottish Parliament RAI Committee, Mar 2026",
+     "url": "https://www.parliament.scot/-/media/files/committees/rural-affairs-and-islands-committee/correspondence/2026/salmon-farming-ccn-9-march.pdf"
+    }
+   ],
+   "new_research": [
+    {
+     "fact": "Genetic resistance to complex gill disease: gill-damage score heritability was about 0.29, and genomic prediction accuracy was 0.60-0.62 (Benchmark Genetics/Stirling, 3,120 fish, 195 families). Selective breeding is feasible.",
+     "source": "Preston et al., Frontiers in Aquaculture, 2025/2026",
+     "url": "https://www.frontiersin.org/journals/aquaculture/articles/10.3389/faquc.2025.1541010/full"
+    },
+    {
+     "fact": "AGD treatment: freshwater baths of 2-3 h work best, and hydrogen peroxide is less effective and riskier. Norway's 2022 cohort study saw mixed results, with AGD decreasing after baths in 6 groups and increasing in 5.",
+     "source": "VKM 2014; Østevik et al. 2022",
+     "url": "https://www.fhf.no/media/4437/ostevik-et-al-2022-a-cohort-study-of-gill-infections-gill-pathology-and-gillrelated-mortality-002.pdf"
+    }
+   ],
+   "keywords": [
+    "gill disease salmon",
+    "complex gill disease",
+    "amoebic gill disease",
+    "AGD",
+    "Paramoeba perurans",
+    "Neoparamoeba perurans",
+    "Candidatus Branchiomonas cysticola",
+    "salmon gill poxvirus",
+    "SGPV",
+    "micro-jellyfish",
+    "gjellesykdom",
+    "kompleks gjellesykdom",
+    "amøbegjellesykdom",
+    "gjellehelse",
+    "enfermedad branquial",
+    "enfermedad branquial amebiana",
+    "salud branquial"
+   ]
+  },
+  {
+   "id": "srs",
+   "name": "SRS (piscirickettsiosis)",
+   "agent": "Piscirickettsia salmonis (intracellular bacterium)",
+   "basins": [
+    "CL",
+    "NO",
+    "IE",
+    "UK",
+    "AU-TAS"
+   ],
+   "what": "A bacterial blood infection that is Chile's top infectious killer of farmed salmon and the reason for almost all Chilean antibiotic use; it has now also hit Tasmania and is rising in Ireland and Scotland.",
+   "mortality": [
+    {
+     "fact": "Chile 2025: SRS caused 52.8% of Atlantic salmon infectious mortality, up 9.6 points on 2024 (Sernapesca annual report).",
+     "source": "Salmon Business on Sernapesca, 2026",
+     "url": "https://www.salmonbusiness.com/sernapesca-chiles-overall-salmon-mortality-falls-in-2025-but-tenacibaculosis-rises/?amp=1"
+    },
+    {
+     "fact": "Chile 2023: SRS caused 44.7% of Atlantic salmon infectious mortality, down 8.1% on 2022.",
+     "source": "WeAreAquaculture on Sernapesca, 2024",
+     "url": "https://weareaquaculture.com/news/aquaculture/chile-recorded-only-one-isa-outstanding-outbreak-in-2023"
+    },
+    {
+     "fact": "Tasmania 2025: more than 20,000 t of farmed salmon died, mainly from P. salmonis; the February peak alone was 6,300 t. Production was about 68,000 t gutted weight in FY2024-25.",
+     "source": "Fish Farming Expert on EPA Tasmania data, 2026",
+     "url": "https://www.fishfarmingexpert.com/epa-tasmania-fish-mortality-piscirickettsia-salmonis/more-than-20000-tonnes-of-fish-died-prematurely-in-tasmania-last-year/2059809"
+    },
+    {
+     "fact": "Tasmania Jan-Mar 2026: another 9,197 t died (2,025 / 3,356 / 3,816 t by month), about 12% of annual production. The article does not confirm the cause, but P. salmonis and warm water are the suspected drivers.",
+     "source": "Huon News on EPA data, Apr 2026",
+     "url": "https://huonnews.com/17435/dead-salmon-9000-tonnes-in-12-weeks/"
+    },
+    {
+     "fact": "Ireland and Scotland since 2023: Piscirickettsia found at more than 25 marine sites a year, most with clinical signs. Mean outbreak length is 13 weeks (range 4-26). Norway had at least 7 affected farms in 2024 without significant mortality.",
+     "source": "Fish Farming Expert on Norwegian Veterinary Institute study, 2026",
+     "url": "https://www.fishfarmingexpert.com/norwegian-veterinary-institute-ireland-patogen/piscirickettsiosis-srs-in-the-north-east-atlantic-area/2180331"
+    },
+    {
+     "fact": "Norway 2025: no confirmed SRS in salmon; suspected at 3 sites in PO8/PO9. SRS became a listed disease (category G) in June 2025.",
+     "source": "Norwegian Veterinary Institute, Fish Health Report 2025",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fish-health-report-2025/_/attachment/inline/4e7d310d-0620-439c-a2cf-caac02253620:b124880858959e1f6b61fbe45e1137e7e31fc0f9/Fish%20Health%20Report%202025.pdf"
+    }
+   ],
+   "growth": [
+    {
+     "fact": "Chile Q1 2026: Salmones Camanchaca cited lower harvest weights after SRS outbreaks; processing cost rose 15% to US$1.22/kg WFE. No weight figure was given.",
+     "source": "Salmon Business, Camanchaca Q1 2026",
+     "url": "https://www.salmonbusiness.com/salmones-camanchaca-srs-outbreaks-and-weak-prices-cut-q1-ebitda-by-52/"
+    }
+   ],
+   "cost": [
+    {
+     "fact": "Chile: infectious disease costs the salmon industry more than US$700 million a year in lost revenue, with SRS the main driver.",
+     "source": "Farias et al., Antibiotics (MDPI) 14:1177, 2025",
+     "url": "https://www.mdpi.com/2079-6382/14/12/1177"
+    },
+    {
+     "fact": "Chile Q1 2026: SRS outbreaks at several Camanchaca sites cost US$2.8 million in extraordinary mortality. EBITDA fell 52% to US$9.3 million and EBIT/kg fell from US$1.02 to US$0.35.",
+     "source": "Salmon Business, 2026",
+     "url": "https://www.salmonbusiness.com/salmones-camanchaca-srs-outbreaks-and-weak-prices-cut-q1-ebitda-by-52/"
+    },
+    {
+     "fact": "Chile 2024: 336.3 t of antibiotics were used, up 9.7% year on year. That is 302 g per tonne harvested over a full cycle. Florfenicol was 97% of the total and SRS accounted for more than 96%.",
+     "source": "Fish Farming Expert on Sernapesca, 2025",
+     "url": "https://www.fishfarmingexpert.com/antibiotics-chilean-salmon-farming-florfenicol/srs-pushed-chilean-salmon-farming-antibiotic-use-up-by-97-last-year/1968326"
+    },
+    {
+     "fact": "Chile 2024: 351.1 t of antimicrobials were used and 97.9% of sea-phase treatments targeted SRS. About 99% were given as medicated feed.",
+     "source": "Farias et al., Antibiotics 2025",
+     "url": "https://www.mdpi.com/2079-6382/14/12/1177"
+    },
+    {
+     "fact": "Chile 2024: cycles certified under PROA-Salmon used 18.9 g antibiotics per tonne, more than 90% below the 302 g/t average. They covered 28.7% of harvest.",
+     "source": "Aquafeed on Sernapesca, 2025",
+     "url": "https://aquafeed.com/newsroom/reports/chile-publishes-annual-reports-on-aquaculture-health-status-and-antimicrobial-use"
+    }
+   ],
+   "quality": [],
+   "trend": [
+    {
+     "fact": "Chile: SRS share of Atlantic salmon infectious mortality was 44.7% in 2023, about 43% in 2024 (implied) and 52.8% in 2025, so it is rising again. Total Chilean salmonid mortality was 9.7% in 2025, down 1.5 points.",
+     "source": "Sernapesca via Salmon Business, 2026",
+     "url": "https://www.salmonbusiness.com/sernapesca-chiles-overall-salmon-mortality-falls-in-2025-but-tenacibaculosis-rises/?amp=1"
+    },
+    {
+     "fact": "Tasmania: Australia approved emergency florfenicol use in Nov 2025, with 10-day treatments at Tassal and Huon leases (Meads Creek, Stringers Cove, Zuidpool, Soldiers Point).",
+     "source": "EPA Tasmania florfenicol page, 2025",
+     "url": "https://epa.tas.gov.au/business-industry/regulation/salmon-aquaculture/management-of-therapeutants-including-antibiotics/florfenicol"
+    },
+    {
+     "fact": "Tasmania: one P. salmonis genotype is present, in the south-east since 2023 and on the east coast since at least 2021. Outbreaks follow sea transfer at 12-18°C, and eastern Tasmanian waters are warming nearly 4x faster than the global average.",
+     "source": "NRE Tasmania, Reflections and Learnings, Salmon Mortality Event 2025",
+     "url": "https://nre.tas.gov.au/Documents/Reflections%20and%20Learnings%20-%20Salmon%20Mortality%20Event%202025.pdf"
+    }
+   ],
+   "new_research": [
+    {
+     "fact": "A live attenuated SRS vaccine (PHARMAQ/Zoetis) protected Atlantic salmon for at least 15 months in lab challenges. Protection failed if fish were immunised at 7-8°C (32-66% mortality) but held at 10°C or above. About 95% of Atlantic salmon stocked in Chile's regions X and XI (141 million fish) were vaccinated in 2022.",
+     "source": "Olsen et al., Vaccines (MDPI) 12:416, 2024",
+     "url": "https://www.mdpi.com/2076-393X/12/4/416"
+    },
+    {
+     "fact": "Genomics: SRS resistance is heritable (h2 about 0.27-0.39 genomic). Genomic prediction raised reliability 25-29% over pedigree selection.",
+     "source": "Bangera et al., BMC Genomics, 2017 (older)",
+     "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5282740"
+    },
+    {
+     "fact": "Mowi Scotland has an SRS vaccine in development and is researching bacteriophage therapy as an antibiotic alternative.",
+     "source": "Salmon Business, 2025",
+     "url": "https://www.salmonbusiness.com/scottish-salmon-survival-rates-soar-heres-what-mowi-did-differently/?amp=1"
+    }
+   ],
+   "keywords": [
+    "piscirickettsiosis",
+    "SRS salmon",
+    "Piscirickettsia salmonis",
+    "salmonid rickettsial septicaemia",
+    "florfenicol salmon",
+    "piscirickettsiose",
+    "SRS laks",
+    "rickettsia laks",
+    "piscirickettsiosis salmón",
+    "SRS salmonicultura",
+    "uso de antimicrobianos salmonicultura",
+    "Sernapesca antibióticos",
+    "PROA-Salmón",
+    "Tasmania salmon mortality"
+   ]
+  },
+  {
+   "id": "bkd",
+   "name": "Bacterial kidney disease (BKD)",
+   "agent": "Renibacterium salmoninarum (Gram-positive bacterium, passed vertically through eggs)",
+   "basins": [
+    "CL",
+    "NO",
+    "CA"
+   ],
+   "what": "A slow, chronic bacterial infection of the kidney with no effective vaccine or cure; it is mainly a coho problem in Chile and an occasional but worrying outbreak in Norway.",
+   "mortality": [
+    {
+     "fact": "BKD can cause up to 40% cumulative mortality in farmed Atlantic salmon (review statement; reported in Canada and Chile).",
+     "source": "Eslamloo et al., Frontiers in Immunology, 2020",
+     "url": "https://frontiersin.org/articles/10.3389/fimmu.2020.567838/pdf"
+    },
+    {
+     "fact": "Chile 2023: BKD was the main infectious cause of death in coho salmon (no % given).",
+     "source": "WeAreAquaculture on Sernapesca, 2024",
+     "url": "https://weareaquaculture.com/news/aquaculture/chile-recorded-only-one-isa-outstanding-outbreak-in-2023"
+    },
+    {
+     "fact": "In a challenge trial, only about 21% of Atlantic salmon pre-smolts survived R. salmoninarum infection (11°C and 15°C). Family survival ranged 0-76% (unpublished data cited). Genome data show several introductions into Chile over 30 years.",
+     "source": "Rozas-Serri et al., Frontiers in Immunology, 2020",
+     "url": "https://www.frontiersin.org/articles/10.3389/fimmu.2020.01378/pdf"
+    }
+   ],
+   "growth": [],
+   "cost": [],
+   "quality": [],
+   "trend": [
+    {
+     "fact": "Norway: historically 0-3 outbreaks a year. Since Dec 2022 there were 14 confirmed sites plus 2 suspected, mostly in PO6 (Hitra/Orkland, 2 companies) and PO4.",
+     "source": "Norwegian Veterinary Institute BKD webinar (T. Moldal), Jan 2024",
+     "url": "https://www.vetinst.no/arrangementer/webinar-om-bakteriell-nyresyke-bkd-hos-laksefisk/_/attachment/inline/0ea98843-f617-45b9-9cd3-ccc7595aabe3:d057d8edc5f3640c2ae26804995230b73b0f90dd/Torfinn%20Moldal.pdf"
+    },
+    {
+     "fact": "Norway 2024: BKD was detected at 8 sites in PO5-PO6.",
+     "source": "Norwegian Veterinary Institute, Fish Health Report 2024",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2025/norwegian-fish-health-report-2024"
+    },
+    {
+     "fact": "Norway 2025: 1 confirmed BKD outbreak (grow-out, PO5) and 1 suspected (broodstock, PO6), so a sharp fall.",
+     "source": "Norwegian Veterinary Institute, Fish Health Report 2025",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fish-health-report-2025/_/attachment/inline/4e7d310d-0620-439c-a2cf-caac02253620:b124880858959e1f6b61fbe45e1137e7e31fc0f9/Fish%20Health%20Report%202025.pdf"
+    },
+    {
+     "fact": "Norway: no effective treatment or vaccine exists. The food authority believes BKD spread from wild fish to a sea site, then between farms via well boats and delousing vessels.",
+     "source": "Fish Farmer Magazine, 2024",
+     "url": "https://www.fishfarmermagazine.com/2024/06/04/bacterial-kidney-disease-fears-in-central-norway/"
+    },
+    {
+     "fact": "Canada (BC): DFO publishes site-level fish health events, which can be used as a feed for BKD diagnoses. No numbers were extracted.",
+     "source": "DFO open data, ongoing",
+     "url": "https://open.canada.ca/data/en/dataset/deefd1d7-7184-44c7-83aa-ec0db91aad27"
+    }
+   ],
+   "new_research": [
+    {
+     "fact": "Research focus is on disease-free broodstock and egg screening, since R. salmoninarum passes through eggs. About 50 Norwegian isolates have been whole-genome sequenced to trace spread.",
+     "source": "Norwegian Veterinary Institute BKD webinar, 2024",
+     "url": "https://www.vetinst.no/arrangementer/webinar-om-bakteriell-nyresyke-bkd-hos-laksefisk/_/attachment/inline/0ea98843-f617-45b9-9cd3-ccc7595aabe3:d057d8edc5f3640c2ae26804995230b73b0f90dd/Torfinn%20Moldal.pdf"
+    },
+    {
+     "fact": "Poor efficacy of vaccines and antibiotics is why BKD persists in sea cages. Breeding for resistance is under study (large family differences in survival).",
+     "source": "Rozas-Serri et al., Frontiers in Immunology, 2020",
+     "url": "https://www.frontiersin.org/articles/10.3389/fimmu.2020.01378/pdf"
+    }
+   ],
+   "keywords": [
+    "bacterial kidney disease",
+    "BKD salmon",
+    "Renibacterium salmoninarum",
+    "bakteriell nyresyke",
+    "BKD laks",
+    "renibacteriosis",
+    "enfermedad bacteriana del riñón",
+    "BKD salmón coho",
+    "Renibacterium Chile"
+   ]
+  },
+  {
+   "id": "ulcers",
+   "name": "Winter ulcers and tenacibaculosis (incl. yellow mouth / mouthrot)",
+   "agent": "Moritella viscosa (winter ulcer); Tenacibaculum spp. (T. finnmarkense, T. dicentrarchi in Chile, T. maritimum = yellow mouth/mouthrot in BC and Tasmania)",
+   "basins": [
+    "NO",
+    "CL",
+    "CA",
+    "AU-TAS",
+    "UK"
+   ],
+   "what": "Bacterial skin and mouth ulcers that kill fish and are the main reason Norwegian salmon is downgraded at slaughter; tenacibaculosis is now Chile's number-two infectious killer.",
+   "mortality": [
+    {
+     "fact": "Norway 2025: winter ulcers were found at 299 salmon sites: M. viscosa at 246 (289 in 2024, 320 in 2023), Tenacibaculum at 147 (165 in 2024), and both together at 94.",
+     "source": "Norwegian Veterinary Institute, Fish Health Report 2025",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fish-health-report-2025/_/attachment/inline/4e7d310d-0620-439c-a2cf-caac02253620:b124880858959e1f6b61fbe45e1137e7e31fc0f9/Fish%20Health%20Report%202025.pdf"
+    },
+    {
+     "fact": "Norway 2025: M. viscosa caused about 14% of infectious-disease death registrations (peak about 39% in 2024), about 4% of all registrations. Unspecified-bacteria winter ulcers added about 15%. Tenacibaculum mouth/head ulcers were about 12% in PO5-PO9.",
+     "source": "Norwegian Veterinary Institute, Fish Health Report 2025 (AquaCloud data)",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fish-health-report-2025/_/attachment/inline/4e7d310d-0620-439c-a2cf-caac02253620:b124880858959e1f6b61fbe45e1137e7e31fc0f9/Fish%20Health%20Report%202025.pdf"
+    },
+    {
+     "fact": "Norway: at the Feb-Mar peak, winter ulcers caused 20-30% of total losses in the 2023-2025 winters, versus under 12% in 2020-2021.",
+     "source": "Salmon Business, Oct 2025",
+     "url": "https://www.salmonbusiness.com/five-winters-one-trend-the-disease-norwegian-farmers-cant-shake/?amp=1"
+    },
+    {
+     "fact": "Chile 2025: tenacibaculosis caused 31.5% of Atlantic salmon infectious mortality, up 2.1 points. It also rose in trout (+6.8%) and coho (+4%).",
+     "source": "Salmon Business on Sernapesca, 2026",
+     "url": "https://www.salmonbusiness.com/sernapesca-chiles-overall-salmon-mortality-falls-in-2025-but-tenacibaculosis-rises/?amp=1"
+    },
+    {
+     "fact": "Chile 2023: tenacibaculosis caused 37.9% of Atlantic salmon infectious mortality, up 9% on 2022. From Jul 2018 to Aug 2020, 52.5% of marine cycles (520 of 990) had outbreaks.",
+     "source": "WeAreAquaculture on Sernapesca 2024; Pontigo et al. preprint 2024",
+     "url": "https://www.preprints.org/manuscript/202411.2156"
+    },
+    {
+     "fact": "BC, Canada: mouthrot can kill up to 40% of fish in affected cages (Cermaq). Yellow-mouth mortality can reach 15% (older study cited in the 2024 review).",
+     "source": "Cermaq, 2022; Wassmuth et al., Frontiers in Aquaculture, 2024",
+     "url": "https://www.frontiersin.org/articles/10.3389/faquc.2024.1496943/full"
+    }
+   ],
+   "growth": [],
+   "cost": [
+    {
+     "fact": "BC: mouthrot outbreaks cost an estimated $1.8M a year plus $3.8M a year in lost revenue for the local industry. One estimate is $1.6M a year for a single company.",
+     "source": "Cermaq news, 2022; Wassmuth et al. 2024",
+     "url": "https://www.cermaq.com/news/benchmark-animal-health-and-cermaq-receive-funding-from-the-research-council-of-norway-for-the-development-of-tenacibaculum-vaccines-for-salmon"
+    },
+    {
+     "fact": "Chile 2019: about 6.2 t florfenicol and 3.1 t oxytetracycline were used against tenacibaculosis, 2% and 1% of the 311 t of sea antibiotics. BC 2011: 98% of aquaculture antimicrobial prescriptions were for yellow mouth.",
+     "source": "Pontigo et al. preprint 2024; Wassmuth et al. 2024",
+     "url": "https://www.preprints.org/manuscript/202411.2156"
+    }
+   ],
+   "quality": [
+    {
+     "fact": "Norway: the share of salmon graded superior at slaughter rose from 80.6% in 2024 to 86.9% in 2025. Ulcers/injuries remain the main reason for downgrading. The new Moritella vaccine and fewer jellyfish problems are credited.",
+     "source": "Norwegian Veterinary Institute, Fish Health Report 2025",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fish-health-report-2025/_/attachment/inline/4e7d310d-0620-439c-a2cf-caac02253620:b124880858959e1f6b61fbe45e1137e7e31fc0f9/Fish%20Health%20Report%202025.pdf"
+    }
+   ],
+   "trend": [
+    {
+     "fact": "Norway: M. viscosa sites fell 320 (2023) to 289 (2024) to 246 (2025), but winter ulcers still ranked 5th among salmon health problems in the 2025 survey (3rd in 2024).",
+     "source": "WeAreAquaculture on Fish Health Report 2025",
+     "url": "https://weareaquaculture.com/news/research/warmer-seas-push-fish-diseases-further-north-in-norway-says-report"
+    },
+    {
+     "fact": "Chile: tenacibaculosis share of Atlantic salmon infectious mortality was about 29% (2024, implied), then 31.5% (2025), and keeps rising in all three species.",
+     "source": "Salmon Business on Sernapesca, 2026",
+     "url": "https://www.salmonbusiness.com/sernapesca-chiles-overall-salmon-mortality-falls-in-2025-but-tenacibaculosis-rises/?amp=1"
+    },
+    {
+     "fact": "Norway: fish stocked at higher sea temperatures had fewer winter ulcers and less tenacibaculosis. Frequent handling (about every 3 weeks) in Dec-May was linked to ulcers.",
+     "source": "Norwegian Veterinary Institute, Fish Health Report 2025 (survey)",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fish-health-report-2025/_/attachment/inline/4e7d310d-0620-439c-a2cf-caac02253620:b124880858959e1f6b61fbe45e1137e7e31fc0f9/Fish%20Health%20Report%202025.pdf"
+    }
+   ],
+   "new_research": [
+    {
+     "fact": "Norway 2025: about 430 million doses of a new winter-ulcer (M. viscosa) vaccine were dispensed, and 99.4% of vaccinated salmon got it. Vets rated it good 47%, moderate 45%, poor 8%. Some reported adhesions.",
+     "source": "Norwegian Veterinary Institute, Fish Health Report 2025",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fish-health-report-2025/_/attachment/inline/4e7d310d-0620-439c-a2cf-caac02253620:b124880858959e1f6b61fbe45e1137e7e31fc0f9/Fish%20Health%20Report%202025.pdf"
+    },
+    {
+     "fact": "Chile 2026: in trials of experimental T. dicentrarchi vaccines, the best prototype cut cumulative mortality to 50% versus 73.3% in controls. One prototype gave only about 10% relative protection. No commercial vaccine exists.",
+     "source": "g5noticias on Avendaño-Herrera et al., J Fish Diseases, Aug 2026",
+     "url": "https://g5noticias.cl/2026/08/21/cientificos-chilenos-avanzan-en-la-creacion-de-una-vacuna-contra-una-de-las-principales-causas-de-muerte-del-salmon/"
+    },
+    {
+     "fact": "No commercial vaccine protects salmon against T. maritimum (yellow mouth); a BC-isolate vaccine failed in challenge trials. Cermaq and Benchmark got NOK 4.2M (2022) for a Tenacibaculum vaccine.",
+     "source": "Wassmuth et al., Frontiers in Aquaculture, 2024; Cermaq 2022",
+     "url": "https://www.frontiersin.org/articles/10.3389/faquc.2024.1496943/full"
+    }
+   ],
+   "keywords": [
+    "winter ulcer salmon",
+    "Moritella viscosa",
+    "tenacibaculosis",
+    "Tenacibaculum",
+    "yellow mouth salmon",
+    "mouthrot",
+    "vintersår",
+    "Moritella laks",
+    "tenacibaculose",
+    "munnråte",
+    "úlcera de invierno",
+    "tenacibaculosis salmón",
+    "Tenacibaculum dicentrarchi",
+    "downgrading salmon ulcers",
+    "nedklassing sår"
+   ]
+  },
+  {
+   "id": "hab",
+   "name": "Harmful algal blooms and jellyfish",
+   "agent": "Microalgae (Pseudochattonella verruculosa, Heterosigma akashiwo, Chrysochromulina leadbeateri) and jellyfish (incl. string jellyfish Apolemia, micro-jellyfish)",
+   "basins": [
+    "CL",
+    "NO",
+    "UK"
+   ],
+   "what": "Sudden blooms of toxic algae or swarms of jellyfish that damage gills and skin and can kill thousands of tonnes of fish within days, forcing emergency harvests.",
+   "mortality": [
+    {
+     "fact": "Chile 2016: a Pseudochattonella verruculosa bloom killed about 100,000 t of salmon and trout, about 15% of annual output, and cost about US$800M in exports.",
+     "source": "Mardones et al., Frontiers in Marine Science, 2019",
+     "url": "https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2019.00024/full"
+    },
+    {
+     "fact": "Chile Apr 2021: an algal bloom killed 5,989 t across 14 farms in Los Lagos/Aysén (Mowi, AquaChile, Yadran, Multi X, Camanchaca). Camanchaca lost 1.3 million fish (US$4.4M). Heterosigma akashiwo in Comau fjord was the agent.",
+     "source": "Salmon Business, 2021; Flores-Leñero et al., Toxins 2022",
+     "url": "https://www.salmonbusiness.com/latest-numbers-in-for-toxic-algea-bloom-mass-death-6000-tonnes-of-salmon-lost/?amp=1"
+    },
+    {
+     "fact": "Chile Magallanes Oct 2026: a bloom at Multi X's Taraba 7/8 sites killed about 918-959 t (sources differ). Early harvest was allowed; Sernapesca blamed physical gill damage.",
+     "source": "Fish Farming Expert / Emol, Oct 2026",
+     "url": "https://www.fishfarmingexpert.com/chile-harmful-algal-blooms-multi-x/multi-x-has-lost-nearly-918-tonnes-of-fish-due-to-algal-bloom/2196902"
+    },
+    {
+     "fact": "Norway May 2019: a Chrysochromulina leadbeateri bloom in Nordland/Troms killed about 8 million salmon, about 14,100 t of biomass.",
+     "source": "Fish Farming Expert on Kontali/FHF, 2019",
+     "url": "https://www.fishfarmingexpert.com/algal-bloom-kontali-analysis-norway/cost-of-norways-algal-bloom-was-around-nok-4-billion/1201808"
+    },
+    {
+     "fact": "Norway Mar 2026: a Pseudochattonella bloom pushed Q1 mortality in PA1-2 to 13.3% (3.4% in Q1 2025). Nearly 1.7 million salmon died in PA1 in March.",
+     "source": "Salmon Business on Mattilsynet data, May 2026",
+     "url": "https://www.salmonbusiness.com/algae-bloom-drives-sharp-mortality-spike-in-southern-norway/?amp=1"
+    },
+    {
+     "fact": "Scotland 2023-24: about 1.05 million salmon died at Mowi's Loch Seaforth sites in one cycle, linked to jellyfish damaging eyes, skin and gills.",
+     "source": "Undercurrent News, Oct 2024",
+     "url": "https://www.undercurrentnews.com/2024/10/29/over-1m-farmed-salmon-die-in-scotlands-largest-mass-die-off-in-a-decade/"
+    },
+    {
+     "fact": "Norway 2025: algal poisoning was about 65% of environmental-cause death registrations (under 1% in 2021-24), and 94% in PO10-13. Jellyfish were about 75% of environmental deaths in 2024 but just over 1% in 2025.",
+     "source": "Norwegian Veterinary Institute, Fish Health Report 2025",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fish-health-report-2025/_/attachment/inline/4e7d310d-0620-439c-a2cf-caac02253620:b124880858959e1f6b61fbe45e1137e7e31fc0f9/Fish%20Health%20Report%202025.pdf"
+    }
+   ],
+   "growth": [
+    {
+     "fact": "Norway 2019: losing 14,100 t of live fish meant losing about 42,000 t of potential harvest, about 3x, because fish were killed before reaching harvest weight.",
+     "source": "Fish Farming Expert on Kontali, 2019",
+     "url": "https://www.fishfarmingexpert.com/algal-bloom-kontali-analysis-norway/cost-of-norways-algal-bloom-was-around-nok-4-billion/1201808"
+    }
+   ],
+   "cost": [
+    {
+     "fact": "Norway 2019 bloom: total cost about NOK 4 billion: NOK 2.1-2.4bn lost sales plus NOK 1.6-1.7bn direct and indirect costs.",
+     "source": "Fish Farming Expert on Kontali/FHF, 2019",
+     "url": "https://www.fishfarmingexpert.com/algal-bloom-kontali-analysis-norway/cost-of-norways-algal-bloom-was-around-nok-4-billion/1201808"
+    },
+    {
+     "fact": "Chile 2016: about US$800 million in export losses.",
+     "source": "Mardones et al., Frontiers in Marine Science, 2019",
+     "url": "https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2019.00024/full"
+    },
+    {
+     "fact": "Removing and handling dead fish costs about NOK 2.12 per kg round weight in Norway (cited estimate).",
+     "source": "Walde et al., Preventive Veterinary Medicine 221:106062, 2023",
+     "url": "https://backend.orbit.dtu.dk/ws/files/339550741/1-s2.0-S016758772300226X-main.pdf"
+    }
+   ],
+   "quality": [
+    {
+     "fact": "Norway 2025: fewer string-jellyfish (Apolemia) problems than in 2023-24 probably cut wounds and downgrading. Superior share was 86.9% vs 80.6%.",
+     "source": "Norwegian Veterinary Institute, Fish Health Report 2025",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fish-health-report-2025/_/attachment/inline/4e7d310d-0620-439c-a2cf-caac02253620:b124880858959e1f6b61fbe45e1137e7e31fc0f9/Fish%20Health%20Report%202025.pdf"
+    }
+   ],
+   "trend": [
+    {
+     "fact": "Chile: a preventive emergency covering all 15 coastal regions runs from 1 Nov 2026 to 30 Jun 2027 because of El Niño-linked bloom risk. AquaChile warns a major bloom could overwhelm preventive measures.",
+     "source": "Salmon Business, Nov 2026",
+     "url": "https://www.salmonbusiness.com/aquachile-major-algal-blooms-could-overwhelm-preventive-measures/"
+    },
+    {
+     "fact": "Norway: algae rose to the 7th most important health challenge in the 2025 survey (15th in 2024). In 2024, jellyfish injuries ranked 3rd.",
+     "source": "Norwegian Veterinary Institute, Fish Health Reports 2024 and 2025",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2025/norwegian-fish-health-report-2024"
+    },
+    {
+     "fact": "Scotland: gill health (incl. plankton and micro-jellyfish) was about 65% of potential persistent mortality incidents in a 2018-2024 screening of 216 sites.",
+     "source": "Scottish Government letter to Rural Affairs Committee, 2026",
+     "url": "https://www.parliament.scot/-/media/files/committees/rural-affairs-and-islands-committee/correspondence/2026/salmon-farming-cab-sec.pdf"
+    }
+   ],
+   "new_research": [
+    {
+     "fact": "Mitigations in use: bubble curtains (early Scottish trials suggest less gill damage), feed withdrawal, deep-water upwelling/aeration, and keeping fish out of surface waters.",
+     "source": "Salmon Business on Mowi Scotland, 2025",
+     "url": "https://www.salmonbusiness.com/scottish-salmon-survival-rates-soar-heres-what-mowi-did-differently/?amp=1"
+    },
+    {
+     "fact": "Lab work shows Chilean P. verruculosa toxicity depends on salinity, helping explain blooms in low-salinity fjords.",
+     "source": "Mardones et al., Frontiers in Marine Science, 2019",
+     "url": "https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2019.00024/full"
+    }
+   ],
+   "keywords": [
+    "harmful algal bloom salmon",
+    "algae bloom salmon mortality",
+    "Pseudochattonella",
+    "Heterosigma",
+    "Chrysochromulina",
+    "jellyfish salmon farm",
+    "algeoppblomstring",
+    "giftalger laks",
+    "maneter laks",
+    "brennmaneter",
+    "floración algal nociva",
+    "FAN salmones",
+    "bloom de algas",
+    "mortalidad masiva salmones",
+    "Magallanes algas",
+    "plankton gill damage"
+   ]
+  },
+  {
+   "id": "pasteurellosis",
+   "name": "Pasteurellosis (and the Tasmania 2025 mortality event)",
+   "agent": "Phocoenobacter atlanticus subsp. atlanticus (formerly Pasteurella atlantica genomovar salmonicida, Norway); Pasteurella skyensis (Scotland). Tasmania: Piscirickettsia salmonis plus pilchard orthomyxovirus (POMV)",
+   "basins": [
+    "NO",
+    "UK",
+    "AU-TAS"
+   ],
+   "what": "A bacterial infection spreading along the Norwegian coast and causing farm-level losses in Scotland, linked to handling and delousing; Tasmania's 2025-26 crisis was driven by SRS in warm water, with POMV as an older viral threat.",
+   "mortality": [
+    {
+     "fact": "Norway 2025: pasteurellosis at 34 salmon sites (29 in 2024), in PA1-PA5 and PA7, nearly half in PA4. It caused about 3% of infectious-disease death registrations nationally and about 5% in PO5-PO9.",
+     "source": "Norwegian Veterinary Institute, Fish Health Report 2025",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fish-health-report-2025/_/attachment/inline/4e7d310d-0620-439c-a2cf-caac02253620:b124880858959e1f6b61fbe45e1137e7e31fc0f9/Fish%20Health%20Report%202025.pdf"
+    },
+    {
+     "fact": "Norway 2020-2022: about 50 pasteurellosis cases a year in south-west Norway. A new lineage (Pas-4) first seen in 2018 has spread widely. Salmon mortality is generally low to moderate.",
+     "source": "Gulla et al., Frontiers in Microbiology, 2023",
+     "url": "https://www.frontiersin.org/journals/microbiology/articles/10.3389/fmicb.2023.1236290/full"
+    },
+    {
+     "fact": "Scotland Q4 2025: a P. skyensis outbreak at Bakkafrost's Portree (Skye) site forced early emptying in October. About half of the DKK 110M quarterly loss in Scotland came from exceptional mortality.",
+     "source": "Fish Farming Expert, 2026",
+     "url": "https://www.fishfarmingexpert.com/applecross-hatchery-bakkafrost-pasteurella-skyensis/bakkafrost-highlights-positives-as-it-posts-more-losses-in-scotland/2066631"
+    },
+    {
+     "fact": "Tasmania POMV: the worst losses were in summer 2017-18, with about 1.3 million fish dead in Macquarie Harbour. A single pen can lose up to 70%.",
+     "source": "FRDC, 2019",
+     "url": "https://frdc.com.au/node/8960"
+    },
+    {
+     "fact": "Tasmania 2025: more than 20,000 t died (P. salmonis), then 9,197 t more in Jan-Mar 2026 (see SRS card).",
+     "source": "Fish Farming Expert / Huon News on EPA data",
+     "url": "https://www.fishfarmingexpert.com/epa-tasmania-fish-mortality-piscirickettsia-salmonis/more-than-20000-tonnes-of-fish-died-prematurely-in-tasmania-last-year/2059809"
+    }
+   ],
+   "growth": [],
+   "cost": [
+    {
+     "fact": "Bakkafrost Scotland Q4 2025: farming operating loss DKK 110M (EBIT -21.11 DKK/kg), with Pasteurella at Portree a major factor. Scotland harvest fell from 27,880 gwt (2024) to 23,185 gwt (2025).",
+     "source": "Fish Farming Expert, 2026",
+     "url": "https://www.fishfarmingexpert.com/applecross-hatchery-bakkafrost-pasteurella-skyensis/bakkafrost-highlights-positives-as-it-posts-more-losses-in-scotland/2066631"
+    }
+   ],
+   "quality": [],
+   "trend": [
+    {
+     "fact": "Norway: pasteurellosis is moving north, with outbreaks in northern Trøndelag and single cases in Andfjorden-Senja in 2024-25.",
+     "source": "WeAreAquaculture on Fish Health Report 2025, Mar 2026",
+     "url": "https://weareaquaculture.com/news/research/warmer-seas-push-fish-diseases-further-north-in-norway-says-report"
+    },
+    {
+     "fact": "Norway: a Veterinary Institute study found significantly higher pasteurellosis risk at sites using thermal or mechanical delousing (not freshwater).",
+     "source": "Norwegian Veterinary Institute, Fish Health Report 2025",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fish-health-report-2025/_/attachment/inline/4e7d310d-0620-439c-a2cf-caac02253620:b124880858959e1f6b61fbe45e1137e7e31fc0f9/Fish%20Health%20Report%202025.pdf"
+    }
+   ],
+   "new_research": [
+    {
+     "fact": "Norway: 24 applications for single-strain autogenous Pasteurella vaccines for salmon were approved (reported in FHR 2025).",
+     "source": "Norwegian Veterinary Institute, Fish Health Report 2025",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fish-health-report-2025/_/attachment/inline/4e7d310d-0620-439c-a2cf-caac02253620:b124880858959e1f6b61fbe45e1137e7e31fc0f9/Fish%20Health%20Report%202025.pdf"
+    },
+    {
+     "fact": "Scotland: Mowi's autogenous vaccine (with Ridgeway Biologicals) has reduced clinical P. skyensis and Yersinia outbreaks.",
+     "source": "Salmon Business, 2025",
+     "url": "https://www.salmonbusiness.com/scottish-salmon-survival-rates-soar-heres-what-mowi-did-differently/?amp=1"
+    },
+    {
+     "fact": "Tasmania POMV: the Certovac vaccine came from a $5M program, and industry paid $2M to vaccinate the full 2019 year-class. True field efficacy was unconfirmed at the time.",
+     "source": "FRDC, 2019",
+     "url": "https://frdc.com.au/node/8960"
+    },
+    {
+     "fact": "Tasmania: Tegovac Plus-EC, an 8-bacteria vaccine including P. salmonis, is being considered (0.1 mL injection 6-8 weeks before sea transfer). A florfenicol risk assessment is planned.",
+     "source": "NRE Tasmania debrief, 2025",
+     "url": "https://nre.tas.gov.au/Documents/Reflections%20and%20Learnings%20-%20Salmon%20Mortality%20Event%202025.pdf"
+    }
+   ],
+   "keywords": [
+    "pasteurellosis salmon",
+    "Pasteurella skyensis",
+    "Pasteurella atlantica",
+    "Phocoenobacter",
+    "pasteurellose laks",
+    "Pasteurella laks",
+    "pasteurelosis salmón",
+    "Tasmania salmon deaths",
+    "Macquarie Harbour",
+    "D'Entrecasteaux Channel salmon",
+    "POMV",
+    "pilchard orthomyxovirus",
+    "Huon Aquaculture mortality",
+    "Tassal mortality"
+   ]
+  },
+  {
+   "id": "nonin",
+   "name": "Non-infectious losses: handling/treatment injury, low oxygen, high temperature, smolt quality",
+   "agent": "Non-infectious: delousing and handling trauma, hypoxia, marine heatwaves, poor smoltification / low-temperature stocking",
+   "basins": [
+    "NO",
+    "CL",
+    "UK",
+    "AU-TAS"
+   ],
+   "what": "Deaths from fish being handled and deloused, from low oxygen or hot water, and from weak smolts put to sea, which together now kill more Norwegian salmon than infections do.",
+   "mortality": [
+    {
+     "fact": "Norway 2025: of sea-phase death registrations, injuries were 33.5%, infectious disease 28.1%, unknown 27.4%, physiological 4.7% and environmental 4.3% (8.5% in 2024). Data cover 408 sites, about 49% of marine sites.",
+     "source": "Norwegian Veterinary Institute, Fish Health Report 2025 (AquaCloud)",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fish-health-report-2025/_/attachment/inline/4e7d310d-0620-439c-a2cf-caac02253620:b124880858959e1f6b61fbe45e1137e7e31fc0f9/Fish%20Health%20Report%202025.pdf"
+    },
+    {
+     "fact": "Norway 2025: unspecified handling injury was 13% of all registrations and non-medicinal (delousing) treatment 11%. In PO5-PO9, injuries were about 42% of deaths.",
+     "source": "Norwegian Veterinary Institute, Fish Health Report 2025",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fish-health-report-2025/_/attachment/inline/4e7d310d-0620-439c-a2cf-caac02253620:b124880858959e1f6b61fbe45e1137e7e31fc0f9/Fish%20Health%20Report%202025.pdf"
+    },
+    {
+     "fact": "Norway: sea-phase mortality was 16.7% (2023, a record), 15.4% (2024) and 14.2% (2025), or 62.8M, 57.8M and 54.9M fish. A further 43.3M smolts over 3 g died in freshwater in 2025.",
+     "source": "Salmon Business on Fish Health Report 2025",
+     "url": "https://www.salmonbusiness.com/new-fish-health-report-flags-climate-driven-challenges-for-salmon-farms/"
+    },
+    {
+     "fact": "Norway 2025: the food authority fined farmers for stocking smolts below 4°C; one cage lost 26% of fish in the first month.",
+     "source": "Norwegian Veterinary Institute, Fish Health Report 2025",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fish-health-report-2025/_/attachment/inline/4e7d310d-0620-439c-a2cf-caac02253620:b124880858959e1f6b61fbe45e1137e7e31fc0f9/Fish%20Health%20Report%202025.pdf"
+    },
+    {
+     "fact": "Smolt quality: in a Norwegian trial, smolts reared on constant light had 8.8% mortality in their first 2 months at sea, versus 0.7-1.0% on short-day light regimes.",
+     "source": "Gjerde et al., Frontiers in Animal Science, 2025",
+     "url": "https://public-pages-files-2025.frontiersin.org/journals/animal-science/articles/10.3389/fanim.2025.1615804/pdf"
+    },
+    {
+     "fact": "Chile H1 2024: of 15.3M fish dead at sea (10.7M Atlantic salmon), causes were infectious 23%, mechanical damage 22%, culling 17% and environmental 16%.",
+     "source": "WeAreAquaculture on Sernapesca, 2024",
+     "url": "https://weareaquaculture.com/species/salmon/mortality-affects-productivity-of-chiles-atlantic-salmon-sector-in-the-first-half-of-2024"
+    },
+    {
+     "fact": "Chile Jan 2022: low oxygen killed 2,666 t at 6 farms in Aysén (Blumar, Salmones Austral, AquaChile, Mowi); not algae-related. Jan 2024: low oxygen and algae caused a mortality peak in Los Lagos/Aysén.",
+     "source": "Salmon Business 2022; Aquafeed on Sernapesca 2025",
+     "url": "https://www.salmonbusiness.com/losses-in-aysen-continue-to-mount-with-2666-tonnes-now-confirmed/?amp=1"
+    }
+   ],
+   "growth": [
+    {
+     "fact": "Norway: each delousing treatment costs an estimated EUR 0.14-0.30/kg in lost growth, on top of about NOK 0.17/kg in mortality cost.",
+     "source": "Walde et al., Preventive Veterinary Medicine, 2023",
+     "url": "https://backend.orbit.dtu.dk/ws/files/339550741/1-s2.0-S016758772300226X-main.pdf"
+    }
+   ],
+   "cost": [
+    {
+     "fact": "Norway: delousing treatment cost per kg live weight is thermal NOK 0.37, mechanical 0.26, freshwater 1.33 and hydrogen peroxide 0.50 (2017 estimates). Disposal of dead fish is NOK 2.12/kg.",
+     "source": "Walde et al., Preventive Veterinary Medicine, 2023",
+     "url": "https://backend.orbit.dtu.dk/ws/files/339550741/1-s2.0-S016758772300226X-main.pdf"
+    },
+    {
+     "fact": "Scotland Q3 2026: Mowi's incident-based mortality cost was EUR 4.2M (EUR 2.9M a year earlier), blamed on seasonally high sea temperatures. Mowi harvested early in H1 to cut biomass at risk.",
+     "source": "Fish Farming Expert, Nov 2026",
+     "url": "https://www.fishfarmingexpert.com/atlantic-salmon-harvest-volumes-mowi-scotland/mowi-scotland-made-164m-in-q3/2205881"
+    }
+   ],
+   "quality": [
+    {
+     "fact": "Norway: superior-grade share was 80.6% in 2024 and 86.9% in 2025; wounds of any cause are probably the biggest single health problem for farmed salmon.",
+     "source": "Norwegian Veterinary Institute, Fish Health Reports 2024/2025",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2025/norwegian-fish-health-report-2024"
+    }
+   ],
+   "trend": [
+    {
+     "fact": "Norway 2025: 3,918 lice-treatment weeks (+about 700), with a record level of non-medicinal treatments. 81% of fish-health staff reported a growing need for treatment, which keeps handling mortality high.",
+     "source": "WeAreAquaculture on Fish Health Report 2025",
+     "url": "https://weareaquaculture.com/news/research/warmer-seas-push-fish-diseases-further-north-in-norway-says-report"
+    },
+    {
+     "fact": "Norway 2025: 27% of salmon deaths had no known cause, a data gap.",
+     "source": "IntraFish, 2026",
+     "url": "https://www.intrafish.com/technology/27-of-salmon-deaths-had-no-known-cause-in-2025-thats-not-a-mystery-its-a-data-gap-says-industry-veteran/2-1-1994230"
+    },
+    {
+     "fact": "Norway Q1 2026: national sea mortality was 3.4% (3.3% in Q1 2025), or about 12.9M fish lost.",
+     "source": "Salmon Business on Mattilsynet, May 2026",
+     "url": "https://www.salmonbusiness.com/algae-bloom-drives-sharp-mortality-spike-in-southern-norway/?amp=1"
+    },
+    {
+     "fact": "Norway: farmers linked higher mortality to handling fish at high water temperatures with low oxygen. Routine use of the hottest thermal-delousing range (33-34°C) fell from 41% to 33% of respondents in 2025.",
+     "source": "Norwegian Veterinary Institute, Fish Health Report 2025",
+     "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fish-health-report-2025/_/attachment/inline/4e7d310d-0620-439c-a2cf-caac02253620:b124880858959e1f6b61fbe45e1137e7e31fc0f9/Fish%20Health%20Report%202025.pdf"
+    }
+   ],
+   "new_research": [
+    {
+     "fact": "Smolt production: short-day light regimes (8-12 h light) produced far more robust smolts than constant light. Smolt traits are heritable (silveriness h2 0.61), so they can be bred for.",
+     "source": "Gjerde et al., Frontiers in Animal Science, 2025",
+     "url": "https://public-pages-files-2025.frontiersin.org/journals/animal-science/articles/10.3389/fanim.2025.1615804/pdf"
+    },
+    {
+     "fact": "Mowi Scotland's post-smolt strategy (larger fish, shorter time at sea) and less handling contributed to 35% lower biomass mortality in 2024 versus 2023.",
+     "source": "Salmon Business, 2025",
+     "url": "https://www.salmonbusiness.com/scottish-salmon-survival-rates-soar-heres-what-mowi-did-differently/?amp=1"
+    }
+   ],
+   "keywords": [
+    "salmon mortality handling",
+    "delousing mortality",
+    "thermal delousing",
+    "low oxygen salmon",
+    "hypoxia salmon farm",
+    "marine heatwave salmon",
+    "smolt quality",
+    "post-smolt mortality",
+    "dødelighet laks",
+    "håndteringsskader",
+    "avlusing dødelighet",
+    "oksygenmangel",
+    "smoltkvalitet",
+    "Fiskehelserapporten",
+    "mortalidad salmones bajo oxígeno",
+    "daño mecánico salmones",
+    "Sernapesca mortalidad"
+   ]
+  }
+ ]
+}

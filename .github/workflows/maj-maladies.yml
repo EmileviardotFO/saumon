@@ -1,0 +1,29 @@
+name: Veille maladies (publications en acces libre et presse)
+
+on:
+  schedule:
+  - cron: 53 5 * * *
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    - name: Europe PMC, OpenAlex, Google News
+      run: python3 -u scripts/build_disease_research.py
+    - name: Enregistrer
+      if: always()
+      run: |
+        git config user.name "github-actions"; git config user.email "actions@github.com"
+        [ -f data/disease_research.json ] && git add data/disease_research.json
+        git diff --cached --quiet && exit 0
+        git commit -m "Veille maladies ($(date -u +%Y-%m-%d))"
+        for i in 1 2 3; do git pull --rebase -q origin main && git push -q origin HEAD:main && break; sleep 5; done
