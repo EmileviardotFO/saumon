@@ -432,7 +432,7 @@ def presse(ancien):
                 t = re.search(r'<title>(.*?)</title>', it, re.S); u = re.search(r'<link>(.*?)</link>', it, re.S); d = re.search(r'<pubDate>(.*?)</pubDate>', it, re.S); sname = re.search(r'<source[^>]*>(.*?)</source>', it, re.S)
                 if not (t and u and d): continue
                 titre = re.sub(r'<!\[CDATA\[|\]\]>', '', t.group(1)).replace('&amp;', '&').replace('&quot;', '"').replace('&#39;', "'").strip()
-                if not CLIMAT.search(titre) or not (ELEVAGE.search(titre) or (re.search(r'el ni[ñn]o', titre, re.I) and MER.search(titre))): continue
+                if not CLIMAT.search(titre): continue
                 try: dd = dt.datetime.strptime(d.group(1).strip()[:25], '%a, %d %b %Y %H:%M:%S').date().isoformat()
                 except ValueError: continue
                 b = next((k for k, r in BASSIN_RX if re.search(r, titre, re.I)), 'ALL')
@@ -442,7 +442,8 @@ def presse(ancien):
             print('  presse :', q[:40], str(e)[:80])
         time.sleep(1)
     lim = (dt.date.today() - dt.timedelta(days=90)).isoformat()
-    ok = lambda t: CLIMAT.search(t) and (ELEVAGE.search(t) or (re.search(r'el ni[ñn]o', t, re.I) and MER.search(t)))
+    SAUMON = re.compile(r'salm|laks|trucha|trout|ørret|anchov|harina de pescado|fishmeal', re.I)
+    ok = lambda t: CLIMAT.search(t) and not re.search(r'facebook|instagram|youtube', t, re.I) and (SAUMON.search(t) or (any(re.search(r, t, re.I) for _, r in BASSIN_RX) and (ELEVAGE.search(t) or MER.search(t))))
     return sorted([i for i in items.values() if i['d'] >= lim and ok(i['t'])], key=lambda i: i['d'], reverse=True)[:60]
 
 
