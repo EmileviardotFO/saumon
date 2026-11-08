@@ -170,9 +170,9 @@ def main():
     fiables = [p for p in (chl.get('points') or []) if p.get('reliable') and p.get('now') and p.get('hist_max') and p['now'] > p['hist_max']]
     for p in sorted(fiables, key=lambda p: -(p.get('anom_pct') or 0))[:1]:
         if (p.get('anom_pct') or 0) >= 30:
-            sig.append({'basin': p.get('basin_name', p.get('basin')), 'title': 'Chlorophyll above every recent year', 'value': sg(p['anom_pct'], 0),
+            sig.append({'basin': p.get('basin_name', p.get('basin')), 'title': 'Chlorophyll above every recent year', 'value': (f'×{p["now"] / p["normal"]:.1f}'.replace('.', '.') + ' usual') if p['anom_pct'] >= 100 else sg(p['anom_pct'], 0, ' %'),
                         'text': f'{p["label"]}: {p["now"]} mg/m³ against {p["normal"]} usually and {p["hist_max"]} at most in the same weeks of the last {p["years"]} years (satellite, {p.get("period", "")}){" — " + p["caveat"] if p.get("caveat") else ""}. It measures how much algae there is, not toxicity: a sign to watch, not a bloom.',
-                        'effect': 'risk', 'tab': 'seatemp', 'score': 1 + p['anom_pct'] / 40})
+                        'effect': 'risk', 'tab': 'seatemp', 'score': 1 + min(p['anom_pct'], 150) / 50})
     # ---------------- sujets suivis (watch.json) ----------------
     today = dt.date.today().isoformat()
     for t in ((lire('watch.json') or {}).get('topics') or []):
