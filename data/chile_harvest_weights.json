@@ -1,0 +1,284 @@
+{
+ "meta": {
+  "note": "Hand-kept. Average harvest weight of Atlantic salmon reported by Chilean farmers, by quarter (company publications: Análisis Razonado filed with the CMF, trading updates). Harvest in tonnes WFE (Multi X chart volumes rounded to the thousand). Units as written in each source. No Chilean industry-wide average harvest weight is published.",
+  "updated": "2026-11-08"
+ },
+ "companies": {
+  "Salmones Camanchaca": [
+   {
+    "q": "2022Q1",
+    "kg": 4.2,
+    "harvest_t": 8108,
+    "unit": "kg WFE",
+    "url": "https://www.mfn.se/ob/a/salmones-camanchaca/sacam-trading-update-q1-2022-3d20c73a"
+   },
+   {
+    "q": "2022Q2",
+    "kg": 4.9,
+    "harvest_t": 12446,
+    "unit": "kg",
+    "url": "https://www.mfn.se/ob/a/salmones-camanchaca/sacam-trading-update-q2-2022-f555e32d"
+   },
+   {
+    "q": "2022Q3",
+    "kg": 5.22,
+    "harvest_t": 14326,
+    "unit": "kg",
+    "url": "https://www.mfn.se/ob/a/salmones-camanchaca/sacam-trading-update-q3-2022-88512393"
+   },
+   {
+    "q": "2022Q4",
+    "kg": 5.2,
+    "harvest_t": 9659,
+    "unit": "kg",
+    "url": "https://www.inderes.fi/en/releases/sacam-trading-update-q4-2022"
+   },
+   {
+    "q": "2023Q1",
+    "kg": 5.0,
+    "harvest_t": 11089,
+    "unit": "kg, closed cycle",
+    "url": "https://www.inderes.se/releases/salmones-camanchaca-q1-2023-results"
+   },
+   {
+    "q": "2023Q2",
+    "kg": 5.0,
+    "harvest_t": 6423,
+    "unit": "kg",
+    "url": "https://www.inderes.se/en/releases/sacam-trading-update-q2-2023"
+   },
+   {
+    "q": "2023Q3",
+    "kg": 5.5,
+    "harvest_t": 17760,
+    "unit": "kg WFE",
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/76065596/analisis_razonado_76065596_2024Q3.pdf"
+   },
+   {
+    "q": "2023Q4",
+    "kg": 4.5,
+    "harvest_t": 8783,
+    "unit": "kg WFE",
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/76065596/analisis_razonado_76065596_2024Q4.pdf"
+   },
+   {
+    "q": "2024Q1",
+    "kg": 4.4,
+    "harvest_t": 9911,
+    "unit": "kg WFE",
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/76065596/analisis_razonado_76065596_2025Q1.pdf"
+   },
+   {
+    "q": "2024Q2",
+    "kg": 4.99,
+    "harvest_t": 11643,
+    "unit": "kg WFE",
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/76065596/analisis_razonado_76065596_2025Q2.pdf"
+   },
+   {
+    "q": "2024Q3",
+    "kg": 5.1,
+    "harvest_t": 12418,
+    "unit": "kg WFE",
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/76065596/analisis_razonado_76065596_2025Q3.pdf"
+   },
+   {
+    "q": "2024Q4",
+    "kg": 5.5,
+    "harvest_t": 13689,
+    "unit": "kg WFE",
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/76065596/analisis_razonado_76065596_2025Q4.pdf"
+   },
+   {
+    "q": "2025Q1",
+    "kg": 5.1,
+    "harvest_t": 12612,
+    "unit": "kg WFE",
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/76065596/analisis_razonado_76065596_2026Q1.pdf"
+   },
+   {
+    "q": "2025Q2",
+    "kg": 5.01,
+    "harvest_t": 11426,
+    "unit": "kg WFE",
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/76065596/analisis_razonado_76065596_2025Q2.pdf"
+   },
+   {
+    "q": "2025Q3",
+    "kg": 5.2,
+    "harvest_t": 19855,
+    "unit": "kg WFE",
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/76065596/analisis_razonado_76065596_2025Q3.pdf"
+   },
+   {
+    "q": "2025Q4",
+    "kg": 5.1,
+    "harvest_t": 14358,
+    "unit": "kg WFE",
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/76065596/analisis_razonado_76065596_2025Q4.pdf"
+   },
+   {
+    "q": "2026Q1",
+    "kg": 4.6,
+    "harvest_t": 13035,
+    "unit": "kg WFE (SRS forced early harvests)",
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/76065596/analisis_razonado_76065596_2026Q1.pdf"
+   }
+  ],
+  "Multi X": [
+   {
+    "q": "2022Q4",
+    "kg": 4.98,
+    "harvest_t": 28200,
+    "unit": "kg WFE",
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/76672100/analisis_razonado_76672100_2025Q4.pdf"
+   },
+   {
+    "q": "2023Q1",
+    "kg": 4.53,
+    "harvest_t": 24600,
+    "unit": "kg WFE",
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/76672100/analisis_razonado_76672100_2025Q4.pdf"
+   },
+   {
+    "q": "2023Q2",
+    "kg": 4.61,
+    "harvest_t": 29000,
+    "unit": "kg WFE",
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/76672100/analisis_razonado_76672100_2025Q4.pdf"
+   },
+   {
+    "q": "2023Q3",
+    "kg": 5.28,
+    "harvest_t": 31500,
+    "unit": "kg WFE",
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/76672100/analisis_razonado_76672100_2025Q4.pdf"
+   },
+   {
+    "q": "2023Q4",
+    "kg": 4.82,
+    "harvest_t": 31200,
+    "unit": "kg WFE",
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/76672100/analisis_razonado_76672100_2025Q4.pdf"
+   },
+   {
+    "q": "2024Q1",
+    "kg": 4.37,
+    "harvest_t": 15700,
+    "unit": "kg WFE",
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/76672100/analisis_razonado_76672100_2025Q4.pdf"
+   },
+   {
+    "q": "2024Q2",
+    "kg": 5.22,
+    "harvest_t": 22709,
+    "unit": "kg WFE",
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/76672100/analisis_razonado_76672100_2025Q4.pdf"
+   },
+   {
+    "q": "2024Q3",
+    "kg": 4.94,
+    "harvest_t": 25500,
+    "unit": "kg WFE",
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/76672100/analisis_razonado_76672100_2025Q4.pdf"
+   },
+   {
+    "q": "2024Q4",
+    "kg": 4.74,
+    "harvest_t": 24969,
+    "unit": "kg WFE",
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/76672100/analisis_razonado_76672100_2025Q4.pdf"
+   },
+   {
+    "q": "2025Q1",
+    "kg": 4.74,
+    "harvest_t": 27701,
+    "unit": "kg WFE",
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/76672100/analisis_razonado_76672100_2025Q4.pdf"
+   },
+   {
+    "q": "2025Q2",
+    "kg": 4.91,
+    "harvest_t": 27064,
+    "unit": "kg WFE",
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/76672100/analisis_razonado_76672100_2025Q2.pdf"
+   },
+   {
+    "q": "2025Q3",
+    "kg": 5.48,
+    "harvest_t": 26100,
+    "unit": "kg WFE",
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/76672100/analisis_razonado_76672100_2025Q4.pdf"
+   },
+   {
+    "q": "2025Q4",
+    "kg": 5.6,
+    "harvest_t": 37500,
+    "unit": "kg WFE",
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/76672100/analisis_razonado_76672100_2025Q4.pdf"
+   },
+   {
+    "q": "2026Q1",
+    "kg": 5.13,
+    "harvest_t": 27504,
+    "unit": "kg WFE",
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/76672100/analisis_razonado_76672100_2026Q1.pdf"
+   }
+  ],
+  "Blumar": [
+   {
+    "q": "2024Q1",
+    "kg": 4.2,
+    "harvest_t": 6995,
+    "unit": "kg/unidad, column alignment uncertain",
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/80860400/analisis_razonado_80860400_2025Q1.pdf"
+   },
+   {
+    "q": "2025Q1",
+    "kg": 4.8,
+    "harvest_t": 20039,
+    "unit": "kg/unidad",
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/80860400/analisis_razonado_80860400_2025Q2.pdf"
+   },
+   {
+    "q": "2025Q2",
+    "kg": 5.3,
+    "harvest_t": 16570,
+    "unit": "kg/unidad, closed cycle",
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/80860400/analisis_razonado_80860400_2025Q2.pdf"
+   },
+   {
+    "q": "2025Q3",
+    "kg": 5.4,
+    "harvest_t": 12910,
+    "unit": "kg/unidad",
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/80860400/analisis_razonado_80860400_2025Q3.pdf"
+   },
+   {
+    "q": "2026Q1",
+    "kg": 5.2,
+    "harvest_t": 12539,
+    "unit": "kg/unidad",
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/80860400/analisis_razonado_80860400_2026Q1.pdf"
+   },
+   {
+    "year": 2023,
+    "kg": 4.7,
+    "harvest_t": 50174,
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/80860400/analisis_razonado_80860400_2024Q4.pdf"
+   },
+   {
+    "year": 2024,
+    "kg": 4.8,
+    "harvest_t": 51912,
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/80860400/analisis_razonado_80860400_2024Q4.pdf"
+   },
+   {
+    "year": 2025,
+    "kg": 5.2,
+    "harvest_t": 65570,
+    "url": "https://anlpubxgxwsaypiyrmec.storage.supabase.co/storage/v1/object/public/analisis-razonado/80860400/analisis_razonado_80860400_2025Q4.pdf"
+   }
+  ]
+ }
+}
