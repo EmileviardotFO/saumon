@@ -15521,7 +15521,11 @@ function renderWellboats() {
       // notes sur toute la largeur (cellule fusionnee) d'un tableau qui defile : le texte reste dans l'ecran au lieu d'etre coupe a droite
       if (on) t.querySelectorAll('td[colspan]').forEach(c => { if (c.dataset.csn || c.textContent.trim().length < 50 || c.querySelector('table,svg')) return; c.dataset.csn = 1;
         const d = document.createElement('div'); d.className = 'cs-note'; while (c.firstChild) d.appendChild(c.firstChild); c.appendChild(d); c.style.whiteSpace = 'normal'; });
-      t.querySelectorAll('th,td').forEach(c => { if (getComputedStyle(c).position === 'sticky') c.classList.add('gl-stk'); }); });
+      t.querySelectorAll('th,td').forEach(c => { if (getComputedStyle(c).position === 'sticky') c.classList.add('gl-stk'); });
+      // drapeau + premier mot du nom insecables : sinon le drapeau reste seul sur sa ligne dans une colonne etroite (EU hubs, USA...)
+      t.querySelectorAll('td > img:first-child, td > b > img:first-child').forEach(im => { if (im.dataset.fl) return; im.dataset.fl = 1; const n = im.nextSibling;
+        if (!n || n.nodeType !== 3) return; const m = /^(\s*\S+)/.exec(n.nodeValue); if (!m) return; const sp = document.createElement('span'); sp.style.whiteSpace = 'nowrap';
+        im.before(sp); sp.appendChild(im); sp.appendChild(document.createTextNode(m[1].replace(/^\s+/, '\u00a0'))); n.nodeValue = n.nodeValue.slice(m[1].length); }); });
     // panneaux entiers qui defilaient (texte, filtres et carte avec le tableau) : seul le tableau defile maintenant
     document.querySelectorAll('.panel').forEach(p => { if (p.offsetParent === null) return; const cs = getComputedStyle(p); if (/(auto|scroll)/.test(cs.overflowX) && p.querySelector('table')) { p.style.overflowX = 'visible';
       p.querySelectorAll('table').forEach(t => { if (!t.parentElement.classList.contains('hs-scroll') && t.scrollWidth > p.clientWidth - 30) { const w = document.createElement('div'); w.className = 'hs-scroll'; t.before(w); w.appendChild(t); } }); } });
