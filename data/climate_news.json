@@ -1,0 +1,11 @@
+{
+ "meta": {
+  "note": "Hand-kept. Climate and sea-temperature news by basin, shown in the Sea temperature tab next to the automatic alerts built from data/sea_temp.json. Each item carries its source.",
+  "updated": "2026-11-08"
+ },
+ "items": [
+  {"d": "2026-08-19", "b": "NO", "lvl": -1, "t": "Marine cold wave on the Norwegian west coast, 20 July – 2 August", "s": "Institute of Marine Research: the cause is the weather (a cloudy, windy summer), natural variability. Far fewer lice than in the 2025 marine heatwave, the strongest in at least 30 years.", "u": "https://www.gauldalsposten.no/norgeogverden/n/L4arB1/en-marin-kuldeboelge-skylte-over-vestlandet-i-sommer"},
+  {"d": "2026-09-07", "b": "GB", "lvl": 1, "t": "North Sea: 5th warmest summer since 1997 (about +1 °C), August slightly cool", "s": "German BSH: record highs in the southern North Sea and the Channel; Norway's coast was the cold exception.", "u": "https://www.surf-magazin.de/en/spots-and-areas/north-sea/bsh-the-north-sea-and-the-baltic-sea-will-be-significantly-too-warm-in-the-summer-of-2026/"},
+  {"d": "2026-06-21", "b": "IS", "lvl": -1, "t": "The North Atlantic \"cold blob\" south of Greenland keeps cooling", "s": "About 1 °C cooler since 1900; a link with a weaker Atlantic overturning circulation (AMOC) is possible but not proven (A. Born, University of Bergen). A long-term trend, not a seasonal one.", "u": "https://www.abcnyheter.no/nyheter/dette-havomradet-blir-kaldere-det-kan-vaere-darlig-nytt-for-norge/1579195"}
+ ]
+}

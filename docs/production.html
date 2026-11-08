@@ -565,6 +565,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
       <button data-v="canada">Canada</button>
       <button data-v="faroe">Faroe Islands</button>
       <button data-v="iceland">Iceland</button>
+      <button data-v="seatemp">Sea temperature</button>
     </div></div>
   </div>
   <div class="field" id="poFilterField" style="display:none;">
@@ -1307,6 +1308,43 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="sig-sub" id="upNote" style="margin-top:10px"></div>
   </div>
 
+  <div class="panel" id="stView" style="flex:1; min-width:0; max-width:1400px; display:none;">
+  <style>
+    #stView .st-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:4px 0 10px}
+    #stView .st-seg{display:inline-flex;padding:4px;border-radius:999px;gap:2px;background:linear-gradient(150deg,rgba(255,255,255,.2),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.28);box-shadow:inset 0 1px 0 rgba(255,255,255,.45)}
+    #stView .st-seg button{border:0;background:none;color:#e6f0f6;font:inherit;font-size:13.5px;padding:7px 15px;border-radius:999px;cursor:pointer}
+    #stView .st-seg button.on{background:linear-gradient(180deg,#fff,#dcecf5);color:#0d2a40;font-weight:700}
+    #stView .st-sl{display:flex;align-items:center;gap:10px;font-size:13px;padding:7px 14px;border-radius:999px;background:linear-gradient(150deg,rgba(255,255,255,.2),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.28)}
+    #stView .st-sl input{width:200px}
+    #stView .st-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+    #stView .st-chips button{border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#fff;border-radius:999px;padding:6px 12px;font:inherit;font-size:12.5px;cursor:pointer}
+    #stView .st-chips button.on{background:rgba(255,255,255,.32)}
+    #stView .st-stage{display:flex;gap:12px;align-items:stretch}
+    #stView .st-map{position:relative;overflow:hidden;border-radius:20px;height:min(62vh,560px);touch-action:none;cursor:grab;flex:1 1 100%;transition:flex-basis .6s cubic-bezier(.3,.8,.2,1),height .6s;
+      background:linear-gradient(150deg,rgba(255,255,255,.14),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.28);box-shadow:inset 0 1px 0 rgba(255,255,255,.4)}
+    #stView .st-map svg{width:100%;height:100%;display:block}
+    #stView .st-stage.open .st-map{flex-basis:52%}
+    #stView .st-side{flex:0 0 0;max-width:0;opacity:0;transform:translateX(30px) scale(.96);overflow:hidden;transition:all .6s cubic-bezier(.3,.8,.2,1);padding:0;height:min(62vh,560px);border-radius:20px;
+      background:linear-gradient(150deg,rgba(255,255,255,.2),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.28);box-shadow:inset 0 1px 0 rgba(255,255,255,.45)}
+    #stView .st-stage.open .st-side{flex:0 0 46%;max-width:46%;opacity:1;transform:none;padding:14px 16px;overflow-y:auto}
+    #stView .st-side h3{margin:0;font-size:19px}
+    #stView .st-x{float:right;border:1px solid rgba(255,255,255,.3);background:rgba(20,52,78,.6);color:#fff;border-radius:10px;width:30px;height:30px;font-size:16px;cursor:pointer}
+    #stView .st-zoom{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:6px}
+    #stView .st-zoom button{width:36px;height:36px;border-radius:12px;border:1px solid rgba(255,255,255,.3);background:rgba(20,52,78,.75);color:#fff;font-size:19px;cursor:pointer}
+    #stView .st-leg{position:absolute;left:12px;bottom:12px;padding:8px 12px;font-size:11.5px;border-radius:14px;background:rgba(20,52,78,.75)}
+    #stView .st-leg .sc{height:9px;width:170px;border-radius:5px;background:linear-gradient(90deg,#3d7bff,#9fd0ff,#eef3f6,#ffb27a,#ff5a2e);margin:4px 0 2px}
+    #stView .st-fp{display:none;position:absolute;left:12px;top:12px;padding:10px 12px;font-size:12.5px;max-width:270px;border-radius:14px;background:rgba(20,52,78,.9);border:1px solid rgba(255,255,255,.3)}
+    #stView .st-k{display:flex;gap:16px;flex-wrap:wrap;margin:8px 0 4px}
+    #stView .st-lbl{font-size:10.5px;letter-spacing:.08em;color:#cfe0ea;font-weight:700;text-transform:uppercase}
+    #stView .st-big{font-size:26px;font-weight:800}
+    #stView .st-ni{display:flex;gap:10px;padding:10px 12px;margin-bottom:8px;border-radius:16px;background:linear-gradient(150deg,rgba(255,255,255,.16),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.22)}
+    #stView .st-ni .dot{width:10px;height:10px;border-radius:50%;margin-top:5px;flex:none}
+    #stView .st-pill{font-size:10.5px;padding:2px 8px;border-radius:999px;background:rgba(255,255,255,.18);margin-left:6px;font-weight:700}
+    @media (max-width:760px){#stView .st-stage{flex-direction:column}#stView .st-stage.open .st-map{height:36vh;flex-basis:auto}#stView .st-map{flex-basis:auto;height:52vh}
+      #stView .st-side{height:auto;max-height:0;max-width:none}#stView .st-stage.open .st-side{max-width:none;max-height:none;flex:none}#stView .st-sl input{width:120px}}
+  </style>
+  <div id="stRoot"></div>
+  </div>
   <div class="panel" id="isView" style="flex:1; min-width:0; max-width:1400px; display:none;">
     <div class="sig-title">Iceland — salmon farming at a glance (MAST, Statistics Iceland, company reports)</div>
     <div class="sig-sub" id="isSub"></div>
@@ -3843,6 +3881,149 @@ function isMap() {
         .bindPopup(`<b>${e(layer)}</b><br>` + Object.entries(pr).slice(0, 10).map(([k, v]) => `${e(k)}: ${e(v)}`).join('<br>')); }));
     setTimeout(() => IS_MAP.invalidateSize(), 50); });
 }
+// ===================== Sea temperature & El Niño (data/sea_temp.json <- scripts/build_sea_temp.py ; data/climate_news.json tenu a la main) =====================
+// Carte du monde zoomable, couleurs par ecart a la normale / temperature / jours de chaleur ; History (mois passes) ou Projected (projection simple) ;
+// clic sur un bassin : le planisphere se reduit et zoome, un panneau s'ouvre avec les graphes ; fermes norvegiennes visibles en zoomant.
+const STV = { mode: 'h', layer: 'anom', bas: 'ALL', k: null, vb: [0, 0, 1000, 520], nf: 'ALL', data: null, news: null, farms: null, farmsLoading: false, anim: 0 };
+function renderSeaTemp() {
+  const root = document.getElementById('stRoot'); if (!root) return;
+  const g = n => fetch(DATA_URL.replace('data.json', n), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
+  if (STV.data === null) { STV.data = false; Promise.all([g('sea_temp.json'), g('climate_news.json')]).then(([a, b]) => { STV.data = a || { points: [] }; STV.news = b || { items: [] }; if (currentView === 'seatemp') renderSeaTemp(); });
+    root.innerHTML = '<div class="sig-sub">Loading…</div>'; return; }
+  if (!STV.data) return;
+  const P = STV.data.points || [], M = STV.data.meta || {};
+  if (!P.length) { root.innerHTML = '<div class="sig-sub">Sea temperatures are collected every morning (NOAA OISST); the first run has not finished yet.</div>'; return; }
+  const MON = MONTHS_FR.map(m => m.slice(0, 3)), e = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const NAME = { NO: 'Norway', FO: 'Faroe Islands', IS: 'Iceland', GB: 'Scotland', IE: 'Ireland', CA: 'Canada', CL: 'Chile', AU: 'Tasmania' };
+  const BOX = { ALL: [-150, -58, 170, 74], NO: [2, 57, 33, 72], FO: [-10, 60.5, -4, 63.2], IS: [-27, 63, -11, 67.5], GB: [-11, 53, 1, 61.5], CA: [-135, 40, -50, 56], CL: [-79, -55, -68, -40], AU: [143, -44.5, 150, -40.5] };
+  const last = P.reduce((a, p) => { const k = Object.keys(p.monthly || {}).sort().pop(); return k > a ? k : a; }, '');
+  const LY = +last.slice(0, 4), LM = +last.slice(5);
+  const addM = (ym, n) => { let y = +ym.slice(0, 4), m = +ym.slice(5) + n; while (m > 12) { m -= 12; y++; } while (m < 1) { m += 12; y--; } return `${y}-${String(m).padStart(2, '0')}`; };
+  const lab = ym => `${MON[+ym.slice(5) - 1]} ${ym.slice(0, 4)}`;
+  const hist = []; for (let ym = `${LY - 2}-01`; ym <= last; ym = addM(ym, 1)) hist.push(ym);
+  if (!STV.k || (STV.mode === 'h' && !hist.includes(STV.k))) STV.k = last;
+  const ahead = ym => { let n = 0, x = last; while (x < ym && n < 12) { x = addM(x, 1); n++; } return n; };
+  // valeur d'un point : [temperature, ecart a la normale, jours > 16,5 °C] ; projection = normale du mois + dernier ecart qui s'efface de 30 % par mois
+  const val = (p, ym) => { if (STV.mode === 'p' && ym > last) { const a0 = (p.anomaly || {})[last], n = (p.normal || {})[String(+ym.slice(5))]; if (a0 === undefined || n === undefined) return null; const a = a0 * Math.pow(.7, ahead(ym)); return [n + a, a, null]; }
+    const t = (p.monthly || {})[ym]; if (t === undefined) return null; const a = (p.anomaly || {})[ym]; return [t, a === undefined ? null : a, ((p.hot_days || {})[ym] || [0])[0]]; };
+  const col = v => { if (v === null || v === undefined) return '#8fa4b0'; const s = [[-2, '#3d7bff'], [-1, '#9fd0ff'], [0, '#eef3f6'], [1, '#ffb27a'], [2, '#ff5a2e']]; v = Math.max(-2, Math.min(2, v)); for (let i = 1; i < s.length; i++) if (v <= s[i][0]) return s[i - (v - s[i - 1][0] < s[i][0] - v ? 1 : 0)][1]; return s[4][1]; };
+  const colT = t => t < 6 ? '#3d7bff' : t < 10 ? '#7fb8ff' : t < 14 ? '#cfe9d8' : t < 16.5 ? '#ffd27a' : t < 18 ? '#ff9a52' : '#ff4a2a';
+  const sg = v => v === null || v === undefined ? '—' : (Math.abs(v) < .05 ? '0.0' : (v > 0 ? '+' : '−') + Math.abs(v).toFixed(1));
+  const rng = (vs, f) => { vs = vs.filter(v => v !== null && v !== undefined && isFinite(v)); if (!vs.length) return '—'; const lo = Math.min(...vs), hi = Math.max(...vs); return hi - lo < .05 ? f(lo) : `${f(lo)} – ${f(hi)}`; };
+  const inB = (p, b) => b === 'ALL' || p.basin === b || (b === 'GB' && p.basin === 'IE');
+  const X = lo => (lo + 180) / 360 * 1000, Y = la => (80 - la) / 150 * 520;
+  if (!STV.land) { let s = ''; if (typeof WORLD !== 'undefined') WORLD.forEach(c => c.forEach(r => { s += 'M' + r.map(q => X(q[0]).toFixed(1) + ',' + Y(q[1]).toFixed(1)).join('L') + 'Z'; })); STV.land = s; }
+  // ---- squelette (une seule fois par affichage) ----
+  if (!document.getElementById('stMap')) {
+    root.innerHTML = `<div class="sig-sub" id="stIntro"></div>` +
+      `<div class="st-bar"><div class="st-seg" id="stMode"><button data-m="h" class="on">History</button><button data-m="p">Projected</button></div>` +
+      `<div class="st-seg" id="stLay"><button data-l="anom" class="on">vs normal</button><button data-l="temp">°C</button><button data-l="hot">Heat days</button></div>` +
+      `<div class="st-sl"><span id="stLab"></span><input type="range" id="stK"></div></div>` +
+      `<div class="st-chips" id="stBas"></div>` +
+      `<div class="st-stage" id="stStage"><div class="st-map" id="stMap"><svg id="stSvg" viewBox="0 0 1000 520"></svg>` +
+      `<div class="st-zoom"><button id="stZi" title="Zoom in">+</button><button id="stZo" title="Zoom out">−</button><button id="stZr" title="Whole world" style="font-size:13px">⤢</button></div>` +
+      `<div class="st-leg" id="stLeg"></div><div class="st-fp" id="stFp"></div></div><div class="st-side" id="stSide"></div></div>` +
+      `<div class="sig-title" style="margin-top:16px">Climate &amp; basins — news</div><div class="st-chips" id="stNf"></div><div id="stNl"></div><div class="sig-sub" id="stNote" style="margin-top:8px"></div>`;
+    const mb = document.getElementById('stMap');
+    document.querySelectorAll('#stMode button').forEach(b => b.onclick = () => { STV.mode = b.dataset.m; document.querySelectorAll('#stMode button').forEach(x => x.classList.toggle('on', x === b)); STV.k = STV.mode === 'p' ? addM(last, 1) : last; renderSeaTemp(); });
+    document.querySelectorAll('#stLay button').forEach(b => b.onclick = () => { STV.layer = b.dataset.l; document.querySelectorAll('#stLay button').forEach(x => x.classList.toggle('on', x === b)); renderSeaTemp(); });
+    document.getElementById('stK').oninput = ev => { STV.k = STV.mode === 'p' ? addM(last, +ev.target.value) : hist[+ev.target.value]; renderSeaTemp(); };
+    const zoom = (f, cx, cy) => { const v = STV.vb; cx = cx ?? v[0] + v[2] / 2; cy = cy ?? v[1] + v[3] / 2; STV.vb = [cx - (cx - v[0]) * f, cy - (cy - v[1]) * f, v[2] * f, v[3] * f]; renderSeaTemp(); };
+    document.getElementById('stZi').onclick = () => zoom(.6); document.getElementById('stZo').onclick = () => zoom(1 / .6); document.getElementById('stZr').onclick = () => window.stClose();
+    mb.addEventListener('wheel', ev => { ev.preventDefault(); const r = mb.getBoundingClientRect(), v = STV.vb; zoom(ev.deltaY > 0 ? 1.2 : .83, v[0] + (ev.clientX - r.left) / r.width * v[2], v[1] + (ev.clientY - r.top) / r.height * v[3]); }, { passive: false });
+    let drag = null;
+    mb.addEventListener('pointerdown', ev => { if (ev.target.tagName === 'circle' || ev.target.closest('.st-zoom') || ev.target.closest('#stFp')) return; drag = [ev.clientX, ev.clientY, STV.vb[0], STV.vb[1]]; });
+    mb.addEventListener('pointermove', ev => { if (!drag) return; const r = mb.getBoundingClientRect(); STV.vb[0] = drag[2] - (ev.clientX - drag[0]) / r.width * STV.vb[2]; STV.vb[1] = drag[3] - (ev.clientY - drag[1]) / r.height * STV.vb[3]; stDraw(); });
+    addEventListener('pointerup', () => { drag = null; });
+    STV.vb = stFit(BOX.ALL, mb);
+  }
+  const sl = document.getElementById('stK');
+  if (STV.mode === 'p') { sl.min = 1; sl.max = 3; sl.value = ahead(STV.k); } else { sl.min = 0; sl.max = hist.length - 1; sl.value = hist.indexOf(STV.k); }
+  document.getElementById('stLab').textContent = lab(STV.k) + (STV.mode === 'p' ? ' (projection)' : '');
+  document.getElementById('stBas').innerHTML = ['ALL', 'NO', 'FO', 'IS', 'GB', 'CA', 'CL', 'AU'].map(b => `<button data-b="${b}" class="${STV.bas === b ? 'on' : ''}">${b === 'ALL' ? 'All basins' : NAME[b] + (b === 'GB' ? ' & Ireland' : '')}</button>`).join('');
+  document.querySelectorAll('#stBas button').forEach(b => b.onclick = () => b.dataset.b === 'ALL' ? window.stClose() : window.stOpen(b.dataset.b));
+  // ---- fermes norvegiennes (BarentsWatch), chargees au premier zoom sur la Norvege ----
+  const needFarms = () => { if (STV.farms || STV.farmsLoading) return; STV.farmsLoading = true;
+    Promise.all([g('bw_sites.json'), g('bw_site_status.json'), g('wellboats.json')]).then(([s, st, wb]) => {
+      const hot = {}; ((wb || {}).hot || []).forEach(h => { hot[String(h.no)] = h; });
+      STV.farms = Object.entries((s || {}).sites || {}).filter(([k, v]) => !v.onLand && v.lat && (v.ptypes || []).some(t => /Matfisk/.test(t)))
+        .map(([k, v]) => { const ss = ((st || {}).sites || {})[k] || '', h = hot[k]; return { k, la: v.lat, lo: v.lon, n: v.name, o: ((v.lic || [])[0] || {}).holder || '', cap: v.cap || 0, po: v.po, s: ss.slice(-1), h: h ? (h.kind || {}).H || 0 : 0 }; });
+      if (currentView === 'seatemp') stDraw(); }); };
+  window.stFarm = i => { const f = STV.farms[i], el = document.getElementById('stFp');
+    el.innerHTML = `<b>${e(f.n)}</b> · zone ${f.po}<br><span class="sig-sub">${e(f.o)} · ${Math.round(f.cap).toLocaleString('en-US')} t MAB · ${f.h ? f.h + ' harvest visits this week' : f.s === 'a' ? 'fish in the sea' : 'fallow'}</span><br>` +
+      `<a style="color:#9fd0ff" target="_blank" rel="noopener" href="https://www.google.com/maps/@?api=1&map_action=map&center=${f.la},${f.lo}&zoom=16&basemap=satellite">See the pens on satellite ↗</a> <span style="float:right;cursor:pointer" onclick="this.parentNode.style.display='none'">✕</span>`; el.style.display = 'block'; };
+  // ---- dessin de la carte ----
+  function stDraw() {
+    const sv = document.getElementById('stSvg'); if (!sv) return; const v = STV.vb, zf = 1000 / v[2];
+    sv.setAttribute('viewBox', v.map(x => x.toFixed(2)).join(' '));
+    let s = `<path d="${STV.land}" fill="rgba(255,255,255,.15)" stroke="rgba(255,255,255,.3)" stroke-width="${.5 / zf}"/>`;
+    P.forEach(p => { const w = val(p, STV.k); if (!w) return; const [t, a, hd] = w, dim = STV.bas !== 'ALL' && !inB(p, STV.bas);
+      const c = STV.layer === 'anom' ? col(a) : STV.layer === 'temp' ? colT(t) : (hd ? colT(16 + hd / 20) : '#cfd8de');
+      const r = (STV.layer === 'hot' ? 6 + Math.min(18, Math.sqrt(hd || 0) * 3) : (p.basin === 'NO' ? 7 : 9)) / zf, b = p.basin === 'IE' ? 'GB' : p.basin;
+      s += `<circle cx="${X(p.lon)}" cy="${Y(p.lat)}" r="${r}" fill="${c}" opacity="${dim ? .35 : 1}" stroke="#fff" stroke-width="${1.2 / zf}" ${STV.mode === 'p' && STV.k > last ? `stroke-dasharray="${3 / zf}"` : ''} style="cursor:pointer" onclick="stOpen('${b}')"><title>${e(p.label)} — ${lab(STV.k)}: ${t.toFixed(1)} °C (${sg(a)} °C vs ${e((M.normal || '').replace('-', '–'))})${hd ? `, ${hd} days above 16.5 °C` : ''}</title></circle>`;
+      if (zf > 3.2 && !dim && !(zf > 4 && p.basin === 'NO')) s += `<text x="${X(p.lon) + r * 1.5}" y="${Y(p.lat) + 4 / zf}" font-size="${10.5 / zf}" fill="#fff" style="paint-order:stroke;stroke:rgba(5,24,43,.7);stroke-width:${2.5 / zf}px">${e(p.label.split(' · ')[1] || p.label).replace(/^zone /, 'Z')} ${t.toFixed(1)}°</text>`; });
+    if (zf > 4 && (STV.bas === 'NO' || STV.bas === 'ALL') && v[0] < X(33) && v[0] + v[2] > X(2) && v[1] < Y(57) && v[1] + v[3] > Y(72)) {
+      needFarms();
+      if (STV.farms) { STV.farms.forEach((f, i) => { const x = X(f.lo), y = Y(f.la); if (x < v[0] || x > v[0] + v[2] || y < v[1] || y > v[1] + v[3]) return;
+        const c = f.h ? '#ff8a3d' : f.s === 'a' ? '#5fe3a1' : '#9aa8b2', r = (1.6 + Math.sqrt(f.cap || 1000) / 40) / zf;
+        s += `<circle cx="${x}" cy="${y}" r="${r}" fill="${c}" stroke="rgba(5,24,43,.8)" stroke-width="${.5 / zf}" style="cursor:pointer" onclick="stFarm(${i})"><title>${e(f.n)} · ${e(f.o)}</title></circle>`; });
+        s += `<g transform="translate(${v[0] + v[2] - 160 / zf},${v[1] + v[3] - 60 / zf}) scale(${1 / zf})"><rect width="150" height="52" rx="10" fill="rgba(20,52,78,.85)"/><circle cx="14" cy="14" r="4" fill="#5fe3a1"/><text x="24" y="18" font-size="10.5" fill="#fff">fish in the sea</text><circle cx="14" cy="29" r="4" fill="#ff8a3d"/><text x="24" y="33" font-size="10.5" fill="#fff">harvest boats this week</text><circle cx="14" cy="44" r="4" fill="#9aa8b2"/><text x="24" y="48" font-size="10.5" fill="#fff">fallow</text></g>`; } }
+    sv.innerHTML = s;
+  }
+  window.stDrawMap = stDraw;
+  // ---- panneau du bassin ----
+  function side() {
+    const b = STV.bas, L = P.filter(p => inB(p, b)); if (!L.length) return;
+    const now = L.map(p => val(p, STV.k)).filter(Boolean), yr = +STV.k.slice(0, 4), ys = [yr - 2, yr - 1, yr];
+    const mean = (y, m, i) => { const ym = `${y}-${String(m).padStart(2, '0')}`, vs = L.map(p => i === 0 ? (p.monthly || {})[ym] : (p.anomaly || {})[ym]).filter(x => x !== undefined); return vs.length ? vs.reduce((a, x) => a + x, 0) / vs.length : null; };
+    const C = ['#c3ced6', '#ffc38a', '#3fb8f0'];
+    const bars = (signed, fmt) => { const W = 520, H = 150, pl = 30, pb = 18, gw = (W - pl) / 12, bw = gw / 4, S = ys.map(y => MON.map((_, m) => mean(y, m + 1, signed ? 1 : 0)));
+      const all = S.flat().filter(x => x !== null); let lo = signed ? Math.min(0, ...all) : 0, hi = Math.max(signed ? 0 : 1, ...all); if (signed) { const mm = Math.max(Math.abs(lo), Math.abs(hi), .5); lo = -mm; hi = mm; }
+      const yy = x => H - pb - (x - lo) / (hi - lo) * (H - pb - 6); let s = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">`;
+      [lo, (lo + hi) / 2, hi].forEach(x => s += `<line x1="${pl}" x2="${W}" y1="${yy(x)}" y2="${yy(x)}" stroke="rgba(255,255,255,.12)"/><text x="${pl - 4}" y="${yy(x) + 3}" font-size="9" fill="#cfe0ea" text-anchor="end">${fmt(x)}</text>`);
+      S.forEach((Ls, j) => Ls.forEach((x, i) => { if (x === null) return; const x0 = pl + i * gw + bw * (j + .5), y0 = yy(signed ? 0 : lo), y1 = yy(x);
+        s += `<rect x="${x0}" y="${Math.min(y0, y1)}" width="${bw * .9}" height="${Math.max(1, Math.abs(y1 - y0))}" rx="2" fill="${signed ? (x >= 0 ? '#ff9a6a' : '#6fb2ff') : C[j]}" ${signed && j < 2 ? 'opacity=".4"' : ''}><title>${ys[j]} ${MON[i]}: ${fmt(x)}</title></rect>`; }));
+      MON.forEach((m, i) => s += `<text x="${pl + i * gw + gw / 2}" y="${H - 4}" font-size="9" fill="#cfe0ea" text-anchor="middle">${m[0]}</text>`); return s + '</svg>'; };
+    const hd = L.reduce((a, p) => { const w = val(p, STV.k); return a + ((w && w[2]) || 0); }, 0);
+    const rows = L.map(p => { const w = val(p, STV.k); return w ? `<tr><td class="name">${e(p.label.split(' · ')[1] || p.label)}</td><td>${w[0].toFixed(1)}</td><td style="color:${col(w[1])}">${sg(w[1])}</td><td>${w[2] === null ? '—' : w[2]}</td></tr>` : ''; }).join('');
+    const nw = stNews().filter(n => n.b === b || (b === 'GB' && n.b === 'IE')).slice(0, 4).map(stNewsHtml).join('') || '<div class="sig-sub">No climate news for this basin yet.</div>';
+    document.getElementById('stSide').innerHTML = `<button class="st-x" onclick="stClose()">✕</button><h3>${NAME[b]}${b === 'GB' ? ' & Ireland' : ''}</h3><div class="sig-sub">${L.length} point${L.length > 1 ? 's' : ''} · ${lab(STV.k)}${STV.mode === 'p' && STV.k > last ? ' (projection)' : ''}</div>` +
+      `<div class="st-k"><div><div class="st-lbl">Sea temperature</div><div class="st-big">${rng(now.map(x => x[0]), x => x.toFixed(1))} °C</div></div><div><div class="st-lbl">vs normal</div><div class="st-big" style="font-size:20px">${rng(now.map(x => x[1]), sg)} °C</div></div><div><div class="st-lbl">Days &gt; 16.5 °C</div><div class="st-big" style="font-size:20px">${STV.mode === 'p' && STV.k > last ? '—' : hd}</div></div></div>` +
+      `<div style="margin-top:10px;font-size:12.5px;font-weight:700">Monthly sea temperature, °C ${ys.map((y, j) => `<i style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${C[j]};margin:0 4px 0 10px;vertical-align:-1px"></i>${y}`).join('')}</div>${bars(false, x => x.toFixed(0))}` +
+      `<div style="margin-top:10px;font-size:12.5px;font-weight:700">Gap to the ${e((M.normal || '').replace('-', '–'))} normal, °C (${yr} bright, earlier years faded)</div>${bars(true, sg)}` +
+      `<div style="margin-top:10px;font-size:12.5px;font-weight:700">Points</div><div style="overflow-x:auto"><table class="sig-table"><thead><tr><th class="name">Point</th><th>°C</th><th>vs normal</th><th>days &gt; 16.5</th></tr></thead><tbody>${rows}</tbody></table></div>` +
+      `<div style="margin-top:12px;font-size:12.5px;font-weight:700">Climate news</div>${nw}`;
+  }
+  // ---- animation : le planisphere se reduit et zoome sur le bassin ----
+  window.stOpen = b => { STV.bas = b; document.querySelectorAll('#stBas button').forEach(x => x.classList.toggle('on', x.dataset.b === b)); const st = document.getElementById('stStage'), was = st.classList.contains('open');
+    st.classList.add('open'); side(); setTimeout(() => stTween(stFit(BOX[b], document.getElementById('stMap')), was ? 650 : 450), was ? 0 : 620); stDraw(); };   // attendre la fin du retrecissement de la carte pour cadrer juste
+  window.stClose = () => { STV.bas = 'ALL'; document.querySelectorAll('#stBas button').forEach(x => x.classList.toggle('on', x.dataset.b === 'ALL')); document.getElementById('stStage').classList.remove('open'); document.getElementById('stFp').style.display = 'none';
+    setTimeout(() => stTween(stFit(BOX.ALL, document.getElementById('stMap'))), 320); };
+  // ---- rubrique news climat : alertes automatiques (7 derniers jours) + presse ----
+  function stNews() { const A = (M.alerts || []).map(a => ({ d: a.until, b: a.basin, lvl: a.level === 'cold' ? -1 : 1, ty: 'alert',
+      t: `${a.label}: ${a.level === 'heat' ? `${a.hot7} day(s) above 16.5 °C this week` : `${sg(a.anom7)} °C vs normal over the last 7 days`}`, s: 'Automatic alert from the daily sea temperature (NOAA OISST): 7-day gap beyond ±1 °C, or a day above 16.5 °C.' }));
+    return A.concat(((STV.news || {}).items || []).map(n => ({ ...n, ty: 'press' }))).sort((x, y) => (y.d || '').localeCompare(x.d || '')); }
+  function stNewsHtml(n) { return `<div class="st-ni"><span class="dot" style="background:${n.lvl > 0 ? '#ff7a45' : '#5fa8ff'}"></span><div><b style="font-size:13.5px">${n.u ? `<a href="${e(n.u)}" target="_blank" rel="noopener" style="color:#fff">${e(n.t)}</a>` : e(n.t)}</b><span class="st-pill">${n.ty === 'alert' ? 'Auto alert' : 'Press'}</span><span class="st-pill">${n.b === 'ALL' ? 'All basins' : NAME[n.b] || n.b}</span><div class="sig-sub" style="margin-top:2px">${e(n.d)} · ${e(n.s)}</div></div></div>`; }
+  window.stNewsHtml = stNewsHtml;
+  const NL = stNews(), types = ['ALL', 'alert', 'press'];
+  document.getElementById('stNf').innerHTML = types.map(x => `<button class="${STV.nf === x ? 'on' : ''}" data-n="${x}">${x === 'ALL' ? 'All' : x === 'alert' ? 'Auto alerts' : 'Press'}</button>`).join('');
+  document.querySelectorAll('#stNf button').forEach(b => b.onclick = () => { STV.nf = b.dataset.n; renderSeaTemp(); });
+  document.getElementById('stNl').innerHTML = NL.filter(n => STV.nf === 'ALL' || n.ty === STV.nf).map(stNewsHtml).join('') || '<div class="sig-sub">No alert this week.</div>';
+  // ---- textes ----
+  const L1 = STV.layer;
+  document.getElementById('stLeg').innerHTML = L1 === 'anom' ? `Gap to the ${e((M.normal || '').replace('-', '–'))} normal (same month)<div class="sc"></div>−2 °C · normal · +2 °C` : L1 === 'temp' ? 'Sea °C: <span style="color:#7fb8ff">&lt;10</span> · <span style="color:#cfe9d8">10–14</span> · <span style="color:#ffd27a">14–16.5</span> · <span style="color:#ff9a52">16.5–18</span> · <span style="color:#ff4a2a">&gt;18</span>' : 'Days above 16.5 °C in the month (size)';
+  document.getElementById('stIntro').innerHTML = `Sea surface temperature at ${P.length} points near the salmon farms of every basin — one per Norwegian production zone, five in Scotland — from NOAA OISST v2.1 (satellites, buoys and ships, 0.25° grid, daily, public domain), updated every morning. ` +
+    `Checked against the temperatures the Norwegian farms report every week (BarentsWatch): 0.5 °C average gap, correlation 0.96–0.99 in every zone. Click a basin or a dot to open its panel; scroll or pinch to zoom, drag to move; zoom on Norway to see every farm.`;
+  document.getElementById('stNote').innerHTML = STV.mode === 'h' ? `<b>History</b>: monthly means from ${e(M.normal ? '2016' : '')} onwards; the normal is the ${e((M.normal || '').replace('-', '–'))} average of the same month. Heat days: days above 16.5 °C, the start of the mortality-risk range in Canepa et al. (Reviews in Aquaculture 2026, Tasmania); salmon grow best at 12–16 °C.` :
+    `<b>Projected</b>: a simple projection — the normal of each month plus last month's gap, fading by 30 % a month. It is not a weather forecast: summer 2026's cold spell in western Norway was foreseen by no model a year ahead. Seasonal model forecasts (Copernicus) and the El Niño index (NOAA, Niño 3.4) are the next step.`;
+  stDraw();
+  if (STV.bas !== 'ALL') side();
+}
+function stFit(bb, el) { const X = lo => (lo + 180) / 360 * 1000, Y = la => (80 - la) / 150 * 520, r = el.getBoundingClientRect(), ar = (r.width || 1000) / (r.height || 520);
+  const x0 = X(bb[0]), x1 = X(bb[2]), y0 = Y(bb[3]), y1 = Y(bb[1]); let w = (x1 - x0) * 1.15, h = (y1 - y0) * 1.15; if (w / h < ar) w = h * ar; else h = w / ar; return [(x0 + x1) / 2 - w / 2, (y0 + y1) / 2 - h / 2, w, h]; }
+function stTween(to, ms = 650) { const fr = STV.vb.slice(), t0 = performance.now(); cancelAnimationFrame(STV.anim);
+  const st = t => { let u = Math.min(1, (t - t0) / ms); u = 1 - Math.pow(1 - u, 3); STV.vb = fr.map((v, i) => v + (to[i] - v) * u); if (window.stDrawMap) window.stDrawMap(); if (u < 1) STV.anim = requestAnimationFrame(st); }; STV.anim = requestAnimationFrame(st); }
+
 function renderIceland() {
   const sub = document.getElementById('isSub'), e = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), t0 = v => Math.round(v).toLocaleString('en-US');
   if (!IS_NT && !IS_LOADING) { IS_LOADING = true; const g = f => fetch(DATA_URL.replace('data.json', f), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
@@ -7574,6 +7755,7 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     document.getElementById('plView').style.display = currentView === 'poland' ? 'block' : 'none';
     document.getElementById('prView').style.display = currentView === 'prices' ? 'block' : 'none';
     document.getElementById('isView').style.display = currentView === 'iceland' ? 'block' : 'none';
+    document.getElementById('stView').style.display = currentView === 'seatemp' ? 'block' : 'none';
     document.getElementById('upView').style.display = currentView === 'usaprices' ? 'block' : 'none';
     document.getElementById('newsView').style.display = currentView === 'news' ? 'block' : 'none';
     document.getElementById('supplyView').style.display = currentView === 'supply' ? 'block' : 'none';
@@ -7587,11 +7769,11 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     // definitions du Biomasseregisteret : seulement sur les vues norvegiennes qui affichent ces mesures (pas sur Chili, Ecosse, actualite...)
     { const fn = document.getElementById('regFootNote'); if (fn) fn.style.display = ['global', 'multi', 'po', 'outlook', 'summary', 'generations', 'genyoy', 'timeatsea'].includes(currentView) ? '' : 'none'; }
     // The year / period selectors do not apply to the weekly fish-health view.
-    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'usaprices' || currentView === 'news' || currentView === 'supply' || currentView === 'disease' || currentView === 'wellboats' || currentView === 'coprod' || currentView === 'feed' || currentView === 'genyoy' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
+    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'seatemp' || currentView === 'usaprices' || currentView === 'news' || currentView === 'supply' || currentView === 'disease' || currentView === 'wellboats' || currentView === 'coprod' || currentView === 'feed' || currentView === 'genyoy' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
     // La carte des zones ne sert qu'aux vues qui raisonnent par PO. Les onglets
     // Markets et Calibre sont nationaux, elle n'y afficherait rien d'utile.
     const mw = document.querySelector('.panel.mapwrap');
-    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'usaprices' || currentView === 'news' || currentView === 'supply' || currentView === 'disease' || currentView === 'wellboats' || currentView === 'coprod' || currentView === 'feed' || currentView === 'genyoy' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
+    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'seatemp' || currentView === 'usaprices' || currentView === 'news' || currentView === 'supply' || currentView === 'disease' || currentView === 'wellboats' || currentView === 'coprod' || currentView === 'feed' || currentView === 'genyoy' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
     document.getElementById('poFilterField').style.display = (currentView === 'global' || currentView === 'multi' || currentView === 'outlook') ? 'flex' : 'none';
     document.getElementById('yearField').style.display = currentView === 'multi' ? 'none' : 'flex';
     document.getElementById('yearRangeField').style.display = currentView === 'multi' ? 'flex' : 'none';
@@ -7628,6 +7810,7 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     else if (currentView === 'poland') { renderPoland(); }
     else if (currentView === 'prices') { renderPrices(); }
     else if (currentView === 'iceland') { renderIceland(); }
+    else if (currentView === 'seatemp') { renderSeaTemp(); }
     else if (currentView === 'feed') { renderFeed(); }
     else if (currentView === 'usaprices') { renderUsaPrices(); }
     else if (currentView === 'news') { renderNews(); }
@@ -14264,7 +14447,7 @@ const SN_BURGER = window.SN_BURGER, SN_CLOSE = window.SN_CLOSE;
     SVG('<path d="M3 17h18l-2.5 4h-13z"/><path d="M5 17V9h14v8M9 9V5h6v4"/>')];                                                 // marches : navire
   const CATS = [['Front page', ['news', 'supply', 'disease', 'summary']],
     ['Norway — production', ['global', 'po', 'multi', 'outlook', 'generations', 'genmap', 'genyoy', 'timeatsea', 'health', 'wellboats', 'register']],
-    ['Other basins', ['scotland', 'faroe', 'iceland', 'chile', 'canada', 'australia']],
+    ['Other basins', ['seatemp', 'scotland', 'faroe', 'iceland', 'chile', 'canada', 'australia']],
     ['Prices & products', ['prices', 'calibre', 'products', 'coprod', 'feed']],
     ['Markets & trade', ['markets', 'producers', 'euflows', 'poland', 'usa', 'usaprices', 'china', 'world']]];
   const btn = v => document.querySelector(`#viewToggle button[data-v="${v}"]`);
