@@ -13857,7 +13857,15 @@ loadRemoteData().then(live => {
     const d = document.createElement('div'); d.className = 'wide-wrap'; s.parentNode.insertBefore(d, s); d.appendChild(s);
     // series temporelles : la periode la plus recente d'abord ; graphiques par categorie (bassins, causes...) : le debut, sinon les premieres barres sont cachees
     const isTime = s.dataset.start !== 'left' && [...s.querySelectorAll('text')].some(t => /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|W ?\d|Q[1-4]|(19|20)\d\d|'\d\d)/.test(t.textContent.trim()));
-    if (isTime) requestAnimationFrame(() => { d.scrollLeft = d.scrollWidth; });
+    // graphique saisonnier (Jan..Dec, 2-3 annees groupees) : l'annee en cours s'arrete avant decembre ; on centre sur sa derniere barre
+    // (sinon l'ouverture a droite montrait Jul-Dec et cachait les mois 2026 : Canada, smolts)
+    const seasonal = () => { const tx = [...s.querySelectorAll('text')].map(t => t.textContent.trim());
+      if (!tx.includes('Dec') || tx.some(t => /^(19|20)\d\d$|^'\d\d$|\d{4}/.test(t) && !/^\d{1,3}(,\d{3})*$/.test(t))) return null;
+      const sr = s.getBoundingClientRect(), G = {};
+      s.querySelectorAll('rect').forEach(r => { const b = r.getBoundingClientRect(), f = r.getAttribute('fill') || ''; if (b.height < 1 || b.width > 60 || !f || f === 'none') return; (G[f] = G[f] || []).push(b.right - sr.left); });
+      const ends = Object.values(G).filter(v => v.length >= 2).map(v => Math.max(...v)); if (ends.length < 2 || ends.length > 4) return null;
+      const lo = Math.min(...ends), hi = Math.max(...ends); return hi - lo > 20 ? lo : null; };
+    if (isTime) requestAnimationFrame(() => { const x = seasonal(); d.scrollLeft = x === null ? d.scrollWidth : Math.max(0, x - d.clientWidth * 0.7); });
   });
   let t = null; new MutationObserver(() => { clearTimeout(t); t = setTimeout(wrap, 60); }).observe(document.documentElement, { childList: true, subtree: true });
   document.addEventListener('DOMContentLoaded', wrap);
