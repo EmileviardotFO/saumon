@@ -3748,7 +3748,7 @@ function renderUsaPrices() {
       if (ff === 1 && pe !== null && peu && pe < 0.8 * peu) w.push('fillet to the US priced over 20 % below the same fillet to the EU');
       return `<tr${w.length ? ' style="border-bottom:0"' : ''}><td class="name" style="white-space:nowrap">${flagImg(o2, 15)} <b>${e(n2)}</b> · ${ff === 1 ? 'fresh fillets' : 'fresh whole'}</td><td>Jan–${tmMl(x.L)}</td><td>${Math.round(x.ex[0]).toLocaleString('en-US')}</td><td>${Math.round(x.us[0]).toLocaleString('en-US')}</td><td>${c2(vg)}</td>` +
         `<td><b>${pe === null ? '—' : pe.toFixed(2)}</b></td><td>${pu === null ? '—' : pu.toFixed(2)}</td><td>${peu === null ? '—' : peu.toFixed(2)}</td><td>${c2(pc2(pe, peu))}</td><td>${o2 === 'NO' ? '—' : c2(pc2(pe, ref[ff]))}</td></tr>` +
-        (w.length ? `<tr><td colspan="10" class="name" style="font-size:12px;color:#ffb74d;padding-top:0">⚠ ${w.map(e).join(' · ')}</td></tr>` : ''); }).join('') + `</tbody>`;
+        (w.length ? `<tr><td colspan="10" class="name" style="font-size:12px;color:#ffb74d;padding-top:0;white-space:normal"><div style="max-width:min(100%,calc(100vw - 72px));white-space:normal">⚠ ${w.map(e).join(' · ')}</div></td></tr>` : ''); }).join('') + `</tbody>`;
   document.getElementById('upNote').innerHTML = `<b>How to read it.</b> A price is shown only for months with at least 20 t shipped: a few parcels do not make a market price (Chile, for instance, sends almost no fresh fillets to Europe — its fresh fillets go to the US and Brazil). Export prices are the values each producer declares at export (Norway: Statistics Norway; other origins: their national statistics), so the US premium compares the same fish leaving the same country for two markets; for fresh product it includes the extra air freight to the US. ` +
     `Import prices are customs values recorded on arrival (US Census; Eurostat, EU arrivals from that origin). All are monthly averages mixing spot and contract sales, and they arrive with one to two months' delay. Wholesale quotes in the US (Miami, East Coast) are sold by private price services and are not included.`;
 }
@@ -10159,7 +10159,7 @@ function renderOutlook() {
   // limite explicite entre mois publies (Biomasseregisteret) et mois projetes
   { const lr = s[s.length - 1], sep = document.createElement('tr');
     sep.className = 'ol-sep';
-    sep.innerHTML = `<td colspan="7">▼ Projected from here — the rows above are harvests already reported to the Biomasseregisteret (last month: ${MONTHS_FR[lr.month - 1]} ${lr.year}); Δ% on projected rows compares an estimate with the reported figure a year earlier</td>`;
+    sep.innerHTML = `<td colspan="7" style="white-space:normal"><div style="position:sticky;left:8px;max-width:min(100%,calc(100vw - 72px));white-space:normal">▼ Projected from here — the rows above are harvests already reported to the Biomasseregisteret (last month: ${MONTHS_FR[lr.month - 1]} ${lr.year}); Δ% on projected rows compares an estimate with the reported figure a year earlier</div></td>`;
     tbody.appendChild(sep); }
 
   // ---- projected months
