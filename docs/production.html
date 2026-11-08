@@ -9703,7 +9703,7 @@ function renderCalPair(months, selA, selB) {
       const dv = b - a;
       const good = r.better === 0 ? null : (dv * r.better > 0);
       const cls = dv === 0 ? 'delta-zero' : (good === null ? 'delta-zero' : (good ? 'delta-neg' : 'delta-pos'));
-      dCell = `<td class="sep-left ${cls}">${dv > 0 ? '+' : ''}${dv.toFixed(r.d)}</td>`;
+      dCell = `<td class="sep-left ${cls}">${dv > 0 ? '+' : ''}${dv.toFixed(r.d)}${r.unit === ' %' ? ' pt' : r.unit}</td>`;   // ecart de parts en points, pas en %
       // Un pourcentage de variation n'a pas de sens sur une grandeur deja en
       // points de pourcentage (les parts) ni sur une prime qui peut changer
       // de signe : on l'affiche seulement pour poids et volume.
