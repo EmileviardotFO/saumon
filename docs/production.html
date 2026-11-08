@@ -3470,7 +3470,10 @@ const stNorm = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g,
 let ST = null, ST_LOADING = false, ST_B = 'all', ST_FREE = true, ST_HIDEPAY = false, QR = null, RB = undefined;
 // ---- resultats trimestriels (data/quarterly.json <- scripts/build_quarterly.py) ----
 function qrLoad(cb) { if (QR) return cb(); fetch(DATA_URL.replace('data.json', 'quarterly.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
-  .then(j => { QR = j || { reports: [] }; cb(); }); }
+  .then(j => { QR = j || { reports: [] };
+    // rapport rattache a la mauvaise societe par la lecture automatique (« Kaldvik T3 2026 » = texte de Wilh. Wilhelmsen) : ecarte partout
+    QR.reports = (QR.reports || []).filter(r => !(r.segments || []).some(g => (g.notes || []).some(n => /^source mismatch/i.test(n))));
+    cb(); }); }
 function qrFind(who, ev, title) {
   const m = /Q([1-4])\s*(20\d\d)/.exec((ev || '') + ' ' + (title || '')); if (!m || !QR) return null;
   const q = `${m[2]}-Q${m[1]}`, R = QR.reports || [];
@@ -3840,7 +3843,7 @@ function renderIceland() {
     rows.map(({ r, g }) => { const d = g.guidance_t !== undefined && g.guidance_prev_t !== undefined ? g.guidance_t - g.guidance_prev_t : null;
       return `<tr><td class="name"><b>${e(g.segment === 'Group' ? r.company : g.segment)}</b></td><td>${e(r.quarter.replace('-', ' '))}</td><td>${f1(g.harvest_t)}</td><td>${g.cost_per_kg !== undefined ? f1(g.cost_per_kg) + ' ' + e(g.currency) : '—'}</td>` +
         `<td>${g.ebit_per_kg !== undefined ? f1(g.ebit_per_kg) + ' ' + e(g.currency) + '/kg' : g.ebit_m !== undefined ? f1(g.ebit_m) + ' ' + e(g.currency) + ' m' + (g.ebit_m_ly !== undefined ? ` (${f1(g.ebit_m_ly)})` : '') : '—'}</td>` +
-        `<td>${g.guidance_t !== undefined ? t0(g.guidance_t) + (d ? ` <span class="${d > 0 ? 'delta-good' : 'delta-bad'}">${d > 0 ? '+' : '−'}${t0(Math.abs(d))}</span>` : '') : '—'}</td><td class="name" style="font-size:12px">${e([g.guidance_reason, ...(g.biology || []), ...(g.notes || [])].filter(Boolean).join('; '))}</td></tr>`; }).join('') + `</tbody>`
+        `<td>${g.guidance_t !== undefined ? t0(g.guidance_t) + (d ? ` <span class="${d > 0 ? 'delta-good' : 'delta-bad'}">${d > 0 ? '+' : '−'}${t0(Math.abs(d))}</span>` : '') : '—'}</td><td class="name" style="font-size:12px;min-width:260px;white-space:normal">${e([g.guidance_reason, ...(g.biology || []), ...(g.notes || [])].filter(Boolean).join('; '))}</td></tr>`; }).join('') + `</tbody>`
     : `<tbody><tr><td class="name" style="color:var(--muted)">No Icelandic report read yet: Icelandic Salmon, Arctic Fish and Kaldvík are followed by the quarterly-report step.</td></tr></tbody>`;
   // ---- exportations ----
   const NR = (IS_NT.rows || []).filter(r => r[1] === 'IS'), W = { 0: 1, 1: 1, 2: 1.75, 3: 1.75, 5: 2.1, 6: 2.0 }, FN = (IS_NT.meta || {}).forms || {};
@@ -14246,6 +14249,8 @@ loadRemoteData().then(live => {
     html,body{overflow-x:clip;max-width:100%}
     table{display:block;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
     table td.name,table th.name{position:sticky;left:0;z-index:1;background:rgb(27,63,93)}
+    /* seule la premiere colonne reste figee : les autres cellules « name » (Fjord, Type, Source... sur Iceland) s'empilaient a gauche par-dessus */
+    table td.name:not(:first-child),table th.name:not(:first-child){position:static!important;box-shadow:none!important;background:transparent!important}
     .panel{overflow-x:visible}
     svg{max-width:100%}
     pre,code{white-space:pre-wrap;word-break:break-word}
