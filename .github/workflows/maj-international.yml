@@ -158,11 +158,6 @@ jobs:
       continue-on-error: true
       timeout-minutes: 5
       run: python3 scripts/build_faroe.py
-    - name: Temperature de la mer et jours de chaleur par bassin (Open-Meteo Marine, gratuit)
-      id: sea_temp
-      continue-on-error: true
-      timeout-minutes: 10
-      run: python3 scripts/build_sea_temp.py
     - name: Offre mondiale - nos propres estimations par bassin (2025, 2026, 2027)
       id: own_supply
       continue-on-error: true
