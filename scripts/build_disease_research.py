@@ -173,7 +173,7 @@ def main():
                 err.append(f'{k} presse {lang}: {str(e)[:150]}')
             time.sleep(1.5)
         mk = re.compile(MUST[k], re.I)
-        pubs = {a: b for a, b in pubs.items() if mk.search(b['title'] + ' ' + (b.get('_ab') or ''))}
+        pubs = {a: b for a, b in pubs.items() if mk.search(b['title'] + ' ' + (b.get('_ab') or '')) and not re.match(r'(correction|erratum|retraction|corrigendum)\b', b['title'], re.I)}
         news = {a: b for a, b in news.items() if mk.search(b['title'])}
         for b in pubs.values(): b.pop('_ab', None)
         P = sorted(pubs.values(), key=lambda p: p['date'] or '', reverse=True)[:30]
