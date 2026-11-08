@@ -163,6 +163,7 @@ def aggregate(rows):
                                            'grade_usd': collections.Counter()})
     prod = collections.defaultdict(lambda: collections.defaultdict(lambda: [0.0, 0.0]))
     psz = collections.defaultdict(lambda: collections.defaultdict(lambda: {'kg': 0.0, 'kg_sized': 0.0, 'w': 0.0, 'hist': [0.0] * (len(CLS) + 1)}))   # calibres par producteur
+    cdst = collections.defaultdict(lambda: collections.defaultdict(lambda: [0.0, 0.0]))   # atlantique entier : (classe de calibre, destination) -> [kg, FOB]
     ex = {}
     for x in rows:
         kg, fob = num(x[C_QTY]), num(x[C_FOB])
@@ -176,6 +177,8 @@ def aggregate(rows):
         if fo in ('fresh whole', 'frozen whole', 'fresh fillets', 'frozen fillets') and sp in ('atlantic', 'coho', 'trout'):
             z = sizes[f'{sp}|{fo}']; z['kg'] += kg; c = calibre(t1)
             if c: z['kg_sized'] += kg; z['w'] += c * kg; z['hist'][sum(c >= b for b in CLS)] += kg
+            if c and sp == 'atlantic' and 'whole' in fo:
+                cl = sum(c >= b for b in CLS); cdst[f'{fo}|{cl}'][dest][0] += kg; cdst[f'{fo}|{cl}'][dest][1] += fob
             if 'fillets' in fo:
                 f = fil[f'{sp}|{fo}']; g = grade(t1); f['grade'][g] += kg; f['grade_usd'][g] += fob; f['trim'][trim(t1)] += kg; f['kind'][kind(t1)] += kg
                 if c: lb = c / 0.4536; f['lb'][min(len(LB_BINS) - 1, max(0, int(lb) - 1))] += kg
@@ -197,6 +200,8 @@ def aggregate(rows):
                             'lb_t': [round(v / 1000, 1) for v in f['lb']]} for k, f in fil.items()},
             'producers': {n: {k: [round(v[0] / 1000, 1), round(v[1] / 1000, 1)] for k, v in sorted(d.items(), key=lambda kv: -kv[1][0]) if v[0] >= 2000}
                           for n, d in sorted(prod.items(), key=lambda kv: -sum(v[0] for v in kv[1].values())) if sum(v[0] for v in d.values()) >= 20000},
+            # atlantique entier : destination et prix FOB par classe de calibre (indice de classe dans CLS : 5 = 6-7 kg, 6 = 7 kg et plus)
+            'size_dest': {k: {dd: [round(v[0] / 1000, 1), round(v[1] / 1000, 1)] for dd, v in sorted(m.items(), key=lambda kv: -kv[1][0]) if v[0] >= 1000} for k, m in cdst.items()},
             # calibres declares par producteur (nom de marque ou de societe lu dans la description) : sert a suivre le poids des poissons
             # de chaque eleveur (ex. Camanchaca) ; 'mean_kg' = moyenne des milieux de classe ponderee par le tonnage, HON pour les entiers
             'producer_sizes': {n: {k: {'t': round(z['kg'] / 1000, 1), 't_sized': round(z['kg_sized'] / 1000, 1), 'mean_kg': round(z['w'] / z['kg_sized'], 2) if z['kg_sized'] else None,
@@ -250,7 +255,7 @@ def main():
     raw_cache = old.get('_exporters_raw') or (json.load(open(CACHE)) if os.path.exists(CACHE) else {})
     for ym in sorted(res):
         key = str(ym)
-        if key in months_agg and key in raw_cache and old.get('mods', {}).get(key) == res[ym]['mod'] and ('--relire' not in sys.argv or 'producer_sizes' in months_agg[key]):
+        if key in months_agg and key in raw_cache and old.get('mods', {}).get(key) == res[ym]['mod'] and ('--relire' not in sys.argv or 'size_dest' in months_agg[key]):
             months_ex[ym] = {k: {**v, 'refs': collections.Counter(v['refs']), 'sp': collections.Counter(v['sp']), 'reg': collections.Counter(v['reg']),
                                  'dest': collections.Counter(v['dest']), 'comuna': collections.Counter(v['comuna']), 'prod': collections.Counter(v.get('prod', {}))} for k, v in raw_cache[key].items()}
             continue
