@@ -7020,7 +7020,7 @@ function renderRegister() {
   // zone 0 : biomasse des licences speciales (recherche, vitrine, enseignement, geniteurs) declaree hors zone ; leur MTB est deja dans les zones ci-dessus (site par site)
   if (bN[0] || bP[0]) { const mtb0 = +((BWR.mtb_po_all || BWR.mtb_po)['0'] || 0);
     tm += mtb0; tb += bN[0] || 0; tbp += bP[0] || 0; tf += fN[0] || 0; tfp += fP[0] || 0; tbm += bM[0] || 0;
-    html += `<tr title="Fish of research, display, education and broodstock licences, reported outside the zones by the register"><td class="name">0. ${PO_NAMES[0]}</td><td style="color:var(--muted)">${mtb0 ? f0(mtb0) : 'in zones'}</td>` +
+    html += `<tr title="Fish of research, display, education and broodstock licences, reported outside the zones by the register"><td class="name">0. ${PO_NAMES[0]}</td><td style="color:var(--muted)" title="The MTB of research, display, education and broodstock licences is counted in the zones of their sites; ${mtb0 ? f0(mtb0) + ' t = development licences with no zone (Smart Fish Farm, fallow)' : ''}">${mtb0 ? f0(mtb0) + '<small style="display:block;font-size:10px">no-zone dev. licences</small>' : 'in zones'}</td>` +
       `<td class="sep-left">${f0(bN[0])}</td><td style="color:var(--muted)">${f0(bP[0])}</td><td class="sep-left">${f1m(fN[0])}</td><td style="color:var(--muted)">${f1m(fP[0])}</td>` +
       `<td class="sep-left barcell"></td><td>—</td><td class="delta-zero">—</td><td style="color:var(--muted)">—</td></tr>`; }
   const tbz = document.getElementById('tbodyRgPo');
