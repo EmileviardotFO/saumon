@@ -59,6 +59,21 @@ def main():
     y0, w0 = map(int, st['first'].split('-'))
     n = max(len(v) for v in st['sites'].values())
     weeks = [dt.date.fromisocalendar(y0, w0, 1) + dt.timedelta(weeks=i) for i in range(n)]
+    C_tout, st_tout, weeks_tout = C, {k: v for k, v in st['sites'].items()}, list(weeks)      # donnees completes, pour le controle apres coup
+    # Simulation « comme a l'epoque » (BF_ASOF=AAAAMM, mois du registre) : registre jusqu'a ce mois, statut des sites jusqu'a la
+    # publication de ce registre (environ le 5 du 2e mois suivant). Les licences (titulaires, capacites) restent celles d'aujourd'hui.
+    ASOF = int(os.environ.get('BF_ASOF') or 0)
+    if ASOF:
+        C = [c for c in C if c['year'] * 100 + c['month'] <= ASOF]; d['cohort'] = C
+        y_, m_ = divmod(ASOF, 100); m_ += 2
+        if m_ > 12: y_, m_ = y_ + 1, m_ - 12
+        pub = dt.date(y_, m_, 5)
+        k_ = sum(1 for w in weeks if w <= pub)
+        st['sites'] = {k: v[:k_] for k, v in st['sites'].items()}
+        n = k_; weeks = weeks[:n]
+        yw_pub = pub.isocalendar()[0] * 100 + pub.isocalendar()[1]
+        bw = d.get('bw_weekly') or {}
+        if bw.get('site_dis'): bw['site_dis'] = [x for x in bw['site_dis'] if x[4] <= yw_pub]
     last = n - 1
     while last > 0 and not any(len(v) > last and v[last] in 'af' for v in st['sites'].values()): last -= 1
 
@@ -479,6 +494,62 @@ def main():
                 F['sites'] += 1; Zf['sites'] += 1
                 if 'PD' in x['disease']: F['pd'] += 1; Zf['pd'] += 1
                 if 'ILA' in x['disease']: F['ila'] += 1; Zf['ila'] += 1
+    # ---- bilan par eleveur : prevision archivee contre « constate » quand le registre des mois prevus est publie ----
+    # Constate = la recolte reelle de chaque zone ce mois-la (registre : tonnes et calibres), repartie entre les eleveurs selon la capacite
+    # des sites qu'ils ont reellement vides ce mois-la (statut hebdomadaire BarentsWatch). La taille des poissons par eleveur n'est publiee
+    # nulle part : dans une zone, chaque eleveur recoit le calibre reel de la zone. Juste pour un eleveur qui domine sa zone (Nordlaks en
+    # zone 9...), approche pour les autres ; l'ecart de rythme d'un eleveur se lit donc surtout dans le choix des zones et des mois.
+    def constate(mois_cibles):
+        res = collections.defaultdict(lambda: [0.0, 0.0, 0.0])
+        for ym in mois_cibles:
+            A_ = recolte(ym)
+            vid = collections.defaultdict(float)                     # (po, eleveur) -> capacite videe dans le mois
+            for site, s_ in st_tout.items():
+                po = R['site_po'].get(site)
+                if not po or not commercial(site): continue
+                co = R['site_org'].get(site); cap = R['site_cap'].get(site) or 0
+                for i, w in enumerate(weeks_tout):
+                    if w.year * 100 + w.month != ym or i >= len(s_) or s_[i] != 'a': continue
+                    if vide(s_, i, 3): vid[(po, co)] += cap; break
+            totz = collections.defaultdict(float)
+            for (po, co), c_ in vid.items(): totz[po] += c_
+            for (po, co), c_ in vid.items():
+                z = A_.get(po)
+                if not z or not totz[po]: continue
+                f_ = c_ / totz[po]
+                for k2 in range(3): res[co][k2] += z[k2] * f_
+        return res
+    bilan = []
+    ARCH = os.path.join(ROOT, 'data', 'big_fish_archive.json')
+    arch_lu = json.load(io.open(ARCH, encoding='utf-8')) if os.path.exists(ARCH) else {}
+    for orig, a in sorted(arch_lu.items()):
+        ms = sorted({x['month'] for x in a['norway']})
+        if not ms or any(m not in mois_r for m in ms): continue
+        obs = constate(ms)
+        for f in a.get('top', []):
+            o_ = obs.get(f['co'])
+            if not o_ or o_[0] < 300 or not f.get('harvest_t'): continue
+            t6m, t56m = f.get('t6_model', f['t6']), f.get('t56_model', f['t56'])   # la prevision du modele, avant correction
+            bilan.append({'made_from': int(orig), 'months': ms, 'co': f['co'],
+                          'shown_share6': round(100 * f['t6'] / f['harvest_t'], 1),
+                          'forecast_share6': round(100 * t6m / f['harvest_t'], 1), 'actual_share6': round(100 * o_[2] / o_[0], 1),
+                          'forecast_share56': round(100 * t56m / f['harvest_t'], 1), 'actual_share56': round(100 * o_[1] / o_[0], 1),
+                          'forecast_harvest_t': f['harvest_t'], 'actual_harvest_t': round(o_[0])})
+    # correction par eleveur apprise sur les bilans deja publies : TESTEE ET NON RETENUE (FAC_ELEVEUR = 0).
+    # Previsions refaites comme a l'epoque, origines juil. 2025 - aout 2026 (236 cas eleveur x fenetre) : erreur moyenne sur la part de
+    # 6 kg+ 5,58 points sans correction, 5,72 a 5,89 avec (ecart moyen x 0,5 a 1, toutes fenetres ou les 3 a 6 dernieres), et pas mieux en
+    # relatif au national. L'ecart d'un eleveur change de signe avec la saison (Nordlaks : +4 a +11 points chaque fenetre d'aout 2025 a
+    # fevrier 2026, -6 a -31 de mars a aout 2026) : c'est le calendrier national qui decale, pas un biais propre a l'eleveur.
+    # A rouvrir quand deux saisons de bilans permettront une correction par eleveur ET par saison.
+    FAC_ELEVEUR = 0.0
+    corr = {}
+    _b = collections.defaultdict(list)
+    for x in bilan: _b[x['co']].append(x)
+    for co, L in _b.items():
+        if len(L) < 2: continue
+        d6 = statistics.mean(x['actual_share6'] - x['forecast_share6'] for x in L)
+        d56 = statistics.mean(x['actual_share56'] - x['forecast_share56'] for x in L)
+        if FAC_ELEVEUR: corr[co] = (max(-8, min(8, FAC_ELEVEUR * d56)), max(-8, min(8, FAC_ELEVEUR * d6)), len(L))
     classement = sorted([{'co': co, 'harvest_t': round(F['t']), 't56': round(F['t56']), 't6': round(F['t6']),
                           'share56': round(100 * F['t56'] / F['t'], 1) if F['t'] else 0, 'share6': round(100 * F['t6'] / F['t'], 1) if F['t'] else 0,
                           'sites': F['sites'], 'pd_sites': F['pd'], 'ila_sites': F['ila'], 'pace': next((c['pace'] for c in cyc if c['co'] == co and c['po'] == 0 and c['pace']), 1.0),
@@ -487,6 +558,20 @@ def main():
                                             'sites': v['sites'], 'pd_sites': v['pd'], 'ila_sites': v['ila']} for po, v in F['zones'].items() if v['t'] >= 20],
                                           key=lambda z: -(z['t56'] + z['t6']))}
                          for co, F in fermes.items() if F['t56'] + F['t6'] >= 20], key=lambda c: -(c['t56'] + c['t6']))
+    # correction par eleveur, puis renormalisation : le total national (calibre de la Norvege, teste a part) ne bouge pas,
+    # seule la repartition des gros poissons entre eleveurs change
+    for c in classement:
+        c['t56_model'], c['t6_model'] = c['t56'], c['t6']
+        k3 = corr.get(c['co'])
+        if k3 and c['harvest_t']:
+            c['correction56'], c['correction6'], c['checks'] = round(k3[0], 1), round(k3[1], 1), k3[2]
+            c['t56'] = max(0, c['t56'] + c['harvest_t'] * k3[0] / 100); c['t6'] = max(0, c['t6'] + c['harvest_t'] * k3[1] / 100)
+    for key in ('t56', 't6'):
+        m0, m1 = sum(c[key + '_model'] for c in classement), sum(c[key] for c in classement)
+        for c in classement:
+            c[key] = round(c[key] * m0 / m1) if m1 else c[key]
+            c['share' + key[1:]] = round(100 * c[key] / c['harvest_t'], 1) if c['harvest_t'] else 0
+    classement.sort(key=lambda c: -(c['t56'] + c['t6']))
     def tots(z): return [sum(v[i] for v in z.values()) for i in range(3)]
     resume = []
     for ym in cibles:
@@ -501,8 +586,13 @@ def main():
     # archive des previsions et controle quand les mois prevus sont publies
     ARCH = os.path.join(ROOT, 'data', 'big_fish_archive.json')
     arch = json.load(io.open(ARCH, encoding='utf-8')) if os.path.exists(ARCH) else {}
+    if ASOF:   # simulation : on ecrit seulement la prevision, ailleurs, sans toucher a l'archive ni au fichier du tableau de bord
+        io.open(os.environ.get('BF_OUT') or '/dev/stdout', 'w', encoding='utf-8').write(json.dumps(
+            {'register_month': dern, 'months': cibles, 'made': now.isoformat(), 'reconstructed': True, 'norway': resume,
+             'top': [{'co': c['co'], 't56': c['t56'], 't6': c['t6'], 't56_model': c['t56_model'], 't6_model': c['t6_model'], 'harvest_t': c['harvest_t']} for c in classement[:30]]}, ensure_ascii=False))
+        return
     arch.setdefault(str(dern), {'made': now.isoformat(), 'norway': resume,
-                                'top': [{'co': c['co'], 't56': c['t56'], 't6': c['t6'], 'harvest_t': c['harvest_t']} for c in classement[:15]]})
+                                'top': [{'co': c['co'], 't56': c['t56'], 't6': c['t6'], 't56_model': c['t56_model'], 't6_model': c['t6_model'], 'harvest_t': c['harvest_t']} for c in classement[:30]]})
     io.open(ARCH, 'w', encoding='utf-8').write(json.dumps(arch, ensure_ascii=False, separators=(',', ':')))
     controles = []
     for orig, a in sorted(arch.items()):
@@ -522,7 +612,7 @@ def main():
                     'method': 'site age from fallow history (BarentsWatch) x zone growth curve (biomass register) x measured harvest chance by age'},
            'zones': zones,
            'ranking': {'months': cibles, 'register_month': dern, 'farmers': classement, 'norway': resume, 'ytd': ytd_share,
-                       'zone_share': part_zones, 'gut': GUT, 'checks': controles, 'test_sizes': test_calibres, 'test_farmers': test_eleveurs,
+                       'zone_share': part_zones, 'gut': GUT, 'checks': controles, 'farmer_checks': bilan, 'test_sizes': test_calibres, 'test_farmers': test_eleveurs,
                        'method': 'size mix: half the last reported month, half the last month plus last year\'s seasonal change (tested best); '
                                  'shared between farmers by site capacity x harvest chance x size mix at the estimated weight; ILA and PD adjust timing and weight'},
            'cycles': {'since': '2023-01-01', 'min_cycles': 3, 'farmers': sorted(cyc, key=lambda c: (c['po'], -c['cycles'])),

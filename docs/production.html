@@ -4354,6 +4354,35 @@ function renderBigFish() {
   document.getElementById('gm_bfCo').innerHTML = `<thead><tr><th class="name">Farmer</th><th>6 kg+ (t gutted)</th><th>% of its harvest</th><th>5–6 kg (t gutted)</th><th>% of its harvest</th><th>5 kg+ (t gutted)</th><th>Expected harvest (t gutted)</th><th>Sites harvesting</th><th>Disease now</th><th>Growth pace</th></tr></thead><tbody>` +
     RK.farmers.slice(0, 25).map(c => row(c) + (BF_OPEN[c.co] ? c.zones.map(z => row(z, true)).join('') : '')).join('') + `</tbody>`;
   document.querySelectorAll('#gm_bfCo tr[data-co]').forEach(tr => tr.onclick = () => { BF_OPEN[tr.dataset.co] = !BF_OPEN[tr.dataset.co]; renderBigFish(); });
+  // ---- bilan eleveur par eleveur : part de 6 kg+ prevue contre constatee, a chaque registre publie ----
+  { const FC = RK.farmer_checks || [], box = document.getElementById('gm_bfChk') || (() => { const x = document.createElement('div'); x.id = 'gm_bfChk'; document.getElementById('gm_bfCo').closest('.gm-tw').after(x); return x; })();
+    if (!FC.length) box.innerHTML = '';
+    else {
+      const by = {}; FC.forEach(x => (by[x.co] = by[x.co] || []).push(x));
+      const MS = k => MONTHS_FR[k % 100 - 1].slice(0, 3) + ' ' + String(Math.floor(k / 100)).slice(2);
+      const win = x => `${MONTHS_FR[x.months[0] % 100 - 1].slice(0, 3)}–${MS(x.months[x.months.length - 1])}`;
+      const winter = x => { const m = x.months[0] % 100; return m >= 9 || m <= 2; };   // fenetres d'automne-hiver (montee des gros poissons)
+      const avg = L => L.length ? L.reduce((t, v) => t + v, 0) / L.length : null, sg = v => v === null ? '—' : (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(0) + ' pt';
+      const read = L => { const d = L.map(x => x.actual_share6 - x.forecast_share6); let r = 0; const s0 = Math.sign(d[d.length - 1]);
+        for (let i = d.length - 1; i >= 0 && Math.sign(d[i]) === s0 && Math.abs(d[i]) >= 1; i--) r++;
+        const w = avg(L.filter(winter).map(x => x.actual_share6 - x.forecast_share6)), su = avg(L.filter(x => !winter(x)).map(x => x.actual_share6 - x.forecast_share6));
+        const t = r >= 3 ? `<b>${s0 > 0 ? 'more' : 'fewer'} 6 kg+ than forecast in the last ${r} checks</b> (${sg(avg(d.slice(-r)))} on average)` : 'no lasting gap in the last checks';
+        return t + (w !== null && su !== null && Math.sign(w) !== Math.sign(su) && Math.abs(w - su) >= 6 ? ` · autumn–winter ${sg(w)}, spring–summer ${sg(su)}` : ''); };
+      const top = RK.farmers.slice(0, 15).map(c => c.co).filter(co => (by[co] || []).length >= 2);
+      const OR = [...new Set(FC.map(x => x.made_from))].sort((a, b) => a - b).slice(-6);   // memes fenetres pour tous les eleveurs
+      const rows = top.map(co => { const L = by[co].sort((a, b) => a.made_from - b.made_from), d = L.map(x => x.actual_share6 - x.forecast_share6);
+        return `<tr><td class="name"><b>${e(co)}</b></td>` + OR.map(o => L.find(x => x.made_from === o)).map(x => { if (!x) return '<td style="color:var(--muted)">—</td>'; const g = x.actual_share6 - x.forecast_share6;
+            return `<td title="forecast made with the ${MS(x.made_from)} register for ${win(x)}: ${x.forecast_share6} % of its harvest at 6 kg+; found ${x.actual_share6} %">${x.forecast_share6.toFixed(0)} → <b class="${Math.abs(g) < 3 ? '' : g > 0 ? 'delta-good' : 'delta-bad'}">${x.actual_share6.toFixed(0)} %</b></td>`; }).join('') +
+          `<td>${(avg(d.map(Math.abs))).toFixed(1)} pt</td><td style="text-align:left;white-space:normal;min-width:220px;font-size:12px">${read(L)}</td></tr>`; });
+      const ref = OR.map(o => FC.find(x => x.made_from === o));
+      box.innerHTML = `<div class="gm-t" style="margin-top:16px;font-size:14px">Farmer by farmer — share of 6 kg+ forecast, and what was found</div>` +
+        `<div class="gm-s">Each time a register comes out, the forecast made two months earlier for each farmer (share of its harvest at 6 kg+, gutted) is set against what was found: ` +
+        `the real harvest and sizes of each zone that month (register), shared between farmers by the capacity of the sites they really emptied (BarentsWatch). ` +
+        `No farmer publishes its sizes, so within a zone each farmer gets the zone's real mix: exact for a farmer that dominates its zone (Nordlaks in zone 9), approximate for the others. ` +
+        `Forecasts made before September 2026 are rebuilt with only the data available at the time. Average gap over all checks since August 2025. Green: more big fish than forecast.</div>` +
+        `<div class="gm-tw"><table class="gm-mini"><thead><tr><th class="name">Farmer</th>${ref.map(x => `<th>${win(x)}</th>`).join('')}<th>Average gap</th><th style="text-align:left">Reading</th></tr></thead><tbody>${rows.join('')}</tbody></table></div>` +
+        `<div class="gm-note" style="margin-top:6px">Tested: correcting each farmer by its past gap made the forecasts worse (5.6 → 5.7–5.9 points of average error over July 2025 – August 2026), because the gap changes sign with the season — the model is late on the national calendar (too few big fish forecast from September to December, too many from February to August), not wrong about one farmer. Kept as a check; a correction by farmer and by season will be tried once two seasons of checks exist.</div>`;
+    } }
   const Y = RK.ytd, pts = v => `<span class="${v >= 0 ? 'delta-good' : 'delta-bad'}">${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(1)} pt</span>`;
   const tot = N.reduce((a, x) => ({ h: a.h + x.harvest_t * x.f, t56: a.t56 + x.t56 * x.f, t6: a.t6 + x.t6 * x.f, l56: a.l56 + x.ly_t56, l6: a.l6 + x.ly_t6, lh: a.lh + (x.ly_harvest_t || 0) }), { h: 0, t56: 0, t6: 0, l56: 0, l6: 0, lh: 0 });
   const line = (lab, h, t56, t6, ly56, ly6, b) => { const s56 = 100 * t56 / h, s6 = 100 * t6 / h;
