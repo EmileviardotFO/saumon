@@ -1991,7 +1991,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
 
 <div id="maptooltip"></div>
 
-<div class="note">
+<div class="note" id="regFootNote">
   Mortality rate: cumulative mortality over the period, compounded month by month from the real monthly rates (dead/stock for each month) — not an average or a simple sum of the monthly rates. The national total compounds a national monthly rate the same way, weighted by each PO's actual headcount, month by month (not an average of the 13 zone rates). Live stock count: number of fish alive at the end of the last month of the period (not a cumulative total).
   <b>All register weights are live weight</b> (round weight: bled, not gutted — Fiskeridirektoratet's definition); gutted weight ≈ live × 0.888. Average harvest weight: total harvested weight ÷ number harvested, cumulated over the period. Average time at sea: weighted average (by number of fish harvested) of the number of months elapsed between each cohort's release and its harvest — the release month for each cohort is itself a weighted average by PO (not at the individual farm level); for cohorts released before 2017 (outside the available history), a default release month (June) is assumed.
   Global smolt released: all fish released into the sea under 500 g, cumulated over the period, split into &lt; 250 g (<code>UTSETT_SMOLT_STK</code>) and 250–500 g (<code>UTSETT_SMOLT_STK_MINDRE_ENN_500G</code> minus <code>UTSETT_SMOLT_STK</code> — the 500 g column already contains the &lt; 250 g fish). Fish released above 500 g are in neither column.
@@ -2657,7 +2657,7 @@ const METRIC_CONF = {
   stock: { fmt: v => v.toLocaleString('en-US', {maximumFractionDigits:0}) },
   stockweight: { fmt: v => v.toLocaleString('en-US', {maximumFractionDigits:2}) },
   pma:   { fmt: v => v.toLocaleString('en-US', {maximumFractionDigits:2}) },
-  mer:   { fmt: v => v.toLocaleString('en-US', {maximumFractionDigits:1}) },
+  mer:   { fmt: v => v.toLocaleString('en-US', {minimumFractionDigits:1, maximumFractionDigits:1}) },
   croissance: { fmt: v => v.toLocaleString('en-US', {maximumFractionDigits:3}) },
   smolt: { fmt: v => v.toLocaleString('en-US', {maximumFractionDigits:0}) },
   smolt500:   { fmt: v => !isFinite(v) ? '—' : v.toLocaleString('en-US', {maximumFractionDigits:0}) },
@@ -2681,7 +2681,9 @@ const ANOMALIES = {};   // "year-month-po" -> reason
   RECORDS.forEach(r => {
     if ((r.mortality_pct || 0) > 100 && (r.behfisk_stk || 0) >= 0.03 * (tot[r.year * 100 + r.month] || 0)) ANOMALIES[`${r.year}-${r.month}-${r.po}`] = `reported mortality ${r.mortality_pct.toFixed(0)}% of stock`;
   }); }
-const FCR_PLAUSIBLE_MAX = 3;   // beyond this the ratio is not a feeding performance any more
+const FCR_PLAUSIBLE_MAX = 3;
+// Ecart (N - N-1) : le format des valeurs masque les negatifs pour le FCR ("—"), alors qu'un ecart negatif est normal
+const fmtDelta = (key, d) => key === 'fcr' ? (isFinite(d) ? d.toLocaleString('en-US', {maximumFractionDigits:3}) : '—') : METRIC_CONF[key].fmt(d);   // beyond this the ratio is not a feeding performance any more
 
 function anomaliesInPeriod(year, startMonth, endMonth, poList) {
   const hits = [];
@@ -2879,7 +2881,7 @@ function render() {
       <td class="name">${r.po}. ${PO_NAMES[r.po]}</td>
       <td>${conf.fmt(r.vPrev)}</td>
       <td>${conf.fmt(r.vCur)}</td>
-      <td class="${dCls}">${r.delta >= 0 ? '+' : ''}${conf.fmt(r.delta)}</td>
+      <td class="${dCls}">${r.delta >= 0 ? '+' : ''}${fmtDelta(metric, r.delta)}</td>
       <td class="${dCls}">${deltaPctText}</td>
     `;
     tbody.appendChild(tr);
@@ -2933,7 +2935,7 @@ function render() {
   const totDeltaPct = totShownPrev !== 0 ? (totDelta/totShownPrev*100) : 0;
   document.getElementById('totPrev').textContent = conf.fmt(totShownPrev);
   document.getElementById('totCur').textContent = conf.fmt(totShownCur);
-  document.getElementById('totDelta').textContent = (totDelta>=0?'+':'') + conf.fmt(totDelta);
+  document.getElementById('totDelta').textContent = (totDelta>=0?'+':'') + fmtDelta(metric, totDelta);
   document.getElementById('totDelta').className = deltaClass(metric, totDelta);
   document.getElementById('totDeltaPct').className = deltaClass(metric, totDelta);
   document.getElementById('totDeltaPct').textContent = (totDeltaPct>=0?'+':'') + totDeltaPct.toLocaleString('en-US',{maximumFractionDigits:1}) + '%';
@@ -5787,7 +5789,7 @@ function renderDisease() {
   const last = c => { const ys = Object.keys(yr[c] || {}).map(Number).sort((a, b) => a - b); const y = ys[ys.length - 1]; return y ? { y, v: yr[c][y], p: yr[c][y - 1] } : null; };
   // ---------------- 2026 so far : series mensuelles (2 ou 3 annees cote a cote) et chiffres cles ----------------
   const SF = {};   // c -> { lab, unit, keys(months 1..12), years:[], val(y,m), kpis:[] }
-  { const R = (typeof RECORDS !== 'undefined' ? RECORDS : []).filter(r => r.po >= 1 && r.po <= 13), cell = {};
+  { const R = (typeof RECORDS !== 'undefined' ? RECORDS : []).filter(r => r.po >= 0 && r.po <= 13), cell = {};
     R.forEach(r => { const k = r.year * 100 + r.month, q = cell[k] = cell[k] || [0, 0, 0, 0]; q[0] += r.dodfisk_stk || 0; q[1] += r.behfisk_stk || 0; });
     const ks = Object.keys(cell).map(Number).filter(k => cell[k][1]).sort((a, b) => a - b), lk = ks[ks.length - 1];
     if (lk) { const Y = Math.floor(lk / 100), lm = lk % 100, dead = y => ks.filter(k => Math.floor(k / 100) === y && k % 100 <= lm).reduce((a, k) => a + cell[k][0], 0);
@@ -7396,6 +7398,8 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     document.getElementById('generationsView').style.display = currentView === 'generations' ? 'block' : 'none';
     document.getElementById('genmapView').style.display = currentView === 'genmap' ? 'block' : 'none';
     document.getElementById('genyoyView').style.display = currentView === 'genyoy' ? 'block' : 'none';
+    // definitions du Biomasseregisteret : seulement sur les vues norvegiennes qui affichent ces mesures (pas sur Chili, Ecosse, actualite...)
+    { const fn = document.getElementById('regFootNote'); if (fn) fn.style.display = ['global', 'multi', 'po', 'outlook', 'summary', 'generations', 'genyoy', 'timeatsea'].includes(currentView) ? '' : 'none'; }
     // The year / period selectors do not apply to the weekly fish-health view.
     document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'usaprices' || currentView === 'news' || currentView === 'supply' || currentView === 'disease' || currentView === 'wellboats' || currentView === 'coprod' || currentView === 'feed' || currentView === 'genyoy' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
     // La carte des zones ne sert qu'aux vues qui raisonnent par PO. Les onglets
@@ -7852,7 +7856,7 @@ function renderGlobal() {
     const delta = vCur - vPrev;
     const deltaPct = vPrev !== 0 ? (delta / vPrev * 100) : (vCur !== 0 ? Infinity : 0);
     const dCls = deltaClass(key, delta);
-    const deltaPctText = isFinite(deltaPct) ? (deltaPct >= 0 ? '+' : '') + deltaPct.toLocaleString('en-US', {maximumFractionDigits:1}) + '%' : '—';
+    const deltaPctText = isFinite(deltaPct) ? (deltaPct >= 0 ? '+' : '') + deltaPct.toLocaleString('en-US', {minimumFractionDigits:1, maximumFractionDigits:1}) + '%' : '—';
     const fmt = METRIC_CONF[key].fmt;
     const tr = document.createElement('tr');
     if (SUB_ROW_LABELS[key]) tr.className = 'subrow';
@@ -7860,7 +7864,7 @@ function renderGlobal() {
       ${rowNameCell(key, METRIC_LABELS[key])}
       <td>${fmt(vPrev)}</td>
       <td>${fmt(vCur)}</td>
-      <td class="${dCls}">${delta >= 0 ? '+' : ''}${fmt(delta)}</td>
+      <td class="${dCls}">${delta >= 0 ? '+' : ''}${fmtDelta(key, delta)}</td>
       <td class="${dCls}">${deltaPctText}</td>
     `;
     tbody.appendChild(tr);
@@ -13836,7 +13840,9 @@ loadRemoteData().then(live => {
     const vb = (s.getAttribute('viewBox') || '').trim().split(/[\s,]+/).map(Number);
     if (!(vb[2] >= 800) || s.closest('.gen-mini')) return;
     const d = document.createElement('div'); d.className = 'wide-wrap'; s.parentNode.insertBefore(d, s); d.appendChild(s);
-    requestAnimationFrame(() => { d.scrollLeft = d.scrollWidth; });   // la periode la plus recente d'abord
+    // series temporelles : la periode la plus recente d'abord ; graphiques par categorie (bassins, causes...) : le debut, sinon les premieres barres sont cachees
+    const isTime = s.dataset.start !== 'left' && [...s.querySelectorAll('text')].some(t => /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|W ?\d|Q[1-4]|(19|20)\d\d|'\d\d)/.test(t.textContent.trim()));
+    if (isTime) requestAnimationFrame(() => { d.scrollLeft = d.scrollWidth; });
   });
   let t = null; new MutationObserver(() => { clearTimeout(t); t = setTimeout(wrap, 60); }).observe(document.documentElement, { childList: true, subtree: true });
   document.addEventListener('DOMContentLoaded', wrap);
@@ -15146,15 +15152,16 @@ function renderSupply() {
     : B.filter(b => b.v2025).map(b => [b.name === 'Canada' ? 'North America' : b.name, b.v2025, b.dir, b.id]).concat([['Other Europe (Iceland, Ireland)', 63, 'flat', 'IS'], ['Other (incl. Australia)', 107, 'up', 'AU']]);
   const mx = Math.max(...rows.map(r => r[1])), DC = { up: 'sb-up', down: 'sb-down', flat: 'sb-flat' };
   // HTML fluide (plus de SVG a l'echelle) : barres fines, la valeur et la fleche dans leurs propres colonnes, rien ne deborde
-  const chart = `<div class="sb-chart">${rows.map(r => `<div class="sb-r" title="${e(r[0])}: ${f0(r[1])} kt gutted weight in 2025"><span class="sb-n">${e(r[0])}</span>` +
+  const SN = n => String(n).replace('Australia (Tasmania)', 'Tasmania');   // nom court : sinon tronque a 390 px
+  const chart = `<div class="sb-chart">${rows.map(r => `<div class="sb-r" title="${e(r[0])}: ${f0(r[1])} kt gutted weight in 2025"><span class="sb-n">${e(SN(r[0]))}</span>` +
       `<span class="sb-t"><i style="width:${(100 * r[1] / mx).toFixed(1)}%"></i></span><span class="sb-v">${f0(r[1])} kt</span><span class="sb-a ${DC[r[2]] || 'sb-flat'}">${AR[r[2]][1]}</span></div>`).join('')}</div>` +
     `<div class="sig-sub">Bars: 2025 harvest in thousand tonnes gutted weight, ${OT ? 'our own count from each country\'s official data (registers, monthly harvest, exports)' : 'Kontali, via Mowi'}. Arrow: direction expected for 2027 (<b style="color:#7ed98f">↑ up</b>, <b>→ flat</b>, <b style="color:#ff8a65">↓ down</b>), from the basin summaries below.</div>`;
   const col = d => d === 'up' ? '#7ed98f' : d === 'down' ? '#ff9b7a' : '#d6e3ea';
   // ---- graphique 2 : variation attendue en 2027, fourchette par bassin (lecture des syntheses ci-dessous)
-  const RG = [[OT ? 'All seven basins' : 'World', (W.r2027 || [0, 0]), 'world', W.c2027], ...B.filter(b => b.r2027).map(b => [b.name, b.r2027, b.dir, b.c2027])];
+  const RG = [[OT ? 'All 7 basins' : 'World', (W.r2027 || [0, 0]), 'world', W.c2027], ...B.filter(b => b.r2027).map(b => [b.name, b.r2027, b.dir, b.c2027])];
   const xmin = -20, xmax = 20, P = v => (100 * (Math.max(xmin, Math.min(xmax, v)) - xmin) / (xmax - xmin)).toFixed(2), TK = [-20, -10, 0, 10, 20], sg = v => (v > 0 ? '+' : '') + v;
   const grid = TK.map(v => `<b class="${v ? '' : 'z'}" style="left:${P(v)}%"></b>`).join('');
-  const chart2 = `<div class="sr-chart">${RG.map(([n, r, d, cc]) => `<div class="sr-r${d === 'world' ? ' sr-w' : ''}"><span class="sr-n">${e(n)}</span><span class="sr-t">${grid}` +
+  const chart2 = `<div class="sr-chart">${RG.map(([n, r, d, cc]) => `<div class="sr-r${d === 'world' ? ' sr-w' : ''}"><span class="sr-n">${e(SN(n))}</span><span class="sr-t">${grid}` +
       `<i style="left:${P(r[0])}%;width:${Math.max(1.5, P(r[1]) - P(r[0]))}%;background:${d === 'world' ? 'rgba(255,255,255,.85)' : col(d)}" title="${e(n)}: ${sg(r[0])} % to ${sg(r[1])} % in 2027"></i>` +
       (cc !== undefined && cc !== null ? `<em style="left:${P(cc)}%" title="central: ${sg(cc)} %"></em>` : '') + `</span><span class="sr-v">${r[0] === r[1] ? '' : sg(r[0]) + ' to '}${sg(r[1])} %</span></div>`).join('')}` +
     `<div class="sr-r sr-ax"><span class="sr-n"></span><span class="sr-t">${TK.map(v => `<u style="left:${P(v)}%">${sg(v)} %</u>`).join('')}</span><span class="sr-v"></span></div></div>` +
@@ -15395,9 +15402,12 @@ function renderWellboats() {
   #prYears input{display:none}
   /* defilement horizontal : seules les colonnes de chiffres bougent, la premiere colonne reste en place */
   .hs-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
+  @media (max-width:430px){#globalView table th,#globalView table td{padding:6px 4px!important;font-size:11.5px!important}#globalView table th:first-child,#globalView table td:first-child{white-space:normal!important;width:104px;max-width:104px}#globalView table th:nth-child(4),#globalView table td:nth-child(4){display:none}#globalView table{width:100%}}
   .hs-on th:first-child,.hs-on td:first-child{position:sticky;left:0;z-index:2;background:rgb(27,63,93)!important;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:6px 0 10px -6px rgba(3,18,35,.55)}
   /* graphiques qui defilent : l'echelle des valeurs reste fixe a gauche */
-  .ax-fix{position:sticky;left:0;z-index:3;overflow:hidden;pointer-events:none;background:linear-gradient(90deg,rgba(27,63,93,.55) 65%,rgba(27,63,93,0));-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+  .ax-fix{position:sticky;left:0;z-index:3;overflow:hidden;pointer-events:none;background:linear-gradient(90deg,rgba(27,63,93,.32) 55%,rgba(27,63,93,0))}
+  /* echelle fixe legere : pas de bande opaque sur les barres, les chiffres gardent un liseré sombre pour rester lisibles */
+  .ax-fix svg text{paint-order:stroke;stroke:rgba(14,38,60,.85);stroke-width:3px;stroke-linejoin:round}
   .ax-fix svg{display:block;max-width:none!important}
 </style>
 <script id="glassSweepJs">
