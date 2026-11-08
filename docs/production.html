@@ -14194,13 +14194,13 @@ loadRemoteData().then(live => {
   const label = t => { t = t.replace(/\s+/g, ' ').trim().replace(/^\d+\s*·\s*/, ''); const c = t.split(/ — | – |: /)[0]; return c.length > 46 ? c.slice(0, 44) + '…' : c; };
   let tm = null;
   const build = () => {
-    const P = [...document.querySelectorAll('.panel')].find(p => p.style.display === 'block' || (p.style.display === '' && vis(p) && p.closest('body')));
+    const P = [...document.querySelectorAll('.panel')].find(p => (p.style.display === 'block' || p.style.display === '') && vis(p) && p.closest('body'));   // un panneau cache par son onglet parent ne compte plus (le sommaire de Generations vs last year restait sur Norway export)
     const active = document.querySelector('#sideNav .sn-item.on') || document.querySelector('#viewToggle button.active');
     if (H1) { const t = active && active.textContent.trim() ? active.textContent.trim() : H1_0, g = active && active.closest('.sn-group'), cb = g && g.querySelector('.sn-cat');
       const cat = cb ? (cb.querySelector('.sn-lab') || cb.childNodes[0]).textContent.trim() : '';
-      H1.innerHTML = (cat ? `<span class="h1-cat">${cat}</span>` : '') + `<span class="h1-t">${t.replace(/</g, '&lt;')}</span>`; }
+      const hh = (cat ? `<span class="h1-cat">${cat}</span>` : '') + `<span class="h1-t">${t.replace(/</g, '&lt;')}</span>`; if (H1.innerHTML !== hh) H1.innerHTML = hh; }
     const yearBox = boxes.find(b => b.querySelector('#yearSel'));
-    if (SUB) SUB.style.display = yearBox && vis(yearBox) ? '' : 'none';
+    if (SUB) { const d = yearBox && vis(yearBox) ? '' : 'none'; if (SUB.style.display !== d) SUB.style.display = d; }
     let items = [];
     if (P) {
       const slots = [...P.querySelectorAll('.bs-slot')].filter(vis);
@@ -14209,11 +14209,15 @@ loadRemoteData().then(live => {
         items = T.slice(1).filter(x => x.textContent.trim().length > 2 && !x.closest('table, details:not([open]), .gm-tw')).map(x => [x, x.textContent]); }
     }
     const seen = new Set(); items = items.filter(([, t]) => { const k = label(t); if (seen.has(k)) return false; seen.add(k); return true; });
-    frame.style.display = items.length >= 2 ? '' : 'none';
-    idx.innerHTML = items.map(([, t], n) => `<button type="button" data-n="${n}"><span class="ti-n">${n + 1}</span>${label(t).replace(/&/g, '&amp;').replace(/</g, '&lt;')}</button>`).join('');
+    { const d = items.length >= 2 ? '' : 'none'; if (frame.style.display !== d) frame.style.display = d; }   // pas d'ecriture inutile : elle relancerait l'observateur
+    if (items.length < 2) items = [];   // sinon les pastilles de l'onglet precedent restaient si le cadre est reaffiche par le changement d'onglet
+    const ih = items.map(([, t], n) => `<button type="button" data-n="${n}"><span class="ti-n">${n + 1}</span>${label(t).replace(/&/g, '&amp;').replace(/</g, '&lt;')}</button>`).join('');
+    if (idx.innerHTML !== ih) idx.innerHTML = ih;
     idx.querySelectorAll('button').forEach(b => b.onclick = () => { const el = items[+b.dataset.n][0]; const y = el.getBoundingClientRect().top + window.scrollY - 70; window.scrollTo({ top: y, behavior: 'smooth' }); });
   };
-  const later = () => { clearTimeout(tm); tm = setTimeout(build, 350); };
+  // attente glissante, mais plafonnee : des changements de style continus (animations) repoussaient le sommaire indefiniment et celui de l'onglet precedent restait affiche
+  let mx = null;
+  const later = () => { clearTimeout(tm); tm = setTimeout(() => { clearTimeout(mx); mx = null; build(); }, 350); if (!mx) mx = setTimeout(() => { mx = null; clearTimeout(tm); build(); }, 1200); };
   // le titre suit tout de suite (le sommaire, plus lourd, attend que la page ait fini de se dessiner)
   const title = () => { if (!H1) return; const active = document.querySelector('#sideNav .sn-item.on') || document.querySelector('#viewToggle button.active');
     const t = active && active.textContent.trim() ? active.textContent.trim() : H1_0, g = active && active.closest('.sn-group'), cb = g && g.querySelector('.sn-cat');
