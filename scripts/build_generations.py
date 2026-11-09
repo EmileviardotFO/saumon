@@ -1,0 +1,310 @@
+#!/usr/bin/env python3
+"""
+Onglet Generations (Norvege) : les chiffres des quatre pages (Verdict, generation en recolte, generation suivante, zones).
+
+    python3 scripts/build_generations.py      -> data/generations.json
+
+Tout vient du registre de la biomasse (data.json 'cohort' : zone x generation x mois) et des releves BarentsWatch (temperature,
+poux), plus les sorties de build_gen_outlook.py (scenarios de volumes) et build_six_stock.py (6 kg+ en degres-jours, alertes).
+Rien n'est saisi a la main. Les textes de la page sont ecrits par la page a partir de ces chiffres.
+
+Contenu :
+  state        la generation en recolte (old) et la suivante (new) au dernier registre, contre la generation precedente au meme mois
+  traj         poids moyen et poissons restants, mois par mois depuis janvier de l'annee de mise a l'eau, pour chaque generation
+  depletion    poissons restants projetes au rythme de recolte de la generation precedente ; mois ou il en reste 20 %
+  handover     part de la recolte faite par la nouvelle generation, saison passee et saison en cours projetee ; mois du passage a 50 %
+  tgc, mort    TGC et mortalite sur 3 mois et depuis l'automne, generation contre generation
+  smolt        poids a 1-3 mois et nombre de poissons des dernieres generations
+  zones        par zone : poissons, poids, stock > 5 kg, TGC et temperature des 3 derniers mois, contre un an plus tot
+  factors      les 8 facteurs de la vague de 6 kg+ de 2025-26, valeur actuelle contre un an plus tot, sens (up/down/mixed)
+  volume       scenarios de volumes de build_gen_outlook (6 mois, tous calibres, 5 kg+, 6 kg+) et estimation du mois suivant
+"""
+import calendar
+import collections
+import datetime as dt
+import io
+import json
+import math
+import os
+import statistics as S
+from statistics import NormalDist
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+D_ = lambda f: json.load(io.open(os.path.join(ROOT, 'data', f), encoding='utf-8')) if os.path.exists(os.path.join(ROOT, 'data', f)) else None
+OUT = os.path.join(ROOT, 'data', 'generations.json')
+PHI = NormalDist().cdf
+GUT, CV = 0.888, 0.27
+MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+days = lambda k: calendar.monthrange(k // 100, k % 100)[1]
+
+
+def above(w, lo_gutted):
+    s2 = math.log(1 + CV * CV)
+    return 1 - PHI((math.log(lo_gutted / GUT) - (math.log(w) - s2 / 2) - s2) / math.sqrt(s2))
+
+
+def sh(k, n):
+    y, m = k // 100, k % 100 - 1 + n
+    y += m // 12
+    return y * 100 + m % 12 + 1
+
+
+def r(v, d=2):
+    return None if v is None else round(v, d)
+
+
+def main():
+    D = D_('data.json')
+    G = D_('gen_outlook.json') or {}
+    SIX = D_('six_stock.json') or {}
+    C = collections.defaultdict(dict)
+    for c in D['cohort']:
+        if c['po'] and c['weight_kg']:
+            C[(c['po'], c['cohort'])][c['year'] * 100 + c['month']] = c
+    K = sorted({k for ser in C.values() for k in ser})
+    last = K[-1]
+    # temperature et poux par zone et mois ; aussi par zone et semaine ISO
+    tt = collections.defaultdict(lambda: [0.0, 0])
+    lw = collections.defaultdict(list)
+    tw = collections.defaultdict(lambda: [0.0, 0])
+    for x in (D.get('bw_weekly') or {}).get('rows', []):
+        th = dt.date.fromisocalendar(x['y'], x['w'], 4)
+        km = th.year * 100 + th.month
+        if x.get('t') is not None and x.get('nt'):
+            tt[(x['po'], km)][0] += x['t'] * x['nt']
+            tt[(x['po'], km)][1] += x['nt']
+            tw[(x['po'], x['y'], x['w'])][0] += x['t'] * x['nt']
+            tw[(x['po'], x['y'], x['w'])][1] += x['nt']
+        if x.get('lice') is not None:
+            lw[(x['po'], x['y'], x['w'])].append(x['lice'])
+    T = {k: v[0] / v[1] for k, v in tt.items() if v[1]}
+
+    def gstate(gen, k):
+        n = b = b5 = h = hk = dd = 0.0
+        for (po, gg), ser in C.items():
+            if gg != gen or k not in ser:
+                continue
+            c = ser[k]
+            if c['stock']:
+                n += c['stock']
+                b += c['stock'] * c['weight_kg']
+                b5 += c['stock'] * c['weight_kg'] * GUT / 1e6 * above(c['weight_kg'], 5)
+            h += c['harv_stk'] or 0
+            hk += c['harv_kg'] or 0
+            dd += c['dead_stk'] or 0
+        return dict(n=n / 1e6, w=b / n if n else None, bio=b * GUT / 1e6, b5=b5, h=h / 1e6, hw=hk / h if h else None, dead=dd / 1e6)
+
+    # generation en recolte = celle qui a le plus de poissons de plus de 2,5 kg ; suivante = annee + 1
+    cand = collections.defaultdict(float)
+    for (po, gg), ser in C.items():
+        c = ser.get(last)
+        if c and c['stock'] and c['weight_kg'] >= 2.5:
+            cand[gg] += c['stock']
+    old = max(cand, key=cand.get) if cand else last // 100 - 1
+    new = old + 1
+    st = {'old': gstate(old, last), 'old_ly': gstate(old - 1, sh(last, -12)), 'new': gstate(new, last), 'new_ly': gstate(new - 1, sh(last, -12))}
+
+    def traj(gen):
+        out = []
+        for i in range(0, 33):
+            k = sh(gen * 100 + 1, i)
+            s = gstate(gen, k) if k <= last else None
+            out.append([k, r(s['w']) if s and s['n'] > 5 else None, r(s['n'], 1) if s and s['n'] > 0.5 else None])
+        return out
+    TR = {g: traj(g) for g in range(old - 6, new + 1)}
+
+    def tgc_month(gen, k, zone=None):
+        num = den = 0.0
+        for (po, gg), ser in C.items():
+            if gg != gen or (zone and po != zone):
+                continue
+            a, b = ser.get(sh(k, -1)), ser.get(k)
+            t = T.get((po, k))
+            if not a or not b or not a['stock'] or not b['stock'] or a['stock'] < 2e5 or not t or t < 1 or a['weight_kg'] < 0.3:
+                continue
+            dead = (b.get('dead_stk') or 0) + (b.get('loss_stk') or 0)
+            prod = b['stock'] * b['weight_kg'] - a['stock'] * a['weight_kg'] + (b.get('harv_kg') or 0) + dead * (a['weight_kg'] + b['weight_kg']) / 4
+            gap = b['stock'] - a['stock'] + (b.get('harv_stk') or 0) + dead
+            prod += -gap * 0.15 if gap > 0 else -gap * (a['weight_kg'] + b['weight_kg']) / 2
+            gf = prod / ((a['stock'] + b['stock']) / 2)
+            w0 = a['weight_kg']
+            if w0 + gf <= 0:
+                continue
+            v = ((w0 + gf) ** (1 / 3) - w0 ** (1 / 3)) * 10000 / (t * days(k))
+            ddg = t * days(k)
+            if -1 < v < 6:
+                num += v * ddg * a['stock']
+                den += ddg * a['stock']
+        return num / den if den else None
+
+    def tgc_win(gen, ks, zone=None):
+        v = [tgc_month(gen, k, zone) for k in ks]
+        v = [x for x in v if x]
+        return r(S.mean(v)) if v else None
+    L3 = [sh(last, -2), sh(last, -1), last]
+    L3y = [sh(k, -12) for k in L3]
+    since = [sh(sh(last, -12), i) for i in range(1, 13)]   # 12 derniers mois
+    since_ly = [sh(k, -12) for k in since]
+    tgc = {'old_3m': tgc_win(old, L3), 'old_ly_3m': tgc_win(old - 1, L3y), 'old_12m': tgc_win(old, since), 'old_ly_12m': tgc_win(old - 1, since_ly),
+           'new_3m': tgc_win(new, L3), 'new_ly_3m': tgc_win(new - 1, L3y)}
+
+    def mort3(gen, k):
+        dd = n = 0.0
+        for i in range(3):
+            kk = sh(k, -i)
+            for (po, gg), ser in C.items():
+                if gg == gen and kk in ser and sh(kk, -1) in ser and ser[sh(kk, -1)]['stock']:
+                    dd += ser[kk]['dead_stk'] or 0
+                    n += ser[sh(kk, -1)]['stock']
+        return 100 * dd / n if n else None
+    mort = {'old': r(mort3(old, last)), 'old_ly': r(mort3(old - 1, sh(last, -12))), 'new': r(mort3(new, last)), 'new_ly': r(mort3(new - 1, sh(last, -12)))}
+
+    # epuisement : rythme de la generation precedente a partir du meme mois
+    dep_ly = [gstate(old - 1, sh(sh(last, -12), i))['n'] for i in range(0, 12)]
+    ratio = [x / dep_ly[0] if dep_ly[0] else 0 for x in dep_ly]
+    dep = [[sh(last, i), r(st['old']['n'] * ratio[i], 1)] for i in range(0, 12)]
+    end20 = next((k for k, v in dep if v is not None and v <= 0.2 * st['old']['n']), None)
+    end05 = next((k for k, v in dep if v is not None and v <= 0.05 * st['old']['n']), None)
+
+    # passage de relais : part de la recolte faite par la generation la plus recente, d'octobre a septembre
+    def share_new(gen, k):
+        hn = sum((ser.get(k) or {}).get('harv_kg') or 0 for (po, gg), ser in C.items() if gg == gen)
+        ht = sum((ser.get(k) or {}).get('harv_kg') or 0 for ser in C.values())
+        return 100 * hn / ht if ht else None
+    # saison = octobre de l'annee old-1 ... septembre ; la saison en cours part du mois qui suit le registre
+    s0 = new * 100 + 10                       # saison ou la nouvelle generation prend le relais : octobre de son annee de mise a l'eau -> septembre
+    season_prev = [[sh(s0, -12 + i), r(share_new(old, sh(s0, -12 + i)), 0)] for i in range(12)]
+    season_prev2 = [[sh(s0, -24 + i), r(share_new(old - 1, sh(s0, -24 + i)), 0)] for i in range(12)]
+    season_cur = [[sh(s0, i), r(share_new(new, sh(s0, i)), 0) if sh(s0, i) <= last else None] for i in range(12)]
+    # projection : part observee jusqu'au registre, puis rythme de la saison passee (meme mois) ajuste du dernier ecart
+    proj = []
+    off = 0.0
+    for i, (k, v) in enumerate(season_cur):
+        pv = season_prev[i][1] or 0
+        if v is not None:
+            off = v - pv
+            proj.append([k, v, True])
+        else:
+            proj.append([k, r(max(0, min(100, pv + off * 0.5)), 0), False])
+    hand50 = next((k for k, v, _ in proj if v is not None and v >= 50), None)
+    hand50_prev = next((k for k, v in season_prev if v is not None and v >= 50), None)
+    hand50_prev2 = next((k for k, v in season_prev2 if v is not None and v >= 50), None)
+
+    def smolt(gen):
+        early = []
+        for (po, gg), ser in C.items():
+            if gg != gen:
+                continue
+            for kk, c in ser.items():
+                if c['stock'] and c['stock'] > 2e5 and c['age_months'] is not None and 1 <= c['age_months'] <= 3:
+                    early.append((c['weight_kg'], c['stock']))
+        n_sep = sum((ser.get(gen * 100 + 9) or {}).get('stock') or 0 for (po, gg), ser in C.items() if gg == gen)
+        n_dec = sum((ser.get(gen * 100 + 12) or {}).get('stock') or 0 for (po, gg), ser in C.items() if gg == gen) if gen * 100 + 12 <= last else None
+        return dict(w=r(sum(a * b for a, b in early) / sum(b for a, b in early)) if early else None, n_sep=round(n_sep / 1e6) if n_sep else None, n_dec=round(n_dec / 1e6) if n_dec else None,
+                    complete=gen * 100 + 12 <= last)
+    SM = {g: smolt(g) for g in (new - 3, new - 2, new - 1, new)}
+
+    Z = []
+    for po in range(1, 14):
+        def zs(gen, kk):
+            c = C.get((po, gen), {}).get(kk)
+            return (c['stock'] * c['weight_kg'] * GUT / 1e6 * above(c['weight_kg'], 5) if c and c['stock'] else 0, c['weight_kg'] if c and c['stock'] else None, (c['stock'] or 0) / 1e6 if c else 0)
+        a, b = zs(old, last), zs(old - 1, sh(last, -12))
+        tz = lambda ks: r(S.mean([T[(po, kk)] for kk in ks if (po, kk) in T]), 1) if any((po, kk) in T for kk in ks) else None
+        Z.append(dict(po=po, n=r(a[2], 1), n_ly=r(b[2], 1), w=r(a[1]), w_ly=r(b[1]), b5=r(a[0], 1), b5_ly=r(b[0], 1), tgc=tgc_win(old, L3, po), tgc_ly=tgc_win(old - 1, L3y, po), t=tz(L3), t_ly=tz(L3y)))
+
+    # ---- les huit facteurs ----
+    hv = collections.defaultdict(float)
+    hvol = collections.defaultdict(float)
+    for ser in C.values():
+        for k, c in ser.items():
+            if c['harv_stk'] and c['harv_kg']:
+                hv[k] += c['harv_kg'] * GUT / 1e6 * above(c['harv_kg'] / c['harv_stk'], 6)
+                hvol[k] += c['harv_kg'] * GUT / 1e6
+    # base : 6 kg+ recoltes d'octobre a mars de la derniere saison complete (et celle d'avant)
+    # derniere saison complete d'octobre a mars : commence l'annee d'avant si mars est passe, sinon deux ans avant
+    y_oct = last // 100 - 1 if last % 100 >= 4 else last // 100 - 2
+    base_ks = [sh(y_oct * 100 + 10, i) for i in range(6)]
+    base_ks_ly = [sh(k, -12) for k in base_ks]
+    base = sum(hv[k] for k in base_ks)
+    base_ly = sum(hv[k] for k in base_ks_ly)
+    # semaines ISO des 3 derniers mois du registre (pour temperature et poux)
+    def weeks_of(ks):
+        out = set()
+        for k in ks:
+            for dday in range(1, days(k) + 1):
+                iso = dt.date(k // 100, k % 100, dday).isocalendar()
+                out.add((iso[0], iso[1]))
+        return out
+    W3, W3y = weeks_of(L3), weeks_of(L3y)
+    def temp_nat(W):
+        num = den = 0.0
+        for (po, y, w), v in tw.items():
+            if (y, w) in W:
+                num += v[0]
+                den += v[1]
+        return num / den if den else None
+    t_now, t_ly = temp_nat(W3), temp_nat(W3y)
+    t_norm = [temp_nat(weeks_of([sh(k, -12 * y) for k in L3])) for y in (1, 2, 3)]
+    t_norm = S.mean([x for x in t_norm if x]) if any(t_norm) else None
+    def lice_zone(zs, W):
+        v = [x for (po, y, w), L in lw.items() if po in zs and (y, w) in W for x in L]
+        return S.mean(v) if v else None
+    lice_n, lice_n_ly = lice_zone({10, 11, 12}, W3), lice_zone({10, 11, 12}, W3y)
+    lice_s, lice_s_ly = lice_zone({4, 5, 6, 7}, W3), lice_zone({4, 5, 6, 7}, W3y)
+    OH = SIX.get('out_of_history') or {}
+    tgc_norm_now = OH.get('tgc_vs_normal')
+    # rythme de recolte : part du stock d'il y a 3 mois recoltee sur les 3 derniers mois (generation en recolte)
+    def pace(gen, k):
+        n0 = gstate(gen, sh(k, -3))['n']
+        h = sum(gstate(gen, sh(k, -i))['h'] for i in range(3))
+        return 100 * h / n0 if n0 else None
+    pace_now, pace_ly = pace(old, last), pace(old - 1, sh(last, -12))
+    def mort_win(gen, k):
+        n0 = gstate(gen, sh(k, -3))['n']
+        dd = sum(gstate(gen, sh(k, -i))['dead'] for i in range(3))
+        return 100 * dd / n0 if n0 else None
+    m_now, m_ly = mort_win(old, last), mort_win(old - 1, sh(last, -12))
+    o, oly = st['old'], st['old_ly']
+    win = f'{MON[L3[0] % 100 - 1]}–{MON[last % 100 - 1]}'
+    factors = [
+        {'id': 'base', 'label': f'Base to beat: 6 kg+ harvested Oct {y_oct}–Mar {y_oct + 1}', 'now': f'{base:.0f} kt', 'ly': f'{base_ly:.0f} kt', 'dir': 'down' if base > base_ly * 1.15 else 'up' if base < base_ly * 0.85 else 'mixed',
+         'why': 'Any % looks weak; read tonnes' if base > base_ly * 1.15 else 'Weak base: % will look strong' if base < base_ly * 0.85 else 'Normal base'},
+        {'id': 'weight', 'label': f'Weight advance of G{old} in {MON[last % 100 - 1]}', 'now': f'{o["w"]:.2f} kg ({100 * (o["w"] / oly["w"] - 1):+.0f} %)', 'ly': f'{oly["w"]:.2f} kg', 'dir': 'up' if o['w'] > oly['w'] * 1.02 else 'down' if o['w'] < oly['w'] * 0.98 else 'mixed',
+         'why': 'Bigger fish going into the winter' if o['w'] > oly['w'] * 1.02 else 'Smaller fish than a year ago'},
+        {'id': 'temp', 'label': f'Sea temperature, {win}', 'now': f'{t_now:.1f} °C ({t_now - t_norm:+.1f} vs normal)' if t_now and t_norm else '—', 'ly': f'{t_ly:.1f} °C' if t_ly else '—',
+         'dir': 'up' if t_now and t_ly and t_now > t_ly + 0.3 else 'down' if t_now and t_ly and t_now < t_ly - 0.3 else 'mixed', 'why': 'More degree-days' if t_now and t_ly and t_now > t_ly + 0.3 else 'Fewer degree-days' if t_now and t_ly and t_now < t_ly - 0.3 else 'About the same warmth'},
+        {'id': 'lice_north', 'label': f'Lice, northern zones 10–12, {win}', 'now': f'{lice_n:.2f}' if lice_n is not None else '—', 'ly': f'{lice_n_ly:.2f}' if lice_n_ly is not None else '—',
+         'dir': 'up' if lice_n is not None and lice_n_ly is not None and lice_n < lice_n_ly * 0.85 else 'down' if lice_n is not None and lice_n_ly is not None and lice_n > lice_n_ly * 1.15 else 'mixed',
+         'why': 'Fewer forced harvests ahead' if lice_n is not None and lice_n_ly is not None and lice_n < lice_n_ly * 0.85 else 'Risk of forced harvests of small fish' if lice_n is not None and lice_n_ly is not None and lice_n > lice_n_ly * 1.15 else 'Unchanged'},
+        {'id': 'lice_mid', 'label': f'Lice, zones 4–7, {win}', 'now': f'{lice_s:.2f}' if lice_s is not None else '—', 'ly': f'{lice_s_ly:.2f}' if lice_s_ly is not None else '—',
+         'dir': 'up' if lice_s is not None and lice_s_ly is not None and lice_s < lice_s_ly * 0.85 else 'down' if lice_s is not None and lice_s_ly is not None and lice_s > lice_s_ly * 1.15 else 'mixed',
+         'why': 'Fewer treatments, fish kept growing' if lice_s is not None and lice_s_ly is not None and lice_s < lice_s_ly * 0.85 else 'More handling, slower growth' if lice_s is not None and lice_s_ly is not None and lice_s > lice_s_ly * 1.15 else 'Unchanged'},
+        {'id': 'tgc', 'label': f'Growth per degree-day (TGC), {win}, G{old}', 'now': f'{tgc["old_3m"]:.2f} ({100 * (tgc["old_3m"] / tgc["old_ly_3m"] - 1):+.0f} %)' if tgc['old_3m'] and tgc['old_ly_3m'] else '—', 'ly': f'{tgc["old_ly_3m"]:.2f}' if tgc['old_ly_3m'] else '—',
+         'dir': 'up' if tgc['old_3m'] and tgc['old_ly_3m'] and tgc['old_3m'] > tgc['old_ly_3m'] * 1.03 else 'down' if tgc['old_3m'] and tgc['old_ly_3m'] and tgc['old_3m'] < tgc['old_ly_3m'] * 0.97 else 'mixed',
+         'why': ('Out of the historical range' if tgc_norm_now and OH.get('past_range', {}).get('tgc_rel') and tgc_norm_now > OH['past_range']['tgc_rel'][1] else 'Fish grow faster for the same warmth') if tgc['old_3m'] and tgc['old_ly_3m'] and tgc['old_3m'] > tgc['old_ly_3m'] * 1.03 else 'Slower growth'},
+        {'id': 'fish', 'label': f'Fish left in G{old}', 'now': f'{o["n"]:.0f} M ({100 * (o["n"] / oly["n"] - 1):+.0f} %)', 'ly': f'{oly["n"]:.0f} M', 'dir': 'mixed', 'why': 'Fewer tonnes to come, more room per fish' if o['n'] < oly['n'] else 'More tonnes to come, less room per fish'},
+        {'id': 'pace', 'label': f'Harvest pace, {win} (share of the stock 3 months earlier)', 'now': f'{pace_now:.0f} %' if pace_now else '—', 'ly': f'{pace_ly:.0f} %' if pace_ly else '—',
+         'dir': 'down' if pace_now and pace_ly and pace_now > pace_ly + 2 else 'up' if pace_now and pace_ly and pace_now < pace_ly - 2 else 'mixed', 'why': 'Reservoir empties sooner' if pace_now and pace_ly and pace_now > pace_ly + 2 else 'Fish kept longer' if pace_now and pace_ly and pace_now < pace_ly - 2 else 'Same pace'},
+        {'id': 'mort', 'label': f'Mortality, {win}, G{old}', 'now': f'{m_now:.1f} %' if m_now is not None else '—', 'ly': f'{m_ly:.1f} %' if m_ly is not None else '—',
+         'dir': 'up' if m_now is not None and m_ly is not None and m_now < m_ly - 0.3 else 'down' if m_now is not None and m_ly is not None and m_now > m_ly + 0.3 else 'mixed', 'why': 'Healthy fish, no emergency harvests' if m_now is not None and m_ly is not None and m_now < m_ly - 0.3 else 'Losses force early harvests' if m_now is not None and m_ly is not None and m_now > m_ly + 0.3 else 'Unchanged'}]
+
+    vol = {}
+    for sc, s in (G.get('scenarios') or {}).items():
+        vol[sc] = [{'k': m['k'], 'tot': r(m['tot'], 1), 'ly': r(m['ly_tot'], 1), 'kt5': r(m['kt5'], 1), 'kt6': r(m['kt6'], 1), 'ly5': r(m['ly5'], 1), 'ly6': r(m['ly6'], 1)} for m in s['months'][:6]]
+    nc = (G.get('nowcast') or {}).get('next')
+    out = {'meta': {'generated': dt.date.today().isoformat(), 'register': last, 'register_label': f'{MON[last % 100 - 1]} {last // 100}', 'old': old, 'new': new, 'window': win},
+           'state': {k: {x: r(v, 3) for x, v in d.items()} for k, d in st.items()}, 'traj': TR, 'tgc': tgc, 'mort': mort,
+           'depletion': {'proj': dep, 'ly': [[sh(sh(last, -12), i), r(v, 1)] for i, v in enumerate(dep_ly)], 'end20': end20, 'end05': end05},
+           'handover': {'prev2': season_prev2, 'prev': season_prev, 'cur': proj, 'k50': hand50, 'k50_prev': hand50_prev, 'k50_prev2': hand50_prev2},
+           'smolt': {str(g): v for g, v in SM.items()}, 'zones': Z, 'factors': factors,
+           'volume': {'scenarios': vol, 'nowcast': {'k': nc['k'], 't': r(nc['t'] / 1000, 1), 'ly': r(nc['ly'] / 1000, 1)} if nc else None, 'tested': 'replayed since Jan 2021: 3.4 % average error on the next 5 months; Q4 forecasts made each November missed by 7–11 points in 2022–2025'},
+           'six': {'forecast': SIX.get('forecast'), 'alerts': SIX.get('alerts'), 'tests': {k: {x: v.get(x) for x in ('mape', 'mape_fixed4', 'naive_mape', 'inside_range')} for k, v in (SIX.get('tests') or {}).items()}}}
+    io.open(OUT, 'w', encoding='utf-8').write(json.dumps(out, ensure_ascii=False, separators=(',', ':')))
+    print(f"generations.json : registre {out['meta']['register_label']}, G{old} en recolte ({st['old']['n']:.1f} M, {st['old']['w']:.2f} kg), G{new} suivante ({st['new']['n']:.1f} M, {st['new']['w']:.2f} kg) ; fin 20 % {end20}, relais 50 % {hand50} (saison passee {hand50_prev})")
+    for f in factors:
+        print(f"  {f['dir']:5s} {f['label']}: {f['now']} vs {f['ly']} — {f['why']}")
+
+
+if __name__ == '__main__':
+    main()

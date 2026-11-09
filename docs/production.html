@@ -1231,6 +1231,7 @@ details.ca-more>summary::-webkit-details-marker{display:none}details.ca-more>sum
 
   </div>
 
+  <div class="panel" id="gnView" style="flex:1; min-width:0; max-width:1480px; display:none;"><div id="gnRoot">Loading…</div></div>
   <div class="panel" id="generationsView" style="flex:1; min-width:0; max-width:1400px; display:none;">
     <div class="sig-title">Generations at sea — size, survival and harvest pace, year class by year class</div>
     <div class="sig-sub" id="genSub"></div>
@@ -4681,7 +4682,7 @@ let BF_OPEN = {};
 function renderBigFish() {
   const sub = document.getElementById('gm_bfSub'); if (!sub) return;
   if (!BF) { if (!BF_LOADING) { BF_LOADING = true; fetch(DATA_URL.replace('data.json', 'big_fish.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
-      .then(j => { BF = j || { zones: [] }; BF_LOADING = false; if (currentView === 'genmap') renderBigFish(); }); } return; }
+      .then(j => { BF = j || { zones: [] }; BF_LOADING = false; if (currentView === 'genmap') renderBigFish(); if (currentView === 'generations') renderGenerations2(); }); } return; }
   const RK = BF.ranking, e = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
   if (!RK) { sub.innerHTML = 'No estimate yet: data/big_fish.json is built at each update run.'; ['gm_bfCo', 'gm_bfNo', 'gm_bfNote'].forEach(id => document.getElementById(id).innerHTML = ''); return; }
   const ML = k => tmMl(k), t0 = v => Math.round(v).toLocaleString('en-US'), per = `${ML(RK.months[0])} – ${ML(RK.months[1])}`;
@@ -8151,13 +8152,14 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     document.getElementById('wbView').style.display = currentView === 'wellboats' ? 'block' : 'none';
     document.getElementById('coprodView').style.display = currentView === 'coprod' ? 'block' : 'none';
     document.getElementById('feedView').style.display = currentView === 'feed' ? 'block' : 'none';
-    document.getElementById('generationsView').style.display = currentView === 'generations' ? 'block' : 'none';
+    document.getElementById('generationsView').style.display = 'none';
+    document.getElementById('gnView').style.display = currentView === 'generations' ? 'block' : 'none';
     document.getElementById('genmapView').style.display = currentView === 'genmap' ? 'block' : 'none';
     document.getElementById('genyoyView').style.display = currentView === 'genyoy' ? 'block' : 'none';
     document.getElementById('bsView').style.display = currentView === 'bigsix' ? 'block' : 'none';
     document.getElementById('basinsView').style.display = currentView === 'basins' ? 'block' : 'none';
     // definitions du Biomasseregisteret : seulement sur les vues norvegiennes qui affichent ces mesures (pas sur Chili, Ecosse, actualite...)
-    { const fn = document.getElementById('regFootNote'); if (fn) fn.style.display = ['global', 'multi', 'po', 'outlook', 'summary', 'generations', 'genyoy', 'timeatsea'].includes(currentView) ? '' : 'none'; }
+    { const fn = document.getElementById('regFootNote'); if (fn) fn.style.display = ['global', 'multi', 'po', 'outlook', 'summary', 'genyoy', 'timeatsea'].includes(currentView) ? '' : 'none'; }
     // The year / period selectors do not apply to the weekly fish-health view.
     document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'seatemp' || currentView === 'usaprices' || currentView === 'news' || currentView === 'supply' || currentView === 'disease' || currentView === 'wellboats' || currentView === 'coprod' || currentView === 'feed' || currentView === 'genyoy' || currentView === 'generations' || currentView === 'genmap' || currentView === 'bigsix' || currentView === 'diseased' || currentView === 'basins') ? 'none' : '';
     // La carte des zones ne sert qu'aux vues qui raisonnent par PO. Les onglets
@@ -8210,7 +8212,7 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     else if (currentView === 'basins') { renderBasins(); }
     else if (currentView === 'wellboats') { renderWellboats(); }
     else if (currentView === 'coprod') { renderCoprod(); }
-    else if (currentView === 'generations') { renderGenerations(); }
+    else if (currentView === 'generations') { renderGenerations2(); }
     else if (currentView === 'genmap') { renderGenMap(); renderBigFish(); }
     else if (currentView === 'genyoy') { renderGenYoy(); }
     else { render(); }
@@ -15197,9 +15199,173 @@ const SN_BURGER = window.SN_BURGER, SN_CLOSE = window.SN_CLOSE;
 })();
 </script>
 <script>
+// ===================== Generations (Norvege), quatre pages : Verdict, generation en recolte, generation suivante, zones & eleveurs =====================
+// Donnees : data/generations.json (scripts/build_generations.py). Les anciens panneaux genmapView / genyoyView servent de donneurs :
+// le detail par zone (carte, mois, archive) est deplace dans la page 4, la grille TGC dans la page 2.
+var GN = undefined, GN_PAGE = 'verdict';
+(function () { const st = document.createElement('style'); st.textContent = `
+#gnRoot .gn-card{border-radius:18px;padding:14px 16px;background:linear-gradient(150deg,rgba(255,255,255,.16),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.24);box-shadow:inset 0 1px 0 rgba(255,255,255,.4)}
+#gnRoot .gn-q{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:#cfe0ea;font-weight:700;margin-bottom:4px}#gnRoot .gn-a{font-size:17px;font-weight:700;line-height:1.35;margin-bottom:8px}
+#gnRoot .gn-k{font-size:30px;font-weight:800;letter-spacing:-.02em}#gnRoot .gn-k small{font-size:14px;font-weight:600;color:#a9bfcc;margin-left:6px}
+#gnRoot .gn-row{display:grid;gap:14px}#gnRoot .c5{grid-template-columns:repeat(5,1fr)}#gnRoot .c2{grid-template-columns:1fr 1fr}#gnRoot .c3{grid-template-columns:repeat(3,1fr)}#gnRoot .c32{grid-template-columns:3fr 2fr}
+#gnRoot .gn-mut{color:#a9bfcc}#gnRoot .gn-sm{font-size:12.5px}#gnRoot .up{color:#81c784}#gnRoot .dn{color:#ff8a65}#gnRoot .b{color:#4fc3f7}#gnRoot .o{color:#ffb74d}
+#gnRoot .gn-verdict{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin:4px 0 14px}#gnRoot .gn-verdict .gn-card{border-left:5px solid}
+#gnRoot .gn-panel{border-radius:22px;padding:18px 20px;margin-top:14px;background:linear-gradient(150deg,rgba(255,255,255,.12),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}
+#gnRoot .gn-title{font-size:16px;font-weight:800;margin:0 0 2px}#gnRoot .gn-sub{font-size:12.5px;color:#a9bfcc;margin-bottom:10px;line-height:1.45}
+#gnRoot table.gn{border-collapse:collapse;width:100%}#gnRoot table.gn th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#cfe0ea;text-align:left;padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.2)}
+#gnRoot table.gn td{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.08);font-variant-numeric:tabular-nums;text-align:left;white-space:normal}#gnRoot table.gn th{text-align:left!important}#gnRoot table.gn td.n,#gnRoot table.gn th.n{text-align:right}#gnRoot .gn-fx td:first-child{font-weight:700}
+#gnRoot .gn-arrow{font-size:16px;font-weight:800}#gnRoot .gn-legend{font-size:12px;color:#a9bfcc;margin-top:4px}
+#gnRoot .gn-alert{display:flex;gap:10px;align-items:flex-start;padding:10px 14px;border-radius:14px;margin:0 0 12px;border:1px solid rgba(255,138,101,.6);background:rgba(255,138,101,.10);font-size:13.5px;line-height:1.45}
+#gnRoot details.gn-drawer{margin-top:14px;border-radius:16px;border:1px dashed rgba(255,255,255,.3);padding:8px 14px;color:#a9bfcc;font-size:13px}#gnRoot details.gn-drawer summary{cursor:pointer;font-weight:700;color:#cfe0ea}
+#gnRoot #genmapView{display:block!important}#gnRoot #genmapView .gm-h1,#gnRoot #genmapView .gm-sub,#gnRoot #genmapView #gm_brT,#gnRoot #genmapView #gm_brSub,#gnRoot #genmapView #gm_brChart,#gnRoot #genmapView #gm_brLeg{display:none}
+@media (max-width:900px){#gnRoot .gn-verdict,#gnRoot .c5,#gnRoot .c2,#gnRoot .c3,#gnRoot .c32{grid-template-columns:1fr}#gnRoot .gn-k{font-size:24px}}`; document.head.appendChild(st); })();
+function gnLine(series, o) {
+  const W = o.w || 620, H = o.h || 220, l = 44, rr = 14, t = 14, b = 30, xs = series.flatMap(s => s.pts.map(p => p[0])), ys = series.flatMap(s => s.pts.filter(p => p[1] != null).map(p => p[1]));
+  if (!ys.length) return '';
+  const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = o.y0 ?? Math.min(...ys) * 0.95, y1 = o.y1 ?? Math.max(...ys) * 1.05, X = x => l + (W - l - rr) * (x - x0) / (x1 - x0), Y = y => t + (H - t - b) * (1 - (y - y0) / (y1 - y0));
+  let s = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">`;
+  for (let i = 0; i <= 4; i++) { const y = y0 + (y1 - y0) * i / 4; s += `<line x1="${l}" x2="${W - rr}" y1="${Y(y)}" y2="${Y(y)}" stroke="rgba(255,255,255,.12)"/><text x="${l - 6}" y="${Y(y) + 4}" text-anchor="end" font-size="10.5" fill="#a9bfcc">${o.fy ? o.fy(y) : y.toFixed(1)}</text>`; }
+  (o.xlab || []).forEach(([x, lab]) => s += `<text x="${X(x)}" y="${H - 10}" text-anchor="middle" font-size="10.5" fill="#cfe0ea">${lab}</text>`);
+  if (o.vline != null) s += `<line x1="${X(o.vline)}" x2="${X(o.vline)}" y1="${t}" y2="${H - b}" stroke="rgba(255,255,255,.35)" stroke-dasharray="3 3"/><text x="${X(o.vline) + 4}" y="${t + 10}" font-size="10.5" fill="#cfe0ea">${o.vlab || ''}</text>`;
+  series.forEach(se => { const P = se.pts.filter(p => p[1] != null); if (!P.length) return;
+    s += `<polyline fill="none" stroke="${se.color}" stroke-width="${se.width || 2.2}" ${se.dash ? 'stroke-dasharray="5 4"' : ''} points="${P.map(p => `${X(p[0])},${Y(p[1])}`).join(' ')}"/>`;
+    const e = P[P.length - 1]; s += `<circle cx="${X(e[0])}" cy="${Y(e[1])}" r="3.5" fill="${se.color}"/>`; if (se.label) s += `<text x="${X(e[0]) + 6}" y="${Y(e[1]) + 4}" font-size="11.5" font-weight="700" fill="${se.color}">${se.label}</text>`; });
+  return s + '</svg>';
+}
+function gnBars(groups, o) {
+  const W = o.w || 620, H = o.h || 200, l = 40, b = 26, mx = Math.max(...groups.flatMap(g => g.vals.map(v => v.v || 0))) * 1.15 || 1, bw = (W - l - 8) / groups.length, Y = v => H - b - (H - b - 10) * v / mx;
+  let s = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">`; for (let t = 0; t <= mx; t += o.step || 10) s += `<line x1="${l}" x2="${W - 4}" y1="${Y(t)}" y2="${Y(t)}" stroke="rgba(255,255,255,.12)"/><text x="${l - 6}" y="${Y(t) + 4}" text-anchor="end" font-size="10" fill="#a9bfcc">${t}</text>`;
+  groups.forEach((g, i) => { const n = g.vals.length, sw = bw * .72 / n; g.vals.forEach((v, j) => { const x = l + i * bw + bw * .14 + j * sw; s += `<rect x="${x}" y="${Y(v.v)}" width="${Math.max(1, sw - 2)}" height="${Y(0) - Y(v.v)}" rx="3" fill="${v.color}" opacity="${v.op || 1}"><title>${v.title || ''}</title></rect>`; }); s += `<text x="${l + i * bw + bw / 2}" y="${H - 8}" text-anchor="middle" font-size="11" fill="#cfe0ea">${g.lab}</text>`; });
+  return s + '</svg>';
+}
+function renderGenerations2() {
+  const root = document.getElementById('gnRoot'); if (!root) return;
+  if (GN === undefined) { GN = null; fetch(DATA_URL.replace('data.json', 'generations.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : false).catch(() => false).then(j => { GN = j || false; if (currentView === 'generations') renderGenerations2(); }); return; }
+  if (GN === null) { root.innerHTML = 'Loading…'; return; }
+  if (!GN) { root.innerHTML = '<div class="sig-sub">Not built yet: data/generations.json comes with the monthly Norway run.</div>'; return; }
+  const D = GN, M = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], ml = k => `${M[k % 100 - 1]} ${(k / 100 | 0) % 100}`, mL = k => `${M[k % 100 - 1]} ${k / 100 | 0}`;
+  const e = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const pc = (a, b, d = 0) => a && b ? `${a >= b ? '+' : '−'}${Math.abs(100 * (a / b - 1)).toFixed(d)} %` : '—', f = (v, d = 1) => v == null ? '—' : (+v).toFixed(d), cls = (a, b, inv) => ((a >= b) !== !!inv ? 'up' : 'dn');
+  const S = D.state, old = D.meta.old, nw = D.meta.new, o = S.old, oly = S.old_ly, n = S.new, nly = S.new_ly, F = (D.six || {}).forecast || [], AL = (D.six || {}).alerts || [], V = D.volume || {}, DP = D.depletion, HD = D.handover;
+  const PAGES = [['verdict', 'Verdict'], ['old', `G${old} — being harvested`], ['new', `G${nw} — next in line`], ['zones', 'Zones & farmers']];
+  const seg = `<div class="gc-ttl">Generations</div><div class="gc-seg" role="tablist">${PAGES.map(([k, nn]) => `<button type="button" data-gn="${k}" class="${k === GN_PAGE ? 'on' : ''}">${nn}</button>`).join('')}</div>`;
+  const sgn = { up: '▲', down: '▼', mixed: '◆' }, dcls = { up: 'up', down: 'dn', mixed: '' };
+  const kpi = (q, v, u, cmp, good) => `<div class="gn-card"><div class="gn-q">${q}</div><div class="gn-k">${v}<small>${u}</small></div><div class="gn-sm ${good}">${cmp}</div></div>`;
+  const traj = (gens, colors, labels, y1, xmax) => { const xl = []; for (let j = 0; j < xmax; j += 3) xl.push([j, `${M[j % 12]} Y${(j / 12 | 0) + 1}`]);
+    return gnLine(gens.map((g, i) => ({ pts: (D.traj[g] || []).slice(0, xmax).map((p, j) => [j, p[1]]), color: colors[i], label: labels[i], dash: colors[i] === '#8fa4b0', width: colors[i] === '#8fa4b0' ? 1.6 : colors[i] === '#cfe0ea' ? 1.8 : 2.6 })), { w: 640, h: 240, y0: 0, y1, xlab: xl, fy: v => v.toFixed(1) }); };
+  const med = (gens, xmax) => (D.traj[gens[0]] || []).slice(0, xmax).map((_, j) => { const v = gens.map(g => (D.traj[g] || [])[j] && D.traj[g][j][1]).filter(x => x != null); if (v.length < 2) return [j, null]; v.sort((a, b) => a - b); return [j, v[(v.length - 1) >> 1]]; });
+  const drawer = (t, body) => `<details class="gn-drawer"><summary>${t}</summary><div style="margin-top:6px">${body}</div></details>`;
+  let html = '';
+  if (GN_PAGE === 'verdict') {
+    const end = DP.end20 ? mL(DP.end20) : '—', hand = HD.k50 ? mL(HD.k50) : '—';
+    const f0 = F[0] || {}, f1 = F[1] || {};
+    html = `<div class="gn-verdict">
+      <div class="gn-card" style="border-color:#4fc3f7"><div class="gn-q">Generation ${old} — being harvested</div><div class="gn-a">${o.n < oly.n ? 'Fewer fish' : 'More fish'}, ${o.w > oly.w ? 'bigger' : 'smaller'} and ${D.mort.old < D.mort.old_ly ? 'healthier' : 'with more losses'}: <span class="${cls(o.n, oly.n)}">${pc(o.n, oly.n)}</span> fish, <span class="${cls(o.w, oly.w)}">${pc(o.w, oly.w)}</span> weight, stock above 5 kg <span class="${cls(o.b5, oly.b5)}">${pc(o.b5, oly.b5)}</span>. 80 % harvested by <b>${end}</b>.</div><div class="gn-sm gn-mut">TGC last 3 months ${f(D.tgc.old_3m, 2)} vs ${f(D.tgc.old_ly_3m, 2)} a year earlier · mortality ${f(D.mort.old, 2)} %/month vs ${f(D.mort.old_ly, 2)}</div></div>
+      <div class="gn-card" style="border-color:#ffb74d"><div class="gn-q">Generation ${nw} — next in line</div><div class="gn-a">${n.w > nly.w ? 'Ahead' : 'Behind'}: <span class="${cls(n.w, nly.w)}">${pc(n.w, nly.w)}</span> weight at the same stage, TGC <span class="${cls(D.tgc.new_3m, D.tgc.new_ly_3m)}">${pc(D.tgc.new_3m, D.tgc.new_ly_3m)}</span>, fish count <span class="${cls(n.n, nly.n)}">${pc(n.n, nly.n)}</span>. Takes over the harvest from <b>${hand}</b>${HD.k50_prev ? ` (${mL(HD.k50_prev)} last season)` : ''}.</div><div class="gn-sm gn-mut">${f(n.w, 2)} kg vs ${f(nly.w, 2)} · ${f(n.n, 0)} M fish vs ${f(nly.n, 0)}</div></div>
+      <div class="gn-card" style="border-color:#cfe0ea"><div class="gn-q">6 kg+ — next six months</div><div class="gn-a">${f0.span ? `${e(f0.span)}: <b>${Math.round(f0.fcst)} kt</b> <span class="${cls(f0.fcst, f0.ly)}">${pc(f0.fcst, f0.ly)}</span>` : ''}${f1.span ? ` · ${e(f1.span)}: <b>${Math.round(f1.fcst)} kt</b> <span class="${cls(f1.fcst, f1.ly)}">${pc(f1.fcst, f1.ly)}</span>` : ''}.</div><div class="gn-sm gn-mut">${f0.lo != null ? `ranges ${Math.round(f0.lo)}–${Math.round(f0.hi)} and ${Math.round(f1.lo)}–${Math.round(f1.hi)} kt` : ''}${f0.fcst_if_anomaly_persists ? ` · ${Math.round(f0.fcst_if_anomaly_persists)} kt if the temperature anomaly (${f0.temp_anomaly_c > 0 ? '+' : ''}${f0.temp_anomaly_c} °C) persists` : ''} · degree-day rule, see 6 kg+ outlook</div></div></div>
+      ${AL.map(a => `<div class="gn-alert"><span style="font-size:18px">⚠</span><div>${e(a.text)}</div></div>`).join('')}
+      <div class="gn-row c5">${kpi('Fish left', f(o.n, 0), 'M', `${pc(o.n, oly.n)} vs G${old - 1} same month`, cls(o.n, oly.n))}${kpi('Average weight', f(o.w, 2), 'kg live', `${pc(o.w, oly.w)} · harvested at ${f(o.hw, 2)} kg`, cls(o.w, oly.w))}${kpi('Stock above 5 kg gutted', f(o.b5, 0), 'kt', `${pc(o.b5, oly.b5)} vs a year earlier`, cls(o.b5, oly.b5))}${kpi('Growth, TGC 3 months', f(D.tgc.old_3m, 2), '', `${pc(D.tgc.old_3m, D.tgc.old_ly_3m)} vs a year earlier`, cls(D.tgc.old_3m, D.tgc.old_ly_3m))}${kpi('Mortality', f(D.mort.old, 2), '%/month', `${pc(D.mort.old, D.mort.old_ly)} vs a year earlier`, cls(D.mort.old, D.mort.old_ly, true))}</div>`;
+    if (V.scenarios && V.scenarios.central) { const c = V.scenarios.central, lo = V.scenarios.fade || c, hi = V.scenarios.fast || c, sum = (A, a, b, k) => A.slice(a, b).reduce((x, m) => x + (m[k] || 0), 0);
+      const P = [[`${ml(c[0].k)} – ${ml(c[2].k)}`, 0, 3, f0], [`${ml(c[3].k)} – ${ml(c[5].k)}`, 3, 6, f1]];
+      const cardV = ([lab, a, b, f6]) => { const t = sum(c, a, b, 'tot'), ly = sum(c, a, b, 'ly'), l = sum(lo, a, b, 'tot'), h = sum(hi, a, b, 'tot'), k5 = sum(c, a, b, 'kt5'), l5 = sum(c, a, b, 'ly5');
+        return `<div class="gn-card"><div class="gn-q">${lab}</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:6px">
+          <div><div class="gn-sm gn-mut">All sizes</div><div class="gn-k" style="font-size:26px">${Math.round(t)}<small>kt</small></div><div class="gn-sm ${cls(t, ly)}">${pc(t, ly)} vs ${Math.round(ly)} · range ${Math.round(Math.min(l, h))}–${Math.round(Math.max(l, h))}</div></div>
+          <div><div class="gn-sm gn-mut">5 kg+</div><div class="gn-k" style="font-size:26px">${Math.round(k5)}<small>kt</small></div><div class="gn-sm ${cls(k5, l5)}">${pc(k5, l5)} vs ${Math.round(l5)}</div></div>
+          <div><div class="gn-sm gn-mut">6 kg+ (degree-day rule)</div><div class="gn-k" style="font-size:26px">${f6.fcst != null ? Math.round(f6.fcst) : '—'}<small>kt</small></div><div class="gn-sm ${f6.fcst != null ? cls(f6.fcst, f6.ly) : ''}">${f6.fcst != null ? `${pc(f6.fcst, f6.ly)} vs ${Math.round(f6.ly)} · range ${Math.round(f6.lo)}–${Math.round(f6.hi)}` : ''}</div></div></div></div>`; };
+      const groups = c.map((m, i) => ({ lab: ml(m.k), vals: [{ v: m.ly, color: '#8fa4b0', op: .75, title: `${ml(m.k - 100)}: ${m.ly} kt` }, { v: m.tot, color: i < 3 ? '#4fc3f7' : '#4fc3f799', title: `${ml(m.k)} forecast: ${m.tot} kt` }] }));
+      const nc = V.nowcast;
+      html += `<div class="gn-panel"><div class="gn-title">Harvest outlook — next 3 and 6 months, all sizes and by size</div><div class="gn-sub">Norway, kt gutted, against the same months a year earlier. Volume from the generation model (central scenario; range = advance fades / kept), 6 kg+ from the degree-day rule, next month from whole-fish exports (SSB weekly).</div>
+        <div class="gn-row c2">${P.map(cardV).join('')}</div>
+        <div class="gn-row c32" style="margin-top:12px"><div>${gnBars(groups, { w: 640, h: 190, step: 40 })}<div class="gn-legend"><span style="color:#8fa4b0">■</span> same month a year earlier · <span style="color:#4fc3f7">■</span> forecast, all sizes (lighter: months 4–6)</div></div>
+        <div class="gn-card"><div class="gn-q">Reading</div><div class="gn-sm" style="line-height:1.5">${nc ? `<b>${mL(nc.k)} is already visible:</b> ${nc.t} kt from exports, ${pc(nc.t, nc.ly)} vs ${nc.ly} a year earlier. ` : ''}<b>Next 3 months:</b> ${sum(c, 0, 3, 'tot') > sum(c, 0, 3, 'ly') * 1.01 ? 'a little more volume than last year' : sum(c, 0, 3, 'tot') < sum(c, 0, 3, 'ly') * 0.99 ? 'a little less volume than last year' : 'about the same volume as last year'}, ${f0.fcst > f0.ly * 1.1 ? 'and clearly more big fish — the same tonnes in fewer, heavier fish' : f0.fcst < f0.ly * 0.9 ? 'and fewer big fish' : 'and about as many big fish'}. <b>Months 4–6:</b> ${sum(c, 3, 6, 'tot') > sum(c, 3, 6, 'ly') * 1.02 ? 'more volume' : sum(c, 3, 6, 'tot') < sum(c, 3, 6, 'ly') * 0.98 ? 'less volume' : 'flat volume'}, 5 kg+ ${sum(c, 3, 6, 'kt5') > sum(c, 3, 6, 'ly5') ? 'up' : 'down'}, 6 kg+ ${f1.fcst > f1.ly ? 'above' : 'below'} last year. ${e(V.tested || '')}. Read months 4–6 as a direction.</div></div></div></div>`; }
+    html += `<div class="gn-panel"><div class="gn-title">The factors behind the 6 kg+ wave of winter 2025–26 — where they stand now</div><div class="gn-sub">Same factors, same months a year earlier; ▲ favours more 6 kg+, ▼ fewer, ◆ mixed. Rebuilt at every register.</div>
+      <table class="gn gn-fx"><tr><th>Factor</th><th>${e(D.meta.register_label)}</th><th>a year earlier</th><th></th><th>Incidence</th></tr>${(D.factors || []).map(r => `<tr><td>${e(r.label)}</td><td>${e(r.now)}</td><td class="gn-mut">${e(r.ly)}</td><td class="gn-arrow ${dcls[r.dir]}">${sgn[r.dir]}</td><td>${e(r.why)}</td></tr>`).join('')}</table>
+      <div class="gn-sm" style="margin-top:10px"><b>Reading:</b> ${(() => { const u = D.factors.filter(x => x.dir === 'up').length, d = D.factors.filter(x => x.dir === 'down').length; return u > d + 2 ? 'most factors point to more big fish.' : d > u + 2 ? 'most factors point to fewer big fish.' : 'the factors disagree: size and health say more big fish, count, water and harvest pace say fewer tonnes. The next register settles which side wins.'; })()}</div></div>
+      ${drawer('Reliability', `6 kg+ rule tested since 2020: ${(D.six.tests || {})['next 3 months']?.mape ?? '—'} % average error at 3 months (repeating last year ${(D.six.tests || {})['next 3 months']?.naive_mape ?? '—'} %), ${(D.six.tests || {})['months 4-6']?.mape ?? '—'} % at 4–6 months · volume model ${e(V.tested || '')} · end-of-generation and handover dates are projections at last season's pace, back-test pending · full test tables in the 6 kg+ outlook tab.`)}`;
+  } else if (GN_PAGE === 'old') {
+    const ref = [old - 6, old - 5, old - 4, old - 3, old - 2].filter(g => D.traj[g]);
+    const wser = gnLine([{ pts: med(ref, 33), color: '#8fa4b0', dash: true, label: `median ${String(ref[0]).slice(2)}–${String(ref[ref.length - 1]).slice(2)}`, width: 1.6 }, { pts: D.traj[old - 1].map((p, j) => [j, p[1]]), color: '#cfe0ea', label: `G${old - 1}`, width: 1.8 }, { pts: D.traj[old].map((p, j) => [j, p[1]]), color: '#4fc3f7', label: `G${old}`, width: 2.6 }], { w: 640, h: 240, y0: 0, y1: 6.5, xlab: Array.from({ length: 11 }, (_, i) => [i * 3, `${M[(i * 3) % 12]} Y${((i * 3) / 12 | 0) + 1}`]), fy: v => v.toFixed(1) });
+    const i20 = DP.proj.findIndex(p => p[0] === DP.end20);
+    const dep = gnLine([{ pts: DP.ly.map((p, i) => [i, p[1]]), color: '#cfe0ea', label: `G${old - 1} (actual)`, width: 1.8 }, { pts: DP.proj.map((p, i) => [i, p[1]]), color: '#4fc3f7', label: `G${old} (projected)`, dash: true, width: 2.4 }], { w: 640, h: 220, y0: 0, y1: Math.max(DP.ly[0][1], DP.proj[0][1]) * 1.1, xlab: DP.proj.map((p, i) => [i, ml(p[0])]), fy: v => v.toFixed(0) + ' M', vline: i20 >= 0 ? i20 : null, vlab: '20 % left' });
+    const Z = D.zones.filter(z => z.b5 > 0.3 || z.b5_ly > 0.3), top = [...Z].sort((a, b) => b.b5 - a.b5).slice(0, 3);
+    const medSep = (() => { const j = (D.traj[old] || []).findIndex(p => p[0] === D.meta.register); const v = med(ref, 33)[j]; return v ? v[1] : null; })();
+    html = `<div class="gn-verdict" style="grid-template-columns:1fr"><div class="gn-card" style="border-color:#4fc3f7"><div class="gn-q">Where it stands · register of ${e(D.meta.register_label)}</div><div class="gn-a">G${old} has <b>${f(o.n, 0)} M</b> fish left (<span class="${cls(o.n, oly.n)}">${pc(o.n, oly.n)}</span>) at <b>${f(o.w, 2)} kg</b> (<span class="${cls(o.w, oly.w)}">${pc(o.w, oly.w)}</span>); biomass ${f(o.bio, 0)} kt gutted (${pc(o.bio, oly.bio)}), stock above 5 kg <b>${f(o.b5, 0)} kt</b> (<span class="${cls(o.b5, oly.b5)}">${pc(o.b5, oly.b5)}</span>). At last season's pace the generation is 80 % harvested by <b>${DP.end20 ? mL(DP.end20) : '—'}</b> and 95 % by <b>${DP.end05 ? mL(DP.end05) : '—'}</b>.</div></div></div>
+      <div class="gn-row c2">
+       <div class="gn-panel" style="margin-top:0"><div class="gn-title">Is it ahead? Weight at the same stage</div><div class="gn-sub">Average live weight, month since 1 January of the release year. Grey dashed: median of five earlier generations.</div>${wser}<div class="gn-sm" style="margin-top:6px"><b>${f(o.w, 2)} kg against ${f(oly.w, 2)} a year earlier${medSep ? ` and ${f(medSep, 1)} kg for the median` : ''}.</b> TGC over the last 3 months ${f(D.tgc.old_3m, 2)} vs ${f(D.tgc.old_ly_3m, 2)}: the advance ${D.tgc.old_3m > D.tgc.old_ly_3m ? 'keeps building' : 'is not growing any more'}.</div></div>
+       <div class="gn-panel" style="margin-top:0"><div class="gn-title">How long does it last? Fish left, month by month</div><div class="gn-sub">G${old} projected with G${old - 1}'s harvest pace from the same month; 20 % left marks the practical end of the generation.</div>${dep}<div class="gn-sm" style="margin-top:6px"><b>Harvest pace ${(() => { const p = D.factors.find(x => x.id === 'pace'); return p ? `${p.now} of the stock taken in the last 3 months vs ${p.ly} a year earlier` : ''; })()}.</b> ${(() => { const p = D.factors.find(x => x.id === 'pace'); return p && p.dir === 'down' ? 'The reservoir of big fish empties sooner than last winter.' : p && p.dir === 'up' ? 'Fish are kept longer: the reservoir lasts further into the winter.' : 'Same pace as last year.'; })()}</div></div></div>
+      <div class="gn-panel"><div class="gn-title">Growth, survival, harvest weight — G${old} vs G${old - 1}, same months</div>
+       <table class="gn"><tr><th>Indicator</th><th class="n">G${old}</th><th class="n">G${old - 1}</th><th class="n">Change</th><th>Reading</th></tr>
+       <tr><td>TGC, last 3 months (${e(D.meta.window)})</td><td class="n b"><b>${f(D.tgc.old_3m, 2)}</b></td><td class="n">${f(D.tgc.old_ly_3m, 2)}</td><td class="n ${cls(D.tgc.old_3m, D.tgc.old_ly_3m)}">${pc(D.tgc.old_3m, D.tgc.old_ly_3m)}</td><td>${D.tgc.old_3m > D.tgc.old_ly_3m * 1.05 ? 'Growing much faster per degree-day' : D.tgc.old_3m < D.tgc.old_ly_3m * 0.95 ? 'Slower per degree-day' : 'Same pace per degree-day'}</td></tr>
+       <tr><td>TGC, last 12 months</td><td class="n b"><b>${f(D.tgc.old_12m, 2)}</b></td><td class="n">${f(D.tgc.old_ly_12m, 2)}</td><td class="n ${cls(D.tgc.old_12m, D.tgc.old_ly_12m)}">${pc(D.tgc.old_12m, D.tgc.old_ly_12m)}</td><td>${D.tgc.old_12m > D.tgc.old_ly_12m ? 'Whole cycle ahead' : 'Whole cycle behind'}</td></tr>
+       <tr><td>Mortality, %/month (3 months)</td><td class="n b"><b>${f(D.mort.old, 2)}</b></td><td class="n">${f(D.mort.old_ly, 2)}</td><td class="n ${cls(D.mort.old, D.mort.old_ly, true)}">${pc(D.mort.old, D.mort.old_ly)}</td><td>${D.mort.old < D.mort.old_ly ? 'Better survival' : 'More losses'}</td></tr>
+       <tr><td>Harvest weight in ${M[D.meta.register % 100 - 1]} (live)</td><td class="n b"><b>${f(o.hw, 2)} kg</b></td><td class="n">${f(oly.hw, 2)} kg</td><td class="n ${cls(o.hw, oly.hw)}">${pc(o.hw, oly.hw)}</td><td>${o.hw > oly.hw ? 'Bigger fish going to the plants' : 'Smaller fish going to the plants'}</td></tr>
+       <tr><td>Fish harvested in ${M[D.meta.register % 100 - 1]}</td><td class="n b"><b>${f(o.h, 1)} M</b></td><td class="n">${f(oly.h, 1)} M</td><td class="n ${cls(o.h, oly.h, true)}">${pc(o.h, oly.h)}</td><td>${o.h > oly.h ? 'Taken faster than last year' : 'Taken slower than last year'}</td></tr></table></div>
+      <div class="gn-panel"><div class="gn-title">By zone — where the big fish are</div><div class="gn-sub">G${old} only. Stock above 5 kg gutted, weight, TGC and sea temperature of the last 3 months against the same zone a year earlier.</div>
+       <table class="gn"><tr><th>Zone</th><th class="n">Fish (M)</th><th class="n">Weight kg</th><th class="n">vs LY</th><th class="n">Stock &gt;5 kg (kt)</th><th class="n">LY</th><th class="n">TGC</th><th class="n">LY</th><th class="n">Sea °C (LY)</th></tr>
+       ${Z.map(z => `<tr><td><b>${z.po}</b></td><td class="n">${f(z.n, 1)}</td><td class="n">${f(z.w, 2)}</td><td class="n ${z.w && z.w_ly ? cls(z.w, z.w_ly) : ''}">${pc(z.w, z.w_ly)}</td><td class="n b"><b>${f(z.b5, 1)}</b></td><td class="n gn-mut">${f(z.b5_ly, 1)}</td><td class="n">${f(z.tgc, 2)}</td><td class="n gn-mut">${f(z.tgc_ly, 2)}</td><td class="n">${f(z.t, 1)} <span class="gn-mut">(${f(z.t_ly, 1)})</span></td></tr>`).join('')}</table>
+       <div class="gn-sm" style="margin-top:8px"><b>Zones ${top.map(z => z.po).join(', ')} hold ${Math.round(top.reduce((a, z) => a + z.b5, 0))} kt of the ${f(o.b5, 0)} kt above 5 kg.</b></div></div>
+      <div class="gn-panel" id="gnTgcHost"><div class="gn-title">Growth month by month — both generations against the year before</div><div class="gn-sub">TGC by stage and by zone, then growth, temperature and mortality month by month; our calculation from the register and BarentsWatch temperatures (degree-day weighted, from 0.3 kg); blue = G${old}, orange = G${nw}.</div></div>
+      ${drawer('Reliability', 'Weight trajectory and zone table are register data, not a model · depletion projection = last season\'s harvest pace from the same month, back-test pending · TGC = (W1^⅓ − W0^⅓) × 1000 / degree-days, corrected for undeclared transfers.')}`;
+  } else if (GN_PAGE === 'new') {
+    const ref = [nw - 6, nw - 5, nw - 4, nw - 3, nw - 2].filter(g => D.traj[g]);
+    const wser = gnLine([{ pts: med(ref, 24), color: '#8fa4b0', dash: true, label: `median ${String(ref[0]).slice(2)}–${String(ref[ref.length - 1]).slice(2)}`, width: 1.6 }, { pts: D.traj[nw - 1].slice(0, 24).map((p, j) => [j, p[1]]), color: '#cfe0ea', label: `G${nw - 1}`, width: 1.8 }, { pts: D.traj[nw].slice(0, 24).map((p, j) => [j, p[1]]), color: '#ffb74d', label: `G${nw}`, width: 2.6 }], { w: 640, h: 240, y0: 0, y1: 2.6, xlab: Array.from({ length: 8 }, (_, i) => [i * 3, `${M[(i * 3) % 12]} Y${((i * 3) / 12 | 0) + 1}`]), fy: v => v.toFixed(1) });
+    const i50 = HD.cur.findIndex(p => p[0] === HD.k50);
+    const hand = gnLine([{ pts: HD.prev2.map((p, i) => [i, p[1]]), color: '#8fa4b0', label: `${String(HD.prev2[0][0]).slice(2, 4)}–${String(HD.prev2[11][0]).slice(2, 4)}`, width: 1.4, dash: true }, { pts: HD.prev.map((p, i) => [i, p[1]]), color: '#cfe0ea', label: `${String(HD.prev[0][0]).slice(2, 4)}–${String(HD.prev[11][0]).slice(2, 4)}`, width: 1.8 }, { pts: HD.cur.map((p, i) => [i, p[1]]), color: '#ffb74d', label: `${String(HD.cur[0][0]).slice(2, 4)}–${String(HD.cur[11][0]).slice(2, 4)} projected`, dash: true, width: 2.4 }], { w: 640, h: 220, y0: 0, y1: 100, xlab: HD.cur.map((p, i) => [i, M[p[0] % 100 - 1]]), fy: v => v.toFixed(0) + ' %', vline: i50 >= 0 ? i50 : null, vlab: `${HD.k50 ? M[HD.k50 % 100 - 1] : ''}: new generation > 50 %` });
+    const sc = V.scenarios || {}, per = (s, a, b, k) => (sc[s] || []).slice(a, b).reduce((x, m) => x + (m[k] || 0), 0), pcs = (s, a, b, k, kl) => { const v = per(s, a, b, k), l = per(s, a, b, kl); return l ? `<td class="n ${v >= l ? 'up' : 'dn'}">${pc(v, l)}</td>` : '<td class="n">—</td>'; };
+    const G0 = (D.six.tests || {});
+    const sm = D.smolt, gens = [nw - 3, nw - 2, nw - 1, nw];
+    html = `<div class="gn-verdict" style="grid-template-columns:1fr"><div class="gn-card" style="border-color:#ffb74d"><div class="gn-q">Where it stands · register of ${e(D.meta.register_label)}</div><div class="gn-a">G${nw} is <b>${f(n.w, 2)} kg</b> where G${nw - 1} was ${f(nly.w, 2)} kg at the same stage (<span class="${cls(n.w, nly.w)}">${pc(n.w, nly.w)}</span>), with <b>${f(n.n, 0)} M</b> fish (<span class="${cls(n.n, nly.n)}">${pc(n.n, nly.n)}</span>). It should take over more than half of the harvest from <b>${HD.k50 ? mL(HD.k50) : '—'}</b>${HD.k50_prev ? ` (${mL(HD.k50_prev)} last season${HD.k50_prev2 ? `, ${mL(HD.k50_prev2)} the season before` : ''})` : ''}.</div></div></div>
+      <div class="gn-row c2">
+       <div class="gn-panel" style="margin-top:0"><div class="gn-title">Is it ahead? Weight at the same stage</div><div class="gn-sub">Average live weight, month since 1 January of the release year. Grey dashed: median of five earlier generations.</div>${wser}<div class="gn-sm" style="margin-top:6px"><b>${f(n.w, 2)} kg against ${f(nly.w, 2)} a year earlier.</b> TGC last 3 months ${f(D.tgc.new_3m, 2)} vs ${f(D.tgc.new_ly_3m, 2)} (<span class="${cls(D.tgc.new_3m, D.tgc.new_ly_3m)}">${pc(D.tgc.new_3m, D.tgc.new_ly_3m)}</span>); mortality ${f(D.mort.new, 2)} %/month vs ${f(D.mort.new_ly, 2)}.</div></div>
+       <div class="gn-panel" style="margin-top:0"><div class="gn-title">When does it take over? Share of the harvest</div><div class="gn-sub">Share of Norway's harvest coming from the newest generation, October to September. Two past seasons actual; the season ahead at last season's pace, shifted by the gap observed so far.</div>${hand}<div class="gn-sm" style="margin-top:6px"><b>Crossing 50 % in ${HD.k50 ? mL(HD.k50) : '—'}</b>${HD.k50_prev ? ` against ${mL(HD.k50_prev)} last season` : ''}. Until then the winter's big fish come from G${old}.</div></div></div>
+      <div class="gn-panel"><div class="gn-title">What it means for the year ahead — three scenarios, one line each</div><div class="gn-sub">Harvest against the same months a year earlier, from the generation model (advance of the new generation fades out / mostly kept / kept in full).</div>
+       <table class="gn"><tr><th>Period</th><th class="n">All sizes · fades</th><th class="n">central</th><th class="n">kept</th><th class="n">6 kg+ · fades</th><th class="n">central</th><th class="n">kept</th></tr>
+       ${[[0, 3], [3, 6]].map(([a, b]) => sc.central ? `<tr><td>${ml(sc.central[a].k)} – ${ml(sc.central[b - 1].k)}</td>${['fade', 'central', 'fast'].map(s => pcs(s, a, b, 'tot', 'ly')).join('')}${['fade', 'central', 'fast'].map(s => pcs(s, a, b, 'kt6', 'ly6')).join('')}</tr>` : '').join('')}</table>
+       <div class="gn-sm" style="margin-top:8px"><b>Reading:</b> the swing between scenarios is in sizes more than in volume: the share of the harvest above 6 kg in months 4–6 ranges from ${pc(per('fade', 3, 6, 'kt6'), per('fade', 3, 6, 'ly6'))} to ${pc(per('fast', 3, 6, 'kt6'), per('fast', 3, 6, 'ly6'))} against a year earlier. The handover months (April–July) are detailed in the Supply outlook tab.</div></div>
+      <div class="gn-panel"><div class="gn-title">Smolts put to sea — the raw material of the year ahead</div>
+       <table class="gn"><tr><th>Generation</th><th class="n">Fish in Sep Y1 (M)</th><th class="n">Weight at 1–3 months</th><th class="n">Fish in Dec Y1 (M)</th><th>Reading</th></tr>
+       ${gens.map(g => { const x = sm[String(g)] || {}; return `<tr><td><b>G${g}</b></td><td class="n">${x.n_sep ?? '—'}</td><td class="n">${x.w != null ? x.w + ' kg' : '—'}${!x.complete ? ' <span class="gn-mut">(spring smolts only so far)</span>' : ''}</td><td class="n">${x.n_dec ?? '<span class="gn-mut">autumn smolts pending</span>'}</td><td>${!x.complete ? 'Not comparable until the December register' : ''}</td></tr>`; }).join('')}</table></div>
+      ${drawer('Reliability', `handover date = last season's pace shifted by the observed gap, back-test pending · scenario table replayed from Sep 2025: Apr–Jul 2026 5 kg+ forecast 206 kt, actual 215; Oct–Mar under-forecast (224 vs 312 kt) — the winter wave · 6 kg+ rule ${G0['next 3 months']?.mape ?? '—'} % error at 3 months.`)}`;
+  } else {
+    const RK = (typeof BF !== 'undefined' && BF && BF.ranking) ? BF.ranking : null, FR = RK ? RK.farmers.slice(0, 6) : [], RV = RK && RK.reservoir ? RK.reservoir.farmers.slice(0, 7) : [], ZS = (typeof BF !== 'undefined' && BF && BF.zones) ? BF.zones.slice(0, 10) : [];
+    const tot6 = FR.reduce((a, x) => a + x.t6, 0), all6 = RK ? RK.farmers.reduce((a, x) => a + x.t6, 0) : 0, top3 = FR.slice(0, 3);
+    html = `<div class="gn-verdict" style="grid-template-columns:1fr"><div class="gn-card" style="border-color:#cfe0ea"><div class="gn-q">Where and who · next two months${RK ? ` (${RK.months.map(ml).join('–')})` : ''}</div><div class="gn-a">${top3.length ? `<b>${top3.map(x => e(x.co)).join(', ')}</b> hold about ${Math.round(100 * top3.reduce((a, x) => a + x.t6, 0) / (all6 || 1))} % of the 6 kg+ to be harvested` : 'Farmer estimates load below'}${ZS.length ? `; zones <b>${ZS.slice(0, 4).map(z => z.po).join(', ')}</b> carry ${Math.round(ZS.slice(0, 4).reduce((a, z) => a + z.zone_share6, 0))} % of them` : ''}. Lerøy, SalMar and Nordlaks are absent from the spot market — hence spot and register can diverge.</div></div></div>
+      <div class="gn-row c32">
+       <div class="gn-panel" style="margin-top:0"><div class="gn-title">Which zones hold the 6 kg+ ?</div><div class="gn-sub">Share of Norway's expected 6 kg+ harvest over the next two months, from site age (BarentsWatch fallow history) × zone growth curve × measured harvest chance.</div>${ZS.length ? gnBars(ZS.map(z => ({ lab: 'Z' + z.po, vals: [{ v: z.zone_share6, color: '#4fc3f7', title: `zone ${z.po}: ${z.zone_share6} %` }] })), { w: 640, h: 200, step: 5 }) : '<div class="gn-sm gn-mut">Loading…</div>'}</div>
+       <div class="gn-panel" style="margin-top:0"><div class="gn-title">Who still has big fish?</div><div class="gn-sub">Reservoir of 6 kg+ at sea after the last register, and what each farmer emptied since (site status, weekly).</div>
+        <table class="gn"><tr><th>Farmer</th><th class="n">6 kg+ at sea</th><th class="n">emptied since</th><th class="n">sites</th></tr>${RV.map(r => `<tr><td><b>${e(r.co)}</b></td><td class="n b"><b>${(r.now6 / 1000).toFixed(1)} kt</b></td><td class="n gn-mut">${(r.emptied6 / 1000).toFixed(1)} kt</td><td class="n">${r.sites_now}</td></tr>`).join('')}</table></div></div>
+      <div id="gnMapHost"></div>`;
+  }
+  // les noeuds donneurs retournent au parking avant que la page soit reecrite (sinon ils disparaissent avec innerHTML)
+  { let park = document.getElementById('gnPark'); if (!park) { park = document.createElement('div'); park.id = 'gnPark'; park.style.display = 'none'; document.body.appendChild(park); }
+    ['genmapView', 'gyGrowGrid'].forEach(id => { const x = document.getElementById(id); if (x && root.contains(x)) park.appendChild(x); }); }
+  root.innerHTML = seg + html;
+  root.querySelectorAll('[data-gn]').forEach(b => b.onclick = () => { GN_PAGE = b.dataset.gn; renderGenerations2(); window.scrollTo(0, 0); });
+  // donneurs : grille TGC (page 2) et detail par zone / carte / eleveurs (page 4)
+  if (GN_PAGE === 'old') { try { renderGenYoy(); } catch (err) { /* la vue donneuse peut manquer de donnees */ }
+    const t = document.getElementById('gyGrowGrid'), host = document.getElementById('gnTgcHost'); if (t && host) host.appendChild(t); }
+  if (GN_PAGE === 'zones') { const gm = document.getElementById('genmapView'), host = document.getElementById('gnMapHost');
+    if (gm && host) { host.appendChild(gm); gm.style.display = 'block'; gnFoldGenmap(gm); }
+    try { renderGenMap(); renderBigFish(); } catch (err) { console.warn('generations/zones', err); }
+    if (gm) gnFoldGenmap(gm); }
+}
+function gnFoldGenmap(gm) {   // page Zones & farmers : le detail par zone reste, le reste passe dans des tiroirs fermes (rejoue a chaque rendu, sans doublon)
+  const q = sel => gm.querySelector(sel), panelOf = el => el && el.closest('.gm-panel');
+  if (!gm.dataset.folded) { gm.dataset.folded = 1;
+    const br = panelOf(q('#gm_brT')); if (br) br.style.display = 'none';                                   // « This month » : repris dans Verdict
+    const d = document.createElement('details'); d.className = 'gn-drawer'; d.id = 'gnDrawerA'; d.style.margin = '14px 0'; d.innerHTML = '<summary>Cycle strategy, time at sea, forecast archive and method</summary>';
+    const strat = panelOf(q('#gm_strat')); const ctl = q('.gm-ctl'); (ctl || gm.firstChild).before(d); if (strat) d.appendChild(strat);
+    [...gm.querySelectorAll(':scope > .gm-panel')].filter(p => /Time at sea|Forecast archive|How the projections/.test((p.querySelector('.gm-t') || {}).textContent || '')).forEach(p => d.appendChild(p)); }
+  const bf = panelOf(q('#gm_bfT'));
+  if (bf) { let d2 = document.getElementById('gnDrawerB'); if (!d2) { d2 = document.createElement('details'); d2.className = 'gn-drawer'; d2.id = 'gnDrawerB'; d2.innerHTML = '<summary>Farmer reservoir, forecast checks, national size shares and method</summary>'; bf.appendChild(d2); }
+    ['gm_bfRes', 'gm_bfChk', 'gm_bfNo', 'gm_bfTest', 'gm_bfNote'].forEach(id => { const x = document.getElementById(id); if (!x || d2.contains(x)) return; const w = x.closest('.gm-tw') || x; const sec = w.previousElementSibling; if (sec && sec.classList.contains('gm-sec')) d2.appendChild(sec); d2.appendChild(w); });
+    bf.appendChild(d2); }
+}
+</script>
+<script>
 // « Generations comparison » : une seule entree du menu, trois vues (generations, carte, contre l'an dernier) choisies en tete
 (function () {
-  const V = [['generations', 'Year classes compared'], ['genmap', 'Zone by zone'], ['genyoy', 'This year vs last year']];
+  const V = [];   // les trois anciennes vues sont reunies dans l'onglet Generations (renderGenerations2)
   const css = document.createElement('style');
   css.textContent = `.gc-seg{display:inline-flex;gap:2px;padding:4px;border-radius:999px;margin:2px 0 12px;background:linear-gradient(150deg,rgba(255,255,255,.2),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.28);box-shadow:inset 0 1px 0 rgba(255,255,255,.45)}
     .gc-seg button{border:0;background:none;color:#e6f0f6;font:inherit;font-size:13.5px;padding:7px 15px;border-radius:999px;cursor:pointer}.gc-seg button.on{background:linear-gradient(180deg,#fff,#dcecf5);color:#0d2a40;font-weight:700}
