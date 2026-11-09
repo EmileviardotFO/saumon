@@ -11190,8 +11190,11 @@ function bsStockHtml(e) {
   const F = SIXS.forecast, M = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], ml = k => `${M[k % 100 - 1]} ${String(k).slice(2, 4)}`;
   const f1 = v => v === null || v === undefined ? '—' : (+v).toFixed(1), sg = v => v === null || v === undefined ? '—' : `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(0)} %`;
   const col = v => v > 2 ? '#81c784' : v < -2 ? '#ff8a65' : '#cfe0ea';
+  // alertes du moment (spot, hors historique)
+  const AL = (SIXS.alerts || []).map(a => `<div style="display:flex;gap:10px;align-items:flex-start;padding:10px 14px;border-radius:14px;margin:8px 0;border:1px solid ${a.level === 'high' ? 'rgba(255,138,101,.6)' : 'rgba(255,213,79,.5)'};background:${a.level === 'high' ? 'rgba(255,138,101,.10)' : 'rgba(255,213,79,.08)'}">
+      <span style="font-size:18px">${a.level === 'high' ? '⚠' : '◔'}</span><div style="font-size:13.5px;line-height:1.45">${e(a.text)}</div></div>`).join('');
   // barres groupees par mois : un an plus tot / prevision
-  const mo = F.flatMap(f => f.months), mx = Math.max(...mo.map(x => Math.max(x.fcst || 0, x.ly || 0))) * 1.15, W = 640, Hh = 190, l = 34, b = 26, bw = (W - l - 8) / mo.length, Y = v => Hh - b - (Hh - b - 10) * v / mx;
+  const mo = F.flatMap(f => f.months).filter(x => x.fcst !== null), mx = Math.max(...mo.map(x => Math.max(x.fcst || 0, x.ly || 0))) * 1.15, W = 640, Hh = 190, l = 34, b = 26, bw = (W - l - 8) / mo.length, Y = v => Hh - b - (Hh - b - 10) * v / mx;
   let svg = `<svg viewBox="0 0 ${W} ${Hh}" style="width:100%;max-width:${W}px;height:auto" role="img" aria-label="6 kg+ harvest by month">`;
   for (let t = 0; t <= mx; t += 10) svg += `<line x1="${l}" x2="${W - 4}" y1="${Y(t)}" y2="${Y(t)}" stroke="rgba(255,255,255,.12)"/><text x="${l - 6}" y="${Y(t) + 4}" text-anchor="end" font-size="10" fill="#a9bfcc">${t}</text>`;
   mo.forEach((x, i) => { const x0 = l + i * bw + bw * .14, sw = bw * .34;
@@ -11199,26 +11202,48 @@ function bsStockHtml(e) {
     svg += `<rect x="${x0 + sw + 2}" y="${Y(x.fcst)}" width="${sw}" height="${Y(0) - Y(x.fcst)}" rx="3" fill="${i < 3 ? '#4fc3f7' : '#4fc3f799'}"><title>${ml(x.k)} forecast: ${f1(x.fcst)} kt</title></rect>`;
     svg += `<text x="${l + i * bw + bw / 2}" y="${Hh - 8}" text-anchor="middle" font-size="11" fill="#cfe0ea">${ml(x.k)}</text>`; });
   svg += `</svg>`;
-  const card = f => `<div style="flex:1 1 260px;padding:12px 14px;border-radius:16px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.06)">
+  const card = (f, i) => `<div style="flex:1 1 280px;padding:12px 14px;border-radius:16px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.06)">
       <div class="sig-sub" style="text-transform:uppercase;letter-spacing:.06em;font-weight:700">${e(f.span)}</div>
       <div style="display:flex;gap:16px;align-items:baseline;margin:6px 0"><b style="font-size:24px">${Math.round(f.fcst)} kt</b><b style="font-size:18px;color:${col(f.chg)}">${sg(f.chg)}</b><span class="sig-sub">vs ${f1(f.ly)} kt a year earlier</span></div>
-      <div class="sig-sub">range ${Math.round(f.lo)}–${Math.round(f.hi)} kt · from the stock above ${f.stock_above} kg gutted: ${Math.round(f.stock_kt)} kt against ${Math.round(f.stock_ly_kt)} a year earlier (${sg(100 * (f.stock_kt / f.stock_ly_kt - 1))})</div>
-      <div class="sig-sub" style="margin-top:4px">tested since 2020: average error ${f.mape} % (repeating last year: ${f.naive_mape} %)${f.mape > f.naive_mape - 3 ? ' — <b style="color:#ffcc80">barely better than last year, read as a direction only</b>' : ''}</div></div>`;
-  const T = SIXS.tests, rows = Object.values(T)[0].rows.filter(r => r.k % 100 === 9), rows2 = Object.values(T)[1].rows.filter(r => r.k % 100 === 9);
-  const tb = `<table class="sig-table" style="margin-top:8px"><tr><th>Made end of</th><th>Oct–Dec: forecast</th><th>actual</th><th>error</th><th>Jan–Mar: forecast</th><th>actual</th><th>error</th></tr>` +
-    rows.map(r => { const q = rows2.find(x => x.k === r.k) || {}; const er = (a, b) => a && b ? sg(100 * (a / b - 1)) : '—';
-      return `<tr><td>${ml(r.k)}</td><td>${f1(r.fcst)}</td><td>${f1(r.actual)}</td><td>${er(r.fcst, r.actual)}</td><td>${f1(q.fcst)}</td><td>${f1(q.actual)}</td><td>${er(q.fcst, q.actual)}</td></tr>`; }).join('') + `</table>`;
+      <div class="sig-sub">range ${Math.round(f.lo)}–${Math.round(f.hi)} kt${f.fcst_if_anomaly_persists ? ` · ${Math.round(f.fcst_if_anomaly_persists)} kt if the current sea-temperature anomaly (${f.temp_anomaly_c > 0 ? '+' : ''}${f.temp_anomaly_c} °C) persists` : ''}</div>
+      <div class="sig-sub" style="margin-top:4px">fish that can reach 6 kg in time: those above ${f.threshold_gutted_kg.map(w => w.toFixed(1)).join(' / ')} kg gutted for the ${i ? '4th / 5th / 6th' : '1st / 2nd / 3rd'} month — ${Math.round(f.basis_kt)} kt of them at sea against ${Math.round(f.basis_ly_kt)} a year earlier (${sg(100 * (f.basis_kt / f.basis_ly_kt - 1))})</div>
+      <div class="sig-sub" style="margin-top:4px">tested since 2020: average error ${f.mape} % (fixed 4 kg threshold ${f.mape_fixed4} %, repeating last year ${f.naive_mape} %)${f.mape > f.naive_mape - 3 ? ' — <b style="color:#ffcc80">barely better than last year at this horizon: a direction, not a figure</b>' : ''}</div></div>`;
+  const T = SIXS.tests, R1 = Object.values(T)[0].rows, R2 = Object.values(T)[1].rows;
+  const er = (a, b) => a && b ? sg(100 * (a / b - 1)) : '—';
+  const tb = rows => `<table class="sig-table" style="margin-top:8px"><tr><th>Made end of</th><th>Oct–Dec: this rule</th><th>fixed 4 kg</th><th>actual</th><th>error</th><th>Jan–Mar: this rule</th><th>fixed 4 kg</th><th>actual</th><th>error</th></tr>` +
+    rows.map(r => { const q = R2.find(x => x.k === r.k) || {};
+      return `<tr><td>${ml(r.k)}</td><td><b>${f1(r.fcst)}</b></td><td>${f1(r.fixed4)}</td><td>${f1(r.actual)}</td><td style="color:${Math.abs(r.fcst / r.actual - 1) > .2 ? '#ff8a65' : '#cfe0ea'}">${er(r.fcst, r.actual)}</td><td><b>${f1(q.fcst)}</b></td><td>${f1(q.fixed4)}</td><td>${f1(q.actual)}</td><td style="color:${q.fcst && Math.abs(q.fcst / q.actual - 1) > .2 ? '#ff8a65' : '#cfe0ea'}">${er(q.fcst, q.actual)}</td></tr>`; }).join('') + `</table>`;
+  // l'hiver 2025-26, mois par mois : ce que la regle disait a chaque registre
+  const W2 = R1.filter(r => r.k >= 202509 && r.k <= 202603);
+  const winter = `<table class="sig-table" style="margin-top:8px"><tr><th>Register of</th><th>Next 3 months: this rule</th><th>fixed 4 kg</th><th>actual</th><th>Months 4–6: this rule</th><th>actual</th></tr>` +
+    W2.map(r => { const q = R2.find(x => x.k === r.k) || {}; return `<tr><td>${ml(r.k)}</td><td><b>${f1(r.fcst)}</b></td><td>${f1(r.fixed4)}</td><td>${f1(r.actual)}</td><td>${f1(q.fcst)}</td><td>${f1(q.actual)}</td></tr>`; }).join('') + `</table>`;
+  // spot : part de 6 kg+ des dernieres semaines contre un an plus tot, et ce que le registre a montre
+  const SP = SIXS.spot || [], RT = SIXS.spot_retro || [];
+  const spotTb = `<table class="sig-table" style="margin-top:8px"><tr><th>Month</th><th>Spot 6 kg+ share</th><th>a year earlier</th><th>Register 6 kg+ share</th><th>a year earlier</th></tr>` +
+    SP.map(s => `<tr><td>${ml(s.k)} (${s.weeks} wk)</td><td><b>${f1(s.spot6)} %</b></td><td>${f1(s.spot6_ly)} %</td><td>${s.register6 === null ? '<i>not out yet</i>' : f1(s.register6) + ' %'}</td><td>${f1(s.register6_ly)} %</td></tr>`).join('') + `</table>`;
+  const retroTb = RT.length ? `<table class="sig-table" style="margin-top:8px"><tr><th>Month</th><th>Spot 6 kg+ share</th><th>a year earlier</th><th>Register 6 kg+ share (3–4 weeks later)</th><th>a year earlier</th></tr>` +
+    RT.map(s => `<tr><td>${ml(s.k)}</td><td><b>${f1(s.spot6)} %</b></td><td>${f1(s.spot6_ly)} %</td><td>${f1(s.register6)} %</td><td>${f1(s.register6_ly)} %</td></tr>`).join('') + `</table>` : '';
   const L = (SIXS.live || []).filter(x => x.forecasts.some(f => f.actual !== undefined));
-  return `<div class="sig-title" style="margin-top:14px">Norway — 6 kg+ in the next six months, from the stock of big fish at sea</div>
-    <div class="sig-sub" style="max-width:900px;line-height:1.5">A deliberately simple rule, refined at each new register: the 6 kg+ harvested in the next three months is the stock of fish above 4 kg gutted in the
-    register (${e(SIXS.meta.register_label)}) times the share of that stock past years turned into 6 kg+ harvest over the same months; months 4–6 use the stock above 3 kg. No scenario, no opinion.
-    In November 2025 this rule gave 60 kt for October–December 2025 (actual 68 kt); our former model said about 38 kt.</div>
+  const OH = SIXS.out_of_history || {}, pr = OH.past_range || {};
+  return `<div class="sig-title" style="margin-top:14px">Norway — 6 kg+ in the next six months, from the fish that can reach 6 kg in time</div>
+    <div class="sig-sub" style="max-width:920px;line-height:1.5">The rule: a fish will be harvested at 6 kg+ in <i>j</i> months if it already weighs enough today to get there at the normal growth of the season (normal degree-days and
+    temperature-corrected growth of the last three years). In summer that threshold is about 3 kg gutted, in winter 5–6 kg. The 6 kg+ harvested over the horizon is the stock of such fish in the register
+    (${e(SIXS.meta.register_label)}) times the share of it past years actually turned into 6 kg+ harvest over the same months. No scenario, no opinion; refined at every register.
+    <b>Why the threshold matters:</b> with a fixed 4 kg threshold, the winter 2025–26 wave was missed by a third; with the seasonal threshold, the register of December 2025 gave 79 kt for January–March 2026 (actual 86) and January gave 80 (actual 81).</div>
+    ${AL}
     <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:10px">${F.map(card).join('')}</div>
     <div style="margin-top:12px">${svg}<div class="sig-sub"><span style="color:#8fa4b0">■</span> same month a year earlier · <span style="color:#4fc3f7">■</span> forecast (lighter: months 4–6, less reliable) · kt gutted, Norway</div></div>
-    <details class="cl-sec" style="margin-top:10px"><summary><span class="cl-st">How good is the rule? Forecasts made each end of September since 2020</span></summary>${tb}
-    <div class="sig-sub" style="margin-top:6px">Each forecast uses only the years known at the time. The actual 6 kg+ harvest is itself estimated from register average weights. The range (lowest–highest past ratio) caught the actual
-    ${Object.values(T)[0].inside_range} % of the time for the next three months — it is a guide, not a confidence interval. Missed most: winter 2025–26, when warm water made fish grow faster than in any past year.
-    Spot-market 6 kg+ shares (Sitagri / Sjømat Norge) exclude Lerøy, SalMar and Nordlaks, three of the largest holders of big fish, so they can diverge from this register-based figure.</div>
+    <details class="cl-sec" style="margin-top:10px"><summary><span class="cl-st">Early warning — the spot market's 6 kg+ share, weekly, 3–4 weeks before the register</span></summary>
+    <div class="sig-sub" style="margin-top:6px;line-height:1.5">The share of 6 kg+ in spot volumes (Sitagri / Sjømat Norge) moves with the register's 6 kg+ share of the same month (correlation 0.83 since 2019) and is known three to four weeks earlier.
+    It excludes Lerøy, SalMar and Nordlaks — three of the largest holders of big fish — so levels differ; the change against a year earlier is what to read. An alert fires above when it moves by 5 points or more.</div>
+    ${spotTb}
+    ${retroTb ? `<div class="sig-sub" style="margin-top:10px"><b>Would it have warned in 2025?</b> In mid-October 2025 the spot share had jumped to 13 % from 2 % a year earlier; the register confirmed it a month later (13 % against 7 %), and the wave followed.</div>${retroTb}` : ''}</details>
+    <details class="cl-sec" style="margin-top:10px"><summary><span class="cl-st">How good is the rule? Forecasts made each end of September since 2020, and the winter 2025–26 month by month</span></summary>${tb(R1.filter(r => r.k % 100 === 9))}
+    <div class="sig-sub" style="margin-top:10px"><b>Winter 2025–26, register by register</b> — what each rule said for the next three months, against what was harvested:</div>${winter}
+    <div class="sig-sub" style="margin-top:6px;line-height:1.5">Each forecast uses only the years known at the time. Average error since 2020: <b>${Object.values(T)[0].mape} %</b> for the next three months (fixed 4 kg threshold ${Object.values(T)[0].mape_fixed4} %, repeating last year ${Object.values(T)[0].naive_mape} %),
+    ${Object.values(T)[1].mape} % for months 4–6 (${Object.values(T)[1].mape_fixed4} % and ${Object.values(T)[1].naive_mape} %). The range (lowest–highest past ratio) caught the actual ${Object.values(T)[0].inside_range} % of the time at three months — a guide, not a confidence interval.
+    What no rule caught: the registers of October and November 2025, when fish grew through the autumn faster than in any past year; from December onward the seasonal threshold had it. The actual 6 kg+ harvest is itself estimated from register average weights.</div>
+    ${OH.harvest_weight_vs_ly ? `<div class="sig-sub" style="margin-top:8px"><b>Out-of-history check (${e(SIXS.meta.register_label)}):</b> harvested fish ${sg(100 * (OH.harvest_weight_vs_ly - 1))} vs a year earlier (seen since 2019: ${sg(100 * (pr.hw_rel[0] - 1))} to ${sg(100 * (pr.hw_rel[1] - 1))}) · sea temperature ${OH.temp_anomaly_c > 0 ? '+' : ''}${OH.temp_anomaly_c} °C vs normal (${pr.t_anom[0].toFixed(1)} to +${pr.t_anom[1].toFixed(1)}) · growth vs seasonal normal ${sg(100 * (OH.tgc_vs_normal - 1))} (${sg(100 * (pr.tgc_rel[0] - 1))} to ${sg(100 * (pr.tgc_rel[1] - 1))}). When one of these leaves its past range, the rule is outside what it was calibrated on.</div>` : ''}
     ${L.length ? `<div class="sig-sub" style="margin-top:6px"><b>Live record</b> (forecasts frozen when made): ${L.map(x => `${ml(x.made_from)} → ${x.forecasts.filter(f => f.actual !== undefined).map(f => `${e(f.span)} ${f1(f.fcst)} vs ${f1(f.actual)} kt`).join(', ')}`).join(' · ')}</div>` : ''}
     <div class="sig-sub" style="margin-top:6px">${e(SIXS.meta.method)}</div></details>`;
 }
