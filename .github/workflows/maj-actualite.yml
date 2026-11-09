@@ -1,10 +1,12 @@
-# Actualite et resultats trimestriels — chaque jour ouvre
+# Actualite et resultats trimestriels — chaque jour, deux fois (matin et debut d'apres-midi, heure de Paris)
 # Titres de presse, evenements de mortalite, sujets de la page d'accueil (Claude), rapports trimestriels publies dans la journee.
 # Les cinq workflows de mise a jour ne tournent jamais en meme temps (groupe maj-donnees) : chacun attend la fin du precedent.
-name: Actualite et resultats trimestriels — chaque jour ouvre
+name: Actualite et resultats trimestriels — chaque jour, matin et apres-midi
 on:
   schedule:
-  - cron: 0 6 * * 1-5
+  # minutes decalees : les taches planifiees a l'heure pile sont souvent retardees ou sautees par GitHub
+  - cron: 41 4 * * *
+  - cron: 11 12 * * *
   workflow_dispatch: {}
 permissions:
   contents: write
