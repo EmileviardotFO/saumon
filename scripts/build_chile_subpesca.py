@@ -391,8 +391,8 @@ def look(aid):
 
 KNOWN = set()
 # themes d'un document : ce qui touche le saumon et sa sante est mis en avant
-THEMES = [('isa', r'\bISA\b|anemia infecciosa|virus ISA'), ('algae', r'FAN\b|floraci[oó]n|algas? nociv|marea roja|microalga'),
-          ('disease', r'sanitari|enfermedad|plaga|piscirickettsi|SRS|caligus|caligidosis|BKD|antimicrob|mortalidad'),
+THEMES = [('isa', r'\bISA\b|anemia infecciosa|virus ISA|PSEVC?-?ISA'), ('algae', r'FAN\b|floraci[oó]n|algas? nociv|marea roja|microalga'),
+          ('disease', r'sanitari|enfermedad|plaga|piscirickettsi|SRS|caligus|caligidosis|BKD|antimicrob|mortalidad|PSEV|vigilancia|bioseguridad'),
           ('emergency', r'emergencia|contingencia|catástrofe|catastrofe'), ('density', r'densidad de cultivo|agrupaci[oó]n de concesiones|ACS|barrio'),
           ('concession', r'concesi[oó]n|relocaliz|caducidad|AAA|acuicultura'), ('report', r'informe|estad[ií]stic|bolet[ií]n|anuario')]
 
@@ -461,7 +461,10 @@ def main():
     for i, v in R.items():
         if i not in DOCS and v.get('title'):
             DOCS[i] = {'id': i, 'title': v['title'][:300], 'date': v.get('date'), 'portal': 615, 'url': f'{BASE}/615/w3-article-{i}.html', 'pdf': f'{BASE}/615/articles-{i}_documento.pdf', 'themes': ['density'], 'aquaculture': True}
-    st['documents'] = sorted(DOCS.values(), key=lambda x: (x.get('date') or '', x['id']), reverse=True)[:1500]
+    # tout ce qui touche l'aquaculture est garde ; les autres textes (peche, quotas...) seulement les 1 500 plus recents
+    L = sorted(DOCS.values(), key=lambda x: (x.get('date') or '', x['id']), reverse=True)
+    autres = [x['id'] for x in L if not x.get('aquaculture')][:1500]
+    st['documents'] = [x for x in L if x.get('aquaculture') or x['id'] in set(autres)]
     # rapports lus a la main quand le lecteur automatique echoue (ils remplacent une entree « unread », jamais une lecture reussie)
     for i, v in RAPPORTS_MANUELS.items():
         if not P.get(i) or P[i].get('unread') or P[i].get('manual'):
