@@ -1,6 +1,6 @@
 {
  "meta": {
-  "built": "2026-11-09T08:05+00:00",
+  "built": "2026-11-09T08:13+00:00",
   "unit": "thousand tonnes gutted (6 kg+ fish)",
   "note": "Supply only. 2026 = harvest to date plus the rest of the year at the same pace; 2027 = our harvest projection times the 6 kg+ share expected, low and high cases in brackets."
  },
@@ -8,17 +8,22 @@
   {
    "id": "NO",
    "name": "Norway",
-   "v2025": 183.5,
-   "v2026": 255.7,
-   "v2027": 307.8,
-   "lo": 260.6,
-   "hi": 332.9,
+   "v2025": 247.2,
+   "v2026": 323.4,
+   "v2027": 389.2,
+   "lo": 324.1,
+   "hi": 421.8,
    "share": [
-    11.9,
-    15.7
+    16.3,
+    20.4
    ],
-   "how": "Harvest (1,537 kt in 2025, 1,630 kt in 2026) × share of 6 kg+ in the harvest from Sjømat Norge's weekly size report (11.9 % in 2025, 15.7 % so far in 2026). 2027: our generations model, 6 kg+ harvested January–September 2027 against the same months of 2026: +20 % central (+2 % if the new generation loses its growth advance, +30 % if it keeps all of it).",
+   "h1": [
+    119.5,
+    165.6
+   ],
+   "how": "6 kg+ harvested month by month from the biomass register (every farm, gutted weight, our size model): 247 kt in 2025, 240 kt from January to September 2026, plus October–December from the generations model. 2027: the model gives January–September 2027 against the same months of 2026: +20 % central, +2 % if the new generation loses its growth advance, +30 % if it keeps all of it; October–December 2027 carried at the same rate. Cross-check: the size split of the Sitagri price index (fresh whole salmon traded on the spot market by the exporters that report to the index, not the whole harvest) shows 6 kg+ at 11.9 % of the volume in 2025 and 15.7 % so far in 2026, the same direction.",
    "known": [
+    "H1 2026: 166 kt of 6 kg+ against 120 kt in H1 2025 (+39 %).",
     "Fish over 5 kg at sea at the end of September: 52 kt gutted against 39 kt a year earlier (+34 %).",
     "The generation being harvested grows 14 % faster per fish and loses 0.85 % of its fish a month (1.43 % a year earlier).",
     "Next generation: 283 M fish at 1.07 kg (289 M at 1.00 kg a year earlier).",
@@ -64,39 +69,58 @@
     "Warm water speeds growth but pushes farmers to harvest early, at smaller sizes, to limit risk.",
     "Companies changing hands (Blumar sold to Agrosuper) may change harvest plans."
    ],
-   "tab": "chile"
+   "tab": "chile",
+   "question": {
+    "q": "Could H1 2027 look like H1 2026 in Chile?",
+    "lines": [
+     "H1 2026 was strong: Atlantic harvest +16.5 % on a year earlier in January–April and +7.9 % in January–June (Subpesca).",
+     "Big fish were plentiful early in 2026: 6 kg+ were 36 % of whole exports in Jan (35 % a year earlier), 39 % of whole exports in Feb (27 % a year earlier), 31 % of whole exports in Mar (26 % a year earlier).",
+     "That came from a record stock at sea in 2025: biomass +12 to +21 % above 2024 month by month (Sernapesca).",
+     "Most fish harvested in H1 2027 went to sea between mid-2025 and early 2026. The pipeline behind them is not bigger: fish in freshwater farms (all salmonids, future smolts) were −4 %, −3 %, −7 % in October–December 2025 against a year earlier (Sernapesca).",
+     "The harvest has already turned down: Aug −6 %, Sep −2 % on a year earlier.",
+     "Health and climate weigh on H1 2027: preventive algae emergency to June 2027 under a record El Niño, sea lice at a high, SRS behind 53 % of infectious deaths; all push farmers to harvest earlier and smaller."
+    ],
+    "verdict": "Unlikely: H1 2027 should bring a flat or lower harvest and fewer 6 kg+ than H1 2026. It would take a mild algae season and fewer early harvests to get close.",
+    "caveat": "Chile publishes no current stock at sea: Sernapesca's monthly biomass comes once a year (2025 figures published in March 2026). Subpesca's stocking resolutions give the number of fish allowed per farm, not the number actually stocked, so they are not used here."
+   }
   },
   {
    "id": "FO",
    "name": "Faroe Islands",
    "v2025": 45.3,
    "v2026": 62.3,
-   "v2027": 53.7,
-   "lo": 36.1,
+   "v2027": 59.9,
+   "lo": 44.5,
    "hi": 71.5,
    "share": [
     39.4,
     45.7
    ],
    "estimated": true,
+   "h1_bakkafrost": [
+    11.4,
+    26.9
+   ],
    "weights": {
     "h1_2025": 5.05,
     "h1_2026": 5.68,
     "q3_2026": 4.97,
     "y2025": 5.26
    },
-   "how": "Harvest (115 kt in 2025, 136 kt in 2026) × share of 6 kg+ estimated from Bakkafrost's average harvest weight (gutted): 5.7 kg in H1 2026 against 5.1 kg in H1 2025, back to 5.0 kg in Q3 2026 (estimated share 39 % in 2025, 46 % in 2026, assuming the usual spread of weights). 2027: flat harvest (Bakkafrost plans as much as in 2026) at the 2025 weight; low case 4.9 kg, high case 5.6 kg.",
+   "how": "Harvest (115 kt in 2025, 136 kt in 2026) × share of 6 kg+ estimated from Bakkafrost's average harvest weight (gutted): 5.7 kg in H1 2026 against 5.1 kg in H1 2025, back to 5.0 kg in Q3 2026 (estimated share 39 % in 2025, 46 % in 2026, assuming the usual spread of weights). 2027: flat harvest (Bakkafrost plans as much as in 2026) with more even harvests through the year: fewer big fish than in H1 2026 and slightly fewer over the year, but still mostly large fish, aimed at the United States and China; we take 5.4 kg on average (low case 5.1 kg, high case 5.6 kg).",
    "known": [
-    "H1 2026 was a big-fish half-year: 5.7 kg on average against 5.1 kg a year earlier; Q3 2026 back to 5.0 kg.",
+    "H1 2026 was a big-fish half-year: 5.7 kg on average against 5.1 kg a year earlier (about 27 kt of 6 kg+ at Bakkafrost against 11 kt, estimated); Q3 2026 back to 5.0 kg.",
+    "Where Faroese whole salmon goes in 2026: United States 19 %, China 15 % of the tonnes (Faroese export statistics).",
     "Bakkafrost Faroes harvest guidance 2026: 97,000 t (raised from 92,000 t in May); smolts put to sea in 2026: 9.5 million in H1, 4.5 million in Q3; average smolt weight 527 g in Q1 2026 (449 g in 2025).",
     "SEB on Q2 2026: heavier fish (5.6 kg vs 5.0 kg) but the premium for larger fish remained limited."
    ],
    "up": [
-    "Larger smolts (527 g in Q1 2026) and good biology let fish reach 6 kg+ again in 2027."
+    "Strategy: keep most of the harvest large for the United States and China (Faroese salmon has entered the US duty-free since August 2026, against about 12 % for Norway and Chile).",
+    "Larger smolts (527 g in Q1 2026) and good biology."
    ],
    "down": [
-    "The H1 2026 bulge came from one strong generation; the fish harvested since July are lighter.",
-    "Bakkafrost may harvest earlier if the premium for big fish stays small."
+    "More even harvests through 2027: fewer 6 kg+ in the first half than in H1 2026.",
+    "The fish harvested since July 2026 are lighter (5.0 kg); a weak premium for big sizes makes earlier harvests tempting."
    ],
    "tab": "faroe",
    "sources": [
@@ -137,11 +161,11 @@
    "Chile",
    "Faroe Islands"
   ],
-  "v2025": 375.2,
-  "v2026": 438.5,
-  "v2027": 479.5,
-  "lo": 361.4,
-  "hi": 555.4
+  "v2025": 438.9,
+  "v2026": 506.2,
+  "v2027": 567.1,
+  "lo": 433.3,
+  "hi": 644.3
  },
- "lead": "6 kg+ salmon from Norway, Chile and the Faroes: about 438 kt in 2026 (+17 % on 2025) and 480 kt in 2027 (+9 %, range 361–555 kt). Norway drives the change; more big fish in Norway; fewer in Faroe Islands, Iceland, Scotland."
+ "lead": "6 kg+ salmon from Norway, Chile and the Faroes: about 506 kt in 2026 (+15 % on 2025) and 567 kt in 2027 (+12 %, range 433–644 kt). Norway drives the change; more big fish in Norway; fewer in Faroe Islands, Iceland, Scotland."
 }

@@ -56,20 +56,36 @@ def main():
     sh = {}
     for r in W:
         if r.get('sh_6plus') is not None: sh.setdefault(r['report_year'], []).append(r['sh_6plus'])
-    s25, s26 = (S.mean(sh[y]) if sh.get(y) else None for y in (2025, 2026))
+    s25i, s26i = (S.mean(sh[y]) if sh.get(y) else None for y in (2025, 2026))
     g = lire('gen_outlook.json'); sc = g.get('scenarios') or {}; st = g.get('state') or {}
-    def ratio(k):
-        m = [x for x in (sc.get(k) or {}).get('months', []) if 202701 <= x['k'] <= 202709]
-        a, b = sum(x['kt6'] for x in m), sum(x['ly6'] for x in m)
-        return a / b if b else None
-    if no and s25 and s26:
-        v25, v26 = no['v2025'] * s25 / 100, no['e2026'] * s26 / 100
-        rc, rl, rh = ratio('central'), ratio('fade'), ratio('fast')
-        out['basins'].append({'id': 'NO', 'name': 'Norway', 'v2025': round(v25, 1), 'v2026': round(v26, 1), 'v2027': round(v26 * rc, 1) if rc else None,
-            'lo': round(v26 * rl, 1) if rl else None, 'hi': round(v26 * rh, 1) if rh else None, 'share': [round(s25, 1), round(s26, 1)],
-            'how': f'Harvest ({no["v2025"]:,.0f} kt in 2025, {no["e2026"]:,.0f} kt in 2026) × share of 6 kg+ in the harvest from Sjømat Norge\'s weekly size report ({s25:.1f} % in 2025, {s26:.1f} % so far in 2026). '
-                   f'2027: our generations model, 6 kg+ harvested January–September 2027 against the same months of 2026: {100 * (rc - 1):+.0f} % central ({100 * (rl - 1):+.0f} % if the new generation loses its growth advance, {100 * (rh - 1):+.0f} % if it keeps all of it).',
-            'known': [f'Fish over 5 kg at sea at the end of September: {st.get("old_b5", 0):.0f} kt gutted against {st.get("old_b5_ly", 0):.0f} kt a year earlier ({100 * (st["old_b5"] / st["old_b5_ly"] - 1):+.0f} %).' if st.get('old_b5_ly') else '',
+    # 6 kg+ recoltes mois par mois (tonnes videes), d'apres le registre de la biomasse (modele des generations) :
+    # realise = valeurs « un an plus tot » des previsions archivees et du modele ; projection = trois scenarios
+    act = {}
+    for v in (lire('big_fish_archive.json') or {}).values():
+        for r in v.get('norway', []):
+            if r.get('ly_t6') is not None: act.setdefault(r['month'] - 100, (r['ly_t6'] / 1000, r['ly_harvest_t'] / 1000))
+    for x in (sc.get('central') or {}).get('months', []): act[x['k'] - 100] = (x['ly6'], x['ly_tot'])
+    def proj(k):
+        M = {x['k']: x for x in (sc.get(k) or {}).get('months', [])}
+        y26 = sum(act[m][0] for m in act if 202601 <= m <= 202612 and m not in M) + sum(M[m]['kt6'] for m in M if 202601 <= m <= 202612)
+        j27 = [M[m] for m in M if 202701 <= m <= 202709]; r = sum(x['kt6'] for x in j27) / sum(x['ly6'] for x in j27)
+        q4 = sum(M[m]['kt6'] for m in M if 202610 <= m <= 202612)
+        return y26, sum(x['kt6'] for x in j27) + q4 * r, r
+    y25 = sum(act[m][0] for m in act if 202501 <= m <= 202512) if all(m in act for m in range(202501, 202513)) else None
+    h25 = sum(act[m][1] for m in act if 202501 <= m <= 202512) if y25 else None
+    if no and y25 and sc.get('central'):
+        y26, c27, rc = proj('central'); _, l27, rl = proj('fade'); _, h27, rh = proj('fast')
+        h26 = sum(act[m][1] for m in act if 202601 <= m <= 202609); j26 = sum(act[m][0] for m in act if 202601 <= m <= 202609)
+        h1_25 = sum(act[m][0] for m in range(202501, 202507)); h1_26 = sum(act[m][0] for m in range(202601, 202607))
+        out['basins'].append({'id': 'NO', 'name': 'Norway', 'v2025': round(y25, 1), 'v2026': round(y26, 1), 'v2027': round(c27, 1), 'lo': round(l27, 1), 'hi': round(h27, 1),
+            'share': [round(100 * y25 / h25, 1), round(100 * j26 / h26, 1)],
+            'h1': [round(h1_25, 1), round(h1_26, 1)],
+            'how': f'6 kg+ harvested month by month from the biomass register (every farm, gutted weight, our size model): {y25:.0f} kt in 2025, {j26:.0f} kt from January to September 2026, '
+                   f'plus October–December from the generations model. 2027: the model gives January–September 2027 against the same months of 2026: {100 * (rc - 1):+.0f} % central, '
+                   f'{100 * (rl - 1):+.0f} % if the new generation loses its growth advance, {100 * (rh - 1):+.0f} % if it keeps all of it; October–December 2027 carried at the same rate. '
+                   f'Cross-check: the size split of the Sitagri price index (fresh whole salmon traded on the spot market by the exporters that report to the index, not the whole harvest) shows 6 kg+ at {s25i:.1f} % of the volume in 2025 and {s26i:.1f} % so far in 2026, the same direction.',
+            'known': [f'H1 2026: {h1_26:.0f} kt of 6 kg+ against {h1_25:.0f} kt in H1 2025 ({100 * (h1_26 / h1_25 - 1):+.0f} %).',
+                      f'Fish over 5 kg at sea at the end of September: {st.get("old_b5", 0):.0f} kt gutted against {st.get("old_b5_ly", 0):.0f} kt a year earlier ({100 * (st["old_b5"] / st["old_b5_ly"] - 1):+.0f} %).' if st.get('old_b5_ly') else '',
                       f'The generation being harvested grows {abs(100 * (st["old_gr"] / st["old_gr_ly"] - 1)):.0f} % {"faster" if st["old_gr"] >= st["old_gr_ly"] else "slower"} per fish and loses {st["old_mort"]:.2f} % of its fish a month ({st["old_mort_ly"]:.2f} % a year earlier).' if st.get('old_gr_ly') else '',
                       f'Next generation: {st.get("new_fish", 0):.0f} M fish at {st.get("new_w", 0):.2f} kg ({st.get("new_fish_ly", 0):.0f} M at {st.get("new_w_ly", 0):.2f} kg a year earlier).' if st.get('new_fish_ly') else '',
                       'October 2026: 14.5 % of the harvest in 6 kg+ (13.1 % a year earlier), from harvest-boat visits.'],
@@ -106,22 +122,30 @@ def main():
                       'Sea lice at a high (65 farms above the threshold in Q3 2026); SRS causes 53 % of infectious mortality (2025) and forced early harvests at Camanchaca in Q1 2026.', 'FOB price of 6 kg+ up 16 % in Q3 2026 as volumes fell.'],
             'up': ['A mild algae season and calmer El Niño let farmers grow fish to full size.', 'Fewer early harvests for lice and SRS.'],
             'down': ['A bloom like 2016 or 2021 in the inner seas (Los Lagos, Aysén) or new losses in Magallanes.', 'Warm water speeds growth but pushes farmers to harvest early, at smaller sizes, to limit risk.', 'Companies changing hands (Blumar sold to Agrosuper) may change harvest plans.'],
-            'tab': 'chile'})
+            'tab': 'chile', 'question': chile_h1(g6)})
     # ---------------- Feroe ----------------
     fo = own.get('FO') or {}; MAN = lire('big_six_manual.json'); FB = (MAN.get('faroe_bakkafrost') or {}).get('rows') or []
     def wavg(pref, months=None):
         R = [r for r in FB if r[0].startswith(pref) and (months is None or r[0][5:] in months)]
         t = sum(r[1] for r in R); return (sum(r[1] * r[2] for r in R) / t if t else None), t
+    nt = lire('national_trade.json').get('rows') or []; tt = sum(r[4] for r in nt if r[1] == 'FO' and r[0] >= 202601 and r[3] in (0, 1)) or 1
+    US_FO = 100 * sum(r[4] for r in nt if r[1] == 'FO' and r[0] >= 202601 and r[3] in (0, 1) and r[2] == 'US') / tt
+    CN_FO = 100 * sum(r[4] for r in nt if r[1] == 'FO' and r[0] >= 202601 and r[3] in (0, 1) and r[2] in ('CN', 'HK')) / tt
     if fo and FB:
         w25, _ = wavg('2025'); w26, _ = wavg('2026'); wh1_25, _ = wavg('2025', ['01', '02', '03', 'Q2']); wh1_26, _ = wavg('2026', ['01', '02', '03', '04', '05', '06']); wq3, _ = wavg('2026', ['07', '08', '09'])
         p25, p26 = part6(w25), part6(w26)
+        W27 = 5.4      # recoltes plus regulieres en 2027 : moins lourd qu'au S1 2026 (5,7 kg), plus lourd qu'au T3 2026 (5,0 kg)
+        h1_25 = sum(r[1] * part6(r[2]) / 100 for r in FB if r[0] < '2025-07' or r[0] == '2025-Q2'); h1_26 = sum(r[1] * part6(r[2]) / 100 for r in FB if '2026' <= r[0] < '2026-07')
         out['basins'].append({'id': 'FO', 'name': 'Faroe Islands', 'v2025': round(fo['v2025'] * p25 / 100, 1), 'v2026': round(fo['e2026'] * p26 / 100, 1),
-            'v2027': round(fo['c2027'] * part6(w25) / 100, 1), 'lo': round(fo['c2027'] * (1 + fo['lo'] / 100) * part6(4.9) / 100, 1), 'hi': round(fo['c2027'] * (1 + fo['hi'] / 100) * part6(5.6) / 100, 1),
-            'share': [round(p25, 1), round(p26, 1)], 'estimated': True, 'weights': {'h1_2025': round(wh1_25, 2), 'h1_2026': round(wh1_26, 2), 'q3_2026': round(wq3, 2), 'y2025': round(w25, 2)},
+            'v2027': round(fo['c2027'] * part6(W27) / 100, 1), 'lo': round(fo['c2027'] * (1 + fo['lo'] / 100) * part6(5.1) / 100, 1), 'hi': round(fo['c2027'] * (1 + fo['hi'] / 100) * part6(5.6) / 100, 1),
+            'share': [round(p25, 1), round(p26, 1)], 'estimated': True, 'h1_bakkafrost': [round(h1_25, 1), round(h1_26, 1)], 'weights': {'h1_2025': round(wh1_25, 2), 'h1_2026': round(wh1_26, 2), 'q3_2026': round(wq3, 2), 'y2025': round(w25, 2)},
             'how': f'Harvest ({fo["v2025"]:.0f} kt in 2025, {fo["e2026"]:.0f} kt in 2026) × share of 6 kg+ estimated from Bakkafrost\'s average harvest weight (gutted): {wh1_26:.1f} kg in H1 2026 against {wh1_25:.1f} kg in H1 2025, back to {wq3:.1f} kg in Q3 2026 '
-                   f'(estimated share {p25:.0f} % in 2025, {p26:.0f} % in 2026, assuming the usual spread of weights). 2027: flat harvest (Bakkafrost plans as much as in 2026) at the 2025 weight; low case 4.9 kg, high case 5.6 kg.',
-            'known': [f'H1 2026 was a big-fish half-year: {wh1_26:.1f} kg on average against {wh1_25:.1f} kg a year earlier; Q3 2026 back to {wq3:.1f} kg.', MAN['faroe_bakkafrost'].get('guidance', ''), MAN['faroe_bakkafrost'].get('premium_note', '')],
-            'up': ['Larger smolts (527 g in Q1 2026) and good biology let fish reach 6 kg+ again in 2027.'], 'down': ['The H1 2026 bulge came from one strong generation; the fish harvested since July are lighter.', 'Bakkafrost may harvest earlier if the premium for big fish stays small.'],
+                   f'(estimated share {p25:.0f} % in 2025, {p26:.0f} % in 2026, assuming the usual spread of weights). 2027: flat harvest (Bakkafrost plans as much as in 2026) with more even harvests through the year: fewer big fish than in H1 2026 and slightly fewer over the year, '
+                   f'but still mostly large fish, aimed at the United States and China; we take {W27} kg on average (low case 5.1 kg, high case 5.6 kg).',
+            'known': [f'H1 2026 was a big-fish half-year: {wh1_26:.1f} kg on average against {wh1_25:.1f} kg a year earlier (about {h1_26:.0f} kt of 6 kg+ at Bakkafrost against {h1_25:.0f} kt, estimated); Q3 2026 back to {wq3:.1f} kg.',
+                      f'Where Faroese whole salmon goes in 2026: United States {US_FO:.0f} %, China {CN_FO:.0f} % of the tonnes (Faroese export statistics).', MAN['faroe_bakkafrost'].get('guidance', ''), MAN['faroe_bakkafrost'].get('premium_note', '')],
+            'up': ['Strategy: keep most of the harvest large for the United States and China (Faroese salmon has entered the US duty-free since August 2026, against about 12 % for Norway and Chile).', 'Larger smolts (527 g in Q1 2026) and good biology.'],
+            'down': ['More even harvests through 2027: fewer 6 kg+ in the first half than in H1 2026.', 'The fish harvested since July 2026 are lighter (5.0 kg); a weak premium for big sizes makes earlier harvests tempting.'],
             'tab': 'faroe', 'sources': sorted({r[3] for r in FB if r[3].startswith('http')})})
     # ---------------- Islande, Ecosse (sans chiffre de 6 kg+) ----------------
     io_ = lire('iceland_outlook.json').get('structure') or {}
@@ -146,6 +170,47 @@ def main():
     io.open(D('big_six.json'), 'w', encoding='utf-8').write(json.dumps(out, ensure_ascii=False, indent=1))
     print(out['lead'])
     for b in Q: print(f'  {b["id"]} {b["v2025"]} {b["v2026"]} {b["v2027"]} ({b["lo"]}–{b["hi"]}) part {b["share"]}')
+
+
+def chile_h1(g6):
+    """Le premier semestre 2026 (recolte en hausse, beaucoup de gros poissons au T1) peut-il se repeter au S1 2027 ?"""
+    bio = (lire('chili.json').get('biologie') or {}); san = bio.get('sanitaire') or {}
+    B = san.get('biomasse_mer_t') or {}; FW = san.get('poissons_eau_douce_m') or {}
+    R = sorted([r for r in (lire('chile_subpesca.json').get('reports') or []) if r.get('k') and (r.get('species') or {}).get('salar')], key=lambda r: r['k'])
+    by = {r['k']: r['species']['salar'] for r in R}
+    L = []
+    if 202604 in by and 202606 in by:
+        L.append(f'H1 2026 was strong: Atlantic harvest {by[202604]["var_pct"]:+.1f} % on a year earlier in January–April and {by[202606]["var_pct"]:+.1f} % in January–June (Subpesca).')
+    q1 = [(m, g6([f'2026{m:02d}']), g6([f'2025{m:02d}'])) for m in (1, 2, 3)]
+    if all(a and b for _, a, b in q1):
+        L.append('Big fish were plentiful early in 2026: 6 kg+ were ' + ', '.join(f'{a:.0f} % of whole exports in {["Jan", "Feb", "Mar"][m - 1]} ({b:.0f} % a year earlier)' for m, a, b in q1) + '.')
+    if B.get('2024') and B.get('2025'):
+        r = [100 * (a / b - 1) for a, b in zip(B['2025'], B['2024'])]
+        L.append(f'That came from a record stock at sea in 2025: biomass {min(r):+.0f} to {max(r):+.0f} % above 2024 month by month (Sernapesca).')
+    if FW.get('2024') and FW.get('2025'):
+        r = [100 * (a / b - 1) for a, b in zip(FW['2025'][9:], FW['2024'][9:])]
+        L.append(f'Most fish harvested in H1 2027 went to sea between mid-2025 and early 2026. The pipeline behind them is not bigger: fish in freshwater farms (all salmonids, future smolts) were {", ".join(sg_(v) for v in r)} in October–December 2025 against a year earlier (Sernapesca).')
+    if R:
+        mm = [(r['k'], r['species']['salar']['cum_kt']) for r in R]
+        d = {k: v for k, v in mm}
+        last = [k for k in (202608, 202609) if k in d and k - 1 in d]
+        if last: L.append('The harvest has already turned down: ' + ', '.join(f'{["Aug", "Sep"][k % 100 - 8]} {sg_(pct_m(by, k))}' for k in last if pct_m(by, k) is not None) + ' on a year earlier.')
+    L.append('Health and climate weigh on H1 2027: preventive algae emergency to June 2027 under a record El Niño, sea lice at a high, SRS behind 53 % of infectious deaths; all push farmers to harvest earlier and smaller.')
+    verdict = 'Unlikely: H1 2027 should bring a flat or lower harvest and fewer 6 kg+ than H1 2026. It would take a mild algae season and fewer early harvests to get close.'
+    return {'q': 'Could H1 2027 look like H1 2026 in Chile?', 'lines': L, 'verdict': verdict,
+            'caveat': 'Chile publishes no current stock at sea: Sernapesca\'s monthly biomass comes once a year (2025 figures published in March 2026). Subpesca\'s stocking resolutions give the number of fish allowed per farm, not the number actually stocked, so they are not used here.'}
+
+
+def pct_m(by, k):
+    """variation d'un mois seul sur un an, a partir de deux cumuls consecutifs (Subpesca donne le cumul et sa variation)."""
+    a, b = by.get(k), by.get(k - 1)
+    if not a or not b: return None
+    m = a['cum_kt'] - b['cum_kt']; ly = a['cum_kt'] / (1 + a['var_pct'] / 100) - b['cum_kt'] / (1 + b['var_pct'] / 100)
+    return 100 * (m / ly - 1) if ly else None
+
+
+def sg_(v):
+    return ('+' if v >= 0 else '−') + f'{abs(v):.0f} %'
 
 
 if __name__ == '__main__':
