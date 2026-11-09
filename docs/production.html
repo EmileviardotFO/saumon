@@ -534,7 +534,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
       <button data-v="global">National view (Norway)</button>
       <button data-v="multi">Multi-year comparison</button>
       <button data-v="outlook">Supply outlook</button>
-      <button data-v="generations">Generations</button>
+      <button data-v="generations">Generations comparison</button>
       <button data-v="po">By zone (PO)</button>
       <button data-v="health">Fish health</button>
       <button data-v="wellboats">Wellboats</button>
@@ -14835,7 +14835,7 @@ const SN_BURGER = window.SN_BURGER, SN_CLOSE = window.SN_CLOSE;
     SVG('<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.3"/>'),                      // prix : etiquette
     SVG('<path d="M3 17h18l-2.5 4h-13z"/><path d="M5 17V9h14v8M9 9V5h6v4"/>')];                                                 // marches : navire
   const CATS = [['Front page', ['news', 'supply', 'bigsix', 'disease', 'summary']],
-    ['Norway — production', ['global', 'po', 'multi', 'outlook', 'generations', 'genmap', 'genyoy', 'timeatsea', 'health', 'wellboats', 'register']],
+    ['Norway — production', ['global', 'po', 'multi', 'outlook', 'generations', 'timeatsea', 'health', 'wellboats', 'register']],
     ['Other basins', ['seatemp', 'scotland', 'faroe', 'iceland', 'chile', 'canada', 'australia']],
     ['Prices & products', ['prices', 'calibre', 'products', 'coprod', 'feed']],
     ['Markets & trade', ['markets', 'producers', 'euflows', 'poland', 'usa', 'usaprices', 'china', 'world']]];
@@ -14876,7 +14876,8 @@ const SN_BURGER = window.SN_BURGER, SN_CLOSE = window.SN_CLOSE;
   nav.querySelectorAll('.sn-cat').forEach(c => c.onclick = () => { const g = c.parentNode, i = g.dataset.g; g.classList.toggle('closed');
     closed[i] = g.classList.contains('closed'); c.querySelector('span:last-child').textContent = closed[i] ? '▸' : '▾'; c.setAttribute('aria-expanded', !closed[i]);
     try { localStorage.setItem('snClosed', JSON.stringify(closed)); } catch (e) { /* pas de stockage */ } });
-  const mark = v => nav.querySelectorAll('.sn-item').forEach(x => x.classList.toggle('on', x.dataset.v === v));
+  const GRP = { genmap: 'generations', genyoy: 'generations' };
+  const mark = v => nav.querySelectorAll('.sn-item').forEach(x => x.classList.toggle('on', x.dataset.v === (GRP[v] || v)));
   let curV = location.hash.slice(1);
   const go = (v, push) => { const b = btn(v); if (!b) return; b.click(); mark(v); close(); window.scrollTo(0, 0); curV = v;
     if (push && location.hash.slice(1) !== v) {
@@ -14892,6 +14893,22 @@ const SN_BURGER = window.SN_BURGER, SN_CLOSE = window.SN_CLOSE;
   let n = 0; const t = setInterval(() => { n++; if (typeof DATA_RAW !== 'undefined' && DATA_RAW || n > 60) { clearInterval(t);
     const v = location.hash.slice(1); if (btn(v) && v !== 'news') go(v, false); else mark('news');
     const sub = document.getElementById('snSub'); if (sub && typeof DATA_DATE !== 'undefined' && DATA_DATE) sub.textContent = 'data of ' + DATA_DATE; } }, 300);
+})();
+</script>
+<script>
+// « Generations comparison » : une seule entree du menu, trois vues (generations, carte, contre l'an dernier) choisies en tete
+(function () {
+  const V = [['generations', 'Generations'], ['genmap', 'Generations map'], ['genyoy', 'vs last year']];
+  const css = document.createElement('style');
+  css.textContent = `.gc-seg{display:inline-flex;gap:2px;padding:4px;border-radius:999px;margin:2px 0 12px;background:linear-gradient(150deg,rgba(255,255,255,.2),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.28);box-shadow:inset 0 1px 0 rgba(255,255,255,.45)}
+    .gc-seg button{border:0;background:none;color:#e6f0f6;font:inherit;font-size:13.5px;padding:7px 15px;border-radius:999px;cursor:pointer}.gc-seg button.on{background:linear-gradient(180deg,#fff,#dcecf5);color:#0d2a40;font-weight:700}
+    .gc-ttl{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#cfe0ea;font-weight:700;margin-bottom:4px}`;
+  document.head.appendChild(css);
+  V.forEach(([v]) => { const p = document.getElementById(v + 'View'); if (!p) return;
+    const bar = document.createElement('div');
+    bar.innerHTML = `<div class="gc-ttl">Generations comparison</div><div class="gc-seg" role="tablist">${V.map(([k, n]) => `<button type="button" data-gc="${k}" class="${k === v ? 'on' : ''}">${n}</button>`).join('')}</div>`;
+    p.prepend(bar);
+    bar.querySelectorAll('[data-gc]').forEach(b => b.onclick = () => { const t = document.querySelector(`#viewToggle button[data-v="${b.dataset.gc}"]`); if (t) { t.click(); window.scrollTo(0, 0); } }); });
 })();
 </script>
 <script>
