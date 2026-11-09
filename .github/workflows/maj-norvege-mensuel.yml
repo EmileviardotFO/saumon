@@ -69,6 +69,10 @@ jobs:
       continue-on-error: true
       timeout-minutes: 5
       run: python3 scripts/build_gen_outlook.py
+    - name: Norvege - 6 kg+ des six prochains mois a partir du stock de gros poissons (prevision figee a chaque registre)
+      continue-on-error: true
+      timeout-minutes: 5
+      run: python3 scripts/build_six_stock.py
     - name: Bulletin du registre de la biomasse (page News, 7 jours apres chaque nouveau mois)
       id: brief
       continue-on-error: true
