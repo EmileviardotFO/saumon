@@ -12953,6 +12953,44 @@ function gyGrowth(zones, g, k) {
   const tgc = T && T > 1 && w0 + gr > 0 ? (Math.cbrt((w0 + gr) * 1000) - Math.cbrt(w0 * 1000)) * 1000 / (T * gyDays(k)) : null;
   return { w0, gr, T, tgc, mort: 100 * Dn / N0, age: N1 ? A / N1 : null, N0 };
 }
+
+// TGC moyen par stade en mer (moyenne ponderee par les degres-jours, a partir de 0,3 kg) : compare les generations au meme stade
+const GY_STAGES = [[0, 6, '0–6 months'], [6, 12, '6–12'], [12, 18, '12–18'], [18, 40, '18 +']];
+function gyStageTgc(Z, g, upto) {
+  const acc = GY_STAGES.map(() => [0, 0]), all = [0, 0], first = gySh(g * 100 + 1, -3);
+  for (let m = first; m <= upto; m = gySh(m, 1)) { const x = gyGrowth(Z, g, m); if (!x || !(x.w0 >= 0.3) || x.tgc == null || !isFinite(x.tgc) || !x.T) continue;
+    const dd = x.T * gyDays(m), age = x.age || 0, i = GY_STAGES.findIndex(([a, b]) => age >= a && age < b);
+    if (i >= 0) { acc[i][0] += x.tgc * dd; acc[i][1] += dd; } all[0] += x.tgc * dd; all[1] += dd; }
+  return { st: acc.map(([a, b]) => b > 200 ? a / b : null), all: all[1] > 200 ? all[0] / all[1] : null };
+}
+// TGC moyen sur une fenetre de mois (ponderee par les degres-jours)
+function gyTgcWin(Z, g, from, to) { let a = 0, b = 0;
+  for (let m = from; m <= to; m = gySh(m, 1)) { const x = gyGrowth(Z, g, m); if (!x || !(x.w0 >= 0.3) || x.tgc == null || !isFinite(x.tgc) || !x.T) continue; const dd = x.T * gyDays(m); a += x.tgc * dd; b += dd; }
+  return b > 100 ? a / b : null; }
+function gyTgcCell(a, b) { if (a == null) return '<td class="gm-c">—</td>'; const pc = b ? 100 * (a / b - 1) : null, mag = pc === null ? 0 : Math.min(1, Math.abs(pc) / 25);
+  const bg = pc === null ? 'transparent' : pc >= 0 ? `rgba(129,199,132,${(0.12 + 0.45 * mag).toFixed(2)})` : `rgba(255,138,101,${(0.12 + 0.45 * mag).toFixed(2)})`;
+  return `<td class="gm-c" style="background:${bg}"><b>${a.toFixed(2)}</b><span>${b != null ? b.toFixed(2) + (pc !== null ? ` · ${pc >= 0 ? '+' : '−'}${Math.abs(pc).toFixed(0)}%` : '') : ''}</span></td>`; }
+function gyTgcCompareHtml(Z, k, H, Nn) {
+  // 1. toutes les generations au meme stade : chaque colonne = un stade en mer ; couleur = ecart a la moyenne des generations sur ce stade
+  const GS = [H - 3, H - 2, H - 1, H, Nn].filter(g => g >= 2018), R = GS.map(g => ({ g, ...gyStageTgc(Z, g, k) }));
+  const avg = GY_STAGES.map((_, i) => { const v = R.filter(r => r.g < H && r.st[i] != null).map(r => r.st[i]); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; });
+  const t1 = `<div class="gm-card" style="border-color:#b39ddb"><div class="gm-h"><span style="background:#b39ddb"></span><b>Average TGC by stage at sea</b> <i>every generation at the same stage — colour against the average of the older generations (small number)</i></div>` +
+    `<div style="overflow-x:auto"><table class="gm-grid"><thead><tr><th></th>${GY_STAGES.map(s => `<th>${s[2]}<small>months at sea</small></th>`).join('')}</tr></thead><tbody>` +
+    R.map(r => `<tr><th>G${r.g}${r.g === H ? ' <small>harvested now</small>' : r.g === Nn ? ' <small>next</small>' : ''}</th>${r.st.map((v, i) => gyTgcCell(v, r.g < H ? null : avg[i])).join('')}</tr>`).join('') +
+    `<tr><th>Average G${GS[0]}–G${H - 1}</th>${avg.map(v => `<td class="gm-c"><b>${v != null ? v.toFixed(2) : '—'}</b></td>`).join('')}</tr></tbody></table></div>` +
+    `<div class="sig-sub">TGC averaged over each stage, weighted by degree-days (warm months count more), from 0.3 kg. A stage still running is the average so far. Lets you compare G${H} and G${Nn} with the generations before them at exactly the same age, whatever the calendar.</div></div>`;
+  // 2. par zone : TGC des 3 derniers mois et depuis la mise a l'eau, contre la generation precedente au meme stade
+  const k3 = gySh(k, -2), k1 = gySh(k, -12), z = po => { const a = gyTgcWin([po], H, k3, k), b = gyTgcWin([po], H - 1, gySh(k3, -12), k1), c = gyTgcWin([po], Nn, k3, k), d = gyTgcWin([po], Nn - 1, gySh(k3, -12), k1);
+      const e = gyStageTgc([po], H, k).all, f = gyStageTgc([po], H - 1, k1).all, gg = gyStageTgc([po], Nn, k).all, h = gyStageTgc([po], Nn - 1, k1).all; return [a, b, e, f, c, d, gg, h]; };
+  const ZS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
+  const t2 = `<div class="gm-card" style="border-color:#4fc3f7"><div class="gm-h"><span style="background:#4fc3f7"></span><b>TGC by zone</b> <i>this year against the previous generation at the same stage (small number)</i></div>` +
+    `<div style="overflow-x:auto"><table class="gm-grid"><thead><tr><th></th><th>G${H}<small>last 3 months</small></th><th>G${H}<small>since 0.3 kg</small></th><th>G${Nn}<small>last 3 months</small></th><th>G${Nn}<small>since 0.3 kg</small></th></tr></thead><tbody>` +
+    ZS.map(po => { const v = z(po); return `<tr><th>Zone ${po}</th>${gyTgcCell(v[0], v[1])}${gyTgcCell(v[2], v[3])}${gyTgcCell(v[4], v[5])}${gyTgcCell(v[6], v[7])}</tr>`; }).join('') +
+    (() => { const a = gyTgcWin(Z, H, k3, k), b = gyTgcWin(Z, H - 1, gySh(k3, -12), k1), c = gyTgcWin(Z, Nn, k3, k), d = gyTgcWin(Z, Nn - 1, gySh(k3, -12), k1);
+      return `<tr><th>Selected area</th>${gyTgcCell(a, b)}${gyTgcCell(gyStageTgc(Z, H, k).all, gyStageTgc(Z, H - 1, k1).all)}${gyTgcCell(c, d)}${gyTgcCell(gyStageTgc(Z, Nn, k).all, gyStageTgc(Z, Nn - 1, k1).all)}</tr>`; })() +
+    `</tbody></table></div><div class="sig-sub">Green = faster growth for the same warmth than the previous generation at the same point of its life, orange = slower. "Since 0.3 kg" = the whole time at sea so far.</div></div>`;
+  return t1 + t2;
+}
 function gyGrowthRender(Z, k, H, Nn) {
   const $g = id => document.getElementById(id), last = gyPrep().months.slice(-1)[0];
   const f2 = v => v === null || v === undefined || !isFinite(v) ? '—' : v.toFixed(2), f1 = v => v === null || v === undefined || !isFinite(v) ? '—' : v.toFixed(1);
@@ -12981,6 +13019,7 @@ function gyGrowthRender(Z, k, H, Nn) {
       .gm-grid{border-collapse:separate;border-spacing:3px;font-size:12px;min-width:100%}.gm-grid th{font-weight:600;color:#cfe0ea;text-align:left;white-space:nowrap;padding:2px 6px;background:none!important;text-transform:none!important;letter-spacing:0!important}.gm-grid thead th{text-align:center;font-size:11.5px}
       .gm-grid th small{display:block;font-weight:400;color:var(--muted);font-size:10.5px}.gm-grid tbody th small{display:inline}
       .gm-c{text-align:center;border-radius:8px;padding:4px 6px;min-width:62px}.gm-c b{display:block;font-size:13px}.gm-c span{display:block;font-size:10.5px;color:#cfe0ea}</style>` +
+    gyTgcCompareHtml(Z, k, H, Nn) +
     grid(R.H.slice().reverse(), H, 'the generation being harvested', '#4fc3f7') + grid(R.N.slice().reverse(), Nn, 'the next generation', '#ffb74d') +
     `<div class="sig-sub">Big number = this year; small = the same month a year earlier, then the change. Green = better for supply (faster growth, fewer deaths), orange = worse; the stronger the colour, the bigger the gap. Weight and temperature are not coloured. Newest month on the left.</div>`;
   $g('gyGrowTab').innerHTML = `<thead><tr><th class="name">Month</th><th>Generation<br>(now vs then)</th><th>Months at sea<br>now / then</th><th>Weight at start<br>of month (kg)</th>` +
