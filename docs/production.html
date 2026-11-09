@@ -527,7 +527,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
     <div class="vt-row"><span class="vt-lab">News<small>weekly digest</small></span><div class="vt-btns">
       <button data-v="news" class="active">This week</button>
       <button data-v="supply">Global supply 2027</button>
-      <button data-v="disease">Disease overview</button>
+      <button data-v="disease">Disease — per country</button>
     </div></div>
     <div class="vt-row"><span class="vt-lab">Norway<small>production &amp; stock</small></span><div class="vt-btns">
       <button data-v="summary">Summary</button>
@@ -541,6 +541,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
       <button data-v="register">Farm register</button>
       <button data-v="timeatsea">Time at sea</button>
       <button data-v="genmap">Generations map</button>
+      <button data-v="diseased">Disease — per disease</button>
       <button data-v="bigsix">Big fish 6+ outlook</button>
       <button data-v="genyoy">Generations vs last year</button>
     </div></div>
@@ -3915,7 +3916,7 @@ function stHiHtml() {
   const C = { 0: '#a9bfcc', 1: '#81c784', 2: '#ffd54f', 3: '#ff8a65' }, ev = (H.events || []).filter(x => x.date && x.level >= 2).slice(0, 3);
   return `<div style="margin-top:12px;font-weight:700;font-size:12.5px">Norway algae watch — Institute of Marine Research, week ${W.week}: <span style="color:${C[W.level]}">risk ${e(W.level_en)}</span></div>` +
     `<div class="sig-sub" style="margin-top:3px;line-height:1.5">${e(W.summary_en)} ${ev.length ? `Last bloom: ${ev.map(x => `${e(x.date)} ${e(x.level_en)} (${Object.keys(x.po || {}).map(k => 'PO' + k).join(', ')}${x.species && x.species.length ? ', ' + e(x.species.join(', ')) : ''})`).join('; ')}. ` : ''}` +
-    `<a href="${e(W.url)}" target="_blank" rel="noopener" style="color:#4fc3f7">HI status (Norwegian)</a> · alerts and Chile's Sernapesca releases in the Disease overview tab.</div>`;
+    `<a href="${e(W.url)}" target="_blank" rel="noopener" style="color:#4fc3f7">HI status (Norwegian)</a> · alerts and Chile's Sernapesca releases in the Disease — per country tab.</div>`;
 }
 function stChlTab() {
   const C = STV.chl; if (!C || !(C.points || []).length) return '';
@@ -6306,7 +6307,7 @@ function renderDisease() {
   const root = document.getElementById('dzRoot'); if (!root) return;
   if (!DZ) { if (!DZ_LOADING) { DZ_LOADING = true; const g = n => fetch(DATA_URL.replace('data.json', n), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
       Promise.all(['disease_manual.json', 'scotland.json', 'iceland_mast.json', 'canada_extra.json', 'australia.json', 'faroe.json', 'chili.json', 'events.json', 'canada_atl.json', 'own_supply.json', 'chile_caligus.json', 'chile_subpesca.json', 'sea_temp.json', 'disease_knowledge.json', 'disease_research.json', 'algae_watch.json', 'bw_disease_sites.json'].map(g))
-        .then(([m, sc, is, ca, au, fo, cl, ev, cat, sup, cad, sub, st, kn, rs, aw, bwd]) => { DZ = { m: m || {}, sc, is, ca, au, fo, cl, ev, cat, sup, cad, sub, st, kn, rs, aw, bwd }; DZ_LOADING = false; if (currentView === 'disease') renderDisease(); }); }
+        .then(([m, sc, is, ca, au, fo, cl, ev, cat, sup, cad, sub, st, kn, rs, aw, bwd]) => { DZ = { m: m || {}, sc, is, ca, au, fo, cl, ev, cat, sup, cad, sub, st, kn, rs, aw, bwd }; DZ_LOADING = false; if (currentView === 'disease' || currentView === 'diseased') renderDisease(); }); }
     root.innerHTML = 'Loading…'; return; }
   if (!DZ_B) { try { DZ_B = localStorage.getItem('dzBasin') || 'NO'; } catch (_) { DZ_B = 'NO'; } }
   const M = DZ.m, e = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), f0 = v => v === null || v === undefined || !isFinite(v) ? '—' : Math.round(v).toLocaleString('en-US');
@@ -6530,11 +6531,14 @@ function renderDisease() {
         `<div style="display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 6px">${P.map(p => `<button type="button" class="dz-sub" style="${p === pick ? 'background:rgba(255,255,255,.28)' : ''}" onclick="window.ST_PT='${p.id}';renderDisease()">${e(p.label)}</button>`).join('')}</div>` +
         `<div style="font-size:13px;font-weight:600">${e(pick.label)} — monthly sea temperature, ${ys.join(', ')}</div>` + chart) + `</div>`;
     } }
-  h += dzLiveHtml(h2, box) + dzDiseaseHtml(h2, box);
+  h += dzLiveHtml(h2, box);
   h += `<div style="margin-top:28px;padding-top:18px;border-top:1px solid var(--border)">` + h2('G · Source library — every document this tab is built on') +
     `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">${[['all', 'All basins'], ...ORDER].map(([b, n]) => `<button type="button" class="dz-tab${DZ_SF.b === b ? ' on' : ''}" data-sfb="${b}">${n}</button>`).join('')}` +
     `<span style="width:12px"></span>${[['all', 'All types'], ['rep', 'Official reports'], ['data', 'Data'], ['press', 'Press'], ['co', 'Company']].map(([t, n]) => `<button type="button" class="dz-tab${DZ_SF.t === t ? ' on' : ''}" data-sft="${t}">${n}</button>`).join('')}` +
     `<button type="button" class="dz-tab" id="dzCsv">Download the list (CSV)</button></div>` + box(srcRows(FL)) + `</div>`;
+  if (currentView === 'diseased') h = `<div class="sig-title">Disease — per disease</div><div class="sig-sub" style="margin-bottom:8px">What each disease does to supply — mortality, growth, cost, quality — with counts by basin, the evidence card, a study library where we have built one, and the latest open-access papers and press. Country by country: see Disease — per country.</div>` +
+    dzDiseaseHtml(h2, box).replace(h2('F · Disease by disease — counts, what we know, and what research and the press say'), '');
+  else h = h.replace("G · Source library", "F · Source library");
   root.innerHTML = `<style>.dz-chip{font-size:12px;padding:4px 10px;border-radius:999px;background:#13283a;color:#a9bfcc;border:1px solid var(--border)}
     .dz-card{font:inherit;color:inherit;text-align:left;cursor:pointer;padding:14px;border-radius:12px;background:#102231;border:1px solid var(--border);display:flex;flex-direction:column}
     .dz-card:hover,.dz-card.on{border-color:#4fc3f7}
@@ -7988,7 +7992,7 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     document.getElementById('upView').style.display = currentView === 'usaprices' ? 'block' : 'none';
     document.getElementById('newsView').style.display = currentView === 'news' ? 'block' : 'none';
     document.getElementById('supplyView').style.display = currentView === 'supply' ? 'block' : 'none';
-    document.getElementById('diseaseView').style.display = currentView === 'disease' ? 'block' : 'none';
+    document.getElementById('diseaseView').style.display = (currentView === 'disease' || currentView === 'diseased') ? 'block' : 'none';
     document.getElementById('wbView').style.display = currentView === 'wellboats' ? 'block' : 'none';
     document.getElementById('coprodView').style.display = currentView === 'coprod' ? 'block' : 'none';
     document.getElementById('feedView').style.display = currentView === 'feed' ? 'block' : 'none';
@@ -7999,11 +8003,11 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     // definitions du Biomasseregisteret : seulement sur les vues norvegiennes qui affichent ces mesures (pas sur Chili, Ecosse, actualite...)
     { const fn = document.getElementById('regFootNote'); if (fn) fn.style.display = ['global', 'multi', 'po', 'outlook', 'summary', 'generations', 'genyoy', 'timeatsea'].includes(currentView) ? '' : 'none'; }
     // The year / period selectors do not apply to the weekly fish-health view.
-    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'seatemp' || currentView === 'usaprices' || currentView === 'news' || currentView === 'supply' || currentView === 'disease' || currentView === 'wellboats' || currentView === 'coprod' || currentView === 'feed' || currentView === 'genyoy' || currentView === 'generations' || currentView === 'genmap' || currentView === 'bigsix') ? 'none' : '';
+    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'seatemp' || currentView === 'usaprices' || currentView === 'news' || currentView === 'supply' || currentView === 'disease' || currentView === 'wellboats' || currentView === 'coprod' || currentView === 'feed' || currentView === 'genyoy' || currentView === 'generations' || currentView === 'genmap' || currentView === 'bigsix' || currentView === 'diseased') ? 'none' : '';
     // La carte des zones ne sert qu'aux vues qui raisonnent par PO. Les onglets
     // Markets et Calibre sont nationaux, elle n'y afficherait rien d'utile.
     const mw = document.querySelector('.panel.mapwrap');
-    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'seatemp' || currentView === 'usaprices' || currentView === 'news' || currentView === 'supply' || currentView === 'disease' || currentView === 'wellboats' || currentView === 'coprod' || currentView === 'feed' || currentView === 'genyoy' || currentView === 'generations' || currentView === 'genmap' || currentView === 'bigsix') ? 'none' : '';
+    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'seatemp' || currentView === 'usaprices' || currentView === 'news' || currentView === 'supply' || currentView === 'disease' || currentView === 'wellboats' || currentView === 'coprod' || currentView === 'feed' || currentView === 'genyoy' || currentView === 'generations' || currentView === 'genmap' || currentView === 'bigsix' || currentView === 'diseased') ? 'none' : '';
     document.getElementById('poFilterField').style.display = (currentView === 'global' || currentView === 'multi' || currentView === 'outlook') ? 'flex' : 'none';
     document.getElementById('yearField').style.display = currentView === 'multi' ? 'none' : 'flex';
     document.getElementById('yearRangeField').style.display = currentView === 'multi' ? 'flex' : 'none';
@@ -8045,7 +8049,7 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     else if (currentView === 'usaprices') { renderUsaPrices(); }
     else if (currentView === 'news') { renderNews(); }
     else if (currentView === 'supply') { renderSupply(); }
-    else if (currentView === 'disease') { renderDisease(); }
+    else if (currentView === 'disease' || currentView === 'diseased') { renderDisease(); }
     else if (currentView === 'bigsix') { renderBigSix(); }
     else if (currentView === 'wellboats') { renderWellboats(); }
     else if (currentView === 'coprod') { renderCoprod(); }
@@ -11140,7 +11144,7 @@ function renderGSum() {
   if (!GSUM) { el.innerHTML = ''; return; }
   const G = GSUM, e = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), MON = MONTHS_FR.map(m => m.slice(0, 3));
   const EF = { supports: '▲ supports prices', weighs: '▼ weighs on prices', risk: '▲ risk to supply', price: 'price', watch: 'watch', algae: '! algae watch' };
-  const TABN = { outlook: 'Supply outlook', prices: 'Prices', genmap: 'Generations map', chile: 'Chile', seatemp: 'Sea temperature', australia: 'Australia', news: 'This week', disease: 'Disease overview' };
+  const TABN = { outlook: 'Supply outlook', prices: 'Prices', genmap: 'Generations map', chile: 'Chile', seatemp: 'Sea temperature', australia: 'Australia', news: 'This week', disease: 'Disease — per country', diseased: 'Disease — per disease' };
   const bars = (L, avg) => { const mx = Math.max(...L.map(x => Math.abs(x[1])), Math.abs(avg)) * 1.1;
     return L.map(([n, v]) => `<div class="gs-hb"><span>${e(n)}</span><div class="gs-tr"><div style="position:absolute;left:${v < 0 ? 50 + 50 * v / mx : 50}%;width:${50 * Math.abs(v) / mx}%;top:0;bottom:0;border-radius:7px;background:${v >= avg ? '#81c784' : '#ffab91'}"></div>` +
       `<div style="position:absolute;left:${50 + 50 * avg / mx}%;top:-3px;bottom:-3px;border-left:2px dashed #ffd54f"></div><div style="position:absolute;left:50%;top:0;bottom:0;border-left:1px solid rgba(255,255,255,.4)"></div></div><span style="text-align:right;font-weight:700">${v > 0 ? '+' : ''}${(+v).toFixed(1)} %</span></div>`).join('') +
@@ -14834,7 +14838,7 @@ const SN_BURGER = window.SN_BURGER, SN_CLOSE = window.SN_CLOSE;
     SVG('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 3.8 5.5 3.8 9S14.5 18.5 12 21c-2.5-2.5-3.8-5.5-3.8-9S9.5 5.5 12 3z"/>'),          // autres bassins : globe
     SVG('<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.3"/>'),                      // prix : etiquette
     SVG('<path d="M3 17h18l-2.5 4h-13z"/><path d="M5 17V9h14v8M9 9V5h6v4"/>')];                                                 // marches : navire
-  const CATS = [['Front page', ['news', 'supply', 'bigsix', 'disease', 'summary']],
+  const CATS = [['Front page', ['news', 'supply', 'bigsix', 'disease', 'diseased', 'summary']],
     ['Norway — production', ['global', 'po', 'multi', 'outlook', 'generations', 'timeatsea', 'health', 'wellboats', 'register']],
     ['Other basins', ['seatemp', 'scotland', 'faroe', 'iceland', 'chile', 'canada', 'australia']],
     ['Prices & products', ['prices', 'calibre', 'products', 'coprod', 'feed']],
