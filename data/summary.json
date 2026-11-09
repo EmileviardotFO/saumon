@@ -1,6 +1,6 @@
 {
  "meta": {
-  "built": "2026-11-09T10:06+00:00",
+  "built": "2026-11-09T17:49+00:00",
   "note": "Signals ranked by how unusual they are against their own history (score). Effect: supports / weighs on prices, risk, watch."
  },
  "lead": "Supply grows +6 % in 2026 across the seven basins and +0.1 % in 2027. Chile is the main source of change: a record El Niño, a slowing harvest and fewer big fish. Norway carries the growth with heavier fish and more 6 kg+. Imports grow fastest in Japan, Brazil, UK; USA and Israel are flat or down.",
@@ -8,20 +8,11 @@
   {
    "basin": "Chile · El Niño",
    "title": "Extreme El Niño, warm Chilean water",
-   "value": "+3.4 °C",
-   "text": "Niño 3.4 index (week of 2026-10-28); Chilean sea +1.0 to +2.9 °C vs normal in Oct. NOAA: El Niño continues to strengthen, with a strong-to-very strong El Niño likely through January-March 2027 (remaining greater than an 83% chance).",
+   "value": "+3.3 °C",
+   "text": "Niño 3.4 index (week of 2026-11-04); Chilean sea +1.0 to +2.9 °C vs normal in Oct. NOAA: El Niño continues to strengthen, with a strong-to-very strong El Niño likely through January-March 2027 (remaining greater than an 83% chance).",
    "effect": "risk",
    "tab": "seatemp",
-   "score": 4.42
-  },
-  {
-   "basin": "Chile",
-   "title": "Chlorophyll above every recent year",
-   "value": "×6.2 usual",
-   "text": "Chile · Aysén fjords: 3.94 mg/m³ against 0.64 usually and 0.83 at most in the same weeks of the last 3 years (satellite, 2026-10-11 to 2026-10-24) — only 3 reference years, but at least twice the highest of them. It measures how much algae there is, not toxicity: a sign to watch, not a bloom.",
-   "effect": "risk",
-   "tab": "seatemp",
-   "score": 4.0
+   "score": 4.29
   },
   {
    "basin": "Chile",
