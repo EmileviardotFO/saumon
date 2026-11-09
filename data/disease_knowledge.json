@@ -757,7 +757,752 @@
     "Sernapesca antibióticos",
     "PROA-Salmón",
     "Tasmania salmon mortality"
-   ]
+   ],
+   "damage": {
+    "title": "What SRS destroys in Chile, as far as public data allow",
+    "lines": [
+     "About 8,000 t of salmon killed by SRS in 2025 (our estimate): 60,273 t of dead fish in all, 25.7 % of deaths from infectious causes, 52.8 % of those from SRS (Sernapesca 2025 report; the Atlantic salmon share is applied to all species).",
+     "An outbreak typically kills 20–30 % of the fish in a cage group, up to 90 %, and about 60 % of sea farms are affected at some point (Sernapesca, SRS programme resolution 2026).",
+     "Losses put at about US$700 million a year for the industry (same resolution).",
+     "More than 95 % of the antibiotics used in Chilean salmon farming go against SRS: about 340 g per tonne harvested in 2024.",
+     "What public data cannot show: deaths farm by farm and month by month (Sernapesca publishes yearly, by company and region), and the weight lost by fish harvested early, which companies mention without figures (Camanchaca Q1 2026)."
+    ],
+    "source": "Sernapesca, Informe Sanitario 2025; Sernapesca SRS programme resolution 2026; see the study library below."
+   },
+   "library": {
+    "themes": [
+     {
+      "id": "burden",
+      "name": "How much SRS kills"
+     },
+     {
+      "id": "cost",
+      "name": "What it costs"
+     },
+     {
+      "id": "growth",
+      "name": "Growth, harvest weight and early harvests"
+     },
+     {
+      "id": "antibiotics",
+      "name": "Antibiotics and resistance"
+     },
+     {
+      "id": "vaccines",
+      "name": "Vaccines"
+     },
+     {
+      "id": "genetics",
+      "name": "Genetics and breeding"
+     },
+     {
+      "id": "environment",
+      "name": "Temperature, season and climate"
+     },
+     {
+      "id": "lice",
+      "name": "SRS and sea lice"
+     },
+     {
+      "id": "treatments",
+      "name": "New treatments"
+     },
+     {
+      "id": "spread",
+      "name": "Beyond Chile: Tasmania, Europe, Canada"
+     },
+     {
+      "id": "series",
+      "name": "Time series"
+     }
+    ],
+    "studies": [
+     {
+      "theme": "burden",
+      "title": "Sernapesca 2025 health report: overall mortality falls, Tenacibaculosis rises (news summary)",
+      "authors": "Salmon Business (reporting Sernapesca)",
+      "year": 2026,
+      "source": "Salmon Business / Sernapesca Informe Sanitario 2025",
+      "url": "https://www.salmonbusiness.com/sernapesca-chiles-overall-salmon-mortality-falls-in-2025-but-tenacibaculosis-rises/?amp=1",
+      "open": true,
+      "finding": "In 2025 infectious causes were 25.7% of Atlantic salmon mortality and SRS was 52.8% of that, up from 2024 and back to being the top infectious killer; Tenacibaculosis was 31.5%. Total salmonid mortality was 9.7% (60,273 t dead biomass), down 1.5 points on 2024.",
+      "level": "read"
+     },
+     {
+      "theme": "burden",
+      "title": "Chile recorded only one ISA outstanding outbreak in 2023 (Sernapesca 2023 health report)",
+      "authors": "WeAreAquaculture (reporting Sernapesca)",
+      "year": 2024,
+      "source": "WeAreAquaculture / Sernapesca",
+      "url": "https://weareaquaculture.com/news/aquaculture/chile-recorded-only-one-isa-outstanding-outbreak-in-2023",
+      "open": true,
+      "finding": "In 2023 SRS caused 44.7% of infectious mortality in Atlantic salmon (Tenacibaculosis 37.9%), down from 2022. Average closed-cycle mortality was 9.4% for Atlantic salmon.",
+      "level": "read"
+     },
+     {
+      "theme": "burden",
+      "title": "Chilean salmonid production hampered by increased mortality (Sernapesca H1 2024)",
+      "authors": "Fish Farming Expert",
+      "year": 2024,
+      "source": "Fish Farming Expert / Sernapesca",
+      "url": "https://www.fishfarmingexpert.com/chile-mortality-figures-rainbow-trout/chilean-salmonid-production-hampered-by-increased-mortality/1801458",
+      "open": true,
+      "finding": "In H1 2024 SRS was 42% of infectious mortality in Atlantic salmon and 52% in rainbow trout. Accumulated mortality in Atlantic salmon closed groups rose to 11.4% from 10.3% in H1 2023; 15.3 million salmonids died at sea in six months.",
+      "level": "read"
+     },
+     {
+      "theme": "burden",
+      "title": "Why Does Piscirickettsia salmonis Break the Immunological Paradigm in Farmed Salmon? Biological Context to Understand the Relative Control of Piscirickettsiosis",
+      "authors": "Rozas-Serri M",
+      "year": 2022,
+      "source": "Frontiers in Immunology 13",
+      "url": "https://www.frontiersin.org/articles/10.3389/fimmu.2022.856896/full",
+      "open": true,
+      "finding": "In 2020 SRS caused 47.8% of infectious mortality in Atlantic salmon (67.3% in trout), i.e. 11.7% of all Atlantic salmon deaths. Losses are put at about US$700 million a year, and a median 93.5% of antibiotic volume in 2017-2020 went to SRS.",
+      "level": "read"
+     },
+     {
+      "theme": "burden",
+      "title": "Resolución Exenta DN-00980/2026: new Programa Sanitario Específico de Vigilancia y Control de Piscirickettsiosis",
+      "authors": "Sernapesca",
+      "year": 2026,
+      "source": "Sernapesca (via Subpesca portal)",
+      "url": "https://source.subpesca.cl/portal/616/articles-129646_documento.pdf",
+      "open": true,
+      "finding": "The regulator's 2026 SRS programme says outbreaks in Los Lagos and Aysén can kill 20-30% of a stock and in some cases up to 90%, with about 60% of marine sites reporting the disease and losses of about US$700 million a year. It replaces the 2012-2013 programme.",
+      "level": "read"
+     },
+     {
+      "theme": "burden",
+      "title": "Use of regulatory data to describe and identify risk factors for salmonid rickettsial septicaemia in Chile, 2011-2017",
+      "authors": "Hillman AE et al.",
+      "year": 2020,
+      "source": "Aquaculture",
+      "url": "https://findanexpert.unimelb.edu.au/scholarlywork/1446966-use-of-regulatory-data-to-describe-and-identify-risk-factors-for-salmonid-rickettsial-septicaemia-in-chile--2011-2017",
+      "open": false,
+      "finding": "Analysis of Sernapesca databases 2011-2017: the farmed species was the key driver of both whether a cycle had SRS mortality and how high it was; trout cycles were much less likely than Atlantic salmon to report SRS mortality (incidence risk ratio 0.17).",
+      "level": "read"
+     },
+     {
+      "theme": "burden",
+      "title": "Epidemiology of piscirickettsiosis on selected Atlantic salmon (Salmo salar) and rainbow trout (Oncorhynchus mykiss) salt water aquaculture farms in Chile",
+      "authors": "Jakob E et al.",
+      "year": 2014,
+      "source": "Aquaculture 433",
+      "url": "https://scholars.cityu.edu.hk/en/publications/epidemiology-of-piscirickettsiosis-on-selected-atlantic-salmon-em/",
+      "open": false,
+      "finding": "On 14 Atlantic salmon farms (252 cages, 2010-2012) SRS hit a high share of cages; onset came at about 2,480-3,829 degree-days after sea transfer depending on vaccine. No vaccine prevented SRS, and high mortality in the first 4 weeks at sea predicted earlier outbreaks.",
+      "level": "read"
+     },
+     {
+      "theme": "burden",
+      "title": "Co-Infection by LF-89-Like and EM-90-Like Genogroups of Piscirickettsia salmonis in Farmed Atlantic Salmon in Chile",
+      "authors": "Rozas-Serri M et al.",
+      "year": 2023,
+      "source": "Pathogens 12(3):450 (MDPI)",
+      "url": "https://mdpi.com/2076-0817/12/3/450",
+      "open": true,
+      "finding": "SRS caused 10.2% of total Atlantic salmon mortality in H1 2022. In 6 prospective farms the bacterium was first detected 83-197 days after sea entry, and both genogroups often co-infect farms, while the only live vaccine contains just one (EM-90).",
+      "level": "read"
+     },
+     {
+      "theme": "cost",
+      "title": "SRS: A disease that eats away the Chilean salmon",
+      "authors": "Orrego R",
+      "year": 2015,
+      "source": "Fish Farming Expert",
+      "url": "https://www.fishfarmingexpert.com/srs-a-disease-that-eats-away-the-chilean-salmon/1374551",
+      "open": true,
+      "finding": "An early industry estimate put SRS losses at about US$100 million a year (likely higher by 2015), with about US$800,000 of antibiotic spending per percentage point of SRS mortality. SRS was then 60-70% of infectious losses in Atlantic and coho salmon, and used ~82% of 338 t of antibiotics.",
+      "level": "read"
+     },
+     {
+      "theme": "cost",
+      "title": "Salmones Camanchaca: SRS outbreaks and weak prices cut Q1 EBITDA by 52%",
+      "authors": "Salmon Business",
+      "year": 2026,
+      "source": "Salmon Business (Camanchaca Q1 2026 results)",
+      "url": "https://www.salmonbusiness.com/salmones-camanchaca-srs-outbreaks-and-weak-prices-cut-q1-ebitda-by-52/",
+      "open": true,
+      "finding": "SRS outbreaks at several sites cost Camanchaca US$2.8 million in extraordinary mortality in Q1 2026; EBIT per kg fell from US$1.02 to US$0.35 (SRS plus lower prices) and EBITDA fell 52% to US$9.3m. Lower harvest weights pushed processing cost up 15% to US$1.22/kg.",
+      "level": "read"
+     },
+     {
+      "theme": "growth",
+      "title": "Salmones Camanchaca's profit plummeted in Q1 2026",
+      "authors": "WeAreAquaculture",
+      "year": 2026,
+      "source": "WeAreAquaculture (Camanchaca Q1 2026)",
+      "url": "https://weareaquaculture.com/news/finance/salmones-camanchacas-profit-plummeted-in-q1-2026",
+      "open": true,
+      "finding": "SRS outbreaks at two sites forced Camanchaca to bring harvests forward, giving lower-than-planned fish weights; the event is a concrete case of SRS turning into early harvest of small fish (no volume or kg given).",
+      "level": "read"
+     },
+     {
+      "theme": "growth",
+      "title": "Lower mortality and higher productivity for Chilean salmon industry last year (Aquabench 2023)",
+      "authors": "Fish Farming Expert (Aquabench data)",
+      "year": 2024,
+      "source": "Fish Farming Expert",
+      "url": "https://www.fishfarmingexpert.com/aquabench-chile-salmon/lower-mortality-and-higher-productivity-for-chilean-salmon-industry-last-year/1724061",
+      "open": true,
+      "finding": "Atlantic salmon closed-cycle mortality fell to 9.7% in 2023 from 13.4% in 2022, and yield rose 4% to 4.53 kg harvested per smolt; average Atlantic harvest weight was 5.1 kg. SRS was cited as one of the biggest killers (33%, base unclear).",
+      "level": "read"
+     },
+     {
+      "theme": "growth",
+      "title": "Novel insights into the genetic relationship between growth and disease resistance in an aquaculture strain of Coho salmon",
+      "authors": "Barria A et al.",
+      "year": 2019,
+      "source": "Aquaculture 511",
+      "url": "https://core.ac.uk/download/323961564.pdf",
+      "open": true,
+      "finding": "In an SRS challenge (coho), daily growth fell from 1.11 g/day before infection to about 0.69 g/day during it, and survivors grew 2.09 g/day faster than fish that died. Faster early growth was genetically linked to longer survival (r=0.43), but survival time and harvest weight were unfavourably correlated (-0.50).",
+      "level": "read"
+     },
+     {
+      "theme": "growth",
+      "title": "Chile fish health and growth best in five years (INTESAL)",
+      "authors": "Fish Farming Expert (INTESAL data)",
+      "year": 2019,
+      "source": "Fish Farming Expert",
+      "url": "https://www.fishfarmingexpert.com/fish-health-intesal-salmon/chile-fish-health-and-growth-best-in-five-years/1172733",
+      "open": true,
+      "finding": "Between 2013 and 2018 Chilean mortality fell from 16% to 9%, harvest weight rose from 4.2 to 5.2 kg and the sea cycle shortened from 18 to 16.5 months, while antibiotic use fell to 322.7 t; this is baseline context for how disease control lifts harvest weight.",
+      "level": "read"
+     },
+     {
+      "theme": "growth",
+      "title": "Study: antibiotic injection is better than in-feed treatment for SRS (Aquabench)",
+      "authors": "Fish Farming Expert (Jimenez D, Aquabench)",
+      "year": 2025,
+      "source": "Fish Farming Expert (seminar presentation, not peer reviewed)",
+      "url": "https://www.fishfarmingexpert.com/antibiotic-injection-aquaculture-health-piscirickettsiosis/study-antibiotic-injection-is-better-than-in-feed-treatment-for-srs/2016258",
+      "open": true,
+      "finding": "Aquabench data on more than 10 billion fish (2017-2024): injecting oxytetracycline instead of medicated feed roughly halved SRS mortality, cut total antibiotic use by 26% and raised harvest weight by 23%. Industry benchmarking, not a peer-reviewed study.",
+      "level": "read"
+     },
+     {
+      "theme": "antibiotics",
+      "title": "Current Status of the Use of Antibiotics and the Antimicrobial Resistance in the Chilean Salmon Farms",
+      "authors": "Miranda CD et al.",
+      "year": 2018,
+      "source": "Frontiers in Microbiology 9",
+      "url": "https://www.frontiersin.org/articles/10.3389/fmicb.2018.01284/full",
+      "open": true,
+      "finding": "Gives Sernapesca antibiotic use 2005-2016: from 143 t (2010) to a peak of 563 t (2014) and 557 t (630 g/t) in 2015, then 382.5 t in 2016. In 2016 florfenicol was 82.5% of use, 95% was at sea mainly against P. salmonis, and SRS caused 74.6% of Atlantic salmon infectious mortality.",
+      "level": "read"
+     },
+     {
+      "theme": "antibiotics",
+      "title": "Health Situation of Chilean Salmon Industry",
+      "authors": "Sandoval del Valle O (Sernapesca)",
+      "year": 2019,
+      "source": "Sernapesca presentation hosted by Norwegian Veterinary Institute",
+      "url": "https://www.vetinst.no/en/news/biosecurity-and-transportation-of-fish/_/attachment/download/9a2f042d-8bf3-4f92-be60-0532f94ab44f:668f9c60b8d892f561fa3b3dc5d79cafa7e0208e/190819%20Status%20of%20fish%20health%20in%20Chile.pdf",
+      "open": true,
+      "finding": "Official Sernapesca table 2007-2018: use 393.9 t (497 g/t) in 2017 and 322.7 t (380 g/t) in 2018, an 18% drop in tonnes and 24% in g/t. Mortality from P. salmonis was falling in H1 2019 while Tenacibaculum and AGD rose.",
+      "level": "read"
+     },
+     {
+      "theme": "antibiotics",
+      "title": "SRS pushed Chilean salmon farming antibiotic use up by 9.7% last year",
+      "authors": "Fish Farming Expert (Sernapesca 2024 report)",
+      "year": 2025,
+      "source": "Fish Farming Expert",
+      "url": "https://www.fishfarmingexpert.com/antibiotics-chilean-salmon-farming-florfenicol/srs-pushed-chilean-salmon-farming-antibiotic-use-up-by-97-last-year/1968326",
+      "open": true,
+      "finding": "Antibiotic use rose 9.7% in 2024 to 336.26 t (301 production cycles), with SRS behind more than 96% and florfenicol 96.98% of use. Consumption index 0.034% (about 340 g/t) vs 0.031% in 2023; closed-cycle index 302.33 g/t. PROA-certified farms used 93.7% less.",
+      "level": "read"
+     },
+     {
+      "theme": "antibiotics",
+      "title": "Insights and Lessons from Chilean Salmon Aquaculture on Antimicrobial Use",
+      "authors": "Farias DR et al.",
+      "year": 2025,
+      "source": "Antibiotics 14(12):1177 (MDPI)",
+      "url": "https://www.mdpi.com/2079-6382/14/12/1177",
+      "open": true,
+      "finding": "Review: Sernapesca reports 351.1 t of antimicrobials used in 2024, 97.9% of treatments given in the sea grow-out phase against SRS. (Note the 336 t figure elsewhere appears to cover a narrower base.)",
+      "level": "read"
+     },
+     {
+      "theme": "antibiotics",
+      "title": "Antimicrobial use in Chile's salmon farming industry dropped 32 percent in 2022",
+      "authors": "SeafoodSource",
+      "year": 2023,
+      "source": "SeafoodSource (Sernapesca 2022 report)",
+      "url": "https://www.seafoodsource.com/news/aquaculture/antimicrobial-use-in-chile-s-salmon-farming-industry-dropped-32-percent-in-2022",
+      "open": true,
+      "finding": "Antibiotic use fell from 463.4 t (470 g/t) in 2021 to 341.5 t (320 g/t) in 2022, the lowest rate since reporting began in 2007; 97.7% of use was in the sea phase.",
+      "level": "read"
+     },
+     {
+      "theme": "antibiotics",
+      "title": "Salmoneras explican las razones del fuerte aumento en el uso de antibioticos reportado por Sernapesca",
+      "authors": "Diario Financiero",
+      "year": 2022,
+      "source": "Diario Financiero (Sernapesca 2021 report)",
+      "url": "https://www.df.cl/sernapesca-reporto-aumento-significativo-en-el-uso-de-antibioticos-en",
+      "open": true,
+      "finding": "The 2021 rate jumped 34% to 470 g/t (vs 630 g/t in 2015 and 340-350 g/t in 2018-2020). The Consejo del Salmon (AquaChile, Australis, Cermaq, Mowi, Salmones Aysen) said SRS causes more than 95% of Chilean antibiotic use.",
+      "level": "read"
+     },
+     {
+      "theme": "antibiotics",
+      "title": "Resolución Exenta DN-01151/2026 modifying the antimicrobial use programme (Res. 8228/2015)",
+      "authors": "Sernapesca",
+      "year": 2026,
+      "source": "Sernapesca (via Subpesca portal)",
+      "url": "https://www.subpesca.cl/portal/615/articles-129660_documento.pdf",
+      "open": true,
+      "finding": "Sets antibiotic-use bands that reward low users: Atlantic salmon farms with 0 g/t, up to 250 g/t, or 250-400 g/t get 10%, 7% or 3% exceptions on allowed losses; 400 g/t equals the 2022-2025 Atlantic salmon average. SRS mortality at sea has trended up since 2018 (+42% from 2019 to 2020).",
+      "level": "read"
+     },
+     {
+      "theme": "antibiotics",
+      "title": "A Novel and Validated Protocol for Performing MIC Tests to Determine the Susceptibility of Piscirickettsia salmonis Isolates to Florfenicol and Oxytetracycline",
+      "authors": "Contreras-Lynch S et al.",
+      "year": 2017,
+      "source": "Frontiers in Microbiology 8:1255",
+      "url": "https://www.frontiersin.org/journals/microbiology/articles/10.3389/fmicb.2017.01255/pdf",
+      "open": true,
+      "finding": "Of 58 Chilean field isolates, 56% were non-wild-type (reduced susceptibility) to florfenicol and 9% to oxytetracycline. This is an early warning for the drug that now makes up ~97% of use.",
+      "level": "read"
+     },
+     {
+      "theme": "antibiotics",
+      "title": "Chile: freshwater salmon antibiotic use drops 34% in 2025",
+      "authors": "Salmon Business (Sernapesca 2025 report)",
+      "year": 2026,
+      "source": "Salmon Business",
+      "url": "https://www.salmonbusiness.com/chile-freshwater-salmon-antibiotic-use-drops-34-in-2025/?amp=1",
+      "open": true,
+      "finding": "Freshwater antibiotic use fell 34.1% in 2025, but the national consumption index (dominated by sea-phase SRS treatment) rose 5.88%, a second year of increase.",
+      "level": "read"
+     },
+     {
+      "theme": "antibiotics",
+      "title": "Chilean farmers cut antibiotic use in 2019",
+      "authors": "Fish Farming Expert (Sernapesca 2019 report)",
+      "year": 2020,
+      "source": "Fish Farming Expert",
+      "url": "https://www.fishfarmingexpert.com/article/chilean-farmers-cut-antibiotic-use-in-2019/",
+      "open": true,
+      "finding": "Use fell 6% to 303.2 t in 2019 with harvests up 13% to 953,395 t; the consumption index fell from 0.038% to 0.032% (about 380 to 320 g/t). Chile's higher use than Norway/Scotland is blamed on SRS being hard to vaccinate against.",
+      "level": "read"
+     },
+     {
+      "theme": "vaccines",
+      "title": "Why vaccines fail against Piscirickettsiosis in farmed salmon and trout and how to avoid it: A review",
+      "authors": "Valenzuela-Aviles P et al.",
+      "year": 2022,
+      "source": "Frontiers in Immunology 13:1019404",
+      "url": "https://frontiersin.org/articles/10.3389/fimmu.2022.1019404/pdf",
+      "open": true,
+      "finding": "About 46 million salmonids died of SRS in 2012-2020; SRS fell from 84.3% to 43.3% of infectious deaths (all species) over the period. Of 28 registered vaccines only 3 claim to cut mortality; in field data (Happold et al. 2020) the best Atlantic salmon regimen cut SRS mortality only 22% and others were worse. Losses are over US$700m/yr.",
+      "level": "read"
+     },
+     {
+      "theme": "vaccines",
+      "title": "Commercial Vaccines Do Not Confer Protection against Two Genogroups of Piscirickettsia salmonis, LF-89 and EM-90, in Atlantic Salmon",
+      "authors": "Figueroa C et al.",
+      "year": 2022,
+      "source": "Biology 11(7):993 (MDPI)",
+      "url": "https://mdpi.com/2079-7737/11/7/993",
+      "open": true,
+      "finding": "In controlled challenges, a commercial vaccine gave negative relative survival (RPS -9% vs LF-89, -12% vs EM-90), with survival 56.7% vs 60.3% and 60.2% vs 64.6% for vaccinated vs unvaccinated; the regulator's threshold is 70% RPS. About 43% of farmers use the pentavalent vaccine.",
+      "level": "read"
+     },
+     {
+      "theme": "vaccines",
+      "title": "The Effect of an Attenuated Live Vaccine against Salmonid Rickettsial Septicemia in Atlantic Salmon Is Highly Dependent on Water Temperature during Immunization",
+      "authors": "Olsen RH et al.",
+      "year": 2024,
+      "source": "Vaccines 12(4):416 (MDPI)",
+      "url": "https://doaj.org/article/48fe896a4e19445c905f66f056c7cc5a",
+      "open": true,
+      "finding": "The live vaccine ALPHA JECT LiVac SRS (licensed in Chile 2016) protected for at least 15 months in lab tests when fish were vaccinated at 10 C or above, but lost much of its protection at 7-8 C. Holding fish at 15 C for 5 days after vaccination restored it, so cold freshwater vaccination is one reason for field failure.",
+      "level": "read"
+     },
+     {
+      "theme": "vaccines",
+      "title": "Increased survival and reduced bacterial shedding following single but not repeated oral immunizations against Piscirickettsia salmonis in Atlantic salmon",
+      "authors": "Long A, Jones SRM",
+      "year": 2024,
+      "source": "Bulletin of the European Association of Fish Pathologists 44(3)",
+      "url": "https://eafpbulletin.scholasticahq.com/article/126207.pdf",
+      "open": true,
+      "finding": "Canadian lab trial: one oral dose gave modest protection (RPS 30.9%) and less shedding; four doses gave RPS 21.1% and two doses none. The authors blame partly the mismatch between the Chilean vaccine strain and the Canadian isolate.",
+      "level": "read"
+     },
+     {
+      "theme": "genetics",
+      "title": "Genomic predictions can accelerate selection for resistance against Piscirickettsia salmonis in Atlantic salmon",
+      "authors": "Bangera R et al.",
+      "year": 2017,
+      "source": "BMC Genomics",
+      "url": "https://bmc.altmetric.com/details/21392742",
+      "open": true,
+      "finding": "Using a 50K SNP chip raised the accuracy of breeding values for SRS resistance by 8-25% (days to death) and 27-30% (survival) over pedigree-only selection, and about 20K SNPs was enough. This supports genomic selection as a practical route to more resistant stock.",
+      "level": "read"
+     },
+     {
+      "theme": "genetics",
+      "title": "GWAS meta-analysis of resistance against Piscirickettsia salmonis in Atlantic salmon",
+      "authors": "Marin-Nahuelpi R et al.",
+      "year": 2024,
+      "source": "Aquaculture 740249 (preprint on bioRxiv)",
+      "url": "https://www.biorxiv.org/content/10.1101/2022.12.24.521873.full.pdf",
+      "open": true,
+      "finding": "On 5,858 challenged fish from 3 breeding lines, SNP heritability of SRS survival was 0.12-0.33 (time to death 0.19-0.44). No single large-effect gene was found (top SNP explains 0.5-1.3%), so gains must come from genomic selection on many genes, not a single marker.",
+      "level": "read"
+     },
+     {
+      "theme": "genetics",
+      "title": "Investigating mechanisms underlying genetic resistance to Salmon Rickettsial Syndrome in Atlantic salmon using RNA sequencing",
+      "authors": "Moraleda CP et al.",
+      "year": 2021,
+      "source": "BMC Genomics 22 (preprint on bioRxiv)",
+      "url": "https://www.biorxiv.org/content/10.1101/2020.12.03.410464v1.full.pdf",
+      "open": true,
+      "finding": "In a challenge of 2,265 fish from 96 families (33% mortality), heritability of SRS survival was 0.43, at the top of the 0.11-0.41 range of earlier Atlantic salmon studies. The trait is highly polygenic, with no major QTL.",
+      "level": "read"
+     },
+     {
+      "theme": "genetics",
+      "title": "Hendrix Genetics ups SRS resistance 15-20 percent",
+      "authors": "Salmon Business",
+      "year": 2017,
+      "source": "Salmon Business (company challenge-test results)",
+      "url": "https://www.salmonbusiness.com/hendrix-genetics-ups-srs-resistance-15-20/?amp=1",
+      "open": true,
+      "finding": "In a challenge test of about 1,500 fish, the top 25 fish by genomic breeding value had 80% survival vs 8.2% for the population. The company projected about 23% lower SRS mortality under Chilean farm conditions (preliminary, company data).",
+      "level": "read"
+     },
+     {
+      "theme": "environment",
+      "title": "Hydrodynamic connectivity, water temperature, and salinity are major drivers of piscirickettsiosis prevalence and transmission among salmonid farms in Chile",
+      "authors": "Bravo F et al.",
+      "year": 2020,
+      "source": "Aquaculture Environment Interactions 12:263-279",
+      "url": "https://int-res.com/abstracts/aei/v12/p263-279",
+      "open": true,
+      "finding": "A hydrodynamic model found that the strongest predictors of SRS were infected farms upstream and the size of their outbreaks, followed by seawater temperature and salinity. Downstream farms reached close to 100% prevalence by week 25, against about 10% for unexposed farms by week 56.",
+      "level": "read"
+     },
+     {
+      "theme": "environment",
+      "title": "Is between-farm water-borne pathogen dissemination an important driver in the epidemiology of salmonid rickettsial septicaemia in Chile?",
+      "authors": "Meyer A et al.",
+      "year": 2021,
+      "source": "Aquaculture 530:735751",
+      "url": "https://dspace.library.uu.nl/bitstream/handle/1874/408834/1_s2.0_S0044848619331394_main.pdf?sequence=1",
+      "open": true,
+      "finding": "Using 334 Los Lagos farms and 1,010 cycles (2012-2018), the study found only a weak link between SRS mortality on a farm and its neighbours, concluding water-borne spread is not the main driver. This contrasts with Bravo et al. 2020.",
+      "level": "read"
+     },
+     {
+      "theme": "environment",
+      "title": "Eliciting expert judgements to estimate risk and protective factors for Piscirickettsiosis in Chilean salmon farming",
+      "authors": "Alamos F, Carey J",
+      "year": 2019,
+      "source": "Aquaculture 507:402-410",
+      "url": "https://investigadores.anid.cl/es/public_search/work?id=537617",
+      "open": false,
+      "finding": "Experts ranked net fouling, dense neighbouring farms, sea lions and early-maturing fish as risk factors for severe outbreaks. Synchronised fallowing, timely diagnosis and necropsy training were ranked protective.",
+      "level": "read"
+     },
+     {
+      "theme": "environment",
+      "title": "How problem child El Nino threatens Chilean fish farming",
+      "authors": "Maldonado I (Fish Farming Expert / Salmonexpert)",
+      "year": 2026,
+      "source": "Fish Farming Expert",
+      "url": "https://www.fishfarmingexpert.com/chile-el-nino-fish-health/how-problem-child-el-nino-threatens-chilean-fish-farming/2161241",
+      "open": true,
+      "finding": "Reports a new Chilean paper listing El Nino effects as more algal blooms, hypoxia, SRS and lice. It recalls 2016, when a warm-water bloom killed more than 100,000 t at about 37 sites (losses over US$800m). No direct El Nino-SRS numbers are given.",
+      "level": "read"
+     },
+     {
+      "theme": "environment",
+      "title": "Chilean salmon sector prepares for El Nino-related disruptions",
+      "authors": "SeafoodSource",
+      "year": 2026,
+      "source": "SeafoodSource",
+      "url": "https://www.seafoodsource.com/news/chilean-salmon-sector-prepares-for-el-ni-o-related-disruptions",
+      "open": true,
+      "finding": "Industry sources warn that El Nino means warm, stratified water, slower growth, worse FCR and longer cycles even before any mass mortality; the 2016 El Nino bloom killed about 27 million fish in Los Lagos. SRS is not quantified.",
+      "level": "read"
+     },
+     {
+      "theme": "lice",
+      "title": "Caligus rogercresseyi infestation is associated with Piscirickettsia salmonis-attributed mortalities in farmed salmonids in Chile",
+      "authors": "Arriagada G et al.",
+      "year": 2019,
+      "source": "Preventive Veterinary Medicine 171:104771",
+      "url": "https://scholars.cityu.edu.hk/en/publications/icaligus-rogercresseyi-iinfestation-is-associated-with-ipiscirick/",
+      "open": false,
+      "finding": "Field data: higher adult Caligus abundance in the 10 weeks before an SRS outbreak (weekly SRS mortality over 0.1%) predicted significantly higher cumulative SRS mortality in the next 10 weeks, in both Atlantic salmon and trout. The authors call lice control part of SRS control.",
+      "level": "read"
+     },
+     {
+      "theme": "lice",
+      "title": "Disease Resistance in Atlantic Salmon (Salmo salar): Coinfection of the Intracellular Bacterial Pathogen Piscirickettsia salmonis and the Sea Louse Caligus rogercresseyi",
+      "authors": "Lhorente JP et al.",
+      "year": 2014,
+      "source": "PLoS ONE 9(4):e95397",
+      "url": "https://doaj.org/article/5de7d0bbce9842c995c48c617cc9dbed",
+      "open": true,
+      "finding": "In a challenge of 1,634 fish, SRS alone killed 251 of 545 (46%), while SRS plus lice killed all 1,089 coinfected fish. Resistance stayed heritable (h2 0.17-0.24), but the genetic correlation between single-infection and coinfection resistance was weak, so breeding for one does not guarantee the other.",
+      "level": "read"
+     },
+     {
+      "theme": "lice",
+      "title": "Epidemiology of Salmonid Rickettsial Septicemia (SRS) in Farmed Salmon: The Role of Sea Lice Infestations in Mortality Risk",
+      "authors": "Diethelm-Varela B et al.",
+      "year": 2025,
+      "source": "Journal of Fish Diseases (doi 10.1111/jfd.70097)",
+      "url": "https://www.research.ed.ac.uk/en/publications/epidemiology-of-salmonid-rickettsial-septicemia-srs-in-farmed-sal/",
+      "open": false,
+      "finding": "Farm data 2014-2021: weekly SRS mortality peaks in warmer seasons; egg-bearing female lice levels predicted both higher weekly SRS mortality and an earlier first outbreak. Lice rose over the period while SRS risk stayed flat.",
+      "level": "read"
+     },
+     {
+      "theme": "treatments",
+      "title": "Skretting functional diet 'best against SRS in trial' (GSI benchmark of functional feeds)",
+      "authors": "Fish Farming Expert (GSI / Skretting)",
+      "year": 2019,
+      "source": "Fish Farming Expert",
+      "url": "https://www.fishfarmingexpert.com/article/gsi-unveils-best-functional-diet-against-srs/",
+      "open": true,
+      "finding": "A GSI-coordinated 2018 cohabitation trial compared 4 commercial functional diets; the company reported a 78% lower probability of SRS death than controls for the best diet. Only company-reported numbers were published.",
+      "level": "read"
+     },
+     {
+      "theme": "treatments",
+      "title": "Know Your Enemy: Piscirickettsia salmonis and Phage Interactions Using an In Silico Perspective",
+      "authors": "Ramirez C, Romero J",
+      "year": 2025,
+      "source": "Antibiotics 14(6):558 (MDPI)",
+      "url": "https://www.mdpi.com/2079-6382/14/6/558",
+      "open": true,
+      "finding": "Of 79 P. salmonis genomes, about 70% carry prophages and many have anti-phage defence systems. This is groundwork for phage therapy, which is computational only and not yet tested in fish, so it is years from farms.",
+      "level": "read"
+     },
+     {
+      "theme": "spread",
+      "title": "Data shows salmon mortality event unprecedented",
+      "authors": "EPA Tasmania",
+      "year": 2025,
+      "source": "EPA Tasmania",
+      "url": "https://epa.tas.gov.au/news/data-shows-salmon-mortality-event-unprecedented",
+      "open": true,
+      "finding": "Over 5,500 t of salmon mortality waste was received in February 2025 alone, with hundreds of pen notifications in the D'Entrecasteaux Channel. The Chief Veterinary Officer attributed the event largely to endemic P. salmonis in warm summer water.",
+      "level": "read"
+     },
+     {
+      "theme": "spread",
+      "title": "Reflections and Learnings: Salmon Mortality Event 2025",
+      "authors": "Tasmanian Government (EPA / NRE Tasmania)",
+      "year": 2025,
+      "source": "EPA Tasmania / NRE Tasmania",
+      "url": "https://epa.tas.gov.au/Documents/Reflections%20and%20Learnings%20-%20Salmon%20Mortality%20Event%202025.pdf",
+      "open": true,
+      "finding": "The official review confirms the Tasmanian strain is P. salmonis, a single genotype present on the east coast since at least 2021 and in the south-east since 2023. The Jan-Apr 2025 event, peaking in February, hit Huon and Tassal; an emergency florfenicol permit was sought.",
+      "level": "read"
+     },
+     {
+      "theme": "spread",
+      "title": "More than 20,000 tonnes of fish died prematurely in Tasmania last year",
+      "authors": "Fish Farming Expert (EPA Tasmania data)",
+      "year": 2026,
+      "source": "Fish Farming Expert",
+      "url": "https://www.fishfarmingexpert.com/epa-tasmania-fish-mortality-piscirickettsia-salmonis/more-than-20000-tonnes-of-fish-died-prematurely-in-tasmania-last-year/2059809",
+      "open": true,
+      "finding": "Tasmanian salmon mortality exceeded 20,000 t in 2025 (6,300 t in February), against production of about 68,000 t gutted weight in 2024-25, a loss on the order of a quarter of output. Florfenicol feed had been used 13 times since November 2025.",
+      "level": "read"
+     },
+     {
+      "theme": "spread",
+      "title": "Dead salmon: 9,000 tonnes in 12 weeks",
+      "authors": "Huon News (EPA Tasmania data)",
+      "year": 2026,
+      "source": "Huon News",
+      "url": "https://huonnews.com/17435/dead-salmon-9000-tonnes-in-12-weeks/",
+      "open": true,
+      "finding": "In January-March 2026, 9,197 t of salmon died on Tasmanian farms (2,025 / 3,356 / 3,816 t by month), about 12% of annual production. This shows the P. salmonis problem recurred in the second summer.",
+      "level": "read"
+     },
+     {
+      "theme": "spread",
+      "title": "Salmon piscirickettsiosis in Europe: a disease of increasing concern",
+      "authors": "Rodger H et al.",
+      "year": 2025,
+      "source": "Bulletin of the European Association of Fish Pathologists 45(3)",
+      "url": "https://eafpbulletin.scholasticahq.com/api/v1/articles/143733-salmon-piscirickettsiosis-in-europe-a-disease-of-increasing-concern.pdf",
+      "open": true,
+      "finding": "Ireland and Scotland went from 0-10 clinical cases a year before 2019 to over 30 farm cases a year since. Mortality averages 1-2% of stock per week and can exceed 25% cumulatively if untreated; SRS now drives most antibiotic prescriptions there, and a new species (P. nova) is involved.",
+      "level": "read"
+     },
+     {
+      "theme": "spread",
+      "title": "Piscirickettsiosis (SRS) in the North-East Atlantic area (PisciNor project)",
+      "authors": "Rodger H, Olsen AB, Colquhoun DJ et al.",
+      "year": 2026,
+      "source": "Fish Farming Expert (Norwegian Veterinary Institute / PatoGen / Marine Institute)",
+      "url": "https://www.fishfarmingexpert.com/norwegian-veterinary-institute-ireland-patogen/piscirickettsiosis-srs-in-the-north-east-atlantic-area/2180331",
+      "open": true,
+      "finding": "Since 2023 Piscirickettsia has been detected each year at more than 25 marine sites across Ireland and Scotland, most with clinical disease; outbreaks last a mean of 13 weeks at about 13.9 C. Norway had at least 7 affected farms in 2024 without significant mortality and made SRS notifiable again in June 2025.",
+      "level": "read"
+     },
+     {
+      "theme": "spread",
+      "title": "Fish Health Report 2025 (Norway)",
+      "authors": "Norwegian Veterinary Institute",
+      "year": 2026,
+      "source": "Norwegian Veterinary Institute",
+      "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fish-health-report-2025/_/attachment/inline/4e7d310d-0620-439c-a2cf-caac02253620:b124880858959e1f6b61fbe45e1137e7e31fc0f9/Fish%20Health%20Report%202025.pdf",
+      "open": true,
+      "finding": "Piscirickettsiosis was listed as a notifiable disease in Norway from 15 June 2025. In 2025 there was one confirmed case, in turbot, and three salmon suspicions that were not confirmed, so there is no supply impact in Norway yet.",
+      "level": "read"
+     },
+     {
+      "theme": "spread",
+      "title": "New SRS bacteria species discovered in Scotland and Ireland (Piscirickettsia nova)",
+      "authors": "Fish Farming Expert (PatoGen)",
+      "year": 2025,
+      "source": "Fish Farming Expert",
+      "url": "https://www.fishfarmingexpert.com/ireland-patogen-as-piscirickettsia-nova/new-srs-bacteria-species-discovered-in-scotland-and-ireland/1908882",
+      "open": true,
+      "finding": "PatoGen researchers identified a distinct species, provisionally P. nova, causing SRS-like disease in Irish and Scottish salmon. Over half of Scottish 2021-2024 'P. salmonis' PCR positives re-tested were P. nova (per Rodger et al. 2025), so Chilean vaccines may not transfer.",
+      "level": "read"
+     },
+     {
+      "theme": "spread",
+      "title": "Cullen Scholarship: Epidemiological examination of SRS in Irish Atlantic salmon farms",
+      "authors": "Marine Institute (Ireland)",
+      "year": 2023,
+      "source": "Marine Institute",
+      "url": "https://www.marine.ie/sites/default/files/MIFiles/Docs/ResearchFunding/SRS%20in%20Irish%20Atlantic%20salmon%20farms.pdf",
+      "open": true,
+      "finding": "SRS accounted for 80% of antibiotics used in Irish salmon farming in 2022, and the disease has been increasing in recent years. (Year of the document inferred, not stated.)",
+      "level": "read"
+     },
+     {
+      "theme": "spread",
+      "title": "Advice from the assessment of the risk to Fraser River Sockeye Salmon due to Piscirickettsia salmonis transfer from Atlantic Salmon farms in the Discovery Islands area, British Columbia",
+      "authors": "Fisheries and Oceans Canada (CSAS SAR 2019/020)",
+      "year": 2020,
+      "source": "DFO Canadian Science Advisory Secretariat",
+      "url": "https://waves-vagues.dfo-mpo.gc.ca/library-bibliotheque/40938049.pdf",
+      "open": true,
+      "finding": "BC Atlantic salmon farms recorded 36 farm-level SRS diagnoses in 2002-2016 (9 of 15 years), a low-level endemic problem with nothing like Chilean losses. DFO judged the risk to wild sockeye minimal.",
+      "level": "read"
+     },
+     {
+      "theme": "spread",
+      "title": "Hindcasting Farmed Salmon Mortality to Improve Future Health and Production Outcomes",
+      "authors": "Knight BR et al.",
+      "year": 2025,
+      "source": "Journal of Fish Diseases 48:e14058",
+      "url": "https://researchonline.jcu.edu.au/88100/1/88100.pdf",
+      "open": true,
+      "finding": "New Zealand king salmon (not Atlantic): a rickettsia-like organism modelled on P. salmonis contributed to a 2021/22 event that lost about 1,300 t, roughly 10% of national output. Mortality switched on above about 17 C, showing how warming turns a background infection into a supply event.",
+      "level": "read"
+     }
+    ],
+    "series": {
+     "srs_share_of_infectious_mortality_atlantic_chile": {
+      "2016": 74.6,
+      "2020": 47.8,
+      "2023": 44.7,
+      "2025": 52.8,
+      "unit": "% of infectious-cause mortality, Atlantic salmon, sea phase",
+      "source": "Sernapesca annual health reports, as cited by Miranda et al. 2018 (2016), Rozas-Serri 2022 (2020), WeAreAquaculture (2023), Salmon Business (2025)",
+      "url": "https://www.salmonbusiness.com/sernapesca-chiles-overall-salmon-mortality-falls-in-2025-but-tenacibaculosis-rises/?amp=1",
+      "urls": {
+       "2016": "https://www.frontiersin.org/articles/10.3389/fmicb.2018.01284/full",
+       "2020": "https://www.frontiersin.org/articles/10.3389/fimmu.2022.856896/full",
+       "2023": "https://weareaquaculture.com/news/aquaculture/chile-recorded-only-one-isa-outstanding-outbreak-in-2023",
+       "2025": "https://www.salmonbusiness.com/sernapesca-chiles-overall-salmon-mortality-falls-in-2025-but-tenacibaculosis-rises/?amp=1"
+      },
+      "note": "2016 value is quoted by Miranda et al. as SRS share of Atlantic salmon mortality (assumed infectious-cause basis, as in Sernapesca reports). H1 2024 = 42% (half-year only, Fish Farming Expert). 2022 and 2024 full-year values were only given as relative changes (-8.1% / +9.6%) and are left out. Years 2012-2015, 2017-2019, 2021 not found."
+     },
+     "srs_share_of_infectious_mortality_all_salmonids_chile": {
+      "2012": 84.3,
+      "2020": 43.3,
+      "source": "Valenzuela-Aviles et al. 2022, Table 1 (Sernapesca data, salmon and trout combined)",
+      "url": "https://frontiersin.org/articles/10.3389/fimmu.2022.1019404/pdf",
+      "note": "Only endpoints extracted; 2012-2020 total 71.0%; ~46 million fish died of SRS 2012-2020."
+     },
+     "antibiotics_tonnes_chile": {
+      "2005": 239.2,
+      "2006": 343.8,
+      "2007": 385.6,
+      "2008": 325.6,
+      "2009": 184.5,
+      "2010": 143.2,
+      "2011": 206.8,
+      "2012": 337.9,
+      "2013": 450.7,
+      "2014": 563.2,
+      "2015": 557.2,
+      "2016": 382.5,
+      "2017": 393.9,
+      "2018": 322.7,
+      "2019": 303.2,
+      "2021": 463.4,
+      "2022": 341.5,
+      "2024": 351.1,
+      "unit": "tonnes active ingredient, all salmonid farming (fresh + sea)",
+      "source": "Sernapesca, via Miranda et al. 2018 (2005-2016), Sernapesca/Sandoval 2019 (2017-2018), Fish Farming Expert (2019), SeafoodSource (2021-2022), Farias et al. 2025 (2024)",
+      "url": "https://www.frontiersin.org/articles/10.3389/fmicb.2018.01284/full",
+      "note": "2020, 2023 and 2025 totals not found. 2024: Fish Farming Expert reports 336.26 t (narrower base, 301 cycles); Farias et al. say 351.1 t. Valenzuela-Aviles 2022 gives 413.5 t for 2021, conflicting with Sernapesca's 463.4 t."
+     },
+     "antibiotics_g_per_t": {
+      "2005": 390,
+      "2006": 530,
+      "2007": 640,
+      "2008": 520,
+      "2009": 390,
+      "2010": 310,
+      "2011": 320,
+      "2012": 410,
+      "2013": 570,
+      "2014": 590,
+      "2015": 630,
+      "2016": 530,
+      "2017": 497,
+      "2018": 380,
+      "2019": 320,
+      "2020": 350,
+      "2021": 470,
+      "2022": 320,
+      "2023": 310,
+      "2024": 340,
+      "unit": "g active ingredient per tonne harvested (Sernapesca ICA x 10,000)",
+      "source": "Miranda et al. 2018 (2005-2016); Sernapesca/Sandoval 2019 (2017-2018); Fish Farming Expert (2019, ICA 0.032%); SeafoodSource (2020 ICA 0.035%, 2021-2022); Fish Farming Expert (2023 ICA 0.031%, 2024 ICA 0.034%)",
+      "url": "https://www.vetinst.no/en/news/biosecurity-and-transportation-of-fish/_/attachment/download/9a2f042d-8bf3-4f92-be60-0532f94ab44f:668f9c60b8d892f561fa3b3dc5d79cafa7e0208e/190819%20Status%20of%20fish%20health%20in%20Chile.pdf",
+      "note": "Sources disagree for 2019-2020: El Mostrador reports 298 g/t for 2020; Diario Financiero says 340-350 g/t for 2018-2020. 2024 closed-cycle index = 302.33 g/t. 2025: national ICA +5.88% vs 2024 (value not given)."
+     },
+     "atlantic_salmon_closed_cycle_mortality_chile_pct": {
+      "2022": 13.4,
+      "2023": 9.7,
+      "source": "Aquabench via Fish Farming Expert",
+      "url": "https://www.fishfarmingexpert.com/aquabench-chile-salmon/lower-mortality-and-higher-productivity-for-chilean-salmon-industry-last-year/1724061",
+      "note": "All causes. Sernapesca gives 9.4% for 2023 closed cycles."
+     },
+     "tasmania_salmon_mortality_tonnes": {
+      "2025": 20133,
+      "2026_Q1": 9197,
+      "source": "EPA Tasmania data via Fish Farming Expert and Huon News",
+      "url": "https://huonnews.com/17435/dead-salmon-9000-tonnes-in-12-weeks/",
+      "note": "All-cause mortality; P. salmonis the main driver per Tasmanian CVO. 2025 is 'more than 20,000 t' (FFE) / 20,133 t (Huon News)."
+     }
+    },
+    "note": "Library compiled on 8–9 Nov 2026 from free-to-read sources; each entry was read (abstract only when the paper is paywalled). Updated by hand; the automatic publication feed below adds new papers every morning."
+   }
   },
   {
    "id": "bkd",

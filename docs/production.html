@@ -6218,6 +6218,28 @@ function dzLiveHtml(h2, box) {
       `<div class="sig-sub" style="margin-top:6px">Subpesca (fisheries and aquaculture undersecretariat) publishes resolutions, decrees and reports as numbered documents with no list; the reader goes through every new number each morning. Spanish titles.</div>`) + `</div>`; }
   return h;
 }
+// bibliotheque d'etudes d'une maladie (fiche tenue a la main) : series longues + etudes par theme
+let DZ_LT = 'all';
+function dzLibraryHtml(d, box) {
+  const L = d.library, e = dzEsc, T = L.themes || [], S = L.studies || [], SE = L.series || {};
+  const ser = (o, unit, col) => { const ys = Object.keys(o).filter(k => /^\d{4}$/.test(k)).sort(); if (ys.length < 2) return '';
+    const v = ys.map(y => o[y]), mx = Math.max(...v) * 1.12, W = 520, H = 170, Lm = 34, Bm = 24, bw = Math.min(24, (W - Lm - 10) / ys.length - 4), y = x => 10 + (H - 10 - Bm) * (1 - x / mx);
+    let g = ''; ys.forEach((yr, i) => { const x = Lm + i * ((W - Lm - 10) / ys.length) + 2; g += `<rect x="${x}" y="${y(o[yr])}" width="${bw}" height="${y(0) - y(o[yr])}" rx="3" fill="${col}" fill-opacity=".85"><title>${yr}: ${o[yr]} ${unit}</title></rect>` +
+      `<text x="${x + bw / 2}" y="${y(o[yr]) - 3}" text-anchor="middle" font-size="9.5" fill="#e7eef2">${Math.round(o[yr])}</text><text x="${x + bw / 2}" y="${H - 8}" text-anchor="middle" font-size="9.5" fill="#cfe0ea">${yr.slice(2)}</text>`; });
+    return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px;height:auto;display:block">${g}</svg>`; };
+  const A = SE.srs_share_of_infectious_mortality_atlantic_chile, B = SE.antibiotics_tonnes_chile, C = SE.antibiotics_g_per_t;
+  let h = `<div id="dzLib" style="margin:16px 0 6px"><b>Study library — ${S.length} studies and reports on ${e(d.name.split(' (')[0])}</b> <span class="sig-sub">${e(L.note || '')}</span></div>`;
+  const charts = [[A, '% of infectious deaths, Atlantic salmon, Chile', '%', '#ff8a65'], [B, 'Antibiotics used in Chilean salmon farming, tonnes', 't', '#ffd54f'], [C, 'Antibiotics per tonne harvested, grams', 'g/t', '#4fc3f7']].filter(x => x[0]);
+  if (charts.length) h += `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin-bottom:12px">` +
+    charts.map(([o, t, u, c]) => box(`<div style="font-weight:700;font-size:13px">${e(t)}</div>${ser(o, u, c)}<div class="sig-sub">${e(o.note || '')} <a href="${e(o.url)}" target="_blank" rel="noopener" style="color:#4fc3f7">source</a></div>`)).join('') + `</div>`;
+  const n = id => S.filter(x => x.theme === id).length;
+  h += `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"><button type="button" class="dz-tab${DZ_LT === 'all' ? ' on' : ''}" data-dzlt="all" style="padding:3px 10px">All <span style="opacity:.7">${S.length}</span></button>` +
+    T.filter(t => n(t.id)).map(t => `<button type="button" class="dz-tab${DZ_LT === t.id ? ' on' : ''}" data-dzlt="${t.id}" style="padding:3px 10px">${e(t.name)} <span style="opacity:.7">${n(t.id)}</span></button>`).join('') + `</div>`;
+  const F = S.filter(x => DZ_LT === 'all' || x.theme === DZ_LT).sort((a, b) => (b.year || 0) - (a.year || 0)), TN = Object.fromEntries(T.map(t => [t.id, t.name]));
+  h += box(F.map(x => `<div style="padding:8px 0;border-bottom:1px solid var(--border)"><div style="font-size:12px;color:var(--muted)">${e(x.year)} · ${e(x.authors)} · ${e(x.source)} · <span style="color:#9fd0ff">${e(TN[x.theme] || x.theme)}</span>${x.open === false ? ' · <span style="color:#ffd54f">abstract only (paywalled)</span>' : ''}</div>` +
+    `<a href="${e(x.url)}" target="_blank" rel="noopener" style="color:#e7eef2;font-weight:600;font-size:13.5px">${e(x.title)}</a><div class="sig-sub" style="margin-top:3px;line-height:1.5">${e(x.finding)}</div></div>`).join(''));
+  return h;
+}
 function dzDiseaseHtml(h2, box) {
   const K = DZ.kn || {}, R = ((DZ.rs || {}).diseases) || {}, e = dzEsc, D = K.diseases || [];
   if (!D.length) return '';
@@ -6247,6 +6269,8 @@ function dzDiseaseHtml(h2, box) {
     `<div style="margin:6px 0 8px;line-height:1.55">${e(d.what || '')}</div><div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px">${(d.basins || []).map(b => `<span class="dz-chip">${e(BN[b] || b)}</span>`).join('')}</div>` +
     `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:4px 22px">${SEC.filter(([k]) => (d[k] || []).length).map(([k, n]) => `<div><div style="font-weight:700;margin-top:10px;font-size:13px">${n}</div><ul style="margin:4px 0 0;padding-left:18px;font-size:12.5px;line-height:1.5;color:#d6e3ea">${d[k].map(fact).join('')}</ul></div>`).join('')}</div>`;
   h += (cnt ? box(cnt, 'margin-bottom:12px') : '') + box(card);
+  if (d.damage) h += box(`<b style="color:#ffab91">${e(d.damage.title)}</b><ul style="margin:6px 0 0;padding-left:18px;font-size:13px;line-height:1.55">${d.damage.lines.map(x => `<li>${e(x)}</li>`).join('')}</ul><div class="sig-sub" style="margin-top:4px">${e(d.damage.source)}</div>`, 'margin-top:12px;border-color:#ff8a65');
+  if (d.library) h += dzLibraryHtml(d, box);
   // publications
   const P = (RS.papers || []).filter(p => DZ_PF === 'all' || (DZ_PF === 'peer' ? p.type !== 'preprint' : p.type === 'preprint'));
   h += `<div id="dzPubs" style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:16px 0 6px"><b>Latest open-access publications</b>${(RS.papers || []).length ? `<span class="sig-sub">${(RS.papers || []).length} in the last ${Math.round(((Date.now() - new Date(((DZ.rs || {}).meta || {}).since || Date.now())) / 864e5) / 30)} months</span>` : ''}` +
@@ -6550,6 +6574,7 @@ function renderDisease() {
   root.querySelectorAll('[data-sft]').forEach(x => x.onclick = () => { DZ_SF.t = x.dataset.sft; renderDisease(); });
   root.querySelectorAll('[data-dzd]').forEach(x => x.onclick = () => { DZ_D = x.dataset.dzd; try { localStorage.setItem('dzDisease', DZ_D); } catch (_) {} renderDisease(); setTimeout(() => { const y = document.getElementById('dzDis'); if (y) y.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 30); });
   root.querySelectorAll('[data-dzsub]').forEach(x => x.onclick = () => { DZ_SUBF = x.dataset.dzsub; renderDisease(); setTimeout(() => { const y = document.getElementById('dzSub'); if (y) y.scrollIntoView({ block: 'start' }); }, 30); });
+  root.querySelectorAll('[data-dzlt]').forEach(x => x.onclick = () => { DZ_LT = x.dataset.dzlt; renderDisease(); setTimeout(() => { const y = document.getElementById('dzLib'); if (y) y.scrollIntoView({ block: 'start' }); }, 30); });
   root.querySelectorAll('[data-dzpf]').forEach(x => x.onclick = () => { DZ_PF = x.dataset.dzpf; renderDisease(); setTimeout(() => { const y = document.getElementById('dzPubs'); if (y) y.scrollIntoView({ block: 'start' }); }, 30); });
   const cb = document.getElementById('dzCsv'); if (cb) cb.onclick = () => { const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
     const csv = ['basin,date,type,document,url,what we use'].concat(ALL.map(x => [x.b, x.d, (TY[x.ty] || TY.data)[0], x.n, x.u, x.w].map(q).join(','))).join('\n');
