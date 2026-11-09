@@ -17,7 +17,8 @@ Contenu :
   smolt        poids a 1-3 mois et nombre de poissons des dernieres generations
   zones        par zone : poissons, poids, stock > 5 kg, TGC et temperature des 3 derniers mois, contre un an plus tot
   factors      les 8 facteurs de la vague de 6 kg+ de 2025-26, valeur actuelle contre un an plus tot, sens (up/down/mixed)
-  volume       scenarios de volumes de build_gen_outlook (6 mois, tous calibres, 5 kg+, 6 kg+) et estimation du mois suivant
+  volume       scenarios de volumes de build_gen_outlook (6 mois, tous calibres, 5 kg+, 6 kg+), budget de poissons (generation videe au
+               rythme de l'an dernier x avance de poids), fourchette modele/budget et estimation du mois suivant
 """
 import calendar
 import collections
@@ -293,12 +294,50 @@ def main():
     for sc, s in (G.get('scenarios') or {}).items():
         vol[sc] = [{'k': m['k'], 'tot': r(m['tot'], 1), 'ly': r(m['ly_tot'], 1), 'kt5': r(m['kt5'], 1), 'kt6': r(m['kt6'], 1), 'ly5': r(m['ly5'], 1), 'ly6': r(m['ly6'], 1)} for m in s['months'][:6]]
     nc = (G.get('nowcast') or {}).get('next')
+    # budget de poissons : volume des 6 prochains mois si la generation en recolte est videe au rythme de l'an dernier
+    # (poissons restants x avance de poids), la nouvelle generation suit l'an dernier au prorata de sa biomasse, le reste comme l'an dernier
+    def harv_kt(gen, k):
+        g = gstate(gen, k)
+        return g['h'] * (g['hw'] or 0) * GUT if g['h'] else 0.0      # M poissons x kg = kt, vide
+    def harv_all_kt(k):
+        return sum(((ser.get(k) or {}).get('harv_kg') or 0) for ser in C.values()) * GUT / 1e6
+    o, oly, nw, nwly = st['old'], st['old_ly'], st['new'], st['new_ly']
+    f_old = (o['n'] / oly['n'] if oly['n'] else 1) * (o['w'] / oly['w'] if oly['w'] and o['w'] else 1)
+    f_new = nw['bio'] / nwly['bio'] if nwly['bio'] else 1
+    budget = []
+    for i in range(1, 7):
+        k = sh(last, i); kl = sh(k, -12)
+        if kl > last:
+            break
+        ly_old, ly_new, ly_all = harv_kt(old - 1, kl), harv_kt(new - 1, kl), harv_all_kt(kl)
+        ly_oth = max(0.0, ly_all - ly_old - ly_new)
+        budget.append({'k': k, 'tot': r(ly_old * f_old + ly_new * f_new + ly_oth, 1), 'ly': r(ly_all, 1), 'old': r(ly_old * f_old, 1), 'new': r(ly_new * f_new, 1), 'ly_old': r(ly_old, 1), 'ly_new': r(ly_new, 1)})
+    cen = vol.get('central') or []
+    recon = []
+    for b in budget:
+        m = next((x for x in cen if x['k'] == b['k']), None)
+        if m:
+            recon.append({'k': b['k'], 'lo': r(min(m['tot'], b['tot']), 1), 'hi': r(max(m['tot'], b['tot']), 1), 'mid': r((m['tot'] + b['tot']) / 2, 1), 'ly': b['ly']})
+    # periodes : 3 prochains mois et les 3 suivants ; si les 3 prochains mois suivent le modele (confirme par les exports), ce qui reste du
+    # budget de 6 mois dit ce que les 3 suivants peuvent donner
+    def psum(A, a, b, key='tot'):
+        return sum(x[key] for x in A[a:b])
+    periods = None
+    if len(budget) >= 6 and len(cen) >= 6:
+        q1m, q2m = psum(cen, 0, 3), psum(cen, 3, 6)
+        q1b, q2b = psum(budget, 0, 3), psum(budget, 3, 6)
+        q1l, q2l = psum(budget, 0, 3, 'ly'), psum(budget, 3, 6, 'ly')
+        periods = {'p1': {'span': f"{MON[budget[0]['k'] % 100 - 1]}–{MON[budget[2]['k'] % 100 - 1]} {budget[2]['k'] // 100}", 'model': r(q1m, 1), 'budget': r(q1b, 1), 'ly': r(q1l, 1)},
+                   'p2': {'span': f"{MON[budget[3]['k'] % 100 - 1]}–{MON[budget[5]['k'] % 100 - 1]} {budget[5]['k'] // 100}", 'model': r(q2m, 1), 'budget': r(q2b, 1), 'ly': r(q2l, 1), 'implied': r(q1b + q2b - q1m, 1)},
+                   'verdict': ('brought_forward' if q1m > q1b * 1.02 else 'held_back' if q1m < q1b * 0.98 else 'in_line')}
+    budget_note = (f"fish budget: G{old} emptied at G{old - 1}'s pace of last year ({o['n']:.0f} M fish left against {oly['n']:.0f} M, x{f_old:.3f} with the weight advance), "
+                   f"G{new} follows G{new - 1} in proportion to its biomass (x{f_new:.3f}), older fish as last year; no growth or temperature effect")
     out = {'meta': {'generated': dt.date.today().isoformat(), 'register': last, 'register_label': f'{MON[last % 100 - 1]} {last // 100}', 'old': old, 'new': new, 'window': win},
            'state': {k: {x: r(v, 3) for x, v in d.items()} for k, d in st.items()}, 'traj': TR, 'tgc': tgc, 'mort': mort,
            'depletion': {'proj': dep, 'ly': [[sh(sh(last, -12), i), r(v, 1)] for i, v in enumerate(dep_ly)], 'end20': end20, 'end05': end05},
            'handover': {'prev2': season_prev2, 'prev': season_prev, 'cur': proj, 'k50': hand50, 'k50_prev': hand50_prev, 'k50_prev2': hand50_prev2},
            'smolt': {str(g): v for g, v in SM.items()}, 'zones': Z, 'factors': factors,
-           'volume': {'scenarios': vol, 'nowcast': {'k': nc['k'], 't': r(nc['t'] / 1000, 1), 'ly': r(nc['ly'] / 1000, 1)} if nc else None, 'tested': 'replayed since Jan 2021: 3.4 % average error on the next 5 months; Q4 forecasts made each November missed by 7–11 points in 2022–2025'},
+           'volume': {'scenarios': vol, 'budget': budget, 'budget_f': {'old': r(f_old, 3), 'new': r(f_new, 3)}, 'budget_note': budget_note, 'reconciled': recon, 'periods': periods, 'nowcast': {'k': nc['k'], 't': r(nc['t'] / 1000, 1), 'ly': r(nc['ly'] / 1000, 1)} if nc else None, 'tested': 'replayed since Jan 2021: 3.4 % average error on the next 5 months; Q4 forecasts made each November missed by 7–11 points in 2022–2025'},
            'six': {'forecast': SIX.get('forecast'), 'alerts': SIX.get('alerts'), 'tests': {k: {x: v.get(x) for x in ('mape', 'mape_fixed4', 'naive_mape', 'inside_range')} for k, v in (SIX.get('tests') or {}).items()}}}
     io.open(OUT, 'w', encoding='utf-8').write(json.dumps(out, ensure_ascii=False, separators=(',', ':')))
     print(f"generations.json : registre {out['meta']['register_label']}, G{old} en recolte ({st['old']['n']:.1f} M, {st['old']['w']:.2f} kg), G{new} suivante ({st['new']['n']:.1f} M, {st['new']['w']:.2f} kg) ; fin 20 % {end20}, relais 50 % {hand50} (saison passee {hand50_prev})")
