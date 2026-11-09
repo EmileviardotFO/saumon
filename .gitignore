@@ -5,3 +5,6 @@ data/chile_caligus_new_alerts.md
 docs/data
 data/data
 data/canada_atl_new_alerts.md
+
+# sortie locale du test du site
+data/smoke.json
