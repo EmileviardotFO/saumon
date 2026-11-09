@@ -12984,10 +12984,11 @@ function gyTgcCompareHtml(Z, k, H, Nn) {
       const e = gyStageTgc([po], H, k).all, f = gyStageTgc([po], H - 1, k1).all, gg = gyStageTgc([po], Nn, k).all, h = gyStageTgc([po], Nn - 1, k1).all; return [a, b, e, f, c, d, gg, h]; };
   const ZS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
   const t2 = `<div class="gm-card" style="border-color:#4fc3f7"><div class="gm-h"><span style="background:#4fc3f7"></span><b>TGC by zone</b> <i>this year against the previous generation at the same stage (small number)</i></div>` +
-    `<div style="overflow-x:auto"><table class="gm-grid"><thead><tr><th></th><th>G${H}<small>last 3 months</small></th><th>G${H}<small>since 0.3 kg</small></th><th>G${Nn}<small>last 3 months</small></th><th>G${Nn}<small>since 0.3 kg</small></th></tr></thead><tbody>` +
-    ZS.map(po => { const v = z(po); return `<tr><th>Zone ${po}</th>${gyTgcCell(v[0], v[1])}${gyTgcCell(v[2], v[3])}${gyTgcCell(v[4], v[5])}${gyTgcCell(v[6], v[7])}</tr>`; }).join('') +
+    `<div style="overflow-x:auto"><table class="gm-grid gm-zone"><thead><tr><th></th><th colspan="2" class="gz-h" style="background:rgba(79,195,247,.22)!important;border-bottom:3px solid #4fc3f7">G${H} — harvested now <small>vs G${H - 1}</small></th><th class="gz-sep"></th><th colspan="2" class="gz-h" style="background:rgba(255,183,77,.22)!important;border-bottom:3px solid #ffb74d">G${Nn} — next generation <small>vs G${Nn - 1}</small></th></tr>` +
+      `<tr><th></th><th>last 3 months</th><th>since 0.3 kg</th><th class="gz-sep"></th><th>last 3 months</th><th>since 0.3 kg</th></tr></thead><tbody>` +
+    ZS.map(po => { const v = z(po); return `<tr><th>Zone ${po}</th>${gyTgcCell(v[0], v[1])}${gyTgcCell(v[2], v[3])}<td class="gz-sep"></td>${gyTgcCell(v[4], v[5])}${gyTgcCell(v[6], v[7])}</tr>`; }).join('') +
     (() => { const a = gyTgcWin(Z, H, k3, k), b = gyTgcWin(Z, H - 1, gySh(k3, -12), k1), c = gyTgcWin(Z, Nn, k3, k), d = gyTgcWin(Z, Nn - 1, gySh(k3, -12), k1);
-      return `<tr><th>Selected area</th>${gyTgcCell(a, b)}${gyTgcCell(gyStageTgc(Z, H, k).all, gyStageTgc(Z, H - 1, k1).all)}${gyTgcCell(c, d)}${gyTgcCell(gyStageTgc(Z, Nn, k).all, gyStageTgc(Z, Nn - 1, k1).all)}</tr>`; })() +
+      return `<tr class="gz-tot"><th>Selected area</th>${gyTgcCell(a, b)}${gyTgcCell(gyStageTgc(Z, H, k).all, gyStageTgc(Z, H - 1, k1).all)}<td class="gz-sep"></td>${gyTgcCell(c, d)}${gyTgcCell(gyStageTgc(Z, Nn, k).all, gyStageTgc(Z, Nn - 1, k1).all)}</tr>`; })() +
     `</tbody></table></div><div class="sig-sub">Green = faster growth for the same warmth than the previous generation at the same point of its life, orange = slower. "Since 0.3 kg" = the whole time at sea so far.</div></div>`;
   return t1 + t2;
 }
@@ -13018,7 +13019,9 @@ function gyGrowthRender(Z, k, H, Nn) {
       .gm-h{display:flex;align-items:center;gap:8px;font-size:14px;margin-bottom:6px}.gm-h span{width:10px;height:10px;border-radius:50%;display:inline-block}.gm-h i{font-style:normal;color:var(--muted);font-size:12.5px}
       .gm-grid{border-collapse:separate;border-spacing:3px;font-size:12px;min-width:100%}.gm-grid th{font-weight:600;color:#cfe0ea;text-align:left;white-space:nowrap;padding:2px 6px;background:none!important;text-transform:none!important;letter-spacing:0!important}.gm-grid thead th{text-align:center;font-size:11.5px}
       .gm-grid th small{display:block;font-weight:400;color:var(--muted);font-size:10.5px}.gm-grid tbody th small{display:inline}
-      .gm-c{text-align:center;border-radius:8px;padding:4px 6px;min-width:62px}.gm-c b{display:block;font-size:13px}.gm-c span{display:block;font-size:10.5px;color:#cfe0ea}</style>` +
+      .gm-c{text-align:center;border-radius:8px;padding:4px 6px;min-width:62px}.gm-zone .gz-h{text-align:center!important;font-size:13px!important;color:#fff!important;border-radius:10px 10px 0 0;padding:6px!important}.gm-zone .gz-h small{display:inline;margin-left:4px}
+      .gm-zone .gz-sep{width:14px;min-width:14px;padding:0!important;background:none!important}.gm-zone tbody tr td:nth-child(2),.gm-zone tbody tr td:nth-child(3){box-shadow:inset 3px 0 0 rgba(79,195,247,.55)}
+      .gm-zone tbody tr td:nth-child(5),.gm-zone tbody tr td:nth-child(6){box-shadow:inset 3px 0 0 rgba(255,183,77,.6)}.gm-zone .gz-tot th,.gm-zone .gz-tot td{border-top:2px solid rgba(255,255,255,.4)}.gm-c b{display:block;font-size:13px}.gm-c span{display:block;font-size:10.5px;color:#cfe0ea}</style>` +
     gyTgcCompareHtml(Z, k, H, Nn) +
     grid(R.H.slice().reverse(), H, 'the generation being harvested', '#4fc3f7') + grid(R.N.slice().reverse(), Nn, 'the next generation', '#ffb74d') +
     `<div class="sig-sub">Big number = this year; small = the same month a year earlier, then the change. Green = better for supply (faster growth, fewer deaths), orange = worse; the stronger the colour, the bigger the gap. Weight and temperature are not coloured. Newest month on the left.</div>`;
