@@ -11064,6 +11064,47 @@ function bsSupplyHtml(e) {
     `<tr style="font-weight:700"><td class="name">Seven basins</td><td>${f(T[0])}</td><td>${f(T[1])}</td>${c(100 * (T[1] / T[0] - 1))}<td>${f(T[2])}</td>${c(100 * (T[2] / T[1] - 1))}<td></td><td></td></tr></tbody></table></div>` +
     `<div class="sig-sub" style="margin-top:4px">${(() => { const s6 = BS.total; return `Big fish grow faster than supply: 6 kg+ ${s6.v2027 >= s6.v2026 ? '+' : '−'}${Math.abs(100 * (s6.v2027 / s6.v2026 - 1)).toFixed(0)} % in 2027 for Norway, Chile and the Faroes, against ${(100 * (T[2] / T[1] - 1)).toFixed(1)} % for all salmon of the seven basins.`; })()}</div></div>`;
 }
+// Norvege : 6 kg+ des six prochains mois, tires du stock de gros poissons (data/six_stock.json, scripts/build_six_stock.py)
+var SIXS;
+function bsStockHtml(e) {
+  if (SIXS === undefined) { SIXS = null; fetch(DATA_URL.replace('data.json', 'six_stock.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : false).catch(() => false)
+      .then(j => { SIXS = j || false; if (currentView === 'bigsix') renderBigSix(); }); return ''; }
+  if (!SIXS || !SIXS.forecast) return '';
+  const F = SIXS.forecast, M = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], ml = k => `${M[k % 100 - 1]} ${String(k).slice(2, 4)}`;
+  const f1 = v => v === null || v === undefined ? '—' : (+v).toFixed(1), sg = v => v === null || v === undefined ? '—' : `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(0)} %`;
+  const col = v => v > 2 ? '#81c784' : v < -2 ? '#ff8a65' : '#cfe0ea';
+  // barres groupees par mois : un an plus tot / prevision
+  const mo = F.flatMap(f => f.months), mx = Math.max(...mo.map(x => Math.max(x.fcst || 0, x.ly || 0))) * 1.15, W = 640, Hh = 190, l = 34, b = 26, bw = (W - l - 8) / mo.length, Y = v => Hh - b - (Hh - b - 10) * v / mx;
+  let svg = `<svg viewBox="0 0 ${W} ${Hh}" style="width:100%;max-width:${W}px;height:auto" role="img" aria-label="6 kg+ harvest by month">`;
+  for (let t = 0; t <= mx; t += 10) svg += `<line x1="${l}" x2="${W - 4}" y1="${Y(t)}" y2="${Y(t)}" stroke="rgba(255,255,255,.12)"/><text x="${l - 6}" y="${Y(t) + 4}" text-anchor="end" font-size="10" fill="#a9bfcc">${t}</text>`;
+  mo.forEach((x, i) => { const x0 = l + i * bw + bw * .14, sw = bw * .34;
+    if (x.ly) svg += `<rect x="${x0}" y="${Y(x.ly)}" width="${sw}" height="${Y(0) - Y(x.ly)}" rx="3" fill="#8fa4b0" opacity=".75"><title>${ml(x.k - 100)}: ${f1(x.ly)} kt</title></rect>`;
+    svg += `<rect x="${x0 + sw + 2}" y="${Y(x.fcst)}" width="${sw}" height="${Y(0) - Y(x.fcst)}" rx="3" fill="${i < 3 ? '#4fc3f7' : '#4fc3f799'}"><title>${ml(x.k)} forecast: ${f1(x.fcst)} kt</title></rect>`;
+    svg += `<text x="${l + i * bw + bw / 2}" y="${Hh - 8}" text-anchor="middle" font-size="11" fill="#cfe0ea">${ml(x.k)}</text>`; });
+  svg += `</svg>`;
+  const card = f => `<div style="flex:1 1 260px;padding:12px 14px;border-radius:16px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.06)">
+      <div class="sig-sub" style="text-transform:uppercase;letter-spacing:.06em;font-weight:700">${e(f.span)}</div>
+      <div style="display:flex;gap:16px;align-items:baseline;margin:6px 0"><b style="font-size:24px">${Math.round(f.fcst)} kt</b><b style="font-size:18px;color:${col(f.chg)}">${sg(f.chg)}</b><span class="sig-sub">vs ${f1(f.ly)} kt a year earlier</span></div>
+      <div class="sig-sub">range ${Math.round(f.lo)}–${Math.round(f.hi)} kt · from the stock above ${f.stock_above} kg gutted: ${Math.round(f.stock_kt)} kt against ${Math.round(f.stock_ly_kt)} a year earlier (${sg(100 * (f.stock_kt / f.stock_ly_kt - 1))})</div>
+      <div class="sig-sub" style="margin-top:4px">tested since 2020: average error ${f.mape} % (repeating last year: ${f.naive_mape} %)${f.mape > f.naive_mape - 3 ? ' — <b style="color:#ffcc80">barely better than last year, read as a direction only</b>' : ''}</div></div>`;
+  const T = SIXS.tests, rows = Object.values(T)[0].rows.filter(r => r.k % 100 === 9), rows2 = Object.values(T)[1].rows.filter(r => r.k % 100 === 9);
+  const tb = `<table class="sig-table" style="margin-top:8px"><tr><th>Made end of</th><th>Oct–Dec: forecast</th><th>actual</th><th>error</th><th>Jan–Mar: forecast</th><th>actual</th><th>error</th></tr>` +
+    rows.map(r => { const q = rows2.find(x => x.k === r.k) || {}; const er = (a, b) => a && b ? sg(100 * (a / b - 1)) : '—';
+      return `<tr><td>${ml(r.k)}</td><td>${f1(r.fcst)}</td><td>${f1(r.actual)}</td><td>${er(r.fcst, r.actual)}</td><td>${f1(q.fcst)}</td><td>${f1(q.actual)}</td><td>${er(q.fcst, q.actual)}</td></tr>`; }).join('') + `</table>`;
+  const L = (SIXS.live || []).filter(x => x.forecasts.some(f => f.actual !== undefined));
+  return `<div class="sig-title" style="margin-top:14px">Norway — 6 kg+ in the next six months, from the stock of big fish at sea</div>
+    <div class="sig-sub" style="max-width:900px;line-height:1.5">A deliberately simple rule, refined at each new register: the 6 kg+ harvested in the next three months is the stock of fish above 4 kg gutted in the
+    register (${e(SIXS.meta.register_label)}) times the share of that stock past years turned into 6 kg+ harvest over the same months; months 4–6 use the stock above 3 kg. No scenario, no opinion.
+    In November 2025 this rule gave 60 kt for October–December 2025 (actual 68 kt); our former model said about 38 kt.</div>
+    <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:10px">${F.map(card).join('')}</div>
+    <div style="margin-top:12px">${svg}<div class="sig-sub"><span style="color:#8fa4b0">■</span> same month a year earlier · <span style="color:#4fc3f7">■</span> forecast (lighter: months 4–6, less reliable) · kt gutted, Norway</div></div>
+    <details class="cl-sec" style="margin-top:10px"><summary><span class="cl-st">How good is the rule? Forecasts made each end of September since 2020</span></summary>${tb}
+    <div class="sig-sub" style="margin-top:6px">Each forecast uses only the years known at the time. The actual 6 kg+ harvest is itself estimated from register average weights. The range (lowest–highest past ratio) caught the actual
+    ${Object.values(T)[0].inside_range} % of the time for the next three months — it is a guide, not a confidence interval. Missed most: winter 2025–26, when warm water made fish grow faster than in any past year.
+    Spot-market 6 kg+ shares (Sitagri / Sjømat Norge) exclude Lerøy, SalMar and Nordlaks, three of the largest holders of big fish, so they can diverge from this register-based figure.</div>
+    ${L.length ? `<div class="sig-sub" style="margin-top:6px"><b>Live record</b> (forecasts frozen when made): ${L.map(x => `${ml(x.made_from)} → ${x.forecasts.filter(f => f.actual !== undefined).map(f => `${e(f.span)} ${f1(f.fcst)} vs ${f1(f.actual)} kt`).join(', ')}`).join(' · ')}</div>` : ''}
+    <div class="sig-sub" style="margin-top:6px">${e(SIXS.meta.method)}</div></details>`;
+}
 function renderBigSix() {
   const root = document.getElementById('bsRoot'); if (!root) return;
   if (BS === undefined || BS === null) { root.innerHTML = 'Loading…'; return bsLoad(() => currentView === 'bigsix' && renderBigSix()); }
@@ -11083,7 +11124,7 @@ function renderBigSix() {
     `<div class="bs-box"><div class="bs-k"><div><span class="sig-sub">2025</span><b>${Math.round(T.v2025)} kt</b></div><div><span class="sig-sub">2026 (estimate)</span><b>${Math.round(T.v2026)} kt</b><span class="sig-sub">${pc(T.v2026, T.v2025)}</span></div>` +
     `<div><span class="sig-sub">2027 projection</span><b>${Math.round(T.v2027)} kt</b><span class="sig-sub">${pc(T.v2027, T.v2026)} · range ${Math.round(T.lo)}–${Math.round(T.hi)} kt</span></div></div>${bsBars(Q)}` +
     `<div class="sig-sub" style="margin-top:6px">${e(T.basins.join(', '))}: about 85 % of the farmed Atlantic salmon of the seven basins. Iceland and Scotland are discussed below without a 6 kg+ figure (no size statistics). ${e(BS.meta.note)}</div></div>` +
-    bsSupplyHtml(e) +
+    bsSupplyHtml(e) + bsStockHtml(e) +
     `<div class="sig-title" style="margin-top:10px">Basin by basin — what we know today, and what could change 2027</div>` +
     BS.basins.map(b => { const AC = { NO: '#4fc3f7', CL: '#ff8a65', FO: '#ffd54f', IS: '#b39ddb', GB: '#81c784' }[b.id] || '#9fd0ff', iso = { NO: 'no', CL: 'cl', FO: 'fo', IS: 'is', GB: 'gb' }[b.id];
       const pill = (t, st = '') => `<span class="bs-pill" style="${st}">${t}</span>`;
