@@ -1,6 +1,6 @@
 {
  "meta": {
-  "built": "2026-11-08T21:06+00:00",
+  "built": "2026-11-09T07:39+00:00",
   "note": "Signals ranked by how unusual they are against their own history (score). Effect: supports / weighs on prices, risk, watch."
  },
  "lead": "Supply grows +6 % in 2026 across the seven basins and +0.1 % in 2027. Chile is the main source of change: a record El Niño, sea lice at a high, a slowing harvest and fewer big fish. Norway carries the growth with heavier fish and more 6 kg+. Imports grow fastest in Japan, Brazil, UK; USA and Israel are flat or down.",
@@ -60,6 +60,15 @@
    "score": 1.68
   },
   {
+   "basin": "Chile · Subpesca",
+   "title": "New rules on algal blooms",
+   "value": "1 document",
+   "text": "Subpesca, 2026-10-28: Res. Ex. N° 2534-2026 Modifica Resolución que Renueva Área de Florecimiento Algal Nocivo (FAN) de Alexandrium Catenella en Sectores que Indica. (Publicado en Página Web 28-10-2026) (F.D.O. 03-11-2026).",
+   "effect": "watch",
+   "tab": "disease",
+   "score": 1.5
+  },
+  {
    "basin": "Norway",
    "title": "Record harvest, heavier fish",
    "value": "1,819 kt",
@@ -76,15 +85,6 @@
    "effect": "watch",
    "tab": "australia",
    "score": 1.2
-  },
-  {
-   "basin": "Market",
-   "title": "Norwegian export price below last year",
-   "value": "75.0 NOK/kg",
-   "text": "fresh salmon, week 44 (80.5 a year earlier, −7 %); export volume since January +13 %.",
-   "effect": "price",
-   "tab": "prices",
-   "score": 0.6
   }
  ],
  "supply": {
@@ -460,7 +460,7 @@
    "title": "Salmar slo forventningene i tredje kvartal",
    "url": "https://e24.no/hav-og-sjoemat/i/n9pmA5/salmar-hadde-driftsresultat-paa-1-6-milliarder-kroner-i-tredje-kvartal",
    "source": "E24",
-   "n_sources": 3,
+   "n_sources": 4,
    "basins": [
     "NO"
    ],
@@ -481,6 +481,50 @@
    "themes": [
     "market",
     "regulation"
+   ],
+   "lang": "en"
+  },
+  {
+   "date": "2026-11-06",
+   "title": "Hofseth Biocare swings to Q3 profit as fish oil prices drive record revenue",
+   "url": "https://www.undercurrentnews.com/2026/11/06/hofseth-biocare-swings-to-q3-profit-as-fish-oil-prices-drive-record-revenue/",
+   "source": "undercurrentnews.com",
+   "n_sources": 2,
+   "basins": [
+    "global"
+   ],
+   "themes": [
+    "market",
+    "feed",
+    "companies"
+   ],
+   "lang": "en"
+  },
+  {
+   "date": "2026-11-06",
+   "title": "Tras la renuncia del Presidente de Paraguay: ¿cuánto salmón chileno se exporta a ese mercado?",
+   "url": "https://www.salmonexpert.cl/envios-exportaciones-gobierno/tras-la-renuncia-del-presidente-de-paraguay-cuanto-salmon-chileno-se-exporta-a-ese-mercado/2207011",
+   "source": "salmonexpert.cl",
+   "n_sources": 2,
+   "basins": [
+    "CL"
+   ],
+   "themes": [
+    "market"
+   ],
+   "lang": "es"
+  },
+  {
+   "date": "2026-11-06",
+   "title": "Fish farmers warned to watch out for disease from wild salmonids",
+   "url": "https://www.fishfarmingexpert.com/fish-health-norway-norwegian-veterinary-institute/fish-farmers-warned-to-watch-out-for-disease-from-wild-salmonids/2207500",
+   "source": "fishfarmingexpert.com",
+   "n_sources": 2,
+   "basins": [
+    "GB"
+   ],
+   "themes": [
+    "biology"
    ],
    "lang": "en"
   },
@@ -523,49 +567,6 @@
    ],
    "themes": [
     "market"
-   ],
-   "lang": "en"
-  },
-  {
-   "date": "2026-11-05",
-   "title": "Mowi crecerá a 630.000 toneladas de salmón: es la mayor empresa de productos del mar en el mundo",
-   "url": "https://www.salmonexpert.cl/cosechas-ebit-ebitda/mowi-crecera-a-630000-toneladas-de-salmon-es-la-mayor-empresa-de-productos-del-mar-en-el-mundo/2206015",
-   "source": "salmonexpert.cl",
-   "n_sources": 2,
-   "basins": [
-    "NO"
-   ],
-   "themes": [
-    "biology",
-    "companies"
-   ],
-   "lang": "es"
-  },
-  {
-   "date": "2026-11-03",
-   "title": "Scottish Sea Farms cuts 2026 harvest guidance by 3,000 tonnes",
-   "url": "https://www.fishfarmingexpert.com/fish-mortality-gill-health-harvest-guidance/scottish-sea-farms-cuts-2026-harvest-guidance-by-3000-tonnes/2205124",
-   "source": "fishfarmingexpert.com",
-   "n_sources": 2,
-   "basins": [
-    "GB"
-   ],
-   "themes": [
-    "companies"
-   ],
-   "lang": "en"
-  },
-  {
-   "date": "2026-11-03",
-   "title": "Icelandic Salmon - Third quarter 2026 results",
-   "url": "https://finance.yahoo.com/markets/stocks/articles/icelandic-salmon-third-quarter-2026-063000093.html",
-   "source": "The Manila Times",
-   "n_sources": 2,
-   "basins": [
-    "IS"
-   ],
-   "themes": [
-    "companies"
    ],
    "lang": "en"
   }
