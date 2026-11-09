@@ -1,6 +1,6 @@
 {
  "meta": {
-  "built": "2026-11-09T17:49+00:00",
+  "built": "2026-11-09T19:56+00:00",
   "note": "Signals ranked by how unusual they are against their own history (score). Effect: supports / weighs on prices, risk, watch."
  },
  "lead": "Supply grows +6 % in 2026 across the seven basins and +0.1 % in 2027. Chile is the main source of change: a record El Niño, a slowing harvest and fewer big fish. Norway carries the growth with heavier fish and more 6 kg+. Imports grow fastest in Japan, Brazil, UK; USA and Israel are flat or down.",
@@ -561,5 +561,293 @@
    ],
    "lang": "en"
   }
+ ],
+ "week": {
+  "ssb": [
+   {
+    "yw": 202639,
+    "t": 32385,
+    "t_ly": 23396,
+    "p": 73.59,
+    "p_ly": 79.91
+   },
+   {
+    "yw": 202640,
+    "t": 30277,
+    "t_ly": 24009,
+    "p": 73.8,
+    "p_ly": 77.68
+   },
+   {
+    "yw": 202641,
+    "t": 27982,
+    "t_ly": 26112,
+    "p": 72.55,
+    "p_ly": 75.38
+   },
+   {
+    "yw": 202642,
+    "t": 27689,
+    "t_ly": 26448,
+    "p": 74.05,
+    "p_ly": 73.74
+   },
+   {
+    "yw": 202643,
+    "t": 28518,
+    "t_ly": 25886,
+    "p": 76.04,
+    "p_ly": 78.25
+   },
+   {
+    "yw": 202644,
+    "t": 28444,
+    "t_ly": 24875,
+    "p": 74.98,
+    "p_ly": 80.55
+   }
+  ],
+  "spot": {
+   "yw": 202644,
+   "now": {
+    "p_avg": 69.26,
+    "sh_6plus": 7.0,
+    "sh_5plus": 26.0,
+    "p_6-7": 71.15,
+    "p_4-5": 69.84
+   },
+   "prev": {
+    "p_avg": 71.24,
+    "sh_6plus": 7.0,
+    "sh_5plus": 31.0,
+    "p_6-7": 75.04,
+    "p_4-5": 71.6
+   },
+   "ly": {
+    "p_avg": 77.68,
+    "sh_6plus": 17.0,
+    "sh_5plus": 41.0,
+    "p_6-7": 79.6,
+    "p_4-5": 78.91
+   }
+  },
+  "bw": {
+   "yw": 202644,
+   "now": {
+    "lice": 0.176,
+    "t": 10.76,
+    "over_limit": 6.5
+   },
+   "prev": {
+    "lice": 0.171,
+    "t": 10.94,
+    "over_limit": 6.5
+   },
+   "ly": {
+    "lice": 0.18,
+    "t": 11.13,
+    "over_limit": 6.5
+   }
+  },
+  "pulse": [
+   {
+    "yw": 202644,
+    "yoy_pct": -2.6,
+    "cage_deliveries": 198,
+    "slaughter_boat_visits": 69
+   },
+   {
+    "yw": 202645,
+    "yoy_pct": 4.9,
+    "cage_deliveries": 194,
+    "slaughter_boat_visits": 62
+   }
+  ],
+  "hi": {
+   "week": 45,
+   "year": 2026,
+   "level": 1,
+   "level_en": "low"
+  },
+  "fx": {
+   "monthly": {
+    "201801": 9.6464,
+    "201802": 9.6711,
+    "201803": 9.5848,
+    "201804": 9.6202,
+    "201805": 9.5642,
+    "201806": 9.4746,
+    "201807": 9.4975,
+    "201808": 9.6161,
+    "201809": 9.6205,
+    "201810": 9.4793,
+    "201811": 9.6272,
+    "201812": 9.8055,
+    "201901": 9.7631,
+    "201902": 9.7444,
+    "201903": 9.7181,
+    "201904": 9.6233,
+    "201905": 9.7793,
+    "201906": 9.7465,
+    "201907": 9.6587,
+    "201908": 9.9742,
+    "201909": 9.9203,
+    "201910": 10.1165,
+    "201911": 10.1087,
+    "201912": 10.0429,
+    "202001": 9.9384,
+    "202002": 10.1327,
+    "202003": 11.2943,
+    "202004": 11.3365,
+    "202005": 10.9862,
+    "202006": 10.7298,
+    "202007": 10.6544,
+    "202008": 10.5797,
+    "202009": 10.7769,
+    "202010": 10.922,
+    "202011": 10.7453,
+    "202012": 10.6008,
+    "202101": 10.3661,
+    "202102": 10.2791,
+    "202103": 10.1469,
+    "202104": 10.0376,
+    "202105": 10.0931,
+    "202106": 10.1444,
+    "202107": 10.3767,
+    "202108": 10.4195,
+    "202109": 10.1861,
+    "202110": 9.8143,
+    "202111": 9.9661,
+    "202112": 10.1308,
+    "202201": 10.007,
+    "202202": 10.0544,
+    "202203": 9.7367,
+    "202204": 9.6191,
+    "202205": 10.1453,
+    "202206": 10.2971,
+    "202207": 10.1823,
+    "202208": 9.8309,
+    "202209": 10.1697,
+    "202210": 10.3919,
+    "202211": 10.3357,
+    "202212": 10.448,
+    "202301": 10.7149,
+    "202302": 10.9529,
+    "202303": 11.2858,
+    "202304": 11.5187,
+    "202305": 11.733,
+    "202306": 11.7164,
+    "202307": 11.3474,
+    "202308": 11.4127,
+    "202309": 11.4525,
+    "202310": 11.6284,
+    "202311": 11.7958,
+    "202312": 11.5333,
+    "202401": 11.3501,
+    "202402": 11.3843,
+    "202403": 11.5214,
+    "202404": 11.6828,
+    "202405": 11.5988,
+    "202406": 11.4178,
+    "202407": 11.716,
+    "202408": 11.7895,
+    "202409": 11.7852,
+    "202410": 11.7907,
+    "202411": 11.7408,
+    "202412": 11.7447,
+    "202501": 11.7456,
+    "202502": 11.6574,
+    "202503": 11.5472,
+    "202504": 11.838,
+    "202505": 11.5968,
+    "202506": 11.5841,
+    "202507": 11.8537,
+    "202508": 11.8653,
+    "202509": 11.6702,
+    "202510": 11.6633,
+    "202511": 11.7402,
+    "202512": 11.8428,
+    "202601": 11.667,
+    "202602": 11.3206,
+    "202603": 11.1657,
+    "202604": 11.0332,
+    "202605": 10.7935,
+    "202606": 11.0338,
+    "202607": 11.0822,
+    "202608": 10.9274,
+    "202609": 10.8003,
+    "202610": 10.5914
+   }
+  }
+ },
+ "mainnews": [
+  {
+   "kind": "results",
+   "title": "Quarterly results: Mowi, SalMar, Bakkafrost",
+   "text": "Mowi 185.6 kt (+12 %), 2026 guidance 620 kt, next year 630 kt · SalMar 105.1 kt (+13 %), 2026 guidance 347 kt · Bakkafrost 27.6 kt (−10 %), 2026 guidance 117 kt, next year 125 kt · Mowi Scotland 11.6 kt (−33 %), 2026 guidance 74 kt, next year 76 kt.",
+   "src": "4 reports this week → Outlook",
+   "tab": "outlook",
+   "n": 66
+  },
+  {
+   "kind": "story",
+   "title": "Agrosuper: AquaChile owner pursues €479 million acquisition of Blumar salmon business",
+   "text": "14 articles since 11-02; latest: AquaChile lidera resultados de la salmonicultura al cierre del tercer trimestre 2026 (El Mostrador).",
+   "src": "14 articles · 11-06",
+   "url": "https://news.google.com/rss/articles/CBMizAFBVV95cUxPYjlrVUpPdTVPWDlmVFRRb19qZ1laeE5vNUVLdTRmT2hwU3BZaU11OHR3ZW9ZTUNzQmlLQUVBNHRzb2ZxYS1lMDZEOFd6a2h3RlFUUWd1ak5NbTB0cmlfTHJzQXI5eXRqM0JlcTF5ZXYtcjJlUUtMR1NxUk5ZVG1zdDVNc3oyYmNtd2FIVlB5VF9KcG1waE5JaE5ZaThERGhwSkh6WVZjMG55TGlrdG9ibXVuUmFzYndOZ2xuZlAzQnlGRUZYYllKX3dPcXY?oc=5",
+   "basin": "CL",
+   "who": "AquaChile",
+   "n": 14
+  },
+  {
+   "kind": "story",
+   "title": "Salmon for the rich? Camanchaca boss takes aim at celebrity chefs",
+   "text": "6 articles since 11-02; latest: Salmon for the rich? Camanchaca boss takes aim at celebrity chefs (Salmon Business).",
+   "src": "6 articles · 11-06",
+   "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxNQ0pWVFRIeC1JOXpBcTFxVEFibjJUU1BlVGhEeGxRc2wzc215djl2U1M2c3I1MHVhR1ZYTnl5SnZRZDB0cGhJVVVqaVRENTNoYmZ3c1NvOFFMSkpwcjNySVZVcU5HQjgyRjAyRHZ6SEw4TDNDOU45T3luX1pISm9mbkQtdFExdWNEaldPTzVvcFNWRzd6VHotSFh5eXg?oc=5",
+   "basin": "CL",
+   "who": "Camanchaca",
+   "n": 6
+  }
+ ],
+ "monthly": [
+  {
+   "k": "register",
+   "label": "Norway register",
+   "when": "Sep 2026",
+   "text": "harvest 172 kt (+15 %); G2025 148 M fish (−12 %) at 3.67 kg (+7 %)",
+   "tab": "generations"
+  },
+  {
+   "k": "us",
+   "label": "US imports",
+   "when": "Sep 2026",
+   "text": "37.2 kt (+4 %); CL +3 %, NO +15 %, CA −33 %",
+   "tab": "usa"
+  },
+  {
+   "k": "cn",
+   "label": "Norway to China + HK",
+   "when": "Sep 2026",
+   "text": "12.5 kt (+37 %)",
+   "tab": "china"
+  },
+  {
+   "k": "chile",
+   "label": "Chile harvest",
+   "when": "Sep 2026",
+   "text": "Atlantic Jan–Sep 596 kt (+4 %)",
+   "tab": "chile"
+  },
+  {
+   "k": "outlook",
+   "label": "Outlook",
+   "when": "",
+   "text": "2026 +6 %, 2027 +0.1 %",
+   "tab": "supply"
+  }
+ ],
+ "notes": [
+  "fx weekly: <urlopen error Tunnel connection failed: 403 Forbidden>"
  ]
 }

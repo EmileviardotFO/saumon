@@ -312,8 +312,111 @@ def main():
         news.append({'date': n['date'], 'title': n['title'], 'url': n.get('link') or n.get('url'), 'source': n.get('source'), 'n_sources': len(n.get('srcs') or []) or 1,
                      'basins': n.get('basins') or [], 'themes': n.get('themes') or [], 'lang': n.get('lang')})
         if len(news) >= 8: break
+    # ---------------- la semaine en chiffres (sources hebdomadaires seulement) ----------------
+    week = {}
+    try:
+        if fr:
+            ks = sorted(fr)[-6:]
+            week['ssb'] = [{'yw': k, 't': fr[k][2], 't_ly': (fr.get(k - 100) or [0, 0, None])[2], 'p': fr[k][3], 'p_ly': (fr.get(k - 100) or [0, 0, 0, None])[3]} for k in ks]
+        if PX:
+            k = max(PX); g = lambda r, f: (r or {}).get(f)
+            week['spot'] = {'yw': k, 'now': {f: g(PX[k], f) for f in ('p_avg', 'sh_6plus', 'sh_5plus', 'p_6-7', 'p_4-5')}, 'prev': {f: g(PX.get(k - 1), f) for f in ('p_avg', 'sh_6plus', 'sh_5plus', 'p_6-7', 'p_4-5')},
+                            'ly': {f: g(PX.get(k - 100), f) for f in ('p_avg', 'sh_6plus', 'sh_5plus', 'p_6-7', 'p_4-5')}}
+        # BarentsWatch : poux et temperature nationale de la derniere semaine complete, meme semaine un an plus tot
+        bwr = (dd.get('bw_weekly') or {}).get('rows') or []
+        if bwr:
+            ywk = max(r['y'] * 100 + r['w'] for r in bwr)
+            def nat(yw_):
+                L = [r['lice'] for r in bwr if r['y'] * 100 + r['w'] == yw_ and r.get('lice') is not None]
+                T = [(r['t'] * r['nt'], r['nt']) for r in bwr if r['y'] * 100 + r['w'] == yw_ and r.get('t') is not None and r.get('nt')]
+                lim = sum(r.get('lim') or 0 for r in bwr if r['y'] * 100 + r['w'] == yw_)
+                return {'lice': round(S.mean(L), 3) if L else None, 't': round(sum(a for a, b in T) / sum(b for a, b in T), 2) if T else None, 'over_limit': lim}
+            week['bw'] = {'yw': ywk, 'now': nat(ywk), 'prev': nat(ywk - 1 if ywk % 100 > 1 else (ywk // 100 - 1) * 100 + 52), 'ly': nat(ywk - 100)}
+        hp = (lire('harvest_pulse_log.json') or {}).get('weeks') or {}
+        if hp:
+            kk = sorted(hp)[-2:]; week['pulse'] = [{'yw': int(k), **{x: hp[k].get(x) for x in ('yoy_pct', 'cage_deliveries', 'slaughter_boat_visits')}} for k in kk]
+        hi = ((lire('algae_watch.json') or {}).get('norway_hi') or {}).get('weekly') or {}
+        if hi: week['hi'] = {x: hi.get(x) for x in ('week', 'year', 'level', 'level_en')}
+        # change NOK/EUR : Norges Bank, quotidien -> semaine ISO ; a defaut, le mensuel deja dans national_trade.json
+        fxw = {}
+        try:
+            import urllib.request
+            raw = urllib.request.urlopen(urllib.request.Request('https://data.norges-bank.no/api/data/EXR/B.EUR.NOK.SP?format=csv&startPeriod=' + (dt.date.today() - dt.timedelta(days=800)).isoformat(), headers={'User-Agent': 'salmon-outlook'}), timeout=30).read().decode('utf-8', 'replace')
+            acc = collections.defaultdict(list)
+            for line in raw.splitlines()[1:]:
+                cells = line.replace('"', '').split(';')
+                try:
+                    dte = dt.date.fromisoformat(cells[-2] if len(cells) >= 2 and re.match(r'\d{4}-\d{2}-\d{2}', cells[-2]) else cells[0]); val = float([c for c in cells if re.match(r'^\d+[.,]\d+$', c)][-1].replace(',', '.'))
+                except Exception:  # noqa: BLE001
+                    continue
+                iso = dte.isocalendar(); acc[iso[0] * 100 + iso[1]].append(val)
+            fxw = {str(k): round(S.mean(v), 4) for k, v in sorted(acc.items())}
+        except Exception as e:  # noqa: BLE001
+            notes.append(f'fx weekly: {str(e)[:120]}')
+        if not fxw:
+            fxm = ((lire('national_trade.json') or {}).get('meta') or {}).get('fx', {}).get('NOK') or {}
+            fxw = {'monthly': fxm}
+        week['fx'] = fxw
+    except Exception as e:  # noqa: BLE001
+        notes.append(f'week: {str(e)[:160]}')
+    # ---------------- les trois sujets de la semaine : les plus repris (stories.json), plus les publications trimestrielles ----------------
+    mainnews = []
+    try:
+        st = lire('stories.json') or {}
+        SS = [x for x in (st.get('stories') or []) if x.get('arts')]
+        for x in SS:
+            x['_n'] = len(x['arts']); x['_last'] = max(a['date'] for a in x['arts'])
+        SS = [x for x in SS if x['_last'] >= cut]
+        SS.sort(key=lambda x: (-x['_n'], x['_last']))
+        qq = [r for r in ((lire('quarterly.json') or {}).get('reports') or []) if r.get('published') and r['published'] >= cut and r.get('segments') and r['segments'][0].get('harvest_t')]
+        if qq:
+            qq.sort(key=lambda r: -(r['segments'][0].get('harvest_t') or 0))
+            parts = []
+            for r in qq[:4]:
+                g = r['segments'][0]; chg = pct(g.get('harvest_t'), g.get('harvest_t_ly'))
+                parts.append(f"{r['company']} {g['harvest_t'] / 1000:.1f} kt" + (f" ({sg(chg, 0)})" if chg is not None else '') + (f", {r.get('quarter', '')[:4]} guidance {g['guidance_t'] / 1000:.0f} kt" if g.get('guidance_t') else '') + (f", next year {g['next_year_guidance_t'] / 1000:.0f} kt" if g.get('next_year_guidance_t') else ''))
+            mainnews.append({'kind': 'results', 'title': f"Quarterly results: {', '.join(r['company'] for r in qq[:3])}", 'text': ' · '.join(parts) + '.', 'src': f"{len(qq)} reports this week → Outlook", 'tab': 'outlook', 'n': sum(x['_n'] for x in SS if x.get('who') in {r['company'] for r in qq})})
+        used = {r['company'] for r in qq}
+        for x in SS:
+            if len(mainnews) >= 3: break
+            if x.get('who') in used or any(x.get('who') and x['who'] in m_['title'] for m_ in mainnews): continue
+            if x.get('basin') == 'FEED' or re.search(r'shrimp|crevette|camar', x.get('title', ''), re.I): continue   # pas de crevette dans les trois sujets saumon
+            a0 = sorted(x['arts'], key=lambda a: a['date'], reverse=True)[0]
+            mainnews.append({'kind': 'story', 'title': x['title'], 'text': (x.get('summary') or '') or f"{x['_n']} articles since {min(a['date'] for a in x['arts'])[5:]}; latest: {a0['title']} ({a0['source']}).", 'src': f"{x['_n']} articles · {x['_last'][5:]}", 'url': a0.get('url'), 'basin': x.get('basin'), 'who': x.get('who'), 'n': x['_n']})
+    except Exception as e:  # noqa: BLE001
+        notes.append(f'mainnews: {str(e)[:160]}')
+    # ---------------- le mensuel en une ligne chacun ----------------
+    monthly = []
+    try:
+        rec = collections.defaultdict(float)
+        for r in d.get('records') or []:
+            rec[r['year'] * 100 + r['month']] += (r['uttak_kg'] or 0) * 0.888 / 1e6
+        if rec:
+            k = max(k_ for k_, v in rec.items() if v > 0); gj = lire('generations.json') or {}; so = (gj.get('state') or {}).get('old') or {}; sly = (gj.get('state') or {}).get('old_ly') or {}
+            monthly.append({'k': 'register', 'label': 'Norway register', 'when': ml(k), 'text': f"harvest {rec[k]:.0f} kt ({sg(pct(rec[k], rec[k - 100]) or 0, 0)})" + (f"; G{gj['meta']['old']} {so['n']:.0f} M fish ({sg(pct(so['n'], sly['n']) or 0, 0)}) at {so['w']:.2f} kg ({sg(pct(so['w'], sly['w']) or 0, 0)})" if so and sly else ''), 'tab': 'generations'})
+        us = lire('us_imports.json') or {}
+        if us.get('rows'):
+            L = us['meta']['last']; A = collections.defaultdict(float)
+            for r in us['rows']:
+                if r[0] in (L, L - 100): A[(r[0] == L, r[1])] += r[3]
+            tot = sum(v for (c, o), v in A.items() if c); totl = sum(v for (c, o), v in A.items() if not c)
+            top = sorted({o for (c, o) in A}, key=lambda o: -A[(True, o)])[:3]
+            monthly.append({'k': 'us', 'label': 'US imports', 'when': ml(L), 'text': f"{tot / 1000:.1f} kt ({sg(pct(tot, totl) or 0, 0)}); " + ', '.join(f"{o} {sg(pct(A[(True, o)], A[(False, o)]) or 0, 0)}" for o in top), 'tab': 'usa'})
+        X = d.get('ssb_exports', {}).get('rows') or []
+        if X:
+            L = max(r[0] for r in X); cn = sum(r[3] for r in X if r[0] == L and r[2] in ('CN', 'HK')) / 1e6; cnl = sum(r[3] for r in X if r[0] == L - 100 and r[2] in ('CN', 'HK')) / 1e6
+            monthly.append({'k': 'cn', 'label': 'Norway to China + HK', 'when': ml(L), 'text': f"{cn:.1f} kt ({sg(pct(cn, cnl) or 0, 0)})", 'tab': 'china'})
+        cs = lire('chile_subpesca.json') or {}
+        rep = sorted([x for x in cs.get('reports') or [] if x.get('k') and (x.get('species') or {}).get('salar')], key=lambda x: x['k'])
+        if rep:
+            x = rep[-1]; sa = x['species']['salar']
+            monthly.append({'k': 'chile', 'label': 'Chile harvest', 'when': ml(x['k']), 'text': f"Atlantic Jan–{MON[x['k'] % 100 - 1]} {sa['cum_kt']:.0f} kt ({sg(sa.get('var_pct') or 0, 0)})", 'tab': 'chile'})
+        if sup:
+            monthly.append({'k': 'outlook', 'label': 'Outlook', 'when': '', 'text': f"2026 {sg(sup['world'], 0)}, 2027 {sg(sup['world_next'], 1)}", 'tab': 'supply'})
+    except Exception as e:  # noqa: BLE001
+        notes.append(f'monthly: {str(e)[:160]}')
     out = {'meta': {'built': dt.datetime.now(dt.timezone.utc).isoformat(timespec='minutes'), 'note': 'Signals ranked by how unusual they are against their own history (score). Effect: supports / weighs on prices, risk, watch.'},
-           'lead': ' '.join(lead), 'signals': sig[:9], 'supply': sup, 'demand': dem, 'basins': B, 'agenda': ag[:8], 'prices': prices, 'news': news}
+           'lead': ' '.join(lead), 'signals': sig[:9], 'supply': sup, 'demand': dem, 'basins': B, 'agenda': ag[:8], 'prices': prices, 'news': news, 'week': week, 'mainnews': mainnews, 'monthly': monthly, 'notes': notes}
     io.open(OUT, 'w', encoding='utf-8').write(json.dumps(out, ensure_ascii=False, indent=1))
     print(f'data/summary.json : {len(sig)} signaux ;', ' | '.join(f'{s["basin"]}: {s["title"]} ({s["score"]})' for s in sig[:9]))
 
