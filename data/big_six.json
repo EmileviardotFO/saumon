@@ -1,6 +1,6 @@
 {
  "meta": {
-  "built": "2026-11-09T08:13+00:00",
+  "built": "2026-11-09T08:22+00:00",
   "unit": "thousand tonnes gutted (6 kg+ fish)",
   "note": "Supply only. 2026 = harvest to date plus the rest of the year at the same pace; 2027 = our harvest projection times the 6 kg+ share expected, low and high cases in brackets."
  },
@@ -30,14 +30,36 @@
     "October 2026: 14.5 % of the harvest in 6 kg+ (13.1 % a year earlier), from harvest-boat visits."
    ],
    "up": [
-    "The new generation keeps its growth advance: a wave of 6 kg+ in spring–summer 2027 (+30 % case).",
-    "Low mortality and fewer lice treatments let farmers keep fish longer."
+    "Stock already in the water: 52 kt of fish over 5 kg at the end of September (+34 %), and they keep growing through the winter: most of the 6 kg+ of H1 2027 are these fish.",
+    "The next generation is ahead: 1.07 kg per fish against 1.00 kg a year earlier, growing faster. If it keeps the advance, it reaches 6 kg in spring–summer 2027 and the usual April–July gap in big fish disappears (+30 % case).",
+    "Fewer losses: the generation being harvested loses 0.85 % of its fish a month against 1.43 % a year earlier, so more fish reach large sizes.",
+    "Farmers can keep fish longer when lice and disease leave them alone: fewer forced harvests of small fish."
    ],
    "down": [
-    "Algae (spring 2026 in the south, 2025 in the north), ISA or a jellyfish year force early harvests of smaller fish.",
-    "Weak premium for big sizes pushes farmers to harvest earlier.",
-    "Norway is at its legal biomass limit: more 6 kg+ means fewer small fish, not more salmon."
+    "The growth advance fades: if the new generation grows like an average one, 6 kg+ are only +2 % in January–September 2027.",
+    "Biology goes back to normal (see the box): more lice, more delousing, more handling deaths, more early harvests.",
+    "Algae (spring 2026 in the south, 2025 in the north), ISA, pasteurellosis or a jellyfish year force early harvests of smaller fish.",
+    "Weak premium for big sizes: farmers may prefer to harvest earlier and free biomass for the next generation.",
+    "Norway is at its legal biomass limit (MTB): more 6 kg+ means fewer small fish, not more salmon; if farmers near their limit, they harvest earlier."
    ],
+   "biology": {
+    "title": "Biology in 2026: the best year in a long time — and a limit for 2027",
+    "lines": [
+     "Mortality at sea, January–Sep: 6.8 % of the fish (30 M fish) against 8.5 % (40 M) in 2025 and 8.5–9.6 % in 2019–2025: the lowest since at least 2019.",
+     "Sea lice, weeks 1–44: 0.134 adult females per fish on average against 0.175 in 2025 (0.134–0.175 since 2019).",
+     "Farm-weeks above the lice limit: 360 against 893 in 2025 (467–959 since 2019).",
+     "Non-medicinal delousing (thermal, mechanical, freshwater) reported: 2,613 against 3,263 in 2025 (-20 %): fewer handlings, fewer injuries.",
+     "Sea at the farms 9.4 °C on average against 9.8 °C in 2025: the cool summer slowed lice; the fish still grew faster than a year earlier."
+    ],
+    "limits": [
+     "A year this good is rarely repeated: low mortality and few treatments in 2026 left more and bigger fish at sea, which is why the 2027 projection is high. If 2027 is an ordinary year, part of that advance is lost.",
+     "Temperature: a warmer 2027 (like 2025, 9.8 °C) brings lice back, then delousing and handling deaths, and earlier harvests of smaller fish.",
+     "After low-lice years, pressure tends to come back: 2023 was as calm as 2026 for lice, and 2024 was one of the worst.",
+     "More big fish at sea also means more biomass to manage under the MTB limit: farmers close to their limit harvest earlier, which caps the 6 kg+.",
+     "The algae episode of March 2026 in the south (about 1.7 million fish in zone 1) shows the risk is still there, even in a good year."
+    ],
+    "source": "Biomass register (Fiskeridirektoratet), monthly; BarentsWatch weekly lice and treatment reports by farm."
+   },
    "tab": "generations"
   },
   {

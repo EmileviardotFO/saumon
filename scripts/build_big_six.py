@@ -89,8 +89,16 @@ def main():
                       f'The generation being harvested grows {abs(100 * (st["old_gr"] / st["old_gr_ly"] - 1)):.0f} % {"faster" if st["old_gr"] >= st["old_gr_ly"] else "slower"} per fish and loses {st["old_mort"]:.2f} % of its fish a month ({st["old_mort_ly"]:.2f} % a year earlier).' if st.get('old_gr_ly') else '',
                       f'Next generation: {st.get("new_fish", 0):.0f} M fish at {st.get("new_w", 0):.2f} kg ({st.get("new_fish_ly", 0):.0f} M at {st.get("new_w_ly", 0):.2f} kg a year earlier).' if st.get('new_fish_ly') else '',
                       'October 2026: 14.5 % of the harvest in 6 kg+ (13.1 % a year earlier), from harvest-boat visits.'],
-            'up': ['The new generation keeps its growth advance: a wave of 6 kg+ in spring–summer 2027 (+30 % case).', 'Low mortality and fewer lice treatments let farmers keep fish longer.'],
-            'down': ['Algae (spring 2026 in the south, 2025 in the north), ISA or a jellyfish year force early harvests of smaller fish.', 'Weak premium for big sizes pushes farmers to harvest earlier.', 'Norway is at its legal biomass limit: more 6 kg+ means fewer small fish, not more salmon.'],
+            'up': [f'Stock already in the water: {st.get("old_b5", 0):.0f} kt of fish over 5 kg at the end of September ({100 * (st["old_b5"] / st["old_b5_ly"] - 1):+.0f} %), and they keep growing through the winter: most of the 6 kg+ of H1 2027 are these fish.' if st.get('old_b5_ly') else '',
+                   f'The next generation is ahead: {st.get("new_w", 0):.2f} kg per fish against {st.get("new_w_ly", 0):.2f} kg a year earlier, growing faster. If it keeps the advance, it reaches 6 kg in spring–summer 2027 and the usual April–July gap in big fish disappears ({100 * (rh - 1):+.0f} % case).' if st.get('new_w_ly') else '',
+                   'Fewer losses: the generation being harvested loses 0.85 % of its fish a month against 1.43 % a year earlier, so more fish reach large sizes.',
+                   'Farmers can keep fish longer when lice and disease leave them alone: fewer forced harvests of small fish.'],
+            'down': [f'The growth advance fades: if the new generation grows like an average one, 6 kg+ are only {100 * (rl - 1):+.0f} % in January–September 2027.',
+                     'Biology goes back to normal (see the box): more lice, more delousing, more handling deaths, more early harvests.',
+                     'Algae (spring 2026 in the south, 2025 in the north), ISA, pasteurellosis or a jellyfish year force early harvests of smaller fish.',
+                     'Weak premium for big sizes: farmers may prefer to harvest earlier and free biomass for the next generation.',
+                     'Norway is at its legal biomass limit (MTB): more 6 kg+ means fewer small fish, not more salmon; if farmers near their limit, they harvest earlier.'],
+            'biology': norway_biology(),
             'tab': 'generations'})
     # ---------------- Chili ----------------
     cl = own.get('CL') or {}; CM = lire('chile_customs.json').get('months') or {}
@@ -170,6 +178,50 @@ def main():
     io.open(D('big_six.json'), 'w', encoding='utf-8').write(json.dumps(out, ensure_ascii=False, indent=1))
     print(out['lead'])
     for b in Q: print(f'  {b["id"]} {b["v2025"]} {b["v2026"]} {b["v2027"]} ({b["lo"]}–{b["hi"]}) part {b["share"]}')
+
+
+def norway_biology():
+    """La biologie de 2026 en Norvege contre les annees precedentes (memes semaines / memes mois), et pourquoi elle peut ne pas durer."""
+    d = lire('data.json'); R = d.get('records') or []; B = (d.get('bw_weekly') or {}).get('rows') or []
+    if not R or not B: return None
+    c = {}
+    for r in R:
+        if 0 <= (r.get('po') if r.get('po') is not None else -1) <= 13 and r.get('behfisk_stk'):
+            q = c.setdefault((r['year'], r['month']), [0, 0]); q[0] += r.get('dodfisk_stk') or 0; q[1] += r['behfisk_stk']
+    Y, M = max(k for k in c)
+    def mort(y):
+        s = 1
+        for m in range(1, M + 1):
+            a, b = c.get((y, m), (0, 0))
+            if b: s *= 1 - a / b
+        return 100 * (1 - s)
+    dead = lambda y: sum(c.get((y, m), (0, 0))[0] for m in range(1, M + 1)) / 1e6
+    W = max(r['w'] for r in B if r['y'] == Y)
+    agg = {}
+    for r in B:
+        if r['w'] > W: continue
+        q = agg.setdefault(r['y'], [0, 0, 0, 0, 0, 0])
+        if r.get('lice') is not None and r.get('nl'): q[0] += r['lice'] * r['nl']; q[1] += r['nl']
+        q[2] += (r.get('trt') or {}).get('IKKE_MEDIKAMENTELL', 0); q[3] += r.get('ov', 0)
+        if r.get('t') is not None and r.get('nt'): q[4] += r['t'] * r['nt']; q[5] += r['nt']
+    yrs = [y for y in range(Y - 7, Y) if y in agg and (y, M) in c]
+    li = lambda y: agg[y][0] / agg[y][1]; tm = lambda y: agg[y][4] / agg[y][5]
+    MN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    mo = {y: mort(y) for y in yrs + [Y]}
+    best = min(mo[y] for y in yrs)
+    lines = [f'Mortality at sea, January–{MN[M - 1]}: {mo[Y]:.1f} % of the fish ({dead(Y):.0f} M fish) against {mo[Y - 1]:.1f} % ({dead(Y - 1):.0f} M) in {Y - 1} and {min(mo[y] for y in yrs):.1f}–{max(mo[y] for y in yrs):.1f} % in {yrs[0]}–{Y - 1}: the lowest since at least {yrs[0]}.' if mo[Y] < best else
+             f'Mortality at sea, January–{MN[M - 1]}: {mo[Y]:.1f} % against {mo[Y - 1]:.1f} % in {Y - 1}.',
+             f'Sea lice, weeks 1–{W}: {li(Y):.3f} adult females per fish on average against {li(Y - 1):.3f} in {Y - 1} ({min(li(y) for y in yrs):.3f}–{max(li(y) for y in yrs):.3f} since {yrs[0]}).',
+             f'Farm-weeks above the lice limit: {agg[Y][3]} against {agg[Y - 1][3]} in {Y - 1} ({min(agg[y][3] for y in yrs)}–{max(agg[y][3] for y in yrs)} since {yrs[0]}).',
+             f'Non-medicinal delousing (thermal, mechanical, freshwater) reported: {agg[Y][2]:,} against {agg[Y - 1][2]:,} in {Y - 1} ({100 * (agg[Y][2] / agg[Y - 1][2] - 1):+.0f} %): fewer handlings, fewer injuries.',
+             f'Sea at the farms {tm(Y):.1f} °C on average against {tm(Y - 1):.1f} °C in {Y - 1}: the cool summer slowed lice; the fish still grew faster than a year earlier.']
+    limits = ['A year this good is rarely repeated: low mortality and few treatments in 2026 left more and bigger fish at sea, which is why the 2027 projection is high. If 2027 is an ordinary year, part of that advance is lost.',
+              f'Temperature: a warmer 2027 (like {Y - 1}, {tm(Y - 1):.1f} °C) brings lice back, then delousing and handling deaths, and earlier harvests of smaller fish.',
+              'After low-lice years, pressure tends to come back: 2023 was as calm as 2026 for lice, and 2024 was one of the worst.',
+              'More big fish at sea also means more biomass to manage under the MTB limit: farmers close to their limit harvest earlier, which caps the 6 kg+.',
+              'The algae episode of March 2026 in the south (about 1.7 million fish in zone 1) shows the risk is still there, even in a good year.']
+    return {'title': f'Biology in {Y}: the best year in a long time — and a limit for {Y + 1}', 'lines': lines, 'limits': limits,
+            'source': 'Biomass register (Fiskeridirektoratet), monthly; BarentsWatch weekly lice and treatment reports by farm.'}
 
 
 def chile_h1(g6):
