@@ -165,6 +165,12 @@ def main():
     sc_ = MAN.get('scotland') or {}
     if sc_:
         out['basins'].append({'id': 'GB', 'name': 'Scotland', 'qualitative': True, 'known': [sc_['text']], 'url': sc_.get('url'), 'direction': 'down', 'tab': 'scotland'})
+    # rappel : offre totale (toutes tailles) par bassin, comme l'onglet Global supply
+    NM = {'NO': 'Norway', 'CL': 'Chile', 'GB': 'Scotland', 'FO': 'Faroe Islands', 'IS': 'Iceland', 'CA': 'Canada', 'AU': 'Tasmania'}
+    six = {b['id']: b for b in out['basins'] if not b.get('qualitative')}
+    out['supply'] = [{'id': k, 'name': NM.get(k, k), 'v2025': round(v['v2025'], 1), 'v2026': round(v['e2026'], 1), 'v2027': round(v['c2027'], 1), 'chg2026': v.get('chg2026'), 'chg2027': v.get('chg2027'),
+                      'lo': v.get('lo'), 'hi': v.get('hi'), 'six2027': six[k]['v2027'] if k in six else None}
+                     for k, v in sorted(own.items(), key=lambda kv: -kv[1]['e2026']) if v.get('e2026')]
     Q = [b for b in out['basins'] if not b.get('qualitative')]
     tot = lambda k: round(sum(b[k] for b in Q if b.get(k) is not None), 1)
     out['total'] = {'basins': [b['name'] for b in Q], 'v2025': tot('v2025'), 'v2026': tot('v2026'), 'v2027': tot('v2027'), 'lo': tot('lo'), 'hi': tot('hi')}

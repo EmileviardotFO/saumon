@@ -10997,6 +10997,16 @@ function bsBars(B) {   // barres groupees 2025 / 2026 / 2027 par bassin, moustac
   return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${Math.max(420, B.length * 200)}px;height:auto;display:block" role="img" aria-label="6 kg+ supply by basin">${g}</svg>` +
     `<div class="sig-sub"><span style="color:#c3ced6">■</span> 2025 · <span style="color:#ffc38a">■</span> 2026 (estimate) · <span style="color:#3fb8f0">■</span> 2027 projection, line = low–high case · thousand tonnes gutted of 6 kg+ fish</div>`;
 }
+function bsSupplyHtml(e) {
+  const L = BS.supply || []; if (!L.length) return '';
+  const f = v => v == null ? '—' : Math.round(v).toLocaleString('en-US'), c = v => v == null ? '<td>—</td>' : `<td class="${v >= 0 ? 'delta-good' : 'delta-bad'}">${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(v).toFixed(1)} %</td>`;
+  const T = ['v2025', 'v2026', 'v2027'].map(k => L.reduce((a, b) => a + (b[k] || 0), 0));
+  return `<div class="bs-box"><b>Reminder — total supply by basin, all sizes</b> <span class="sig-sub">thousand tonnes gutted, our estimates (Global supply tab); last column: how much of 2027 is 6 kg+</span>` +
+    `<div style="overflow-x:auto;margin-top:6px"><table class="sig-table"><thead><tr><th class="name">Basin</th><th>2025</th><th>2026</th><th>vs 2025</th><th>2027</th><th>vs 2026</th><th>2027 range</th><th>6 kg+ in 2027</th></tr></thead><tbody>` +
+    L.map(b => `<tr><td class="name">${e(b.name)}</td><td>${f(b.v2025)}</td><td>${f(b.v2026)}</td>${c(b.chg2026)}<td>${f(b.v2027)}</td>${c(b.chg2027)}<td>${b.lo != null ? `${b.lo > 0 ? '+' : ''}${b.lo} to ${b.hi > 0 ? '+' : ''}${b.hi} %` : '—'}</td><td>${b.six2027 != null ? `${f(b.six2027)} kt (${Math.round(100 * b.six2027 / b.v2027)} %)` : '—'}</td></tr>`).join('') +
+    `<tr style="font-weight:700"><td class="name">Seven basins</td><td>${f(T[0])}</td><td>${f(T[1])}</td>${c(100 * (T[1] / T[0] - 1))}<td>${f(T[2])}</td>${c(100 * (T[2] / T[1] - 1))}<td></td><td></td></tr></tbody></table></div>` +
+    `<div class="sig-sub" style="margin-top:4px">${(() => { const s6 = BS.total; return `Big fish grow faster than supply: 6 kg+ ${s6.v2027 >= s6.v2026 ? '+' : '−'}${Math.abs(100 * (s6.v2027 / s6.v2026 - 1)).toFixed(0)} % in 2027 for Norway, Chile and the Faroes, against ${(100 * (T[2] / T[1] - 1)).toFixed(1)} % for all salmon of the seven basins.`; })()}</div></div>`;
+}
 function renderBigSix() {
   const root = document.getElementById('bsRoot'); if (!root) return;
   if (BS === undefined || BS === null) { root.innerHTML = 'Loading…'; return bsLoad(() => currentView === 'bigsix' && renderBigSix()); }
@@ -11010,6 +11020,7 @@ function renderBigSix() {
     `<div class="bs-box"><div class="bs-k"><div><span class="sig-sub">2025</span><b>${Math.round(T.v2025)} kt</b></div><div><span class="sig-sub">2026 (estimate)</span><b>${Math.round(T.v2026)} kt</b><span class="sig-sub">${pc(T.v2026, T.v2025)}</span></div>` +
     `<div><span class="sig-sub">2027 projection</span><b>${Math.round(T.v2027)} kt</b><span class="sig-sub">${pc(T.v2027, T.v2026)} · range ${Math.round(T.lo)}–${Math.round(T.hi)} kt</span></div></div>${bsBars(Q)}` +
     `<div class="sig-sub" style="margin-top:6px">${e(T.basins.join(', '))}: about 85 % of the farmed Atlantic salmon of the seven basins. Iceland and Scotland are discussed below without a 6 kg+ figure (no size statistics). ${e(BS.meta.note)}</div></div>` +
+    bsSupplyHtml(e) +
     `<div class="sig-title" style="margin-top:6px">Basin by basin — what we know today and what could change 2027</div><div class="bs-grid">` +
     BS.basins.map(b => `<div class="bs-box"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><b style="font-size:16px">${e(b.name)}</b>${b.qualitative ? `<span style="font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;border:1px solid ${b.direction === 'down' ? '#ff8a65;color:#ffab91' : '#81c784;color:#a5d6a7'}">${b.direction === 'down' ? '▼ fewer big fish' : '▲ more big fish'}</span>` : `<span class="sig-sub">${Math.round(b.v2026)} kt in 2026 → <b style="color:#e7eef2">${Math.round(b.v2027)} kt</b> in 2027 (${pc(b.v2027, b.v2026)}, ${Math.round(b.lo)}–${Math.round(b.hi)})</span>`}</div>` +
       (b.share ? `<div class="sig-sub" style="margin-top:4px">6 kg+ share of the harvest: ${b.share[0]} % in 2025, ${b.share[1]} % in 2026${b.estimated ? ' (estimated from average harvest weight)' : ''}</div>` : '') +

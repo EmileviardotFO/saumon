@@ -1,6 +1,6 @@
 {
  "meta": {
-  "built": "2026-11-09T08:22+00:00",
+  "built": "2026-11-09T08:23+00:00",
   "unit": "thousand tonnes gutted (6 kg+ fish)",
   "note": "Supply only. 2026 = harvest to date plus the rest of the year at the same pace; 2027 = our harvest projection times the 6 kg+ share expected, low and high cases in brackets."
  },
@@ -175,6 +175,92 @@
    "url": "https://www.salmonbusiness.com/bakkafrost-faroese-success-dampened-by-another-heavy-scottish-loss/",
    "direction": "down",
    "tab": "scotland"
+  }
+ ],
+ "supply": [
+  {
+   "id": "NO",
+   "name": "Norway",
+   "v2025": 1537.1,
+   "v2026": 1630.1,
+   "v2027": 1639.7,
+   "chg2026": 6.1,
+   "chg2027": 0.6,
+   "lo": -4.5,
+   "hi": 4.1,
+   "six2027": 389.2
+  },
+  {
+   "id": "CL",
+   "name": "Chile",
+   "v2025": 724.0,
+   "v2026": 739.9,
+   "v2027": 724.7,
+   "chg2026": 2.2,
+   "chg2027": -2.1,
+   "lo": -9.1,
+   "hi": 0.9,
+   "six2027": 118.0
+  },
+  {
+   "id": "GB",
+   "name": "Scotland",
+   "v2025": 175.7,
+   "v2026": 182.0,
+   "v2027": 189.6,
+   "chg2026": 3.6,
+   "chg2027": 4.1,
+   "lo": -4.2,
+   "hi": 9.6,
+   "six2027": null
+  },
+  {
+   "id": "FO",
+   "name": "Faroe Islands",
+   "v2025": 114.9,
+   "v2026": 136.3,
+   "v2027": 136.3,
+   "chg2026": 18.7,
+   "chg2027": 0,
+   "lo": -5,
+   "hi": 5,
+   "six2027": 59.9
+  },
+  {
+   "id": "CA",
+   "name": "Canada",
+   "v2025": 87.5,
+   "v2026": 100.0,
+   "v2027": 101.5,
+   "chg2026": 14.2,
+   "chg2027": 1.5,
+   "lo": -5.5,
+   "hi": 6.5,
+   "six2027": null
+  },
+  {
+   "id": "AU",
+   "name": "Tasmania",
+   "v2025": 68.0,
+   "v2026": 74.2,
+   "v2027": 78.0,
+   "chg2026": 9.2,
+   "chg2027": 5,
+   "lo": 0,
+   "hi": 10,
+   "six2027": null
+  },
+  {
+   "id": "IS",
+   "name": "Iceland",
+   "v2025": 54.5,
+   "v2026": 64.5,
+   "v2027": 60.0,
+   "chg2026": 18.3,
+   "chg2027": -7.0,
+   "lo": -13.5,
+   "hi": -2.0,
+   "six2027": null
   }
  ],
  "total": {
