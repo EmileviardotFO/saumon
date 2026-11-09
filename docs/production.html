@@ -15004,7 +15004,7 @@ const SN_BURGER = window.SN_BURGER, SN_CLOSE = window.SN_CLOSE;
 <script>
 // « Generations comparison » : une seule entree du menu, trois vues (generations, carte, contre l'an dernier) choisies en tete
 (function () {
-  const V = [['generations', 'Generations'], ['genmap', 'Generations map'], ['genyoy', 'vs last year']];
+  const V = [['generations', 'Year classes compared'], ['genmap', 'Zone by zone'], ['genyoy', 'This year vs last year']];
   const css = document.createElement('style');
   css.textContent = `.gc-seg{display:inline-flex;gap:2px;padding:4px;border-radius:999px;margin:2px 0 12px;background:linear-gradient(150deg,rgba(255,255,255,.2),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.28);box-shadow:inset 0 1px 0 rgba(255,255,255,.45)}
     .gc-seg button{border:0;background:none;color:#e6f0f6;font:inherit;font-size:13.5px;padding:7px 15px;border-radius:999px;cursor:pointer}.gc-seg button.on{background:linear-gradient(180deg,#fff,#dcecf5);color:#0d2a40;font-weight:700}
@@ -15140,9 +15140,27 @@ function renderBasins() {
     #tabIndex .ti-n{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;border-radius:999px;font-size:11.5px;font-weight:800;color:#0d2a40;
       background:linear-gradient(150deg,#ffffff,#cfe6f3);box-shadow:inset 0 -1px 0 rgba(0,0,0,.08)}
     @media (max-width:760px){#tabIndex{flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;padding-bottom:4px}}
-    .bs-nav{display:none !important}`;
+    .bs-nav{display:none !important}
+    #tabTop{display:none;justify-content:center;width:100%}#tabTop.on{display:flex}
+    #tabTop .gc-seg{margin:0;padding:5px}#tabTop .gc-seg button{font-size:14.5px;padding:9px 20px}
+    .panel #tabIndex{justify-content:flex-start;margin:4px 0 14px}.gc-hid{display:none!important}
+    @media (max-width:760px){#tabTop{justify-content:flex-start;overflow-x:auto}#tabTop .gc-seg{flex-wrap:nowrap}#tabTop .gc-seg button{white-space:nowrap;font-size:13.5px;padding:8px 14px}}`;
   document.head.appendChild(st);
+  // vues principales d'un onglet (barre .gc-seg : Generations, Disease, Chile, Other basins) : elles montent dans le cadre du haut,
+  // et le sommaire des parties prend leur place dans la page
+  const top = document.createElement('div'); top.id = 'tabTop'; frame.appendChild(top);
   const idx = document.createElement('div'); idx.id = 'tabIndex'; frame.appendChild(idx);
+  const lift = P => {
+    const seg = P ? [...P.querySelectorAll('.gc-seg')].find(x => !top.contains(x)) : null;
+    if (!seg) { if (top.classList.contains('on')) { top.classList.remove('on'); top.innerHTML = ''; } if (idx.parentNode !== frame) frame.appendChild(idx); return false; }
+    const B = [...seg.querySelectorAll('button')];
+    const th = `<div class="gc-seg" role="tablist">${B.map((b, n) => `<button type="button" data-n="${n}" class="${b.classList.contains('on') ? 'on' : ''}">${b.innerHTML}</button>`).join('')}</div>`;
+    if (top.innerHTML !== th) { top.innerHTML = th; top.querySelectorAll('button').forEach(x => x.onclick = () => { const o = [...seg.querySelectorAll('button')][+x.dataset.n]; if (o) o.click(); }); }
+    if (!top.classList.contains('on')) top.classList.add('on');
+    if (!seg.classList.contains('gc-hid')) seg.classList.add('gc-hid');
+    const tt = seg.previousElementSibling; if (tt && tt.classList.contains('gc-ttl') && !tt.classList.contains('gc-hid')) tt.classList.add('gc-hid');
+    if (seg.nextElementSibling !== idx) seg.after(idx);
+    return true; };
   const vis = el => el && el.offsetParent !== null && getComputedStyle(el).display !== 'none';
   const label = t => { t = t.replace(/\s+/g, ' ').trim().replace(/^\d+\s*·\s*/, ''); const c = t.split(/ — | – |: /)[0]; return c.length > 46 ? c.slice(0, 44) + '…' : c; };
   let tm = null;
@@ -15162,7 +15180,8 @@ function renderBasins() {
         items = T.slice(1).filter(x => x.textContent.trim().length > 2 && !x.closest('table, details:not([open]), .gm-tw')).map(x => [x, x.textContent]); }
     }
     const seen = new Set(); items = items.filter(([, t]) => { const k = label(t); if (seen.has(k)) return false; seen.add(k); return true; });
-    { const d = items.length >= 2 ? '' : 'none'; if (frame.style.display !== d) frame.style.display = d; }   // pas d'ecriture inutile : elle relancerait l'observateur
+    const lifted = lift(P);
+    { const d = items.length >= 2 || lifted ? '' : 'none'; if (frame.style.display !== d) frame.style.display = d; }   // pas d'ecriture inutile : elle relancerait l'observateur
     if (items.length < 2) items = [];   // sinon les pastilles de l'onglet precedent restaient si le cadre est reaffiche par le changement d'onglet
     const ih = items.map(([, t], n) => `<button type="button" data-n="${n}"><span class="ti-n">${n + 1}</span>${label(t).replace(/&/g, '&amp;').replace(/</g, '&lt;')}</button>`).join('');
     if (idx.innerHTML !== ih) idx.innerHTML = ih;
@@ -15177,7 +15196,7 @@ function renderBasins() {
     const cat = cb ? (cb.querySelector('.sn-lab') || cb.childNodes[0]).textContent.trim() : '';
     const html = (cat ? `<span class="h1-cat">${cat}</span>` : '') + `<span class="h1-t">${t.replace(/</g, '&lt;')}</span>`; if (H1.innerHTML !== html) H1.innerHTML = html; };
   document.addEventListener('click', e => { if (e.target.closest && e.target.closest('#sideNav .sn-item, #viewToggle button')) setTimeout(title, 0); }, true);
-  new MutationObserver(muts => { if (muts.some(m => !idx.contains(m.target) && m.target !== H1)) { title(); later(); } })
+  new MutationObserver(muts => { if (muts.some(m => !idx.contains(m.target) && !top.contains(m.target) && m.target !== H1)) { title(); later(); } })
     .observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['style', 'class'] });
   window.addEventListener('hashchange', later); later();
 })();
