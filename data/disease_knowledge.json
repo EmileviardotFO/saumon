@@ -158,7 +158,740 @@
     "tratamiento antiparasitario",
     "baños antiparasitarios",
     "Sernapesca caligus"
-   ]
+   ],
+   "library": {
+    "themes": [
+     {
+      "id": "burden",
+      "name": "Deaths from lice and delousing"
+     },
+     {
+      "id": "growth",
+      "name": "Growth, harvest weight and early harvests"
+     },
+     {
+      "id": "cost",
+      "name": "What it costs"
+     },
+     {
+      "id": "rules",
+      "name": "Rules and their effect on supply"
+     },
+     {
+      "id": "treatments",
+      "name": "Treatments, resistance and cleaner fish"
+     },
+     {
+      "id": "new",
+      "name": "New methods"
+     },
+     {
+      "id": "environment",
+      "name": "Temperature and environment"
+     },
+     {
+      "id": "links",
+      "name": "Lice and other diseases"
+     },
+     {
+      "id": "spread",
+      "name": "By country"
+     }
+    ],
+    "studies": [
+     {
+      "theme": "burden",
+      "title": "Norwegian Fish Health Report 2024",
+      "authors": "Norwegian Veterinary Institute (Sommerset et al.)",
+      "year": 2025,
+      "source": "Norwegian Veterinary Institute",
+      "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2025/norwegian-fish-health-report-2024/_/attachment/inline/6b11b72c-ee8f-4529-921f-1a3d85dc419e:2d59843d7c1e34e9200669ae47f2974d8ee51b6a/Fish%20Health%20Report%202024.pdf",
+      "open": true,
+      "finding": "57.8 million salmon (15.4%) died in the sea phase in 2024, down from 62.7 million (16.7%) in 2023. Delousing injuries rank among the top health problems at sea, and non-medicinal delousing hit a record 3,160 treatment-weeks (+21% on 2023), with mechanical and thermal methods well over half of all treatments.",
+      "level": "read"
+     },
+     {
+      "theme": "burden",
+      "title": "Fiskehelserapporten 2025 (Fish Health Report 2025)",
+      "authors": "Norwegian Veterinary Institute",
+      "year": 2026,
+      "source": "Norwegian Veterinary Institute",
+      "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fiskehelserapporten-2025/_/attachment/inline/363a7595-e0c3-4ee8-87e6-71ba808b4288:b3c8e9bf1ee7902bdc1ab93334e5219666ceabbd/Fiskehelserapporten%202025.pdf",
+      "open": true,
+      "finding": "54.9 million salmon (14.2%) died at sea in 2025, the lowest share in years, even though non-medicinal delousing reached a new record of 3,918 treatment-weeks (+24% on 2024). Medicinal treatment-weeks fell to 628. Adult female lice topped 0.4 per fish in some weeks of Aug-Oct 2025 in PO3 and PO5-PO7.",
+      "level": "read"
+     },
+     {
+      "theme": "burden",
+      "title": "Salmon lice treatments and salmon mortality in Norwegian aquaculture: a review",
+      "authors": "Overton et al.",
+      "year": 2019,
+      "source": "Reviews in Aquaculture 11(4):1398-1417",
+      "url": "https://doi.org/10.1111/raq.12299",
+      "open": true,
+      "finding": "Using national data for 2012-2017, mortality rose after 31% of thermal treatments, 25% of mechanical, 21% of hydrogen peroxide and under 14% of medicinal baths. Fish of 2 kg or more, and treatments at 4-7 or 13-16 C, carried higher risk. Thermal and mechanical methods made up over 74% of operations by 2017.",
+      "level": "abstract"
+     },
+     {
+      "theme": "burden",
+      "title": "Estimating cage-level mortality distributions following different delousing treatments of Atlantic salmon (Salmo salar) in Norway",
+      "authors": "Walde et al. (author list not shown on the page read)",
+      "year": 2021,
+      "source": "Journal of Fish Diseases 44(7):899-912",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/33606885",
+      "open": false,
+      "finding": "Across 4,644 treatments at 1,837 cohorts (2014-2017), every delousing method raised mortality. For the 2017 year-class, the median rise in mortality after thermal and mechanical delousing was 5.4 and 6.3 times that after medicinal treatment. Thermal treatments jumped from 14 in 2015 to 738 in 2018.",
+      "level": "abstract"
+     },
+     {
+      "theme": "growth",
+      "title": "The economic impact of decreased mortality and increased growth associated with preventing, replacing or improving current methods for delousing farmed Atlantic salmon in Norway",
+      "authors": "Walde et al.",
+      "year": 2023,
+      "source": "Preventive Veterinary Medicine 221:106062",
+      "url": "https://backend.orbit.dtu.dk/ws/files/339550741/1-s2.0-S016758772300226X-main.pdf",
+      "open": true,
+      "finding": "In the week after treatment, the growth coefficient falls by about a third after thermal, mechanical or freshwater delousing (about 13% after medicinal). The model assumes 5 fasting days per treatment. Growth loss alone is valued at EUR 0.14-0.30 per kg. Avoiding all four thermal treatments in a cycle is worth about EUR 535,000-692,000 per cage.",
+      "level": "read"
+     },
+     {
+      "theme": "growth",
+      "title": "Delousing and growth: presentation at Fresh Fish 2022 (news report)",
+      "authors": "Walde (Norwegian Veterinary Institute), as reported by Fish Farming Expert",
+      "year": 2022,
+      "source": "Fish Farming Expert",
+      "url": "https://www.fishfarmingexpert.com/delousing-growth-impacts-fresh-fish-2022-norway/revealed-the-impact-of-different-delousing-methods-on-salmon-growth/1312202",
+      "open": true,
+      "finding": "Growth fell after all six delousing methods. Median recovery took about 3 days after medicinal, 8 after mechanical and 11 after thermal treatment. For a 150,000-fish cage, one treatment cost just over 30 tonnes, about 6% of biomass. Avoiding one non-drug delousing plus 7 fasting days could add over 200 g per 3 kg fish over 14 days.",
+      "level": "read"
+     },
+     {
+      "theme": "growth",
+      "title": "The impact of parasitic sea lice on harvest quantities and sizes of farmed salmon",
+      "authors": "Zhang et al.",
+      "year": 2023,
+      "source": "Aquaculture 576:739884",
+      "url": "https://uis.brage.unit.no/uis-xmlui/handle/11250/3085367",
+      "open": true,
+      "finding": "In Norwegian data, farms harvest slightly faster as lice levels rise, and harvest weights fall with both lice levels and delousing. The traffic-light system (from 2017) made delousing's negative effect on harvest volumes stronger. The abstract gives no effect sizes.",
+      "level": "abstract"
+     },
+     {
+      "theme": "cost",
+      "title": "The cost of lice: quantifying the impacts of parasitic sea lice on farmed salmon",
+      "authors": "Abolofia et al.",
+      "year": 2017,
+      "source": "Marine Resource Economics 32(3):329-349",
+      "url": "https://uis.brage.unit.no/uis-xmlui/handle/11250/2494032",
+      "open": true,
+      "finding": "Lice cut biomass growth per cycle by 3.6-16.6% even with control measures. An average infestation costs about USD 0.46 per kg harvested, about 9% of farm revenue. Estimated total damage to the Norwegian industry was USD 436 million in 2011.",
+      "level": "abstract"
+     },
+     {
+      "theme": "cost",
+      "title": "Counting the true cost of combatting sea lice (Nofima, Aqua Nor 2019 talk)",
+      "authors": "Iversen (Nofima), as reported by The Fish Site",
+      "year": 2019,
+      "source": "The Fish Site / Nofima",
+      "url": "https://thefishsite.com/articles/counting-the-true-cost-of-combatting-sea-lice",
+      "open": true,
+      "finding": "Lice cost Norwegian farmers about NOK 5 billion a year. Unit costs per kg of salmon: cleaner fish NOK 1.2, mechanical treatment (hydrolicer/thermolicer) NOK 0.55, bath treatments NOK 0.5-1, lasers about NOK 0.34. Indirect costs such as growth loss are not included.",
+      "level": "read"
+     },
+     {
+      "theme": "cost",
+      "title": "Impact of Caligus treatments on unit costs of heterogeneous salmon farms in Chile",
+      "authors": "Dresdner et al.",
+      "year": 2019,
+      "source": "Aquaculture Economics & Management 23(1):1-27",
+      "url": "https://www.efdinitiative.org/publications/impact-caligus-treatments-unit-costs-heterogenous-salmon-farms-chile",
+      "open": false,
+      "finding": "Caligus and its treatments raise Chilean unit production costs by about USD 1.4 per kg on average. Treatment costs are partly offset by higher harvests, so unit costs are roughly the same as with no treatment at all.",
+      "level": "abstract"
+     },
+     {
+      "theme": "rules",
+      "title": "Trafikklysene klare: Ett område i rødt (traffic-light decision 2026)",
+      "authors": "iLaks",
+      "year": 2026,
+      "source": "iLaks.no",
+      "url": "https://ilaks.no/trafikklysene-klare-ett-omrade-i-rodt/",
+      "open": true,
+      "finding": "In the June 2026 decision, PO3 (Karmøy-Sotra) is red with a 6% capacity cut. PO1, PO12 and PO13 are green with up to 6% growth (about 8,300 t MTB in total), and all other areas are yellow with no change.",
+      "level": "read"
+     },
+     {
+      "theme": "rules",
+      "title": "Norway's traffic light markdown will cost almost 500 jobs",
+      "authors": "Moore (Fish Farming Expert)",
+      "year": 2026,
+      "source": "Fish Farming Expert",
+      "url": "https://www.fishfarmingexpert.com/norway-salmon-farming-sea-lice/norways-traffic-light-markdown-will-cost-almost-500-jobs/2142068",
+      "open": true,
+      "finding": "The 2026 red light is PO3's third cut in a row: minus 6%, about 5,300 t of capacity. Seafood Norway puts the cost at almost 500 jobs and about NOK 700 million of annual value creation.",
+      "level": "read"
+     },
+     {
+      "theme": "rules",
+      "title": "Lakselusregulering: svar på bestilling om kunnskapsstøtte fra Mattilsynet",
+      "authors": "Sandvik et al.",
+      "year": 2025,
+      "source": "Rapport fra havforskningen 2025-29 (Institute of Marine Research)",
+      "url": "https://www.hi.no/templates/reporteditor/report-pdf?id=105282",
+      "open": true,
+      "finding": "Estimated lice-induced mortality of wild salmon in 2020-2023 was about 33-51% a year in PO3, 25-34% in PO2 and 18-32% in PO4. Getting PO3 below 10% would need lice cuts of about 40-93%. This is the science behind continued red lights in western Norway.",
+      "level": "read"
+     },
+     {
+      "theme": "rules",
+      "title": "New lice legislation launched in Chile",
+      "authors": "Fish Farming Expert",
+      "year": 2015,
+      "source": "Fish Farming Expert",
+      "url": "https://www.fishfarmingexpert.com/new-lice-legislation-launched-in-chile/1292186",
+      "open": true,
+      "finding": "A farm becomes a CAD when it averages more than 3 gravid females per fish after the treatment window (the old trigger was 9 adult lice). Three consecutive CADs force immediate harvest of the whole site, and three CAD notices within six weeks force harvest of 25% of the farm.",
+      "level": "read"
+     },
+     {
+      "theme": "rules",
+      "title": "Sernapesca performance indicators: CAD cases of caligus with follow-up (Indicadores de Desempeño 2021 and 2023)",
+      "authors": "Sernapesca / DIPRES",
+      "year": 2021,
+      "source": "Dirección de Presupuestos (DIPRES), Chile",
+      "url": "https://www.dipres.gob.cl/597/articles-218735_doc_pdf.pdf",
+      "open": true,
+      "finding": "Actual CAD cases detected in Los Lagos, Aysén and Magallanes were 196 (2017), 277 (2018), 339 (2019), 131 (Jan-Jun 2020) and 199 (2021, from the 2023 indicators file). These are cases, and a farm can be a CAD more than once a year.",
+      "level": "read"
+     },
+     {
+      "theme": "rules",
+      "title": "Regulatory processes for setting sensitive-period sea-lice thresholds in major salmon producer jurisdictions: an evaluation",
+      "authors": "Vormedal & Larsen",
+      "year": 2021,
+      "source": "Fridtjof Nansen Institute for ASC",
+      "url": "https://asc-aqua.org/wp-content/uploads/2022/03/Regulatory-Processes-for-Setting-Sensitive-Period-and-Sea-lice-Thresholds-in-Major-Salmon-Producer-Jurisdictions.pdf",
+      "open": true,
+      "finding": "Compares lice limits by country. Norway: 0.5 adult females (0.2 in spring), with the traffic light giving +/-6%. Faroes: 0.5 (May-July) and 1.0 otherwise, with penalty points; 16+ points forces a smaller stocking, and repeated breaches force harvest within 11 weeks. Scotland: report at 2, act at 6. British Columbia: 3 motile lice in spring.",
+      "level": "read"
+     },
+     {
+      "theme": "rules",
+      "title": "Canada pushes back BC salmon farm transition: open net pens to be banned from mid-2029",
+      "authors": "Salmon Business",
+      "year": 2024,
+      "source": "Salmon Business",
+      "url": "https://www.salmonbusiness.com/canada-pushes-back-bc-salmon-farm-transition-open-net-pens-to-be-banned-from-mid-2029/",
+      "open": true,
+      "finding": "Open-net salmon farming in British Columbia is to end by 30 June 2029, affecting 79 farms. Licences are renewed for 5 years with tighter lice conditions, and the industry warned of about 4,700 jobs and over CAD 1 billion of activity at risk.",
+      "level": "read"
+     },
+     {
+      "theme": "treatments",
+      "title": "The surveillance programme for resistance in salmon lice in Norway 2023",
+      "authors": "Helgesen et al.",
+      "year": 2024,
+      "source": "Norwegian Veterinary Institute report 23/2024",
+      "url": "https://www.vetinst.no/overvaking/lakselus-resistens/_/attachment/inline/c76c9dc1-44dd-4d73-991b-e381249badc5:dbe86e9e0adf542fba96efb14a455c0aed75a722/2024_23_OK_for%20resistance%20in%20salmon%20lice%20in%20Norway.pdf",
+      "open": true,
+      "finding": "Reduced sensitivity to deltamethrin, azamethiphos and emamectin is widespread along most of the coast, so low treatment efficacy is expected in most areas. Hydrogen peroxide resistance is lower. On freshwater, lice from farms that used it more often tolerated moderate salinity drops better (at 7 ppt). Resistance is stable or slightly rising.",
+      "level": "read"
+     },
+     {
+      "theme": "treatments",
+      "title": "Chilean lice becoming more resistant to most-used drug, monitoring shows (IFOP resistance programme)",
+      "authors": "Soto (Fish Farming Expert), reporting IFOP / J. Solano",
+      "year": 2025,
+      "source": "Fish Farming Expert",
+      "url": "https://www.fishfarmingexpert.com/azamethiphos-caligus-rogercresseyi-lyptus-plus/chilean-lice-becoming-more-resistant-to-most-used-drug-monitoring-shows/1961734",
+      "open": true,
+      "finding": "From 254 bioassays since 2017, azamethiphos at the normal dose affected a median of only 66.7% of Caligus, and the dose needed to affect half of them (EC50) is up 37.1%. Non-susceptible populations: 33% for azamethiphos, 22.1% for deltamethrin and 6.4% for cypermethrin.",
+      "level": "read"
+     },
+     {
+      "theme": "treatments",
+      "title": "SRS pushed Chilean salmon farming antibiotic use up by 9.7% last year (Sernapesca 2024 use report)",
+      "authors": "Fish Farming Expert",
+      "year": 2025,
+      "source": "Fish Farming Expert (Sernapesca data)",
+      "url": "https://www.fishfarmingexpert.com/antibiotics-chilean-salmon-farming-florfenicol/srs-pushed-chilean-salmon-farming-antibiotic-use-up-by-97-last-year/1968326",
+      "open": true,
+      "finding": "Hydrogen peroxide use against Caligus more than doubled, from 5,150 g/t in 2023 to 10,890 g/t in 2024 (12,112 t in total). Drug antiparasitics fell to 4.29 g/t. SRS drives over 96% of antibiotic use (ICA 302 g/t in 2024).",
+      "level": "read"
+     },
+     {
+      "theme": "treatments",
+      "title": "Causes of mortality and loss of lumpfish Cyclopterus lumpus",
+      "authors": "Reynolds et al.",
+      "year": 2022,
+      "source": "Fishes (MDPI) 7(6):328",
+      "url": "https://www.mdpi.com/2410-3888/7/6/328",
+      "open": true,
+      "finding": "Across 160,729 lumpfish in Norwegian salmon cages (2013-2020), mechanical delousing was the top single cause of loss at commercial sites (13 of 23 groups) and caused 19.7% of losses overall. The paper cites a Mattilsynet figure of over 40% lumpfish mortality in pens. Norway's cleaner fish stocking fell from 57.3 million in 2020 to 24.1 million in 2024 (NVI).",
+      "level": "read"
+     },
+     {
+      "theme": "new",
+      "title": "Prevention not cure: a review of methods to avoid sea lice infestations in salmon aquaculture",
+      "authors": "Barrett et al.",
+      "year": 2020,
+      "source": "Reviews in Aquaculture",
+      "url": "https://openpolar.no/Record/crwiley:10.1111%2Fraq.12456",
+      "open": true,
+      "finding": "Skirts and snorkels (plankton-mesh barriers) cut infestation by a weighted median of 76%, fully enclosed cages by up to 100%, and depth control by less.",
+      "level": "abstract"
+     },
+     {
+      "theme": "new",
+      "title": "Snorkel sea-cage technology decreases salmon louse infestation by 75% in a full-cycle commercial test (news coverage)",
+      "authors": "Geitung et al. (IMR), as reported by AquaHoy",
+      "year": 2019,
+      "source": "International Journal for Parasitology (news coverage)",
+      "url": "https://aquahoy.com/75-percent-fewer-salmon-lice-with-new-type-of-sea-cage/",
+      "open": true,
+      "finding": "Snorkel cages (net roof at 10-20 m with a sealed surface tube) had 75% fewer lice than standard cages over a full commercial cycle, or 43% fewer when the comparison cages were deloused. Sold commercially as 'tubenet'.",
+      "level": "read"
+     },
+     {
+      "theme": "new",
+      "title": "Salmon lice survive the straight shooter: a commercial scale sea cage trial of laser delousing",
+      "authors": "Bui et al.",
+      "year": 2020,
+      "source": "Preventive Veterinary Medicine 181:105063",
+      "url": "https://openpolar.no/Record/ftunivbergen:oai:bora.uib.no:11250%2F2736724/Details",
+      "open": true,
+      "finding": "In a 54-day, 6-cage trial, lasers did not visibly hold lice down, and adult females reached about 0.5 per fish (the legal limit). Even if every pulse worked, they would remove only 4-38% of mobile lice a day.",
+      "level": "abstract"
+     },
+     {
+      "theme": "new",
+      "title": "Significantly fewer treatments needed at farms with lice lasers (Stingray/University of Bergen study)",
+      "authors": "Fish Farming Expert (Stingray Research and J. Bulla, UiB)",
+      "year": 2025,
+      "source": "Aquaculture (doi 10.1016/j.aquaculture.2025.742910), news coverage",
+      "url": "https://www.fishfarmingexpert.com/aquaculture-laser-delousing-sea-lice/significantly-fewer-treatments-needed-at-farms-with-lice-lasers/1987279",
+      "open": true,
+      "finding": "A company-linked study reports that farms with lasers need about half as many delousing treatments. No lice-level data were reported in the coverage, and it conflicts with Bui et al. 2020.",
+      "level": "read"
+     },
+     {
+      "theme": "new",
+      "title": "Prime-boost vaccination with chimeric antigens adjuvanted in Montanide ISA50 V2 confers protection against experimental Lepeophtheirus salmonis infestation in Atlantic salmon",
+      "authors": "Rodríguez et al.",
+      "year": 2025,
+      "source": "Frontiers in Immunology",
+      "url": "https://www.frontiersin.org/articles/10.3389/fimmu.2025.1570948/full",
+      "open": true,
+      "finding": "In lab challenges, the experimental vaccines cut lice by 88-91% at 2 months and 75-90% at 5 months, but protection had faded to about 20% by 11 months. Field trials are still needed, so there is no commercial impact yet.",
+      "level": "read"
+     },
+     {
+      "theme": "new",
+      "title": "Study: experimental vaccine cuts sea lice by up to 74% in Chilean salmon trial (IPath)",
+      "authors": "Salmon Business (study in Marine Biotechnology)",
+      "year": 2026,
+      "source": "Salmon Business",
+      "url": "https://www.salmonbusiness.com/study-experimental-vaccine-cuts-sea-lice-by-up-to-74-in-chilean-salmon-trial/",
+      "open": true,
+      "finding": "The experimental recombinant vaccine IPath cut Caligus burden by 73.7% (69.8% when combined with commercial SRS vaccines), and vaccinated fish died later after SRS challenge. Lab study only; field validation and approval are still pending.",
+      "level": "read"
+     },
+     {
+      "theme": "new",
+      "title": "Genomic prediction of host resistance to sea lice in farmed Atlantic salmon populations",
+      "authors": "Tsai et al.",
+      "year": 2016,
+      "source": "Genetics Selection Evolution 48:47",
+      "url": "https://link.springer.com/10.1186/s12711-016-0226-9",
+      "open": true,
+      "finding": "Lice resistance is moderately heritable (h2 about 0.2-0.3). Genomic prediction accuracy is 0.34-0.61 within populations, beating pedigree selection, so breeding for lice resistance is feasible but slow.",
+      "level": "read"
+     },
+     {
+      "theme": "new",
+      "title": "LiceRESIST: unravelling genetic mechanisms underlying sea lice resistance in salmonid fishes",
+      "authors": "CIGENE / NMBU (Lien et al.)",
+      "year": 2020,
+      "source": "Research Council of Norway project 301685",
+      "url": "https://cigene.no/projects/liceresist/",
+      "open": true,
+      "finding": "A NOK 12 million project (2020-2023) using CRISPR/Cas gene editing to test why some salmonids resist lice. No results are posted, and gene-edited lice-resistant salmon are not near market.",
+      "level": "read"
+     },
+     {
+      "theme": "new",
+      "title": "Promising results for SalMar Ocean Farm 1 facility",
+      "authors": "Fish Focus",
+      "year": 2019,
+      "source": "Fish Focus",
+      "url": "https://fishfocus.co.uk/promising-results-for-salmar-ocean-farm-1-facility/",
+      "open": true,
+      "finding": "The first offshore cycle at Ocean Farm 1 (about 1 million fish, harvested by Jan 2019) needed no delousing at all, with few lice seen. Production loss was 15,805 fish (about 1.5%) from an escape, not lice.",
+      "level": "read"
+     },
+     {
+      "theme": "environment",
+      "title": "Development of the salmon louse Lepeophtheirus salmonis parasitic stages in temperatures ranging from 3 to 24°C",
+      "authors": "Hamre et al.",
+      "year": 2019,
+      "source": "Aquaculture Environment Interactions 11:429-443",
+      "url": "https://int-res.com/articles/aei2019/11/q011p429.pdf",
+      "open": true,
+      "finding": "Female lice reach adulthood in about 72 days at 6 C but only about 13 days at 21 C, and egg output at 18 C is about 3 times that at 6 C. Development works normally from 6 to 21 C. Warm summers speed up lice generations sharply.",
+      "level": "read"
+     },
+     {
+      "theme": "environment",
+      "title": "Høg vasstemperatur, meir fisk i sjøen og hyppigare avlusing har forverra situasjonen (HI risk report 2026)",
+      "authors": "iLaks (HI risk report, M. Myksvoll)",
+      "year": 2026,
+      "source": "iLaks.no / Institute of Marine Research",
+      "url": "https://ilaks.no/hog-vasstemperatur-meir-fisk-i-sjoen-og-hyppigare-avlusing-har-forverra-situasjonen/",
+      "open": true,
+      "finding": "HI's 2026 risk report links the warm summers and autumns of 2024 and 2025, plus more fish at sea, to worse lice and more delousing. Norwegian output rose about 200,000 t from 2024 to 2025. NVI notes adult females averaged over 0.3 per fish for four weeks in Sep-Oct 2024, the first time since 2014.",
+      "level": "read"
+     },
+     {
+      "theme": "links",
+      "title": "Caligus rogercresseyi infestation is associated with Piscirickettsia salmonis-attributed mortalities in farmed salmonids in Chile",
+      "authors": "Arriagada et al.",
+      "year": 2019,
+      "source": "Preventive Veterinary Medicine 171:104771",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/31521964/",
+      "open": false,
+      "finding": "Farms with more adult Caligus over 10 weeks had significantly more SRS deaths in the following 10 weeks, in both Atlantic salmon and trout, which the authors read as synergy between the two diseases. The abstract gives no effect size.",
+      "level": "abstract"
+     },
+     {
+      "theme": "links",
+      "title": "Disease resistance in Atlantic salmon (Salmo salar): coinfection of the intracellular bacterial pathogen Piscirickettsia salmonis and the sea louse Caligus rogercresseyi",
+      "authors": "Lhorente et al.",
+      "year": 2014,
+      "source": "PLoS ONE 9(4):e95397",
+      "url": "https://doi.org/10.1371/journal.pone.0095397",
+      "open": true,
+      "finding": "In a challenge test, fish co-infected with Caligus and SRS reached 100% mortality by day 53, against 46% with SRS alone. Resistance is heritable (0.17-0.24).",
+      "level": "abstract"
+     },
+     {
+      "theme": "links",
+      "title": "Identifying environmental and production related risk factors associated with ulcer outbreaks in salmon farming (RiskIdent final report)",
+      "authors": "Oldham et al.",
+      "year": 2026,
+      "source": "Institute of Marine Research",
+      "url": "https://www.hi.no/resources/RiskIdent-sluttrapport.pdf",
+      "open": true,
+      "finding": "Across 452 handling events at 19 northern farms (2020-2022), mortality rose after every handling, and wounds rose after the fourth event. The report concludes that keeping delousing to three or fewer events substantially lowers winter-ulcer risk.",
+      "level": "read"
+     },
+     {
+      "theme": "links",
+      "title": "Norwegian Fish Health Report 2024: winter ulcers and pasteurellosis",
+      "authors": "Norwegian Veterinary Institute",
+      "year": 2025,
+      "source": "Norwegian Veterinary Institute",
+      "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2025/norwegian-fish-health-report-2024/_/attachment/inline/6b11b72c-ee8f-4529-921f-1a3d85dc419e:2d59843d7c1e34e9200669ae47f2974d8ee51b6a/Fish%20Health%20Report%202024.pdf",
+      "open": true,
+      "finding": "Winter ulcers (Moritella viscosa) caused over 60% of infectious-disease deaths in PO10-13 (about 19% of all dead fish), and fish-health staff name delousing as a known risk factor for wounds. Pasteurellosis was found at 52 sites (2022), 27 (2023) and 29 (2024), and is spreading north.",
+      "level": "read"
+     },
+     {
+      "theme": "spread",
+      "title": "Salmon production fell by 11% last year, Scottish Government confirms (Fish Farm Production Survey 2023)",
+      "authors": "Fish Farming Expert",
+      "year": 2024,
+      "source": "Fish Farming Expert (Scottish Government data)",
+      "url": "https://www.fishfarmingexpert.com/salmon-scotland-scottish-farmed-fish-production-survey-2023/salmon-production-fell-by-11-last-year-scottish-government-confirms/1844063",
+      "open": true,
+      "finding": "Scottish salmon output fell from 205,393 t (2021) to 169,194 t (2022) and 150,949 t (2023). Survival to harvest for the 2021 smolt input was 68.7%, a 30-year low. Gills, jellyfish and warm water are blamed more than lice, which are mentioned only via freshwater treatments.",
+      "level": "read"
+     },
+     {
+      "theme": "spread",
+      "title": "High sea lice levels forced Mowi subsidiary Arctic Fish to harvest salmon at its Tálknafjörður farm (Iceland)",
+      "authors": "SeafoodSource",
+      "year": 2023,
+      "source": "SeafoodSource",
+      "url": "https://www.seafoodsource.com/news/aquaculture/high-sea-lice-levels-forced-mowi-subsidiary-arctic-fish-to-harvest-salmon-at-its-t-lknafj-r-ur-farm",
+      "open": true,
+      "finding": "In autumn 2023, a lice outbreak in Iceland's southern Westfjords led to treatments and a forced harvest at Arctic Fish's Tálknafjörður site. At least 1 million salmon were dead or discarded (MAST). Tonnage and cost were not stated.",
+      "level": "read"
+     },
+     {
+      "theme": "spread",
+      "title": "Workshop on the Faroes Ecoregion Aquaculture Overview (WKFaroesAO)",
+      "authors": "ICES",
+      "year": 2023,
+      "source": "ICES Scientific Reports 5:28",
+      "url": "https://ices-library.figshare.com/articles/report/Workshop_on_the_Faroes_Ecoregion_Aquaculture_Overview_WKFaroesAO_/21551541",
+      "open": true,
+      "finding": "In the Faroes, lice performance at a site directly sets how many smolts can be stocked next cycle. Lice are counted every two weeks by a third party, and farmers invest in large on-land smolt to shorten time at sea. No lice levels were given.",
+      "level": "read"
+     },
+     {
+      "theme": "spread",
+      "title": "Canadian salmon farm closures haven't cut sea lice numbers (British Columbia)",
+      "authors": "Moore (Fish Farming Expert)",
+      "year": 2026,
+      "source": "Fish Farming Expert",
+      "url": "https://www.fishfarmingexpert.com/british-columbia-mowi-canada-west-salmon-farming/canadian-salmon-farm-closures-havent-cut-sea-lice-numbers/2191431",
+      "open": true,
+      "finding": "After the Discovery Islands (2022) and Broughton (2024) closures, 35.8% of 508 wild juvenile salmon sampled in the Broughton in 2026 still carried lice. The BC sector says closures removed 35,000 t of production. The data are Mowi-funded and not yet peer reviewed.",
+      "level": "read"
+     }
+    ],
+    "series": {
+     "non_medicinal_treatments_norway": {
+      "2012": 136,
+      "2013": 110,
+      "2014": 177,
+      "2015": 201,
+      "2016": 1179,
+      "2017": 1672,
+      "2018": 1963,
+      "2019": 2446,
+      "2020": 2962,
+      "2021": 2830,
+      "2022": 3145,
+      "2023": 2609,
+      "2024": 3160,
+      "2025": 3918,
+      "unit": "treatment-weeks reported (site-weeks with at least one non-medicinal delousing)",
+      "source": "Norwegian Veterinary Institute, Fish Health Report 2024 Table 9.1.2 (2012-2024) and Fiskehelserapporten 2025 Table 10.1.2 (2025)",
+      "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2025/norwegian-fish-health-report-2024/_/attachment/inline/6b11b72c-ee8f-4529-921f-1a3d85dc419e:2d59843d7c1e34e9200669ae47f2974d8ee51b6a/Fish%20Health%20Report%202024.pdf",
+      "note": "2025 value from https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fiskehelserapporten-2025/_/attachment/inline/363a7595-e0c3-4ee8-87e6-71ba808b4288:b3c8e9bf1ee7902bdc1ab93334e5219666ceabbd/Fiskehelserapporten%202025.pdf. A week counts once per site, so this is not the number of individual treatments. Combination treatments have been reported separately since 2024.",
+      "title": "Norway: non-medicinal delousing, treatment-weeks"
+     },
+     "thermal_treatments_norway": {
+      "2012": 0,
+      "2013": 0,
+      "2014": 3,
+      "2015": 36,
+      "2016": 685,
+      "2017": 1245,
+      "2018": 1327,
+      "2019": 1447,
+      "2020": 1723,
+      "2021": 1456,
+      "2022": 1357,
+      "2023": 888,
+      "2024": 1072,
+      "2025": 1139,
+      "unit": "treatment-weeks, thermal only (combinations excluded)",
+      "source": "NVI Fish Health Report 2024 Table 9.1.2; Fiskehelserapporten 2025 Table 10.1.2",
+      "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2025/norwegian-fish-health-report-2024/_/attachment/inline/6b11b72c-ee8f-4529-921f-1a3d85dc419e:2d59843d7c1e34e9200669ae47f2974d8ee51b6a/Fish%20Health%20Report%202024.pdf",
+      "note": "Thermal combined with freshwater adds 305 weeks (2024) and 502 (2025).",
+      "title": "Norway: thermal delousing, treatment-weeks"
+     },
+     "mechanical_treatments_norway": {
+      "2012": 4,
+      "2013": 2,
+      "2014": 37,
+      "2015": 34,
+      "2016": 311,
+      "2017": 236,
+      "2018": 423,
+      "2019": 674,
+      "2020": 823,
+      "2021": 862,
+      "2022": 1074,
+      "2023": 980,
+      "2024": 1287,
+      "2025": 1746,
+      "unit": "treatment-weeks, mechanical only",
+      "source": "NVI Fish Health Report 2024 Table 9.1.2; Fiskehelserapporten 2025 Table 10.1.2",
+      "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2025/norwegian-fish-health-report-2024/_/attachment/inline/6b11b72c-ee8f-4529-921f-1a3d85dc419e:2d59843d7c1e34e9200669ae47f2974d8ee51b6a/Fish%20Health%20Report%202024.pdf",
+      "note": "Mechanical has been the most-used single method since 2023.",
+      "title": "Norway: mechanical delousing, treatment-weeks"
+     },
+     "freshwater_treatments_norway": {
+      "2012": 0,
+      "2013": 1,
+      "2014": 1,
+      "2015": 28,
+      "2016": 73,
+      "2017": 75,
+      "2018": 84,
+      "2019": 148,
+      "2020": 220,
+      "2021": 286,
+      "2022": 225,
+      "2023": 186,
+      "2024": 114,
+      "2025": 136,
+      "unit": "treatment-weeks, freshwater only",
+      "source": "NVI Fish Health Report 2024 Table 9.1.2; Fiskehelserapporten 2025 Table 10.1.2",
+      "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2025/norwegian-fish-health-report-2024/_/attachment/inline/6b11b72c-ee8f-4529-921f-1a3d85dc419e:2d59843d7c1e34e9200669ae47f2974d8ee51b6a/Fish%20Health%20Report%202024.pdf",
+      "note": "Freshwater is increasingly used in combinations (thermal+freshwater 502 weeks in 2025)."
+     },
+     "medicinal_treatments_norway": {
+      "2012": 1983,
+      "2013": 1843,
+      "2014": 2595,
+      "2015": 2754,
+      "2016": 2505,
+      "2017": 1133,
+      "2018": 739,
+      "2019": 929,
+      "2020": 940,
+      "2021": 968,
+      "2022": 1031,
+      "2023": 974,
+      "2024": 769,
+      "2025": 628,
+      "unit": "treatment-weeks with medicinal treatment (all substances)",
+      "source": "NVI Fish Health Report 2024 Table 9.1.1; Fiskehelserapporten 2025 Table 10.1.1",
+      "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2025/norwegian-fish-health-report-2024/_/attachment/inline/6b11b72c-ee8f-4529-921f-1a3d85dc419e:2d59843d7c1e34e9200669ae47f2974d8ee51b6a/Fish%20Health%20Report%202024.pdf",
+      "note": "Includes in-feed emamectin and flubenzurons and bath treatments. The fall since 2016 reflects resistance.",
+      "title": "Norway: medicinal delousing, treatment-weeks"
+     },
+     "azamethiphos_treatments_norway": {
+      "2012": 494,
+      "2013": 375,
+      "2014": 560,
+      "2015": 485,
+      "2016": 208,
+      "2017": 57,
+      "2018": 33,
+      "2019": 76,
+      "2020": 122,
+      "2021": 151,
+      "2022": 239,
+      "2023": 273,
+      "2024": 292,
+      "2025": 199,
+      "unit": "treatment-weeks",
+      "source": "NVI FHR 2024 Table 9.1.1; FHR 2025 Table 10.1.1",
+      "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2025/norwegian-fish-health-report-2024/_/attachment/inline/6b11b72c-ee8f-4529-921f-1a3d85dc419e:2d59843d7c1e34e9200669ae47f2974d8ee51b6a/Fish%20Health%20Report%202024.pdf",
+      "note": ""
+     },
+     "emamectin_treatments_norway": {
+      "2012": 196,
+      "2013": 171,
+      "2014": 438,
+      "2015": 601,
+      "2016": 637,
+      "2017": 521,
+      "2018": 454,
+      "2019": 581,
+      "2020": 605,
+      "2021": 607,
+      "2022": 586,
+      "2023": 540,
+      "2024": 392,
+      "2025": 379,
+      "unit": "treatment-weeks",
+      "source": "NVI FHR 2024 Table 9.1.1; FHR 2025 Table 10.1.1",
+      "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2025/norwegian-fish-health-report-2024/_/attachment/inline/6b11b72c-ee8f-4529-921f-1a3d85dc419e:2d59843d7c1e34e9200669ae47f2974d8ee51b6a/Fish%20Health%20Report%202024.pdf",
+      "note": "Mostly in-feed treatments, often in smaller fish."
+     },
+     "hydrogen_peroxide_treatments_norway": {
+      "2012": 59,
+      "2013": 113,
+      "2014": 425,
+      "2015": 562,
+      "2016": 327,
+      "2017": 144,
+      "2018": 84,
+      "2019": 77,
+      "2020": 62,
+      "2021": 45,
+      "2022": 40,
+      "2023": 19,
+      "2024": 5,
+      "2025": 6,
+      "unit": "treatment-weeks",
+      "source": "NVI FHR 2024 Table 9.1.1; FHR 2025 Table 10.1.1",
+      "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2025/norwegian-fish-health-report-2024/_/attachment/inline/6b11b72c-ee8f-4529-921f-1a3d85dc419e:2d59843d7c1e34e9200669ae47f2974d8ee51b6a/Fish%20Health%20Report%202024.pdf",
+      "note": "Norway has almost abandoned peroxide, while Chile's use doubled in 2024."
+     },
+     "cleaner_fish_transferred_norway": {
+      "2020": 57.3,
+      "2021": 48.3,
+      "2022": 36.3,
+      "2023": 34.0,
+      "2024": 24.1,
+      "2025": 18.9,
+      "unit": "million cleaner fish put into sea sites",
+      "source": "NVI Fish Health Report 2024 Table 2.1.2 (2020-2024); Fiskehelserapporten 2025 Table 2.1.4 (2025)",
+      "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2025/norwegian-fish-health-report-2024/_/attachment/inline/6b11b72c-ee8f-4529-921f-1a3d85dc419e:2d59843d7c1e34e9200669ae47f2974d8ee51b6a/Fish%20Health%20Report%202024.pdf",
+      "note": "Original data from the Directorate of Fisheries.",
+      "title": "Norway: cleaner fish put to sea, millions"
+     },
+     "salmon_sea_mortality_norway": {
+      "2023": 62.7,
+      "2024": 57.8,
+      "2025": 54.9,
+      "unit": "million salmon dead in sea phase (all causes)",
+      "source": "NVI Fish Health Reports 2024 and 2025 (via Fish Farming Expert and iLaks)",
+      "url": "https://ilaks.no/lavere-dodelighet-til-tross-for-rekordmange-lusebehandlinger/",
+      "note": "Mortality risk was 16.7% (2023), 15.4% (2024) and 14.2% (2025). iLaks gives 62.8 million for 2023, and the FHR 2025 summary says 54.8 vs 54.9 in the table. These are all causes, not lice only."
+     },
+     "adult_female_lice_norway": {
+      "2023": 0.14,
+      "2024": 0.17,
+      "unit": "average adult female lice per fish (national, annual)",
+      "source": "NVI Fish Health Report 2024, ch. 9.1",
+      "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2025/norwegian-fish-health-report-2024/_/attachment/inline/6b11b72c-ee8f-4529-921f-1a3d85dc419e:2d59843d7c1e34e9200669ae47f2974d8ee51b6a/Fish%20Health%20Report%202024.pdf",
+      "note": "The 2018-2022 average was 0.15. The 2025 annual average was not found in the text (it is shown only in a chart)."
+     },
+     "pasteurellosis_sites_norway": {
+      "2022": 52,
+      "2023": 27,
+      "2024": 29,
+      "unit": "sites with pasteurellosis",
+      "source": "NVI Fish Health Report 2024",
+      "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2025/norwegian-fish-health-report-2024/_/attachment/inline/6b11b72c-ee8f-4529-921f-1a3d85dc419e:2d59843d7c1e34e9200669ae47f2974d8ee51b6a/Fish%20Health%20Report%202024.pdf",
+      "note": "Spreading northwards."
+     },
+     "cad_cases_chile": {
+      "2017": 196,
+      "2018": 277,
+      "2019": 339,
+      "2020": 131,
+      "2021": 199,
+      "unit": "Caligus CAD cases detected (Los Lagos, Aysén, Magallanes)",
+      "source": "DIPRES/Sernapesca Indicadores de Desempeño 2021 (2017-2020 actuals) and 2023 (2021 actual)",
+      "url": "https://www.dipres.gob.cl/597/articles-218735_doc_pdf.pdf",
+      "note": "2020 covers Jan-Jun only. The 2021 actual comes from https://www.dipres.gob.cl/597/articles-290548_doc_pdf.pdf. These are cases, and a farm can be a CAD several times a year. PMG planning documents show 360 for 2021-2022 as a target or formula value, not an actual. In May 2013, under the old 9-lice definition, 79 farms were CAD at once (Diario Financiero).",
+      "title": "Chile: high-dissemination (CAD) lice cases per year"
+     },
+     "hydrogen_peroxide_use_chile": {
+      "2023": 5150,
+      "2024": 10890,
+      "unit": "g of hydrogen peroxide per tonne harvested (closed cycles)",
+      "source": "Sernapesca antimicrobial and antiparasitic use report 2024 (via Fish Farming Expert, aquafeed.com)",
+      "url": "https://www.fishfarmingexpert.com/antibiotics-chilean-salmon-farming-florfenicol/srs-pushed-chilean-salmon-farming-antibiotic-use-up-by-97-last-year/1968326",
+      "note": "Total 2024 use was 12,112 t of peroxide. Pre-2023 values were not found."
+     },
+     "antiparasitic_index_chile": {
+      "2023": 4.85,
+      "2024": 4.29,
+      "unit": "g active ingredient per tonne harvested (azamethiphos, emamectin, deltamethrin, hexaflumuron and others)",
+      "source": "Sernapesca 2024 report (via aquafeed.com and Fish Farming Expert)",
+      "url": "https://aquafeed.com/newsroom/reports/chile-publishes-annual-reports-on-aquaculture-health-status-and-antimicrobial-use",
+      "note": "No by-drug or earlier years found."
+     },
+     "scotland_salmon_production": {
+      "2021": 205393,
+      "2022": 169194,
+      "2023": 150949,
+      "unit": "tonnes live weight",
+      "source": "Scottish Fish Farm Production Survey 2023 (via Fish Farming Expert)",
+      "url": "https://www.fishfarmingexpert.com/salmon-scotland-scottish-farmed-fish-production-survey-2023/salmon-production-fell-by-11-last-year-scottish-government-confirms/1844063",
+      "note": "Context for supply. The decline is mainly blamed on gills, jellyfish and warm water rather than lice."
+     }
+    },
+    "charts": [
+     "non_medicinal_treatments_norway",
+     "medicinal_treatments_norway",
+     "cleaner_fish_transferred_norway",
+     "thermal_treatments_norway",
+     "mechanical_treatments_norway",
+     "cad_cases_chile"
+    ],
+    "note": "First draft compiled on 9 Nov 2026 from free-to-read sources; each entry was read (abstract only when marked). Updated by hand; the automatic publication feed below adds new papers every morning."
+   }
   },
   {
    "id": "pd",
@@ -1427,7 +2160,8 @@
        "2023": "https://weareaquaculture.com/news/aquaculture/chile-recorded-only-one-isa-outstanding-outbreak-in-2023",
        "2025": "https://www.salmonbusiness.com/sernapesca-chiles-overall-salmon-mortality-falls-in-2025-but-tenacibaculosis-rises/?amp=1"
       },
-      "note": "2016 value is quoted by Miranda et al. as SRS share of Atlantic salmon mortality (assumed infectious-cause basis, as in Sernapesca reports). H1 2024 = 42% (half-year only, Fish Farming Expert). 2022 and 2024 full-year values were only given as relative changes (-8.1% / +9.6%) and are left out. Years 2012-2015, 2017-2019, 2021 not found."
+      "note": "2016 value is quoted by Miranda et al. as SRS share of Atlantic salmon mortality (assumed infectious-cause basis, as in Sernapesca reports). H1 2024 = 42% (half-year only, Fish Farming Expert). 2022 and 2024 full-year values were only given as relative changes (-8.1% / +9.6%) and are left out. Years 2012-2015, 2017-2019, 2021 not found.",
+      "title": "SRS, % of infectious deaths, Atlantic salmon, Chile"
      },
      "srs_share_of_infectious_mortality_all_salmonids_chile": {
       "2012": 84.3,
@@ -1458,7 +2192,8 @@
       "unit": "tonnes active ingredient, all salmonid farming (fresh + sea)",
       "source": "Sernapesca, via Miranda et al. 2018 (2005-2016), Sernapesca/Sandoval 2019 (2017-2018), Fish Farming Expert (2019), SeafoodSource (2021-2022), Farias et al. 2025 (2024)",
       "url": "https://www.frontiersin.org/articles/10.3389/fmicb.2018.01284/full",
-      "note": "2020, 2023 and 2025 totals not found. 2024: Fish Farming Expert reports 336.26 t (narrower base, 301 cycles); Farias et al. say 351.1 t. Valenzuela-Aviles 2022 gives 413.5 t for 2021, conflicting with Sernapesca's 463.4 t."
+      "note": "2020, 2023 and 2025 totals not found. 2024: Fish Farming Expert reports 336.26 t (narrower base, 301 cycles); Farias et al. say 351.1 t. Valenzuela-Aviles 2022 gives 413.5 t for 2021, conflicting with Sernapesca's 463.4 t.",
+      "title": "Chile: antibiotics used, tonnes"
      },
      "antibiotics_g_per_t": {
       "2005": 390,
@@ -1484,7 +2219,8 @@
       "unit": "g active ingredient per tonne harvested (Sernapesca ICA x 10,000)",
       "source": "Miranda et al. 2018 (2005-2016); Sernapesca/Sandoval 2019 (2017-2018); Fish Farming Expert (2019, ICA 0.032%); SeafoodSource (2020 ICA 0.035%, 2021-2022); Fish Farming Expert (2023 ICA 0.031%, 2024 ICA 0.034%)",
       "url": "https://www.vetinst.no/en/news/biosecurity-and-transportation-of-fish/_/attachment/download/9a2f042d-8bf3-4f92-be60-0532f94ab44f:668f9c60b8d892f561fa3b3dc5d79cafa7e0208e/190819%20Status%20of%20fish%20health%20in%20Chile.pdf",
-      "note": "Sources disagree for 2019-2020: El Mostrador reports 298 g/t for 2020; Diario Financiero says 340-350 g/t for 2018-2020. 2024 closed-cycle index = 302.33 g/t. 2025: national ICA +5.88% vs 2024 (value not given)."
+      "note": "Sources disagree for 2019-2020: El Mostrador reports 298 g/t for 2020; Diario Financiero says 340-350 g/t for 2018-2020. 2024 closed-cycle index = 302.33 g/t. 2025: national ICA +5.88% vs 2024 (value not given).",
+      "title": "Chile: antibiotics per tonne harvested, grams"
      },
      "atlantic_salmon_closed_cycle_mortality_chile_pct": {
       "2022": 13.4,
@@ -1501,6 +2237,11 @@
       "note": "All-cause mortality; P. salmonis the main driver per Tasmanian CVO. 2025 is 'more than 20,000 t' (FFE) / 20,133 t (Huon News)."
      }
     },
+    "charts": [
+     "srs_share_of_infectious_mortality_atlantic_chile",
+     "antibiotics_tonnes_chile",
+     "antibiotics_g_per_t"
+    ],
     "note": "Library compiled on 8–9 Nov 2026 from free-to-read sources; each entry was read (abstract only when the paper is paywalled). Updated by hand; the automatic publication feed below adds new papers every morning."
    }
   },
@@ -1699,7 +2440,490 @@
     "Tenacibaculum dicentrarchi",
     "downgrading salmon ulcers",
     "nedklassing sår"
-   ]
+   ],
+   "library": {
+    "themes": [
+     {
+      "id": "burden",
+      "name": "How much it kills"
+     },
+     {
+      "id": "cost",
+      "name": "What it costs"
+     },
+     {
+      "id": "growth",
+      "name": "Growth, quality and early harvests"
+     },
+     {
+      "id": "antibiotics",
+      "name": "Antibiotics"
+     },
+     {
+      "id": "vaccines",
+      "name": "Vaccines"
+     },
+     {
+      "id": "environment",
+      "name": "Temperature, handling and other drivers"
+     },
+     {
+      "id": "treatments",
+      "name": "Prevention and new treatments"
+     },
+     {
+      "id": "spread",
+      "name": "By country"
+     }
+    ],
+    "studies": [
+     {
+      "theme": "burden",
+      "title": "Sernapesca: Chile's overall salmon mortality falls in 2025, but Tenacibaculosis rises",
+      "authors": "Salmon Business (reporting Sernapesca Informe Sanitario 2025)",
+      "year": 2026,
+      "source": "Salmon Business / Sernapesca",
+      "url": "https://www.salmonbusiness.com/sernapesca-chiles-overall-salmon-mortality-falls-in-2025-but-tenacibaculosis-rises/?amp=1",
+      "open": true,
+      "finding": "In 2025 infectious causes were 25.7% of Atlantic salmon mortality in Chile; tenacibaculosis was 31.5% of that infectious mortality (up 2.1 vs 2024), second to SRS at 52.8%. Overall salmonid mortality fell to 9.7% (60,273 t dead biomass).",
+      "level": "read"
+     },
+     {
+      "theme": "burden",
+      "title": "Chile recorded only one ISA outstanding outbreak in 2023",
+      "authors": "WeAreAquaculture (reporting Sernapesca Informe Sanitario 2023)",
+      "year": 2024,
+      "source": "WeAreAquaculture / Sernapesca",
+      "url": "https://weareaquaculture.com/news/aquaculture/chile-recorded-only-one-isa-outstanding-outbreak-in-2023",
+      "open": true,
+      "finding": "Tenacibaculosis caused 37.9% of Atlantic salmon infectious mortality in Chile in 2023 (up 9 points vs 2022), against 44.7% for SRS; average mortality of Atlantic salmon cycles closed in 2023 was 9.4%.",
+      "level": "read"
+     },
+     {
+      "theme": "burden",
+      "title": "Chile reduced the use of antibiotics in salmon farming in 2022",
+      "authors": "WeAreAquaculture (reporting Sernapesca 2022 reports)",
+      "year": 2023,
+      "source": "WeAreAquaculture / Sernapesca",
+      "url": "https://weareaquaculture.com/news/37964",
+      "open": true,
+      "finding": "Tenacibaculosis was the second cause of Atlantic salmon infectious mortality in 2022 at 28.5% (SRS 52.8%); infectious causes were 23.2% of mortality. Antibiotic use fell 26.3% to 341.5 t, with SRS driving over 95% of use.",
+      "level": "read"
+     },
+     {
+      "theme": "burden",
+      "title": "Tenacibaculum Virulence and Resistance: Genomic Insights (preprint)",
+      "authors": "Pontigo JP et al.",
+      "year": 2024,
+      "source": "Preprints.org (not peer reviewed)",
+      "url": "https://www.preprints.org/frontend/manuscript/7bd2a78e663c2d54ecb83bea1f42c5dc/download_pub",
+      "open": true,
+      "finding": "Citing Sernapesca, tenacibaculosis share of Atlantic salmon infectious mortality rose from 14% (2019) to 25% (2020) and 31% (2021); 520 of 990 marine cycles (52.5%) had outbreaks between mid-2018 and mid-2020. No vaccine exists.",
+      "level": "read"
+     },
+     {
+      "theme": "burden",
+      "title": "Fish Health Report 2025 (Norwegian Veterinary Institute), section 8.4 Winter ulcer",
+      "authors": "Norwegian Veterinary Institute",
+      "year": 2026,
+      "source": "Norwegian Veterinary Institute",
+      "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fish-health-report-2025",
+      "open": true,
+      "finding": "Tenacibaculum spp. were confirmed at 147 Norwegian salmon sites in 2025 (159 in 2024), Moritella viscosa at 246 (289), mixed infections at 94 and winter ulcers of any cause at 299 sites; T. finnmarkense is the main species. Sea-phase salmon mortality was 14.2% (54.8 million fish), down from 15.4%.",
+      "level": "read"
+     },
+     {
+      "theme": "burden",
+      "title": "Five winters, one trend: the disease Norwegian farmers can't shake",
+      "authors": "Salmon Business (data from Manolin)",
+      "year": 2025,
+      "source": "Salmon Business",
+      "url": "https://www.salmonbusiness.com/five-winters-one-trend-the-disease-norwegian-farmers-cant-shake/?amp=1",
+      "open": true,
+      "finding": "Manolin farm data: winter ulcer was under 12% of total Norwegian losses at its seasonal peak in 2020-2021, but peaked at 20-30% of losses in the 2023-2025 winters (record in February 2023).",
+      "level": "read"
+     },
+     {
+      "theme": "cost",
+      "title": "Economic modelling of mouth rot in British Columbia Atlantic salmon farming",
+      "authors": "Jahangiri L et al.",
+      "year": 2026,
+      "source": "Aquaculture Journal (MDPI) 6(3):29",
+      "url": "https://www.stir.ac.uk/research/hub/publication/2284779",
+      "open": true,
+      "finding": "Monte Carlo model puts mouthrot cost at USD 0.74 million per farm production cycle (SD 0.45 M) and USD 10.58 million per year for the BC industry (SD 6.54 M).",
+      "level": "abstract"
+     },
+     {
+      "theme": "cost",
+      "title": "Benchmark Animal Health and Cermaq receive funding from the Research Council of Norway for the development of Tenacibaculum vaccines for salmon",
+      "authors": "Cermaq / Benchmark (press release)",
+      "year": 2022,
+      "source": "Cermaq press release (Mynewsdesk)",
+      "url": "https://www.mynewsdesk.com/no/cermaq/pressreleases/benchmark-animal-health-and-cermaq-receive-funding-from-the-research-council-of-norway-for-the-development-of-tenacibaculum-vaccines-for-salmon-3154169",
+      "open": true,
+      "finding": "Mouthrot can cause up to 40% cumulative mortality in affected BC cages, costing an estimated $1.8M a year plus $3.8M a year in lost revenue; NOK 4.2M grant for a Tenacibaculum vaccine. Tenacibaculosis was ranked the 5th cause of on-growing mortality in Norway in 2020.",
+      "level": "read"
+     },
+     {
+      "theme": "cost",
+      "title": "Advancements in Characterizing Tenacibaculum Infections in Canada",
+      "authors": "Nowlan JP et al.",
+      "year": 2020,
+      "source": "Pathogens 9:1029 (MDPI)",
+      "url": "https://rcastoragev2.blob.core.windows.net/503ceae2cde8fdc26e770fd44855a2a0/PMC7763822.pdf",
+      "open": true,
+      "finding": "Grieg Seafood reported Tenacibaculum outbreaks in 2014 cost over $1.6 million (treatment plus lost growth); one outbreak cycle at a single site can cost up to $500K. BC mortality spikes reached hundreds to thousands of fish per day before or during antibiotic treatment.",
+      "level": "read"
+     },
+     {
+      "theme": "cost",
+      "title": "Økonomiske og biologiske konsekvenser av Moritella viscosa - et case studie (seminar slides)",
+      "authors": "Pettersen JH",
+      "year": 2023,
+      "source": "STIM seminar presentation",
+      "url": "https://stim.no/content/wp-content/uploads/2023/06/John-Harald-Pettersen_Biologiske-og-%C3%B8konomiske-konsekvenser-av-Moritella-viscosa.pdf",
+      "open": true,
+      "finding": "Winter-ulcer case (Oct 2021-Aug 2022, ~4 M fish): ~4.3% lost to ulcers, total direct loss ~NOK 71 M (NOK 17.80 per fish stocked), of which downgrading NOK 30 M and 2.5% lower harvest weight NOK 21.5 M; a site with 71.4% superior lost NOK 85 M.",
+      "level": "read"
+     },
+     {
+      "theme": "growth",
+      "title": "More farmed salmon have wounds and injuries than in previous years: 'Significant deterioration'",
+      "authors": "Dæhlen M (ScienceNorway, on Fish Health Report 2024)",
+      "year": 2025,
+      "source": "ScienceNorway",
+      "url": "https://www.sciencenorway.no/animal-welfare-aquaculture-fish/more-farmed-salmon-have-wounds-and-injuries-than-in-previous-years-significant-deterioration/2480280",
+      "open": true,
+      "finding": "Only 80.6% of Norwegian salmon graded superior in 2024 (about one fish in five downgraded), the lowest since 2017; wounds and injuries were the main downgrading reason, mostly linked to lice treatments.",
+      "level": "read"
+     },
+     {
+      "theme": "growth",
+      "title": "Fish Health Report 2025, section 6.7 Slaughter data as a welfare indicator",
+      "authors": "Norwegian Veterinary Institute",
+      "year": 2026,
+      "source": "Norwegian Veterinary Institute",
+      "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fish-health-report-2025/_/attachment/inline/4e7d310d-0620-439c-a2cf-caac02253620:b124880858959e1f6b61fbe45e1137e7e31fc0f9/Fish%20Health%20Report%202025.pdf",
+      "open": true,
+      "finding": "Superior share recovered to 86.9% by weight in 2025 (79.8% in Jan-Jun vs 92.5% in Jul-Dec); the fall in wounds and downgrading may partly reflect an effective new Moritella viscosa vaccine. Discards were 7,218 t (0.5%).",
+      "level": "read"
+     },
+     {
+      "theme": "growth",
+      "title": "Mowi announces EUR 200 million earnings in Q1 2024 amid challenges with winter sores and jellyfish",
+      "authors": "Salmon Business",
+      "year": 2024,
+      "source": "Salmon Business (Mowi Q1 2024)",
+      "url": "https://www.salmonbusiness.com/mowi-announces-e200-million-earnings-in-q1-2024-amid-challenges-with-winter-sores-and-jellyfish/?amp=1",
+      "open": true,
+      "finding": "Mowi said winter sores and jellyfish hurt the superior share and average harvest size in Norway in Q1 2024; blended farming cost rose to EUR 6.05/kg (winter sores' share not split out).",
+      "level": "read"
+     },
+     {
+      "theme": "growth",
+      "title": "Pharmaq: En sen vintersårsesong overlappet med lusesesongen",
+      "authors": "iLaks (Pharmaq Analytiq)",
+      "year": 2026,
+      "source": "iLaks",
+      "url": "https://ilaks.no/pharmaq-vintersarsesongen-toppet-ut-senere-enn-normalt/",
+      "open": true,
+      "finding": "Fewer serious M. viscosa findings in winter 2025/26; Q1 2026 superior share was the highest first quarter since 2019, but the ulcer peak shifted to March and overlapped lice handling; over half of cases in some periods were mixed infections with Tenacibaculum.",
+      "level": "read"
+     },
+     {
+      "theme": "antibiotics",
+      "title": "Characterization of Tenacibaculum maritimum and mouthrot to inform pathogen transfer risk assessments in British Columbia",
+      "authors": "Wade J, Weber L",
+      "year": 2020,
+      "source": "DFO Canadian Science Advisory Secretariat Res. Doc. 2020/061",
+      "url": "https://waves-vagues.dfo-mpo.gc.ca/library-bibliotheque/40952824.pdf",
+      "open": true,
+      "finding": "Mouthrot treatment is the BC salmon industry's largest use of antimicrobials (florfenicol, potentiated sulfonamides); mortality drops 2-3 days after treatment starts. Diagnosed in 106 of 1,446 farm audits (7.3%) 2002-2018; spikes 7-14 days and detection ~6 weeks after sea entry; chronic mortality up to ~15%.",
+      "level": "read"
+     },
+     {
+      "theme": "antibiotics",
+      "title": "SRS pushed Chilean salmon farming antibiotic use up by 9.7% last year",
+      "authors": "Fish Farming Expert (reporting Sernapesca)",
+      "year": 2025,
+      "source": "Fish Farming Expert",
+      "url": "https://www.fishfarmingexpert.com/antibiotics-chilean-salmon-farming-florfenicol/srs-pushed-chilean-salmon-farming-antibiotic-use-up-by-97-last-year/1968326",
+      "open": true,
+      "finding": "Chile used 336.26 t of antibiotics for cycles harvested in 2024, 96.98% florfenicol, mostly for SRS; tenacibaculosis and BKD account for a smaller, unquantified share. (Pontigo et al. 2024 cite 6.2 t florfenicol + 3.1 t oxytetracycline, about 3% of marine use, against tenacibaculosis in 2019.)",
+      "level": "read"
+     },
+     {
+      "theme": "antibiotics",
+      "title": "Fish Health Report 2025, sections 8.4 and 8.10",
+      "authors": "Norwegian Veterinary Institute",
+      "year": 2026,
+      "source": "Norwegian Veterinary Institute",
+      "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fish-health-report-2025/_/attachment/inline/4e7d310d-0620-439c-a2cf-caac02253620:b124880858959e1f6b61fbe45e1137e7e31fc0f9/Fish%20Health%20Report%202025.pdf",
+      "open": true,
+      "finding": "Norway uses some antibacterials in severe ulcer cases but their effect is 'variable and uncertain'; total antibacterial use in Norwegian aquaculture was only 498 kg in 2025, not broken down by disease.",
+      "level": "read"
+     },
+     {
+      "theme": "antibiotics",
+      "title": "Salmon mortality event 2025 (Tasmania EPA)",
+      "authors": "EPA Tasmania",
+      "year": 2025,
+      "source": "Environment Protection Authority Tasmania",
+      "url": "https://epa.tas.gov.au/business-industry/regulation/salmon-aquaculture/salmon-mortality-event-2025",
+      "open": true,
+      "finding": "During Tasmania's Feb-May 2025 mortality event, Huon treated pens with oxytetracycline feed (29,000 mg/kg); residues were found near pens and in a few wild fish. The page does not name the cause; industry reports blamed a rickettsia-type bacterium, not Tenacibaculum.",
+      "level": "read"
+     },
+     {
+      "theme": "vaccines",
+      "title": "Fish Health Report 2025: vaccination against winter ulcer",
+      "authors": "Norwegian Veterinary Institute",
+      "year": 2026,
+      "source": "Norwegian Veterinary Institute",
+      "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fish-health-report-2025/_/attachment/inline/4e7d310d-0620-439c-a2cf-caac02253620:b124880858959e1f6b61fbe45e1137e7e31fc0f9/Fish%20Health%20Report%202025.pdf",
+      "open": true,
+      "finding": "Nearly all Atlantic salmon stocked at sea in Norway in 2025 got a new vaccine with an M. viscosa component (CC3 credited with better protection), though some farmers reported more adhesions; there is still no commercial vaccine against Tenacibaculum.",
+      "level": "read"
+     },
+     {
+      "theme": "vaccines",
+      "title": "Chilean scientists advance a vaccine against one of the main causes of salmon death (Tenacibaculum dicentrarchi prototypes)",
+      "authors": "Avendaño-Herrera R, Irgang R et al. (reported by G5noticias)",
+      "year": 2026,
+      "source": "Journal of Fish Diseases (via G5noticias)",
+      "url": "https://g5noticias.cl/2026/08/21/cientificos-chilenos-avanzan-en-la-creacion-de-una-vacuna-contra-una-de-las-principales-causas-de-muerte-del-salmon/",
+      "open": true,
+      "finding": "Of three T. dicentrarchi vaccine prototypes, only TdCh05 significantly improved survival (50% mortality vs 73.3% in controls); an iron-restricted version gave only ~10% relative protection. Still experimental.",
+      "level": "read"
+     },
+     {
+      "theme": "vaccines",
+      "title": "Desarrollo y evaluación de la eficacia de una vacuna tipo bacterina para la prevención de la tenacibaculosis",
+      "authors": "Romero Escobar A",
+      "year": 2023,
+      "source": "Universidad de Chile (undergraduate thesis)",
+      "url": "https://repositorio.uchile.cl/handle/2250/196848",
+      "open": true,
+      "finding": "A T. finnmarkense bacterin gave 77% relative percent survival in a bath challenge in rainbow trout at 600 degree-days; tenacibaculosis was cited as 14-35.4% of salmonid infectious deaths in Chile.",
+      "level": "abstract"
+     },
+     {
+      "theme": "vaccines",
+      "title": "Vaccinating salmon against winter ulcers",
+      "authors": "Mathisen G (Nofima)",
+      "year": 2023,
+      "source": "Nofima",
+      "url": "https://nofima.com/results/vaccinating-salmon-against-winter-ulcers/",
+      "open": true,
+      "finding": "Nofima: the Moritella vaccine 'isn't perfect'; in a cohabitation trial with ulcerated fish, 15% of vaccinated salmon developed deep ulcers and 25% superficial wounds.",
+      "level": "read"
+     },
+     {
+      "theme": "vaccines",
+      "title": "Vaccination of Atlantic salmon (Salmo salar) against marine flexibacteriosis",
+      "authors": "van Gelderen R",
+      "year": 2007,
+      "source": "University of Tasmania (PhD thesis)",
+      "url": "https://eprints.utas.edu.au/22196/",
+      "open": true,
+      "finding": "Tasmanian T. maritimum isolates killed 100% of challenged smolts within 3 days; an inactivated vaccine gave 22-28% relative survival alone and 78-80% with oil adjuvant (with side effects). No commercial salmon vaccine followed.",
+      "level": "abstract"
+     },
+     {
+      "theme": "environment",
+      "title": "Identifying environmental and production related risk factors associated with ulcer outbreaks in salmon farming (RiskIdent)",
+      "authors": "Oldham T et al. (Institute of Marine Research)",
+      "year": 2026,
+      "source": "FHF project 901837 final report",
+      "url": "https://www.hi.no/resources/RiskIdent-sluttrapport.pdf",
+      "open": true,
+      "finding": "Across 452 handling events on 19 Norwegian farms, wounds rose after the fourth handling; severe Tenacibaculum ulcers occurred only below 10 C and above 30 ppt salinity, and M. viscosa was not found above 10 C. Keeping delousing to three events or fewer substantially cuts winter-ulcer risk.",
+      "level": "read"
+     },
+     {
+      "theme": "environment",
+      "title": "Risk Factors Associated With Tenacibaculosis-Related Mortality in Farmed Salmon in Chile From 2018 to 2021",
+      "authors": "Gaete-Carrasco A et al.",
+      "year": 2026,
+      "source": "Journal of Fish Diseases e70249 (CC BY)",
+      "url": "https://www.research.ed.ac.uk/en/publications/risk-factors-associated-with-tenacibaculosis-related-mortality-in/",
+      "open": true,
+      "finding": "65.2% of 1,192 Chilean marine cycles (76.4% of Atlantic salmon cycles) recorded tenacibaculosis mortality, concentrated at 6-12.7 C and starting a median 12 weeks after stocking in Atlantic salmon; high sea lice (Caligus) raised the odds 3.2x and Atlantic salmon in Aysén 5.4x. Median cumulative mortality per cycle was small (0.09-0.27%).",
+      "level": "abstract"
+     },
+     {
+      "theme": "environment",
+      "title": "Factors associated with disease in farmed and wild salmonids caused by Tenacibaculum maritimum: a scoping review",
+      "authors": "Wassmuth RM et al.",
+      "year": 2024,
+      "source": "Frontiers in Aquaculture 3:1496943",
+      "url": "https://www.frontiersin.org/journals/aquaculture/articles/10.3389/faquc.2024.1496943/pdf",
+      "open": true,
+      "finding": "T. maritimum grows best at 15-30 C and water above ~15 C is a risk factor; BC yellow-mouth mortality can reach 15%, most BC aquaculture antibiotic prescriptions in 2011 were for it, and no commercial salmon vaccine exists (experimental Canadian vaccine failed).",
+      "level": "read"
+     },
+     {
+      "theme": "treatments",
+      "title": "Salinity acclimatization enhances Atlantic salmon resistance to Tenacibaculum finnmarkense: Skin infection and host response",
+      "authors": "Fredriksen M et al.",
+      "year": 2026,
+      "source": "Aquaculture 612",
+      "url": "https://nofima.com/publication/10314337/",
+      "open": false,
+      "finding": "Holding post-smolts in 26 ppt brackish water before sea transfer cut T. finnmarkense challenge mortality from 53% to 22% (trial 2) and from 23% to 13% (trial 3) versus freshwater-held fish.",
+      "level": "abstract"
+     },
+     {
+      "theme": "treatments",
+      "title": "Experimental Induction of Tenacibaculosis in Atlantic Salmon Using Tenacibaculum maritimum, T. dicentrarchi, and T. finnmarkense",
+      "authors": "Nowlan JP et al.",
+      "year": 2021,
+      "source": "Pathogens 10:1439 (MDPI)",
+      "url": "https://www.mdpi.com/2076-0817/10/11/1439",
+      "open": true,
+      "finding": "A challenge model for testing vaccines and treatments in 30 g smolts at 12 C: T. maritimum left under 40% survival by day 21 and T. dicentrarchi acted fastest (0-55% survival by day 12), while a T. finnmarkense isolate caused no disease.",
+      "level": "read"
+     },
+     {
+      "theme": "treatments",
+      "title": "Tenacibaculosis caused by Tenacibaculum maritimum: Updated knowledge of this marine bacterial fish pathogen",
+      "authors": "Mabrok M et al.",
+      "year": 2023,
+      "source": "Frontiers in Cellular and Infection Microbiology 12:1068000",
+      "url": "https://www.frontiersin.org/journals/cellular-and-infection-microbiology/articles/10.3389/fcimb.2022.1068000/pdf",
+      "open": true,
+      "finding": "Review: the only commercial T. maritimum vaccine is for turbot (~50% survival after bath, >85% after booster); a whole-cell vaccine in Atlantic salmon raised antibodies but no protection; oxolinic-acid resistance is common in isolates.",
+      "level": "read"
+     },
+     {
+      "theme": "spread",
+      "title": "Tenacibaculosis in Norwegian Atlantic salmon cage-farmed in cold sea water is primarily associated with Tenacibaculum finnmarkense genomovar finnmarkense",
+      "authors": "Spilsberg B et al.",
+      "year": 2022,
+      "source": "Journal of Fish Diseases",
+      "url": "https://vetinst.brage.unit.no/vetinst-xmlui/handle/11250/3039866",
+      "open": true,
+      "finding": "Fifteen outbreaks along the Norwegian coast in 2018 were mainly a single T. finnmarkense cluster (13 of 15); all occurred in cold water and mostly hit small fish recently transferred to sea.",
+      "level": "abstract"
+     },
+     {
+      "theme": "spread",
+      "title": "Advice from the assessment of the risk to Fraser River Sockeye Salmon due to Tenacibaculum maritimum transfer from Atlantic Salmon farms in the Discovery Islands area",
+      "authors": "DFO CSAS",
+      "year": 2020,
+      "source": "DFO CSAS Science Advisory Report 2020/044",
+      "url": "https://waves-vagues.dfo-mpo.gc.ca/Library/40940809.pdf",
+      "open": true,
+      "finding": "BC mouthrot is seen 3-8 weeks after seawater entry, mainly in first-year smolts; 537 fish-health events attributed to it 2002-2018; DFO modelled 0-30% (mode 10%) outbreak mortality in smolts.",
+      "level": "read"
+     },
+     {
+      "theme": "spread",
+      "title": "Marine finfish aquaculture fish health events (BC)",
+      "authors": "Fisheries and Oceans Canada",
+      "year": 2026,
+      "source": "DFO Pacific region public reporting",
+      "url": "https://www.pac.dfo-mpo.gc.ca/aquaculture/reporting-rapports/health-events-sante/index-eng.html",
+      "open": true,
+      "finding": "Bacterial disease is 78-100% of BC farm fish-health events each year 2016-2025 (91% in 2025, 33 events), and DFO says about two thirds of these are mouthrot.",
+      "level": "read"
+     },
+     {
+      "theme": "spread",
+      "title": "Pathology of experimentally induced mouthrot caused by Tenacibaculum maritimum in Atlantic salmon smolts",
+      "authors": "Frisch K et al.",
+      "year": 2018,
+      "source": "PLOS ONE 13(11):e0206951",
+      "url": "https://rcastoragev2.blob.core.windows.net/3920655d44fb48018a2ca68c8764d304/PMC6211739.pdf",
+      "open": true,
+      "finding": "Western Canadian T. maritimum isolates reproduced mouthrot in smolts, killing 84-100% of exposed fish and 27-100% of cohabitants within about 3 weeks, confirming it as the BC mouthrot agent.",
+      "level": "read"
+     },
+     {
+      "theme": "spread",
+      "title": "Identification, Characterisation, and Pathogenic Potential of Chilean Isolates of Tenacibaculum finnmarkense Recovered From Coinfection in Farmed Salmonids",
+      "authors": "Valencia-Soler V et al.",
+      "year": 2026,
+      "source": "Journal of Fish Diseases",
+      "url": "https://investigadores.anid.cl//en/public_search/work?id=997450",
+      "open": false,
+      "finding": "T. finnmarkense (both Norwegian genomovars) is present in Chilean farms in coinfections; one isolate killed 57% of challenged Atlantic salmon.",
+      "level": "abstract"
+     },
+     {
+      "theme": "spread",
+      "title": "Shifting Moritella patterns raise the bar for diagnostics in Scotland",
+      "authors": "Fish Farming Expert",
+      "year": 2026,
+      "source": "Fish Farming Expert",
+      "url": "https://www.fishfarmingexpert.com/diagnostics-moritella-viscosa-salmon-farming/shifting-moritella-patterns-raise-the-bar-for-diagnostics-in-scotland/2144977",
+      "open": true,
+      "finding": "Variant M. viscosa strains are increasingly found on the Scottish mainland (once mainly Shetland/Orkney), often mixed with Tenacibaculum; no Scottish case counts are given.",
+      "level": "read"
+     }
+    ],
+    "series": {
+     "tenaci_share_of_infectious_mortality_atlantic_chile": {
+      "2019": 14,
+      "2020": 25,
+      "2021": 31,
+      "2022": 28.5,
+      "2023": 37.9,
+      "2025": 31.5,
+      "source": "Sernapesca annual health reports, via Pontigo et al. 2024 preprint (2019-2021), WeAreAquaculture (2022, 2023) and Salmon Business (2025)",
+      "url": "https://www.salmonbusiness.com/sernapesca-chiles-overall-salmon-mortality-falls-in-2025-but-tenacibaculosis-rises/?amp=1",
+      "note": "Percent of Atlantic salmon mortality attributed to infectious causes. 2024 full-year not found: 2025 is reported as +2.1 vs 2024 (implying ~29.4 if points); H1 2024 alone was 25% (Fish Farming Expert). 2022 article says -7.8 vs 2021, implying ~36 for 2021, inconsistent with the preprint's 31 - treat 2019-2021 as approximate. URLs per year: 2019-21 https://www.preprints.org/frontend/manuscript/7bd2a78e663c2d54ecb83bea1f42c5dc/download_pub ; 2022 https://weareaquaculture.com/news/37964 ; 2023 https://weareaquaculture.com/news/aquaculture/chile-recorded-only-one-isa-outstanding-outbreak-in-2023",
+      "title": "Tenacibaculosis, % of infectious deaths, Atlantic salmon, Chile"
+     },
+     "tenacibaculum_sites_norway": {
+      "2021": 159,
+      "2022": 205,
+      "2023": 155,
+      "2024": 159,
+      "2025": 147,
+      "source": "Norwegian Veterinary Institute, Fish Health Report 2023 (presentation table), 2024 and 2025",
+      "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fish-health-report-2025/_/attachment/inline/4e7d310d-0620-439c-a2cf-caac02253620:b124880858959e1f6b61fbe45e1137e7e31fc0f9/Fish%20Health%20Report%202025.pdf",
+      "note": "Salmon sites with confirmed Tenacibaculum spp. (NVI plus private labs). 2021-2022 values from unlabelled table columns, inferred as 2021-2023 order and consistent across 2023 and 2025 reports. One extraction of the 2025 report text gave 165 for 2024; the 2024 report and the 2025 table give 159.",
+      "title": "Norway: farms with Tenacibaculum"
+     },
+     "moritella_viscosa_sites_norway": {
+      "2021": 204,
+      "2022": 296,
+      "2023": 320,
+      "2024": 289,
+      "2025": 246,
+      "source": "Norwegian Veterinary Institute, Fish Health Reports 2023-2025",
+      "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fish-health-report-2025/_/attachment/inline/4e7d310d-0620-439c-a2cf-caac02253620:b124880858959e1f6b61fbe45e1137e7e31fc0f9/Fish%20Health%20Report%202025.pdf",
+      "note": "Salmon sites with classical winter ulcer (M. viscosa). Same year-label caveat for 2021-2022.",
+      "title": "Norway: farms with winter ulcers (Moritella)"
+     },
+     "sea_mortality_salmon_norway_pct": {
+      "2020": 14.8,
+      "2021": 15.5,
+      "2022": 16.1,
+      "2023": 16.7,
+      "2024": 15.4,
+      "2025": 14.2,
+      "source": "Norwegian Veterinary Institute, Fish Health Report 2024 (Table 2.3.1) and 2025",
+      "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2025/norwegian-fish-health-report-2024/_/attachment/inline/6b11b72c-ee8f-4529-921f-1a3d85dc419e:2d59843d7c1e34e9200669ae47f2974d8ee51b6a/Fish%20Health%20Report%202024.pdf",
+      "note": "Annual cumulative mortality risk, sea phase, all causes (context for Tenacibaculum/ulcer burden)."
+     },
+     "superior_share_salmon_norway_pct": {
+      "2024": 80.6,
+      "2025": 86.9,
+      "source": "Fish Health Report 2024 (via ScienceNorway) and Fish Health Report 2025 section 6.7",
+      "url": "https://www.vetinst.no/rapporter-og-publikasjoner/rapporter/2026/fish-health-report-2025/_/attachment/inline/4e7d310d-0620-439c-a2cf-caac02253620:b124880858959e1f6b61fbe45e1137e7e31fc0f9/Fish%20Health%20Report%202025.pdf",
+      "note": "Share graded superior at slaughter; wounds/ulcers are the main downgrading cause."
+     }
+    },
+    "charts": [
+     "tenaci_share_of_infectious_mortality_atlantic_chile",
+     "tenacibaculum_sites_norway",
+     "moritella_viscosa_sites_norway"
+    ],
+    "note": "First draft compiled on 9 Nov 2026 from free-to-read sources; each entry was read (abstract only when marked). Updated by hand; the automatic publication feed below adds new papers every morning."
+   }
   },
   {
    "id": "hab",

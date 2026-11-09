@@ -1,9 +1,9 @@
 {
  "meta": {
-  "built": "2026-11-09T07:39+00:00",
+  "built": "2026-11-09T10:06+00:00",
   "note": "Signals ranked by how unusual they are against their own history (score). Effect: supports / weighs on prices, risk, watch."
  },
- "lead": "Supply grows +6 % in 2026 across the seven basins and +0.1 % in 2027. Chile is the main source of change: a record El Niño, sea lice at a high, a slowing harvest and fewer big fish. Norway carries the growth with heavier fish and more 6 kg+. Imports grow fastest in Japan, Brazil, UK; USA and Israel are flat or down.",
+ "lead": "Supply grows +6 % in 2026 across the seven basins and +0.1 % in 2027. Chile is the main source of change: a record El Niño, a slowing harvest and fewer big fish. Norway carries the growth with heavier fish and more 6 kg+. Imports grow fastest in Japan, Brazil, UK; USA and Israel are flat or down.",
  "signals": [
   {
    "basin": "Chile · El Niño",
@@ -25,9 +25,9 @@
   },
   {
    "basin": "Chile",
-   "title": "Sea lice at a high",
+   "title": "Sea lice: most farms flagged since 2025",
    "value": "65 farms",
-   "text": "listed as high-dissemination sites in 2026 Q3 (31 to 49 in the other quarters since 2025).",
+   "text": "listed as high-dissemination sites in 2026 Q3 (31 to 49 in the other quarters since 2025); earlier years ran higher (about 70–85 cases a quarter in 2018–2019; no figures found for 2022–2024).",
    "effect": "supports",
    "tab": "chile",
    "score": 3.63
@@ -60,15 +60,6 @@
    "score": 1.68
   },
   {
-   "basin": "Chile · Subpesca",
-   "title": "New rules on algal blooms",
-   "value": "1 document",
-   "text": "Subpesca, 2026-10-28: Res. Ex. N° 2534-2026 Modifica Resolución que Renueva Área de Florecimiento Algal Nocivo (FAN) de Alexandrium Catenella en Sectores que Indica. (Publicado en Página Web 28-10-2026) (F.D.O. 03-11-2026).",
-   "effect": "watch",
-   "tab": "disease",
-   "score": 1.5
-  },
-  {
    "basin": "Norway",
    "title": "Record harvest, heavier fish",
    "value": "1,819 kt",
@@ -85,6 +76,15 @@
    "effect": "watch",
    "tab": "australia",
    "score": 1.2
+  },
+  {
+   "basin": "Market",
+   "title": "Norwegian export price below last year",
+   "value": "75.0 NOK/kg",
+   "text": "fresh salmon, week 44 (80.5 a year earlier, −7 %); export volume since January +13 %.",
+   "effect": "price",
+   "tab": "prices",
+   "score": 0.6
   }
  ],
  "supply": {

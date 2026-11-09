@@ -153,7 +153,7 @@ def main():
     if len(full) >= 4:
         lq = full[-1]; oth = [q[k] for k in full[:-1]]
         if q[lq] > max(oth):
-            sig.append({'basin': 'Chile', 'title': 'Sea lice at a high', 'value': f'{q[lq]} farms', 'text': f'listed as high-dissemination sites in {lq[:4]} Q{lq[-1]} ({min(oth)} to {max(oth)} in the other quarters since {full[0][:4]}).',
+            sig.append({'basin': 'Chile', 'title': 'Sea lice: most farms flagged since 2025', 'value': f'{q[lq]} farms', 'text': f'listed as high-dissemination sites in {lq[:4]} Q{lq[-1]} ({min(oth)} to {max(oth)} in the other quarters since {full[0][:4]}); earlier years ran higher (about 70–85 cases a quarter in 2018–2019; no figures found for 2022–2024).',
                         'effect': 'supports', 'tab': 'chile', 'score': 1 + (q[lq] - max(oth)) / max(1, S.pstdev(oth) or 1)})
     # ---------------- mer, El Niño, chlorophylle ----------------
     st = lire('sea_temp.json') or {}
@@ -214,7 +214,8 @@ def main():
                         'text': f'week {w} of {y}: {n(lw)} farms listed with ISA (ILA) against {n(ly)} a year earlier and {min(hist)} to {max(hist)} the same week of the last {len(hist)} years (Food Safety Authority via BarentsWatch).',
                         'effect': 'watch', 'tab': 'disease', 'score': max(1.0, z(n(lw), hist) or 1.0)})
     # ---------------- Subpesca : documents recents sur l'ISA, les algues, les emergences sanitaires ----------------
-    sub_docs = [x for x in ((lire('chile_subpesca.json') or {}).get('documents') or []) if (x.get('date') or '') >= (dt.date.today() - dt.timedelta(days=14)).isoformat() and set(x.get('themes') or []) & {'isa', 'algae', 'emergency'}]
+    sub_docs = [x for x in ((lire('chile_subpesca.json') or {}).get('documents') or []) if (x.get('date') or '') >= (dt.date.today() - dt.timedelta(days=14)).isoformat() and set(x.get('themes') or []) & {'isa', 'algae', 'emergency'}
+                and not re.search(r'Alexandrium|marea roja|moluscos|mariscos|bivalvos|algas ep[ií]fitas', x.get('title', ''), re.I)]   # textes sur les coquillages : pas le saumon
     if sub_docs:
         sig.append({'basin': 'Chile · Subpesca', 'title': 'New rules on ' + ', '.join(sorted({ {'isa': 'ISA', 'algae': 'algal blooms', 'emergency': 'emergencies'}[t] for x in sub_docs for t in x['themes'] if t in ('isa', 'algae', 'emergency')})),
                     'value': f'{len(sub_docs)} document' + ('s' if len(sub_docs) > 1 else ''), 'text': f'Subpesca, {sub_docs[0]["date"]}: {sub_docs[0]["title"][:220]}.', 'effect': 'watch', 'tab': 'disease', 'score': 1.5})

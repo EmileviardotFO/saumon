@@ -6223,15 +6223,15 @@ let DZ_LT = 'all';
 function dzLibraryHtml(d, box) {
   const L = d.library, e = dzEsc, T = L.themes || [], S = L.studies || [], SE = L.series || {};
   const ser = (o, unit, col) => { const ys = Object.keys(o).filter(k => /^\d{4}$/.test(k)).sort(); if (ys.length < 2) return '';
-    const v = ys.map(y => o[y]), mx = Math.max(...v) * 1.12, W = 520, H = 170, Lm = 34, Bm = 24, bw = Math.min(24, (W - Lm - 10) / ys.length - 4), y = x => 10 + (H - 10 - Bm) * (1 - x / mx);
+    const v = ys.map(y => +o[y]), mx = Math.max(...v) * 1.12, W = 520, H = 170, Lm = 34, Bm = 24, bw = Math.min(24, (W - Lm - 10) / ys.length - 4), y = x => 10 + (H - 10 - Bm) * (1 - x / mx);
     let g = ''; ys.forEach((yr, i) => { const x = Lm + i * ((W - Lm - 10) / ys.length) + 2; g += `<rect x="${x}" y="${y(o[yr])}" width="${bw}" height="${y(0) - y(o[yr])}" rx="3" fill="${col}" fill-opacity=".85"><title>${yr}: ${o[yr]} ${unit}</title></rect>` +
-      `<text x="${x + bw / 2}" y="${y(o[yr]) - 3}" text-anchor="middle" font-size="9.5" fill="#e7eef2">${Math.round(o[yr])}</text><text x="${x + bw / 2}" y="${H - 8}" text-anchor="middle" font-size="9.5" fill="#cfe0ea">${yr.slice(2)}</text>`; });
+      `<text x="${x + bw / 2}" y="${y(o[yr]) - 3}" text-anchor="middle" font-size="9.5" fill="#e7eef2">${o[yr] < 100 && o[yr] % 1 ? (+o[yr]).toFixed(1) : Math.round(o[yr]).toLocaleString('en-US')}</text><text x="${x + bw / 2}" y="${H - 8}" text-anchor="middle" font-size="9.5" fill="#cfe0ea">${yr.slice(2)}</text>`; });
     return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px;height:auto;display:block">${g}</svg>`; };
-  const A = SE.srs_share_of_infectious_mortality_atlantic_chile, B = SE.antibiotics_tonnes_chile, C = SE.antibiotics_g_per_t;
+  const PAL = ['#ff8a65', '#ffd54f', '#4fc3f7', '#81c784', '#b39ddb', '#f48fb1'];
   let h = `<div id="dzLib" style="margin:16px 0 6px"><b>Study library — ${S.length} studies and reports on ${e(d.name.split(' (')[0])}</b> <span class="sig-sub">${e(L.note || '')}</span></div>`;
-  const charts = [[A, '% of infectious deaths, Atlantic salmon, Chile', '%', '#ff8a65'], [B, 'Antibiotics used in Chilean salmon farming, tonnes', 't', '#ffd54f'], [C, 'Antibiotics per tonne harvested, grams', 'g/t', '#4fc3f7']].filter(x => x[0]);
+  const charts = (L.charts || []).map((k, i) => [SE[k], (SE[k] || {}).title || k.replace(/_/g, ' '), (SE[k] || {}).unit || '', PAL[i % PAL.length]]).filter(x => x[0]);
   if (charts.length) h += `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin-bottom:12px">` +
-    charts.map(([o, t, u, c]) => box(`<div style="font-weight:700;font-size:13px">${e(t)}</div>${ser(o, u, c)}<div class="sig-sub">${e(o.note || '')} <a href="${e(o.url)}" target="_blank" rel="noopener" style="color:#4fc3f7">source</a></div>`)).join('') + `</div>`;
+    charts.map(([o, t, u, c]) => box(`<div style="font-weight:700;font-size:13px">${e(t)}</div>${ser(o, u, c)}<div class="sig-sub">${e(String(o.note || '').replace(/https?:\/\/\S+/g, '(link)'))} <a href="${e(o.url)}" target="_blank" rel="noopener" style="color:#4fc3f7">source</a></div>`)).join('') + `</div>`;
   const n = id => S.filter(x => x.theme === id).length;
   h += `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"><button type="button" class="dz-tab${DZ_LT === 'all' ? ' on' : ''}" data-dzlt="all" style="padding:3px 10px">All <span style="opacity:.7">${S.length}</span></button>` +
     T.filter(t => n(t.id)).map(t => `<button type="button" class="dz-tab${DZ_LT === t.id ? ' on' : ''}" data-dzlt="${t.id}" style="padding:3px 10px">${e(t.name)} <span style="opacity:.7">${n(t.id)}</span></button>`).join('') + `</div>`;

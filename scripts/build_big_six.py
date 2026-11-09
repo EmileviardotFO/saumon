@@ -246,7 +246,19 @@ def cad_line():
     top = q[lk] > max(oth)
     return (f'Sea lice: {q[lk]} farms classed as high-dissemination centres (CAD, 3+ egg-bearing females per fish after treatment) in {lk}, '
             + (f'the most of any quarter since Sernapesca\'s current list starts ({full[0]}: {min(oth)}–{max(oth)} per quarter since). ' if top else f'against {min(oth)}–{max(oth)} per quarter since {full[0]}. ')
-            + 'Older lists are not online, so we cannot check five years back.')
+            + hist_cad())
+
+
+def hist_cad():
+    """contexte plus long : cas CAD par an (indicateurs DIPRES / Sernapesca), dans la bibliotheque des poux"""
+    K = lire('disease_knowledge.json').get('diseases') or []
+    se = next((((x.get('library') or {}).get('series') or {}).get('cad_cases_chile') for x in K if x['id'] == 'lice'), None) or {}
+    ys = {y: v for y, v in se.items() if y.isdigit() and y != '2020'}
+    if not ys: return 'Older lists are not online.'
+    hi = max(ys, key=ys.get)
+    return (f'Earlier years ran higher: {min(ys.values())}–{max(ys.values())} CAD cases a year in {min(ys)}–{max(ys)} '
+            f'(about {round(ys[hi] / 4)} a quarter in {hi}; Sernapesca indicators via DIPRES; a farm can count more than once). '
+            'We found no figures for 2022–2024, so we cannot say whether it is a five-year high.')
 
 
 def chile_h1(g6):
