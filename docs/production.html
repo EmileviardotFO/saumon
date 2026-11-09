@@ -546,15 +546,15 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
       <button data-v="genyoy">Generations vs last year</button>
     </div></div>
     <div class="vt-row"><span class="vt-lab">Markets &amp; producers<small>trade, prices, other origins</small></span><div class="vt-btns">
-      <button data-v="markets">Norway exports</button>
-      <button data-v="products">Products</button>
+      <button data-v="markets">By market</button>
+      <button data-v="products">By product</button>
       <button data-v="calibre">Sizes &amp; premium</button>
       <button data-v="coprod">By-products</button>
       <button data-v="feed">Feed</button>
-      <button data-v="producers">Exporters</button>
+      <button data-v="producers">Producing countries</button>
       <button data-v="euflows">EU imports</button>
       <button data-v="poland">EU hubs</button>
-      <button data-v="prices">Prices</button>
+      <button data-v="prices">EU spot prices</button>
       <button data-v="usa">USA</button>
       <button data-v="usaprices">USA prices</button>
       <button data-v="china">China</button>
@@ -567,7 +567,8 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
       <button data-v="canada">Canada</button>
       <button data-v="faroe">Faroe Islands</button>
       <button data-v="iceland">Iceland</button>
-      <button data-v="seatemp">Sea temp</button>
+      <button data-v="basins">Other basins</button>
+      <button data-v="seatemp">Sea &amp; algae</button>
     </div></div>
   </div>
   <div class="field" id="poFilterField" style="display:none;">
@@ -1297,6 +1298,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
   </div>
 
   <div class="panel" id="supplyView" style="flex:1; min-width:0; max-width:1400px; display:none;"><div id="supRoot">Loading…</div></div>
+  <div class="panel" id="basinsView" style="flex:1; min-width:0; max-width:1400px; display:none;"><div id="obRoot">Loading…</div></div>
   <div class="panel" id="bsView" style="flex:1; min-width:0; max-width:1400px; display:none;"><div id="bsRoot">Loading…</div></div>
   <div class="panel" id="diseaseView" style="flex:1; min-width:0; max-width:1400px; display:none;"><div id="dzRoot">Loading…</div></div>
   <div class="panel" id="newsView" style="flex:1; min-width:0; max-width:1400px; display:none;">
@@ -5755,6 +5757,7 @@ function clBrief(D) {
 }
 
 function renderChile() {
+  clApplyPage();
   setTimeout(plChile, 100);
   if (!CLD) { if (!CL_LOADING) { CL_LOADING = true; const g = n => fetch(DATA_URL.replace('data.json', n), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
       Promise.all([g('chili.json'), g('chile_sites.json'), g('national_trade.json')]).then(([a, b, c]) => { CLD = a || {}; CLS = b; CLT = c; CL_LOADING = false; if (currentView === 'chile') renderChile(); }); }
@@ -6173,7 +6176,27 @@ const CL_COM = { 10101: 'Puerto Montt', 10102: 'Calbuco', 10103: 'Cochamó', 101
   10201: 'Castro', 10202: 'Ancud', 10203: 'Chonchi', 10204: 'Curaco de Vélez', 10205: 'Dalcahue', 10206: 'Puqueldón', 10207: 'Queilén', 10208: 'Quellón', 10209: 'Quemchi', 10210: 'Quinchao', 10301: 'Osorno', 10401: 'Chaitén',
   11101: 'Coyhaique', 11201: 'Aysén', 11202: 'Cisnes', 12101: 'Punta Arenas', 12401: 'Natales', 13101: 'Santiago', 13114: 'Las Condes', 13123: 'Providencia', 13132: 'Vitacura', 13120: 'Ñuñoa', 13113: 'La Reina', 13115: 'Lo Barnechea',
   14101: 'Valdivia', 8101: 'Concepción', 8110: 'Talcahuano', 6101: 'Rancagua', 5101: 'Valparaíso', 5109: 'Viña del Mar' };
-function clOpen(id) { const d = document.getElementById(id); if (!d) return; d.open = true; d.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+// l'onglet Chili est decoupe en pages : une seule vue, les sections hors de la page choisie sont masquees
+var CL_PAGE = 'overview';
+var CL_PAGES = [['overview', 'Overview', ['clS8', 'clS7']], ['harvest', 'Harvest & exports', ['clS1']], ['stock', 'Stock & outlook', ['clS2']],
+  ['regions', 'Regions & health', ['clS3', 'clS4']], ['companies', 'Companies & farms', ['clS5', 'clS6']], ['wellboats', 'Wellboats', ['clS9']]];
+function clGo(p) { if (window.snGo) window.snGo(p === 'overview' ? 'chile' : 'chile:' + p); else { CL_PAGE = p; renderChile(); } }
+function clApplyPage() {
+  const V = document.getElementById('chileView'); if (!V) return;
+  const P = CL_PAGES.find(x => x[0] === CL_PAGE) || CL_PAGES[0], ov = P[0] === 'overview';
+  let bar = document.getElementById('clPageBar');
+  if (!bar) { bar = document.createElement('div'); bar.id = 'clPageBar'; V.prepend(bar);
+    const s7 = document.getElementById('clS7'), s8 = document.getElementById('clS8'); if (s7 && s8) s7.before(s8); }   // en page d'accueil : les nouvelles avant le contexte
+  const bh = `<div class="gc-ttl">Chile</div><div class="gc-seg" role="tablist">${CL_PAGES.map(([k, n]) => `<button type="button" data-cp="${k}" class="${k === P[0] ? 'on' : ''}">${n.replace(/&/g, '&amp;')}</button>`).join('')}</div>`;
+  if (bar.innerHTML !== bh) { bar.innerHTML = bh; bar.querySelectorAll('[data-cp]').forEach(b => b.onclick = () => clGo(b.dataset.cp)); }
+  V.classList.toggle('cl-subpage', !ov);   // le bandeau 2027 reste sur la page d'accueil du Chili
+  ['clSub', 'clCards', 'clAlerts'].forEach(i => { const e = document.getElementById(i); if (e) e.style.display = ov ? '' : 'none'; });
+  const t = V.querySelector(':scope > .sig-title'); if (t) t.textContent = ov ? 'Chile — salmon farming, from the whole country down to the farm' : 'Chile — ' + P[1].toLowerCase();
+  V.querySelectorAll(':scope > details.cl-sec').forEach(d => { const on = P[2].includes(d.id); d.style.display = on ? '' : 'none'; if (on && !ov) d.open = true; });
+  if (P[2].includes('clS6') && typeof CL_MAP !== 'undefined' && CL_MAP) setTimeout(() => CL_MAP.invalidateSize(), 80);
+}
+function clOpen(id) { const pg = CL_PAGES.find(x => x[2].includes(id)); if (pg && pg[0] !== CL_PAGE) { clGo(pg[0]); setTimeout(() => clOpen(id), 300); return; }
+  const d = document.getElementById(id); if (!d) return; d.open = true; d.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
 function clSecInit() {   // memorise les sections ouvertes ; recale la carte a l'ouverture
   const ds = [...document.querySelectorAll('#chileView details.cl-sec')]; if (!ds.length || ds[0].dataset.init) return;
   let saved = null; try { saved = JSON.parse(localStorage.getItem('clOpen') || 'null'); } catch (_) {}
@@ -8003,14 +8026,15 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     document.getElementById('genmapView').style.display = currentView === 'genmap' ? 'block' : 'none';
     document.getElementById('genyoyView').style.display = currentView === 'genyoy' ? 'block' : 'none';
     document.getElementById('bsView').style.display = currentView === 'bigsix' ? 'block' : 'none';
+    document.getElementById('basinsView').style.display = currentView === 'basins' ? 'block' : 'none';
     // definitions du Biomasseregisteret : seulement sur les vues norvegiennes qui affichent ces mesures (pas sur Chili, Ecosse, actualite...)
     { const fn = document.getElementById('regFootNote'); if (fn) fn.style.display = ['global', 'multi', 'po', 'outlook', 'summary', 'generations', 'genyoy', 'timeatsea'].includes(currentView) ? '' : 'none'; }
     // The year / period selectors do not apply to the weekly fish-health view.
-    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'seatemp' || currentView === 'usaprices' || currentView === 'news' || currentView === 'supply' || currentView === 'disease' || currentView === 'wellboats' || currentView === 'coprod' || currentView === 'feed' || currentView === 'genyoy' || currentView === 'generations' || currentView === 'genmap' || currentView === 'bigsix' || currentView === 'diseased') ? 'none' : '';
+    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'seatemp' || currentView === 'usaprices' || currentView === 'news' || currentView === 'supply' || currentView === 'disease' || currentView === 'wellboats' || currentView === 'coprod' || currentView === 'feed' || currentView === 'genyoy' || currentView === 'generations' || currentView === 'genmap' || currentView === 'bigsix' || currentView === 'diseased' || currentView === 'basins') ? 'none' : '';
     // La carte des zones ne sert qu'aux vues qui raisonnent par PO. Les onglets
     // Markets et Calibre sont nationaux, elle n'y afficherait rien d'utile.
     const mw = document.querySelector('.panel.mapwrap');
-    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'seatemp' || currentView === 'usaprices' || currentView === 'news' || currentView === 'supply' || currentView === 'disease' || currentView === 'wellboats' || currentView === 'coprod' || currentView === 'feed' || currentView === 'genyoy' || currentView === 'generations' || currentView === 'genmap' || currentView === 'bigsix' || currentView === 'diseased') ? 'none' : '';
+    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'seatemp' || currentView === 'usaprices' || currentView === 'news' || currentView === 'supply' || currentView === 'disease' || currentView === 'wellboats' || currentView === 'coprod' || currentView === 'feed' || currentView === 'genyoy' || currentView === 'generations' || currentView === 'genmap' || currentView === 'bigsix' || currentView === 'diseased' || currentView === 'basins') ? 'none' : '';
     document.getElementById('poFilterField').style.display = (currentView === 'global' || currentView === 'multi' || currentView === 'outlook') ? 'flex' : 'none';
     document.getElementById('yearField').style.display = currentView === 'multi' ? 'none' : 'flex';
     document.getElementById('yearRangeField').style.display = currentView === 'multi' ? 'flex' : 'none';
@@ -8054,6 +8078,7 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     else if (currentView === 'supply') { renderSupply(); }
     else if (currentView === 'disease' || currentView === 'diseased') { renderDisease(); }
     else if (currentView === 'bigsix') { renderBigSix(); }
+    else if (currentView === 'basins') { renderBasins(); }
     else if (currentView === 'wellboats') { renderWellboats(); }
     else if (currentView === 'coprod') { renderCoprod(); }
     else if (currentView === 'generations') { renderGenerations(); }
@@ -14857,6 +14882,8 @@ loadRemoteData().then(live => {
   #sideNav{background:linear-gradient(170deg,rgba(255,255,255,.16),rgba(255,255,255,.06))!important;-webkit-backdrop-filter:blur(30px) saturate(180%);backdrop-filter:blur(30px) saturate(180%);
     border-right:1px solid rgba(255,255,255,.22)!important;box-shadow:inset -1px 0 0 rgba(255,255,255,.18)}
   #sideNav .sn-item{color:#e3edf3;border-radius:14px}
+  #sideNav .sn-sh{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:#bcd8e8;opacity:.8;padding:10px 12px 3px 22px}#sideNav .sn-group.closed .sn-sh{display:none}
+  #sideNav .sn-item.sn-long{font-size:12px;line-height:1.35}
   #sideNav .sn-item:hover{background:rgba(255,255,255,.10)}
   #sideNav .sn-item.on{background:linear-gradient(150deg,rgba(255,255,255,.34),rgba(255,255,255,.16))!important;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 4px 12px rgba(3,18,35,.25)!important}
   #sideNav .sn-cat{gap:8px}
@@ -14900,18 +14927,25 @@ const SN_BURGER = window.SN_BURGER, SN_CLOSE = window.SN_CLOSE;
     SVG('<path d="M2 12c3-4.5 7-6 11-6 3 0 5.5 1.5 7 3l2-2v10l-2-2c-1.5 1.5-4 3-7 3-4 0-8-1.5-11-6z"/><circle cx="16.5" cy="10.5" r=".8" fill="#fff"/>'),   // Norvege : poisson
     SVG('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 3.8 5.5 3.8 9S14.5 18.5 12 21c-2.5-2.5-3.8-5.5-3.8-9S9.5 5.5 12 3z"/>'),          // autres bassins : globe
     SVG('<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.3"/>'),                      // prix : etiquette
-    SVG('<path d="M3 17h18l-2.5 4h-13z"/><path d="M5 17V9h14v8M9 9V5h6v4"/>')];                                                 // marches : navire
-  const CATS = [['Front page', ['summary', 'news', 'supply', 'bigsix', 'disease']],
-    ['Norway — production', ['global', 'po', 'multi', 'outlook', 'generations', 'timeatsea', 'health', 'wellboats', 'register']],
-    ['Other basins', ['seatemp', 'scotland', 'faroe', 'iceland', 'chile', 'canada', 'australia']],
-    ['Prices & products', ['prices', 'calibre', 'products', 'coprod', 'feed']],
-    ['Markets & trade', ['markets', 'producers', 'euflows', 'poland', 'usa', 'usaprices', 'china', 'world']]];
-  const btn = v => document.querySelector(`#viewToggle button[data-v="${v}"]`);
+    SVG('<path d="M3 17h18l-2.5 4h-13z"/><path d="M5 17V9h14v8M9 9V5h6v4"/>'),                                                 // marches : navire
+    '<svg width="18" height="13" viewBox="0 0 22 16" aria-hidden="true"><rect width="22" height="16" rx="2" fill="#ba0c2f"/><path d="M0 8h22M8 0v16" stroke="#fff" stroke-width="4"/><path d="M0 8h22M8 0v16" stroke="#00205b" stroke-width="2"/></svg>',   // Norvege : drapeau
+    '<svg width="18" height="13" viewBox="0 0 22 16" aria-hidden="true"><rect width="22" height="16" rx="2" fill="#fff"/><path d="M0 8h22v6a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2z" fill="#d52b1e"/><path d="M2 0h6v8H0V2a2 2 0 0 1 2-2z" fill="#0039a6"/><path d="M4 2.2l.7 2h2.1l-1.7 1.2.6 2-1.7-1.2-1.7 1.2.6-2-1.7-1.2h2.1z" fill="#fff"/></svg>'];   // Chili : drapeau
+  // '#Titre' = intertitre dans le groupe ; 'chile:page' = une page de l'onglet Chili (meme vue, contenu filtre)
+  const CATS = [['Front page', ['summary', 'news', 'supply', 'bigsix', 'disease', 'seatemp'], 0],
+    ['Norway', ['#Production', 'global', 'po', 'multi', 'outlook', '#Fish & farms', 'generations', 'timeatsea', 'health', 'register', 'wellboats',
+      '#Exports', 'markets', 'products', 'calibre', 'coprod'], 5],
+    ['Chile', ['chile', 'chile:harvest', 'chile:stock', 'chile:regions', 'chile:companies', 'chile:wellboats'], 6],
+    ['Other basins', ['basins'], 2],
+    ['Markets & prices', ['prices', 'usaprices', 'usa', 'china', 'euflows', 'poland', 'world', 'producers', 'feed'], 4]];
+  const SN_LAB = { chile: 'Overview', basins: 'Faroes · Scotland · Iceland · Canada · Tasmania' };
+  (window.CL_PAGES || []).forEach(([k, n]) => { if (k !== 'overview') SN_LAB['chile:' + k] = n; });
+  const btn = v => document.querySelector(`#viewToggle button[data-v="${String(v).split(':')[0]}"]`);
   const nav = document.createElement('nav'); nav.id = 'sideNav'; nav.setAttribute('aria-label', 'Dashboard sections');
   const closed = JSON.parse((() => { try { return localStorage.getItem('snClosed') || '{}'; } catch (e) { return '{}'; } })());
   nav.innerHTML = `<div class="sn-top" aria-hidden="true"></div><div class="sn-brand"><img src="icons/logo.svg?v=orb" alt="Salmon Outlook" title="Salmon Outlook" width="36" height="36"></div><div class="sn-sub" id="snSub"></div>` +
-    CATS.map(([c, L], i) => `<div class="sn-group${closed[i] ? ' closed' : ''}" data-g="${i}"><button type="button" class="sn-cat" aria-expanded="${!closed[i]}"><span class="sn-ic">${SN_ICONS[i] || ''}</span><span class="sn-lab">${c}</span><span>${closed[i] ? '▸' : '▾'}</span></button>` +
-      L.filter(btn).map(v => `<button type="button" class="sn-item" data-v="${v}">${btn(v).textContent.trim()}</button>`).join('') + `</div>`).join('');
+    CATS.map(([c, L, ic], i) => `<div class="sn-group${closed[i] ? ' closed' : ''}" data-g="${i}"><button type="button" class="sn-cat" aria-expanded="${!closed[i]}"><span class="sn-ic">${SN_ICONS[ic] || ''}</span><span class="sn-lab">${c}</span><span>${closed[i] ? '▸' : '▾'}</span></button>` +
+      L.filter(v => v[0] === '#' || btn(v)).map(v => v[0] === '#' ? `<div class="sn-sh">${v.slice(1)}</div>`
+        : `<button type="button" class="sn-item${SN_LAB[v] && SN_LAB[v].length > 28 ? ' sn-long' : ''}" data-v="${v}"${v === 'basins' ? ' data-tv="1"' : ''}>${SN_LAB[v] || btn(v).textContent.trim()}</button>`).join('') + `</div>`).join('');
   document.body.prepend(nav);
   // telephone : les boutons fixes (menu, loupe) s'effacent quand on descend dans la page et reviennent des qu'on remonte
   { let lastY = 0, tick = false; window.addEventListener('scroll', () => { if (tick) return; tick = true; requestAnimationFrame(() => { const y = window.scrollY, hide = y > 120 && y > lastY + 4 && !document.body.classList.contains('sn-open');
@@ -14943,13 +14977,18 @@ const SN_BURGER = window.SN_BURGER, SN_CLOSE = window.SN_CLOSE;
   nav.querySelectorAll('.sn-cat').forEach(c => c.onclick = () => { const g = c.parentNode, i = g.dataset.g; g.classList.toggle('closed');
     closed[i] = g.classList.contains('closed'); c.querySelector('span:last-child').textContent = closed[i] ? '▸' : '▾'; c.setAttribute('aria-expanded', !closed[i]);
     try { localStorage.setItem('snClosed', JSON.stringify(closed)); } catch (e) { /* pas de stockage */ } });
-  const GRP = { genmap: 'generations', genyoy: 'generations', diseased: 'disease' };
-  const mark = v => nav.querySelectorAll('.sn-item').forEach(x => x.classList.toggle('on', x.dataset.v === (GRP[v] || v)));
+  const GRP = { genmap: 'generations', genyoy: 'generations', diseased: 'disease', faroe: 'basins', scotland: 'basins', iceland: 'basins', canada: 'basins', australia: 'basins' };
+  // l'onglet Chili garde une seule vue ; la page choisie (CL_PAGE) dit quelle partie afficher
+  const key = v => v === 'chile' && window.CL_PAGE && window.CL_PAGE !== 'overview' ? 'chile:' + window.CL_PAGE : v;
+  const mark = v => { v = key(v); nav.querySelectorAll('.sn-item').forEach(x => x.classList.toggle('on', x.dataset.v === (GRP[v] || v))); };
   let curV = location.hash.slice(1);
-  const go = (v, push) => { const b = btn(v); if (!b) return; b.click(); mark(v); close(); window.scrollTo(0, 0); curV = v;
+  const go = (v, push) => { const b = btn(v); if (!b) return;
+    if (String(v).startsWith('chile')) window.CL_PAGE = v.split(':')[1] || 'overview';
+    b.click(); mark(v); close(); window.scrollTo(0, 0); curV = v;
     if (push && location.hash.slice(1) !== v) {
       if (mobile()) history.replaceState({ snGuard: 1 }, '', '#' + v); else history.pushState(null, '', '#' + v); } };
   nav.querySelectorAll('.sn-item').forEach(x => x.onclick = () => go(x.dataset.v, true));
+  window.snGo = v => go(v, true);
   // l'onglet ouvert par d'autres moyens (liens internes) reste surligne
   document.querySelectorAll('#viewToggle button[data-v]').forEach(b => b.addEventListener('click', () => mark(b.dataset.v)));
   window.addEventListener('popstate', ev => {
@@ -15035,6 +15074,55 @@ const SN_BURGER = window.SN_BURGER, SN_CLOSE = window.SN_CLOSE;
 })();
 </script>
 <script>
+// « Other basins » : une seule entree du menu. Une vue d'ensemble (basins) puis une page par pays, choisie dans la barre du haut.
+var OB_V = [['basins', 'Overview'], ['faroe', 'Faroe Islands'], ['scotland', 'Scotland'], ['iceland', 'Iceland'], ['canada', 'Canada'], ['australia', 'Tasmania']];
+var OB_PANEL = { basins: 'basinsView', faroe: 'faroeView', scotland: 'scotlandView', iceland: 'isView', canada: 'canadaView', australia: 'australiaView' };
+function obGo(v) { if (window.snGo) window.snGo(v); else { const t = document.querySelector(`#viewToggle button[data-v="${v}"]`); if (t) t.click(); } window.scrollTo(0, 0); }
+function obBar(v) { return `<div class="gc-ttl">Other basins</div><div class="gc-seg" role="tablist">${OB_V.map(([k, n]) => `<button type="button" data-ob="${k}" class="${k === v ? 'on' : ''}" onclick="obGo('${k}')">${n}</button>`).join('')}</div>`; }
+(function () {
+  OB_V.slice(1).forEach(([v]) => { const P = document.getElementById(OB_PANEL[v]); if (!P) return;
+    const bar = document.createElement('div'); bar.className = 'ob-bar'; bar.innerHTML = obBar(v); P.prepend(bar); });
+})();
+var OB_D = null;
+function renderBasins() {
+  const R = document.getElementById('obRoot'); if (!R) return;
+  if (!OB_D) { if (OB_D === null) { OB_D = false; fetch(DATA_URL.replace('data.json', 'global_supply.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
+      .then(j => { OB_D = j || { basins: [] }; if (currentView === 'basins') renderBasins(); }); }
+    R.innerHTML = obBar('basins') + '<div class="sig-sub">Loading…</div>'; return; }
+  const e = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const TAB = { GB: 'scotland', FO: 'faroe', IS: 'iceland', CA: 'canada', AU: 'australia' };
+  const B = (OB_D.basins || []).filter(x => TAB[x.id]);
+  const vol = x => x.v2025 ? x.v2025 + ' kt' : x.v_local ? (x.v_local.match(/^[\d.,]+\s*kt/) || [''])[0] : '—';
+  const pc = v => v === null || v === undefined ? '—' : (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toLocaleString('en-US', { maximumFractionDigits: 1 }) + ' %';
+  const col = v => v > 0.5 ? '#7fe0a8' : v < -0.5 ? '#ff9b8a' : '#e6f0f6';
+  const sh = B.reduce((a, x) => a + (x.share || 0), 0), w = OB_D.world || {};
+  const card = x => `<div class="ob-card" onclick="obGo('${TAB[x.id]}')" role="button" tabindex="0">
+    <div class="ob-h"><b>${e(x.name)}</b><span>${x.share ? x.share + ' % of world' : ''}</span></div>
+    <div class="ob-k"><div><small>2025</small><b>${e(vol(x))}</b></div><div><small>2027, our projection</small><b style="color:${col(x.c2027)}">${pc(x.c2027)}</b></div></div>
+    <div class="ob-t">${e(x.oneliner || '')}</div><div class="ob-go">Open the ${e(x.name.split(' (')[0])} page →</div></div>`;
+  R.innerHTML = obBar('basins') +
+    `<div class="sig-title">Other basins — the five smaller producers, side by side</div>
+    <div class="sig-sub">Scotland, the Faroe Islands, Canada, Tasmania and Iceland together${sh ? ` make about ${sh} % of world farmed salmon (Scotland, Faroes and Canada; Tasmania and Iceland are counted locally)` : ''}. Each card opens the full country page.
+    2025 volumes are thousand tonnes gutted weight (Kontali via Mowi) unless marked; 2027 is our own projection — see <span class="gs-go" onclick="obGo('supply')">Supply 2027</span>.</div>
+    <div class="ob-grid">${B.map(card).join('')}</div>
+    <div class="sig-title" style="margin-top:22px">Same indicators, one table</div>
+    <div style="overflow-x:auto"><table class="sig-table ob-tab"><tr><th>Basin</th><th>2025</th><th>2026 so far</th><th>2027, our projection</th><th>Range 2027</th><th>Analysts 2027</th><th>What to watch</th></tr>
+    ${B.map(x => `<tr onclick="obGo('${TAB[x.id]}')" style="cursor:pointer"><td><b>${e(x.name)}</b></td><td>${e(vol(x))}</td><td>${e(x.y2026 || '')}</td><td style="color:${col(x.c2027)};font-weight:700">${pc(x.c2027)}</td>
+      <td>${x.r2027 ? pc(x.r2027[0]) + ' to ' + pc(x.r2027[1]) : '—'}</td><td>${e(x.analysts_2027 || '')}</td><td>${e(x.watch || '')}</td></tr>`).join('')}</table></div>
+    <div class="sig-sub" style="margin-top:8px">Source: data/global_supply.json, written ${e((OB_D.meta || {}).written || '')} — ${((OB_D.meta || {}).sources || []).map(x => `<a href="${e(x.u)}" target="_blank" rel="noopener">${e(x.t)}</a>`).join(' · ')}</div>`;
+  R.querySelectorAll('.ob-card').forEach(c => c.onkeydown = ev => { if (ev.key === 'Enter') c.click(); });
+}
+(function () { const st = document.createElement('style');
+  st.textContent = `.ob-grid{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px}
+  .ob-card{flex:1 1 190px;padding:14px 16px;border-radius:18px;cursor:pointer;background:linear-gradient(150deg,rgba(255,255,255,.17),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.26);box-shadow:inset 0 1px 0 rgba(255,255,255,.4);transition:transform .12s}
+  .ob-card:hover{transform:translateY(-2px)}.ob-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.ob-h b{font-size:16px}.ob-h span{font-size:12px;opacity:.75}
+  .ob-k{display:flex;gap:18px;margin:10px 0 8px}.ob-k small{display:block;font-size:11px;opacity:.7}.ob-k b{font-size:20px}
+  .ob-t{font-size:13px;line-height:1.4;opacity:.92}.ob-go{margin-top:10px;font-size:12.5px;color:#9fd3f0}
+  .ob-tab td,.ob-tab th{text-align:left!important;vertical-align:top}.ob-tab td:nth-child(3),.ob-tab td:nth-child(6),.ob-tab td:nth-child(7){white-space:normal!important;min-width:200px;max-width:340px;font-size:12.5px;line-height:1.4}
+  #basinsView a{color:#9fd3f0}`;
+  document.head.appendChild(st); })();
+</script>
+<script>
 // Sommaire de chaque onglet : les titres des parties de l'onglet affiche, en pastilles cliquables, dans le cadre du haut
 // (celui des anciens boutons d'onglets, vide depuis le menu lateral). Le titre de la page suit l'onglet.
 (function () {
@@ -15061,7 +15149,7 @@ const SN_BURGER = window.SN_BURGER, SN_CLOSE = window.SN_CLOSE;
   const build = () => {
     const P = [...document.querySelectorAll('.panel')].find(p => (p.style.display === 'block' || p.style.display === '') && vis(p) && p.closest('body'));   // un panneau cache par son onglet parent ne compte plus (le sommaire de Generations vs last year restait sur Norway export)
     const active = document.querySelector('#sideNav .sn-item.on') || document.querySelector('#viewToggle button.active');
-    if (H1) { const t = active && active.textContent.trim() ? active.textContent.trim() : H1_0, g = active && active.closest('.sn-group'), cb = g && g.querySelector('.sn-cat');
+    if (H1) { const t = (a => { const vb = document.querySelector('#viewToggle button.active'); return a && a.dataset.tv && vb ? (vb.dataset.v === 'basins' ? 'Overview' : vb.textContent.trim()) : a && a.textContent.trim() ? a.textContent.trim() : H1_0; })(active), g = active && active.closest('.sn-group'), cb = g && g.querySelector('.sn-cat');
       const cat = cb ? (cb.querySelector('.sn-lab') || cb.childNodes[0]).textContent.trim() : '';
       const hh = (cat ? `<span class="h1-cat">${cat}</span>` : '') + `<span class="h1-t">${t.replace(/</g, '&lt;')}</span>`; if (H1.innerHTML !== hh) H1.innerHTML = hh; }
     const yearBox = boxes.find(b => b.querySelector('#yearSel'));
@@ -15085,7 +15173,7 @@ const SN_BURGER = window.SN_BURGER, SN_CLOSE = window.SN_CLOSE;
   const later = () => { clearTimeout(tm); tm = setTimeout(() => { clearTimeout(mx); mx = null; build(); }, 350); if (!mx) mx = setTimeout(() => { mx = null; clearTimeout(tm); build(); }, 1200); };
   // le titre suit tout de suite (le sommaire, plus lourd, attend que la page ait fini de se dessiner)
   const title = () => { if (!H1) return; const active = document.querySelector('#sideNav .sn-item.on') || document.querySelector('#viewToggle button.active');
-    const t = active && active.textContent.trim() ? active.textContent.trim() : H1_0, g = active && active.closest('.sn-group'), cb = g && g.querySelector('.sn-cat');
+    const t = (a => { const vb = document.querySelector('#viewToggle button.active'); return a && a.dataset.tv && vb ? (vb.dataset.v === 'basins' ? 'Overview' : vb.textContent.trim()) : a && a.textContent.trim() ? a.textContent.trim() : H1_0; })(active), g = active && active.closest('.sn-group'), cb = g && g.querySelector('.sn-cat');
     const cat = cb ? (cb.querySelector('.sn-lab') || cb.childNodes[0]).textContent.trim() : '';
     const html = (cat ? `<span class="h1-cat">${cat}</span>` : '') + `<span class="h1-t">${t.replace(/</g, '&lt;')}</span>`; if (H1.innerHTML !== html) H1.innerHTML = html; };
   document.addEventListener('click', e => { if (e.target.closest && e.target.closest('#sideNav .sn-item, #viewToggle button')) setTimeout(title, 0); }, true);
@@ -16111,6 +16199,7 @@ function renderSupply() {
 .bs-glance .ar.up{background:rgba(126,217,143,.15);color:#7ed98f;border:1px solid #7ed98f}.bs-glance .ar.flat{background:rgba(143,164,176,.15);color:#cfdde4;border:1px solid #8fa4b0}.bs-glance .ar.down{background:rgba(255,138,101,.15);color:#ff8a65;border:1px solid #ff8a65}
 .bs-glance .tx{font-size:14px;line-height:1.5;color:#e7eef2}.bs-glance .tx small{display:block;color:#a9bfcc;font-size:12.5px;margin-top:3px}
 .bs-glance .go{color:#4fc3f7;cursor:pointer;white-space:nowrap}
+#chileView.cl-subpage .bs-glance{display:none}
 </style>
 <script>
 // En tete commun des onglets bassins : sens attendu pour 2027, la phrase de synthese et 2026 a ce jour (data/global_supply.json)
