@@ -3,26 +3,26 @@
   "generated": "2026-11-09",
   "status": {
    "ilaks.no": "ok 12 articles, 0 kept",
-   "www.kyst.no": "ok 58 articles, 0 kept",
-   "www.fishfarmingexpert.com": "ok 65 articles, 0 kept",
+   "www.kyst.no": "ok 61 articles, 1 kept",
+   "www.fishfarmingexpert.com": "ok 65 articles, 1 kept",
    "www.fishfarmermagazine.com": "ok 30 articles, 0 kept",
    "www.salmonexpert.cl": "ok 55 articles, 5 kept",
    "thefishsite.com": "ok 50 articles, 1 kept",
-   "news.google.com (NO no #1)": "ok 10 articles, 7 kept",
+   "news.google.com (NO no #1)": "ok 9 articles, 7 kept",
    "news.google.com (NO no #2)": "ok 10 articles, 1 kept",
-   "news.google.com (CL es #3)": "ok 32 articles, 12 kept",
+   "news.google.com (CL es #3)": "ok 32 articles, 13 kept",
    "news.google.com (CL es #4)": "ok 8 articles, 4 kept",
    "news.google.com (IS is #5)": "ok 0 articles, 0 kept",
-   "news.google.com (IS en #6)": "ok 9 articles, 4 kept",
-   "news.google.com (GB en #7)": "ok 28 articles, 9 kept",
-   "news.google.com (FO en #8)": "ok 7 articles, 1 kept",
+   "news.google.com (IS en #6)": "ok 9 articles, 3 kept",
+   "news.google.com (GB en #7)": "ok 28 articles, 8 kept",
+   "news.google.com (FO en #8)": "ok 6 articles, 1 kept",
    "news.google.com (FO fo #9)": "ok 0 articles, 0 kept",
-   "news.google.com (CA en #10)": "ok 7 articles, 1 kept",
-   "news.google.com (multi en #11)": "ok 19 articles, 1 kept",
+   "news.google.com (CA en #10)": "ok 6 articles, 1 kept",
+   "news.google.com (multi en #11)": "ok 17 articles, 1 kept",
    "news.google.com (CA en #12)": "ok 13 articles, 7 kept",
    "news.google.com (CA en #13)": "ok 0 articles, 0 kept",
    "news.google.com (CA en #14)": "ok 5 articles, 0 kept",
-   "news.google.com (multi en #15)": "ok 67 articles, 12 kept",
+   "news.google.com (multi en #15)": "ok 69 articles, 11 kept",
    "gov.scot FHI": "error: no xlsx link (1983 chars, 0 xlsx links, title: )"
   },
   "note": "news = articles kept by keyword (a mortality word + a farming word), classified by cause and basin; manual = events entered by hand with their losses; scotland_fhi = mortalities reported to the Scottish Fish Health Inspectorate",
@@ -156,6 +156,34 @@
   }
  ],
  "news": [
+  {
+   "date": "2026-11-09",
+   "title": "Skjerper meldekravene for tap av fisk",
+   "url": "https://www.kyst.no/dodfisk-mattilsynet/skjerper-meldekravene-for-tap-av-fisk/2208074",
+   "source": "www.kyst.no",
+   "lang": "no",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "NO"
+   ],
+   "id": "4d4b458ea6a5"
+  },
+  {
+   "date": "2026-11-09",
+   "title": "Norway tightens reporting requirements for fish losses",
+   "url": "https://www.fishfarmingexpert.com/fish-farming-fish-mortality-norwegian-food-safety-authority/norway-tightens-reporting-requirements-for-fish-losses/2208138",
+   "source": "www.fishfarmingexpert.com",
+   "lang": "en",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "NO"
+   ],
+   "id": "7f4b48b6c791"
+  },
   {
    "date": "2026-11-05",
    "title": "Mowi crecerá a 630.000 toneladas de salmón: es la mayor empresa de productos del mar en el mundo",
