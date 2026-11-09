@@ -308,6 +308,8 @@ def outlook(car, ports):
     pac = {r['m']: r['pac_t'] for r in ports['rows'] if r.get('pac_t') is not None}
     cycles = car['cycles']
     site_months = car.get('site_months') or {}
+    CO = {x['id']: x['co'] for x in car.get('sites', [])}
+    co_of = lambda c: 'Cermaq Canada (ex-Grieg BC)' if 'grieg' in CO.get(c['id'], '').lower() else CO.get(c['id'], '?')
 
     def dist(asof):
         done = [c for c in cycles if c['harv0'] and c['end'] and c['end'] <= asof and c['entry'] >= mback(asof, 120)]
@@ -328,9 +330,13 @@ def outlook(car, ports):
             seen = [k for k in site_months.get(c['id'], ()) if k <= asof]
             if not seen or mdiff(asof, max(seen)) > 3: continue
             started = c['harv0'] is not None and c['harv0'] <= asof
+            # une ferme en recolte qui ne declare plus le mois de reference a ete videe (une ferme avec du poisson declare chaque mois) ;
+            # sans ce test, Koskimo, Mahatta East, Bawden et Dixon Bay (vides en avril-mai 2026) restaient « en recolte » jusqu'en 2027
+            if started and max(seen) < asof: continue
             live.append((c, started))
         fut = [mback(asof, -i) for i in range(1, 3 * nq + 1)]
         exp = {k: 0.0 for k in fut}
+        eco = defaultdict(lambda: defaultdict(float))      # meme calcul, par entreprise
         pairs = [(a, b) for a in th for b in hl]
         for c, started in live:
             age = mdiff(asof, c['entry'])
@@ -340,14 +346,14 @@ def outlook(car, ports):
                 for b in cand:
                     for i in range(1, b - done_h + 1):
                         k = mback(asof, -i)
-                        if k in exp: exp[k] += 1 / len(cand)
+                        if k in exp: exp[k] += 1 / len(cand); eco[co_of(c)][k] += 1 / len(cand)
             else:
                 cand = [(a, b) for a, b in pairs if a > age] or [(age + 1, statistics.median(hl))]
                 w = 1 / len(cand)
                 for a, b in cand:
                     for i in range(int(b)):
                         k = mback(c['entry'], -(a + i))
-                        if k in exp: exp[k] += w
+                        if k in exp: exp[k] += w; eco[co_of(c)][k] += w
         # mises a l'eau a venir : autant que sur les 12 mois precedents, decalees d'un an
         newx = {k: 0.0 for k in fut}
         starts = defaultdict(int)
@@ -370,7 +376,8 @@ def outlook(car, ports):
             ks = fut[3 * i:3 * i + 3]
             sm, sn = sum(exp[k] for k in ks), sum(newx[k] for k in ks)
             q.append({'q': f'{ks[0] // 100}Q{(ks[0] % 100 + 2) // 3}', 'months': ks, 'site_months': round(sm + sn, 1),
-                      't': round((sm + sn) * rate), 't_in_sea': round(sm * rate), 't_future_smolt': round(sn * rate)})
+                      't': round((sm + sn) * rate), 't_in_sea': round(sm * rate), 't_future_smolt': round(sn * rate),
+                      'by_co': {co: round(sum(v[k] for k in ks), 1) for co, v in sorted(eco.items())}})
         return {'asof': asof, 'rate_t_per_site_month': round(rate, 1), 'live_cycles': len(live),
                 'started': sum(1 for _, s in live if s), 'new_entries_12m': sum(starts.values()), 'quarters': q}
 
@@ -404,7 +411,11 @@ def outlook(car, ports):
     obs = defaultdict(lambda: [0, 0])
     for m, v in pac.items():
         qk = f'{m // 100}Q{(m % 100 + 2) // 3}'; obs[qk][0] += v; obs[qk][1] += 1
-    return {'current': cur, 'backtest': bt, 'errors': err,
+    obs_co = defaultdict(lambda: defaultdict(int))
+    for co, d in (car.get('by_company') or {}).items():
+        cn = 'Cermaq Canada (ex-Grieg BC)' if 'grieg' in co.lower() else co
+        for m, v in d.items(): m = int(m); obs_co[cn][f'{m // 100}Q{(m % 100 + 2) // 3}'] += v[2]
+    return {'current': cur, 'backtest': bt, 'errors': err, 'observed_sites_harvesting': {c: dict(v) for c, v in obs_co.items()},
             'observed': {k: round(v[0]) for k, v in sorted(obs.items()) if v[1] == 3}}
 
 

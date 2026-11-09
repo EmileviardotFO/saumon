@@ -5243,6 +5243,11 @@ function caSupply() {
     const why = [];
     const bc = [`Exports of the last 3 months: ${vt(r3('BC'))} against a year earlier.`];
     if (dfo) bc.push(`Fish already at sea (DFO farm cycles): ${dfo.q.filter(q => q[3] !== null).map(q => `${q[0]} ${vt(q[3])}`).join(', ') || 'no quarter projected yet'}${dfo.chg !== null ? `; ${dfo.y0} as a whole ${vt(dfo.chg)} on ${dfo.y1}` : ''}.`);
+    // par entreprise : mois-fermes en recolte attendus (cycles DFO) contre les memes trimestres un an plus tot (observes)
+    const OQ = O && O.current ? O.current.quarters.filter(q => dfo && dfo.q.some(x => x[0] === q.q) && q.by_co) : [], OH = (O && O.observed_sites_harvesting) || {};
+    const coN = c => c.replace('MOWI Canada West', 'Mowi').replace('Cermaq Canada (ex-Grieg BC)', 'Cermaq ex-Grieg').replace('Cermaq Canada', 'Cermaq');
+    const coR = OQ.length ? [...new Set(OQ.flatMap(q => Object.keys(q.by_co)))].map(c => { const a = OQ.reduce((t, q) => t + (q.by_co[c] || 0), 0), b = OQ.reduce((t, q) => t + ((OH[c] || {})[`${+q.q.slice(0, 4) - 1}${q.q.slice(4)}`] || 0), 0); return { c, a, b }; }).sort((x, y) => y.a - x.a) : [];
+    if (coR.length) bc.push(`By company, farm-months of harvest in ${OQ.map(q => q.q).join('–')} against a year earlier: ${coR.map(r => `${coN(r.c)} ${r.a.toFixed(0)} vs ${r.b}`).join(' · ')} — ${coR.filter(r => r.a > r.b + 0.5).map(r => coN(r.c)).join(' and ') || 'no company'} up${coR.some(r => r.a < r.b - 0.5) ? `, ${coR.filter(r => r.a < r.b - 0.5).map(r => coN(r.c)).join(' and ')} down` : ''}.`);
     if (mowi && mBC0) bc.push(`${e(mowi.co)} guides ${f0(mowi.n)} t in British Columbia for ${mowi.gy + 1}, against ${f0(mBC0)} t in ${mowi.gy} (${vt(mChg)}).`);
     bc.push(`Open net-pen licences end on 30 June 2029: some farms are no longer restocked, so BC volumes trend down from 2027.`);
     const at = [`Exports of the last 3 months: ${vt(r3('ATL'))} against a year earlier.`,
@@ -5251,6 +5256,11 @@ function caSupply() {
     if (ce) at.push(`Mowi Canada East (${f0(ce)} t harvested this year) is being sold to Cooke: same farms, new owner — no volume effect expected by itself.`);
     $('caTrend').innerHTML = `<div class="ca-tr">${tc(`Canada · ${per}`, tCA, lCA, 'whole-fish equivalent, both coasts')}${tc(`British Columbia · ${per}`, sum(PB), sum(LY.BC), how('BC'))}${tc(`Atlantic provinces · ${per}`, sum(PA), sum(LY.ATL), how('ATL'))}</div>` +
       `<div class="ca-why"><div><b>Why — British Columbia</b><ul>${bc.map(x => `<li>${x}</li>`).join('')}</ul></div><div><b>Why — Atlantic provinces</b><ul>${at.map(x => `<li>${x}</li>`).join('')}</ul></div></div>` +
+      (coR.length ? `<div class="ca-h3">British Columbia by company — farms harvesting, ${OQ.map(q => q.q).join(' + ')} against a year earlier</div>` +
+        caHB(coR.map(r => ({ lab: coN(r.c), v: [r.b, r.a], d: r.b ? 100 * (r.a / r.b - 1) : null, note: r.b ? '' : 'no harvest a year earlier' })), [['a year earlier (observed)', '#c3ced6'], ['expected (fish at sea)', '#3fb8f0']], { unit: ' farm-months', dlab: 'vs N-1' }) +
+        '' : '') +
+      (coR.length ? `<div class="sig-sub" style="margin-top:4px">One farm-month = one farm harvesting during one month (DFO monthly reports); a farm is emptied in about 5 months. ` +
+        `Fewer farms harvesting (${coR.reduce((t, r) => t + Math.round(r.a), 0)} farm-months against ${coR.reduce((t, r) => t + r.b, 0)}) but about the same tonnage: the projection uses the average harvest per farm-month of the last 12 months (${f0(O.current.rate_t_per_site_month)} t), above what the farms harvesting a year earlier yielded — the tonnes per farm are the uncertain part.</div>` : '') +
       `<div class="ca-h3">Month by month — expected against a year earlier, Canada</div>` +
       caHB(nxt.map((k, i) => ({ lab: tmMl(k), v: [LY.BC[i] + LY.ATL[i], PB[i] + PA[i]], d: pc(PB[i] + PA[i], LY.BC[i] + LY.ATL[i]), note: `BC ${f0(PB[i])} t · Atlantic ${f0(PA[i])} t` })),
         [['a year earlier', '#c3ced6'], ['expected', '#3fb8f0']], { unit: ' t', dlab: 'vs N-1' });
@@ -5262,7 +5272,7 @@ function caSupply() {
 let CATL = null, CATL_LOADING = false, CATL_MAP = null, CATL_LAYER = null, CATL_OP = null, CATL_PROV = '', CATL_Q = '', CATL_MK = {};
 function caAtl() {
   if (!CATL) { if (!CATL_LOADING) { CATL_LOADING = true; fetch(DATA_URL.replace('data.json', 'canada_atl.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
-      .then(j => { CATL = j || { sites: [] }; CATL_LOADING = false; if (currentView === 'canada') caAtl(); }); }
+      .then(j => { CATL = j || { sites: [] }; CATL_LOADING = false; if (currentView === 'canada') { caAtl(); caSupply(); } }); }
     document.getElementById('caAtlSub').innerHTML = 'Loading…'; return; }
   const $ = id => document.getElementById(id), e = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
   const S = CATL.sites || []; if (!S.length) { $('caAtlSub').innerHTML = 'No Atlantic data yet: data/canada_atl.json is built by the update step "Canada atlantique".'; return; }
