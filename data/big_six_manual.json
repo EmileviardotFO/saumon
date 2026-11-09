@@ -1,0 +1,132 @@
+{
+ "meta": {
+  "note": "Hand-kept figures for the 6 kg+ outlook (scripts/build_big_six.py). Each block names its source. Bakkafrost volumes are thousand tonnes HOG (head-on gutted), weights kg HOG.",
+  "updated": "2026-11-09"
+ },
+ "faroe_bakkafrost": {
+  "source": "Bakkafrost quarterly trading updates (Faroe Islands farming)",
+  "rows": [
+   [
+    "2025-01",
+    6.7,
+    5.1,
+    "https://www.inderes.dk/en/releases/bakka-q1-2025-trading-update"
+   ],
+   [
+    "2025-02",
+    6.8,
+    5.0,
+    "https://www.inderes.dk/en/releases/bakka-q1-2025-trading-update"
+   ],
+   [
+    "2025-03",
+    5.4,
+    5.2,
+    "https://www.inderes.dk/en/releases/bakka-q1-2025-trading-update"
+   ],
+   [
+    "2025-Q2",
+    16.0,
+    5.0,
+    "https://www.salmonbusiness.com/seb-faroese-producers-q2-harvest-beats-guidance-by-10/"
+   ],
+   [
+    "2025-07",
+    6.1,
+    4.8,
+    "https://www.inderes.dk/en/releases/bakka-q3-2025-trading-update"
+   ],
+   [
+    "2025-08",
+    9.6,
+    5.2,
+    "https://www.inderes.dk/en/releases/bakka-q3-2025-trading-update"
+   ],
+   [
+    "2025-09",
+    9.7,
+    5.6,
+    "https://www.inderes.dk/en/releases/bakka-q3-2025-trading-update"
+   ],
+   [
+    "2025-10",
+    9.5,
+    5.4,
+    "https://www.inderes.fi/en/releases/bakka-q4-2025-trading-update"
+   ],
+   [
+    "2025-11",
+    7.6,
+    5.9,
+    "https://www.inderes.fi/en/releases/bakka-q4-2025-trading-update"
+   ],
+   [
+    "2025-12",
+    6.2,
+    5.4,
+    "https://www.inderes.fi/en/releases/bakka-q4-2025-trading-update"
+   ],
+   [
+    "2026-01",
+    8.3,
+    5.9,
+    "https://www.inderes.fi/en/releases/bakkafrost-q1-2026-trading-update"
+   ],
+   [
+    "2026-02",
+    7.7,
+    5.8,
+    "https://www.inderes.fi/en/releases/bakkafrost-q1-2026-trading-update"
+   ],
+   [
+    "2026-03",
+    9.2,
+    5.7,
+    "https://www.inderes.fi/en/releases/bakkafrost-q1-2026-trading-update"
+   ],
+   [
+    "2026-04",
+    7.7,
+    5.9,
+    "https://news.cision.com/bakkafrost/r/q2-2026-trading-update,c4370593"
+   ],
+   [
+    "2026-05",
+    8.7,
+    5.7,
+    "https://news.cision.com/bakkafrost/r/q2-2026-trading-update,c4370593"
+   ],
+   [
+    "2026-06",
+    10.3,
+    5.2,
+    "https://news.cision.com/bakkafrost/r/q2-2026-trading-update,c4370593"
+   ],
+   [
+    "2026-07",
+    8.3,
+    5.0,
+    "Bakkafrost Q3 2026 trading update"
+   ],
+   [
+    "2026-08",
+    7.1,
+    5.0,
+    "Bakkafrost Q3 2026 trading update"
+   ],
+   [
+    "2026-09",
+    7.7,
+    4.9,
+    "Bakkafrost Q3 2026 trading update"
+   ]
+  ],
+  "guidance": "Bakkafrost Faroes harvest guidance 2026: 97,000 t (raised from 92,000 t in May); smolts put to sea in 2026: 9.5 million in H1, 4.5 million in Q3; average smolt weight 527 g in Q1 2026 (449 g in 2025).",
+  "guidance_url": "https://www.salmonbusiness.com/bakkafrost-strong-q1-raises-2026-harvest-guidance-to-97000-tonnes/",
+  "premium_note": "SEB on Q2 2026: heavier fish (5.6 kg vs 5.0 kg) but the premium for larger fish remained limited."
+ },
+ "scotland": {
+  "text": "Scottish farmers harvested early in 2026 because of gill disease and mortality (Scottish Sea Farms cut its 2026 harvest guidance by 3,000 t; Bakkafrost Scotland ended external smolt sourcing after biological setbacks). Bakkafrost Scotland harvest weight: 6.4 kg in Q1 2026, 5.2 kg in Q2 (4.4 kg in June). No national size statistics.",
+  "url": "https://www.salmonbusiness.com/bakkafrost-faroese-success-dampened-by-another-heavy-scottish-loss/"
+ }
+}

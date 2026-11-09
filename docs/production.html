@@ -541,6 +541,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
       <button data-v="register">Farm register</button>
       <button data-v="timeatsea">Time at sea</button>
       <button data-v="genmap">Generations map</button>
+      <button data-v="bigsix">Big fish 6+ outlook</button>
       <button data-v="genyoy">Generations vs last year</button>
     </div></div>
     <div class="vt-row"><span class="vt-lab">Markets &amp; producers<small>trade, prices, other origins</small></span><div class="vt-btns">
@@ -1294,6 +1295,7 @@ tr.ol-sep td { text-align:left !important; font-size:11.5px; color:#5FD3C4; back
   </div>
 
   <div class="panel" id="supplyView" style="flex:1; min-width:0; max-width:1400px; display:none;"><div id="supRoot">Loading…</div></div>
+  <div class="panel" id="bsView" style="flex:1; min-width:0; max-width:1400px; display:none;"><div id="bsRoot">Loading…</div></div>
   <div class="panel" id="diseaseView" style="flex:1; min-width:0; max-width:1400px; display:none;"><div id="dzRoot">Loading…</div></div>
   <div class="panel" id="newsView" style="flex:1; min-width:0; max-width:1400px; display:none;">
     <div class="sig-title">This week in salmon — news by basin and company, and coming dates</div>
@@ -7968,14 +7970,15 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     document.getElementById('generationsView').style.display = currentView === 'generations' ? 'block' : 'none';
     document.getElementById('genmapView').style.display = currentView === 'genmap' ? 'block' : 'none';
     document.getElementById('genyoyView').style.display = currentView === 'genyoy' ? 'block' : 'none';
+    document.getElementById('bsView').style.display = currentView === 'bigsix' ? 'block' : 'none';
     // definitions du Biomasseregisteret : seulement sur les vues norvegiennes qui affichent ces mesures (pas sur Chili, Ecosse, actualite...)
     { const fn = document.getElementById('regFootNote'); if (fn) fn.style.display = ['global', 'multi', 'po', 'outlook', 'summary', 'generations', 'genyoy', 'timeatsea'].includes(currentView) ? '' : 'none'; }
     // The year / period selectors do not apply to the weekly fish-health view.
-    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'seatemp' || currentView === 'usaprices' || currentView === 'news' || currentView === 'supply' || currentView === 'disease' || currentView === 'wellboats' || currentView === 'coprod' || currentView === 'feed' || currentView === 'genyoy' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
+    document.querySelector('.top-controls').style.display = (currentView === 'health' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'seatemp' || currentView === 'usaprices' || currentView === 'news' || currentView === 'supply' || currentView === 'disease' || currentView === 'wellboats' || currentView === 'coprod' || currentView === 'feed' || currentView === 'genyoy' || currentView === 'generations' || currentView === 'genmap' || currentView === 'bigsix') ? 'none' : '';
     // La carte des zones ne sert qu'aux vues qui raisonnent par PO. Les onglets
     // Markets et Calibre sont nationaux, elle n'y afficherait rien d'utile.
     const mw = document.querySelector('.panel.mapwrap');
-    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'seatemp' || currentView === 'usaprices' || currentView === 'news' || currentView === 'supply' || currentView === 'disease' || currentView === 'wellboats' || currentView === 'coprod' || currentView === 'feed' || currentView === 'genyoy' || currentView === 'generations' || currentView === 'genmap') ? 'none' : '';
+    if (mw) mw.style.display = (currentView === 'markets' || currentView === 'products' || currentView === 'calibre' || currentView === 'summary' || currentView === 'euflows' || currentView === 'producers' || currentView === 'usa' || currentView === 'china' || currentView === 'scotland' || currentView === 'chile' || currentView === 'australia' || currentView === 'canada' || currentView === 'faroe' || currentView === 'world' || currentView === 'timeatsea' || currentView === 'poland' || currentView === 'prices' || currentView === 'iceland' || currentView === 'seatemp' || currentView === 'usaprices' || currentView === 'news' || currentView === 'supply' || currentView === 'disease' || currentView === 'wellboats' || currentView === 'coprod' || currentView === 'feed' || currentView === 'genyoy' || currentView === 'generations' || currentView === 'genmap' || currentView === 'bigsix') ? 'none' : '';
     document.getElementById('poFilterField').style.display = (currentView === 'global' || currentView === 'multi' || currentView === 'outlook') ? 'flex' : 'none';
     document.getElementById('yearField').style.display = currentView === 'multi' ? 'none' : 'flex';
     document.getElementById('yearRangeField').style.display = currentView === 'multi' ? 'flex' : 'none';
@@ -8018,6 +8021,7 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     else if (currentView === 'news') { renderNews(); }
     else if (currentView === 'supply') { renderSupply(); }
     else if (currentView === 'disease') { renderDisease(); }
+    else if (currentView === 'bigsix') { renderBigSix(); }
     else if (currentView === 'wellboats') { renderWellboats(); }
     else if (currentView === 'coprod') { renderCoprod(); }
     else if (currentView === 'generations') { renderGenerations(); }
@@ -10978,6 +10982,55 @@ pmBind();
 //  precedent et contre la meme periode N-1, fleche, et phrase quand il se
 //  passe quelque chose de notable (record, bascule contre N-1, foyer...).
 // ===========================================================================
+// ===================== Big fish 6+ outlook (data/big_six.json <- scripts/build_big_six.py) : offre de 6 kg+ par bassin, 2025, 2026, projection 2027 =====================
+let BS;
+function bsLoad(cb) { if (BS !== undefined) return cb && cb(); BS = null; fetch(DATA_URL.replace('data.json', 'big_six.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null).then(j => { BS = j || false; cb && cb(); }); }
+function bsBars(B) {   // barres groupees 2025 / 2026 / 2027 par bassin, moustache = fourchette 2027
+  const W = 640, H = 230, L = 46, Bt = 30, T = 14, mx = Math.max(...B.map(b => Math.max(b.v2025 || 0, b.v2026 || 0, b.hi || b.v2027 || 0))) * 1.1, gw = (W - L - 10) / B.length, bw = Math.min(30, (gw - 20) / 3);
+  const y = v => T + (H - T - Bt) * (1 - v / mx), C = ['#c3ced6', '#ffc38a', '#3fb8f0']; let g = '';
+  const step = mx > 400 ? 100 : mx > 150 ? 50 : 20;
+  for (let t = 0; t <= mx; t += step) g += `<line x1="${L}" x2="${W - 4}" y1="${y(t)}" y2="${y(t)}" stroke="rgba(255,255,255,.12)"/><text x="${L - 6}" y="${y(t) + 4}" text-anchor="end" font-size="11" fill="#cfe0ea">${t}</text>`;
+  B.forEach((b, i) => { const x0 = L + i * gw + (gw - 3 * bw - 8) / 2;
+    [b.v2025, b.v2026, b.v2027].forEach((v, j) => { if (v == null) return; const x = x0 + j * (bw + 4); g += `<rect x="${x}" y="${y(v)}" width="${bw}" height="${y(0) - y(v)}" rx="4" fill="${C[j]}" fill-opacity="${j === 2 ? .75 : .9}" ${j === 2 ? 'stroke="#3fb8f0" stroke-dasharray="3 2"' : ''}><title>${b.name} ${2025 + j}: ${v} kt</title></rect><text x="${x + bw / 2}" y="${(j === 2 && b.hi != null ? y(Math.max(v, b.hi)) : y(v)) - 5}" text-anchor="middle" font-size="10.5" fill="#e7eef2">${Math.round(v)}</text>`; });
+    if (b.lo != null && b.hi != null) { const x = x0 + 2 * (bw + 4) + bw / 2; g += `<line x1="${x}" x2="${x}" y1="${y(b.hi)}" y2="${y(b.lo)}" stroke="#fff" stroke-width="1.5"/><line x1="${x - 5}" x2="${x + 5}" y1="${y(b.hi)}" y2="${y(b.hi)}" stroke="#fff"/><line x1="${x - 5}" x2="${x + 5}" y1="${y(b.lo)}" y2="${y(b.lo)}" stroke="#fff"/>`; }
+    g += `<text x="${L + i * gw + gw / 2}" y="${H - Bt + 18}" text-anchor="middle" font-size="12" fill="#e7eef2" font-weight="600">${b.name}${b.estimated ? ' (est.)' : ''}</text>`; });
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${Math.max(420, B.length * 200)}px;height:auto;display:block" role="img" aria-label="6 kg+ supply by basin">${g}</svg>` +
+    `<div class="sig-sub"><span style="color:#c3ced6">■</span> 2025 · <span style="color:#ffc38a">■</span> 2026 (estimate) · <span style="color:#3fb8f0">■</span> 2027 projection, line = low–high case · thousand tonnes gutted of 6 kg+ fish</div>`;
+}
+function renderBigSix() {
+  const root = document.getElementById('bsRoot'); if (!root) return;
+  if (BS === undefined || BS === null) { root.innerHTML = 'Loading…'; return bsLoad(() => currentView === 'bigsix' && renderBigSix()); }
+  if (!BS) { root.innerHTML = '<div class="sig-sub">Big-fish outlook not built yet.</div>'; return; }
+  const e = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), Q = BS.basins.filter(b => !b.qualitative), T = BS.total, pc = (a, b) => a && b ? `${a >= b ? '+' : '−'}${Math.abs(100 * (a / b - 1)).toFixed(0)} %` : '—';
+  const go = t => `<span class="gs-go" style="cursor:pointer;color:#9fd0ff" onclick="(document.querySelector('#viewToggle button[data-v=&quot;${t}&quot;]')||{click(){}}).click();scrollTo(0,0)">→ open the ${e(t)} tab</span>`;
+  const li = (L, c) => (L || []).filter(Boolean).map(x => `<li style="margin:3px 0${c ? `;list-style:none;margin-left:-16px` : ''}">${c ? `<span style="color:${c}">●</span> ` : ''}${e(x)}</li>`).join('');
+  root.innerHTML = `<style>#bsRoot .bs-box{padding:14px 16px;border-radius:20px;background:linear-gradient(150deg,rgba(255,255,255,.14),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.24);margin-bottom:12px}
+      #bsRoot .bs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:12px}#bsRoot ul{margin:4px 0 0;padding-left:16px;font-size:13px;line-height:1.5}#bsRoot .bs-k{display:flex;gap:18px;flex-wrap:wrap;margin:8px 0}#bsRoot .bs-k b{font-size:22px;display:block}</style>` +
+    `<div class="sig-title" style="font-size:22px">Big fish (6 kg+) — supply outlook 2027</div><p class="sig-sub" style="font-size:14px;line-height:1.55;max-width:900px">${e(BS.lead)} Supply only for now; demand and prices come later.</p>` +
+    `<div class="bs-box"><div class="bs-k"><div><span class="sig-sub">2025</span><b>${Math.round(T.v2025)} kt</b></div><div><span class="sig-sub">2026 (estimate)</span><b>${Math.round(T.v2026)} kt</b><span class="sig-sub">${pc(T.v2026, T.v2025)}</span></div>` +
+    `<div><span class="sig-sub">2027 projection</span><b>${Math.round(T.v2027)} kt</b><span class="sig-sub">${pc(T.v2027, T.v2026)} · range ${Math.round(T.lo)}–${Math.round(T.hi)} kt</span></div></div>${bsBars(Q)}` +
+    `<div class="sig-sub" style="margin-top:6px">${e(T.basins.join(', '))}: about 85 % of the farmed Atlantic salmon of the seven basins. Iceland and Scotland are discussed below without a 6 kg+ figure (no size statistics). ${e(BS.meta.note)}</div></div>` +
+    `<div class="sig-title" style="margin-top:6px">Basin by basin — what we know today and what could change 2027</div><div class="bs-grid">` +
+    BS.basins.map(b => `<div class="bs-box"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><b style="font-size:16px">${e(b.name)}</b>${b.qualitative ? `<span style="font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;border:1px solid ${b.direction === 'down' ? '#ff8a65;color:#ffab91' : '#81c784;color:#a5d6a7'}">${b.direction === 'down' ? '▼ fewer big fish' : '▲ more big fish'}</span>` : `<span class="sig-sub">${Math.round(b.v2026)} kt in 2026 → <b style="color:#e7eef2">${Math.round(b.v2027)} kt</b> in 2027 (${pc(b.v2027, b.v2026)}, ${Math.round(b.lo)}–${Math.round(b.hi)})</span>`}</div>` +
+      (b.share ? `<div class="sig-sub" style="margin-top:4px">6 kg+ share of the harvest: ${b.share[0]} % in 2025, ${b.share[1]} % in 2026${b.estimated ? ' (estimated from average harvest weight)' : ''}</div>` : '') +
+      `<div style="margin-top:8px;font-weight:700;font-size:13px">What we know</div><ul>${li(b.known)}</ul>` +
+      (b.up ? `<div style="margin-top:8px;font-weight:700;font-size:13px">Could mean more 6 kg+ in 2027</div><ul>${li(b.up, '#81c784')}</ul>` : '') +
+      (b.down ? `<div style="margin-top:8px;font-weight:700;font-size:13px">Could mean fewer</div><ul>${li(b.down, '#ff8a65')}</ul>` : '') +
+      (b.how ? `<details style="margin-top:8px"><summary class="sig-sub" style="cursor:pointer">How the figure is built</summary><div class="sig-sub" style="margin-top:4px;line-height:1.5">${e(b.how)}${(b.sources || []).length ? ' Sources: ' + b.sources.map((u, i) => `<a href="${e(u)}" target="_blank" rel="noopener" style="color:#4fc3f7">${i + 1}</a>`).join(' ') : ''}${b.url ? ` <a href="${e(b.url)}" target="_blank" rel="noopener" style="color:#4fc3f7">source</a>` : ''}</div></details>` : (b.url ? `<div class="sig-sub" style="margin-top:6px"><a href="${e(b.url)}" target="_blank" rel="noopener" style="color:#4fc3f7">source</a></div>` : '')) +
+      `<div style="margin-top:8px">${go(b.tab)}</div></div>`).join('') + `</div>`;
+}
+// encart du Summary : la projection 6 kg+ en une ligne par bassin
+function gsBigSixHtml() {
+  if (BS === undefined) { bsLoad(() => currentView === 'summary' && renderGSum()); return ''; }
+  if (!BS) return '';
+  const T = BS.total, Q = BS.basins.filter(b => !b.qualitative), O = BS.basins.filter(b => b.qualitative), e = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const pc = (a, b) => `${a >= b ? '+' : '−'}${Math.abs(100 * (a / b - 1)).toFixed(0)} %`;
+  return `<div class="sig-title" style="margin-top:18px">Big fish (6 kg+) — supply in 2027</div><div class="gs-box" style="cursor:pointer" onclick="(document.querySelector('#viewToggle button[data-v=&quot;bigsix&quot;]')||{click(){}}).click();scrollTo(0,0)">` +
+    `<div style="display:flex;gap:22px;flex-wrap:wrap;align-items:flex-end"><div><div class="sig-sub">Norway + Chile + Faroes, 2027</div><div class="gs-num">${Math.round(T.v2027)} kt</div><div class="sig-sub">${pc(T.v2027, T.v2026)} on 2026 · range ${Math.round(T.lo)}–${Math.round(T.hi)} kt</div></div>` +
+    Q.map(b => `<div><div class="sig-sub">${e(b.name)}</div><div style="font-size:18px;font-weight:700">${Math.round(b.v2027)} kt <span style="font-size:13px;color:${b.v2027 >= b.v2026 ? '#a5d6a7' : '#ffab91'}">${pc(b.v2027, b.v2026)}</span></div></div>`).join('') +
+    O.map(b => `<div><div class="sig-sub">${e(b.name)}</div><div style="font-size:14px;font-weight:700;color:#ffab91">${b.direction === 'down' ? 'fewer big fish' : 'more'}</div></div>`).join('') +
+    `</div><div class="sig-sub" style="margin-top:8px">${e(BS.lead)} → Big fish 6+ outlook tab</div></div>`;
+}
 // Summary : prix (spot europeen, export norvegien), echanges USA et Chine par origine (meme calcul que les onglets USA focus / China focus), presse
 function gsPricesHtml(G) {
   const P = G.prices || {}, E = P.eu_spot, B = P.ssb, e = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
@@ -11049,7 +11102,7 @@ function renderGSum() {
     `<div class="sig-title" style="margin-top:6px">The signals, ranked by how unusual they are</div><div class="gs-sig">` +
     S.map(x => `<div class="gs-card" onclick="(document.querySelector('#viewToggle button[data-v=&quot;${e(x.tab)}&quot;]')||{click(){}}).click();scrollTo(0,0)"><div class="gs-bas">${e(x.basin)}</div><h4>${e(x.title)}</h4>${x.value ? `<div class="gs-num">${e(x.value)}</div>` : ''}<div class="sig-sub">${e(x.text)}</div>` +
       `<div style="margin-top:8px"><span class="gs-badge b-${x.effect}">${EF[x.effect] || x.effect}</span><span class="sig-sub" style="color:#9fd0ff">→ ${e(TABN[x.tab] || x.tab)}</span></div></div>`).join('') + `</div>` +
-    gsPricesHtml(G) + gsTradeHtml() + gsNewsHtml(G) +
+    gsBigSixHtml() + gsPricesHtml(G) + gsTradeHtml() + gsNewsHtml(G) +
     `<div class="sig-title" style="margin-top:18px">Producers and consumers — faster or slower than the world?</div><div class="gs-two">` +
     (SU.basins ? `<div class="gs-box"><b>Supply 2026 by basin vs the world (${SU.world > 0 ? '+' : ''}${SU.world} %)</b>${bars(SU.basins, SU.world)}<div class="sig-sub">Our estimates from official data (Global supply tab), ${(+SU.world_kt).toLocaleString('en-US')} kt for the seven basins. 2027: ${SU.world_next > 0 ? '+' : ''}${SU.world_next} %.</div></div>` : '') +
     (DE.markets ? `<div class="gs-box"><b>Imports this year by market vs the world (${DE.world > 0 ? '+' : ''}${DE.world} %)</b>${bars(DE.markets, DE.world)}<div class="sig-sub">Atlantic salmon, fresh and frozen, whole and fillets, tonnes (UN Comtrade, each country's own declarations, same months both years). China, Korea and Vietnam do not report monthly.</div></div>` : '') + `</div>` +
@@ -14731,7 +14784,7 @@ const SN_BURGER = window.SN_BURGER, SN_CLOSE = window.SN_CLOSE;
     SVG('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 3.8 5.5 3.8 9S14.5 18.5 12 21c-2.5-2.5-3.8-5.5-3.8-9S9.5 5.5 12 3z"/>'),          // autres bassins : globe
     SVG('<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.3"/>'),                      // prix : etiquette
     SVG('<path d="M3 17h18l-2.5 4h-13z"/><path d="M5 17V9h14v8M9 9V5h6v4"/>')];                                                 // marches : navire
-  const CATS = [['Front page', ['news', 'supply', 'disease', 'summary']],
+  const CATS = [['Front page', ['news', 'supply', 'bigsix', 'disease', 'summary']],
     ['Norway — production', ['global', 'po', 'multi', 'outlook', 'generations', 'genmap', 'genyoy', 'timeatsea', 'health', 'wellboats', 'register']],
     ['Other basins', ['seatemp', 'scotland', 'faroe', 'iceland', 'chile', 'canada', 'australia']],
     ['Prices & products', ['prices', 'calibre', 'products', 'coprod', 'feed']],

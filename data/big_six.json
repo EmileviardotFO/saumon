@@ -1,0 +1,147 @@
+{
+ "meta": {
+  "built": "2026-11-09T08:05+00:00",
+  "unit": "thousand tonnes gutted (6 kg+ fish)",
+  "note": "Supply only. 2026 = harvest to date plus the rest of the year at the same pace; 2027 = our harvest projection times the 6 kg+ share expected, low and high cases in brackets."
+ },
+ "basins": [
+  {
+   "id": "NO",
+   "name": "Norway",
+   "v2025": 183.5,
+   "v2026": 255.7,
+   "v2027": 307.8,
+   "lo": 260.6,
+   "hi": 332.9,
+   "share": [
+    11.9,
+    15.7
+   ],
+   "how": "Harvest (1,537 kt in 2025, 1,630 kt in 2026) × share of 6 kg+ in the harvest from Sjømat Norge's weekly size report (11.9 % in 2025, 15.7 % so far in 2026). 2027: our generations model, 6 kg+ harvested January–September 2027 against the same months of 2026: +20 % central (+2 % if the new generation loses its growth advance, +30 % if it keeps all of it).",
+   "known": [
+    "Fish over 5 kg at sea at the end of September: 52 kt gutted against 39 kt a year earlier (+34 %).",
+    "The generation being harvested grows 14 % faster per fish and loses 0.85 % of its fish a month (1.43 % a year earlier).",
+    "Next generation: 283 M fish at 1.07 kg (289 M at 1.00 kg a year earlier).",
+    "October 2026: 14.5 % of the harvest in 6 kg+ (13.1 % a year earlier), from harvest-boat visits."
+   ],
+   "up": [
+    "The new generation keeps its growth advance: a wave of 6 kg+ in spring–summer 2027 (+30 % case).",
+    "Low mortality and fewer lice treatments let farmers keep fish longer."
+   ],
+   "down": [
+    "Algae (spring 2026 in the south, 2025 in the north), ISA or a jellyfish year force early harvests of smaller fish.",
+    "Weak premium for big sizes pushes farmers to harvest earlier.",
+    "Norway is at its legal biomass limit: more 6 kg+ means fewer small fish, not more salmon."
+   ],
+   "tab": "generations"
+  },
+  {
+   "id": "CL",
+   "name": "Chile",
+   "v2025": 146.4,
+   "v2026": 120.5,
+   "v2027": 118.0,
+   "lo": 64.7,
+   "hi": 151.0,
+   "share": [
+    20.2,
+    16.3
+   ],
+   "estimated": true,
+   "how": "Atlantic harvest (724 kt in 2025, 740 kt in 2026) × share of 6 kg+ estimated from the average harvest weight reported by Camanchaca and Multi X (5.17 kg live in 2025, 5.02 kg in 2026Q1; estimated share 20 % and 16 %, assuming the usual spread of weights). Customs confirm the direction: 6 kg+ were 35 % of the whole Atlantic salmon exported over the last six months against 42 % a year earlier. 2027: harvest -2.1 % at the 2026 weight; low case: harvest -9 % and 0.3 kg lighter fish; high case: harvest +1 % and back to 2025 weights.",
+   "known": [
+    "Standing biomass about 7 % below a year earlier; harvest slowing since August.",
+    "Record El Niño: Chilean sea 1–3 °C above normal; preventive algae emergency from 1 Nov 2026 to 30 Jun 2027.",
+    "Sea lice at a high (65 farms above the threshold in Q3 2026); SRS causes 53 % of infectious mortality (2025) and forced early harvests at Camanchaca in Q1 2026.",
+    "FOB price of 6 kg+ up 16 % in Q3 2026 as volumes fell."
+   ],
+   "up": [
+    "A mild algae season and calmer El Niño let farmers grow fish to full size.",
+    "Fewer early harvests for lice and SRS."
+   ],
+   "down": [
+    "A bloom like 2016 or 2021 in the inner seas (Los Lagos, Aysén) or new losses in Magallanes.",
+    "Warm water speeds growth but pushes farmers to harvest early, at smaller sizes, to limit risk.",
+    "Companies changing hands (Blumar sold to Agrosuper) may change harvest plans."
+   ],
+   "tab": "chile"
+  },
+  {
+   "id": "FO",
+   "name": "Faroe Islands",
+   "v2025": 45.3,
+   "v2026": 62.3,
+   "v2027": 53.7,
+   "lo": 36.1,
+   "hi": 71.5,
+   "share": [
+    39.4,
+    45.7
+   ],
+   "estimated": true,
+   "weights": {
+    "h1_2025": 5.05,
+    "h1_2026": 5.68,
+    "q3_2026": 4.97,
+    "y2025": 5.26
+   },
+   "how": "Harvest (115 kt in 2025, 136 kt in 2026) × share of 6 kg+ estimated from Bakkafrost's average harvest weight (gutted): 5.7 kg in H1 2026 against 5.1 kg in H1 2025, back to 5.0 kg in Q3 2026 (estimated share 39 % in 2025, 46 % in 2026, assuming the usual spread of weights). 2027: flat harvest (Bakkafrost plans as much as in 2026) at the 2025 weight; low case 4.9 kg, high case 5.6 kg.",
+   "known": [
+    "H1 2026 was a big-fish half-year: 5.7 kg on average against 5.1 kg a year earlier; Q3 2026 back to 5.0 kg.",
+    "Bakkafrost Faroes harvest guidance 2026: 97,000 t (raised from 92,000 t in May); smolts put to sea in 2026: 9.5 million in H1, 4.5 million in Q3; average smolt weight 527 g in Q1 2026 (449 g in 2025).",
+    "SEB on Q2 2026: heavier fish (5.6 kg vs 5.0 kg) but the premium for larger fish remained limited."
+   ],
+   "up": [
+    "Larger smolts (527 g in Q1 2026) and good biology let fish reach 6 kg+ again in 2027."
+   ],
+   "down": [
+    "The H1 2026 bulge came from one strong generation; the fish harvested since July are lighter.",
+    "Bakkafrost may harvest earlier if the premium for big fish stays small."
+   ],
+   "tab": "faroe",
+   "sources": [
+    "https://news.cision.com/bakkafrost/r/q2-2026-trading-update,c4370593",
+    "https://www.inderes.dk/en/releases/bakka-q1-2025-trading-update",
+    "https://www.inderes.dk/en/releases/bakka-q3-2025-trading-update",
+    "https://www.inderes.fi/en/releases/bakka-q4-2025-trading-update",
+    "https://www.inderes.fi/en/releases/bakkafrost-q1-2026-trading-update",
+    "https://www.salmonbusiness.com/seb-faroese-producers-q2-harvest-beats-guidance-by-10/"
+   ]
+  },
+  {
+   "id": "IS",
+   "name": "Iceland",
+   "qualitative": true,
+   "known": [
+    "Fish over 5 kg at sea in 2026-09: 6.4 kt against 10.6 kt a year earlier (-40 %); 4–5 kg: 7.4 kt against 9.2 kt (MAST).",
+    "Iceland harvest 2027: -7.0 % (our projection)."
+   ],
+   "direction": "down",
+   "tab": "iceland"
+  },
+  {
+   "id": "GB",
+   "name": "Scotland",
+   "qualitative": true,
+   "known": [
+    "Scottish farmers harvested early in 2026 because of gill disease and mortality (Scottish Sea Farms cut its 2026 harvest guidance by 3,000 t; Bakkafrost Scotland ended external smolt sourcing after biological setbacks). Bakkafrost Scotland harvest weight: 6.4 kg in Q1 2026, 5.2 kg in Q2 (4.4 kg in June). No national size statistics."
+   ],
+   "url": "https://www.salmonbusiness.com/bakkafrost-faroese-success-dampened-by-another-heavy-scottish-loss/",
+   "direction": "down",
+   "tab": "scotland"
+  }
+ ],
+ "total": {
+  "basins": [
+   "Norway",
+   "Chile",
+   "Faroe Islands"
+  ],
+  "v2025": 375.2,
+  "v2026": 438.5,
+  "v2027": 479.5,
+  "lo": 361.4,
+  "hi": 555.4
+ },
+ "lead": "6 kg+ salmon from Norway, Chile and the Faroes: about 438 kt in 2026 (+17 % on 2025) and 480 kt in 2027 (+9 %, range 361–555 kt). Norway drives the change; more big fish in Norway; fewer in Faroe Islands, Iceland, Scotland."
+}
