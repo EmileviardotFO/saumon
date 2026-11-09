@@ -127,7 +127,8 @@ def main():
                    f'Customs confirm the direction: 6 kg+ were {s6:.0f} % of the whole Atlantic salmon exported over the last six months against {s6ly:.0f} % a year earlier. '
                    f'2027: harvest {cl["chg2027"]:+.1f} % at the 2026 weight; low case: harvest {cl["lo"]:+.0f} % and 0.3 kg lighter fish; high case: harvest {cl["hi"]:+.0f} % and back to 2025 weights.',
             'known': ['Standing biomass about 7 % below a year earlier; harvest slowing since August.', 'Record El Niño: Chilean sea 1–3 °C above normal; preventive algae emergency from 1 Nov 2026 to 30 Jun 2027.',
-                      'Sea lice at a high (65 farms above the threshold in Q3 2026); SRS causes 53 % of infectious mortality (2025) and forced early harvests at Camanchaca in Q1 2026.', 'FOB price of 6 kg+ up 16 % in Q3 2026 as volumes fell.'],
+                      cad_line(),
+                      'SRS (piscirickettsiosis) causes 53 % of Atlantic salmon infectious mortality (2025, up from 45 % in 2023) and forced early harvests at Camanchaca in Q1 2026.', 'FOB price of 6 kg+ up 16 % in Q3 2026 as volumes fell.'],
             'up': ['A mild algae season and calmer El Niño let farmers grow fish to full size.', 'Fewer early harvests for lice and SRS.'],
             'down': ['A bloom like 2016 or 2021 in the inner seas (Los Lagos, Aysén) or new losses in Magallanes.', 'Warm water speeds growth but pushes farmers to harvest early, at smaller sizes, to limit risk.', 'Companies changing hands (Blumar sold to Agrosuper) may change harvest plans.'],
             'tab': 'chile', 'question': chile_h1(g6)})
@@ -228,6 +229,24 @@ def norway_biology():
               'The algae episode of March 2026 in the south (about 1.7 million fish in zone 1) shows the risk is still there, even in a good year.']
     return {'title': f'Biology in {Y}: the best year in a long time — and a limit for {Y + 1}', 'lines': lines, 'limits': limits,
             'source': 'Biomass register (Fiskeridirektoratet), monthly; BarentsWatch weekly lice and treatment reports by farm.'}
+
+
+def cad_line():
+    """Fermes chiliennes classees a haute dissemination de caligus (CAD) par trimestre : la plus haute depuis le debut de la liste ?"""
+    E = lire('chile_caligus.json').get('entries') or []; q = {}
+    for x in E:
+        try:
+            y, w = x['week'].split('-W'); d = dt.date.fromisocalendar(int(y), int(w), 4); k = f'{d.year} Q{(d.month - 1) // 3 + 1}'; q[k] = q.get(k, 0) + 1
+        except Exception:  # noqa: BLE001
+            pass
+    today = dt.date.today(); cur = f'{today.year} Q{(today.month - 1) // 3 + 1}'
+    full = sorted(k for k in q if k < cur)
+    if len(full) < 3: return ''
+    lk = full[-1]; oth = [q[k] for k in full[:-1]]
+    top = q[lk] > max(oth)
+    return (f'Sea lice: {q[lk]} farms classed as high-dissemination centres (CAD, 3+ egg-bearing females per fish after treatment) in {lk}, '
+            + (f'the most of any quarter since Sernapesca\'s current list starts ({full[0]}: {min(oth)}–{max(oth)} per quarter since). ' if top else f'against {min(oth)}–{max(oth)} per quarter since {full[0]}. ')
+            + 'Older lists are not online, so we cannot check five years back.')
 
 
 def chile_h1(g6):
