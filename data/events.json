@@ -1,25 +1,28 @@
 {
  "meta": {
-  "generated": "2026-11-06",
+  "generated": "2026-11-09",
   "status": {
    "ilaks.no": "ok 12 articles, 0 kept",
-   "www.kyst.no": "ok 56 articles, 0 kept",
+   "www.kyst.no": "ok 58 articles, 0 kept",
    "www.fishfarmingexpert.com": "ok 65 articles, 0 kept",
    "www.fishfarmermagazine.com": "ok 30 articles, 0 kept",
    "www.salmonexpert.cl": "ok 55 articles, 5 kept",
    "thefishsite.com": "ok 50 articles, 1 kept",
-   "news.google.com (NO no #1)": "ok 10 articles, 8 kept",
+   "news.google.com (NO no #1)": "ok 10 articles, 7 kept",
    "news.google.com (NO no #2)": "ok 10 articles, 1 kept",
-   "news.google.com (CL es #3)": "ok 30 articles, 11 kept",
-   "news.google.com (CL es #4)": "ok 9 articles, 5 kept",
+   "news.google.com (CL es #3)": "ok 32 articles, 12 kept",
+   "news.google.com (CL es #4)": "ok 8 articles, 4 kept",
    "news.google.com (IS is #5)": "ok 0 articles, 0 kept",
-   "news.google.com (IS en #6)": "ok 10 articles, 5 kept",
-   "news.google.com (GB en #7)": "ok 25 articles, 10 kept",
-   "news.google.com (FO en #8)": "ok 9 articles, 1 kept",
+   "news.google.com (IS en #6)": "ok 9 articles, 4 kept",
+   "news.google.com (GB en #7)": "ok 28 articles, 9 kept",
+   "news.google.com (FO en #8)": "ok 7 articles, 1 kept",
    "news.google.com (FO fo #9)": "ok 0 articles, 0 kept",
-   "news.google.com (CA en #10)": "ok 20 articles, 1 kept",
-   "news.google.com (multi en #11)": "ok 17 articles, 1 kept",
-   "news.google.com (multi en #12)": "ok 71 articles, 12 kept",
+   "news.google.com (CA en #10)": "ok 7 articles, 1 kept",
+   "news.google.com (multi en #11)": "ok 19 articles, 1 kept",
+   "news.google.com (CA en #12)": "ok 13 articles, 7 kept",
+   "news.google.com (CA en #13)": "ok 0 articles, 0 kept",
+   "news.google.com (CA en #14)": "ok 5 articles, 0 kept",
+   "news.google.com (multi en #15)": "ok 67 articles, 12 kept",
    "gov.scot FHI": "error: no xlsx link (1983 chars, 0 xlsx links, title: )"
   },
   "note": "news = articles kept by keyword (a mortality word + a farming word), classified by cause and basin; manual = events entered by hand with their losses; scotland_fhi = mortalities reported to the Scottish Fish Health Inspectorate",
@@ -661,6 +664,20 @@
    "id": "6c3b963ad546"
   },
   {
+   "date": "2026-10-12",
+   "title": "Salmones muertos en Kawésqar: mortalidad supera 642 toneladas",
+   "url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxPUE5mRUdoS0FRMFJRcjNEWi1WWUZVRGpnTUZCMFUwd1hxNWlnZjl2YUs3dkwxRUdNM0lvTlg5alkwTlFWYWJvZHBjVzlQT3NlalJSMzZ6Ml9yZ1hwZVQ0NEZqcGNLcmZxUkZkOXh0TndUQmg0TU9xcDhmN1JxSHNuLVFyS2NlMlRWUFE?oc=5",
+   "source": "El Diario Santiago",
+   "lang": "es",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "d13916c4b179"
+  },
+  {
    "date": "2026-10-10",
    "title": "Masiva mortalidad de salmones en Magallanes obliga a activar operativo de emergencia",
    "url": "https://news.google.com/rss/articles/CBMieEFVX3lxTFBEb1dCNnZLdDZZOVBHVFV3LVR2V0VIbEd0cTlQUzMySFpqOHNsVXl5eTFLZUFfVnAyYXNNM3BRendlTTRzR0tPdWNIdWxkUFdjSUlNY0RTYlJYX2ZKQTV5enFPakxENXBVOGd3WUVWOGI1cVhWeFk5NQ?oc=5",
@@ -1165,6 +1182,34 @@
     "CA"
    ],
    "id": "0b0a01bcd0e4"
+  },
+  {
+   "date": "2025-09-11",
+   "title": "Despite recent die-off, plenty of support remains for aquaculture on Newfoundland's south coast",
+   "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxOQm9mQjdtdUgwMHBzXy1ieEUtWDlldThON2pQakpjU1d2RWVOTWxibjNpR1U4b3pwMktZSC1yQzhqa0xscDQxSTEtd2RJeU9Beml3OFh0cGhTSzNkRlVZeWF6eWtadTZOTWphNGQ4b3ZHZWJhRkNFVUlRc0ptWnF1eWNGZkJwVGR5UEhiVExwWHRMVlJWdTljLUZjNA?oc=5",
+   "source": "CBC",
+   "lang": "en",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "CA"
+   ],
+   "id": "78a840ca7cff"
+  },
+  {
+   "date": "2025-09-05",
+   "title": "Here’s why hundreds of thousands of farmed salmon died near Harbour Breton",
+   "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTFBmUDV1eVU4VGJLRkE1bU9yZlhxaDlhYkdKQ2ZnNEdlR3pZZG9GYTVVUXRKM21LY1pfaG4xRmxFMHRQa05CN3E0M2ZUTGxfMEM0ZTl5T3dlWl9KUQ?oc=5",
+   "source": "CBC",
+   "lang": "en",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "CA"
+   ],
+   "id": "3d71559a9d35"
   }
  ],
  "scotland_fhi": {
