@@ -732,6 +732,13 @@ details.ca-more>summary::-webkit-details-marker{display:none}details.ca-more>sum
       #gsum .gs-box{padding:14px 16px;border-radius:20px;background:linear-gradient(150deg,rgba(255,255,255,.14),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.24)}
       #gsum .gs-hb{display:grid;grid-template-columns:110px 1fr 62px;gap:8px;align-items:center;margin:5px 0;font-size:13px}
       #gsum .gs-tr{position:relative;height:13px;background:rgba(255,255,255,.08);border-radius:7px}
+      #gsum .gs-verdict{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin:4px 0 12px}#gsum .gs-vc{border-radius:18px;padding:14px 16px;background:linear-gradient(150deg,rgba(255,255,255,.16),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.24);border-left:5px solid #cfe0ea;box-shadow:inset 0 1px 0 rgba(255,255,255,.4)}
+      #gsum .gs-q{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:#cfe0ea;font-weight:700;margin-bottom:4px}#gsum .gs-a{font-size:16.5px;font-weight:700;line-height:1.38;margin-bottom:8px}#gsum .up{color:#81c784}#gsum .dn{color:#ff8a65}#gsum .b{color:#4fc3f7}
+      #gsum .gs-three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:8px}#gsum .gs-panel{border-radius:22px;padding:16px 18px;margin-top:12px;background:linear-gradient(150deg,rgba(255,255,255,.12),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.22)}
+      #gsum .gs-alert{display:flex;gap:10px;align-items:flex-start;padding:10px 14px;border-radius:14px;margin:0 0 12px;border:1px solid rgba(255,138,101,.6);background:rgba(255,138,101,.10);font-size:13.5px;line-height:1.45;cursor:pointer}
+      #gsum table.gs-tab td,#gsum table.gs-tab th{text-align:left!important;white-space:normal}#gsum table.gs-tab td.n,#gsum table.gs-tab th.n{text-align:right!important}
+      #gsum ul.gs-news{margin:6px 0 0;padding-left:18px;columns:2;column-gap:28px}#gsum ul.gs-news li{margin:5px 0;font-size:13.5px;break-inside:avoid}#gsum ul.gs-news a{color:#e8f1f7;text-decoration:none}#gsum ul.gs-news small{color:var(--muted)}#gsum .gs-go{color:#9fd0ff;cursor:pointer}
+      @media (max-width:900px){#gsum .gs-verdict,#gsum .gs-three{grid-template-columns:1fr}}
       @media (max-width:760px){#gsum .gs-two{grid-template-columns:1fr}#gsum .gs-sig{grid-template-columns:1fr}#gsum .gs-hb{grid-template-columns:90px 1fr 56px}}
     </style>
     <div id="gsum"></div>
@@ -5983,7 +5990,7 @@ let CLX = undefined;   // { cus, reg, cad } : douanes, bulletins INE, liste cali
 function clMore() {
   const $c = id => document.getElementById(id);
   if (CLX === undefined) { CLX = null; const g = n => fetch(DATA_URL.replace('data.json', n), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
-    Promise.all([g('chile_customs.json'), g('chile_regional.json'), g('chile_caligus.json'), g('chile_harvest_weights.json')]).then(([a, b, c, w]) => { CLX = { cus: a, reg: b, cad: c, hw: w }; if (currentView === 'chile') clMore(); }); return; }
+    Promise.all([g('chile_customs.json'), g('chile_regional.json'), g('chile_caligus.json'), g('chile_harvest_weights.json')]).then(([a, b, c, w]) => { CLX = { cus: a, reg: b, cad: c, hw: w }; if (currentView === 'chile') { clMore(); clVerdict(CL_PAGE === 'overview'); } }); return; }
   if (!CLX) return;
   const e = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), f0 = v => v === null || v === undefined || !isFinite(v) ? '—' : Math.round(v).toLocaleString('en-US');
   const f1 = v => v === null || v === undefined || !isFinite(v) ? '—' : (+v).toFixed(1), MON = MONTHS_FR.map(m => m.slice(0, 3));
@@ -6193,7 +6200,7 @@ function clFilPrd(CM, ks, last, lab) {   // filets (classes, trims, grades) et e
 let CLWB = null;
 function clWbw() {
   if (CLWB === null) { CLWB = undefined; fetch(DATA_URL.replace('data.json', 'chile_wellboats.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : false).catch(() => false)
-      .then(j => { CLWB = j || false; if (currentView === 'chile') clWbw(); }); return; }
+      .then(j => { CLWB = j || false; if (currentView === 'chile') { clWbw(); clVerdict(CL_PAGE === 'overview'); } }); return; }
   if (!CLWB) { const el = document.getElementById('clWbSub'); if (el) el.innerHTML = 'Not built yet: data/chile_wellboats.json comes from the weekly step "Chili - wellboats".'; return; }
   const W = CLWB, $ = id => document.getElementById(id), e = x => String(x ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const MO = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], YC = ['#3d5a6c', '#6fa8c7', '#f2a541'];
@@ -6308,8 +6315,7 @@ const CL_COM = { 10101: 'Puerto Montt', 10102: 'Calbuco', 10103: 'Cochamó', 101
   14101: 'Valdivia', 8101: 'Concepción', 8110: 'Talcahuano', 6101: 'Rancagua', 5101: 'Valparaíso', 5109: 'Viña del Mar' };
 // l'onglet Chili est decoupe en pages : une seule vue, les sections hors de la page choisie sont masquees
 var CL_PAGE = 'overview';
-var CL_PAGES = [['overview', 'Overview', ['clS8', 'clS7']], ['harvest', 'Harvest & exports', ['clS1']], ['stock', 'Stock & outlook', ['clS2']],
-  ['regions', 'Regions & health', ['clS3', 'clS4']], ['companies', 'Companies & farms', ['clS5', 'clS6']], ['wellboats', 'Wellboats', ['clS9']]];
+var CL_PAGES = [['overview', 'Overview', ['clS8', 'clS7']], ['production', 'Production & stock', ['clS1', 'clS2', 'clS3', 'clS9']], ['health', 'Health & companies', ['clS4', 'clS5', 'clS6']]];
 function clGo(p) { if (window.snGo) window.snGo(p === 'overview' ? 'chile' : 'chile:' + p); else { CL_PAGE = p; renderChile(); } }
 function clApplyPage() {
   const V = document.getElementById('chileView'); if (!V) return;
@@ -6324,6 +6330,64 @@ function clApplyPage() {
   const t = V.querySelector(':scope > .sig-title'); if (t) t.textContent = ov ? 'Chile — salmon farming, from the whole country down to the farm' : 'Chile — ' + P[1].toLowerCase();
   V.querySelectorAll(':scope > details.cl-sec').forEach(d => { const on = P[2].includes(d.id); d.style.display = on ? '' : 'none'; if (on && !ov) d.open = true; });
   if (P[2].includes('clS6') && typeof CL_MAP !== 'undefined' && CL_MAP) setTimeout(() => CL_MAP.invalidateSize(), 80);
+  clVerdict(ov);
+}
+var CL_DEST = 'last';
+function clVerdict(ov) {
+  // page d'accueil du Chili : trois phrases, six chiffres, nowcast wellboats, recolte mensuelle, calibres, filets, destinations
+  const V = document.getElementById('chileView'); if (!V) return;
+  let box = document.getElementById('clVerdict'); if (!box) { box = document.createElement('div'); box.id = 'clVerdict'; box.className = 'gn-scope'; const bar = document.getElementById('clPageBar'); (bar || V.firstChild).after(box); }
+  box.style.display = ov ? '' : 'none'; if (!ov) return;
+  const e = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), pc = (a, b, d = 0) => a && b ? `${a >= b ? '+' : '−'}${Math.abs(100 * (a / b - 1)).toFixed(d)} %` : '—', f = (v, d = 1) => v == null ? '—' : (+v).toFixed(d), cls = (a, b, inv) => ((a >= b) !== !!inv ? 'up' : 'dn'), sg = v => v == null ? '—' : `${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(v).toFixed(Math.abs(v) < 10 ? 1 : 0)} %`;
+  const M = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], mL = k => `${M[k % 100 - 1]} ${k / 100 | 0}`, ml = k => `${M[k % 100 - 1]} ${(k / 100 | 0) % 100}`;
+  const card = (q, a, foot, col) => `<div class="ly-card" style="border-left-color:${col}"><div class="ly-q">${q}</div><div class="ly-a">${a}</div>${foot ? `<div class="sig-sub">${foot}</div>` : ''}</div>`;
+  const kp = (q, v, u, c, g) => `<div class="ly-kc"><div class="ly-q">${q}</div><div class="ly-kv">${v}<small>${u}</small></div><div class="sig-sub" style="${g === 'up' ? 'color:#81c784' : g === 'dn' ? 'color:#ff8a65' : ''}">${c}</div></div>`;
+  // --- Subpesca : cumul Atlantique et mois par mois (difference de deux rapports)
+  const R = (CLP && CLP.reports || []).filter(r => r && r.k && !r.unread && r.species && r.species.salar).sort((a, b) => a.k - b.k);
+  const cum = {}, varp = {}; R.forEach(r => { cum[r.k] = r.species.salar.cum_kt; varp[r.k] = r.species.salar.var_pct; });
+  const lyc = k => varp[k] != null ? cum[k] / (1 + varp[k] / 100) : null;
+  const last = R.length ? R[R.length - 1].k : null;
+  const months = R.filter(r => r.k >= (last / 100 | 0) * 100 + 1).map(r => { const k = r.k, p = k % 100 > 1 ? k - 1 : null; const mo = p && cum[p] != null ? cum[k] - cum[p] : cum[k]; const mly = p && lyc(k) && lyc(p) ? lyc(k) - lyc(p) : (!p ? lyc(k) : null); return { k, mo, mly }; });
+  const lastM = months[months.length - 1];
+  // --- wellboats : nowcast Los Lagos
+  const WB = CLWB && CLWB.ll_estimate ? CLWB : null, est = WB ? WB.ll_estimate : {}, off = WB ? WB.ll_official : {}, estK = Object.keys(est).sort(), lyk = k => off[`${+k.slice(0, 4) - 1}${k.slice(4)}`];
+  // --- douanes : calibres, filets, destinations
+  const CM = CLX && CLX.cus && CLX.cus.months ? CLX.cus.months : null, cmK = CM ? Object.keys(CM).sort() : [], ck = cmK[cmK.length - 1], ckly = ck ? String(+ck - 100) : null;
+  const sizes = k => { const x = CM && CM[k] ? (CM[k].sizes || {})['atlantic|fresh whole'] : null; if (!x || !x.hist_t) return null; const h = x.hist_t, tot = h.reduce((a, b) => a + b, 0) || 1; return { mean: x.mean_kg, sh5: 100 * (h[4] + h[5] + h[6]) / tot, sh6: 100 * (h[5] + h[6]) / tot }; };
+  const prod = k => { const F = CM && CM[k] ? CM[k].species_form || {} : {}; const g = n => F[n] || [0, 0]; const fw = g('atlantic|fresh whole'), fr = g('atlantic|fresh fillets'), zf = g('atlantic|frozen fillets'), zw = g('atlantic|frozen whole'); const atl = fw[0] + fr[0] + zf[0] + zw[0]; return { fw_t: fw[0], fw_p: fw[0] ? fw[1] / fw[0] : null, fr_t: fr[0], fr_p: fr[0] ? fr[1] / fr[0] : null, zf_t: zf[0], fil: atl ? 100 * (fr[0] + zf[0]) / atl : null }; };
+  const sz = ck ? sizes(ck) : null, szl = ckly ? sizes(ckly) : null, pr = ck ? prod(ck) : null, prl = ckly ? prod(ckly) : null;
+  const sizeSeries = cmK.filter(k => +k >= +ck - 200).map(k => ({ k: +k, s: sizes(k) })).filter(x => x.s);
+  const NAMES = { 'U.S.A.': 'USA', 'Brasil': 'Brazil', 'Japon': 'Japan', 'Rusia': 'Russia', 'Mexico': 'Mexico', 'China': 'China', 'Colombia': 'Colombia', 'Argentina': 'Argentina', 'Vietnam': 'Vietnam', 'Israel': 'Israel', 'Canada': 'Canada', 'Espana': 'Spain', 'Thailandia': 'Thailand', 'Corea Del Sur': 'South Korea' };
+  const dest = ks => { const A = {}; ks.forEach(k => { if (CM && CM[k]) Object.entries(CM[k].dest || {}).forEach(([o, v]) => A[o] = (A[o] || 0) + v[0]); }); return A; };
+  const destBlock = () => { if (!CM) return ''; const y = ck.slice(0, 4), mo = +ck.slice(4); const cur = CL_DEST === 'ytd' ? dest(Array.from({ length: mo }, (_, i) => `${y}${String(i + 1).padStart(2, '0')}`)) : dest([ck]); const prev = CL_DEST === 'ytd' ? dest(Array.from({ length: mo }, (_, i) => `${+y - 1}${String(i + 1).padStart(2, '0')}`)) : dest([ckly]);
+    const tot = Object.values(cur).reduce((a, b) => a + b, 0), totl = Object.values(prev).reduce((a, b) => a + b, 0); if (!tot) return '';
+    const tops = Object.keys(cur).sort((a, b) => cur[b] - cur[a]).slice(0, 9); const rows = tops.map(o => ({ o: NAMES[o] || o, t: cur[o], sh: 100 * cur[o] / tot, sh_ly: totl ? 100 * (prev[o] || 0) / totl : 0, t_ly: prev[o] || 0 }));
+    rows.push({ o: 'Others', t: tot - tops.reduce((a, o) => a + cur[o], 0), sh: 100 - rows.reduce((a, r) => a + r.sh, 0), sh_ly: 100 - rows.reduce((a, r) => a + r.sh_ly, 0), t_ly: totl - tops.reduce((a, o) => a + (prev[o] || 0), 0) });
+    const lab = CL_DEST === 'ytd' ? `Jan–${M[mo - 1]} ${y}` : mL(+ck), W = 640, rh = 26, H = rows.length * rh + 8, LAB = 120, X0 = LAB + 8, sc = (W - X0 - 110) / Math.max(...rows.map(r => Math.max(r.sh, r.sh_ly)));
+    const svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">${rows.map((r, i) => { const yy = 4 + i * rh; return `<text x="${LAB}" y="${yy + 17}" text-anchor="end" font-size="12.5" fill="#e8f1f7" font-weight="${i < 3 ? 700 : 400}">${e(r.o)}</text><rect x="${X0}" y="${yy + 3}" width="${sc * r.sh_ly}" height="8" rx="3" fill="#8fa4b0" opacity=".7"/><rect x="${X0}" y="${yy + 12}" width="${sc * r.sh}" height="9" rx="3" fill="${r.o === 'Others' ? '#8fa4b0' : '#ff8a65'}"/><text x="${X0 + sc * Math.max(r.sh, r.sh_ly) + 6}" y="${yy + 17}" font-size="12" fill="#cfe0ea">${r.sh.toFixed(1)} % <tspan fill="${r.sh >= r.sh_ly ? '#81c784' : '#ff8a65'}">(${r.sh - r.sh_ly >= 0 ? '+' : '−'}${Math.abs(r.sh - r.sh_ly).toFixed(1)} pt)</tspan></text>`; }).join('')}</svg>`;
+    const us = rows.find(r => r.o === 'USA'), cn = rows.find(r => r.o === 'China'), br = rows.find(r => r.o === 'Brazil'), jp = rows.find(r => r.o === 'Japan');
+    return `<div class="gn-panel"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap"><div><div class="gn-title">Where the salmon goes — share of exports by destination</div><div class="gn-sub">All species and products, tonnes, Chilean customs; share against the same period a year earlier. Total ${(tot / 1000).toFixed(1)} kt (${pc(tot, totl)}).</div></div>
+      <div class="gc-seg" style="margin:0"><button type="button" class="${CL_DEST === 'last' ? 'on' : ''}" onclick="CL_DEST='last';clVerdict(true)">Last month · ${mL(+ck)}</button><button type="button" class="${CL_DEST === 'ytd' ? 'on' : ''}" onclick="CL_DEST='ytd';clVerdict(true)">Year to date · Jan–${M[mo - 1]}</button></div></div>
+      <div class="gn-row c32"><div>${svg}<div class="gn-legend"><span style="color:#ff8a65">■</span> ${lab} · <span style="color:#8fa4b0">■</span> a year earlier (thin bar)</div></div>
+      <table class="gn"><tr><th>Destination</th><th class="n">kt</th><th class="n">vs LY</th><th class="n">Share</th></tr>${rows.map(r => `<tr><td><b>${e(r.o)}</b></td><td class="n">${(r.t / 1000).toFixed(1)}</td><td class="n ${cls(r.t, r.t_ly)}">${pc(r.t, r.t_ly)}</td><td class="n b"><b>${r.sh.toFixed(1)} %</b></td></tr>`).join('')}</table></div>
+      ${us ? `<div class="gn-sm" style="margin-top:8px"><b>Reading (${lab}):</b> the USA take ${us.sh.toFixed(0)} % of Chilean exports (${us.sh_ly.toFixed(0)} % a year earlier); ${br ? `Brazil ${br.sh.toFixed(0)} % (${br.sh_ly.toFixed(0)} %), ` : ''}${jp ? `Japan ${jp.sh.toFixed(0)} % (${jp.sh_ly.toFixed(0)} %), ` : ''}${cn ? `China ${cn.sh.toFixed(1)} % (${cn.sh_ly.toFixed(1)} %)` : ''}.</div>` : ''}</div>`; };
+  const bars = (groups, o) => { const W = o.w || 620, H = o.h || 190, l = 40, b = 26, mx = Math.max(...groups.flatMap(g => g.vals.map(v => v.v || 0))) * 1.15 || 1, bw = (W - l - 8) / groups.length, Y = v => H - b - (H - b - 10) * v / mx; let sv = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">`; for (let t = 0; t <= mx; t += o.step || 10) sv += `<line x1="${l}" x2="${W - 4}" y1="${Y(t)}" y2="${Y(t)}" stroke="rgba(255,255,255,.12)"/><text x="${l - 6}" y="${Y(t) + 4}" text-anchor="end" font-size="13" fill="#a9bfcc">${t}</text>`; groups.forEach((g, i) => { const n = g.vals.length, sw = bw * .72 / n; g.vals.forEach((v, j) => { const x = l + i * bw + bw * .14 + j * sw; sv += `<rect x="${x}" y="${Y(v.v)}" width="${Math.max(1, sw - 2)}" height="${Y(0) - Y(v.v)}" rx="3" fill="${v.color}" opacity="${v.op || 1}"><title>${v.title || ''}</title></rect>`; }); sv += `<text x="${l + i * bw + bw / 2}" y="${H - 8}" text-anchor="middle" font-size="13" fill="#cfe0ea">${g.lab}</text>`; }); return sv + '</svg>'; };
+  const lineS = (pts, o) => { if (pts.length < 2) return ''; const W = 420, H = 230, l = 44, b = 26, ys = pts.map(p => p[1]), y0 = 0, y1 = Math.max(70, Math.max(...ys) * 1.1), X = i => l + (W - l - 8) * i / (pts.length - 1), Y = v => H - b - (H - b - 10) * (v - y0) / (y1 - y0); let sv = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">`; for (let i = 0; i <= 3; i++) { const yv = y0 + (y1 - y0) * i / 3; sv += `<line x1="${l}" x2="${W - 8}" y1="${Y(yv)}" y2="${Y(yv)}" stroke="rgba(255,255,255,.12)"/><text x="${l - 6}" y="${Y(yv) + 4}" text-anchor="end" font-size="13" fill="#a9bfcc">${yv.toFixed(0)} %</text>`; } sv += `<polyline fill="none" stroke="#ffb74d" stroke-width="2.2" points="${pts.map((p, i) => `${X(i)},${Y(p[1])}`).join(' ')}"/>`; pts.forEach((p, i) => { if (i % 3 === 0 || i === pts.length - 1) sv += `<text x="${X(i)}" y="${H - 8}" text-anchor="middle" font-size="12" fill="#cfe0ea">${ml(p[0])}</text>`; }); return sv + '</svg>'; };
+  const wk = WB ? Object.entries(WB.weeks.LL).sort((a, b) => a[0] < b[0] ? -1 : 1).slice(-14, -1) : [], wkly = WB ? wk.map(([k]) => { const kk = `${+k.slice(0, 4) - 1}${k.slice(4)}`; return [kk, WB.weeks.LL[kk] || 0]; }) : [];
+  let html = `<div class="ly-verdict">` +
+    (lastM ? card(`Harvest · official to ${mL(last)}${estK.length ? `, nowcast to ${mL(+estK[estK.length - 1].replace('-', ''))}` : ''}`, `Atlantic <b>${f(cum[last], 0)} kt</b> January–${M[last % 100 - 1]} (<span class="${varp[last] >= 0 ? 'up' : 'dn'}">${sg(varp[last])}</span>)${lastM.mly ? `; ${M[last % 100 - 1]} alone <span class="${cls(lastM.mo, lastM.mly)}">${pc(lastM.mo, lastM.mly)}</span>` : ''}. ${estK.length ? `Wellboat stops put the raw material of the Los Lagos plants (all species, Aysén fish included) at ${estK.map(k => `<b>≈ ${f(est[k] / 1000, 0)} kt</b> in ${M[+k.slice(5) - 1]} (<span class="${cls(est[k], lyk(k))}">${pc(est[k], lyk(k))}</span> vs the same month a year earlier)`).join(' and ')} — weeks before any official figure.` : ''}`, `Subpesca monthly report (live weight)${WB && WB.ll_fit ? ` · wellboat nowcast: r = ${WB.ll_fit.r}, ${Math.round(100 * WB.ll_fit.mape)} % error on ${WB.ll_fit.n_test} unseen months` : ''}`, '#ff8a65') : '') +
+    (sz ? card(`Sizes · exports of ${mL(+ck)}`, `Fresh whole Atlantic exported at <b>${f(sz.mean, 2)} kg</b> on average; <b>${f(sz.sh6, 0)} %</b> of it 6 kg+ (${szl ? f(szl.sh6, 0) : '—'} % a year earlier), <b>${f(sz.sh5, 0)} %</b> 5 kg+ (${szl ? f(szl.sh5, 0) : '—'} %). ${szl && sz.sh6 < szl.sh6 ? 'Fewer big fish than a year ago.' : szl ? 'More big fish than a year ago.' : ''}`, 'Chilean customs declarations (size written on the product)', '#ffb74d') : '') +
+    (pr ? card('Products & market', `Fillets are <b>${f(pr.fil, 0)} %</b> of Atlantic exports (${prl ? f(prl.fil, 0) : '—'} % a year ago); fresh fillet <b>${f(pr.fr_p, 2)} $/kg</b> (<span class="${cls(pr.fr_p, prl && prl.fr_p)}">${pc(pr.fr_p, prl && prl.fr_p)}</span>), fresh whole ${f(pr.fw_p, 2)} $ (<span class="${cls(pr.fw_p, prl && prl.fw_p)}">${pc(pr.fw_p, prl && prl.fw_p)}</span>).`, 'Customs declarations, FOB', '#cfe0ea') : '') + `</div>`;
+  html += `<div class="ly-k" style="grid-template-columns:repeat(6,1fr)">${lastM ? kp(`Harvest Jan–${M[last % 100 - 1]}`, f(cum[last], 0), 'kt live', `${sg(varp[last])} vs last year`, varp[last] >= 0 ? 'up' : 'dn') + kp(M[last % 100 - 1], f(lastM.mo, 0), 'kt', lastM.mly ? `${pc(lastM.mo, lastM.mly)} vs LY` : '', lastM.mly ? cls(lastM.mo, lastM.mly) : '') : ''}${estK.length ? kp(`Nowcast ${M[+estK[estK.length - 1].slice(5) - 1]}`, f(est[estK[estK.length - 1]] / 1000, 0), 'kt · Los Lagos plants', `${pc(est[estK[estK.length - 1]], lyk(estK[estK.length - 1]))} vs LY`, cls(est[estK[estK.length - 1]], lyk(estK[estK.length - 1]))) : ''}${sz ? kp('6 kg+ share', f(sz.sh6, 0), '%', szl ? `${f(szl.sh6, 0)} % a year ago` : '', szl ? cls(sz.sh6, szl.sh6) : '') : ''}${pr ? kp('Fillet share', f(pr.fil, 0), '%', prl ? `${f(prl.fil, 0)} % a year ago` : '', '') : ''}${pr ? kp('Fresh whole, FOB', f(pr.fw_p, 2), '$/kg', prl ? `${pc(pr.fw_p, prl.fw_p)} vs LY` : '', prl ? cls(pr.fw_p, prl.fw_p) : '') : ''}</div>`;
+  html += `<div class="gn-row c2">` +
+    (WB ? `<div class="gn-panel" style="margin-top:0"><div class="gn-title">Before the official figure — wellboat stops in Los Lagos, week by week</div><div class="gn-sub">AIS port visits of the ${WB.meta.boats} wellboats (Global Fishing Watch), against the same weeks a year earlier. More stops = more fish moved to the plants; the current, incomplete week is left out.</div>${bars(wk.map(([k, v], i) => ({ lab: 'w' + k.slice(-2), vals: [{ v: wkly[i][1], color: '#8fa4b0', op: .75, title: `${wkly[i][0]}: ${wkly[i][1]}` }, { v, color: '#ff8a65', title: `${k}: ${v}` }] })), { w: 640, h: 230, step: 50 })}
+      <table class="gn" style="margin-top:8px"><tr><th>Los Lagos plants, kt raw material</th><th class="n">Official</th><th class="n">Nowcast</th><th class="n">a year earlier</th><th class="n">vs LY</th></tr>${Object.keys(off).sort().slice(-2).map(k => `<tr><td>${M[+k.slice(5) - 1]} ${k.slice(0, 4)}</td><td class="n b"><b>${f(off[k] / 1000, 0)}</b></td><td class="n gn-mut">—</td><td class="n gn-mut">${f(lyk(k) / 1000, 0)}</td><td class="n ${cls(off[k], lyk(k))}">${pc(off[k], lyk(k))}</td></tr>`).join('')}${estK.map(k => `<tr><td>${M[+k.slice(5) - 1]} ${k.slice(0, 4)}</td><td class="n gn-mut">not out</td><td class="n o"><b>${f(est[k] / 1000, 0)}</b></td><td class="n gn-mut">${f(lyk(k) / 1000, 0)}</td><td class="n ${cls(est[k], lyk(k))}">${pc(est[k], lyk(k))}</td></tr>`).join('')}</table></div>` : '') +
+    (months.length ? `<div class="gn-panel" style="margin-top:0"><div class="gn-title">Harvest month by month — Atlantic salmon</div><div class="gn-sub">kt live, Subpesca; same month a year earlier from the published change.</div>${bars(months.map(x => ({ lab: ml(x.k), vals: [{ v: x.mly || 0, color: '#8fa4b0', op: .75, title: `${ml(x.k - 100)}: ${f(x.mly)} kt` }, { v: x.mo, color: '#ff8a65', title: `${ml(x.k)}: ${f(x.mo)} kt` }] })), { w: 640, h: 230, step: 20 })}<div class="gn-legend"><span style="color:#8fa4b0">■</span> a year earlier · <span style="color:#ff8a65">■</span> this year</div></div>` : '') + `</div>`;
+  if (sizeSeries.length > 3 || pr) html += `<div class="gn-row c2">` +
+    (sizeSeries.length > 3 ? `<div class="gn-panel"><div class="gn-title">Sizes — share of 6 kg+ in fresh whole exports</div><div class="gn-sub">%, by month of export (customs declarations).</div>${lineS(sizeSeries.map(x => [x.k, x.s.sh6]))}</div>` : '') +
+    (CM ? `<div class="gn-panel"><div class="gn-title">Products — fillets vs whole, and their prices</div><div class="gn-sub">Atlantic salmon, customs declarations; $/kg FOB.</div><table class="gn"><tr><th>Month</th><th class="n">Fresh whole kt</th><th class="n">$/kg</th><th class="n">Fresh fillets kt</th><th class="n">$/kg</th><th class="n">Frozen fillets kt</th><th class="n">Fillet share</th></tr>${cmK.slice(-6).map(k => { const x = prod(k); return `<tr><td>${ml(+k)}</td><td class="n">${f(x.fw_t / 1000, 1)}</td><td class="n">${f(x.fw_p, 2)}</td><td class="n">${f(x.fr_t / 1000, 1)}</td><td class="n">${f(x.fr_p, 2)}</td><td class="n">${f(x.zf_t / 1000, 1)}</td><td class="n b"><b>${f(x.fil, 0)} %</b></td></tr>`; }).join('')}</table></div>` : '') + `</div>`;
+  html += destBlock();
+  box.innerHTML = html;
 }
 function clOpen(id) { const pg = CL_PAGES.find(x => x[2].includes(id)); if (pg && pg[0] !== CL_PAGE) { clGo(pg[0]); setTimeout(() => clOpen(id), 300); return; }
   const d = document.getElementById(id); if (!d) return; d.open = true; d.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
@@ -8175,6 +8239,7 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     document.querySelector('body > .top-controls').classList.toggle('tc-one', currentView === 'markets');
     if (currentView !== 'markets' && periodTypeSel.value === '12') { periodTypeSel.value = 'cumul'; monthSelLabel.textContent = MONTH_SEL_LABELS.cumul; }
     topPeriodSeg();
+    if (window.layerApply) setTimeout(window.layerApply, 0);
     document.getElementById('toYearField').style.display = currentView === 'multi' ? 'flex' : 'none';
     document.getElementById('mapLegendDelta').style.display = currentView === 'po' ? 'block' : 'none';
     document.getElementById('mapLegendSelection').style.display = (currentView === 'global' || currentView === 'cohort' || currentView === 'multi') ? 'block' : 'none';
@@ -11364,34 +11429,53 @@ function gsNewsHtml(G) {
 // ===================== Summary « What matters this week » (data/summary.json <- scripts/build_summary.py) =====================
 let GSUM;
 function renderGSum() {
+  // Summary hebdomadaire : trois phrases sur la semaine, trois sujets, dix chiffres, prix par calibre, agenda, le mensuel en une ligne
   const el = document.getElementById('gsum'); if (!el) return;
-  if (GSUM === undefined) { GSUM = null; fetch(DATA_URL.replace('data.json', 'summary.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null).then(j => { GSUM = j || false; if (currentView === 'summary') renderGSum(); }); el.innerHTML = '<div class="sig-sub">Loading…</div>'; return; }
+  if (GSUM === undefined) { GSUM = null; fetch(DATA_URL.replace('data.json', 'summary.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null).then(j => { GSUM = j || false; if (currentView === 'summary') renderGSum(); }); el.innerHTML = 'Loading…'; return; }
   if (!GSUM) { el.innerHTML = ''; return; }
   const G = GSUM, e = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;'), MON = MONTHS_FR.map(m => m.slice(0, 3));
-  const EF = { supports: '▲ supports prices', weighs: '▼ weighs on prices', risk: '▲ risk to supply', price: 'price', watch: 'watch', algae: '! algae watch' };
-  const TABN = { outlook: 'Supply outlook', prices: 'Prices', genmap: 'Generations map', chile: 'Chile', seatemp: 'Sea temperature', australia: 'Australia', news: 'This week', disease: 'Disease', diseased: 'Disease · per disease' };
-  const bars = (L, avg) => { const mx = Math.max(...L.map(x => Math.abs(x[1])), Math.abs(avg)) * 1.1;
-    return L.map(([n, v]) => `<div class="gs-hb"><span>${e(n)}</span><div class="gs-tr"><div style="position:absolute;left:${v < 0 ? 50 + 50 * v / mx : 50}%;width:${50 * Math.abs(v) / mx}%;top:0;bottom:0;border-radius:7px;background:${v >= avg ? '#81c784' : '#ffab91'}"></div>` +
-      `<div style="position:absolute;left:${50 + 50 * avg / mx}%;top:-3px;bottom:-3px;border-left:2px dashed #ffd54f"></div><div style="position:absolute;left:50%;top:0;bottom:0;border-left:1px solid rgba(255,255,255,.4)"></div></div><span style="text-align:right;font-weight:700">${v > 0 ? '+' : ''}${(+v).toFixed(1)} %</span></div>`).join('') +
-      `<div class="sig-sub"><span style="border-left:2px dashed #ffd54f;padding-left:4px">world average</span> · green faster, orange slower</div>`; };
+  const pc = (a, b, d = 0) => a && b ? `${a >= b ? '+' : '−'}${Math.abs(100 * (a / b - 1)).toFixed(d)} %` : '—', f = (v, d = 1) => v == null ? '—' : (+v).toFixed(d), cls = (a, b, inv) => ((a >= b) !== !!inv ? 'up' : 'dn'), sg = v => v == null ? '—' : `${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(v).toFixed(Math.abs(v) < 10 ? 1 : 0)} %`;
+  const go = t => `onclick="(document.querySelector('#viewToggle button[data-v=&quot;${e(t)}&quot;]')||{click(){}}).click();scrollTo(0,0)"`;
+  const W = G.week || {}, P = (G.prices || {}).eu_spot, ssb = (G.prices || {}).ssb, sp = W.spot || {}, bw = W.bw || {}, S = G.signals || [], mlw = yw => `week ${yw % 100}`;
+  const ssbL = (W.ssb || []).slice(-1)[0], ssb5 = (W.ssb || []).slice(-5), sum5 = k => ssb5.reduce((a, x) => a + (x[k] || 0), 0);
+  // change : hebdomadaire si disponible, sinon mensuel
+  const fx = (() => { const F = W.fx || {}; if (F.monthly) { const ks = Object.keys(F.monthly).sort(); const k = ks[ks.length - 1]; return { now: F.monthly[k], ly: F.monthly[String(+k - 100)] || F.monthly[k], src: 'Norges Bank, monthly' }; }
+    const ks = Object.keys(F).sort(); if (!ks.length) return null; const k = ks[ks.length - 1]; return { now: F[k], ly: F[String(+k - 100)] || F[ks[Math.max(0, ks.length - 53)]], src: 'Norges Bank, weekly' }; })();
+  const eur = v => fx ? v / fx.now : null, eurly = v => fx ? v / fx.ly : null;
+  const prem = o => o && o['p_6-7'] && o['p_4-5'] ? 100 * (o['p_6-7'] / o['p_4-5'] - 1) : null;
+  const pulse = (W.pulse || []).slice(-1)[0], pulse0 = (W.pulse || []).slice(-2)[0];
+  const risks = S.filter(s => s.effect === 'risk' || s.effect === 'watch').slice(0, 3);
+  const card = (q, body, foot, col) => `<div class="gs-vc" style="border-left-color:${col}"><div class="gs-q">${q}</div><div class="gs-a">${body}</div>${foot ? `<div class="sig-sub">${foot}</div>` : ''}</div>`;
+  const verdict = `<div class="gs-verdict">` +
+    (P ? card(`Prices · ${mlw(P.year * 100 + P.week)}`, `EU spot <b>${f(P.avg[0])} NOK</b> (<span class="${cls(P.avg[0], P.avg[1])}">${pc(P.avg[0], P.avg[1])}</span> on the week, <span class="${cls(P.avg[0], P.avg[2])}">${pc(P.avg[0], P.avg[2])}</span> on the year${fx ? `; in euros <b>${f(eur(P.avg[0]), 2)} €</b>, <span class="${cls(eur(P.avg[0]), eurly(P.avg[2]))}">${pc(eur(P.avg[0]), eurly(P.avg[2]))}</span>` : ''}). ${prem(sp.now) != null ? `Big-fish premium <b>${sg(prem(sp.now))}</b> for 6–7 over 4–5 kg (${sg(prem(sp.ly))} a year ago).` : ''} ${ssb ? `Export price ${f(ssb.now)} NOK, ${pc(ssb.now, ssb.ly)}.` : ''}`, `${e(P.src)} · SSB 03024${fx ? ` · NOK/EUR ${f(fx.now, 2)} vs ${f(fx.ly, 2)} a year ago (${fx.src})` : ''}`, '#ffb74d') : '') +
+    (ssbL ? card(`Volumes · ${mlw(ssbL.yw)}`, `Norway exported <b>${(ssbL.t / 1000).toFixed(1)} kt</b> of fresh salmon, <span class="${cls(ssbL.t, ssbL.t_ly)}">${pc(ssbL.t, ssbL.t_ly)}</span> on a year earlier; weeks ${ssb5[0].yw % 100}–${ssbL.yw % 100} <span class="${cls(sum5('t'), sum5('t_ly'))}">${pc(sum5('t'), sum5('t_ly'))}</span>. ${pulse ? `Harvest-boat pulse, ${mlw(pulse.yw)}: <span class="${pulse.yoy_pct >= 0 ? 'up' : 'dn'}">${sg(pulse.yoy_pct)}</span>.` : ''} ${ssbL.t > ssbL.t_ly && P && P.avg[0] < P.avg[2] ? 'Supply runs above last year while prices sit below it.' : ''}`, sp.now && sp.now.sh_6plus != null ? `6 kg+ on the spot market: ${f(sp.now.sh_6plus, 0)} % of volumes (${f(sp.ly.sh_6plus, 0)} % a year ago)` : '', '#4fc3f7') : '') +
+    card('Biology & risks · this week', `${bw.now ? `Norway lice <b>${f(bw.now.lice, 2)}</b> per fish (${f((bw.ly || {}).lice, 2)} a year ago), sea <b>${f(bw.now.t, 1)} °C</b> (${f((bw.ly || {}).t, 1)}). ` : ''}${W.hi ? `HI algae risk <b>${e(W.hi.level_en)}</b> (week ${W.hi.week}). ` : ''}${risks.map(r => `<b>${e(r.basin.split(' · ')[0])}</b>: ${e(r.title)}${r.value ? ` (${e(r.value)})` : ''}`).join(' · ')}.`, 'BarentsWatch · HI algestatus · NOAA / Sernapesca', '#ff8a65') + `</div>`;
+  const alerts = S.filter(s => s.effect === 'risk').slice(0, 1).map(s => `<div class="gs-alert" ${go(s.tab)}><span style="font-size:18px">⚠</span><div><b>${e(s.basin)}:</b> ${e(s.text)}</div></div>`).join('');
+  const MN = G.mainnews || [];
+  const mainnews = MN.length ? `<div class="gs-panel"><div class="sig-title">Main news of the week</div><div class="gs-three">${MN.map(m => `<div class="gs-vc" style="border-left-color:${m.kind === 'results' ? '#4fc3f7' : '#cfe0ea'};cursor:pointer" ${m.url ? `onclick="window.open('${e(m.url)}','_blank')"` : m.tab ? go(m.tab) : ''}><div class="gs-q" style="white-space:normal">${e(m.title)}</div><div class="sig-sub" style="color:#e8f1f7;line-height:1.5">${e(m.text)}</div><div class="sig-sub" style="margin-top:6px">${e(m.src)}</div></div>`).join('')}</div></div>` : '';
+  const ind = [];
+  if (P) { ind.push(['EU spot, 3–6 kg average', 'NOK/kg', P.avg[0], P.avg[1], P.avg[2], 2, false]); if (fx) ind.push(['EU spot in euros', '€/kg', eur(P.avg[0]), eur(P.avg[1]), eurly(P.avg[2]), 2, false]); }
+  if (prem(sp.now) != null) ind.push(['Premium 6–7 kg over 4–5 kg', '%', prem(sp.now), prem(sp.prev), prem(sp.ly), 1, false]);
+  if (ssb) ind.push(['Norwegian export price, fresh', 'NOK/kg', ssb.now, ssb.prev, ssb.ly, 2, false]);
+  if (ssbL) ind.push(['Norwegian fresh exports', 'kt', ssbL.t / 1000, (ssb5[ssb5.length - 2] || {}).t / 1000, ssbL.t_ly / 1000, 1, false]);
+  if (sp.now && sp.now.sh_6plus != null) { ind.push(['6 kg+ share of spot volumes', '%', sp.now.sh_6plus, sp.prev.sh_6plus, sp.ly.sh_6plus, 0, false]); ind.push(['5 kg+ share of spot volumes', '%', sp.now.sh_5plus, sp.prev.sh_5plus, sp.ly.sh_5plus, 0, false]); }
+  if (bw.now) { ind.push(['Lice, adult females per fish (Norway)', '', bw.now.lice, (bw.prev || {}).lice, (bw.ly || {}).lice, 3, true]); ind.push(['Sea temperature (Norway, farm sites)', '°C', bw.now.t, (bw.prev || {}).t, (bw.ly || {}).t, 1, false]); }
+  if (pulse) ind.push([`Harvest-boat pulse (${mlw(pulse.yw)})`, '% y/y', pulse.yoy_pct, pulse0 && pulse0 !== pulse ? pulse0.yoy_pct : null, null, 1, false]);
+  const indTb = ind.length ? `<div class="gs-panel"><div class="sig-title">The week in ${ind.length} numbers</div><div class="sig-sub">This week, last week, the same week a year earlier. Weekly sources only: Sitagri (Monday), SSB (Wednesday), BarentsWatch (Thursday), our harvest-boat count.</div>
+    <table class="sig-table gs-tab"><tr><th>Indicator</th><th class="n">This week</th><th class="n">Last week</th><th class="n">A year earlier</th><th class="n">vs LY</th></tr>${ind.map(([n, u, a, b, c, d, inv]) => `<tr><td>${n}${u ? ` <span class="sig-sub">${u}</span>` : ''}</td><td class="n b"><b>${f(a, d)}</b></td><td class="n">${f(b, d)}</td><td class="n sig-sub">${f(c, d)}</td><td class="n ${c != null && a != null ? cls(a, c, inv) : ''}">${c != null && a != null ? ((u === '%' || u === '% y/y') ? `${a - c >= 0 ? '+' : '−'}${Math.abs(a - c).toFixed(Math.abs(a - c) < 3 ? 1 : 0)} pt` : pc(a, c)) : '—'}</td></tr>`).join('')}</table></div>` : '';
+  const spark = pts => { if (!pts || pts.length < 2) return ''; const w = 320, h = 70, ys = pts.map(p => p[1]), y0 = Math.min(...ys) * .97, y1 = Math.max(...ys) * 1.03, X = i => 4 + (w - 8) * i / (pts.length - 1), Y = v => h - 8 - (h - 16) * (v - y0) / (y1 - y0);
+    return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto"><polyline fill="none" stroke="#4fc3f7" stroke-width="2" points="${pts.map((p, i) => `${X(i)},${Y(p[1])}`).join(' ')}"/><circle cx="${X(pts.length - 1)}" cy="${Y(ys[ys.length - 1])}" r="3.5" fill="#4fc3f7"/><text x="${X(pts.length - 1) - 4}" y="${Y(ys[ys.length - 1]) - 8}" text-anchor="end" font-size="11" fill="#e8f1f7" font-weight="700">${ys[ys.length - 1].toFixed(1)}</text></svg>`; };
+  const prices = P ? `<div class="gs-two" style="margin-top:12px"><div class="gs-panel" style="margin:0"><div class="sig-title">EU spot by size — ${mlw(P.year * 100 + P.week)}</div><div class="sig-sub">${e(P.src)}, NOK/kg.</div><table class="sig-table gs-tab"><tr><th>Size</th><th class="n">This week</th><th class="n">Last week</th><th class="n">A year earlier</th><th class="n">vs LY</th></tr>${P.sizes.map(s => `<tr><td><b>${s[0]} kg</b></td><td class="n b"><b>${f(s[1], 2)}</b></td><td class="n">${f(s[2], 2)}</td><td class="n sig-sub">${f(s[3], 2)}</td><td class="n ${cls(s[1], s[3])}">${pc(s[1], s[3])}</td></tr>`).join('')}</table></div>
+    <div class="gs-panel" style="margin:0"><div class="sig-title">26 weeks</div><div class="sig-sub">Average 3–6 kg, NOK/kg</div>${spark((P.hist || []).slice(-26))}<div class="sig-sub" style="margin-top:8px;color:#e8f1f7"><b>Reading:</b> ${pc(P.avg[0], P.avg[2])} under last year in kroner${fx ? `, ${pc(eur(P.avg[0]), eurly(P.avg[2]))} in euros` : ''}${prem(sp.now) != null ? `; the premium for big fish has moved from ${sg(prem(sp.ly))} to ${sg(prem(sp.now))}` : ''}.</div></div></div>` : '';
+  const lim = (G.agenda || []).filter(a => a.d <= new Date(Date.now() + 14 * 864e5).toISOString().slice(0, 10)).slice(0, 6);
+  const agenda = `<div class="gs-two" style="margin-top:12px"><div class="gs-panel" style="margin:0"><div class="sig-title">Next two weeks</div><table class="sig-table gs-tab">${(lim.length ? lim : (G.agenda || []).slice(0, 4)).map(a => `<tr><td class="sig-sub" style="white-space:nowrap">${+a.d.slice(8)} ${MON[+a.d.slice(5, 7) - 1]}</td><td>${a.u ? `<a href="${e(a.u)}" target="_blank" rel="noopener" style="color:#e8f1f7">${e(a.t)}</a>` : e(a.t)}</td></tr>`).join('')}</table></div>
+    <div class="gs-panel" style="margin:0"><div class="sig-title">Monthly data, latest</div><div class="sig-sub">One line each; the detail lives in its tab.</div><table class="sig-table gs-tab">${(G.monthly || []).map(m => `<tr style="cursor:pointer" ${go(m.tab)}><td><b>${e(m.label)}</b> <span class="sig-sub">${e(m.when)}</span></td><td>${e(m.text)}</td><td class="sig-sub" style="white-space:nowrap">→</td></tr>`).join('')}</table></div></div>`;
+  const news = (G.news || []).length ? `<div class="gs-panel"><div class="sig-title">Other stories this week</div><ul class="gs-news">${G.news.slice(0, 8).map(n => `<li><a href="${e(n.url)}" target="_blank" rel="noopener">${e(n.title)}</a> <small>· ${e(n.source)} · ${e((n.date || '').slice(5))}</small></li>`).join('')}</ul><div class="sig-sub" style="margin-top:6px"><span class="gs-go" ${go('news')}>All stories of the week, grouped by basin →</span></div></div>` : '';
   const d = G.meta && G.meta.built ? G.meta.built.slice(0, 10) : '';
-  const S = G.signals || [], SU = G.supply || {}, DE = G.demand || {}, B = G.basins || [];
-  const col = v => v === null || v === undefined ? '' : v >= 1 ? 'color:#ffab91' : v <= -1 ? 'color:#9fd0ff' : '';
-  el.innerHTML = `<div class="sig-title" style="font-size:22px">What matters this week</div><p class="gs-lead">${e(G.lead)} <span class="sig-sub">Updated ${e(d)} · click a card to open its tab.</span></p>` +
-    `<div class="sig-title" style="margin-top:6px">The signals, ranked by how unusual they are</div><div class="gs-sig">` +
-    S.map(x => `<div class="gs-card" onclick="(document.querySelector('#viewToggle button[data-v=&quot;${e(x.tab)}&quot;]')||{click(){}}).click();scrollTo(0,0)"><div class="gs-bas">${e(x.basin)}</div><h4>${e(x.title)}</h4>${x.value ? `<div class="gs-num">${e(x.value)}</div>` : ''}<div class="sig-sub">${e(x.text)}</div>` +
-      `<div style="margin-top:8px"><span class="gs-badge b-${x.effect}">${EF[x.effect] || x.effect}</span><span class="sig-sub" style="color:#9fd0ff">→ ${e(TABN[x.tab] || x.tab)}</span></div></div>`).join('') + `</div>` +
-    gsBigSixHtml() + gsPricesHtml(G) + gsTradeHtml() + gsNewsHtml(G) +
-    `<div class="sig-title" style="margin-top:18px">Producers and consumers — faster or slower than the world?</div><div class="gs-two">` +
-    (SU.basins ? `<div class="gs-box"><b>Supply 2026 by basin vs the world (${SU.world > 0 ? '+' : ''}${SU.world} %)</b>${bars(SU.basins, SU.world)}<div class="sig-sub">Our estimates from official data (Global supply tab), ${(+SU.world_kt).toLocaleString('en-US')} kt for the seven basins. 2027: ${SU.world_next > 0 ? '+' : ''}${SU.world_next} %.</div></div>` : '') +
-    (DE.markets ? `<div class="gs-box"><b>Imports this year by market vs the world (${DE.world > 0 ? '+' : ''}${DE.world} %)</b>${bars(DE.markets, DE.world)}<div class="sig-sub">Atlantic salmon, fresh and frozen, whole and fillets, tonnes (UN Comtrade, each country's own declarations, same months both years). China, Korea and Vietnam do not report monthly.</div></div>` : '') + `</div>` +
-    `<div class="sig-title" style="margin-top:18px">Basin by basin</div><div style="overflow-x:auto"><table class="sig-table"><thead><tr><th class="name">Basin</th><th>2026 (kt gutted)</th><th>vs 2025</th><th>2027</th><th>range 2027</th><th>Sea vs normal (last month)</th></tr></thead><tbody>` +
-    B.map(b => `<tr style="cursor:pointer" onclick="(document.querySelector('#viewToggle button[data-v=&quot;${e(b.tab || '')}&quot;]')||{click(){}}).click()"><td class="name">${e(b.basin)}</td><td>${b.v2026 ? Math.round(b.v2026).toLocaleString('en-US') : '—'}</td>` +
-      `<td class="${b.chg2026 >= 0 ? 'delta-good' : 'delta-bad'}">${b.chg2026 === null || b.chg2026 === undefined ? '—' : (b.chg2026 > 0 ? '+' : '') + b.chg2026.toFixed(1) + ' %'}</td><td class="${b.chg2027 >= 0 ? 'delta-good' : 'delta-bad'}">${b.chg2027 === null || b.chg2027 === undefined ? '—' : (b.chg2027 > 0 ? '+' : '') + (+b.chg2027).toFixed(1) + ' %'}</td>` +
-      `<td>${b.lo !== undefined && b.lo !== null ? `${b.lo > 0 ? '+' : ''}${b.lo} to ${b.hi > 0 ? '+' : ''}${b.hi} %` : '—'}</td><td style="${col(b.sea && Math.max(...b.sea.map(Math.abs)) === Math.abs(b.sea[1]) ? b.sea[1] : b.sea && b.sea[0])}">${b.sea ? (b.sea[0] === b.sea[1] ? `${b.sea[0] > 0 ? '+' : ''}${b.sea[0]} °C` : `${b.sea[0] > 0 ? '+' : ''}${b.sea[0]} to ${b.sea[1] > 0 ? '+' : ''}${b.sea[1]} °C`) : '—'}</td></tr>`).join('') + `</tbody></table></div>` +
-    `<div class="sig-title" style="margin-top:18px">Next weeks</div><div class="gs-box"><ul style="margin:0;padding-left:18px;line-height:1.7">` +
-    (G.agenda || []).map(a => `<li><b>${+a.d.slice(8)} ${MON[+a.d.slice(5, 7) - 1]}</b> · ${a.u ? `<a href="${e(a.u)}" target="_blank" rel="noopener" style="color:#cfe0ea">${e(a.t)}</a>` : e(a.t)}</li>`).join('') + `</ul></div>`;
+  el.innerHTML = `<div class="sig-sub" style="margin-bottom:8px">Weekly brief · updated ${e(d)}</div>` + verdict + alerts + mainnews + indTb + prices + agenda + news +
+    `<details class="cl-sec" style="margin-top:14px"><summary><span class="cl-st">Method — how the signals and the main news are picked</span></summary><div class="sig-sub" style="margin-top:6px;line-height:1.5">${e((G.meta || {}).note || '')} Main news: the stories with the most sources in the last 8 days, plus the quarterly reports published; shrimp and feed-only stories are left out. Update days: Sitagri Monday, SSB Wednesday, BarentsWatch Thursday, biomass register around the 20th, Subpesca around the 15th.</div></details>`;
 }
+
 function renderSummary() {
   renderGSum();
   const MS = m => MONTHS_FR[m - 1].slice(0, 3);
@@ -15128,13 +15212,12 @@ const SN_BURGER = window.SN_BURGER, SN_CLOSE = window.SN_CLOSE;
     '<svg width="18" height="13" viewBox="0 0 22 16" aria-hidden="true"><rect width="22" height="16" rx="2" fill="#ba0c2f"/><path d="M0 8h22M8 0v16" stroke="#fff" stroke-width="4"/><path d="M0 8h22M8 0v16" stroke="#00205b" stroke-width="2"/></svg>',   // Norvege : drapeau
     '<svg width="18" height="13" viewBox="0 0 22 16" aria-hidden="true"><rect width="22" height="16" rx="2" fill="#fff"/><path d="M0 8h22v6a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2z" fill="#d52b1e"/><path d="M2 0h6v8H0V2a2 2 0 0 1 2-2z" fill="#0039a6"/><path d="M4 2.2l.7 2h2.1l-1.7 1.2.6 2-1.7-1.2-1.7 1.2.6-2-1.7-1.2h2.1z" fill="#fff"/></svg>'];   // Chili : drapeau
   // '#Titre' = intertitre dans le groupe ; 'chile:page' = une page de l'onglet Chili (meme vue, contenu filtre)
-  const CATS = [['Front page', ['summary', 'news', 'supply', 'bigsix', 'disease', 'seatemp'], 0],
-    ['Norway', ['#Production', 'global', 'po', 'multi', 'outlook', '#Fish & farms', 'generations', 'timeatsea', 'health', 'register', 'wellboats',
-      '#Exports', 'markets', 'products', 'calibre', 'coprod'], 5],
-    ['Chile', ['chile', 'chile:harvest', 'chile:stock', 'chile:regions', 'chile:companies', 'chile:wellboats'], 6],
+  const CATS = [['Front page', ['summary', 'supply', 'disease', 'seatemp'], 0],
+    ['Norway', ['global', 'generations', 'health'], 5],
+    ['Chile', ['chile', 'chile:production', 'chile:health'], 6],
     ['Other basins', ['basins'], 2],
-    ['Markets & prices', ['prices', 'usaprices', 'usa', 'china', 'euflows', 'poland', 'world', 'producers', 'feed'], 4]];
-  const SN_LAB = { chile: 'Overview', basins: 'Faroes · Scotland · Iceland · Canada · Tasmania' };
+    ['Markets & prices', ['prices', 'markets', 'usa', 'feed'], 4]];
+  const SN_LAB = { chile: 'Overview', basins: 'Faroes · Scotland · Iceland · Canada · Tasmania', supply: 'Outlook 2026–27', global: 'Production', health: 'Fish & farms', prices: 'Prices', markets: 'Norway exports', usa: 'Importers' };
   (window.CL_PAGES || []).forEach(([k, n]) => { if (k !== 'overview') SN_LAB['chile:' + k] = n; });
   const btn = v => document.querySelector(`#viewToggle button[data-v="${String(v).split(':')[0]}"]`);
   const nav = document.createElement('nav'); nav.id = 'sideNav'; nav.setAttribute('aria-label', 'Dashboard sections');
@@ -15174,7 +15257,8 @@ const SN_BURGER = window.SN_BURGER, SN_CLOSE = window.SN_CLOSE;
   nav.querySelectorAll('.sn-cat').forEach(c => c.onclick = () => { const g = c.parentNode, i = g.dataset.g; g.classList.toggle('closed');
     closed[i] = g.classList.contains('closed'); c.querySelector('span:last-child').textContent = closed[i] ? '▸' : '▾'; c.setAttribute('aria-expanded', !closed[i]);
     try { localStorage.setItem('snClosed', JSON.stringify(closed)); } catch (e) { /* pas de stockage */ } });
-  const GRP = { genmap: 'generations', genyoy: 'generations', diseased: 'disease', faroe: 'basins', scotland: 'basins', iceland: 'basins', canada: 'basins', australia: 'basins' };
+  const GRP = { genmap: 'generations', genyoy: 'generations', diseased: 'disease', faroe: 'basins', scotland: 'basins', iceland: 'basins', canada: 'basins', australia: 'basins',
+    bigsix: 'supply', po: 'global', multi: 'global', outlook: 'global', register: 'health', wellboats: 'health', timeatsea: 'health', usaprices: 'prices', calibre: 'prices', products: 'markets', coprod: 'markets', china: 'usa', euflows: 'usa', poland: 'usa', world: 'usa', producers: 'usa', news: 'summary' };
   // l'onglet Chili garde une seule vue ; la page choisie (CL_PAGE) dit quelle partie afficher
   const key = v => v === 'chile' && window.CL_PAGE && window.CL_PAGE !== 'overview' ? 'chile:' + window.CL_PAGE : v;
   const mark = v => { v = key(v); nav.querySelectorAll('.sn-item').forEach(x => x.classList.toggle('on', x.dataset.v === (GRP[v] || v))); };
@@ -15204,7 +15288,8 @@ const SN_BURGER = window.SN_BURGER, SN_CLOSE = window.SN_CLOSE;
 // le detail par zone (carte, mois, archive) est deplace dans la page 4, la grille TGC dans la page 2.
 var GN = undefined, GN_PAGE = 'verdict';
 (function () { const st = document.createElement('style'); st.textContent = `
-#gnRoot .gn-card{border-radius:18px;padding:14px 16px;background:linear-gradient(150deg,rgba(255,255,255,.16),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.24);box-shadow:inset 0 1px 0 rgba(255,255,255,.4)}
+.gn-scope .gn-panel{border-radius:22px;padding:18px 20px;margin-top:14px;background:linear-gradient(150deg,rgba(255,255,255,.12),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}.gn-scope .gn-title{font-size:16px;font-weight:800;margin:0 0 2px}.gn-scope .gn-sub{font-size:12.5px;color:#a9bfcc;margin-bottom:10px;line-height:1.45}.gn-scope .gn-row{display:grid;gap:14px}.gn-scope .c2{grid-template-columns:1fr 1fr}.gn-scope .c32{grid-template-columns:3fr 2fr}.gn-scope table.gn{border-collapse:collapse;width:100%}.gn-scope table.gn th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#cfe0ea;text-align:left!important;padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.2)}.gn-scope table.gn td{padding:6px 10px;border-bottom:1px solid rgba(255,255,255,.08);font-variant-numeric:tabular-nums;text-align:left;white-space:normal}.gn-scope table.gn td.n,.gn-scope table.gn th.n{text-align:right!important;white-space:nowrap}.gn-scope .gn-legend{font-size:12px;color:#a9bfcc;margin-top:4px}.gn-scope .gn-sm{font-size:12.5px}.gn-scope .gn-mut{color:#a9bfcc}.gn-scope .up{color:#81c784}.gn-scope .dn{color:#ff8a65}.gn-scope .b{color:#4fc3f7}.gn-scope .o{color:#ffb74d}.gn-scope .ly-verdict{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin:4px 0 14px}.gn-scope .ly-card{border-radius:18px;padding:14px 16px;background:linear-gradient(150deg,rgba(255,255,255,.16),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.24);border-left:5px solid #cfe0ea;box-shadow:inset 0 1px 0 rgba(255,255,255,.4)}.gn-scope .ly-q{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:#cfe0ea;font-weight:700;margin-bottom:4px}.gn-scope .ly-a{font-size:16.5px;font-weight:700;line-height:1.38;margin-bottom:6px}.gn-scope .ly-k{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:0 0 14px}.gn-scope .ly-kc{border-radius:16px;padding:12px 14px;background:linear-gradient(150deg,rgba(255,255,255,.14),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.22)}.gn-scope .ly-kv{font-size:26px;font-weight:800;letter-spacing:-.02em}.gn-scope .ly-kv small{font-size:13px;font-weight:600;color:#a9bfcc;margin-left:5px}@media (max-width:900px){.gn-scope .ly-verdict,.gn-scope .ly-k,.gn-scope .c2,.gn-scope .c32{grid-template-columns:1fr!important}}
+#gnRoot .gn-card,#clVerdict .gn-card{border-radius:18px;padding:14px 16px;background:linear-gradient(150deg,rgba(255,255,255,.16),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.24);box-shadow:inset 0 1px 0 rgba(255,255,255,.4)}
 #gnRoot .gn-q{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:#cfe0ea;font-weight:700;margin-bottom:4px}#gnRoot .gn-a{font-size:17px;font-weight:700;line-height:1.35;margin-bottom:8px}
 #gnRoot .gn-k{font-size:30px;font-weight:800;letter-spacing:-.02em}#gnRoot .gn-k small{font-size:14px;font-weight:600;color:#a9bfcc;margin-left:6px}
 #gnRoot .gn-row{display:grid;gap:14px}#gnRoot .c5{grid-template-columns:repeat(5,1fr)}#gnRoot .c2{grid-template-columns:1fr 1fr}#gnRoot .c3{grid-template-columns:repeat(3,1fr)}#gnRoot .c32{grid-template-columns:3fr 2fr}
@@ -15361,6 +15446,107 @@ function gnFoldGenmap(gm) {   // page Zones & farmers : le detail par zone reste
     ['gm_bfRes', 'gm_bfChk', 'gm_bfNo', 'gm_bfTest', 'gm_bfNote'].forEach(id => { const x = document.getElementById(id); if (!x || d2.contains(x)) return; const w = x.closest('.gm-tw') || x; const sec = w.previousElementSibling; if (sec && sec.classList.contains('gm-sec')) d2.appendChild(sec); d2.appendChild(w); });
     bf.appendChild(d2); }
 }
+</script>
+<script>
+// ===================== Pages a plusieurs vues : un cadre commun (barre des vues en haut, verdict, puis la vue elle-meme) =====================
+// Les vues existantes restent intactes ; le cadre les deplace sous lui quand elles s'affichent. Le verdict est ecrit a partir des donnees.
+(function () {
+  const LAYERS = {
+    summary: { title: 'Summary', subs: [['summary', 'This week'], ['news', 'All stories']], verdict: null },
+    supply: { title: 'Outlook 2026–27', subs: [['supply', 'Volumes by basin'], ['bigsix', 'Big fish 6 kg+']], verdict: 'outlook' },
+    global: { title: 'Production', subs: [['global', 'Overview'], ['po', 'Zones'], ['multi', 'Multi-year'], ['outlook', 'Next months']], verdict: 'noprod' },
+    health: { title: 'Fish & farms', subs: [['health', 'Lice & health'], ['register', 'Farms'], ['wellboats', 'Wellboats'], ['timeatsea', 'Time at sea']], verdict: 'nofish' },
+    prices: { title: 'Prices', subs: [['prices', 'EU spot'], ['usaprices', 'USA'], ['calibre', 'Sizes & premium']], verdict: 'prices' },
+    markets: { title: 'Norway exports', subs: [['markets', 'By market'], ['products', 'By product'], ['coprod', 'By-products']], verdict: 'exports' },
+    usa: { title: 'Importers', subs: [['usa', 'USA'], ['china', 'China + HK'], ['euflows', 'EU imports'], ['poland', 'EU hubs'], ['world', 'World'], ['producers', 'Exporters']], verdict: 'importers' },
+  };
+  const PANEL = { euflows: 'euView', timeatsea: 'tasView', poland: 'plView', prices: 'prView', iceland: 'isView', usaprices: 'upView', wellboats: 'wbView', bigsix: 'bsView', generations: 'gnView' };
+  const panelOf = v => document.getElementById((PANEL[v] || v) + 'View');
+  const layerOf = v => Object.keys(LAYERS).find(k => LAYERS[k].subs.some(([x]) => x === v));
+  const st = document.createElement('style');
+  st.textContent = `#lyFrame{display:none;flex:1;min-width:0;max-width:1480px}#lyFrame.on{display:block}#lyHost>.panel{display:block!important;background:none!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0!important;max-width:none!important}
+    #lyVerdict .ly-verdict{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin:4px 0 14px}#lyVerdict .ly-card{border-radius:18px;padding:14px 16px;background:linear-gradient(150deg,rgba(255,255,255,.16),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.24);border-left:5px solid #cfe0ea;box-shadow:inset 0 1px 0 rgba(255,255,255,.4)}
+    #lyVerdict .ly-q{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:#cfe0ea;font-weight:700;margin-bottom:4px}#lyVerdict .ly-a{font-size:16.5px;font-weight:700;line-height:1.38;margin-bottom:6px}#lyVerdict .up{color:#81c784}#lyVerdict .dn{color:#ff8a65}
+    #lyVerdict .ly-k{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:0 0 14px}#lyVerdict .ly-kc{border-radius:16px;padding:12px 14px;background:linear-gradient(150deg,rgba(255,255,255,.14),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.22)}#lyVerdict .ly-kv{font-size:26px;font-weight:800;letter-spacing:-.02em}#lyVerdict .ly-kv small{font-size:13px;font-weight:600;color:var(--muted);margin-left:5px}
+    @media (max-width:900px){#lyVerdict .ly-verdict,#lyVerdict .ly-k{grid-template-columns:1fr}}`;
+  document.head.appendChild(st);
+  const main = document.getElementById('mainContent'); if (!main) return;
+  const frame = document.createElement('div'); frame.id = 'lyFrame'; frame.className = 'panel'; frame.innerHTML = '<div id="lySeg"></div><div id="lyVerdict"></div><div id="lyHost"></div>'; main.prepend(frame);
+  let park = document.getElementById('lyPark'); if (!park) { park = document.createElement('div'); park.id = 'lyPark'; park.style.display = 'none'; document.body.appendChild(park); }
+  const home = {};   // panneau -> parent et voisin d'origine, pour le remettre quand il quitte le cadre
+  const give = p => { if (!p || p.parentNode === document.getElementById('lyHost')) return; if (!home[p.id]) home[p.id] = [p.parentNode, p.nextSibling]; document.getElementById('lyHost').appendChild(p); };
+  const back = () => { const host = document.getElementById('lyHost'); [...host.children].forEach(p => { const h = home[p.id]; if (h && h[0]) { if (h[1] && h[1].parentNode === h[0]) h[0].insertBefore(p, h[1]); else h[0].appendChild(p); } else park.appendChild(p); }); };
+  window.LY_DATA = window.LY_DATA || {};
+  window.lyFetch = (name, cb) => { const D = window.LY_DATA; if (D[name] !== undefined) return D[name]; D[name] = null;
+    fetch(DATA_URL.replace('data.json', name), { cache: 'no-store' }).then(r => r.ok ? r.json() : false).catch(() => false).then(j => { D[name] = j || false; cb && cb(); }); return null; };
+  window.layerApply = function () {
+    const v = currentView, k = layerOf(v), seg = document.getElementById('lySeg'), ver = document.getElementById('lyVerdict');
+    if (!k) { back(); frame.classList.remove('on'); seg.innerHTML = ''; ver.innerHTML = ''; return; }
+    const Lr = LAYERS[k];
+    back(); give(panelOf(v)); frame.classList.add('on');
+    seg.innerHTML = `<div class="gc-ttl">${Lr.title}</div><div class="gc-seg" role="tablist">${Lr.subs.map(([x, n]) => `<button type="button" data-ly="${x}" class="${x === v ? 'on' : ''}">${n}</button>`).join('')}</div>`;
+    seg.querySelectorAll('[data-ly]').forEach(b => b.onclick = () => { const t = document.querySelector(`#viewToggle button[data-v="${b.dataset.ly}"]`); if (t) { t.click(); window.scrollTo(0, 0); } });
+    ver.innerHTML = Lr.verdict && window.lyVerdicts && window.lyVerdicts[Lr.verdict] ? (window.lyVerdicts[Lr.verdict](v) || '') : '';
+  };
+  window.layerRefresh = () => { if (layerOf(currentView)) window.layerApply(); };
+})();
+</script>
+<script>
+// ===================== Verdicts des pages : trois phrases et cinq chiffres ecrits a partir des donnees =====================
+(function () {
+  const e = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const pc = (a, b, d = 0) => a && b ? `${a >= b ? '+' : '−'}${Math.abs(100 * (a / b - 1)).toFixed(d)} %` : '—', f = (v, d = 1) => v == null ? '—' : (+v).toFixed(d), cls = (a, b, inv) => ((a >= b) !== !!inv ? 'up' : 'dn'), sg = v => v == null ? '—' : `${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(v).toFixed(Math.abs(v) < 10 ? 1 : 0)} %`;
+  const M = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], mL = k => `${M[k % 100 - 1]} ${k / 100 | 0}`;
+  const card = (q, a, foot, col) => `<div class="ly-card" style="border-left-color:${col}"><div class="ly-q">${q}</div><div class="ly-a">${a}</div>${foot ? `<div class="sig-sub">${foot}</div>` : ''}</div>`;
+  const kp = (q, v, u, c, g) => `<div class="ly-kc"><div class="ly-q">${q}</div><div class="ly-kv">${v}<small>${u}</small></div><div class="sig-sub ${g || ''}" style="${g === 'up' ? 'color:#81c784' : g === 'dn' ? 'color:#ff8a65' : ''}">${c}</div></div>`;
+  const need = (...names) => { let ok = true; names.forEach(n => { if (window.lyFetch(n, window.layerRefresh) === null) ok = false; }); return ok; };
+  const V = {};
+  // ---- Outlook : volumes 2026-27 et 6 kg+
+  V.outlook = () => { if (!need('global_supply.json', 'big_six.json', 'six_stock.json')) return '<div class="sig-sub">Loading…</div>';
+    const G = LY_DATA['global_supply.json'], B6 = LY_DATA['big_six.json'], SX = LY_DATA['six_stock.json']; if (!G || !G.world) return '';
+    const W = G.world, T = (B6 || {}).total, NX = ((SX || {}).forecast || [])[0];
+    return `<div class="ly-verdict">${card('Volumes 2027', `World <b>${e(W.y2027)}</b> after <span class="up">${e(W.y2026)}</span> in 2026; range ${W.r2027[0]} to +${W.r2027[1]} %. ${e((W.summary || '').split('. ').slice(1, 2).join('. '))}.`, `Analysts: ${e((W.analysts_2027 || '').split(' — ')[0])}`, '#4fc3f7')}
+      ${T ? card('Big fish 6 kg+ 2027', `<b>${Math.round(T.v2027)} kt</b> from ${e((T.basins || []).join(', '))}, <span class="${cls(T.v2027, T.v2026)}">${pc(T.v2027, T.v2026)}</span> after <span class="${cls(T.v2026, T.v2025)}">${pc(T.v2026, T.v2025)}</span> in 2026; range ${Math.round(T.lo)}–${Math.round(T.hi)} kt.`, NX ? `Norway ${e(NX.span)}: ${Math.round(NX.fcst)} kt (${pc(NX.fcst, NX.ly)}), degree-day rule` : '', '#ffb74d') : ''}
+      ${card('What could change it', (W.risks || []).slice(0, 3).map(r => `<b>${e(r.k)}</b>: ${e(r.t.split(/[.:]/)[0])}`).join(' · ') + '.', 'Full risk notes below', '#ff8a65')}</div>`; };
+  // ---- Norvege · Production
+  V.noprod = () => { if (!need('generations.json', 'gen_outlook.json')) return '<div class="sig-sub">Loading…</div>';
+    const GN = LY_DATA['generations.json'], GO = LY_DATA['gen_outlook.json']; if (!GN || !GN.volume) return '';
+    const c = (GN.volume.scenarios || {}).central || [], sum = (A, a, b, k) => A.slice(a, b).reduce((x, m) => x + (m[k] || 0), 0), nc = GN.volume.nowcast;
+    const R = {}; (RECORDS || []).forEach(r => { const k = r.year * 100 + r.month; R[k] = (R[k] || 0) + (r.uttak_kg || 0) * 0.888 / 1e6; });
+    const ks = Object.keys(R).map(Number).filter(k => R[k] > 0).sort(); const k = ks[ks.length - 1], ytd = ks.filter(x => x / 100 | 0) .filter(x => (x / 100 | 0) === (k / 100 | 0) && x <= k).reduce((a, x) => a + R[x], 0), ytdly = ks.filter(x => (x / 100 | 0) === (k / 100 | 0) - 1 && x % 100 <= k % 100).reduce((a, x) => a + R[x], 0);
+    const o = GN.state.old, oly = GN.state.old_ly;
+    return `<div class="ly-verdict">${card(`Harvest · register of ${mL(k)}`, `<b>${f(R[k], 0)} kt</b> gutted in ${M[k % 100 - 1]} (<span class="${cls(R[k], R[k - 100])}">${pc(R[k], R[k - 100])}</span>); January–${M[k % 100 - 1]} <b>${f(ytd, 0)} kt</b>, <span class="${cls(ytd, ytdly)}">${pc(ytd, ytdly)}</span>. Fish harvested at ${f(o.hw, 2)} kg live (${f(oly.hw, 2)} a year earlier).`, 'Fiskeridirektoratet biomass register, all licences', '#4fc3f7')}
+      ${card('Fish at sea', `G${GN.meta.old}, the generation being harvested: <b>${f(o.n, 0)} M</b> fish (<span class="${cls(o.n, oly.n)}">${pc(o.n, oly.n)}</span>) at <b>${f(o.w, 2)} kg</b> (<span class="${cls(o.w, oly.w)}">${pc(o.w, oly.w)}</span>); biomass ${f(o.bio, 0)} kt gutted (${pc(o.bio, oly.bio)}). ${o.n < oly.n && o.w > oly.w ? 'Fewer but heavier fish.' : ''}`, 'Generation detail → Generations', '#ffb74d')}
+      ${c.length >= 3 ? card('Next months', `${mL(c[0].k).split(' ')[0]}–${mL(c[2].k)} <b>${Math.round(sum(c, 0, 3, 'tot'))} kt</b> (<span class="${cls(sum(c, 0, 3, 'tot'), sum(c, 0, 3, 'ly'))}">${pc(sum(c, 0, 3, 'tot'), sum(c, 0, 3, 'ly'))}</span>)${c.length >= 6 ? `, then ${mL(c[3].k).split(' ')[0]}–${mL(c[5].k)} <b>${Math.round(sum(c, 3, 6, 'tot'))} kt</b> (${pc(sum(c, 3, 6, 'tot'), sum(c, 3, 6, 'ly'))})` : ''}. ${nc ? `${mL(nc.k)} already visible in exports: ${nc.t} kt, ${pc(nc.t, nc.ly)}.` : ''}`, 'Generation model, central scenario → Outlook / Generations', '#cfe0ea') : ''}</div>`; };
+  // ---- Norvege · Fish & farms
+  V.nofish = () => { if (!need('summary.json', 'generations.json', 'big_fish.json')) return '<div class="sig-sub">Loading…</div>';
+    const S = LY_DATA['summary.json'], GN = LY_DATA['generations.json'], BF = LY_DATA['big_fish.json']; if (!S || !S.week) return '';
+    const bw = S.week.bw || {}, pulse = (S.week.pulse || []).slice(-1)[0], m = GN && GN.mort ? GN.mort : {}, fx = (GN && GN.factors || []);
+    const ln = fx.find(x => x.id === 'lice_north'), lm = fx.find(x => x.id === 'lice_mid');
+    const RV = BF && BF.ranking && BF.ranking.reservoir ? BF.ranking.reservoir.farmers.slice(0, 3) : [];
+    return `<div class="ly-verdict">${bw.now ? card(`Lice · week ${bw.yw % 100}`, `<b>${f(bw.now.lice, 2)}</b> adult females per fish (${f((bw.ly || {}).lice, 2)} a year ago). ${ln ? `North (zones 10–12): ${e(ln.now)} vs ${e(ln.ly)} a year ago; ` : ''}${lm ? `zones 4–7: ${e(lm.now)} vs ${e(lm.ly)}.` : ''}`, 'BarentsWatch, farmer-reported counts', '#4fc3f7') : ''}
+      ${m.old != null ? card('Mortality · last 3 months', `G${GN.meta.old}: <b>${f(m.old, 2)} %</b> of the stock a month (${f(m.old_ly, 2)} % a year earlier); G${GN.meta.new}: ${f(m.new, 2)} % (${f(m.new_ly, 2)} %). ${m.old < m.old_ly ? 'Better survival than last year.' : 'More losses than last year.'}`, 'Biomass register → Disease tab for the diseases themselves', '#ffb74d') : ''}
+      ${card('Harvest activity', `${pulse ? `Harvest-boat pulse, week ${pulse.yw % 100}: <span class="${pulse.yoy_pct >= 0 ? 'up' : 'dn'}">${sg(pulse.yoy_pct)}</span> on the same week last year (${pulse.cage_deliveries} wellboat deliveries to slaughter cages, ${pulse.slaughter_boat_visits} slaughter-boat visits). ` : ''}${RV.length ? `Biggest 6 kg+ reservoirs at sea: ${RV.map(r => `${e(r.co)} ${(r.now6 / 1000).toFixed(1)} kt`).join(', ')}.` : ''}`, 'AIS, our count · site status → Farms, Wellboats', '#cfe0ea')}</div>`; };
+  // ---- Marches · Prices
+  V.prices = () => { if (!need('summary.json')) return '<div class="sig-sub">Loading…</div>';
+    const S = LY_DATA['summary.json']; if (!S || !S.prices || !S.prices.eu_spot) return '';
+    const P = S.prices.eu_spot, sp = (S.week || {}).spot || {}, prem = o => o && o['p_6-7'] && o['p_4-5'] ? 100 * (o['p_6-7'] / o['p_4-5'] - 1) : null, ssb = S.prices.ssb;
+    const F = (S.week || {}).fx || {}, fxm = F.monthly ? (ks => [F.monthly[ks[ks.length - 1]], F.monthly[String(+ks[ks.length - 1] - 100)]])(Object.keys(F.monthly).sort()) : (ks => ks.length ? [F[ks[ks.length - 1]], F[String(+ks[ks.length - 1] - 100)] || F[ks[Math.max(0, ks.length - 53)]]] : null)(Object.keys(F).sort());
+    return `<div class="ly-verdict">${card(`EU spot · week ${P.week}`, `<b>${f(P.avg[0])} NOK</b>${fxm ? ` (${f(P.avg[0] / fxm[0], 2)} €)` : ''}, <span class="${cls(P.avg[0], P.avg[1])}">${pc(P.avg[0], P.avg[1])}</span> on the week, <span class="${cls(P.avg[0], P.avg[2])}">${pc(P.avg[0], P.avg[2])}</span> on the year in kroner${fxm && fxm[1] ? `, <span class="${cls(P.avg[0] / fxm[0], P.avg[2] / fxm[1])}">${pc(P.avg[0] / fxm[0], P.avg[2] / fxm[1])}</span> in euros` : ''}.`, `${e(P.src)}`, '#ffb74d')}
+      ${ssb ? card(`Norwegian export price · week ${ssb.yw % 100}`, `<b>${f(ssb.now)} NOK/kg</b> for fresh salmon, <span class="${cls(ssb.now, ssb.ly)}">${pc(ssb.now, ssb.ly)}</span> on a year earlier, on volumes <span class="${cls(ssb.tonnes, ssb.tonnes_ly)}">${pc(ssb.tonnes, ssb.tonnes_ly)}</span>.`, 'Statistics Norway 03024, all sizes and markets', '#4fc3f7') : ''}
+      ${prem(sp.now) != null ? card('Big-fish premium', `6–7 kg over 4–5 kg: <b>${sg(prem(sp.now))}</b> this week (${sg(prem(sp.prev))} last week, ${sg(prem(sp.ly))} a year ago). 6 kg+ are ${f(sp.now.sh_6plus, 0)} % of spot volumes (${f(sp.ly.sh_6plus, 0)} %). Lerøy, SalMar and Nordlaks are not in the spot statistics.`, 'Sitagri sizes → Sizes & premium', '#cfe0ea') : ''}</div>`; };
+  // ---- Marches · Norway exports
+  V.exports = () => { const X = (typeof DATA_RAW !== 'undefined' && DATA_RAW && DATA_RAW.ssb_exports) ? DATA_RAW.ssb_exports.rows : null; if (!X) return '';
+    const last = Math.max(...X.map(r => r[0])), A = {}; X.forEach(r => { if (r[0] === last || r[0] === last - 100) { const k = (r[0] === last) + '|' + r[2]; A[k] = (A[k] || 0) + r[3] / 1e6; } });
+    const tot = Object.entries(A).filter(([k]) => k.startsWith('true')).reduce((a, [, v]) => a + v, 0), totl = Object.entries(A).filter(([k]) => k.startsWith('false')).reduce((a, [, v]) => a + v, 0);
+    const top = Object.entries(A).filter(([k]) => k.startsWith('true')).sort((a, b) => b[1] - a[1]).slice(0, 4).map(([k, v]) => { const iso = k.split('|')[1]; return `${iso} ${v.toFixed(1)} kt (${pc(v, A['false|' + iso])})`; });
+    return `<div class="ly-verdict" style="grid-template-columns:1fr">${card(`Norway exports · ${mL(last)} · Statistics Norway 08799`, `<b>${f(tot, 0)} kt</b> of salmon (product weight, all forms), <span class="${cls(tot, totl)}">${pc(tot, totl)}</span> on a year earlier. Largest markets: ${top.join(' · ')}.`, 'Monthly by destination and product; the weekly series and Akvafakta four-market view sit in By market', '#4fc3f7')}</div>`; };
+  // ---- Marches · Importers
+  V.importers = v => { if (!need('summary.json')) return ''; const S = LY_DATA['summary.json']; if (!S) return ''; const mo = (S.monthly || []);
+    const us = mo.find(x => x.k === 'us'), cn = mo.find(x => x.k === 'cn'), de = S.demand || {};
+    return `<div class="ly-verdict">${us ? card(`USA · ${e(us.when)}`, `Imports ${e(us.text)}.`, 'US Census, all farmed Atlantic salmon products', '#4fc3f7') : ''}${cn ? card(`China + Hong Kong · ${e(cn.when)}`, `Norway shipped ${e(cn.text)}; Chinese customs stopped publishing origins in 2024, so exporters’ declarations stand in.`, 'SSB, exporters’ customs', '#ffb74d') : ''}${de.markets ? card(`Imports this year`, `World <b>${sg(de.world)}</b>; fastest: ${de.markets.slice().sort((a, b) => b[1] - a[1]).slice(0, 3).map(([n, v]) => `${e(n)} ${sg(v)}`).join(', ')}; weakest: ${de.markets.slice().sort((a, b) => a[1] - b[1]).slice(0, 2).map(([n, v]) => `${e(n)} ${sg(v)}`).join(', ')}.`, `UN Comtrade and national customs, same months to ${mL(de.to)}`, '#cfe0ea') : ''}</div>`; };
+  window.lyVerdicts = V;
+})();
 </script>
 <script>
 // « Generations comparison » : une seule entree du menu, trois vues (generations, carte, contre l'an dernier) choisies en tete
