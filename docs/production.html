@@ -5184,6 +5184,8 @@ function caSupply() {
   ((typeof QR !== 'undefined' && QR && QR.reports) || []).forEach(r => (r.segments || []).forEach(g => { if (g.basin === 'CA' && g.guidance_t && (!mowi || r.quarter > mowi.q)) mowi = { co: r.company.replace(/ Scotland$/, ''), q: r.quarter, g: g.guidance_t, gy: g.guidance_year, n: g.next_year_guidance_t, notes: g.notes || [], h: g.harvest_t, hly: g.harvest_t_ly }; }));
   const isa = ((typeof CATL !== 'undefined' && CATL && CATL.isa) || []), yN = new Date().getFullYear(), isaN = y => isa.filter(i => i.year === y && /brunswick/i.test(i.prov)).length;
   const stock = ((typeof CATL !== 'undefined' && CATL && CATL.nl_stocking) || []);
+  // dates « Aug-24 » : tri chronologique (le tri alphabetique mettait « May-24, Sep-23 » en dernier)
+  const sdk = d => { const [m, y] = String(d).split('-'); return +y * 100 + 'JanFebMarAprMayJunJulAugSepOctNovDec'.indexOf(m) / 3; }, sdates = n => [...new Set(stock.map(s => s.date))].sort((a, b) => sdk(a) - sdk(b)).slice(-n);
   // cartes
   const card = (lab, big, sub, c) => `<div class="pr-card" style="cursor:default"><div class="nm"><i style="background:${c}"></i>${lab}</div><div class="big">${big}</div><div class="ln">${sub}</div></div>`;
   const rng = (v, g) => { const m = back[g + best(g)].m6 / 100; return `${f0(v * (1 - m))}–${f0(v * (1 + m))} t`; };
@@ -5216,7 +5218,7 @@ function caSupply() {
     (dfo ? row('BC farm cycles (DFO sea lice reports)', `${dfo.q.map(q => q[0]).join(', ')} · year ${dfo.y0}`, `${dfo.q.map(q => `${q[0]}: ${vt(q[3])}`).join(' · ')} · ${dfo.y0}: ${vt(dfo.chg)}`, '— (no farm data published)', `±${f0(dfo.err)} % on a year`) : '') +
     (mowi ? row(`${e(mowi.co)} guidance (${e(mowi.q)})`, `${mowi.gy} and ${mowi.gy + 1}`, `${f0(mowi.n)} t in ${mowi.gy + 1} (British Columbia only) · ${f0(mowi.g)} t in ${mowi.gy} incl. Atlantic`, e(mowi.notes.find(n => /east|cooke/i.test(n)) || '—'), 'company guidance, revised each quarter') : '') +
     row('ISA in New Brunswick (CFIA)', `${yN}`, '—', `${isaN(yN)} confirmed infected sites in ${yN} (${isaN(yN - 1)} in ${yN - 1}, ${isaN(yN - 2)} in ${yN - 2}): more early harvests and depopulations, then less fish`, 'leading sign, not a forecast') +
-    (stock.length ? row('Fish put to sea in Newfoundland', 'harvest 18-24 months later', '—', `${f0(sum(stock.map(s => s.n)))} fish on ${stock.length} sites, last stockings ${e([...new Set(stock.map(s => s.date))].sort().slice(-3).join(', '))}`, 'counts, not tonnes') : '') + `</tbody>`;
+    (stock.length ? row('Fish put to sea in Newfoundland', 'harvest 18-24 months later', '—', `${f0(sum(stock.map(s => s.n)))} fish on ${stock.length} sites, last stockings ${e(sdates(3).join(', '))}`, 'counts, not tonnes') : '') + `</tbody>`;
   const b = (g, m) => back[g + m];
   $('csBack').innerHTML = `<thead><tr><th class="name">Test on past months — average error</th><th>BC, next 3 months</th><th>BC, next 6 months</th><th>Atlantic, next 3 months</th><th>Atlantic, next 6 months</th></tr></thead><tbody>` +
     METH.map(([m, l]) => `<tr><td class="name">${l}${best('BC') === m ? ' <span style="color:#4fc3f7">(used for BC)</span>' : ''}${best('ATL') === m ? ' <span style="color:#ffb74d">(used for the Atlantic)</span>' : ''}</td><td>±${f0(b('BC', m).m3)} %</td><td>±${f0(b('BC', m).m6)} %</td><td>±${f0(b('ATL', m).m3)} %</td><td>±${f0(b('ATL', m).m6)} %</td></tr>`).join('') + `</tbody>`;
@@ -5245,7 +5247,7 @@ function caSupply() {
     bc.push(`Open net-pen licences end on 30 June 2029: some farms are no longer restocked, so BC volumes trend down from 2027.`);
     const at = [`Exports of the last 3 months: ${vt(r3('ATL'))} against a year earlier.`,
       `ISA in New Brunswick: ${isaN(yN)} confirmed sites in ${yN} against ${isaN(yN - 1)} in ${yN - 1}${isaN(yN) > isaN(yN - 1) ? ' — more early harvests now, fewer fish later' : isaN(yN) < isaN(yN - 1) ? ' — less disease pressure than last year' : ''}.`];
-    if (stock.length) at.push(`Newfoundland: ${f0(sum(stock.map(s => s.n)))} fish put to sea on ${stock.length} sites (last stockings ${e([...new Set(stock.map(s => s.date))].sort().slice(-2).join(', '))}), harvested 18–24 months later.`);
+    if (stock.length) at.push(`Newfoundland: ${f0(sum(stock.map(s => s.n)))} fish put to sea on ${stock.length} sites in 2023–2024 (latest public list, stockings up to ${e(sdates(1)[0])}); fish stocked in 2024 are harvested in 2025–2026, so this explains the strong Newfoundland exports this year more than the months ahead. Production 2025: 30,567 t of Atlantic salmon (provincial government).`);
     if (ce) at.push(`Mowi Canada East (${f0(ce)} t harvested this year) is being sold to Cooke: same farms, new owner — no volume effect expected by itself.`);
     $('caTrend').innerHTML = `<div class="ca-tr">${tc(`Canada · ${per}`, tCA, lCA, 'whole-fish equivalent, both coasts')}${tc(`British Columbia · ${per}`, sum(PB), sum(LY.BC), how('BC'))}${tc(`Atlantic provinces · ${per}`, sum(PA), sum(LY.ATL), how('ATL'))}</div>` +
       `<div class="ca-why"><div><b>Why — British Columbia</b><ul>${bc.map(x => `<li>${x}</li>`).join('')}</ul></div><div><b>Why — Atlantic provinces</b><ul>${at.map(x => `<li>${x}</li>`).join('')}</ul></div></div>` +

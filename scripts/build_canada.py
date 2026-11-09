@@ -76,9 +76,11 @@ def lire_page_dfo(html):
     """Premier tableau (tonnes) : lignes Salmon et Total Finfish par province."""
     p = _Tables(); p.feed(html)
     for t in p.tables:
+        ALIAS = {'PEI': 'PE', 'Que': 'QC', 'Que.': 'QC', 'Man': 'MB', 'Sask': 'SK', 'Alta': 'AB', 'Nfld': 'NL'}
         def code(c):
             c = c.strip()
             if c.startswith('Canada'): return 'Canada'             # « Canada » + renvoi de note colle
+            c = ALIAS.get(c, c)                                    # 2015-2021 : en-tetes « PEI » et « Que » -> sans alias, les colonnes glissaient d'un cran
             return c if c in PROVS else ''
         tete = next((r for r in t if 'BC' in [code(c) for c in r]), None)
         if not tete: continue
@@ -88,8 +90,10 @@ def lire_page_dfo(html):
             brut = (r[0] if r else '').strip()
             lab = 'Salmon' if brut.startswith('Salmon') else 'Total Finfish' if brut.startswith('Total Finfish') else None
             if lab:
-                vals = r[-len([c for c in cols if c in PROVS]):]
-                out[lab] = {pr: int(v.replace(',', '')) for pr, v in zip([c for c in cols if c in PROVS], vals) if re.fullmatch(r'[\d,]+', v.strip() or '-')}
+                # alignement par position dans l'en-tete (meme nombre de cellules), sinon a droite
+                if len(r) == len(cols): pairs = [(pr, r[i]) for i, pr in enumerate(cols) if pr]
+                else: off = len(r) - len(cols); pairs = [(pr, r[i + off]) for i, pr in enumerate(cols) if pr and 0 <= i + off < len(r)]
+                out[lab] = {pr: int(v.replace(',', '')) for pr, v in pairs if re.fullmatch(r'[\d,]+', v.strip() or '-')}
         if out: return out
     return None
 
