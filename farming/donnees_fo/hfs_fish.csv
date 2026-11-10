@@ -1,0 +1,1780 @@
+as,site,name,company,species,date,fish
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2026-09-30,612324
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2026-09-30,1107988
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2026-09-30,1039216
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2026-09-30,370486
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2026-09-30,769578
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2026-09-30,0
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2026-09-30,0
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2026-09-30,0
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2026-09-30,959429
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2026-09-30,1001400
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2026-09-30,0
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2026-09-30,0
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2026-09-30,229813
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2026-09-30,1788193
+AS-20,A-80,Selatrað,Bakkafrost Farming P/F,Laksur,2026-09-30,615051
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2026-09-30,997074
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2026-09-30,1547198
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2026-09-30,777589
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2026-09-30,2478020
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2026-09-30,1010322
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2026-09-30,431388
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2026-09-30,583834
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2026-09-30,1202421
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2026-09-30,396666
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2026-09-30,1315950
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2026-09-30,1330820
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2026-09-30,2408654
+AS-06,A-43,Funningsfjørður eystari Hagagjógv,Bakkafrost Farming P/F,Laksur,2026-09-30,0
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2026-09-30,0
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2026-09-30,129661
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2026-09-30,788009
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2026-09-30,0
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2026-08-31,616073
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2026-08-31,1110064
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2026-08-31,1040891
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2026-08-31,707822
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2026-08-31,1101558
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2026-08-31,0
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2026-08-31,0
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2026-08-31,0
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2026-08-31,978571
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2026-08-31,1016042
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2026-08-31,669149
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2026-08-31,0
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2026-08-31,0
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2026-08-31,996022
+AS-20,A-80,Selatrað,Bakkafrost Farming P/F,Laksur,2026-08-31,461702
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2026-08-31,1000615
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2026-08-31,1552778
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2026-08-31,782629
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2026-08-31,2485990
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2026-08-31,1014413
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2026-08-31,432277
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2026-08-31,585946
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2026-08-31,1205823
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2026-08-31,607864
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2026-08-31,1323917
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2026-08-31,1344946
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2026-08-31,2415919
+AS-06,A-43,Funningsfjørður eystari Hagagjógv,Bakkafrost Farming P/F,Laksur,2026-08-31,0
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2026-08-31,0
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2026-08-31,695962
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2026-08-31,790682
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2026-08-31,0
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2026-07-31,641893
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2026-07-31,1111951
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2026-07-31,1042525
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2026-07-31,712820
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2026-07-31,1110026
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2026-07-31,134561
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2026-07-31,0
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2026-07-31,0
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2026-07-31,990267
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2026-07-31,1027997
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2026-07-31,1094728
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2026-07-31,555728
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2026-07-31,0
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2026-07-31,0
+AS-20,A-80,Selatrað,Bakkafrost Farming P/F,Laksur,2026-07-31,0
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2026-07-31,1006591
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2026-07-31,874610
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2026-07-31,796202
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2026-07-31,2494242
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2026-07-31,1018983
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2026-07-31,432906
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2026-07-31,586597
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2026-07-31,1208389
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2026-07-31,817178
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2026-07-31,1325907
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2026-07-31,1348199
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2026-07-31,2420315
+AS-06,A-43,Funningsfjørður eystari Hagagjógv,Bakkafrost Farming P/F,Laksur,2026-07-31,0
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2026-07-31,205728
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2026-07-31,791465
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2026-07-31,793098
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2026-07-31,225752
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2026-06-30,0
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2026-06-30,1114004
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2026-06-30,1043884
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2026-06-30,716165
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2026-06-30,1117045
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2026-06-30,208507
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2026-06-30,0
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2026-06-30,0
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2026-06-30,993030
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2026-06-30,1030532
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2026-06-30,1105288
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2026-06-30,1033113
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2026-06-30,1117403
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2026-06-30,0
+AS-20,A-80,Selatrað,Bakkafrost Farming P/F,Laksur,2026-06-30,0
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2026-06-30,1011751
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2026-06-30,0
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2026-06-30,798493
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2026-06-30,2230326
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2026-06-30,1025614
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2026-06-30,433224
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2026-06-30,483718
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2026-06-30,1211194
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2026-06-30,1077974
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2026-06-30,1329851
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2026-06-30,1353860
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2026-06-30,2427264
+AS-06,A-43,Funningsfjørður eystari Hagagjógv,Bakkafrost Farming P/F,Laksur,2026-06-30,0
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2026-06-30,208041
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2026-06-30,794500
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2026-06-30,794308
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2026-06-30,544504
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2026-05-31,0
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2026-05-31,1118572
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2026-05-31,1045475
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2026-05-31,719227
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2026-05-31,1119504
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2026-05-31,1127242
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2026-05-31,434910
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2026-05-31,0
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2026-05-31,997118
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2026-05-31,1035228
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2026-05-31,1117029
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2026-05-31,1050595
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2026-05-31,1524998
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2026-05-31,32302
+AS-20,A-80,Selatrað,Bakkafrost Farming P/F,Laksur,2026-05-31,183487
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2026-05-31,1022874
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2026-05-31,0
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2026-05-31,799459
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2026-05-31,241319
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2026-05-31,1034591
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2026-05-31,435332
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2026-05-31,0
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2026-05-31,1219207
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2026-05-31,1234238
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2026-05-31,1334769
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2026-05-31,1360783
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2026-05-31,2435094
+AS-06,A-43,Funningsfjørður eystari Hagagjógv,Bakkafrost Farming P/F,Laksur,2026-05-31,0
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2026-05-31,1006621
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2026-05-31,0
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2026-05-31,796215
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2026-05-31,823876
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2026-04-30,141376
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2026-04-30,1124633
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2026-04-30,1048271
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2026-04-30,722616
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2026-04-30,1126038
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2026-04-30,1160627
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2026-04-30,536845
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2026-04-30,71973
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2026-04-30,1004594
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2026-04-30,1046582
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2026-04-30,1122518
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2026-04-30,1061124
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2026-04-30,1545339
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2026-04-30,1119117
+AS-20,A-80,Selatrað,Bakkafrost Farming P/F,Laksur,2026-04-30,464788
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2026-04-30,1041921
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2026-04-30,64168
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2026-04-30,0
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2026-04-30,0
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2026-04-30,1048122
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2026-04-30,0
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2026-04-30,0
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2026-04-30,471553
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2026-04-30,1508384
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2026-04-30,1340114
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2026-04-30,1365398
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2026-04-30,2447600
+AS-06,A-43,Funningsfjørður eystari Hagagjógv,Bakkafrost Farming P/F,Laksur,2026-04-30,0
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2026-04-30,1012279
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2026-04-30,0
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2026-04-30,799291
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2026-04-30,877258
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2026-03-31,472764
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2026-03-31,1081663
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2026-03-31,631332
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2026-03-31,728917
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2026-03-31,1136450
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2026-03-31,1174387
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2026-03-31,547977
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2026-03-31,329943
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2026-03-31,1012491
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2026-03-31,1055877
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2026-03-31,1128975
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2026-03-31,1076995
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2026-03-31,1559886
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2026-03-31,1178361
+AS-20,A-80,Selatrað,Bakkafrost Farming P/F,Laksur,2026-03-31,548005
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2026-03-31,1051068
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2026-03-31,1030817
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2026-03-31,0
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2026-03-31,0
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2026-03-31,1052492
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2026-03-31,0
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2026-03-31,0
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2026-03-31,0
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2026-03-31,1702859
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2026-03-31,1346785
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2026-03-31,1369526
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2026-03-31,386216
+AS-06,A-43,Funningsfjørður eystari Hagagjógv,Bakkafrost Farming P/F,Laksur,2026-03-31,0
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2026-03-31,1017991
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2026-03-31,0
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2026-03-31,802467
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2026-03-31,879559
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2026-02-28,601931
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2026-02-28,80664
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2026-02-28,633938
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2026-02-28,739809
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2026-02-28,1151665
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2026-02-28,1184406
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2026-02-28,555398
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2026-02-28,488088
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2026-02-28,1031361
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2026-02-28,1069054
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2026-02-28,1146819
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2026-02-28,1119235
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2026-02-28,1582947
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2026-02-28,1616211
+AS-20,A-80,Selatrað,Bakkafrost Farming P/F,Laksur,2026-02-28,557825
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2026-02-28,1085563
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2026-02-28,1100583
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2026-02-28,58649
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2026-02-28,969923
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2026-02-28,1061288
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2026-02-28,0
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2026-02-28,0
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2026-02-28,0
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2026-02-28,1716449
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2026-02-28,1354731
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2026-02-28,1375536
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2026-02-28,0
+AS-06,A-43,Funningsfjørður eystari Hagagjógv,Bakkafrost Farming P/F,Laksur,2026-02-28,0
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2026-02-28,1021814
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2026-02-28,0
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2026-02-28,805094
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2026-02-28,885880
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2026-01-31,612073
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2026-01-31,0
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2026-01-31,646930
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2026-01-31,757238
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2026-01-31,1163672
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2026-01-31,1193044
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2026-01-31,560935
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2026-01-31,663718
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2026-01-31,1079677
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2026-01-31,1080519
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2026-01-31,1163745
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2026-01-31,1122489
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2026-01-31,1592392
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2026-01-31,1643600
+AS-20,A-80,Selatrað,Bakkafrost Farming P/F,Laksur,2026-01-31,566605
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2026-01-31,0
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2026-01-31,1418449
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2026-01-31,212597
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2026-01-31,1360301
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2026-01-31,1067431
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2026-01-31,0
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2026-01-31,338201
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2026-01-31,464507
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2026-01-31,1742919
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2026-01-31,1263958
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2026-01-31,1385618
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2026-01-31,0
+AS-06,A-43,Funningsfjørður eystari Hagagjógv,Bakkafrost Farming P/F,Laksur,2026-01-31,0
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2026-01-31,1026740
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2026-01-31,0
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2026-01-31,0
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2026-01-31,890211
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2025-12-31,615982
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2025-12-31,0
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2025-12-31,0
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2025-12-31,781756
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2025-12-31,1181253
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2025-12-31,1203469
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2025-12-31,564882
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2025-12-31,681552
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2025-12-31,1083771
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2025-12-31,1088113
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2025-12-31,1168034
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2025-12-31,1126281
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2025-12-31,1597582
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2025-12-31,1663179
+AS-20,A-80,Selatrað,Bakkafrost Farming P/F,Laksur,2025-12-31,571083
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2025-12-31,0
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2025-12-31,1429087
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2025-12-31,449825
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2025-12-31,2230277
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2025-12-31,1072640
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2025-12-31,0
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2025-12-31,621345
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2025-12-31,474615
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2025-12-31,1765800
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2025-12-31,778650
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2025-12-31,740018
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2025-12-31,518692
+AS-06,A-43,Funningsfjørður eystari Hagagjógv,Bakkafrost Farming P/F,Laksur,2025-12-31,0
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2025-12-31,1032989
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2025-12-31,0
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2025-12-31,0
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2025-12-31,898743
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2025-11-30,621130
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2025-11-30,0
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2025-11-30,0
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2025-11-30,0
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2025-11-30,1188342
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2025-11-30,1210092
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2025-11-30,566920
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2025-11-30,703547
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2025-11-30,789064
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2025-11-30,1092417
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2025-11-30,1179683
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2025-11-30,1169888
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2025-11-30,1605358
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2025-11-30,1685085
+AS-20,A-80,Selatrað,Bakkafrost Farming P/F,Laksur,2025-11-30,583078
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2025-11-30,0
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2025-11-30,1435130
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2025-11-30,715981
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2025-11-30,2323680
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2025-11-30,1085160
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2025-11-30,0
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2025-11-30,887010
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2025-11-30,958966
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2025-11-30,1778730
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2025-11-30,0
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2025-11-30,0
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2025-11-30,1079092
+AS-06,A-43,Funningsfjørður eystari Hagagjógv,Bakkafrost Farming P/F,Laksur,2025-11-30,0
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2025-11-30,1065082
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2025-11-30,0
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2025-11-30,62912
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2025-11-30,908288
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2025-10-31,625086
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2025-10-31,923214
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2025-10-31,0
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2025-10-31,0
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2025-10-31,1191863
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2025-10-31,1214033
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2025-10-31,570235
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2025-10-31,715493
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2025-10-31,0
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2025-10-31,0
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2025-10-31,1182797
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2025-10-31,1174681
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2025-10-31,1626223
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2025-10-31,1694809
+AS-20,A-80,Selatrað,Bakkafrost Farming P/F,Laksur,2025-10-31,584339
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2025-10-31,0
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2025-10-31,1438432
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2025-10-31,719333
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2025-10-31,2340313
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2025-10-31,1090819
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2025-10-31,0
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2025-10-31,1041067
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2025-10-31,1038144
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2025-10-31,1232281
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2025-10-31,0
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2025-10-31,0
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2025-10-31,1630801
+AS-06,A-43,Funningsfjørður eystari Hagagjógv,Bakkafrost Farming P/F,Laksur,2025-10-31,0
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2025-10-31,1078334
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2025-10-31,0
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2025-10-31,385452
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2025-10-31,910209
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2025-09-30,627058
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2025-09-30,999334
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2025-09-30,146662
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2025-09-30,0
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2025-09-30,96260
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2025-09-30,2506813
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2025-09-30,0
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2025-09-30,0
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2025-09-30,0
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2025-09-30,0
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2025-09-30,1187285
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2025-09-30,1176884
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2025-09-30,1634604
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2025-09-30,1704050
+AS-20,A-80,Selatrað,Bakkafrost Farming P/F,Laksur,2025-09-30,586451
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2025-09-30,268925
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2025-09-30,1443359
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2025-09-30,720955
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2025-09-30,2354645
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2025-09-30,602336
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2025-09-30,0
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2025-09-30,1090763
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2025-09-30,1123733
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2025-09-30,1027110
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2025-09-30,410961
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2025-09-30,421146
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2025-09-30,2182064
+AS-06,A-43,Funningsfjørður eystari Hagagjógv,Bakkafrost Farming P/F,Laksur,2025-09-30,0
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2025-09-30,1080596
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2025-09-30,0
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2025-09-30,835689
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2025-09-30,912702
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2025-08-31,630238
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2025-08-31,1001301
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2025-08-31,367103
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2025-08-31,367740
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2025-08-31,0
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2025-08-31,2510993
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2025-08-31,0
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2025-08-31,0
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2025-08-31,0
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2025-08-31,0
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2025-08-31,251458
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2025-08-31,1177902
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2025-08-31,1638827
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2025-08-31,1708950
+AS-20,A-80,Selatrað,Bakkafrost Farming P/F,Laksur,2025-08-31,588089
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2025-08-31,614021
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2025-08-31,1449540
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2025-08-31,721916
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2025-08-31,2375838
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2025-08-31,0
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2025-08-31,0
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2025-08-31,1095557
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2025-08-31,1155380
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2025-08-31,1030905
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2025-08-31,1124679
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2025-08-31,1088024
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2025-08-31,2192552
+AS-06,A-43,Funningsfjørður eystari Hagagjógv,Bakkafrost Farming P/F,Laksur,2025-08-31,0
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2025-08-31,1086163
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2025-08-31,0
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2025-08-31,851788
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2025-08-31,0
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2025-07-31,636451
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2025-07-31,1003131
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2025-07-31,476219
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2025-07-31,681427
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2025-07-31,0
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2025-07-31,2517602
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2025-07-31,0
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2025-07-31,0
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2025-07-31,913483
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2025-07-31,493564
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2025-07-31,0
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2025-07-31,1179980
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2025-07-31,1643922
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2025-07-31,1715650
+AS-20,A-80,Selatrað,Bakkafrost Farming P/F,Laksur,2025-07-31,590192
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2025-07-31,936342
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2025-07-31,1454682
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2025-07-31,732837
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2025-07-31,2382861
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2025-07-31,0
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2025-07-31,0
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2025-07-31,1098347
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2025-07-31,1158280
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2025-07-31,0
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2025-07-31,1128936
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2025-07-31,1171580
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2025-07-31,2197677
+AS-06,A-43,Funningsfjørður eystari Hagagjógv,Bakkafrost Farming P/F,Laksur,2025-07-31,0
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2025-07-31,0
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2025-07-31,0
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2025-07-31,853681
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2025-07-31,0
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2025-06-30,639151
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2025-06-30,1008398
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2025-06-30,609773
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2025-06-30,812540
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2025-06-30,827825
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2025-06-30,2521849
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2025-06-30,0
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2025-06-30,0
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2025-06-30,920389
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2025-06-30,915280
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2025-06-30,0
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2025-06-30,1040579
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2025-06-30,0
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2025-06-30,1723616
+AS-20,A-80,Selatrað,Bakkafrost Farming P/F,Laksur,2025-06-30,592619
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2025-06-30,960539
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2025-06-30,1458569
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2025-06-30,770852
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2025-06-30,2386443
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2025-06-30,0
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2025-06-30,0
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2025-06-30,1103568
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2025-06-30,1160757
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2025-06-30,0
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2025-06-30,1134983
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2025-06-30,1177034
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2025-06-30,0
+AS-06,A-43,Funningsfjørður eystari Hagagjógv,Bakkafrost Farming P/F,Laksur,2025-06-30,2204544
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2025-06-30,0
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2025-06-30,0
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2025-06-30,855688
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2025-06-30,72255
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2025-05-31,0
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2025-05-31,1009374
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2025-05-31,777997
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2025-05-31,813776
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2025-05-31,967926
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2025-05-31,2268442
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2025-05-31,0
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2025-05-31,0
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2025-05-31,924536
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2025-05-31,922005
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2025-05-31,550150
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2025-05-31,0
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2025-05-31,0
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2025-05-31,1729357
+AS-20,A-80,Selatrað,Bakkafrost Farming P/F,Laksur,2025-05-31,593837
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2025-05-31,970581
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2025-05-31,1463071
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2025-05-31,793393
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2025-05-31,2391505
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2025-05-31,137634
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2025-05-31,0
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2025-05-31,1106692
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2025-05-31,1165534
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2025-05-31,57648
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2025-05-31,1146687
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2025-05-31,1192435
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2025-05-31,0
+AS-06,A-43,Funningsfjørður eystari Hagagjógv,Bakkafrost Farming P/F,Laksur,2025-05-31,2214231
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2025-05-31,0
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2025-05-31,0
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2025-05-31,858184
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2025-05-31,349860
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2025-04-30,0
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2025-04-30,1010992
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2025-04-30,869601
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2025-04-30,822457
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2025-04-30,974284
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2025-04-30,0
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2025-04-30,0
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2025-04-30,0
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2025-04-30,930431
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2025-04-30,930771
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2025-04-30,1063356
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2025-04-30,0
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2025-04-30,0
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2025-04-30,1735655
+AS-20,A-80,Selatrað,Bakkafrost Farming P/F,Laksur,2025-04-30,512021
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2025-04-30,983112
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2025-04-30,1466030
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2025-04-30,795434
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2025-04-30,2398888
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2025-04-30,747126
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2025-04-30,0
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2025-04-30,1111845
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2025-04-30,1172560
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2025-04-30,372835
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2025-04-30,1150893
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2025-04-30,1196658
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2025-04-30,0
+AS-06,A-43,Funningsfjørður eystari Hagagjógv,Bakkafrost Farming P/F,Laksur,2025-04-30,2238674
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2025-04-30,0
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2025-04-30,0
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2025-04-30,862558
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2025-04-30,646190
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2025-03-31,0
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2025-03-31,1014273
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2025-03-31,971927
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2025-03-31,824265
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2025-03-31,980459
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2025-03-31,0
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2025-03-31,0
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2025-03-31,0
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2025-03-31,938701
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2025-03-31,946676
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2025-03-31,1119271
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2025-03-31,395713
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2025-03-31,681650
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2025-03-31,597235
+AS-20,A-80,Selatrað,Bakkafrost Farming P/F,Laksur,2025-03-31,0
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2025-03-31,989110
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2025-03-31,1471382
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2025-03-31,797726
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2025-03-31,2409415
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2025-03-31,900506
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2025-03-31,0
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2025-03-31,1118611
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2025-03-31,1182268
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2025-03-31,602420
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2025-03-31,1160881
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2025-03-31,1204267
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2025-03-31,0
+AS-06,A-43,Funningsfjørður eystari Hagagjógv,Bakkafrost Farming P/F,Laksur,2025-03-31,2249994
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2025-03-31,0
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2025-03-31,0
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2025-03-31,868453
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2025-03-31,918028
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2025-02-28,65702
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2025-02-28,1018443
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2025-02-28,976863
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2025-02-28,826942
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2025-02-28,987234
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2025-02-28,0
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2025-02-28,11641
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2025-02-28,0
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2025-02-28,942448
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2025-02-28,949678
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2025-02-28,1128127
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2025-02-28,871531
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2025-02-28,1214896
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2025-02-28,0
+AS-20,A-80,Selatrað,Bakkafrost Farming P/F,Laksur,2025-02-28,0
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2025-02-28,995098
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2025-02-28,1133306
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2025-02-28,0
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2025-02-28,1966751
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2025-02-28,903872
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2025-02-28,0
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2025-02-28,1074899
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2025-02-28,1189931
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2025-02-28,904170
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2025-02-28,1172496
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2025-02-28,1209831
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2025-02-28,0
+AS-06,A-43,Funningsfjørður eystari Hagagjógv,Bakkafrost Farming P/F,Laksur,2025-02-28,2271636
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2025-02-28,0
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2025-02-28,0
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2025-02-28,880131
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2025-02-28,1101731
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2025-01-31,163213
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2025-01-31,1026279
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2025-01-31,978148
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2025-01-31,830943
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2025-01-31,992337
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2025-01-31,154634
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2025-01-31,500736
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2025-01-31,664927
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2025-01-31,946064
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2025-01-31,955559
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2025-01-31,1130894
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2025-01-31,878761
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2025-01-31,1269608
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2025-01-31,0
+AS-20,A-80,Selatrað,Bakkafrost Farming P/F,Laksur,2025-01-31,0
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2025-01-31,999924
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2025-01-31,0
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2025-01-31,0
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2025-01-31,1348632
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2025-01-31,907703
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2025-01-31,0
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2025-01-31,737050
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2025-01-31,1199782
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2025-01-31,1197304
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2025-01-31,1188345
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2025-01-31,1216734
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2025-01-31,0
+AS-06,A-43,Funningsfjørður eystari Hagagjógv,Bakkafrost Farming P/F,Laksur,2025-01-31,2298608
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2025-01-31,0
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2025-01-31,0
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2025-01-31,891357
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2025-01-31,1159608
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2024-12-31,290316
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2024-12-31,1032212
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2024-12-31,980313
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2024-12-31,838180
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2024-12-31,998258
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2024-12-31,573912
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2024-12-31,508912
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2024-12-31,682633
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2024-12-31,955999
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2024-12-31,963926
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2024-12-31,1138128
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2024-12-31,882775
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2024-12-31,1276140
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2024-12-31,865722
+AS-20,A-80,Selatrað,Bakkafrost Farming P/F,Laksur,2024-12-31,0
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2024-12-31,1010089
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2024-12-31,0
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2024-12-31,0
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2024-12-31,1362018
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2024-12-31,916952
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2024-12-31,0
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2024-12-31,739225
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2024-12-31,1216050
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2024-12-31,1464461
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2024-12-31,1207726
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2024-12-31,1224586
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2024-12-31,0
+AS-06,A-43,Funningsfjørður eystari Hagagjógv,Bakkafrost Farming P/F,Laksur,2024-12-31,2329146
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2024-12-31,0
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2024-12-31,0
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2024-12-31,897604
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2024-12-31,1203270
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2024-11-30,319124
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2024-11-30,1037853
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2024-11-30,982920
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2024-11-30,842653
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2024-11-30,1003197
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2024-11-30,786254
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2024-11-30,516146
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2024-11-30,699020
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2024-11-30,961388
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2024-11-30,972441
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2024-11-30,1141745
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2024-11-30,886545
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2024-11-30,1282646
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2024-11-30,1166085
+AS-20,A-80,Selatrað,Bakkafrost Farming P/F,Laksur,2024-11-30,170329
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2024-11-30,1037726
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2024-11-30,134456
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2024-11-30,107435
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2024-11-30,0
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2024-11-30,937514
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2024-11-30,0
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2024-11-30,0
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2024-11-30,0
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2024-11-30,1475846
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2024-11-30,1215213
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2024-11-30,1227993
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2024-11-30,0
+AS-06,A-43,Funningsfjørður eystari Hagagjógv,Bakkafrost Farming P/F,Laksur,2024-11-30,2053916
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2024-11-30,0
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2024-11-30,0
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2024-11-30,901898
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2024-11-30,1207765
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2024-10-31,324801
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2024-10-31,930773
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2024-10-31,984060
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2024-10-31,845625
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2024-10-31,1012935
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2024-10-31,999972
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2024-10-31,521569
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2024-10-31,708818
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2024-10-31,965630
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2024-10-31,977782
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2024-10-31,1147313
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2024-10-31,888744
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2024-10-31,1285347
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2024-10-31,1171271
+AS-20,A-80,Selatrað,Bakkafrost Farming P/F,Laksur,2024-10-31,359214
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2024-10-31,1065448
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2024-10-31,724823
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2024-10-31,309962
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2024-10-31,0
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2024-10-31,948481
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2024-10-31,0
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2024-10-31,0
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2024-10-31,0
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2024-10-31,1629685
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2024-10-31,1220655
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2024-10-31,1232569
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2024-10-31,0
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2024-10-31,0
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2024-10-31,0
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2024-10-31,0
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2024-10-31,1211214
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2024-09-30,326215
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2024-09-30,0
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2024-09-30,985384
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2024-09-30,851077
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2024-09-30,1018186
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2024-09-30,1008294
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2024-09-30,523931
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2024-09-30,713167
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2024-09-30,969711
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2024-09-30,980851
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2024-09-30,1150099
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2024-09-30,896465
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2024-09-30,1284129
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2024-09-30,1181229
+AS-20,A-80,Selatrað,Bakkafrost Farming P/F,Laksur,2024-09-30,361710
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2024-09-30,1071587
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2024-09-30,1256220
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2024-09-30,467449
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2024-09-30,911670
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2024-09-30,950728
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2024-09-30,0
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2024-09-30,0
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2024-09-30,0
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2024-09-30,1735632
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2024-09-30,1224397
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2024-09-30,1237826
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2024-09-30,0
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2024-09-30,0
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2024-09-30,0
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2024-09-30,0
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2024-09-30,1214897
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2024-08-31,327961
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2024-08-31,0
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2024-08-31,987160
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2024-08-31,247263
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2024-08-31,1020958
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2024-08-31,1014668
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2024-08-31,525519
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2024-08-31,715189
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2024-08-31,972541
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2024-08-31,984069
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2024-08-31,1151943
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2024-08-31,900668
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2024-08-31,1288486
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2024-08-31,1189282
+AS-20,A-80,Selatrað,Bakkafrost Farming P/F,Laksur,2024-08-31,364027
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2024-08-31,0
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2024-08-31,1267731
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2024-08-31,486861
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2024-08-31,1507634
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2024-08-31,953250
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2024-08-31,152209
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2024-08-31,0
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2024-08-31,842023
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2024-08-31,1741909
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2024-08-31,1160136
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2024-08-31,941620
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2024-08-31,0
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2024-08-31,0
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2024-08-31,0
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2024-08-31,386703
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2024-08-31,1219887
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2024-07-31,330121
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2024-07-31,0
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2024-07-31,988965
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2024-07-31,0
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2024-07-31,1022799
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2024-07-31,1018349
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2024-07-31,526586
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2024-07-31,716845
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2024-07-31,770442
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2024-07-31,991009
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2024-07-31,1153229
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2024-07-31,902122
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2024-07-31,1294208
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2024-07-31,1193936
+AS-20,A-80,Selatrað,Bakkafrost Farming P/F,Laksur,2024-07-31,365664
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2024-07-31,0
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2024-07-31,1275965
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2024-07-31,489038
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2024-07-31,1525176
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2024-07-31,955728
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2024-07-31,441108
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2024-07-31,0
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2024-07-31,1054192
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2024-07-31,1747774
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2024-07-31,0
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2024-07-31,0
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2024-07-31,707247
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2024-07-31,0
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2024-07-31,738185
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2024-07-31,809016
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2024-07-31,1224845
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2024-06-30,331417
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2024-06-30,395021
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2024-06-30,475583
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2024-06-30,27482
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2024-06-30,1036548
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2024-06-30,1548840
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2024-06-30,0
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2024-06-30,718066
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2024-06-30,210430
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2024-06-30,208810
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2024-06-30,1154798
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2024-06-30,903832
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2024-06-30,1310121
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2024-06-30,1199046
+AS-20,A-80,Selatrað,Bakkafrost Farming P/F,Laksur,2024-06-30,367598
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2024-06-30,0
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2024-06-30,1282810
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2024-06-30,491285
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2024-06-30,1535595
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2024-06-30,957408
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2024-06-30,554552
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2024-06-30,74570
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2024-06-30,1066127
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2024-06-30,1752412
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2024-06-30,0
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2024-06-30,0
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2024-06-30,1229411
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2024-06-30,0
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2024-06-30,843183
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2024-06-30,1173734
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2024-06-30,1231349
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2024-05-31,332429
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2024-05-31,608588
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2024-05-31,0
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2024-05-31,247999
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2024-05-31,198372
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2024-05-31,1552247
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2024-05-31,0
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2024-05-31,720516
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2024-05-31,0
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2024-05-31,0
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2024-05-31,928421
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2024-05-31,905051
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2024-05-31,1313553
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2024-05-31,1203516
+AS-20,A-80,Selatrað,Bakkafrost Farming P/F,Laksur,2024-05-31,368643
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2024-05-31,0
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2024-05-31,1286405
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2024-05-31,493004
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2024-05-31,1546610
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2024-05-31,959113
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2024-05-31,555442
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2024-05-31,262234
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2024-05-31,1076231
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2024-05-31,1756711
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2024-05-31,0
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2024-05-31,0
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2024-05-31,1800014
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2024-05-31,0
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2024-05-31,978883
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2024-05-31,1179729
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2024-05-31,877212
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2024-04-30,336377
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2024-04-30,779584
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2024-04-30,0
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2024-04-30,371336
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2024-04-30,0
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2024-04-30,2291296
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2024-04-30,0
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2024-04-30,0
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2024-04-30,0
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2024-04-30,0
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2024-04-30,125845
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2024-04-30,906821
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2024-04-30,1323387
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2024-04-30,1213141
+AS-20,A-80,Selatrað,Bakkafrost Farming P/F,Laksur,2024-04-30,370633
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2024-04-30,0
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2024-04-30,1294753
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2024-04-30,494978
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2024-04-30,1556746
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2024-04-30,734470
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2024-04-30,561404
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2024-04-30,369009
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2024-04-30,1121826
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2024-04-30,1760682
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2024-04-30,119633
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2024-04-30,0
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2024-04-30,1914866
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2024-04-30,1031362
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2024-04-30,0
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2024-04-30,1188224
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2024-04-30,0
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2024-03-31,346984
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2024-03-31,850267
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2024-03-31,0
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2024-03-31,683217
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2024-03-31,0
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2024-03-31,2321103
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2024-03-31,0
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2024-03-31,0
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2024-03-31,0
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2024-03-31,124066
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2024-03-31,0
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2024-03-31,909490
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2024-03-31,1004370
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2024-03-31,1237797
+AS-20,A-80,Selatrað,Bakkafrost Farming P/F,Laksur,2024-03-31,373441
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2024-03-31,0
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2024-03-31,1317428
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2024-03-31,496977
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2024-03-31,1572543
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2024-03-31,0
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2024-03-31,570789
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2024-03-31,573543
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2024-03-31,1128594
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2024-03-31,1120060
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2024-03-31,449118
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2024-03-31,209082
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2024-03-31,2025579
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2024-03-31,1047476
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2024-03-31,0
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2024-03-31,1194224
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2024-03-31,0
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2024-02-29,0
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2024-02-29,857760
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2024-02-29,80027
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2024-02-29,876159
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2024-02-29,0
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2024-02-29,2355063
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2024-02-29,0
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2024-02-29,0
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2024-02-29,155548
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2024-02-29,361481
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2024-02-29,0
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2024-02-29,675760
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2024-02-29,0
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2024-02-29,1269113
+AS-20,A-80,Selatrað,Bakkafrost Farming P/F,Laksur,2024-02-29,376627
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2024-02-29,0
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2024-02-29,1330970
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2024-02-29,505199
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2024-02-29,1584057
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2024-02-29,0
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2024-02-29,571644
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2024-02-29,577640
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2024-02-29,1132536
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2024-02-29,1123529
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2024-02-29,677936
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2024-02-29,373373
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2024-02-29,2053440
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2024-02-29,1051259
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2024-02-29,0
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2024-02-29,1200661
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2024-02-29,0
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2024-01-31,95176
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2024-01-31,860756
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2024-01-31,307974
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2024-01-31,897583
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2024-01-31,416221
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2024-01-31,2390918
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2024-01-31,0
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2024-01-31,0
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2024-01-31,423337
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2024-01-31,424411
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2024-01-31,0
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2024-01-31,0
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2024-01-31,0
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2024-01-31,1281005
+AS-20,A-80,Selatrað,Bakkafrost Farming P/F,Laksur,2024-01-31,379348
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2024-01-31,215039
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2024-01-31,1355518
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2024-01-31,381298
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2024-01-31,1599448
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2024-01-31,0
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2024-01-31,574018
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2024-01-31,580077
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2024-01-31,1141731
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2024-01-31,1135342
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2024-01-31,685283
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2024-01-31,610646
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2024-01-31,2083272
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2024-01-31,1057099
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2024-01-31,0
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2024-01-31,1210217
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2024-01-31,273211
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2023-12-31,206387
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2023-12-31,862458
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2023-12-31,589846
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2023-12-31,904235
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2023-12-31,557328
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2023-12-31,2351551
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2023-12-31,0
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2023-12-31,0
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2023-12-31,470599
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2023-12-31,428238
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2023-12-31,0
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2023-12-31,0
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2023-12-31,0
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2023-12-31,1324920
+AS-20,A-80,Selatrað,Bakkafrost Farming P/F,Laksur,2023-12-31,381681
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2023-12-31,656196
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2023-12-31,1374966
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2023-12-31,432499
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2023-12-31,1617083
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2023-12-31,0
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2023-12-31,575268
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2023-12-31,582795
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2023-12-31,1148380
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2023-12-31,0
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2023-12-31,831327
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2023-12-31,695696
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2023-12-31,2092389
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2023-12-31,1071661
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2023-12-31,0
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2023-12-31,1218629
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2023-12-31,488028
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2023-11-30,207127
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2023-11-30,864805
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2023-11-30,793528
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2023-11-30,910101
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2023-11-30,863261
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2023-11-30,1319991
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2023-11-30,0
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2023-11-30,0
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2023-11-30,633380
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2023-11-30,568754
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2023-11-30,0
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2023-11-30,0
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2023-11-30,0
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2023-11-30,0
+AS-20,A-80,Selatrað,Bakkafrost Farming P/F,Laksur,2023-11-30,390903
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2023-11-30,850169
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2023-11-30,1386004
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2023-11-30,438630
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2023-11-30,1651266
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2023-11-30,0
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2023-11-30,576483
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2023-11-30,587722
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2023-11-30,1156712
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2023-11-30,0
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2023-11-30,984672
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2023-11-30,1077555
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2023-11-30,2106842
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2023-11-30,1076927
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2023-11-30,0
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2023-11-30,1224314
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2023-11-30,805290
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2023-10-31,207779
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2023-10-31,866748
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2023-10-31,978409
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2023-10-31,915259
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2023-10-31,977635
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2023-10-31,462426
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2023-10-31,0
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2023-10-31,0
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2023-10-31,718650
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2023-10-31,571645
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2023-10-31,471363
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2023-10-31,0
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2023-10-31,0
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2023-10-31,0
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2023-10-31,1016671
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2023-10-31,1397530
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2023-10-31,0
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2023-10-31,1673463
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2023-10-31,0
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2023-10-31,585310
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2023-10-31,591123
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2023-10-31,1164217
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2023-10-31,56028
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2023-10-31,1165539
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2023-10-31,1157204
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2023-10-31,2115549
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2023-10-31,1083586
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2023-10-31,0
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2023-10-31,1228680
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2023-10-31,1145138
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2023-09-30,208394
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2023-09-30,868686
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2023-09-30,980961
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2023-09-30,937666
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2023-09-30,1006056
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2023-09-30,0
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2023-09-30,0
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2023-09-30,0
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2023-09-30,723955
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2023-09-30,575768
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2023-09-30,1040898
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2023-09-30,104912
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2023-09-30,374048
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2023-09-30,0
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2023-09-30,1025641
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2023-09-30,1413601
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2023-09-30,0
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2023-09-30,1685926
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2023-09-30,0
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2023-09-30,587872
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2023-09-30,594033
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2023-09-30,1169336
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2023-09-30,376564
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2023-09-30,1186491
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2023-09-30,1189324
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2023-09-30,2124141
+AS-05,A-92,Vágur,Bakkafrost Farming P/F,Laksur,2023-09-30,175142
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2023-09-30,0
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2023-09-30,1234392
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2023-09-30,1390967
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2023-08-31,211670
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2023-08-31,871152
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2023-08-31,983156
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2023-08-31,946973
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2023-08-31,1015787
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2023-08-31,0
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2023-08-31,0
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2023-08-31,0
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2023-08-31,730463
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2023-08-31,583572
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2023-08-31,1058269
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2023-08-31,921184
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2023-08-31,1042759
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2023-08-31,227172
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2023-08-31,1040554
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2023-08-31,881223
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2023-08-31,126739
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2023-08-31,1723463
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2023-08-31,168694
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2023-08-31,590554
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2023-08-31,595784
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2023-08-31,1175646
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2023-08-31,698985
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2023-08-31,1212003
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2023-08-31,1209630
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2023-08-31,2132969
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2023-08-31,0
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2023-08-31,903063
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2023-08-31,1418117
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2023-07-31,212672
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2023-07-31,872832
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2023-07-31,984322
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2023-07-31,949547
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2023-07-31,1020959
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2023-07-31,94433
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2023-07-31,0
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2023-07-31,0
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2023-07-31,738359
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2023-07-31,591793
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2023-07-31,1071522
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2023-07-31,931345
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2023-07-31,1092646
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2023-07-31,786082
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2023-07-31,1057701
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2023-07-31,0
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2023-07-31,367080
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2023-07-31,1329824
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2023-07-31,589060
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2023-07-31,0
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2023-07-31,597212
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2023-07-31,1181228
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2023-07-31,828094
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2023-07-31,1218390
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2023-07-31,1216400
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2023-07-31,2149435
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2023-07-31,0
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2023-07-31,912193
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2023-07-31,1424030
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2023-06-30,213350
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2023-06-30,873928
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2023-06-30,985030
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2023-06-30,950541
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2023-06-30,1022970
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2023-06-30,195174
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2023-06-30,212887
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2023-06-30,0
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2023-06-30,744284
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2023-06-30,598997
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2023-06-30,1080843
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2023-06-30,939841
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2023-06-30,1275816
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2023-06-30,995116
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2023-06-30,1058833
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2023-06-30,0
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2023-06-30,705112
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2023-06-30,103226
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2023-06-30,592708
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2023-06-30,0
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2023-06-30,598338
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2023-06-30,1209628
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2023-06-30,927768
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2023-06-30,1221175
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2023-06-30,1220261
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2023-06-30,2175468
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2023-06-30,0
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2023-06-30,0
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2023-06-30,1428229
+AS-35,A-08,Suðuri í Bug,Luna P/F,Laksur,2023-05-31,71303
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2023-05-31,874858
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2023-05-31,985778
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2023-05-31,956309
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2023-05-31,1024613
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2023-05-31,390977
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2023-05-31,561671
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2023-05-31,0
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2023-05-31,749749
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2023-05-31,603259
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2023-05-31,1087212
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2023-05-31,943244
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2023-05-31,1286863
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2023-05-31,1014651
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2023-05-31,1059921
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2023-05-31,0
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2023-05-31,954126
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2023-05-31,0
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2023-05-31,717656
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2023-05-31,0
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2023-05-31,0
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2023-05-31,67093
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2023-05-31,1154860
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2023-05-31,1224817
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2023-05-31,1224117
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2023-05-31,2195584
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2023-05-31,0
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2023-05-31,0
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2023-05-31,1433131
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2023-04-30,877996
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2023-04-30,986626
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2023-04-30,977058
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2023-04-30,1027522
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2023-04-30,497721
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2023-04-30,581773
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2023-04-30,469615
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2023-04-30,783129
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2023-04-30,617640
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2023-04-30,1090283
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2023-04-30,951532
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2023-04-30,1293259
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2023-04-30,1162392
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2023-04-30,1061019
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2023-04-30,0
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2023-04-30,1054489
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2023-04-30,0
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2023-04-30,702762
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2023-04-30,0
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2023-04-30,0
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2023-04-30,0
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2023-04-30,1370962
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2023-04-30,1227867
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2023-04-30,1229094
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2023-04-30,1145146
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2023-04-30,57115
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2023-04-30,133677
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2023-04-30,1446100
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2023-03-31,889575
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2023-03-31,927055
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2023-03-31,996110
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2023-03-31,1040563
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2023-03-31,624407
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2023-03-31,588199
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2023-03-31,472002
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2023-03-31,809370
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2023-03-31,626498
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2023-03-31,1096194
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2023-03-31,964278
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2023-03-31,1298186
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2023-03-31,1225587
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2023-03-31,1062658
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2023-03-31,140790
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2023-03-31,1059116
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2023-03-31,0
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2023-03-31,705507
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2023-03-31,0
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2023-03-31,0
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2023-03-31,0
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2023-03-31,1486830
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2023-03-31,1233689
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2023-03-31,1234090
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2023-03-31,0
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2023-03-31,287887
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2023-03-31,381300
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2023-03-31,1460193
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2023-02-28,218380
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2023-02-28,708975
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2023-02-28,0
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2023-02-28,1049171
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2023-02-28,898011
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2023-02-28,705688
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2023-02-28,635840
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2023-02-28,848189
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2023-02-28,634262
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2023-02-28,1121363
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2023-02-28,966714
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2023-02-28,1306310
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2023-02-28,1262344
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2023-02-28,1065282
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2023-02-28,302176
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2023-02-28,1062488
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2023-02-28,0
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2023-02-28,957663
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2023-02-28,0
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2023-02-28,0
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2023-02-28,0
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2023-02-28,1618093
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2023-02-28,821563
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2023-02-28,895732
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2023-02-28,0
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2023-02-28,288393
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2023-02-28,671513
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2023-02-28,1471535
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2023-01-31,0
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2023-01-31,717832
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2023-01-31,0
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2023-01-31,1059293
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2023-01-31,946893
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2023-01-31,711512
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2023-01-31,746741
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2023-01-31,768150
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2023-01-31,572225
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2023-01-31,1132812
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2023-01-31,971401
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2023-01-31,1314822
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2023-01-31,1270265
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2023-01-31,992549
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2023-01-31,396664
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2023-01-31,1070244
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2023-01-31,0
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2023-01-31,962096
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2023-01-31,37688
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2023-01-31,0
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2023-01-31,0
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2023-01-31,1623007
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2023-01-31,828425
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2023-01-31,736252
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2023-01-31,0
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2023-01-31,604913
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2023-01-31,952860
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2023-01-31,1478203
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2022-12-31,0
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2022-12-31,722572
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2022-12-31,0
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2022-12-31,1066108
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2022-12-31,1111111
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2022-12-31,720116
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2022-12-31,762531
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2022-12-31,773701
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2022-12-31,583651
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2022-12-31,1145366
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2022-12-31,975516
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2022-12-31,1319821
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2022-12-31,1286481
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2022-12-31,1001376
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2022-12-31,1094413
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2022-12-31,1078506
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2022-12-31,0
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2022-12-31,964641
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2022-12-31,338198
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2022-12-31,0
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2022-12-31,0
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2022-12-31,1656437
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2022-12-31,831907
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2022-12-31,737790
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2022-12-31,0
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2022-12-31,1011273
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2022-12-31,1163977
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2022-12-31,1050078
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2022-11-30,0
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2022-11-30,0
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2022-11-30,199921
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2022-11-30,1069387
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2022-11-30,1123396
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2022-11-30,725666
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2022-11-30,766880
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2022-11-30,776694
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2022-11-30,589627
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2022-11-30,1151781
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2022-11-30,985942
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2022-11-30,1324814
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2022-11-30,1299086
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2022-11-30,96196
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2022-11-30,1376409
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2022-11-30,1080367
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2022-11-30,695815
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2022-11-30,966009
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2022-11-30,345796
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2022-11-30,326980
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2022-11-30,0
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2022-11-30,1660646
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2022-11-30,0
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2022-11-30,0
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2022-11-30,0
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2022-11-30,1031232
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2022-11-30,1269543
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2022-11-30,1054205
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2022-10-31,0
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2022-10-31,0
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2022-10-31,318968
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2022-10-31,812195
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2022-10-31,1126676
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2022-10-31,733224
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2022-10-31,769053
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2022-10-31,220720
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2022-10-31,116865
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2022-10-31,1154157
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2022-10-31,987153
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2022-10-31,1327012
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2022-10-31,1315641
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2022-10-31,0
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2022-10-31,1402612
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2022-10-31,1082629
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2022-10-31,1228876
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2022-10-31,967725
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2022-10-31,354052
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2022-10-31,581641
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2022-10-31,1038585
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2022-10-31,1664969
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2022-10-31,0
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2022-10-31,0
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2022-10-31,129099
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2022-10-31,1033922
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2022-10-31,1359086
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2022-10-31,0
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2022-09-30,0
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2022-09-30,0
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2022-09-30,579035
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2022-09-30,121292
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2022-09-30,1132125
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2022-09-30,734773
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2022-09-30,773794
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2022-09-30,0
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2022-09-30,0
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2022-09-30,1157087
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2022-09-30,988624
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2022-09-30,1329885
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2022-09-30,1323263
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2022-09-30,0
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2022-09-30,1431895
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2022-09-30,1084624
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2022-09-30,1653113
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2022-09-30,970268
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2022-09-30,356880
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2022-09-30,778620
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2022-09-30,1061652
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2022-09-30,1670391
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2022-09-30,0
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2022-09-30,0
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2022-09-30,1227799
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2022-09-30,1041616
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2022-09-30,1362342
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2022-09-30,0
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2022-08-31,197468
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2022-08-31,131653
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2022-08-31,678800
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2022-08-31,0
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2022-08-31,1134504
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2022-08-31,737078
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2022-08-31,776118
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2022-08-31,0
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2022-08-31,0
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2022-08-31,95452
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2022-08-31,993567
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2022-08-31,1333487
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2022-08-31,1134285
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2022-08-31,0
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2022-08-31,1435717
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2022-08-31,1089345
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2022-08-31,1675471
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2022-08-31,972902
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2022-08-31,366905
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2022-08-31,791613
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2022-08-31,1072261
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2022-08-31,1455007
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2022-08-31,211752
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2022-08-31,236866
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2022-08-31,1966152
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2022-08-31,1046252
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2022-08-31,1364941
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2022-08-31,228027
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2022-07-31,348708
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2022-07-31,372931
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2022-07-31,687128
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2022-07-31,0
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2022-07-31,1137296
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2022-07-31,738942
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2022-07-31,778141
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2022-07-31,0
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2022-07-31,0
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2022-07-31,0
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2022-07-31,390572
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2022-07-31,612740
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2022-07-31,1138179
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2022-07-31,0
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2022-07-31,1440421
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2022-07-31,1092797
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2022-07-31,1691911
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2022-07-31,976568
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2022-07-31,367188
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2022-07-31,793346
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2022-07-31,1077633
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2022-07-31,1145200
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2022-07-31,607475
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2022-07-31,672935
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2022-07-31,1981799
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2022-07-31,1048661
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2022-07-31,1367454
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2022-07-31,553673
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2022-06-30,491574
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2022-06-30,375042
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2022-06-30,687740
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2022-06-30,0
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2022-06-30,1138478
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2022-06-30,739838
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2022-06-30,779305
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2022-06-30,172086
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2022-06-30,261519
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2022-06-30,0
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2022-06-30,0
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2022-06-30,0
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2022-06-30,858663
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2022-06-30,0
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2022-06-30,1444969
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2022-06-30,956454
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2022-06-30,1698880
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2022-06-30,986776
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2022-06-30,370898
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2022-06-30,794903
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2022-06-30,1079978
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2022-06-30,827342
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2022-06-30,846499
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2022-06-30,881310
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2022-06-30,2000033
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2022-06-30,1050796
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2022-06-30,1369025
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2022-06-30,803629
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2022-05-31,619500
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2022-05-31,494372
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2022-05-31,688592
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2022-05-31,0
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2022-05-31,1139612
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2022-05-31,741114
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2022-05-31,782653
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2022-05-31,178576
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2022-05-31,308947
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2022-05-31,0
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2022-05-31,0
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2022-05-31,0
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2022-05-31,0
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2022-05-31,306090
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2022-05-31,1450864
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2022-05-31,0
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2022-05-31,1702750
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2022-05-31,317399
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2022-05-31,371207
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2022-05-31,821813
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2022-05-31,1082438
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2022-05-31,559261
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2022-05-31,1004893
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2022-05-31,1088559
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2022-05-31,2007907
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2022-05-31,1058689
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2022-05-31,1370383
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2022-05-31,1158663
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2022-04-30,710474
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2022-04-30,608980
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2022-04-30,691144
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2022-04-30,0
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2022-04-30,984700
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2022-04-30,406919
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2022-04-30,607245
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2022-04-30,402822
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2022-04-30,357808
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2022-04-30,0
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2022-04-30,0
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2022-04-30,0
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2022-04-30,0
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2022-04-30,534679
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2022-04-30,1454524
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2022-04-30,0
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2022-04-30,1708142
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2022-04-30,0
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2022-04-30,373169
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2022-04-30,822671
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2022-04-30,1086409
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2022-04-30,0
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2022-04-30,1195514
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2022-04-30,1168770
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2022-04-30,2015521
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2022-04-30,1060045
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2022-04-30,1372922
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2022-04-30,1417894
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2022-03-31,711736
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2022-03-31,748465
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2022-03-31,698678
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2022-03-31,0
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2022-03-31,588859
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2022-03-31,308085
+AS-26,A-05,Undir Síðu,Bakkafrost Farming P/F,Laksur,2022-03-31,350648
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2022-03-31,571232
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2022-03-31,540069
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2022-03-31,433876
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2022-03-31,0
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2022-03-31,0
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2022-03-31,0
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2022-03-31,775540
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2022-03-31,1460941
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2022-03-31,0
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2022-03-31,1714811
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2022-03-31,0
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2022-03-31,374546
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2022-03-31,826079
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2022-03-31,1109441
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2022-03-31,0
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2022-03-31,1206568
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2022-03-31,1178753
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2022-03-31,2023036
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2022-03-31,1061481
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2022-03-31,1383248
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2022-03-31,1514181
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2022-02-28,713674
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2022-02-28,795437
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2022-02-28,709264
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2022-02-28,719785
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2022-02-28,0
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2022-02-28,0
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2022-02-28,633587
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2022-02-28,605136
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2022-02-28,557594
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2022-02-28,226956
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2022-02-28,0
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2022-02-28,0
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2022-02-28,872755
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2022-02-28,1392491
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2022-02-28,49785
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2022-02-28,1742262
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2022-02-28,0
+AS-12,A-87,Út fyri Haldórsvík,Mowi P/F,Laksur,2022-02-28,386993
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2022-02-28,829021
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2022-02-28,1114472
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2022-02-28,0
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2022-02-28,1209433
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2022-02-28,1182805
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2022-02-28,2047246
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2022-02-28,1065063
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2022-02-28,952046
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2022-02-28,1520269
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2022-01-31,726637
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2022-01-31,808231
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2022-01-31,714867
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2022-01-31,967587
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2022-01-31,0
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2022-01-31,0
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2022-01-31,726485
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2022-01-31,617647
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2022-01-31,998705
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2022-01-31,618149
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2022-01-31,0
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2022-01-31,0
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2022-01-31,1045948
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2022-01-31,1065998
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2022-01-31,63836
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2022-01-31,1749901
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2022-01-31,0
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2022-01-31,832721
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2022-01-31,1118962
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2022-01-31,0
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2022-01-31,1211396
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2022-01-31,1185346
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2022-01-31,2056438
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2022-01-31,991434
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2022-01-31,681486
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2022-01-31,1537052
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2021-12-31,731325
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2021-12-31,827226
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2021-12-31,722306
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2021-12-31,995322
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2021-12-31,0
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2021-12-31,0
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2021-12-31,735004
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2021-12-31,619326
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2021-12-31,1019840
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2021-12-31,778412
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2021-12-31,884979
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2021-12-31,0
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2021-12-31,1048832
+AS-17,A-72,Haraldsund Norður,Bakkafrost Farming P/F,Laksur,2021-12-31,1077421
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2021-12-31,594259
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2021-12-31,1757872
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2021-12-31,133203
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2021-12-31,858372
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2021-12-31,1128905
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2021-12-31,273716
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2021-12-31,1218804
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2021-12-31,1194232
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2021-12-31,2064346
+AS-05,A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,Laksur,2021-12-31,776552
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2021-12-31,0
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2021-12-31,1583339
+AS-33,A-23,Hvalba,Bakkafrost Farming P/F,Laksur,2021-11-30,732831
+AS-31,A-90,Sandsvág,Mowi P/F,Laksur,2021-11-30,830071
+AS-29,A-89,Velbastað,Luna P/F,Laksur,2021-11-30,378894
+AS-28,A-06,Argjalandið,Bakkafrost Farming P/F,Laksur,2021-11-30,1016911
+AS-26,A-85,Undir Neslandinum,Bakkafrost Farming P/F,Laksur,2021-11-30,0
+AS-26,A-81,Kolbeinagjógv,Bakkafrost Farming P/F,Laksur,2021-11-30,0
+AS-25,A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,Laksur,2021-11-30,749185
+AS-25,A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,Laksur,2021-11-30,623874
+AS-24,A-63,Árnafjørður,Bakkafrost Farming P/F,Laksur,2021-11-30,1070485
+AS-23,A-13,Borðoyarvík,Bakkafrost Farming P/F,Laksur,2021-11-30,813168
+AS-22,A-04,Lambavík,Bakkafrost Farming P/F,Laksur,2021-11-30,1245310
+AS-21,A-12,Kunoyarnes,Bakkafrost Farming P/F,Laksur,2021-11-30,942281
+AS-19,A-15,Froðba,Bakkafrost Farming P/F,Laksur,2021-11-30,1051009
+AS-16,A-83,Sørvágsfjørður ytra,Luna P/F,Laksur,2021-11-30,967367
+AS-14,A-57,Fuglafjørður,Bakkafrost Farming P/F,Laksur,2021-11-30,1802900
+AS-13,A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,Laksur,2021-11-30,173738
+AS-12,A-32,Fossá,Mowi P/F,Laksur,2021-11-30,43540
+AS-11,A-73,Hvannasund Norður,Bakkafrost Farming P/F,Laksur,2021-11-30,133901
+AS-10,A-52,Oyndarfjørður inni á fjørð,Mowi P/F,Laksur,2021-11-30,638064
+AS-07,A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,Laksur,2021-11-30,1222293
+AS-07,A-11,Hvannasund suður,Bakkafrost Farming P/F,Laksur,2021-11-30,1199026
+AS-06,A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,Laksur,2021-11-30,2067694
+AS-03,A-27,Miðvágur,Luna P/F,Laksur,2021-11-30,0
+AS-01,A-88,Vestmanna,Luna P/F,Laksur,2021-11-30,1597161
