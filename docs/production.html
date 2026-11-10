@@ -829,33 +829,9 @@ details.ca-more>summary::-webkit-details-marker{display:none}details.ca-more>sum
     </div>
 
     <hr class="sig-divider">
-    <div class="sig-title">Harvest projection (1–9 months)</div>
-    <div class="sig-sub" id="outlookProjSub">Projected harvest volume, headcount and average weight, with the error the method actually made on past data at each horizon.</div>
+    <div class="sig-title">Harvest projection — next six months</div>
+    <div class="sig-sub">Two readings of the same fish: the generation model (zone-by-zone simulation, relative to last year) and the fish budget (the fish actually left, emptied at last year's pace, grown at each zone's expected degree-days). Live weight, all licences.</div>
     <div id="outlookThree"></div>
-
-    <table>
-      <thead>
-        <tr>
-          <th class="name">Month</th>
-          <th>Harvest volume (t)</th>
-          <th>Δ% YoY</th>
-          <th>Individuals harvested</th>
-          <th>Δ% YoY</th>
-          <th>Avg harvest weight (kg, live)</th>
-          <th>Δ% YoY</th>
-        </tr>
-      </thead>
-      <tbody id="tbodyOutlook"></tbody>
-    </table>
-    <div class="sig-title" style="margin-top:22px">By quarter</div>
-    <table class="sig-table"><thead><tr><th class="name">Quarter</th><th>Harvest (t)</th><th>Δ% YoY</th><th>Months projected</th><th>Error band</th>
-      <th class="sep-left" title="Fish in the sea x share usually harvested, with its recent bias">Headcount method</th><th title="Last year x biomass change x half the change in stock rotation">Rotation method</th><th title="Biomass ratio and 12-month drift">Previous method</th></tr></thead>
-      <tbody id="tbodyOutlookQ"></tbody></table>
-    <div class="sig-title" style="margin-top:22px">Test on a period already known</div>
-    <div class="sig-sub" id="outlookBtSub"></div>
-    <table class="sig-table"><thead><tr><th class="name">Month</th><th>Actual (t)</th><th>Projected (t)</th><th>Error</th><th class="sep-left">Previous method</th><th>Error</th></tr></thead>
-      <tbody id="tbodyOutlookBt"></tbody><tfoot id="tfootOutlookBt"></tfoot></table>
-    <div class="sig-sub" id="outlookAcc" style="margin-top:10px"></div>
     <hr class="sig-divider">
     <div class="sig-title">Stock rotation — how fast the fish in the sea are turned into harvest</div>
     <div class="sig-sub" id="rotSub"></div>
@@ -868,7 +844,6 @@ details.ca-more>summary::-webkit-details-marker{display:none}details.ca-more>sum
     <div class="sig-title" style="font-size:12px;margin-top:18px">By zone (12 months to the latest reported month)</div>
     <table class="sig-table"><thead><tr><th class="name">Zone</th><th>Harvest (t)</th><th>Avg biomass (t)</th><th class="sep-left">Biomass rotation</th><th>a year earlier</th><th>Δ</th>
       <th class="sep-left">Fish rotation</th><th>a year earlier</th></tr></thead><tbody id="tbodyRotZ"></tbody></table>
-    <div class="note" id="outlookNote" style="margin-top:16px; text-align:left; max-width:none;"></div>
   </div>
 
   <div class="panel" id="wbView" style="flex:1; min-width:0; max-width:1400px; display:none;">
@@ -4695,7 +4670,7 @@ function renderBigFish() {
   if (!RK) { sub.innerHTML = 'No estimate yet: data/big_fish.json is built at each update run.'; ['gm_bfCo', 'gm_bfNo', 'gm_bfNote'].forEach(id => document.getElementById(id).innerHTML = ''); return; }
   const ML = k => tmMl(k), t0 = v => Math.round(v).toLocaleString('en-US'), per = `${ML(RK.months[0])} – ${ML(RK.months[1])}`;
   // volumes cales sur la prevision Supply outlook (poids vif, toutes licences) -> poids vide, zones 1 a 13 ; les calibres restent ceux du classement
-  if (!window.OUTLOOK_PROJ) { try { if (getSelectedPoFilter().length >= ALL_PO.length) renderOutlook(); } catch (err) { /* pas de projection disponible */ } }
+  if (!window.OUTLOOK_PROJ && window.lyFetch) { const G = window.lyFetch('generations.json', () => { window.setOutlookProjFromGN && window.setOutlookProjFromGN(); if (currentView === 'generations') renderGenerations2(); }); if (G && window.setOutlookProjFromGN) window.setOutlookProjFromGN(); }
   const OP = window.OUTLOOK_PROJ || {}, cal = RK.months.map(m => OP[m] ? OP[m] * (RK.gut || 0.888) * (RK.zone_share || 1) : null);
   const calOK = cal.every(v => v), N = RK.norway.map((x, i) => calOK ? { ...x, f: cal[i] / x.harvest_t } : { ...x, f: 1 });
   const F2 = calOK ? (cal[0] + cal[1]) / (RK.norway[0].harvest_t + RK.norway[1].harvest_t) : 1;
@@ -10953,6 +10928,22 @@ function renderOutlook() {
   const num0 = v => v === null || !isFinite(v) ? '—' : v.toLocaleString('en-US',{maximumFractionDigits:0});
   const num2 = v => v === null || !isFinite(v) ? '—' : v.toFixed(2);
 
+  // ---- projection : modele de generations + budget de poissons (generations.json), mois par mois et par trimestre
+  { const box = document.getElementById('outlookThree'), GNV = window.lyFetch ? window.lyFetch('generations.json', () => { window.setOutlookProjFromGN && window.setOutlookProjFromGN(); if (currentView === 'outlook') renderOutlook(); else if (currentView === 'generations' && typeof renderGenerations2 === 'function') renderGenerations2(); }) : null;
+    if (GNV) window.setOutlookProjFromGN && window.setOutlookProjFromGN();
+    if (box) { const V = GNV && GNV.volume, B = V && (V.budget_dd || V.budget) || [], C0 = V && V.scenarios && V.scenarios.central || [], P = V && V.periods, natl = poFilter.length >= ALL_PO.length;
+      if (!natl) box.innerHTML = '<div class="sig-sub" style="margin:6px 0 12px;color:var(--muted)">The projection is national: select all zones to see it. The zone figures sit in the Zones tab and in the TGC watch of the Overview.</div>';
+      else if (!B.length) box.innerHTML = GNV === null ? '<div class="sig-sub">Loading the generation model…</div>' : '<div class="sig-sub">No projection available (generations.json missing).</div>';
+      else { const pct = (a, b) => a && b ? `<span style="color:${a >= b ? '#81c784' : '#ff8a65'}">${a >= b ? '+' : '−'}${Math.abs(100 * (a / b - 1)).toFixed(1)}%</span>` : '—', L = v => v / 0.888 * 1000;
+        const rows = B.map(b => { const k = b.k, mIdx = k % 100 - 1, yy = k / 100 | 0, ly = byKey[(yy - 1) * 100 + k % 100], lyv = ly ? ly.vol / 1000 : L(b.ly), lyf = ly ? ly.stk / 1e6 : b.fish_ly, m = C0.find(x => x.k === k);
+          return `<tr class="projected"><td class="name">${MONTHS_FR[mIdx]} ${yy} <span class="ol-tag ol-proj">projected</span></td><td>${num0(lyv)}</td><td>${m ? `<b>${num0(L(m.tot))}</b> ${pct(L(m.tot), lyv)}` : '—'}</td><td><b>${num0(L(b.tot))}</b> ${pct(L(b.tot), lyv)}</td><td>${b.fish != null ? `${num0(b.fish * 1e6)} ${pct(b.fish, lyf)}` : '—'}</td><td>${b.hw ? num2(b.hw) : '—'}${ly && ly.stk ? ` <small style="color:var(--muted)">(${num2(ly.vol / ly.stk)})</small>` : ''}</td></tr>`; }).join('');
+        const qrow = (x, i) => { const bd = x.dd != null ? x.dd : x.budget, im = x.implied_dd != null ? x.implied_dd : x.implied, sx = (GNV.six && GNV.six.forecast || [])[i]; return `<tr><td class="name"><b>${x.span}</b></td><td>${num0(L(x.ly))}</td><td><b>${num0(L(x.model))}</b> ${pct(x.model, x.ly)}</td><td><b>${num0(L(bd))}</b> ${pct(bd, x.ly)}</td><td>${im != null ? `<b>${num0(L(im))}</b> ${pct(im, x.ly)}` : '—'}</td><td>${sx ? `${num0(sx.fcst * 1000)} ${pct(sx.fcst, sx.ly)}` : '—'}</td></tr>`; };
+        box.innerHTML = `<table class="sig-table" style="margin-bottom:6px"><thead><tr><th class="name">Month</th><th>A year earlier (t)</th><th>Generation model (t)</th><th>Fish budget (t)</th><th>Fish budget · individuals</th><th>Budget avg weight (kg, live) <small>(a year earlier)</small></th></tr></thead><tbody>${rows}</tbody></table>
+          ${P ? `<div class="sig-title" style="margin-top:16px">By quarter</div><table class="sig-table"><thead><tr><th class="name">Quarter</th><th>A year earlier (t)</th><th>Generation model</th><th>Fish budget</th><th>If the model's ${P.p1.span.split(' ')[0]} holds</th><th>6 kg+ rule (t gutted)</th></tr></thead><tbody>${qrow(P.p1, 0)}${qrow(P.p2, 1)}</tbody></table>
+          <div class="sig-sub" style="margin-top:8px"><b>Reading:</b> ${P.verdict === 'brought_forward' ? `the model (and ${V.nowcast ? `${MONTHS_FR[V.nowcast.k % 100 - 1]}'s exports, ${pct(V.nowcast.t, V.nowcast.ly)}` : 'the exports'}) put ${P.p1.span} above last year; the fish budget puts the same fish ${pct(P.p1.dd != null ? P.p1.dd : P.p1.budget, P.p1.ly)} at last year's pace. Both hold only if the harvest is brought forward — then ${P.p2.span} falls to about ${num0(L(P.p2.implied_dd != null ? P.p2.implied_dd : P.p2.implied))} t (${pct(P.p2.implied_dd != null ? P.p2.implied_dd : P.p2.implied, P.p2.ly)}).` : P.verdict === 'held_back' ? `the model sees less than the fish budget in ${P.p1.span}: fish kept at sea, more volume in ${P.p2.span}.` : 'the model and the fish budget agree within 2 %.'}</div>` : ''}
+          <div class="note" style="margin-top:14px;text-align:left;max-width:none"><b>Method.</b> <b>Generation model</b>: zone by zone and generation by generation, growth = usual TGC at that weight and calendar month × the generation's own recent advance (kept at 70 %) × expected sea temperature; harvest = usual share of the stock harvested at that weight and month; the same simulation is run from a year earlier and the ratio of the two is applied to what was really harvested, so most of the simulation's own errors cancel. ${V.tested ? V.tested.charAt(0).toUpperCase() + V.tested.slice(1) + '.' : ''} <b>Fish budget</b>: not a forecast but an accounting check — G${GNV.meta.old}'s fish left in each zone, harvested at the pace of G${GNV.meta.old - 1} a year earlier, at a weight that follows each zone's expected degree-days (3-year normal + the zone's last anomaly, fading by 0.6 a month) with the zone's TGC advance kept at 70 %; G${GNV.meta.new} follows G${GNV.meta.new - 1} in proportion to its biomass; older fish as last year. Both are scaled to the full register (zones 0–13). Gutted → live at 0.888. <b>6 kg+ rule</b>: degree-day threshold, see Outlook. The older page projector (biomass × take-out, mass balance, weight analogue) was retired in November 2026 to keep one set of figures across the site.</div>`; } } }
+  window.setOutlookProjFromGN = () => { const G = window.LY_DATA && window.LY_DATA['generations.json']; if (!G || !G.volume || !G.volume.scenarios) return; const OP = window.OUTLOOK_PROJ = {}; (G.volume.scenarios.central || []).forEach(m => { OP[m.k] = m.tot / 0.888 * 1000; }); };
+  if (document.getElementById('tbodyOutlook')) {   // ancien projecteur de la page : plus affiche depuis novembre 2026 (modele de generations + budget de poissons)
   const tbody = document.getElementById('tbodyOutlook');
   tbody.innerHTML = '';
 
@@ -10969,17 +10960,6 @@ function renderOutlook() {
     tbody.appendChild(tr);
   };
 
-  // ---- three readings, month by month: this page's projector, the generation model, the fish budget (generations.json)
-  { const box = document.getElementById('outlookThree'), GNV = window.lyFetch ? window.lyFetch('generations.json', () => { if (currentView === 'outlook') renderOutlook(); }) : null;
-    if (box) { const V = GNV && GNV.volume, B = V && (V.budget_dd || V.budget) || [], C0 = V && V.scenarios && V.scenarios.central || [], P = V && V.periods, natl = poFilter.length >= ALL_PO.length;
-      if (!natl) box.innerHTML = '<div class="sig-sub" style="margin:6px 0 12px;color:var(--muted)">The generation model and the fish budget are national: select all zones to see them against this page’s projector.</div>';
-      else if (!B.length) box.innerHTML = GNV === null ? '<div class="sig-sub">Loading the generation model…</div>' : '';
-      else { const pct = (a, b) => a && b ? `<span style="color:${a >= b ? '#81c784' : '#ff8a65'}">${a >= b ? '+' : '−'}${Math.abs(100 * (a / b - 1)).toFixed(1)}%</span>` : '—';
-        const rows = B.map((b, i) => { const k = b.k, mIdx = k % 100 - 1, yy = k / 100 | 0, pv = projectVol(lastIdx, i + 1), live = pv !== null ? pv / 1000 : null, ly = byKey[(yy - 1) * 100 + k % 100], lyv = ly ? ly.vol / 1000 : null, lyf = ly ? ly.stk / 1e6 : null, m = C0.find(x => x.k === k);
-          return `<tr class="projected"><td class="name">${MONTHS_FR[mIdx]} ${yy}</td><td>${lyv != null ? num0(lyv) : '—'}</td><td>${live != null ? num0(live) : '—'} ${pct(live, lyv)}</td><td>${m ? num0(m.tot / 0.888 * 1000) : '—'} ${m ? pct(m.tot / 0.888 * 1000, lyv) : ''}</td><td><b>${num0(b.tot / 0.888 * 1000)}</b> ${pct(b.tot / 0.888 * 1000, lyv)}</td><td>${b.fish != null ? num0(b.fish * 1e6) : '—'} ${b.fish != null ? pct(b.fish, lyf) : ''}</td><td>${b.hw ? num2(b.hw) : '—'}</td></tr>`; }).join('');
-        const q = P ? `<div class="sig-sub" style="margin-top:6px"><b>By quarter:</b> ${P.p1.span} — model ${num0(P.p1.model / 0.888 * 1000)} t (${pct(P.p1.model, P.p1.ly)}), fish budget <b>${num0((P.p1.dd != null ? P.p1.dd : P.p1.budget) / 0.888 * 1000)} t</b> (${pct(P.p1.dd != null ? P.p1.dd : P.p1.budget, P.p1.ly)}); ${P.p2.span} — model ${num0(P.p2.model / 0.888 * 1000)} t (${pct(P.p2.model, P.p2.ly)}), budget ${num0((P.p2.dd != null ? P.p2.dd : P.p2.budget) / 0.888 * 1000)} t (${pct(P.p2.dd != null ? P.p2.dd : P.p2.budget, P.p2.ly)}), and <b>${num0((P.p2.implied_dd != null ? P.p2.implied_dd : P.p2.implied) / 0.888 * 1000)} t</b> (${pct(P.p2.implied_dd != null ? P.p2.implied_dd : P.p2.implied, P.p2.ly)}) if ${P.p1.span.split(' ')[0]} takes the model’s volume — ${P.verdict === 'brought_forward' ? 'volume brought forward, hole afterwards' : P.verdict === 'held_back' ? 'fish held back, more volume later' : 'the readings agree'}.</div>` : '';
-        box.innerHTML = `<div class="sig-sub" style="margin:4px 0 6px"><b>Three readings, live weight.</b> This page’s projector (biomass × usual take-out, blended with last year × drift) and the generation model both let heavier fish go sooner; the fish budget keeps last year’s pace and counts the fish actually left (G${GNV.meta.old}: ${GNV.state.old.n.toFixed(0)} M against ${GNV.state.old_ly.n.toFixed(0)} M), grown at each zone’s expected degree-days. The gap between them is volume moved between quarters, not created.</div>
-          <table class="sig-table" style="margin-bottom:6px"><thead><tr><th class="name">Month</th><th>A year earlier (t)</th><th>This page’s projector</th><th>Generation model</th><th>Fish budget (t)</th><th>Fish budget · individuals</th><th>Budget avg weight (kg, live)</th></tr></thead><tbody>${rows}</tbody></table>${q}<div style="height:14px"></div>`; } } }
   // ---- reported months (context for reading the projections)
   const HISTORY_MONTHS = 6;
   const histStart = Math.max(0, s.length - HISTORY_MONTHS);
@@ -11183,9 +11163,10 @@ function renderOutlook() {
     }
   }
 
+  }
   const bandTxt = [1,3,6,9].filter(k => bandOf[k]).map(k => `${k} mo ±${bandOf[k].mae.toFixed(1)}%`).join(' · ');
   const wr9 = wFit[9] ? wFit[9].r : null;
-  document.getElementById('outlookNote').innerHTML =
+  const _oln = document.getElementById('outlookNote'); if (_oln) _oln.innerHTML =
     `<b>Method — volume.</b> The projection is the average of the methods below, each tested month by month on the past; the three older ones are shown by quarter. ` +
     `<b>Weight analogue</b> (1–7 months, added November 2026): generations 2025 and 2026 grew ahead of the previous ones, and copying past generations' calendar under-estimated 2025–2026 by about 4 %. ` +
     `Each generation is matched, zone by zone, to the month when last years' generation had the same average weight, and takes what that generation harvested afterwards; at 1 month, a harvest rate by weight band is added. ` +
