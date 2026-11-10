@@ -1758,6 +1758,9 @@ details.ca-more>summary::-webkit-details-marker{display:none}details.ca-more>sum
     <div class="sig-sub" style="margin-top:10px">Brought over from the first Chile page (chili.html) so that nothing is lost. Destinations month by month are also in <span class="gs-go" onclick="gsGoTab('producers')">Producing countries</span>; the tariff in detail in the <span class="gs-go" onclick="gsGoTab('usa')">USA</span> tab.</div>
     <div id="clBrief"></div>
     </details>
+    <details class="cl-sec" id="clS10"><summary><span class="cl-st">10 · Farms and cycles — every finished cycle, farm by farm</span><span class="cl-ss" id="clS10Sum"></span></summary>
+      <div id="clCyc"></div>
+    </details>
     <details class="cl-sec" id="clS9"><summary><span class="cl-st">9 · Wellboat watch — the harvest seen from the boats</span><span class="cl-ss" id="clS9Sum"></span></summary>
     <div class="sig-sub" id="clWbSub"></div>
     <div id="clWbKpi" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:10px 0 16px"></div>
@@ -6295,7 +6298,7 @@ const CL_COM = { 10101: 'Puerto Montt', 10102: 'Calbuco', 10103: 'Cochamó', 101
   14101: 'Valdivia', 8101: 'Concepción', 8110: 'Talcahuano', 6101: 'Rancagua', 5101: 'Valparaíso', 5109: 'Viña del Mar' };
 // l'onglet Chili est decoupe en pages : une seule vue, les sections hors de la page choisie sont masquees
 var CL_PAGE = 'overview';
-var CL_PAGES = [['overview', 'Overview', ['clS8', 'clS7']], ['production', 'Production & stock', ['clS1', 'clS2', 'clS3', 'clS9']], ['health', 'Health & companies', ['clS4', 'clS5', 'clS6']]];
+var CL_PAGES = [['overview', 'Overview', ['clS8', 'clS7']], ['production', 'Production & stock', ['clS1', 'clS2', 'clS3', 'clS9']], ['health', 'Health & companies', ['clS4', 'clS5', 'clS6']], ['cycles', 'Farms & cycles', ['clS10']]];
 function clGo(p) { if (window.snGo) window.snGo(p === 'overview' ? 'chile' : 'chile:' + p); else { CL_PAGE = p; renderChile(); } }
 function clApplyPage() {
   const V = document.getElementById('chileView'); if (!V) return;
@@ -6310,6 +6313,7 @@ function clApplyPage() {
   const t = V.querySelector(':scope > .sig-title'); if (t) t.textContent = ov ? 'Chile — salmon farming, from the whole country down to the farm' : 'Chile — ' + P[1].toLowerCase();
   V.querySelectorAll(':scope > details.cl-sec').forEach(d => { const on = P[2].includes(d.id); d.style.display = on ? '' : 'none'; if (on && !ov) d.open = true; });
   if (P[2].includes('clS6') && typeof CL_MAP !== 'undefined' && CL_MAP) setTimeout(() => CL_MAP.invalidateSize(), 80);
+  if (P[2].includes('clS10') && window.renderChileCycles) window.renderChileCycles();
   clVerdict(ov);
 }
 var CL_DEST = 'last';
@@ -15211,7 +15215,7 @@ const SN_BURGER = window.SN_BURGER, SN_CLOSE = window.SN_CLOSE;
   // '#Titre' = intertitre dans le groupe ; 'chile:page' = une page de l'onglet Chili (meme vue, contenu filtre)
   const CATS = [['Front page', ['summary', 'supply', 'disease', 'seatemp'], 0],
     ['Norway', ['global', 'generations', 'health'], 5],
-    ['Chile', ['chile', 'chile:production', 'chile:health'], 6],
+    ['Chile', ['chile', 'chile:production', 'chile:health', 'chile:cycles'], 6],
     ['Other basins', ['basins'], 2],
     ['Markets & prices', ['prices', 'markets', 'usa', 'feed'], 4]];
   const SN_LAB = { chile: 'Overview', basins: 'Faroes · Scotland · Iceland · Canada · Tasmania', supply: 'Outlook 2026–27', global: 'Production', health: 'Fish & farms', prices: 'Prices', markets: 'Norway exports', usa: 'Importers' };
@@ -15460,7 +15464,7 @@ function gnFoldGenmap(gm) {   // page Zones & farmers : le detail par zone reste
     #foNew .fo-title{font-size:16px;font-weight:800;margin:0 0 2px}#foNew .fo-sub{font-size:12.5px;color:#a9bfcc;margin-bottom:10px;line-height:1.45}#foNew .fo-legend{font-size:12px;color:#a9bfcc;margin-top:4px}#foNew .fo-note{font-size:12.5px;color:#a9bfcc;margin-top:8px;line-height:1.5}
     #foNew .fo-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
     @media (max-width:900px){#foNew .fo-verdict,#foNew .fo-c6,#foNew .fo-c2,#foNew .fo-c32,#foNew .fo-c23{grid-template-columns:1fr}#foNew .fo-c6{grid-template-columns:1fr 1fr}}`;
-  css.textContent += css.textContent.replace(/#foNew/g, '#scNew');
+  css.textContent += css.textContent.replace(/#foNew/g, '#scNew') + css.textContent.replace(/#foNew/g, '#clCyc');
   document.head.appendChild(css);
   function foBuild(D) {
 
@@ -15556,6 +15560,46 @@ return {render,go};
       if (!j || !j.weekly) { state = null; document.getElementById('foRoot').innerHTML = '<div class="sig-sub">No HFS data yet: data/faroe_hfs.json is built by the workflow “Féroé — HFS”.</div>'; document.getElementById('foOld').style.display = ''; return; }
       API = foBuild(j); window.foGo = API.go; if (currentView === 'faroe') API.render(); });
   };
+})();
+</script>
+<script>
+// ===================== Chili, cycles termines centre par centre (data/chile_cycles.json <- scripts/build_chile_cycles.py, fichiers de la loi 21.532) =====================
+(function () {
+  const YC = ['#8fa4b0', '#ffc38a', '#4fc3f7'], f = (v, d = 1) => v == null ? '—' : (+v).toFixed(d), n0 = v => v == null ? '—' : Math.round(v).toLocaleString('en-US'), esc = t => String(t == null ? '' : t).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  const kp = (q, v, u, c, g) => `<div class="fo-card"><div class="fo-q">${q}</div><div class="fo-k">${v}<small>${u}</small></div><div class="fo-sm ${g || 'fo-mut'}">${c}</div></div>`;
+  const leg = items => `<div class="fo-legend">${items.map(([c, t]) => `<span style="color:${c}">■</span> ${t}`).join(' · ')}</div>`;
+  const pc = (a, b) => a && b ? `${a >= b ? '+' : '−'}${Math.abs(100 * (a / b - 1)).toFixed(0)} %` : '—';
+  function bars(groups, o) { const W = o.w || 620, H = o.h || 200, l = 44, b = 26, mx = Math.max(...groups.map(g => Math.max(...g.vals.map(v => v.v || 0)))) * 1.12 || 1, bw = (W - l - 8) / groups.length, Y = v => H - b - (H - b - 10) * v / mx;
+    let s = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">`; for (let t = 0; t <= mx; t += o.step || 1) s += `<line x1="${l}" x2="${W - 4}" y1="${Y(t)}" y2="${Y(t)}" stroke="rgba(255,255,255,.12)"/><text x="${l - 6}" y="${Y(t) + 4}" text-anchor="end" font-size="11" fill="#a9bfcc">${+t.toFixed(1)}</text>`;
+    groups.forEach((g, i) => { const n = g.vals.length, sw = bw * .8 / n; g.vals.forEach((v, j) => { if (v.v == null) return; s += `<rect x="${l + i * bw + bw * .1 + j * sw}" y="${Y(v.v)}" width="${Math.max(1, sw - 1.5)}" height="${Math.max(0, H - b - Y(v.v))}" rx="2" fill="${v.color}" opacity="${v.op || 1}"><title>${v.title || ''}</title></rect>`; }); s += `<text x="${l + i * bw + bw / 2}" y="${H - 8}" text-anchor="middle" font-size="${o.fs || 11}" fill="#a9bfcc">${g.lab}</text>`; });
+    return s + '</svg>'; }
+  let D = null, state = null, sortK = 6, flt = '', spF = 'Atlantic';
+  function render() { const box = document.getElementById('clCyc'); if (!box || !D) return;
+    const Y = D.meta.years, L = Y[Y.length - 1], P = Y[Y.length - 2], A = D.species_year.Atlantic, C = D.species_year.Coho, H = D.holdings.filter(h => h.atl[L].n >= 4), CI = D.cycle_cols, ci = k => CI.indexOf(k);
+    const yb = (key, tt, step, src) => bars((src || H).map(h => ({ lab: h.h.replace('Salmones ', ''), vals: Y.map((y, j) => ({ v: h.atl[y][key], color: YC[j], op: j < 2 ? .8 : 1, title: `${h.h} ${y}: ${h.atl[y][key]} ${tt} (${h.atl[y].n} cycles, ${h.atl[y].kt} kt)` })) })), { step, w: 1100, h: 220, fs: 10 });
+    const row = (lab, o, key, d, sfx, inv) => `<tr><td>${lab}</td>${Y.map((y, i) => { const v = o[y][key], pv = i ? o[Y[i - 1]][key] : null; return `<td class="fo-n ${inv != null && pv != null && v != null && v !== pv ? ((v > pv) !== !!inv ? 'fo-up' : 'fo-dn') : ''}">${v == null ? '—' : (d === 'n' ? n0(v) : f(v, d)) + (sfx || '')}</td>`; }).join('')}</tr>`;
+    const spT = (nm, o) => `<table><tr><th>${nm}</th>${Y.map(y => `<th class="fo-n">${y}</th>`).join('')}</tr>${row('Cycles finished', o, 'n', 'n')}${row('Harvested, kt', o, 'kt', 0, '', 0)}${row('Tonnes per cycle', o, 'tpc', 'n')}${row('Months at sea (median)', o, 'mo', 0)}${row('Dead fish, millions', o, 'dead_m', 1, '', 1)}${row('Mortality over the cycle, estimated', o, 'mp', 1, ' %', 1)}${row('Antibiotics, g per tonne', o, 'ab', 'n', '', 1)}${row('Antibiotics, tonnes', o, 'ab_t', 0, '', 1)}${row('Cycles without antibiotics', o, 'noab', 0, ' %', 0)}</table>`;
+    const R = D.cycles.filter(r => r[ci('sp')] === spF && (!flt || r[ci('h')] === flt)).slice().sort((a, b) => typeof a[sortK] === 'string' ? String(a[sortK]).localeCompare(b[sortK]) : (b[sortK] == null ? -1 : b[sortK]) - (a[sortK] == null ? -1 : a[sortK]));
+    const th = (k, t, n) => `<th class="${n ? 'fo-n' : ''}" style="cursor:pointer" onclick="clCycSort(${ci(k)})">${t}${sortK === ci(k) ? ' ▾' : ''}</th>`, LK = D.links, hs = [...new Set(D.cycles.filter(r => r[ci('sp')] === spF).map(r => r[ci('h')]))].filter(h => h !== 'Other').sort();
+    const s = document.getElementById('clS10Sum'); if (s) s.textContent = `${n0(D.holdings.length ? Object.values(D.species_year).reduce((a, o) => a + o[L].n, 0) : 0)} cycles finished in ${L} · Atlantic mortality about ${f(A[L].mp, 1)} % · ${n0(A[L].ab)} g of antibiotics per tonne`;
+    box.innerHTML = `<div class="fo-row fo-c6">${kp('Atlantic harvested, ' + L, f(A[L].kt, 0), 'kt', `${pc(A[L].kt, A[P].kt)} on ${P} · ${A[L].n} cycles`)}${kp('Mortality per cycle', f(A[L].mp, 1), '% est.', `${f(A[P].mp, 1)} % in ${P} · ${f(A[L].dead_m, 1)} M fish`, A[L].mp < A[P].mp ? 'fo-up' : 'fo-dn')}${kp('Antibiotics', n0(A[L].ab), 'g per t', `${n0(A[P].ab)} in ${P} · ${n0(A[Y[0]].ab)} in ${Y[0]}`, A[L].ab > A[P].ab ? 'fo-dn' : 'fo-up')}${kp('Months at sea', f(A[L].mo, 0), 'median', `${n0(A[L].tpc)} t per cycle`)}${kp('Coho harvested, ' + L, f(C[L].kt, 0), 'kt', `${pc(C[L].kt, C[P].kt)} on ${P} · ${C[L].n} cycles`)}${kp('Coho mortality', f(C[L].mp, 1), '% est.', `${f(C[P].mp, 1)} % in ${P} · ${f(C[L].mo, 0)} months at sea`, C[L].mp < C[P].mp ? 'fo-up' : 'fo-dn')}</div>
+      <div class="fo-panel"><div class="fo-title">What this is</div><div class="fo-sub" style="margin:0">Since law 21.532, the fisheries service publishes for every farm and every finished production cycle the tonnes harvested, the fish that died and the medicines used: ${n0(D.centres)} farms, ${D.meta.periods[0].replace('H', ' H')} to ${D.meta.periods[D.meta.periods.length - 1].replace('H', ' H')}. A cycle is counted in the half-year in which it ends. The number of fish stocked is not published, so <b>mortality in % is our estimate</b>: dead fish ÷ (dead fish + harvested fish), with harvested fish = tonnes ÷ an assumed live weight (${Object.entries(D.meta.weights).map(([k, v]) => `${k} ${v} kg`).join(', ')}). A real weight 10 % higher would raise the percentage by about a tenth. Cycles under 200 t are left out of the ratios.</div></div>
+      <div class="fo-row fo-c2"><div class="fo-panel">${spT('Atlantic salmon', A)}</div><div class="fo-panel">${spT('Coho', C)}<div class="fo-note">Trout, ${L}: ${D.species_year.Trout[L].n} cycles, ${f(D.species_year.Trout[L].kt, 0)} kt, about ${f(D.species_year.Trout[L].mp, 1)} % mortality, ${n0(D.species_year.Trout[L].ab)} g of antibiotics per tonne.</div></div></div>
+      <div class="fo-panel"><div class="fo-title">Mortality over the cycle, by farmer — Atlantic salmon</div><div class="fo-sub">Estimated share of the fish that died between stocking and harvest, cycles finished in each year. Farmers with at least four cycles finished in ${L}.</div>${yb('mp', '% mortality', 5)}${leg(Y.map((y, i) => [YC[i], y]))}</div>
+      <div class="fo-panel"><div class="fo-title">Antibiotics per tonne harvested, by farmer — Atlantic salmon</div><div class="fo-sub">Grams of active substance per tonne harvested (almost all florfenicol, against SRS).</div>${yb('ab', 'g per tonne', 200)}${leg(Y.map((y, i) => [YC[i], y]))}</div>
+      <div class="fo-panel"><div class="fo-title">By farmer — Atlantic salmon</div><table class="fo-tgrid"><tr><th rowspan="2">Farmer</th>${['Cycles', 'Harvested, kt', 'Months at sea', 'Mortality, est. %', 'Antibiotics, g/t'].map(t => `<th class="fo-n" colspan="${Y.length}" style="text-align:center;border-left:1px solid rgba(255,255,255,.14)">${t}</th>`).join('')}</tr><tr>${[0, 1, 2, 3, 4].map(() => Y.map((y, i) => `<th class="fo-n"${i ? '' : ' style="border-left:1px solid rgba(255,255,255,.14)"'}>${y.slice(2)}</th>`).join('')).join('')}</tr>
+        ${D.holdings.filter(h => h.atl[L].n).map(h => `<tr><td><b>${esc(h.h)}</b></td>${[['n', 0], ['kt', 0], ['mo', 0], ['mp', 1, 15], ['ab', 0, 600]].map(([k, d, hi]) => Y.map((y, i) => `<td class="fo-n ${hi && h.atl[y][k] >= hi ? 'fo-dn' : ''}"${i ? '' : ' style="border-left:1px solid rgba(255,255,255,.14)"'}>${f(h.atl[y][k], d)}</td>`).join('')).join('')}</tr>`).join('')}</table></div>
+      <div class="fo-row fo-c2"><div class="fo-panel"><div class="fo-title">By region — Atlantic salmon</div><table><tr><th rowspan="2">Region</th>${['Harvested, kt', 'Mortality, est. %', 'Antibiotics, g/t'].map(t => `<th class="fo-n" colspan="${Y.length}" style="text-align:center">${t}</th>`).join('')}</tr><tr>${[0, 1, 2].map(() => Y.map(y => `<th class="fo-n">${y.slice(2)}</th>`).join('')).join('')}</tr>${Object.entries(D.regions).map(([r, o]) => `<tr><td><b>${r}</b></td>${[['kt', 0], ['mp', 1], ['ab', 0]].map(([k, d]) => Y.map(y => `<td class="fo-n">${f(o[y][k], d)}</td>`).join('')).join('')}</tr>`).join('')}</table><div class="fo-note">Months at sea in ${L}: ${Object.entries(D.regions).map(([r, o]) => `${r} ${f(o[L].mo, 0)}`).join(', ')}. In Magallanes ${f(D.regions.Magallanes[L].noab, 0)} % of the cycles used no antibiotic at all, against ${f(D.regions['Los Lagos'][L].noab, 0)} % in Los Lagos.</div></div>
+      <div class="fo-panel"><div class="fo-title">What goes with high mortality</div><div class="fo-sub">${LK.n} Atlantic cycles above 1,000 t, grouped by estimated mortality.</div><table><tr><th>Mortality of the cycle</th><th class="fo-n">Cycles</th><th class="fo-n">Tonnes harvested (median)</th><th class="fo-n">Months at sea</th><th class="fo-n">Antibiotics, g/t</th></tr>${LK.bands.map(b => `<tr><td><b>${b.lab}</b></td><td class="fo-n">${b.n}</td><td class="fo-n">${n0(b.t)}</td><td class="fo-n">${f(b.mo, 0)}</td><td class="fo-n">${n0(b.ab)}</td></tr>`).join('')}</table><div class="fo-note">Mortality rises with antibiotic use (r = ${f(LK.mort_ab, 2)}): the fish that die are the ones being treated. It falls with the tonnage harvested (r = ${f(LK.mort_size, 2)}), which is partly mechanical: dead fish are tonnes not harvested. No link with the length of the cycle (r = ${f(LK.mort_len, 2)}). Rotation: on the same farm, an Atlantic cycle ends about ${D.rotation.Atlantic.gap} months after the previous one (${D.rotation.Atlantic.fallow} months between harvest and restocking, ${D.rotation.Atlantic.n} cases); coho ${D.rotation.Coho.gap} months.</div></div></div>
+      <div class="fo-panel"><div class="fo-title">Medicines used, tonnes of active substance</div><table><tr><th>Substance</th>${Y.map(y => `<th class="fo-n">${y}</th>`).join('')}</tr>${D.actives.map(a => `<tr><td><b>${esc(a.a)}</b></td>${Y.map(y => `<td class="fo-n">${a.y[y] >= 10 ? n0(a.y[y]) : f(a.y[y], 2)}</td>`).join('')}</tr>`).join('')}</table><div class="fo-note">By year in which the cycle ended. Hydrogen peroxide is a bath against sea lice, used in very large quantities; the others are antibiotics (florfenicol, oxytetracycline, tiamulin) and lice medicines.</div></div>
+      <div class="fo-panel"><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start"><div><div class="fo-title">Every cycle finished in ${L}</div><div class="fo-sub">${R.length} cycles. Click a column to sort.</div></div><div><div class="gc-seg" style="margin:0 0 6px">${['Atlantic', 'Coho', 'Trout'].map(k => `<button type="button" class="${k === spF ? 'on' : ''}" onclick="clCycSp('${k}')">${k}</button>`).join('')}</div><select onchange="clCycF(this.value)" style="background:rgba(255,255,255,.1);color:#e8f1f7;border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:5px 8px"><option value="">All farmers</option>${hs.map(h => `<option${h === flt ? ' selected' : ''}>${esc(h)}</option>`).join('')}</select></div></div>
+        <div style="max-height:620px;overflow-y:auto"><table><tr>${th('code', 'Farm')}${th('h', 'Farmer')}${th('r', 'Region')}${th('com', 'Commune')}${th('start', 'Stocked')}${th('end', 'Emptied')}${th('mo', 'Months', 1)}${th('t', 'Tonnes', 1)}${th('mp', 'Mortality, est.', 1)}${th('ab', 'Antibiotics, g/t', 1)}${th('ap', 'Lice medicines, g/t', 1)}</tr>
+        ${R.map(r => `<tr><td><b>${r[ci('code')]}</b></td><td>${esc(r[ci('h')])}</td><td>${r[ci('r')]}</td><td>${esc(r[ci('com')])}</td><td>${r[ci('start')] || '—'}</td><td>${r[ci('end')] || '—'}</td><td class="fo-n">${f(r[ci('mo')], 0)}</td><td class="fo-n"><b>${n0(r[ci('t')])}</b></td><td class="fo-n ${r[ci('mp')] >= 20 ? 'fo-dn' : ''}">${r[ci('mp')] != null ? f(r[ci('mp')], 1) + ' %' : '—'}</td><td class="fo-n ${r[ci('ab')] >= 800 ? 'fo-dn' : ''}">${n0(r[ci('ab')])}</td><td class="fo-n">${f(r[ci('ap')], 1)}</td></tr>`).join('')}</table></div></div>
+      <div class="fo-note">Source: ${esc(D.meta.source)}. The files stop at the second half of ${L}; they are refreshed twice a year.</div>`; }
+  window.clCycSort = k => { sortK = k; render(); }; window.clCycF = v => { flt = v; render(); }; window.clCycSp = v => { spF = v; flt = ''; render(); };
+  window.renderChileCycles = function () { if (D) { render(); return; } if (state) return; state = 1;
+    const box = document.getElementById('clCyc'); if (box) box.innerHTML = '<div class="sig-sub">Loading…</div>';
+    fetch(DATA_URL.replace('data.json', 'chile_cycles.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null).then(j => { state = null; if (!j || !j.cycles) { if (box) box.innerHTML = '<div class="sig-sub">Cycle data not built yet (data/chile_cycles.json).</div>'; return; } D = j; render(); }); };
 })();
 </script>
 <script>
