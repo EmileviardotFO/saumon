@@ -113,6 +113,7 @@ def main():
             mort[key] = {'m': x['m'], 'st': x['st'], 'cause': x['cause'], 'cum': x['cum'], 'run': len(run), 'lost': round(100 * (1 - surv), 1) if run else None, 'farm': x['farm']}
     # SEPA : biomasse par mois et par eleveur, plafond par site
     sepa, sb, smax = [], {}, {}
+    ym, yb = collections.defaultdict(lambda: collections.defaultdict(float)), collections.defaultdict(lambda: collections.defaultdict(float))
     p = os.path.join(GB, 'se_monthly_reports.csv')
     if os.path.exists(p):
         agg = collections.defaultdict(lambda: collections.defaultdict(float))
@@ -127,6 +128,8 @@ def main():
             k = f'{d.year}{d.month:02d}'
             b = fl(r['Actual Biomass on Site (tonnes)']) or 0
             c = co(r['Operator'])
+            ym[d.year][c] += (fl(r['Mortalities Kilograms']) or 0) / 1000
+            yb[d.year][c] += b / 12
             agg[k][c] += b
             mk[k] += (fl(r['Mortalities Kilograms']) or 0) / 1000
             sb[(k, c, norm(r['Site Name']))] = b
@@ -172,6 +175,29 @@ def main():
     out = {'meta': {'last_week': last, 'sepa_last': sl, 'mort_last': M['latest'] if M else None, 'sites': len(now), 'matched_mort': matched,
                     'sources': 'Scottish Government (weekly sea lice counts by site) · SEPA (monthly biomass by site) · Salmon Scotland (monthly mortality by farm)'},
            'weeks': W[-30:], 'months': months[-40:], 'now': sorted(now, key=lambda x: -(x['af'] or 0)), 'companies': cos, 'sepa': sepa[-40:]}
+    # mortalite en tonnes (SEPA), par annee et par eleveur ; estimation de l'annee en cours a partir des % mensuels de Salmon Scotland
+    if sepa:
+        try:
+            prod = json.load(open(os.path.join(ROOT, 'data', 'scotland_survey.json')))['history']['production']
+        except Exception:
+            prod = {}
+        full = [y for y in sorted(ym) if sum(1 for x in sepa if x['k'][:4] == str(y)) == 12]
+        cs = ['Mowi', 'Scottish Sea Farms', 'Cooke', 'Bakkafrost Scotland', 'Loch Duart']
+        vol = {'years': [{'y': y, 't': round(sum(ym[y].values())), 'harvest': prod.get(str(y)), 'co': {c: round(ym[y][c]) for c in cs}, 'bio': {c: round(yb[y][c]) for c in cs},
+                          'pct': {c: round(100 * ym[y][c] / yb[y][c], 1) if yb[y][c] > 500 else None for c in cs}} for y in full[-5:]], 'companies': cs, 'sepa_last': sl}
+        if M:
+            ind = M['industry']
+            mt = {x['k']: x['mort_t'] for x in sepa}
+            rat = sorted(mt[k] / ind[k] for k in sorted(mt)[-12:] if ind.get(k))
+            if rat:
+                r = rat[len(rat) // 2]
+                ly = int(M['latest'][:4])
+                ks = [k for k in sorted(ind) if k[:4] == str(ly) and k <= M['latest'] and k not in mt]
+                prev = [str(int(k) - 100) for k in ks]
+                if ks and all(k in mt for k in prev):
+                    vol['estimate'] = {'y': ly, 'span': f"Jan–{dt.date(2000, int(ks[-1][4:]), 1):%b}", 't': round(sum(ind[k] * r for k in ks), -2), 't_prev': round(sum(mt[k] for k in prev), -2),
+                                       'per_point': round(r, -1), 'lo': round(rat[0], -1), 'hi': round(rat[-1], -1)}
+        out['mort_vol'] = vol
     if M:
         ind = M['industry']
         cyc = collections.defaultdict(lambda: collections.defaultdict(list))
