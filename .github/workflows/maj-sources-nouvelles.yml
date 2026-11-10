@@ -31,7 +31,7 @@ jobs:
     - name: Builders (s'ils existent)
       continue-on-error: true
       run: |
-        for s in build_scotland_weekly.py build_scotland_mortality.py build_norway_extra.py; do if [ -f scripts/$s ]; then python3 scripts/$s || true; fi; done
+        for s in build_scotland_mortality.py build_scotland_weekly.py build_norway_extra.py; do if [ -f scripts/$s ]; then python3 scripts/$s || true; fi; done
     - name: Publier
       if: always()
       run: |
