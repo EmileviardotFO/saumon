@@ -1,29 +1,29 @@
 {
  "meta": {
-  "generated": "2026-11-09",
+  "generated": "2026-11-10",
   "status": {
    "ilaks.no": "ok 12 articles, 0 kept",
-   "www.kyst.no": "ok 61 articles, 1 kept",
+   "www.kyst.no": "ok 67 articles, 1 kept",
    "www.fishfarmingexpert.com": "ok 65 articles, 1 kept",
    "www.fishfarmermagazine.com": "ok 30 articles, 0 kept",
-   "www.salmonexpert.cl": "ok 55 articles, 5 kept",
+   "www.salmonexpert.cl": "ok 55 articles, 6 kept",
    "thefishsite.com": "ok 50 articles, 1 kept",
-   "news.google.com (NO no #1)": "ok 9 articles, 7 kept",
+   "news.google.com (NO no #1)": "ok 10 articles, 8 kept",
    "news.google.com (NO no #2)": "ok 10 articles, 1 kept",
    "news.google.com (CL es #3)": "ok 32 articles, 13 kept",
    "news.google.com (CL es #4)": "ok 8 articles, 4 kept",
    "news.google.com (IS is #5)": "ok 0 articles, 0 kept",
    "news.google.com (IS en #6)": "ok 9 articles, 3 kept",
-   "news.google.com (GB en #7)": "ok 28 articles, 8 kept",
+   "news.google.com (GB en #7)": "ok 33 articles, 8 kept",
    "news.google.com (FO en #8)": "ok 6 articles, 1 kept",
    "news.google.com (FO fo #9)": "ok 0 articles, 0 kept",
-   "news.google.com (CA en #10)": "ok 6 articles, 1 kept",
-   "news.google.com (multi en #11)": "ok 17 articles, 1 kept",
+   "news.google.com (CA en #10)": "ok 7 articles, 2 kept",
+   "news.google.com (multi en #11)": "ok 34 articles, 2 kept",
    "news.google.com (CA en #12)": "ok 13 articles, 7 kept",
    "news.google.com (CA en #13)": "ok 0 articles, 0 kept",
-   "news.google.com (CA en #14)": "ok 5 articles, 0 kept",
-   "news.google.com (multi en #15)": "ok 69 articles, 11 kept",
-   "gov.scot FHI": "error: no xlsx link (1983 chars, 0 xlsx links, title: )"
+   "news.google.com (CA en #14)": "ok 5 articles, 1 kept",
+   "news.google.com (multi en #15)": "ok 66 articles, 12 kept",
+   "gov.scot FHI": "ok 6824 reports, last 2026-10-14"
   },
   "note": "news = articles kept by keyword (a mortality word + a farming word), classified by cause and basin; manual = events entered by hand with their losses; scotland_fhi = mortalities reported to the Scottish Fish Health Inspectorate",
   "causes": [
@@ -156,6 +156,48 @@
   }
  ],
  "news": [
+  {
+   "date": "2026-11-10",
+   "title": "Ordenan prisión preventiva de imputados por la sustracción de 6 toneladas de salmón a Blumar",
+   "url": "https://www.salmonexpert.cl/aysen-blumar-centro/ordenan-prision-preventiva-de-imputados-por-la-sustraccion-de-6-toneladas-de-salmon-a-blumar/2208683",
+   "source": "www.salmonexpert.cl",
+   "lang": "es",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "cf0c99016728"
+  },
+  {
+   "date": "2026-11-10",
+   "title": "Mowi faces eight safety charges following hatchery worker’s death",
+   "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxONzZBeGVkbkl6NU9GdzExaUdibEtURklUUzFfRDN3U1BWN1FtQWVQMklEaVNtSXkyMGZSSHAwVTRyS0E0Ym9XUmFJTGFGaU5zbjNTb0hIV2FKLTQ2ZGZxQ3dCOVdVR3FNUnJucXRCcGVFV1JKY2lTSlFvUzA4RHJUZE9rRm9oMXdBNlpnLUo2bjluaXk4ZC1sbHVHOGM?oc=5",
+   "source": "Salmon Business",
+   "lang": "en",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "NO"
+   ],
+   "id": "6c53e8958722"
+  },
+  {
+   "date": "2026-11-10",
+   "title": "Norway: to introduce daily salmon mortality reporting from January",
+   "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxQUnQ1OXEwUUpCMlRqOW5qYTgxWGlETlF5eVRsdDA1VDRBVjRta1I2QTJwQ3VMc1NJazRBeVNFVzllbm5Ecmh3ZXk2bFlneXM4b3JXemM2UlkwSkN2Y0VWcFo0Y1R3d0RQb0JlQ2tWd3NyRlllUFdCOVg2Y0wwdHNaSWlTMFl3Wk15c1hrb0ZIMi1ac1pqcm1fb01HeFNNdw?oc=5",
+   "source": "Salmon Business",
+   "lang": "en",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "NO"
+   ],
+   "id": "d6c8dc8b9036"
+  },
   {
    "date": "2026-11-09",
    "title": "Skjerper meldekravene for tap av fisk",
@@ -1184,6 +1226,20 @@
    "id": "8cd084355c09"
   },
   {
+   "date": "2026-09-15",
+   "title": "Eskalerende dødelighet fra manettrøbbel",
+   "url": "https://news.google.com/rss/articles/CBMiZ0FVX3lxTE1LdlRxbHBBSXNneTRFRGxxRFpKUFE2WnFLazlOanI4YWNXNnQyQlpreXQzYXV4WDBVdWRuTFVNOEZTY0FNa08yQlAzMk15VGxPOVhiNHdNcHhzLWtyN0EtTTgxX1hCMEk?oc=5",
+   "source": "iLaks",
+   "lang": "no",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "NO"
+   ],
+   "id": "551a8c6aacc7"
+  },
+  {
    "date": "2026-09-08",
    "title": "Jellyfish lead to increased mortality at Icelandic salmon farm",
    "url": "https://news.google.com/rss/articles/CBMi0wFBVV95cUxPbHRUb2NrZ0EyRElZUEtpb1FEeElBNEVXTExCYzVONWkxMU9PQlNHYmNGdVZVdTJzMnlUdUdkUzc1THdPY0tSR3pnNFk5bm1faDNuT2pjTWFDRXlWNy1yOVY1aVpvSzFXZVkzTFdGME9lcmNyVHpkTkZSNWhpOTctMUtBQ0JRYnpKS0F0dDFkdFpJRW95YVM5REZ4RFhreGNZV1lMUkd3WVBKblRodTNlTzlDOHpENXJxcUMtay1XMzRnaG1UcUFXOVpGcWVCVGIxRjBn?oc=5",
@@ -1244,14 +1300,14 @@
   "source": "https://www.gov.scot/binaries/content/documents/govscot/publications/transparency-data/2019/12/fish-health-inspectorate-mortality-information/documents/mortality-information---until-end-october-2019/mortality-information---until-end-october-2019/govscot%3Adocument/Mortality%2Binformation%2B-%2Buntil%2Bend%2BSeptember%2B2026.xlsx",
   "monthly": {
    "2023-10": {
-    "reports": 63,
+    "reports": 41,
     "causes": {
-     "gill": 47,
-     "disease": 17,
-     "unspecified": 10,
-     "treatment": 2,
+     "unspecified": 4,
+     "gill": 32,
+     "disease": 14,
      "oxygen": 3,
-     "jellyfish": 1
+     "jellyfish": 1,
+     "treatment": 1
     }
    },
    "2023-11": {
@@ -27156,251 +27212,6 @@
     ],
     "n": null,
     "pct": 3.09
-   },
-   {
-    "date": "2023-10-19",
-    "site": "Cairndow Hatchery",
-    "company": "Cooke Aquaculture (Freshwater) Ltd",
-    "cause": "Furunculosis outbreak, plus Saprolegnia outbreak",
-    "causes": [
-     "unspecified"
-    ],
-    "n": null,
-    "pct": 1.71
-   },
-   {
-    "date": "2023-10-18",
-    "site": "South Sound",
-    "company": "Scottish Sea Farms Ltd",
-    "cause": "Environmental; Gill Health related",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 4.7
-   },
-   {
-    "date": "2023-10-18",
-    "site": "Tanera",
-    "company": "Scottish Sea Farms Ltd",
-    "cause": "Gill Health related",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 2.6
-   },
-   {
-    "date": "2023-10-18",
-    "site": "Olna South",
-    "company": "Scottish Sea Farms Ltd",
-    "cause": "Environment; Gill health related",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 2
-   },
-   {
-    "date": "2023-10-17",
-    "site": "Bastaness",
-    "company": "Cooke Aquaculture Scotland Ltd",
-    "cause": "Sealice+CMS",
-    "causes": [
-     "disease"
-    ],
-    "n": null,
-    "pct": 1.05
-   },
-   {
-    "date": "2023-10-17",
-    "site": "Carness Bay",
-    "company": "Cooke Aquaculture Scotland Ltd",
-    "cause": "Gill Health+Predator",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 1.16
-   },
-   {
-    "date": "2023-10-17",
-    "site": "Mill Bay",
-    "company": "Cooke Aquaculture Scotland Ltd",
-    "cause": "Environmental",
-    "causes": [
-     "unspecified"
-    ],
-    "n": null,
-    "pct": 1.75
-   },
-   {
-    "date": "2023-10-17",
-    "site": "Mill Bay",
-    "company": "Cooke Aquaculture Scotland Ltd",
-    "cause": "Environmental",
-    "causes": [
-     "unspecified"
-    ],
-    "n": null,
-    "pct": 4.55
-   },
-   {
-    "date": "2023-10-17",
-    "site": "Ness of Copister",
-    "company": "Cooke Aquaculture Scotland Ltd",
-    "cause": "Handling/Gills",
-    "causes": [
-     "gill",
-     "treatment"
-    ],
-    "n": null,
-    "pct": 5.36
-   },
-   {
-    "date": "2023-10-17",
-    "site": "Loch A Chairn Bhain",
-    "company": "Loch Duart Ltd",
-    "cause": "Seal predation",
-    "causes": [
-     "unspecified"
-    ],
-    "n": null,
-    "pct": 2.15
-   },
-   {
-    "date": "2023-10-17",
-    "site": "Loch A Chairn Bhain",
-    "company": "Loch Duart Ltd",
-    "cause": "Seal predation/gill health",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 2.15
-   },
-   {
-    "date": "2023-10-17",
-    "site": "Lochmaddy",
-    "company": "Loch Duart Ltd",
-    "cause": "Gill health (AGD)",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 1.47
-   },
-   {
-    "date": "2023-10-17",
-    "site": "Lochmaddy",
-    "company": "Loch Duart Ltd",
-    "cause": "Gill health (AGD)",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 2.5
-   },
-   {
-    "date": "2023-10-16",
-    "site": "Kyles Vuia",
-    "company": "Bakkafrost Scotland",
-    "cause": "Gill Health Related",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 2.2
-   },
-   {
-    "date": "2023-10-16",
-    "site": "Vuia Mor",
-    "company": "Bakkafrost Scotland",
-    "cause": "Gill Health Related; Viral Disease (PD)",
-    "causes": [
-     "gill",
-     "disease"
-    ],
-    "n": null,
-    "pct": 1.58
-   },
-   {
-    "date": "2023-10-16",
-    "site": "Gravir",
-    "company": "Bakkafrost Scotland",
-    "cause": "Gill Health Related",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 1.86
-   },
-   {
-    "date": "2023-10-16",
-    "site": "Gometra",
-    "company": "Bakkafrost Scotland",
-    "cause": "Gill Health Related",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 1.68
-   },
-   {
-    "date": "2023-10-16",
-    "site": "Geasgill",
-    "company": "Bakkafrost Scotland",
-    "cause": "Gill Health Related",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 1.3
-   },
-   {
-    "date": "2023-10-16",
-    "site": "Sgian Dubh",
-    "company": "Bakkafrost Scotland",
-    "cause": "Bacterial Disease; Gill Health Related",
-    "causes": [
-     "gill",
-     "disease"
-    ],
-    "n": null,
-    "pct": 1.54
-   },
-   {
-    "date": "2023-10-16",
-    "site": "Strone",
-    "company": "Bakkafrost Scotland",
-    "cause": "Gill Health Related",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 1.44
-   },
-   {
-    "date": "2023-10-16",
-    "site": "Loch Langavat",
-    "company": "Bakkafrost Scotland",
-    "cause": "Fungus",
-    "causes": [
-     "unspecified"
-    ],
-    "n": null,
-    "pct": 4.13
-   },
-   {
-    "date": "2023-10-16",
-    "site": "Glenkens",
-    "company": "Kames Fish Farming Ltd",
-    "cause": "PKD-Confirmed ",
-    "causes": [
-     "unspecified"
-    ],
-    "n": null,
-    "pct": 5.59
    }
   ]
  },
