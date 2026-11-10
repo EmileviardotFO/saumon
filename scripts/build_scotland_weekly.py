@@ -198,6 +198,42 @@ def main():
                     vol['estimate'] = {'y': ly, 'span': f"Jan–{dt.date(2000, int(ks[-1][4:]), 1):%b}", 't': round(sum(ind[k] * r for k in ks), -2), 't_prev': round(sum(mt[k] for k in prev), -2),
                                        'per_point': round(r, -1), 'lo': round(rat[0], -1), 'hi': round(rat[-1], -1)}
         out['mort_vol'] = vol
+    # plafonds des permis (SEPA) par eleveur, face a la biomasse reellement portee et a la mortalite
+    pp = os.path.join(GB, 'se_permit_conditions.csv')
+    if os.path.exists(pp) and sepa:
+        cs = ['Mowi', 'Scottish Sea Farms', 'Cooke', 'Bakkafrost Scotland', 'Loch Duart']
+        ly = int(sl[:4])
+        mtb, ns = collections.defaultdict(float), collections.Counter()
+        for r in csv.DictReader(open(pp, encoding='utf-8-sig')):
+            v = fl(r['Maximum Biomass Allowed (tonnes)'])
+            if (r.get('Water Type') or '').lower() == 'seawater' and r.get('Permit Status') == 'Active' and v:
+                mtb[co(r['Operator'])] += v; ns[co(r['Operator'])] += 1
+        used, usedcap, peak = collections.defaultdict(set), collections.defaultdict(float), collections.defaultdict(float)
+        for (k, c, nme), b in sb.items():
+            if k[:4] == str(ly) and b > 0 and nme not in used[c]:
+                used[c].add(nme); usedcap[c] += smax.get((c, nme)) or 0
+        for x in sepa:
+            if x['k'][:4] == str(ly):
+                for c, v in x['co'].items():
+                    peak[c] = max(peak[c], v * 1000)
+        cyl = (out.get('mort') or {})
+        rows_ = []
+        for c in cs:
+            rows_.append({'co': c, 'permits': ns[c], 'mtb': round(mtb[c]), 'used_sites': len(used[c]), 'used_mtb': round(usedcap[c]), 'peak': round(peak[c]), 'avg': round(yb[ly][c]),
+                          'use': round(100 * peak[c] / mtb[c]) if mtb[c] else None, 'use_sites': round(100 * peak[c] / usedcap[c]) if usedcap[c] else None,
+                          'mort_t': round(ym[ly][c]), 'mort_pct': round(100 * ym[ly][c] / yb[ly][c], 1) if yb[ly][c] else None})
+        tot = {'mtb': round(sum(mtb.values())), 'permits': sum(ns.values()), 'peak': round(max(x['t'] for x in sepa if x['k'][:4] == str(ly)) * 1000)}
+        ceil = {'year': ly, 'rows': rows_, 'total': tot}
+        try:
+            sv = json.load(open(os.path.join(ROOT, 'data', 'scotland_survey.json')))
+            st = sv['smolts_to_sea']
+            bc = sv['by_class'][str(max(int(y) for y in sv['by_class']))]
+            wt = sum(v[0] for v in bc.values()) / sum(v[0] / v[1] for v in bc.values() if v[1])
+            ceil['smolts'] = {'y': st['years'][-1], 'n': st['total'][-1] * 1000, 'w': round(wt, 2), 'per_point': round(st['total'][-1] * 1000 * 0.01 * wt / 1000, -1),
+                              'harvest': sv['production'][str(max(int(y) for y in sv['production']))], 'harvest_y': max(int(y) for y in sv['production'])}
+        except Exception as e:
+            print('  survey:', e)
+        out['ceilings'] = ceil
     if M:
         ind = M['industry']
         cyc = collections.defaultdict(lambda: collections.defaultdict(list))
