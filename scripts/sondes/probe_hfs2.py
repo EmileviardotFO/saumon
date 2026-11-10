@@ -95,10 +95,10 @@ def main():
                     pg.mouse.wheel(0, 20000)
                     pg.wait_for_timeout(400)
                 rows = pg.evaluate("""() => { const T = [...document.querySelectorAll('table')].filter(t => t.querySelectorAll('tr').length > 20).sort((a, b) => b.querySelectorAll('tr').length - a.querySelectorAll('tr').length);
-                    if (!T.length) return []; return [...T[0].querySelectorAll('tr')].map(r => [...r.querySelectorAll('td,th')].map(c => c.innerText.trim())).filter(r => r.length >= 5); }""")
+                    if (!T.length) return []; return [...T[0].querySelectorAll('tr')].map(r => [...r.querySelectorAll('td,th')].map(c => c.innerText.trim().slice(0, 80))).filter(r => r.length >= 5 && r.every(c => c.length < 80)); }""")
                 print('  rendered rows', len(rows))
             tables[key] = rows or []
-            print('  rows', len(tables[key]), 'first', tables[key][:2], 'last', tables[key][-1:], flush=True)
+            print('  rows', len(tables[key]), 'first', [str(x)[:40] for x in (tables[key][0] if tables[key] else [])][:8], 'last', [str(x)[:40] for x in (tables[key][-1] if tables[key] else [])][:8], flush=True)
             json.dump(tables[key], open(os.path.join(OUT, f'hfs_{key}.json'), 'w'), ensure_ascii=False)
         b.close()
     summarize(tables)
@@ -108,17 +108,18 @@ def main():
 def read_export(path):
     try:
         import pandas as pd
-        if path.lower().endswith(('.xlsx', '.xls')):
+        raw = open(path, 'rb').read()
+        if raw[:200].lstrip().lower().startswith(b'<'):      # export ADF : HTML deguise en .xls
+            sh(f'{sys.executable} -m pip install -q lxml html5lib beautifulsoup4')
+            txt = raw.decode('utf-8', 'replace')
+            dfs = pd.read_html(io.StringIO(txt), header=None)
+            df = max(dfs, key=len)
+        elif path.lower().endswith(('.xlsx', '.xls')):
             df = pd.read_excel(path, header=None, dtype=str)
         else:
-            raw = open(path, 'rb').read()
-            txt = raw.decode('utf-8', 'replace') if b'<' not in raw[:100] else None
-            if txt is None:      # export HTML deguise en xls
-                df = pd.read_html(io.BytesIO(raw))[0].astype(str)
-            else:
-                df = pd.read_csv(io.StringIO(txt), sep=None, engine='python', header=None, dtype=str)
+            df = pd.read_csv(io.StringIO(raw.decode('utf-8', 'replace')), sep=None, engine='python', header=None, dtype=str)
         rows = df.fillna('').astype(str).values.tolist()
-        print('  export rows', len(rows), 'cols', len(rows[0]) if rows else 0, 'head', rows[:3])
+        print('  export rows', len(rows), 'cols', len(rows[0]) if rows else 0, 'head', [r[:8] for r in rows[:3]])
         return rows
     except Exception as e:
         print('  cannot read export:', str(e)[:200])
