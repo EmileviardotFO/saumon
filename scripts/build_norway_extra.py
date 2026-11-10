@@ -52,8 +52,62 @@ def quality():
     for x in ytd:
         x['sup_kt'] = round(x['vol'] * x['sup'] / 100)
         x['prod_kt'] = round(x['vol'] * x['prod'] / 100)
-    return {'quarters': q, 'years': y, 'ytd': ytd, 'ytd_span': f"Q1–Q{q[-1]['q'][-1]}", 'source': 'Mattilsynet, Slakting av oppdrettet laksefisk (salmon and trout together, tonnes as reported by the farmers)',
+    return {'quarters': q, 'years': y, 'ytd': ytd, 'fillets': fillets(q), 'ytd_span': f"Q1–Q{q[-1]['q'][-1]}", 'source': 'Mattilsynet, Slakting av oppdrettet laksefisk (salmon and trout together, tonnes as reported by the farmers)',
             'url': 'https://mattilsynet.no/fisk-og-akvakultur/slakting-av-fisk/statistikk-om-slakting-av-oppdrettet-laksefisk'}
+
+
+def corr(a, b):
+    n = len(a)
+    if n < 6:
+        return None
+    ma, mb = sum(a) / n, sum(b) / n
+    va, vb = sum((x - ma) ** 2 for x in a), sum((y - mb) ** 2 for y in b)
+    return round(sum((x - ma) * (y - mb) for x, y in zip(a, b)) / (va * vb) ** .5, 2) if va and vb else None
+
+
+def fillets(Q):
+    """Croise les classes de qualite avec les exportations SSB par produit (data/data.json) : la part « Production »
+    se retrouve-t-elle en filets ? Et combien de mois separent la congelation de l'exportation (decalage des prix) ?"""
+    try:
+        D = json.load(open(os.path.join(ROOT, 'data', 'data.json'), encoding='utf-8'))['ssb_exports']['rows']
+    except Exception:
+        return None
+    kg, nk = collections.defaultdict(lambda: [0.0] * 4), collections.defaultdict(lambda: [0.0] * 4)
+    for ym, pr, _c, k, n in D:        # 0 frais entier, 1 filet frais, 2 filet congele, 3 congele entier
+        if pr < 4:
+            kg[ym][pr] += k
+            nk[ym][pr] += n
+    yms = sorted(kg)
+    qk = lambda ym: f"{ym // 100}-K{(ym % 100 - 1) // 3 + 1}"
+    qs, cnt = collections.defaultdict(lambda: [0.0] * 4), collections.Counter()
+    for ym in yms:
+        cnt[qk(ym)] += 1
+        for i in range(4):
+            qs[qk(ym)][i] += kg[ym][i] / 1e6
+    WFE = 1.6                         # kg de poisson entier par kg de filet (ordre de grandeur, pour la part seulement)
+    byq = {x['q']: x for x in Q}
+    for x in Q:
+        if cnt[x['q']] == 3:
+            w, ff, zf, zw = qs[x['q']]
+            x.update(x_whole=round(w + zw, 1), x_ff=round(ff, 1), x_zf=round(zf, 1), x_fshare=round(100 * (ff + zf) * WFE / ((ff + zf) * WFE + w + zw), 1))
+    def prev(k):
+        return f"{int(k[:4]) - 1}{k[4:]}"
+    ks = [x['q'] for x in Q if 'x_ff' in x and prev(x['q']) in byq and 'x_ff' in byq[prev(x['q'])]]
+    d = lambda key: [byq[k][key] - byq[prev(k)][key] for k in ks]
+    cor = {'n': len(ks), 'from': ks[0] if ks else None, 'fshare': corr(d('prod'), d('x_fshare')), 'fresh_fillet': corr(d('prod'), d('x_ff')), 'frozen_fillet': corr(d('prod'), d('x_zf')), 'whole': corr(d('prod'), d('x_whole'))}
+    # decalage des prix : la valeur unitaire du filet congele suit le prix du frais entier de L mois plus tot
+    px = lambda i: [nk[ym][i] / kg[ym][i] if kg[ym][i] else None for ym in yms]
+    yoy = lambda a: [a[i] / a[i - 12] - 1 for i in range(12, len(a))]
+    fw, ff, zf = yoy(px(0)), yoy(px(1)), yoy(px(2))
+    lag = {'frozen': [corr(zf[L:], fw[:len(fw) - L]) for L in range(10)], 'fresh': [corr(ff[L:], fw[:len(fw) - L]) for L in range(10)]}
+    lag['best_frozen'] = max(range(10), key=lambda L: lag['frozen'][L] or -1)
+    # saisonnalite : part de l'annee exportee chaque mois, moyenne des 5 dernieres annees completes
+    yrs = [y for y in sorted({ym // 100 for ym in yms}) if all(y * 100 + m in kg for m in range(1, 13))][-5:]
+    sea = {}
+    for nm, i in (('whole', 0), ('fresh_fillet', 1), ('frozen_fillet', 2)):
+        sea[nm] = [round(sum(100 * kg[y * 100 + m][i] / sum(kg[y * 100 + mm][i] for mm in range(1, 13)) for y in yrs) / len(yrs), 1) for m in range(1, 13)]
+    months = [{'m': ym, 'zf_t': round(kg[ym][2] / 1e3), 'zf_p': round(nk[ym][2] / kg[ym][2], 1), 'ff_t': round(kg[ym][1] / 1e3), 'ff_p': round(nk[ym][1] / kg[ym][1], 1), 'w_p': round(nk[ym][0] / kg[ym][0], 1)} for ym in yms[-30:]]
+    return {'corr': cor, 'lag': lag, 'season': sea, 'season_years': [yrs[0], yrs[-1]] if yrs else None, 'months': months, 'wfe': WFE}
 
 
 GROUPS = [('Mowi', r'MOWI|NOVA SEA'), ('SalMar', r'SALMAR|SALFJORD|NORSKOTT|REFSNES|OCEAN FARMING|ARCTIC OFFSHORE'), ('Lerøy', r'LERØY|LEROY|SJØTROLL'), ('Cermaq', r'CERMAQ'), ('Grieg', r'GRIEG'), ('Nordlaks', r'NORDLAKS'),
