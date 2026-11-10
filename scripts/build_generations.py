@@ -290,9 +290,15 @@ def main():
         {'id': 'mort', 'label': f'Mortality, {win}, G{old}', 'now': f'{m_now:.1f} %' if m_now is not None else '—', 'ly': f'{m_ly:.1f} %' if m_ly is not None else '—',
          'dir': 'up' if m_now is not None and m_ly is not None and m_now < m_ly - 0.3 else 'down' if m_now is not None and m_ly is not None and m_now > m_ly + 0.3 else 'mixed', 'why': 'Healthy fish, no emergency harvests' if m_now is not None and m_ly is not None and m_now < m_ly - 0.3 else 'Losses force early harvests' if m_now is not None and m_ly is not None and m_now > m_ly + 0.3 else 'Unchanged'}]
 
+    REG0 = collections.defaultdict(float)      # registre complet (zones 0-13), kt vides : les scenarios (cohortes, zones 1-13) sont cales dessus
+    for x in D['records']:
+        REG0[x['year'] * 100 + x['month']] += (x.get('uttak_kg') or 0) * GUT / 1e6
     vol = {}
     for sc, s in (G.get('scenarios') or {}).items():
-        vol[sc] = [{'k': m['k'], 'tot': r(m['tot'], 1), 'ly': r(m['ly_tot'], 1), 'kt5': r(m['kt5'], 1), 'kt6': r(m['kt6'], 1), 'ly5': r(m['ly5'], 1), 'ly6': r(m['ly6'], 1)} for m in s['months'][:6]]
+        vol[sc] = []
+        for m in s['months'][:6]:
+            scl = REG0[sh(m['k'], -12)] / m['ly_tot'] if m.get('ly_tot') and REG0.get(sh(m['k'], -12)) else 1.0
+            vol[sc].append({'k': m['k'], 'tot': r(m['tot'] * scl, 1), 'ly': r(m['ly_tot'] * scl, 1), 'kt5': r(m['kt5'], 1), 'kt6': r(m['kt6'], 1), 'ly5': r(m['ly5'], 1), 'ly6': r(m['ly6'], 1)})
     nc = (G.get('nowcast') or {}).get('next')
     # budget de poissons : volume des 6 prochains mois si la generation en recolte est videe au rythme de l'an dernier
     # (poissons restants x avance de poids), la nouvelle generation suit l'an dernier au prorata de sa biomasse, le reste comme l'an dernier
@@ -305,13 +311,23 @@ def main():
     f_old = (o['n'] / oly['n'] if oly['n'] else 1) * (o['w'] / oly['w'] if oly['w'] and o['w'] else 1)
     f_new = nw['bio'] / nwly['bio'] if nwly['bio'] else 1
     budget = []
+    REG = collections.defaultdict(float)      # registre complet (zones 0-13), kt vides, pour caler le budget sur le total publie
+    for x in D['records']:
+        REG[x['year'] * 100 + x['month']] += (x.get('uttak_kg') or 0) * GUT / 1e6
     for i in range(1, 7):
         k = sh(last, i); kl = sh(k, -12)
         if kl > last:
             break
         ly_old, ly_new, ly_all = harv_kt(old - 1, kl), harv_kt(new - 1, kl), harv_all_kt(kl)
+        scale = REG[kl] / ly_all if ly_all and REG.get(kl) else 1.0      # part du registre absente des cohortes (zone 0 surtout)
+        ly_old, ly_new, ly_all = ly_old * scale, ly_new * scale, ly_all * scale
         ly_oth = max(0.0, ly_all - ly_old - ly_new)
-        budget.append({'k': k, 'tot': r(ly_old * f_old + ly_new * f_new + ly_oth, 1), 'ly': r(ly_all, 1), 'old': r(ly_old * f_old, 1), 'new': r(ly_new * f_new, 1), 'ly_old': r(ly_old, 1), 'ly_new': r(ly_new, 1)})
+        go_, gn_ = gstate(old - 1, kl), gstate(new - 1, kl)
+        fo_ = go_['h'] * (o['n'] / oly['n'] if oly['n'] else 1)
+        fn_ = gn_['h'] * (nw['n'] / nwly['n'] if nwly['n'] else 1)
+        f_all = sum(((ser.get(kl) or {}).get('harv_stk') or 0) for ser in C.values()) / 1e6
+        budget.append({'k': k, 'tot': r(ly_old * f_old + ly_new * f_new + ly_oth, 1), 'ly': r(ly_all, 1), 'old': r(ly_old * f_old, 1), 'new': r(ly_new * f_new, 1), 'ly_old': r(ly_old, 1), 'ly_new': r(ly_new, 1),
+                       'fish': r((fo_ + fn_ + max(0.0, f_all - go_['h'] - gn_['h'])) * scale, 2), 'fish_ly': r(f_all * scale, 2), 'fish_old': r(fo_ * scale, 2), 'fish_new': r(fn_ * scale, 2), 'scale': r(scale, 4)})
     cen = vol.get('central') or []
     recon = []
     for b in budget:
@@ -356,6 +372,7 @@ def main():
             b0 = next((b for b in budget if b['k'] == k), None)
             if not b0:
                 break
+            fish *= b0.get('scale', 1.0)
             out.append({'k': k, 'tot': r(fish * hw * GUT + b0['new'] + max(0.0, b0['ly'] - b0['ly_old'] - b0['ly_new']), 1), 'ly': b0['ly'], 'old': r(fish * hw * GUT, 1), 'new': b0['new'], 'hw': r(hw, 2), 'hw_ly': r(gl['hw'], 2), 'w': r(wproj, 2), 'w_ly': r(gl['w'], 2), 't': r(tj, 1), 't_ly': r(tly, 1)})
         return out
     budget_dd_nat, budget_dd_nat_persist = budget_growth(False), budget_growth(True)
@@ -368,6 +385,7 @@ def main():
     def budget_zones(persist):
         zones = sorted({po for (po, gg) in C})
         tot = collections.defaultdict(float)
+        fishz = collections.defaultdict(float)
         covered = collections.defaultdict(float)      # recolte de l'an dernier des zones traitees, pour completer les zones absentes au facteur national
         detail = {}
         for po in zones:
@@ -406,6 +424,7 @@ def main():
                 fish = (cl.get('harv_stk') or 0) * n_ratio / 1e6
                 vol[k] = fish * hw * GUT
                 tot[k] += vol[k]
+                fishz[k] += fish
                 covered[k] += (cl.get('harv_kg') or 0) * GUT / 1e6
             if not persist:
                 detail[po] = {'n': r(a['stock'] / 1e6, 1), 'n_ly': r(b['stock'] / 1e6, 1), 'w': r(a['weight_kg']), 'w_ly': r(b['weight_kg']), 'tgc': g_now, 'tgc_ly': g_ly, 'rho': r(rho_z, 2), 'anom': r(an_z, 2),
@@ -414,8 +433,10 @@ def main():
         for b0 in budget:
             if b0['k'] not in tot:
                 break
-            rest = max(0.0, b0['ly_old'] - covered[b0['k']]) * f_old
-            out.append({'k': b0['k'], 'tot': r(tot[b0['k']] + rest + b0['new'] + max(0.0, b0['ly'] - b0['ly_old'] - b0['ly_new']), 1), 'ly': b0['ly'], 'old': r(tot[b0['k']] + rest, 1), 'new': b0['new']})
+            sc_ = b0.get('scale', 1.0)
+            rest = max(0.0, b0['ly_old'] - covered[b0['k']] * sc_) * f_old
+            out.append({'k': b0['k'], 'tot': r(tot[b0['k']] * sc_ + rest + b0['new'] + max(0.0, b0['ly'] - b0['ly_old'] - b0['ly_new']), 1), 'ly': b0['ly'], 'old': r(tot[b0['k']] * sc_ + rest, 1), 'new': b0['new'],
+                        'fish': r(fishz[b0['k']] * sc_ + (b0['fish'] - b0['fish_old']), 2), 'fish_ly': b0['fish_ly'], 'hw': r(tot[b0['k']] / GUT / fishz[b0['k']], 2) if fishz[b0['k']] else None})
         return out, detail
     budget_dd, zone_detail = budget_zones(False)
     budget_dd_persist, _ = budget_zones(True)

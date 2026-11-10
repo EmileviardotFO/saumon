@@ -831,6 +831,7 @@ details.ca-more>summary::-webkit-details-marker{display:none}details.ca-more>sum
     <hr class="sig-divider">
     <div class="sig-title">Harvest projection (1–9 months)</div>
     <div class="sig-sub" id="outlookProjSub">Projected harvest volume, headcount and average weight, with the error the method actually made on past data at each horizon.</div>
+    <div id="outlookThree"></div>
 
     <table>
       <thead>
@@ -10968,6 +10969,17 @@ function renderOutlook() {
     tbody.appendChild(tr);
   };
 
+  // ---- three readings, month by month: this page's projector, the generation model, the fish budget (generations.json)
+  { const box = document.getElementById('outlookThree'), GNV = window.lyFetch ? window.lyFetch('generations.json', () => { if (currentView === 'outlook') renderOutlook(); }) : null;
+    if (box) { const V = GNV && GNV.volume, B = V && (V.budget_dd || V.budget) || [], C0 = V && V.scenarios && V.scenarios.central || [], P = V && V.periods, natl = poFilter.length >= ALL_PO.length;
+      if (!natl) box.innerHTML = '<div class="sig-sub" style="margin:6px 0 12px;color:var(--muted)">The generation model and the fish budget are national: select all zones to see them against this page’s projector.</div>';
+      else if (!B.length) box.innerHTML = GNV === null ? '<div class="sig-sub">Loading the generation model…</div>' : '';
+      else { const pct = (a, b) => a && b ? `<span style="color:${a >= b ? '#81c784' : '#ff8a65'}">${a >= b ? '+' : '−'}${Math.abs(100 * (a / b - 1)).toFixed(1)}%</span>` : '—';
+        const rows = B.map((b, i) => { const k = b.k, mIdx = k % 100 - 1, yy = k / 100 | 0, pv = projectVol(lastIdx, i + 1), live = pv !== null ? pv / 1000 : null, ly = byKey[(yy - 1) * 100 + k % 100], lyv = ly ? ly.vol / 1000 : null, lyf = ly ? ly.stk / 1e6 : null, m = C0.find(x => x.k === k);
+          return `<tr class="projected"><td class="name">${MONTHS_FR[mIdx]} ${yy}</td><td>${lyv != null ? num0(lyv) : '—'}</td><td>${live != null ? num0(live) : '—'} ${pct(live, lyv)}</td><td>${m ? num0(m.tot / 0.888 * 1000) : '—'} ${m ? pct(m.tot / 0.888 * 1000, lyv) : ''}</td><td><b>${num0(b.tot / 0.888 * 1000)}</b> ${pct(b.tot / 0.888 * 1000, lyv)}</td><td>${b.fish != null ? num0(b.fish * 1e6) : '—'} ${b.fish != null ? pct(b.fish, lyf) : ''}</td><td>${b.hw ? num2(b.hw) : '—'}</td></tr>`; }).join('');
+        const q = P ? `<div class="sig-sub" style="margin-top:6px"><b>By quarter:</b> ${P.p1.span} — model ${num0(P.p1.model / 0.888 * 1000)} t (${pct(P.p1.model, P.p1.ly)}), fish budget <b>${num0((P.p1.dd != null ? P.p1.dd : P.p1.budget) / 0.888 * 1000)} t</b> (${pct(P.p1.dd != null ? P.p1.dd : P.p1.budget, P.p1.ly)}); ${P.p2.span} — model ${num0(P.p2.model / 0.888 * 1000)} t (${pct(P.p2.model, P.p2.ly)}), budget ${num0((P.p2.dd != null ? P.p2.dd : P.p2.budget) / 0.888 * 1000)} t (${pct(P.p2.dd != null ? P.p2.dd : P.p2.budget, P.p2.ly)}), and <b>${num0((P.p2.implied_dd != null ? P.p2.implied_dd : P.p2.implied) / 0.888 * 1000)} t</b> (${pct(P.p2.implied_dd != null ? P.p2.implied_dd : P.p2.implied, P.p2.ly)}) if ${P.p1.span.split(' ')[0]} takes the model’s volume — ${P.verdict === 'brought_forward' ? 'volume brought forward, hole afterwards' : P.verdict === 'held_back' ? 'fish held back, more volume later' : 'the readings agree'}.</div>` : '';
+        box.innerHTML = `<div class="sig-sub" style="margin:4px 0 6px"><b>Three readings, live weight.</b> This page’s projector (biomass × usual take-out, blended with last year × drift) and the generation model both let heavier fish go sooner; the fish budget keeps last year’s pace and counts the fish actually left (G${GNV.meta.old}: ${GNV.state.old.n.toFixed(0)} M against ${GNV.state.old_ly.n.toFixed(0)} M), grown at each zone’s expected degree-days. The gap between them is volume moved between quarters, not created.</div>
+          <table class="sig-table" style="margin-bottom:6px"><thead><tr><th class="name">Month</th><th>A year earlier (t)</th><th>This page’s projector</th><th>Generation model</th><th>Fish budget (t)</th><th>Fish budget · individuals</th><th>Budget avg weight (kg, live)</th></tr></thead><tbody>${rows}</tbody></table>${q}<div style="height:14px"></div>`; } } }
   // ---- reported months (context for reading the projections)
   const HISTORY_MONTHS = 6;
   const histStart = Math.max(0, s.length - HISTORY_MONTHS);
