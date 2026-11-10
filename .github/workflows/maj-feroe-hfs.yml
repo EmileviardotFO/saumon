@@ -1,0 +1,42 @@
+# Feroe — HFS (autorite sanitaire) : poissons par site chaque fin de mois, comptages de poux par site, traitements par site.
+# Portail Oracle ADF rendu dans un navigateur sans tete ; export Excel complet a chaque passage. Mardi 6 h UTC (poissons : vers le 5 du mois ;
+# poux : tous les 14 jours ; recolte hebdo : le classeur est pour l'instant depose a la main dans farming/donnees_fo/toka_av_laksi.xlsx).
+name: Féroé — HFS (poissons par site, poux, traitements)
+on:
+  schedule:
+  - cron: 0 6 * * 2
+  workflow_dispatch: {}
+permissions:
+  contents: write
+concurrency:
+  group: maj-donnees
+  cancel-in-progress: false
+jobs:
+  maj:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - name: Dependances
+      run: |
+        pip install pandas openpyxl lxml html5lib beautifulsoup4 playwright
+        python3 -m playwright install --with-deps chromium
+    - name: HFS - export des trois tables
+      id: fetch
+      run: python3 scripts/fetch_hfs.py
+    - name: Construire data/faroe_hfs.json
+      id: build
+      continue-on-error: true
+      run: |
+        if [ -f scripts/build_faroe_hfs.py ]; then python3 scripts/build_faroe_hfs.py; else echo "pas encore de builder"; fi
+    - name: Publier
+      if: always()
+      run: |
+        git config user.name "github-actions"; git config user.email "actions@github.com"
+        git add farming/donnees_fo/ data/
+        if git diff --staged --quiet; then echo "Aucun changement."; else
+          git commit -m "Féroé HFS : poissons par site, poux, traitements ($(date -u +%Y-%m-%d))"
+          git pull --rebase; git push; fi
