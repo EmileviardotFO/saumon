@@ -115,15 +115,16 @@ by_y=collections.defaultdict(list)
 for c in ALL: by_y[c['hd'].year].append(c['tgc'])
 tg_year={y:(round(S.median(v),2),len(v)) for y,v in sorted(by_y.items())}
 # ---- delousages deduits : le registre HFS ne contient que les medicaments (bain, aliment) ; les traitements sans medicament
-# (eau douce, thermique, mecanique) n'y sont pas. On les lit dans les comptages : chute d'au moins 60 % entre deux comptages
-# espaces de 24 jours au plus, en partant de 0,3 femelle adulte ou plus. 'med' = un medicament est declare sur le site autour de la chute.
+# (eau douce, thermique, mecanique) n'y sont pas. On les lit dans les comptages : chute d'au moins 50 % entre deux comptages
+# espaces de 24 jours au plus, en partant de 0,2 femelle adulte ou plus (regle recalee sur Gotuvik, cycle 2025-26 : 9 traitements
+# connus pour le site, la regle en retrouve 8 sur les deux cotes ; l'ancienne, 60 % depuis 0,3, n'en voyait que 6). 'med' = un medicament est declare sur le site autour de la chute.
 lice_by=collections.defaultdict(list)
 for l in L: lice_by[l['site']].append((l['d'],l['v']))
 KD=[]
 for s_,v in lice_by.items():
     v.sort()
     for (a,x),(b,y) in zip(v,v[1:]):
-        if x>=0.3 and y<=0.4*x and (b-a).days<=24:
+        if x>=0.2 and y<=0.5*x and (b-a).days<=24:
             KD.append(dict(site=s_,co=co.get(s_),a=a,b=b,x=x,y=y,med=any(a-dt.timedelta(days=10)<=m['d0']<=b for m in M if m['site']==s_)))
 # ---- fermiers
 comp=[]
