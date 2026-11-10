@@ -1253,6 +1253,7 @@ details.ca-more>summary::-webkit-details-marker{display:none}details.ca-more>sum
   </div>
 
   <div class="panel" id="scotlandView" style="flex:1; min-width:0; max-width:1400px; display:none;">
+    <div id="scNew"></div>
     <div class="sig-title">Scotland — salmon farming at a glance (SEPA, Marine Directorate, company reports)</div>
     <div class="sig-sub" id="scSub"></div>
     <div id="scCards" class="pr-cards"></div>
@@ -8236,7 +8237,7 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
     else if (currentView === 'producers') { renderProducers(); }
     else if (currentView === 'usa') { renderUSA(); }
     else if (currentView === 'china') { renderChina(); }
-    else if (currentView === 'scotland') { renderScotland(); qrLoad(renderScotlandResults); }
+    else if (currentView === 'scotland') { renderScotland(); qrLoad(renderScotlandResults); if (window.renderScotlandNew) window.renderScotlandNew(); }
     else if (currentView === 'chile') { renderChile(); }
     else if (currentView === 'australia') { renderAustralia(); }
     else if (currentView === 'canada') { renderCanada(); }
@@ -15459,6 +15460,7 @@ function gnFoldGenmap(gm) {   // page Zones & farmers : le detail par zone reste
     #foNew .fo-title{font-size:16px;font-weight:800;margin:0 0 2px}#foNew .fo-sub{font-size:12.5px;color:#a9bfcc;margin-bottom:10px;line-height:1.45}#foNew .fo-legend{font-size:12px;color:#a9bfcc;margin-top:4px}#foNew .fo-note{font-size:12.5px;color:#a9bfcc;margin-top:8px;line-height:1.5}
     #foNew .fo-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
     @media (max-width:900px){#foNew .fo-verdict,#foNew .fo-c6,#foNew .fo-c2,#foNew .fo-c32,#foNew .fo-c23{grid-template-columns:1fr}#foNew .fo-c6{grid-template-columns:1fr 1fr}}`;
+  css.textContent += css.textContent.replace(/#foNew/g, '#scNew');
   document.head.appendChild(css);
   function foBuild(D) {
 
@@ -15553,6 +15555,64 @@ return {render,go};
     fetch(DATA_URL.replace('data.json', 'faroe_hfs.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null).then(j => {
       if (!j || !j.weekly) { state = null; document.getElementById('foRoot').innerHTML = '<div class="sig-sub">No HFS data yet: data/faroe_hfs.json is built by the workflow “Féroé — HFS”.</div>'; document.getElementById('foOld').style.display = ''; return; }
       API = foBuild(j); window.foGo = API.go; if (currentView === 'faroe') API.render(); });
+  };
+})();
+</script>
+<script>
+// ===================== Ecosse, pages hebdomadaires (data/scotland_weekly.json <- scripts/build_scotland_weekly.py) : poux par site, sites en retrait avant abattage, mortalite par ferme et par cycle =====================
+(function () {
+  const M = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], YC = ['#8fa4b0', '#ffc38a', '#4fc3f7'];
+  const f = (v, d = 1) => v == null ? '—' : (+v).toFixed(d), esc = t => String(t == null ? '' : t).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  const mL = k => `${M[+String(k).slice(4) - 1]} ${String(k).slice(0, 4)}`, dL = d => { const x = new Date(d + 'T00:00:00Z'); return `${x.getUTCDate()} ${M[x.getUTCMonth()]} ${x.getUTCFullYear()}`; };
+  const kp = (q, v, u, c, g) => `<div class="fo-card"><div class="fo-q">${q}</div><div class="fo-k">${v}<small>${u}</small></div><div class="fo-sm ${g || 'fo-mut'}">${c}</div></div>`;
+  const leg = items => `<div class="fo-legend">${items.map(([c, t]) => `<span style="color:${c}">■</span> ${t}`).join(' · ')}</div>`;
+  function bars(groups, o) { const W = o.w || 620, H = o.h || 200, l = 40, b = 26, mx = (o.max || Math.max(...groups.map(g => Math.max(...g.vals.map(v => v.v || 0))))) * 1.12 || 1, bw = (W - l - 8) / groups.length, Y = v => H - b - (H - b - 10) * v / mx;
+    let s = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">`; for (let t = 0; t <= mx; t += o.step || 1) s += `<line x1="${l}" x2="${W - 4}" y1="${Y(t)}" y2="${Y(t)}" stroke="rgba(255,255,255,.12)"/><text x="${l - 6}" y="${Y(t) + 4}" text-anchor="end" font-size="11" fill="#a9bfcc">${+t.toFixed(2)}</text>`;
+    if (o.ref != null) s += `<line x1="${l}" x2="${W - 4}" y1="${Y(o.ref)}" y2="${Y(o.ref)}" stroke="#ff8a65" stroke-dasharray="4 3"/>`;
+    groups.forEach((g, i) => { const n = g.vals.length, sw = bw * .8 / n; g.vals.forEach((v, j) => { if (v.v == null) return; s += `<rect x="${l + i * bw + bw * .1 + j * sw}" y="${Y(v.v)}" width="${Math.max(1, sw - 1.5)}" height="${Math.max(0, H - b - Y(v.v))}" rx="2" fill="${v.color}" opacity="${v.op || 1}"><title>${v.title || ''}</title></rect>`; }); s += `<text x="${l + i * bw + bw / 2}" y="${H - 8}" text-anchor="middle" font-size="11" fill="#a9bfcc">${g.lab}</text>`; });
+    return s + '</svg>'; }
+  function build(D) {
+    const W = D.weeks, w = W[W.length - 1], p = W[W.length - 2] || {}, MO = D.mort, LYr = +D.meta.last_week.slice(0, 4), Y3 = [LYr - 2, LYr - 1, LYr];
+    const PAGES = [['week', 'This week'], ['mort', 'Mortality'], ['sites', 'Sites']]; let cur = 'week', sortK = 'af', coF = '';
+    const mo = k => D.months.find(x => x.k === String(k)) || {}, RN = { wd: 'withdrawal before harvest', stocked: 'just stocked', fallow: 'fallow', vet: 'veterinary advice', other: 'no count' };
+    const byMonth = (key, tt, o) => bars(M.map((m, i) => ({ lab: m, vals: Y3.map((y, j) => { const x = mo(y * 100 + i + 1); return { v: x[key], color: YC[j], op: j < 2 ? .8 : 1, title: x[key] != null ? `${m} ${y}: ${x[key]} ${tt}` : '' }; }) })), o);
+    const wdNow = D.now.filter(x => x.r === 'wd').sort((a, b) => b.wdw - a.wdw);
+    function pageWeek() { const lm = D.months[D.months.length - 1], ly = mo(+lm.k - 100);
+      return `<div class="fo-row fo-c6">${kp('Adult female lice', f(w.af, 2), 'per fish', `${f(p.af, 2)} a week earlier · ${f(ly.af, 2)} in ${mL(ly.k || +lm.k - 100)}`)}${kp('Sites above 0.5', w.o05, `of ${w.n} counted`, `${w.o1} above 1 · ${w.o2} at 2 or more`, w.o05 > (p.o05 || 0) ? 'fo-dn' : 'fo-mut')}${kp('Withdrawal before harvest', w.wd, 'sites', `${p.wd != null ? p.wd : '—'} a week earlier`)}${kp('Just stocked', w.stocked, 'sites', `${w.fallow} declared fallow`)}${MO ? kp('Mortality, ' + mL(MO.latest), f(MO.industry[MO.latest], 2), '%', `${f(MO.industry[+MO.latest - 100], 2)} % a year earlier`, MO.industry[MO.latest] > MO.industry[+MO.latest - 100] ? 'fo-dn' : 'fo-up') : ''}${MO ? kp('Farms at 5 % or more', MO.stats.over5, `of ${MO.stats.active}`, `${MO.stats.over10} at 10 % or more`) : ''}</div>
+      <div class="fo-row fo-c2"><div class="fo-panel"><div class="fo-title">Lice by month — three years</div><div class="fo-sub">Average adult female lice per fish over all counts of the month. Dashed line: 0.5, the industry's own threshold from February to June (1 the rest of the year).</div>${byMonth('af', 'adult females per fish', { step: .2, ref: .5 })}${leg(Y3.map((y, i) => [YC[i], y]))}</div>
+      <div class="fo-panel"><div class="fo-title">Sites in withdrawal before harvest — three years</div><div class="fo-sub">A farm that stops counting lice because the fish are in the withdrawal period before slaughter is about to harvest. Number of sites that declared it at least once in the month.</div>${byMonth('wd_sites', 'sites', { step: 5 })}${leg(Y3.map((y, i) => [YC[i], y]))}</div></div>
+      <div class="fo-row fo-c2"><div class="fo-panel"><div class="fo-title">By farmer — week of ${dL(w.d)}</div><table><tr><th>Farmer</th><th class="fo-n">Sites</th><th class="fo-n">Counted</th><th class="fo-n">Lice</th><th class="fo-n">Above 0.5</th><th class="fo-n">Withdrawal</th><th class="fo-n">Just stocked</th></tr>${D.companies.map(c => `<tr><td><b>${esc(c.co)}</b></td><td class="fo-n">${c.sites}</td><td class="fo-n">${c.n}</td><td class="fo-n ${c.af > .5 ? 'fo-dn' : ''}"><b>${f(c.af, 2)}</b></td><td class="fo-n">${c.o05}</td><td class="fo-n">${c.wd || '—'}</td><td class="fo-n">${c.stocked || '—'}</td></tr>`).join('')}</table></div>
+      <div class="fo-panel"><div class="fo-title">About to harvest — sites in withdrawal now</div><div class="fo-sub">With the worst count of the eight weeks before, and the losses of the cycle so far where the farm is matched to the mortality reports.</div>${wdNow.length ? `<table><tr><th>Site</th><th>Farmer</th><th class="fo-n">Weeks in withdrawal</th><th class="fo-n">Worst lice, 8 weeks</th><th class="fo-n">Lost so far</th></tr>${wdNow.map(x => `<tr><td><b>${esc(x.name)}</b></td><td>${esc(x.co)}</td><td class="fo-n">${x.wdw}</td><td class="fo-n ${x.max8 > 1 ? 'fo-dn' : ''}">${f(x.max8, 2)}</td><td class="fo-n">${x.lost != null ? f(x.lost, 1) + ' %' : '—'}</td></tr>`).join('')}</table>` : '<div class="fo-mut">None this week.</div>'}</div></div>
+      <div class="fo-panel"><div class="fo-title">Last 16 weeks</div><table class="fo-tgrid"><tr><th>Week of</th>${W.slice(-16).map(x => `<th class="fo-n">${x.d.slice(8)} ${M[+x.d.slice(5, 7) - 1]}</th>`).join('')}</tr>${[['Lice, adult females', 'af', 2], ['Sites counted', 'n', 0], ['Above 0.5', 'o05', 0], ['Above 1', 'o1', 0], ['Withdrawal before harvest', 'wd', 0], ['Just stocked', 'stocked', 0]].map(r => `<tr><td>${r[0]}</td>${W.slice(-16).map(x => `<td class="fo-n">${f(x[r[1]], r[2])}</td>`).join('')}</tr>`).join('')}</table></div>`; }
+    function pageMort() { if (!MO) return '<div class="fo-panel fo-mut">Mortality reports not loaded yet.</div>';
+      const ys = [...new Set(Object.keys(MO.industry).map(k => +k.slice(0, 4)))].slice(-3), cy = Object.keys(MO.cycles.All || {}).sort(), cos = Object.keys(MO.cycles).filter(c => c !== 'All').sort((a, b) => ((MO.cycles[b][cy[cy.length - 1]] || {}).n || 0) - ((MO.cycles[a][cy[cy.length - 1]] || {}).n || 0)).concat(['All']);
+      const mk = Object.keys(MO.by_month).sort().slice(-12), CO = MO.companies.filter(c => c.n >= 5).map(c => c.co);
+      return `<div class="fo-row fo-c2"><div class="fo-panel"><div class="fo-title">Monthly mortality, whole industry — three years</div><div class="fo-sub">Fish lost in the month as a share of the fish on the farms.</div>${bars(M.map((m, i) => ({ lab: m, vals: ys.map((y, j) => { const v = MO.industry[y * 100 + i + 1]; return { v, color: YC[j], op: j < 2 ? .8 : 1, title: v != null ? `${m} ${y}: ${v} %` : '' }; }) })), { step: 1 })}${leg(ys.map((y, i) => [YC[i], y]))}</div>
+      <div class="fo-panel"><div class="fo-title">Mortality over the whole sea cycle — farms emptied ${MO.cycles_span}</div><div class="fo-sub">Reported once a farm is fully harvested: fish that died during the cycle as a share of the fish stocked. Simple average of farms, not weighted by fish numbers.</div><table><tr><th>Farmer</th>${cy.map(y => `<th class="fo-n">${y}: farms</th><th class="fo-n">Average</th><th class="fo-n">Worst</th>`).join('')}</tr>${cos.map(c => `<tr><td><b>${esc(c === 'All' ? 'All farmers' : c)}</b></td>${cy.map((y, i) => { const x = MO.cycles[c][y], pv = i ? MO.cycles[c][cy[i - 1]] : null; return x ? `<td class="fo-n">${x.n}</td><td class="fo-n ${pv ? (x.mean > pv.mean ? 'fo-dn' : 'fo-up') : ''}"><b>${f(x.mean, 1)} %</b></td><td class="fo-n">${f(x.max, 1)} %</td>` : '<td class="fo-n">—</td><td class="fo-n">—</td><td class="fo-n">—</td>'; }).join('')}</tr>`).join('')}</table></div></div>
+      <div class="fo-panel"><div class="fo-title">By farmer, month by month</div><div class="fo-sub">Average monthly mortality of the farmer's stocked farms, %. Last line: farms at 5 % or more, all farmers.</div><table class="fo-tgrid"><tr><th>Farmer</th>${mk.map(k => `<th class="fo-n">${M[+k.slice(4) - 1]} ${k.slice(2, 4)}</th>`).join('')}</tr>${CO.map(c => `<tr><td><b>${esc(c)}</b></td>${mk.map(k => { const v = MO.by_month[k].co[c]; return `<td class="fo-n ${v >= 3 ? 'fo-dn' : ''}">${f(v, 1)}</td>`; }).join('')}</tr>`).join('')}<tr><td>Industry, %</td>${mk.map(k => `<td class="fo-n"><b>${f(MO.industry[k], 2)}</b></td>`).join('')}</tr><tr><td>Farms at 5 % or more</td>${mk.map(k => `<td class="fo-n">${MO.by_month[k].over5}</td>`).join('')}</tr></table></div>
+      <div class="fo-row fo-c2"><div class="fo-panel"><div class="fo-title">Worst farms — ${mL(MO.latest)}</div><table><tr><th>Farm</th><th>Farmer</th><th class="fo-n">Month</th><th>Cause given</th></tr>${MO.worst.map(x => `<tr><td><b>${esc(x.farm)}</b></td><td>${esc(x.co)}</td><td class="fo-n fo-dn"><b>${f(x.m, 1)} %</b></td><td class="fo-sm">${esc(x.cause) || '—'}</td></tr>`).join('')}</table><div class="fo-note">Causes named this month: ${MO.causes.map(c => `${esc(c[0])} (${c[1]})`).join(', ')}.</div></div>
+      <div class="fo-panel"><div class="fo-title">Cycles just finished</div><table><tr><th>Emptied</th><th>Farm</th><th>Farmer</th><th class="fo-n">Lost over the cycle</th></tr>${MO.recent.map(x => `<tr><td>${mL(x.m)}</td><td><b>${esc(x.farm)}</b></td><td>${esc(x.co)}</td><td class="fo-n ${x.cum >= 25 ? 'fo-dn' : ''}"><b>${f(x.cum, 1)} %</b></td></tr>`).join('')}</table></div></div>`; }
+    function pageSites() { const cos = [...new Set(D.now.map(x => x.co))], R = D.now.filter(x => !coF || x.co === coF).slice().sort((a, b) => sortK === 'name' ? a.name.localeCompare(b.name) : (b[sortK] == null ? -1 : b[sortK]) - (a[sortK] == null ? -1 : a[sortK]));
+      const th = (k, t) => `<th class="fo-n" style="cursor:pointer" onclick="scSort('${k}')">${t}${sortK === k ? ' ▾' : ''}</th>`;
+      return `<div class="fo-panel"><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start"><div><div class="fo-title">Every site — week of ${dL(w.d)}</div><div class="fo-sub">Lice from the weekly official counts; mortality from the ${MO ? mL(MO.latest) : ''} report where the farm name could be matched (${D.meta.matched_mort} of ${D.meta.sites}). “Lost so far”: monthly losses compounded since stocking, or since January 2025 for older cycles. Click a column to sort.</div></div>
+        <div class="gc-seg" style="margin:0"><button type="button" class="${!coF ? 'on' : ''}" onclick="scCo('')">All</button>${cos.filter(c => c !== 'Other').map(c => `<button type="button" class="${coF === c ? 'on' : ''}" onclick="scCo('${c}')">${esc(c.replace(' Scotland', ''))}</button>`).join('')}</div></div>
+        <table><tr><th style="cursor:pointer" onclick="scSort('name')">Site</th><th>Farmer</th>${th('af', 'Lice now')}${th('max8', 'Worst, 8 weeks')}<th>Status</th>${th('m', 'Mortality, month')}${th('lost', 'Lost so far')}${th('run', 'Months at sea')}<th>Cause given</th>${th('cap', 'Permit, t')}</tr>
+        ${R.map(x => `<tr><td><b>${esc(x.name)}</b></td><td>${esc(x.co)}</td><td class="fo-n ${x.af > 1 ? 'fo-dn' : x.af > .5 ? 'fo-o' : ''}"><b>${f(x.af, 2)}</b></td><td class="fo-n">${f(x.max8, 2)}</td><td class="${x.r === 'wd' ? 'fo-b' : 'fo-mut'}">${x.r ? RN[x.r] : 'counted'}</td><td class="fo-n ${x.m >= 5 ? 'fo-dn' : ''}">${x.m != null ? f(x.m, 1) + ' %' : '—'}</td><td class="fo-n ${x.lost >= 20 ? 'fo-dn' : ''}">${x.lost != null ? f(x.lost, 1) + ' %' : '—'}</td><td class="fo-n">${x.run ? x.run + (x.run >= 21 ? '+' : '') : '—'}</td><td class="fo-sm">${esc(x.cause) || ''}</td><td class="fo-n">${x.cap ? Math.round(x.cap).toLocaleString('en-US') : '—'}</td></tr>`).join('')}</table></div>`; }
+    function render() { const root = document.getElementById('scRoot'); if (!root) return;
+      document.getElementById('scSeg').innerHTML = `<div class="sig-title">Scotland — week by week</div><div class="gc-seg" style="margin:8px 0 12px">${PAGES.map(([k, t]) => `<button type="button" class="${k === cur ? 'on' : ''}" onclick="scGo('${k}')">${t}</button>`).join('')}</div>`;
+      root.innerHTML = (cur === 'week' ? pageWeek() : cur === 'mort' ? pageMort() : pageSites()) + `<div class="fo-note" style="margin-bottom:22px">Sources: ${esc(D.meta.sources)}. Lice to the week of ${dL(D.meta.last_week)}; mortality reports about one month in arrears. The annual survey, company figures and map follow below.</div>`; }
+    window.scSort = k => { sortK = k; render(); }; window.scCo = c => { coF = c; render(); };
+    return { render, go: k => { cur = k; render(); } };
+  }
+  let API = null, state = null;
+  window.renderScotlandNew = function () {
+    const box = document.getElementById('scNew'); if (!box) return;
+    if (!document.getElementById('scRoot')) box.innerHTML = '<div id="scSeg"></div><div id="scRoot"></div>';
+    if (API) { API.render(); return; }
+    if (state === 'loading') return; state = 'loading';
+    fetch(DATA_URL.replace('data.json', 'scotland_weekly.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null).then(j => {
+      if (!j || !j.weeks) { state = null; box.innerHTML = ''; return; }
+      API = build(j); window.scGo = API.go; if (currentView === 'scotland') API.render(); });
   };
 })();
 </script>
