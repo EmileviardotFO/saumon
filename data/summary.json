@@ -1,6 +1,6 @@
 {
  "meta": {
-  "built": "2026-11-09T19:56+00:00",
+  "built": "2026-11-10T15:46+00:00",
   "note": "Signals ranked by how unusual they are against their own history (score). Effect: supports / weighs on prices, risk, watch."
  },
  "lead": "Supply grows +6 % in 2026 across the seven basins and +0.1 % in 2027. Chile is the main source of change: a record El Niño, a slowing harvest and fewer big fish. Norway carries the growth with heavier fish and more 6 kg+. Imports grow fastest in Japan, Brazil, UK; USA and Israel are flat or down.",
@@ -212,7 +212,7 @@
    "lo": -13.5,
    "hi": -2.0,
    "sea": [
-    0.1,
+    0.2,
     0.7
    ],
    "tab": "iceland"
@@ -461,6 +461,81 @@
    "lang": "no"
   },
   {
+   "date": "2026-11-10",
+   "title": "Scottish Sea Farms opens Scotland’s largest salmon site with £7.5m investment",
+   "url": "https://www.undercurrentnews.com/2026/11/10/scottish-sea-farms-opens-scotlands-largest-salmon-site-with-7-5m-investment/",
+   "source": "undercurrentnews.com",
+   "n_sources": 2,
+   "basins": [
+    "GB"
+   ],
+   "themes": [
+    "companies"
+   ],
+   "lang": "en"
+  },
+  {
+   "date": "2026-11-10",
+   "title": "Ordenan prisión preventiva de imputados por la sustracción de 6 toneladas de salmón a Blumar",
+   "url": "https://www.salmonexpert.cl/aysen-blumar-centro/ordenan-prision-preventiva-de-imputados-por-la-sustraccion-de-6-toneladas-de-salmon-a-blumar/2208683",
+   "source": "salmonexpert.cl",
+   "n_sources": 2,
+   "basins": [
+    "CL"
+   ],
+   "themes": [
+    "market",
+    "biology",
+    "companies"
+   ],
+   "lang": "es"
+  },
+  {
+   "date": "2026-11-10",
+   "title": "¿Efecto Fenómeno de El Niño? Desaceleración en el crecimiento para el salmón chileno",
+   "url": "https://www.salmonexpert.cl/chile-cosechas-el-nino/efecto-fenomeno-de-el-nino-desaceleracion-en-el-crecimiento-para-el-salmon-chileno/2208326",
+   "source": "salmonexpert.cl",
+   "n_sources": 2,
+   "basins": [
+    "CL"
+   ],
+   "themes": [
+    "feed",
+    "biology"
+   ],
+   "lang": "es"
+  },
+  {
+   "date": "2026-11-09",
+   "title": "BioMar expands shrimp feed capacity by 37% in Ecuador",
+   "url": "https://www.fishfarmingexpert.com/biomar-ecuador-production-capacity/biomar-expands-shrimp-feed-capacity-by-37-in-ecuador/2207918",
+   "source": "fishfarmingexpert.com",
+   "n_sources": 2,
+   "basins": [
+    "global"
+   ],
+   "themes": [
+    "market",
+    "feed",
+    "regulation"
+   ],
+   "lang": "en"
+  },
+  {
+   "date": "2026-11-09",
+   "title": "Biggest Baa none! Scotland's largest capacity salmon farm officially opened",
+   "url": "https://www.fishfarmingexpert.com/aquaculture-investment-billy-baa-salmon-farming/biggest-baa-none-scotlands-largest-capacity-salmon-farm-officially-opened/2208300",
+   "source": "fishfarmingexpert.com",
+   "n_sources": 2,
+   "basins": [
+    "GB"
+   ],
+   "themes": [
+    "regulation"
+   ],
+   "lang": "en"
+  },
+  {
    "date": "2026-11-06",
    "title": "Urk-Export eyes doubling salmon processing capacity as demand outstrips production",
    "url": "https://www.undercurrentnews.com/2026/11/06/urk-export-eyes-doubling-salmon-processing-capacity-as-demand-outstrips-production/",
@@ -488,76 +563,6 @@
     "market",
     "feed",
     "companies"
-   ],
-   "lang": "en"
-  },
-  {
-   "date": "2026-11-06",
-   "title": "Tras la renuncia del Presidente de Paraguay: ¿cuánto salmón chileno se exporta a ese mercado?",
-   "url": "https://www.salmonexpert.cl/envios-exportaciones-gobierno/tras-la-renuncia-del-presidente-de-paraguay-cuanto-salmon-chileno-se-exporta-a-ese-mercado/2207011",
-   "source": "salmonexpert.cl",
-   "n_sources": 2,
-   "basins": [
-    "CL"
-   ],
-   "themes": [
-    "market"
-   ],
-   "lang": "es"
-  },
-  {
-   "date": "2026-11-06",
-   "title": "Fish farmers warned to watch out for disease from wild salmonids",
-   "url": "https://www.fishfarmingexpert.com/fish-health-norway-norwegian-veterinary-institute/fish-farmers-warned-to-watch-out-for-disease-from-wild-salmonids/2207500",
-   "source": "fishfarmingexpert.com",
-   "n_sources": 2,
-   "basins": [
-    "GB"
-   ],
-   "themes": [
-    "biology"
-   ],
-   "lang": "en"
-  },
-  {
-   "date": "2026-11-05",
-   "title": "Blumar firma acuerdo para vender su negocio salmonicultor a Agrosuper en US$540 millones",
-   "url": "https://www.salmonexpert.cl/adquisicion-agrosuper-aquachile/blumar-firma-acuerdo-para-vender-su-negocio-salmonicultor-a-agrosuper-en-us540-millones/2206341",
-   "source": "salmonexpert.cl",
-   "n_sources": 2,
-   "basins": [
-    "CL"
-   ],
-   "themes": [
-    "companies"
-   ],
-   "lang": "es"
-  },
-  {
-   "date": "2026-11-05",
-   "title": "UCN launches weekly fresh Norwegian Atlantic salmon, DDP Poland price assessments",
-   "url": "https://www.undercurrentnews.com/2026/11/05/ucn-launches-weekly-fresh-norwegian-atlantic-salmon-ddp-poland-price-assessments/",
-   "source": "undercurrentnews.com",
-   "n_sources": 2,
-   "basins": [
-    "NO"
-   ],
-   "themes": [
-    "market"
-   ],
-   "lang": "en"
-  },
-  {
-   "date": "2026-11-05",
-   "title": "US wholesale: Chilean salmon’s frozen squeeze deepens as fresh prices pull further ahead",
-   "url": "https://www.undercurrentnews.com/2026/11/05/us-wholesale-chilean-salmons-frozen-squeeze-deepens-as-fresh-pulls-further-ahead/",
-   "source": "undercurrentnews.com",
-   "n_sources": 2,
-   "basins": [
-    "CL"
-   ],
-   "themes": [
-    "market"
    ],
    "lang": "en"
   }
@@ -670,114 +675,121 @@
    "level_en": "low"
   },
   "fx": {
-   "monthly": {
-    "201801": 9.6464,
-    "201802": 9.6711,
-    "201803": 9.5848,
-    "201804": 9.6202,
-    "201805": 9.5642,
-    "201806": 9.4746,
-    "201807": 9.4975,
-    "201808": 9.6161,
-    "201809": 9.6205,
-    "201810": 9.4793,
-    "201811": 9.6272,
-    "201812": 9.8055,
-    "201901": 9.7631,
-    "201902": 9.7444,
-    "201903": 9.7181,
-    "201904": 9.6233,
-    "201905": 9.7793,
-    "201906": 9.7465,
-    "201907": 9.6587,
-    "201908": 9.9742,
-    "201909": 9.9203,
-    "201910": 10.1165,
-    "201911": 10.1087,
-    "201912": 10.0429,
-    "202001": 9.9384,
-    "202002": 10.1327,
-    "202003": 11.2943,
-    "202004": 11.3365,
-    "202005": 10.9862,
-    "202006": 10.7298,
-    "202007": 10.6544,
-    "202008": 10.5797,
-    "202009": 10.7769,
-    "202010": 10.922,
-    "202011": 10.7453,
-    "202012": 10.6008,
-    "202101": 10.3661,
-    "202102": 10.2791,
-    "202103": 10.1469,
-    "202104": 10.0376,
-    "202105": 10.0931,
-    "202106": 10.1444,
-    "202107": 10.3767,
-    "202108": 10.4195,
-    "202109": 10.1861,
-    "202110": 9.8143,
-    "202111": 9.9661,
-    "202112": 10.1308,
-    "202201": 10.007,
-    "202202": 10.0544,
-    "202203": 9.7367,
-    "202204": 9.6191,
-    "202205": 10.1453,
-    "202206": 10.2971,
-    "202207": 10.1823,
-    "202208": 9.8309,
-    "202209": 10.1697,
-    "202210": 10.3919,
-    "202211": 10.3357,
-    "202212": 10.448,
-    "202301": 10.7149,
-    "202302": 10.9529,
-    "202303": 11.2858,
-    "202304": 11.5187,
-    "202305": 11.733,
-    "202306": 11.7164,
-    "202307": 11.3474,
-    "202308": 11.4127,
-    "202309": 11.4525,
-    "202310": 11.6284,
-    "202311": 11.7958,
-    "202312": 11.5333,
-    "202401": 11.3501,
-    "202402": 11.3843,
-    "202403": 11.5214,
-    "202404": 11.6828,
-    "202405": 11.5988,
-    "202406": 11.4178,
-    "202407": 11.716,
-    "202408": 11.7895,
-    "202409": 11.7852,
-    "202410": 11.7907,
-    "202411": 11.7408,
-    "202412": 11.7447,
-    "202501": 11.7456,
-    "202502": 11.6574,
-    "202503": 11.5472,
-    "202504": 11.838,
-    "202505": 11.5968,
-    "202506": 11.5841,
-    "202507": 11.8537,
-    "202508": 11.8653,
-    "202509": 11.6702,
-    "202510": 11.6633,
-    "202511": 11.7402,
-    "202512": 11.8428,
-    "202601": 11.667,
-    "202602": 11.3206,
-    "202603": 11.1657,
-    "202604": 11.0332,
-    "202605": 10.7935,
-    "202606": 11.0338,
-    "202607": 11.0822,
-    "202608": 10.9274,
-    "202609": 10.8003,
-    "202610": 10.5914
-   }
+   "202436": 11.7784,
+   "202437": 11.9126,
+   "202438": 11.7489,
+   "202439": 11.7052,
+   "202440": 11.7145,
+   "202441": 11.7321,
+   "202442": 11.7998,
+   "202443": 11.8297,
+   "202444": 11.9061,
+   "202445": 11.8675,
+   "202446": 11.7495,
+   "202447": 11.6417,
+   "202448": 11.6605,
+   "202449": 11.6626,
+   "202450": 11.7034,
+   "202451": 11.7849,
+   "202452": 11.8253,
+   "202501": 11.7677,
+   "202502": 11.7407,
+   "202503": 11.7175,
+   "202504": 11.7632,
+   "202505": 11.7731,
+   "202506": 11.6775,
+   "202507": 11.6356,
+   "202508": 11.6335,
+   "202509": 11.683,
+   "202510": 11.7596,
+   "202511": 11.6261,
+   "202512": 11.493,
+   "202513": 11.3369,
+   "202514": 11.4221,
+   "202515": 12.0213,
+   "202516": 12.0219,
+   "202517": 11.8624,
+   "202518": 11.8084,
+   "202519": 11.7044,
+   "202520": 11.6052,
+   "202521": 11.5425,
+   "202522": 11.5063,
+   "202523": 11.5224,
+   "202524": 11.5227,
+   "202525": 11.4915,
+   "202526": 11.7526,
+   "202527": 11.8558,
+   "202528": 11.8337,
+   "202529": 11.8843,
+   "202530": 11.8736,
+   "202531": 11.8091,
+   "202532": 11.8855,
+   "202533": 11.9121,
+   "202534": 11.8891,
+   "202535": 11.785,
+   "202536": 11.7218,
+   "202537": 11.6478,
+   "202538": 11.606,
+   "202539": 11.6924,
+   "202540": 11.6823,
+   "202541": 11.6275,
+   "202542": 11.7275,
+   "202543": 11.6511,
+   "202544": 11.6435,
+   "202545": 11.726,
+   "202546": 11.6802,
+   "202547": 11.7433,
+   "202548": 11.8114,
+   "202549": 11.771,
+   "202550": 11.8121,
+   "202551": 11.9496,
+   "202552": 11.8682,
+   "202601": 11.8236,
+   "202602": 11.7673,
+   "202603": 11.7348,
+   "202604": 11.6399,
+   "202605": 11.4996,
+   "202606": 11.4461,
+   "202607": 11.317,
+   "202608": 11.2567,
+   "202609": 11.2626,
+   "202610": 11.2129,
+   "202611": 11.1576,
+   "202612": 11.0535,
+   "202613": 11.2232,
+   "202614": 11.2062,
+   "202615": 11.1449,
+   "202616": 11.0768,
+   "202617": 10.9438,
+   "202618": 10.8862,
+   "202619": 10.8441,
+   "202620": 10.7963,
+   "202621": 10.753,
+   "202622": 10.7841,
+   "202623": 10.8142,
+   "202624": 10.9636,
+   "202625": 11.0639,
+   "202626": 11.179,
+   "202627": 11.302,
+   "202628": 11.1726,
+   "202629": 11.0871,
+   "202630": 10.9633,
+   "202631": 10.9812,
+   "202632": 10.9896,
+   "202633": 10.9622,
+   "202634": 10.9013,
+   "202635": 10.8755,
+   "202636": 10.8139,
+   "202637": 10.7521,
+   "202638": 10.795,
+   "202639": 10.8085,
+   "202640": 10.8597,
+   "202641": 10.736,
+   "202642": 10.6487,
+   "202643": 10.5093,
+   "202644": 10.3668,
+   "202645": 10.4111,
+   "202646": 10.574
   }
  },
  "mainnews": [
@@ -787,27 +799,27 @@
    "text": "Mowi 185.6 kt (+12 %), 2026 guidance 620 kt, next year 630 kt · SalMar 105.1 kt (+13 %), 2026 guidance 347 kt · Bakkafrost 27.6 kt (−10 %), 2026 guidance 117 kt, next year 125 kt · Mowi Scotland 11.6 kt (−33 %), 2026 guidance 74 kt, next year 76 kt.",
    "src": "4 reports this week → Outlook",
    "tab": "outlook",
-   "n": 66
+   "n": 51
   },
   {
    "kind": "story",
-   "title": "Agrosuper: AquaChile owner pursues €479 million acquisition of Blumar salmon business",
-   "text": "14 articles since 11-02; latest: AquaChile lidera resultados de la salmonicultura al cierre del tercer trimestre 2026 (El Mostrador).",
-   "src": "14 articles · 11-06",
-   "url": "https://news.google.com/rss/articles/CBMizAFBVV95cUxPYjlrVUpPdTVPWDlmVFRRb19qZ1laeE5vNUVLdTRmT2hwU3BZaU11OHR3ZW9ZTUNzQmlLQUVBNHRzb2ZxYS1lMDZEOFd6a2h3RlFUUWd1ak5NbTB0cmlfTHJzQXI5eXRqM0JlcTF5ZXYtcjJlUUtMR1NxUk5ZVG1zdDVNc3oyYmNtd2FIVlB5VF9KcG1waE5JaE5ZaThERGhwSkh6WVZjMG55TGlrdG9ibXVuUmFzYndOZ2xuZlAzQnlGRUZYYllKX3dPcXY?oc=5",
+   "title": "Agrosuper signs agreement to buy Blumar's salmon business for up to US$540 million",
+   "text": "Agrosuper, owner of AquaChile, signed a memorandum of understanding to acquire 100% of Salmones Blumar, valuing it at up to US$540 million. The two firms are negotiating the definitive contracts, and the combination would form the world's second-largest producer. Reports also say Multi X is exploring a purchase of Ventisqueros and that two Chilean producers may be up for sale.",
+   "src": "16 articles · 11-09",
+   "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxNREl4em1mTmlIc0dRY2luMVNjSGtjSHZfajE5THVNeXFuMEtGaHhmelZWU0dqWmhUQ2MyV3BGYTJMaHVuTVhfdDRCSGdjOS1mcklPRFpEUnFCb3VJblh2QzBYVnJDYnd1TUZfMVlNNTJTVDBKeF9ESG9GRkJkR3Q2cDdPckEtc0tYaS1lazdvYXdNRElhOS0yTDln?oc=5",
    "basin": "CL",
-   "who": "AquaChile",
-   "n": 14
+   "who": "Agrosuper",
+   "n": 16
   },
   {
    "kind": "story",
-   "title": "Salmon for the rich? Camanchaca boss takes aim at celebrity chefs",
-   "text": "6 articles since 11-02; latest: Salmon for the rich? Camanchaca boss takes aim at celebrity chefs (Salmon Business).",
-   "src": "6 articles · 11-06",
-   "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxNQ0pWVFRIeC1JOXpBcTFxVEFibjJUU1BlVGhEeGxRc2wzc215djl2U1M2c3I1MHVhR1ZYTnl5SnZRZDB0cGhJVVVqaVRENTNoYmZ3c1NvOFFMSkpwcjNySVZVcU5HQjgyRjAyRHZ6SEw4TDNDOU45T3luX1pISm9mbkQtdFExdWNEaldPTzVvcFNWRzd6VHotSFh5eXg?oc=5",
-   "basin": "CL",
-   "who": "Camanchaca",
-   "n": 6
+   "title": "Lerøy's Q3 operating profit jumps to NOK 459m and beats expectations",
+   "text": "Operational EBIT rose to NOK 459 million from NOK 15 million a year earlier. Lower farming costs and better biological performance offset lower harvest volumes, and the group sees low volume growth ahead.",
+   "src": "10 articles · 11-10",
+   "url": "https://ilaks.no/bedre-enn-ventet-fra-leroy-som-ser-lav-volumvekst-fremover/?mtm_campaign=feed_click&mtm_kwd=bedre-enn-ventet-fra-leroy-som-ser-lav-volumvekst-fremover&mtm_source=RSS2&mtm_medium=feed",
+   "basin": "NO",
+   "who": "Lerøy",
+   "n": 10
   }
  ],
  "monthly": [
@@ -847,7 +859,5 @@
    "tab": "supply"
   }
  ],
- "notes": [
-  "fx weekly: <urlopen error Tunnel connection failed: 403 Forbidden>"
- ]
+ "notes": []
 }
