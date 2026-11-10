@@ -1,0 +1,36 @@
+info
+Notification
+Looker Studio is now called Data Studio. For more, see our blog.
+Dismiss
+Slakting av oppdrettet laksefisk
+Reset
+Share
+arrow_drop_down
+Norge
+Produksjonsområder
+Tabell for nedlasting
+Om statistikken
+keyboard_arrow_left
+Slakting av oppdrettet laksefisk per kvalitetsklasse
+Totalt slaktevolum (tonn), per kvartal
+Totalt slaktevolum (tonn), per år
+Andel superior og ordinær, per kvartal
+Andel superior og ordinær, per år
+Andel produksjonsfisk, per kvartal
+Andel produksjonsfisk, per år
+Andel utkast, per kvartal
+Andel utkast, per år
+Hittil i 2026 og samme periode tidligere år 
+Akkumulerte tall for kvartal 1–3 (t.o.m. uke 39)
+
+Totalt slaktevolum (tonn)
+Andel superior og ordinær
+Andel produksjonsfisk
+Andel utkast
+Kilde: Mattilsynet
+
+Sist oppdatert: 9. 11. 2026
+Neste oppdatering: 8. 2. 2027
+
+
+Privacy Policy
