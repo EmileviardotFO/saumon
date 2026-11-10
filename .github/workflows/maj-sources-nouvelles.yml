@@ -20,9 +20,14 @@ jobs:
     - uses: actions/setup-python@v5
       with:
         python-version: '3.11'
-    - run: pip install pandas openpyxl lxml html5lib beautifulsoup4 requests pdfplumber
+    - run: |
+        pip install pandas openpyxl lxml html5lib beautifulsoup4 requests pdfplumber playwright
+        python3 -m playwright install --with-deps chromium
     - name: Collecte
-      run: python3 scripts/fetch_new_sources.py
+      run: python3 scripts/fetch_new_sources.py > /tmp/collecte.log 2>&1 || true; tail -40 /tmp/collecte.log
+    - name: Collecte au navigateur (Salmon Scotland, enquete ecossaise, Mattilsynet)
+      continue-on-error: true
+      run: python3 scripts/fetch_browser_sources.py 2>&1 | tee farming/donnees_no/_browser_log.txt | cut -c1-400
     - name: Builders (s'ils existent)
       continue-on-error: true
       run: |
