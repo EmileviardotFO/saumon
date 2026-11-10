@@ -45,13 +45,27 @@ def salmon_scotland(ctx):
             kept += 1
             continue
         try:
-            r = ctx.request.get(u, timeout=90000, headers={'Referer': 'https://www.salmonscotland.co.uk/reports'})
-            b = r.body()
-            if r.ok and b[:4] == b'%PDF':
+            # requete faite depuis la page de la liste elle-meme (meme origine, memes cookies, pile reseau du navigateur) :
+            # une requete directe hors navigateur recoit un 403
+            import base64
+            res = pg.evaluate("""async u => { const r = await fetch(u, {credentials: 'include'}); const b = new Uint8Array(await r.arrayBuffer());
+                let s = ''; for (let i = 0; i < b.length; i += 32768) s += String.fromCharCode.apply(null, b.subarray(i, i + 32768)); return [r.status, r.headers.get('content-type') || '', btoa(s)]; }""", u)
+            b = base64.b64decode(res[2])
+            if b[:4] != b'%PDF':
+                try:
+                    with pg.expect_download(timeout=30000) as dl:
+                        pg.evaluate("u => { const a = document.createElement('a'); a.href = u; a.download = ''; document.body.appendChild(a); a.click(); }", u)
+                    b = open(dl.value.path(), 'rb').read()
+                except Exception as e2:
+                    print('   clic :', str(e2)[:60])
+            if b[:4] == b'%PDF':
                 open(dest, 'wb').write(b)
                 got += 1
             else:
-                print('   pas un PDF :', h, r.status, r.headers.get('content-type', ''), len(b))
+                print('   pas un PDF :', h, res[0], res[1], len(b))
+                if got == 0 and n >= 3:
+                    print('   abandon : le site refuse les telechargements')
+                    break
         except Exception as e:
             print('   failed', h, str(e)[:100])
     print(f'ok salmon_scotland : {got} PDF telecharges, {kept} deja presents')
