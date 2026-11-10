@@ -358,7 +358,91 @@ def main():
                 break
             out.append({'k': k, 'tot': r(fish * hw * GUT + b0['new'] + max(0.0, b0['ly'] - b0['ly_old'] - b0['ly_new']), 1), 'ly': b0['ly'], 'old': r(fish * hw * GUT, 1), 'new': b0['new'], 'hw': r(hw, 2), 'hw_ly': r(gl['hw'], 2), 'w': r(wproj, 2), 'w_ly': r(gl['w'], 2), 't': r(tj, 1), 't_ly': r(tly, 1)})
         return out
-    budget_dd, budget_dd_persist = budget_growth(False), budget_growth(True)
+    budget_dd_nat, budget_dd_nat_persist = budget_growth(False), budget_growth(True)
+    # meme budget, zone par zone : poissons, poids, TGC, temperature normale et anomalie propres a chaque zone de production
+    # (une zone sans temperature ou sans TGC l'an dernier retombe sur les valeurs nationales)
+    def tnorm_z(po, k):
+        v = [T[(po, sh(k, -12 * y))] for y in (1, 2, 3) if (po, sh(k, -12 * y)) in T]
+        return S.mean(v) if v else None
+    zone_watch = []
+    def budget_zones(persist):
+        zones = sorted({po for (po, gg) in C})
+        tot = collections.defaultdict(float)
+        covered = collections.defaultdict(float)      # recolte de l'an dernier des zones traitees, pour completer les zones absentes au facteur national
+        detail = {}
+        for po in zones:
+            a, b = C.get((po, old), {}).get(last), C.get((po, old - 1), {}).get(sh(last, -12))
+            if not a or not b or not a['stock'] or not b['stock'] or a['stock'] < 2e5:
+                continue
+            n_ratio = a['stock'] / b['stock']
+            adv = a['weight_kg'] ** (1 / 3) - b['weight_kg'] ** (1 / 3)
+            g_now, g_ly = tgc_win(old, L3, po), tgc_win(old - 1, L3y, po)
+            rho_z = min(1.5, max(0.7, g_now / g_ly)) if g_now and g_ly else rho
+            rho_zeff = 1 + 0.7 * (rho_z - 1)
+            tl = t_last if (po, t_last) in T and tnorm_z(po, t_last) else None
+            an_z = (T[(po, tl)] - tnorm_z(po, tl)) if tl else anom
+            vol = {}
+            for i in range(1, 7):
+                k = sh(last, i); kl = sh(k, -12)
+                cl = C.get((po, old - 1), {}).get(kl)
+                if kl > last or not cl:
+                    break
+                nrm, tly, g = tnorm_z(po, k), T.get((po, kl)), tgc_month(old - 1, kl, po)
+                if nrm is None or tly is None:
+                    nrm, tly = tnorm(k), TN.get(kl)
+                if not g:
+                    g = tgc_month(old - 1, kl)
+                if nrm is None or tly is None or not g:
+                    return None, None
+                steps = max(0, i - (t_last - last) if t_last else i)
+                tj = nrm + an_z * (1.0 if persist else 0.6 ** steps)
+                adv += g * days(k) * (rho_zeff * tj - tly) / 10000
+                if not cl['stock'] or not cl['weight_kg']:
+                    vol[k] = 0.0
+                    continue
+                wproj = max(0.3, cl['weight_kg'] ** (1 / 3) + adv) ** 3
+                hw_ly = (cl['harv_kg'] / cl['harv_stk']) if cl.get('harv_stk') and cl.get('harv_kg') else cl['weight_kg'] * 1.15
+                hw = hw_ly * wproj / cl['weight_kg']
+                fish = (cl.get('harv_stk') or 0) * n_ratio / 1e6
+                vol[k] = fish * hw * GUT
+                tot[k] += vol[k]
+                covered[k] += (cl.get('harv_kg') or 0) * GUT / 1e6
+            if not persist:
+                detail[po] = {'n': r(a['stock'] / 1e6, 1), 'n_ly': r(b['stock'] / 1e6, 1), 'w': r(a['weight_kg']), 'w_ly': r(b['weight_kg']), 'tgc': g_now, 'tgc_ly': g_ly, 'rho': r(rho_z, 2), 'anom': r(an_z, 2),
+                              'vol3': r(sum(v for kk, v in vol.items() if kk <= sh(last, 3)), 1), 'vol3_ly': r(sum((C.get((po, old - 1), {}).get(sh(kk, -12)) or {}).get('harv_kg', 0) or 0 for kk in vol if kk <= sh(last, 3)) * GUT / 1e6, 1)}
+        out = []
+        for b0 in budget:
+            if b0['k'] not in tot:
+                break
+            rest = max(0.0, b0['ly_old'] - covered[b0['k']]) * f_old
+            out.append({'k': b0['k'], 'tot': r(tot[b0['k']] + rest + b0['new'] + max(0.0, b0['ly'] - b0['ly_old'] - b0['ly_new']), 1), 'ly': b0['ly'], 'old': r(tot[b0['k']] + rest, 1), 'new': b0['new']})
+        return out, detail
+    budget_dd, zone_detail = budget_zones(False)
+    budget_dd_persist, _ = budget_zones(True)
+    if not budget_dd or len(budget_dd) < 6:
+        budget_dd, budget_dd_persist, zone_detail = budget_dd_nat, budget_dd_nat_persist, None
+    # suivi de la TGC et des degres-jours par zone : depuis le registre, semaines BarentsWatch (temperature x 7 jours) contre les memes semaines l'an dernier
+    wk_last = max((y, w) for (po, y, w) in tw) if tw else None
+    def dd_since(po, y0):
+        tot_dd = n = 0.0
+        for (p2, y, w), v in tw.items():
+            if p2 != po or not v[1]:
+                continue
+            th = dt.date.fromisocalendar(y, w, 4)
+            km = th.year * 100 + th.month
+            if km > (last if y0 == 0 else sh(last, -12)) and (y, w) <= ((wk_last[0] - y0, wk_last[1]) if wk_last else (0, 0)):
+                tot_dd += 7 * v[0] / v[1]
+                n += 1
+        return tot_dd, n
+    tgc_watch = []
+    for po, d in sorted((zone_detail or {}).items()):
+        dd_now, wn = dd_since(po, 0)
+        dd_ly, wl = dd_since(po, 1)
+        g_norm = [tgc_win(old - 1 - y, [sh(k, -12 * y) for k in L3y], po) for y in (0, 1, 2)]
+        g_norm = r(S.mean([x for x in g_norm if x])) if any(g_norm) else None
+        nw = min(wn, wl)      # meme nombre de semaines des deux cotes (une semaine peut manquer dans une zone)
+        tgc_watch.append({'po': po, **d, 'tgc_norm': g_norm, 'dd_since': r(dd_now / wn * nw, 0) if wn and wl else None, 'dd_since_ly': r(dd_ly / wl * nw, 0) if wn and wl else None, 'weeks': int(nw)})
+    tgc_watch_meta = {'since': sh(last, 1), 'to_week': f'{wk_last[0]}-W{wk_last[1]:02d}' if wk_last else None, 'window': win}
     growth_note = (f"growth budget: same fish and pace, harvest weight follows expected degree-days — temperature normal of the last 3 years "
                    f"{'+ ' if anom >= 0 else '− '}{abs(anom):.1f} °C anomaly of {MON[t_last % 100 - 1] if t_last else '?'} fading by 0.6 a month (or kept), "
                    f"TGC of G{old - 1} at the same month × {rho_eff:.2f} (G{old}'s advance {rho:.2f}, kept at 70 %)") if t_last else None
@@ -387,7 +471,7 @@ def main():
            'depletion': {'proj': dep, 'ly': [[sh(sh(last, -12), i), r(v, 1)] for i, v in enumerate(dep_ly)], 'end20': end20, 'end05': end05},
            'handover': {'prev2': season_prev2, 'prev': season_prev, 'cur': proj, 'k50': hand50, 'k50_prev': hand50_prev, 'k50_prev2': hand50_prev2},
            'smolt': {str(g): v for g, v in SM.items()}, 'zones': Z, 'factors': factors,
-           'volume': {'scenarios': vol, 'budget': budget, 'budget_f': {'old': r(f_old, 3), 'new': r(f_new, 3)}, 'budget_note': budget_note, 'reconciled': recon, 'budget_dd': budget_dd, 'budget_dd_persist': budget_dd_persist, 'growth': {'anomaly_c': r(anom, 2), 'anomaly_month': t_last, 'tgc_ratio': r(rho, 3), 'tgc_ratio_used': r(rho_eff, 3), 'note': growth_note}, 'periods': periods, 'nowcast': {'k': nc['k'], 't': r(nc['t'] / 1000, 1), 'ly': r(nc['ly'] / 1000, 1)} if nc else None, 'tested': 'replayed since Jan 2021: 3.4 % average error on the next 5 months; Q4 forecasts made each November missed by 7–11 points in 2022–2025'},
+           'volume': {'scenarios': vol, 'budget': budget, 'budget_f': {'old': r(f_old, 3), 'new': r(f_new, 3)}, 'budget_note': budget_note, 'reconciled': recon, 'budget_dd': budget_dd, 'budget_dd_persist': budget_dd_persist, 'growth': {'anomaly_c': r(anom, 2), 'anomaly_month': t_last, 'tgc_ratio': r(rho, 3), 'tgc_ratio_used': r(rho_eff, 3), 'note': growth_note, 'by_zone': zone_detail is not None, 'national': {'dd': budget_dd_nat, 'dd_persist': budget_dd_nat_persist}}, 'tgc_watch': tgc_watch, 'tgc_watch_meta': tgc_watch_meta, 'periods': periods, 'nowcast': {'k': nc['k'], 't': r(nc['t'] / 1000, 1), 'ly': r(nc['ly'] / 1000, 1)} if nc else None, 'tested': 'replayed since Jan 2021: 3.4 % average error on the next 5 months; Q4 forecasts made each November missed by 7–11 points in 2022–2025'},
            'six': {'forecast': SIX.get('forecast'), 'alerts': SIX.get('alerts'), 'tests': {k: {x: v.get(x) for x in ('mape', 'mape_fixed4', 'naive_mape', 'inside_range')} for k, v in (SIX.get('tests') or {}).items()}}}
     io.open(OUT, 'w', encoding='utf-8').write(json.dumps(out, ensure_ascii=False, separators=(',', ':')))
     print(f"generations.json : registre {out['meta']['register_label']}, G{old} en recolte ({st['old']['n']:.1f} M, {st['old']['w']:.2f} kg), G{new} suivante ({st['new']['n']:.1f} M, {st['new']['w']:.2f} kg) ; fin 20 % {end20}, relais 50 % {hand50} (saison passee {hand50_prev})")
