@@ -1,0 +1,23 @@
+# Bakkafrost, Farming FO, par trimestre. Tenu a la main depuis les rapports, presentations et trading updates de Bakkafrost (releve du 11/11/2026).
+# harvest_tgw : tonnes videes (HOG). harvest_kg : poids moyen de recolte, kg HOG (libelle « kg » dans les presentations ; 5,2 kg HOG sur 2024 et 2025 dans le rapport annuel).
+# smolt_m : millions de smolts transferes en mer. smolt_g : poids moyen des smolts transferes, grammes. conf : ok, ou chart = lu sur une etiquette de graphique (a verifier).
+quarter,harvest_tgw,harvest_kg,smolt_m,smolt_g,conf,source
+2022-Q1,17459,4.8,2.0,353,chart,Q1 2023 presentation; Q1 2022 release
+2022-Q2,13101,,3.3,,ok,Q2 2023 release (comparative)
+2022-Q3,16850,5.1,4.117,,chart,Q3 2022 report and presentation
+2022-Q4,19276,,4.972,304,ok,Q4 2022 report; Q4 2023 report (comparative)
+2023-Q1,11005,4.4,2.099,424,chart,Q1 2024 report (comparative); Q1 2023 presentation
+2023-Q2,8658,,3.6,,ok,Q2 2023 release
+2023-Q3,16740,4.8,3.343,405,ok,Q3 2023 report
+2023-Q4,16005,4.7,5.164,375,ok,Q4 2023 report
+2024-Q1,14294,5.4,2.093,410,ok,Q1 2024 report
+2024-Q2,10226,,3.995,391,ok,Q2 2025 report (comparative)
+2024-Q3,21618,5.3,4.901,423,ok,Q3 2024 report and presentation
+2024-Q4,16638,5.3,6.093,413,ok,Q4 2024 report and presentation
+2025-Q1,18914,5.1,3.180,421,ok,Q1 2025 report and presentation
+2025-Q2,16020,5.0,5.434,464,ok,Q2 2025 report and trading update
+2025-Q3,25392,5.2,4.8,427,ok,Q3 2025 release and trading update
+2025-Q4,23312,5.6,5.322,485,ok,Q4 2025 report and trading update
+2026-Q1,25139,5.8,3.9,,ok,Q1 2026 release and trading update
+2026-Q2,26749,5.6,5.6,427,ok,Q2 2026 presentation and trading update
+2026-Q3,23097,5.0,4.5,,ok,Q3 2026 release and trading update
