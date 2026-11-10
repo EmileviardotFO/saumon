@@ -74,9 +74,13 @@ def main():
     if not months:
         print('scotland mortality : aucun PDF dans', SRC)
         return
+    for k in months:
+        months[k]['industry'] = ind.get(int(k), months[k]['industry'])
+    # cycles termines : mortalite cumulee declaree le mois ou la ferme est videe
+    cycles = sorted(({'m': k, 'co': x['co'], 'farm': x['farm'], 'cum': x['cum']} for k in months for x in months[k]['farms'] if x['cum'] is not None), key=lambda z: z['m'])
     out = {'meta': {'source': 'Salmon Scotland, Monthly mortality rate (one PDF a month, published about a month in arrears)', 'url': 'https://www.salmonscotland.co.uk/reports',
                     'note': 'Monthly mortality = fish lost in the month as % of the fish on the farm. Company means are simple averages of farms, not weighted by fish numbers. Cumulative = whole sea cycle, reported once the farm is emptied.'},
-           'industry': {str(k): v for k, v in sorted(ind.items())}, 'months': months, 'latest': max(months)}
+           'industry': {str(k): v for k, v in sorted(ind.items())}, 'cycles': cycles, 'months': months, 'latest': max(months)}
     json.dump(out, open(os.path.join(ROOT, 'data', 'scotland_mortality.json'), 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 
 
