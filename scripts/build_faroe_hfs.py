@@ -114,13 +114,25 @@ ALL=[c for c in cycles if good(c) and c.get('tgc')]
 by_y=collections.defaultdict(list)
 for c in ALL: by_y[c['hd'].year].append(c['tgc'])
 tg_year={y:(round(S.median(v),2),len(v)) for y,v in sorted(by_y.items())}
+# ---- delousages deduits : le registre HFS ne contient que les medicaments (bain, aliment) ; les traitements sans medicament
+# (eau douce, thermique, mecanique) n'y sont pas. On les lit dans les comptages : chute d'au moins 60 % entre deux comptages
+# espaces de 24 jours au plus, en partant de 0,3 femelle adulte ou plus. 'med' = un medicament est declare sur le site autour de la chute.
+lice_by=collections.defaultdict(list)
+for l in L: lice_by[l['site']].append((l['d'],l['v']))
+KD=[]
+for s_,v in lice_by.items():
+    v.sort()
+    for (a,x),(b,y) in zip(v,v[1:]):
+        if x>=0.3 and y<=0.4*x and (b-a).days<=24:
+            KD.append(dict(site=s_,co=co.get(s_),a=a,b=b,x=x,y=y,med=any(a-dt.timedelta(days=10)<=m['d0']<=b for m in M if m['site']==s_)))
 # ---- fermiers
 comp=[]
 for c_ in CO.values():
     Tm=[m for m in M if m['co']==c_ and T0<=m['d0']]; st_=S.mean(x[c_] for x in stock[-24:])
     Lv=[l['v'] for l in L if l['co']==c_ and T0<=l['d']]
     a,na=tas(c_,T0,last); b,nb=tas(c_,dt.date(2022,11,1),T0)
-    comp.append(dict(co=c_, stock=stock[-1][c_], stock_ly=stock[-13][c_], sites=sum(1 for s in current if co[s]==c_), tas=a, tas_n=na, tas_prev=b, trt=len(Tm), bath=sum(m['bath'] for m in Tm), trt_m=round(len(Tm)/st_/2,2), lice=round(S.mean(Lv),2), lice_hi=round(100*sum(v>0.5 for v in Lv)/len(Lv)), tgc=tg[(c_,'last')], tgc_prev=tg[(c_,'prev')]))
+    kd=[k for k in KD if k['co']==c_ and k['b']>=T0]
+    comp.append(dict(co=c_, kd=len(kd), kd_nomed=sum(1 for k in kd if not k['med']), kd_m=round(len(kd)/st_/2,2), stock=stock[-1][c_], stock_ly=stock[-13][c_], sites=sum(1 for s in current if co[s]==c_), tas=a, tas_n=na, tas_prev=b, trt=len(Tm), bath=sum(m['bath'] for m in Tm), trt_m=round(len(Tm)/st_/2,2), lice=round(S.mean(Lv),2), lice_hi=round(100*sum(v>0.5 for v in Lv)/len(Lv)), tgc=tg[(c_,'last')], tgc_prev=tg[(c_,'prev')]))
 TAS={c['co']:c['tas'] for c in comp}
 # ---- sites + projection
 fj=json.load(open(R+'data/faroe.json')); pos={x['code']:(x['lat'],x['lon']) for x in fj['sites']+fj['register_other']}
@@ -135,7 +147,7 @@ for s in sorted(ser):
         T=TAS[cur['co']]; endm=addm(cur['start'],round(T)); harvesting=cur['now']<0.9*cur['peak'] and cur['months']>=9
         if endm<=last: endm=addm(last,2 if harvesting else 3)
         row.update(start=cur['start'].isoformat()[:7], months=cur['months'], known=cur['known'], peak=cur['peak'], end=endm.isoformat()[:7], hstart=addm(endm,-3).isoformat()[:7], state='harvesting' if harvesting else ('smolts' if cur['months']<=4 else 'growing'),
-                   trt=sum(1 for m in M if m['site']==s and m['d0']>=cur['start']))
+                   trt=sum(1 for m in M if m['site']==s and m['d0']>=cur['start']), kd=sum(1 for k in KD if k['site']==s and k['a']>=cur['start']), kd_nomed=sum(1 for k in KD if k['site']==s and k['a']>=cur['start'] and not k['med']))
     else: row.update(state='fallow', trt=0)
     sites.append(row)
 def addm(d,n):
@@ -158,7 +170,7 @@ med=[]
 d=dt.date(last.year-2,last.month,1)
 for i in range(1,25):
     e=addm(d,i); k=(e.year,e.month); T=[m for m in M if (m['d0'].year,m['d0'].month)==k]
-    med.append(dict(k=e.year*100+e.month, bath=sum(m['bath'] for m in T), feed=sum(not m['bath'] for m in T), by={c:sum(1 for m in T if m['co']==c) for c in CO.values()}))
+    med.append(dict(k=e.year*100+e.month, kd=sum(1 for q in KD if (q['b'].year,q['b'].month)==k and not q['med']), bath=sum(m['bath'] for m in T), feed=sum(not m['bath'] for m in T), by={c:sum(1 for m in T if m['co']==c) for c in CO.values()}))
 subst=collections.Counter(((m['substance'] or m['product']).lower().replace('emamektin','emamectin').replace('emamectinbenzoate','emamectin').split(' ')[0].replace('slice','emamectin'), m['co']) for m in M if m['d0']>=T0)
 med_last=max(m['d0'] for m in M).isoformat()
 cyc=[dict(site=c['site'],name=name[c['site']],co=c['co'],start=c['start'].isoformat()[:7],end=c['end'].isoformat()[:7],months=c['months'],peak=round(c['peak']/1e6,2),transfer=c['months']<=9,tgc=c.get('tgc'),hw=c.get('hw'),days=c.get('days'),dd=c.get('dd')) for c in sorted(cycles,key=lambda c:c['end']) if c['known'] and c['end']>=T0]
