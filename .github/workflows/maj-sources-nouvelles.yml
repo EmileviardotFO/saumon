@@ -1,0 +1,37 @@
+# Sources ajoutees en novembre 2026 : Ecosse (poux hebdo par site, mortalite Salmon Scotland, Fish Health Inspectorate, enquete annuelle),
+# Norvege (registre des licences et capacites, statistique hebdo du Norges sjomatrad, classes de qualite), Chili (loi 21.532).
+# Mercredi 5 h UTC ; les fichiers bruts sont deposes dans le depot, les builders les lisent ensuite.
+name: Sources nouvelles — Écosse, Norvège (registre, sjømatråd), Chili (loi 21.532)
+on:
+  schedule:
+  - cron: 0 5 * * 3
+  workflow_dispatch: {}
+permissions:
+  contents: write
+concurrency:
+  group: maj-donnees
+  cancel-in-progress: false
+jobs:
+  maj:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - run: pip install pandas openpyxl lxml html5lib beautifulsoup4 requests pdfplumber
+    - name: Collecte
+      run: python3 scripts/fetch_new_sources.py
+    - name: Builders (s'ils existent)
+      continue-on-error: true
+      run: |
+        for s in build_scotland_weekly.py build_norway_capacity.py; do if [ -f scripts/$s ]; then python3 scripts/$s || true; fi; done
+    - name: Publier
+      if: always()
+      run: |
+        git config user.name "github-actions"; git config user.email "actions@github.com"
+        git add farming/donnees_gb/ farming/donnees_no/ xlsx/chile/transparencia/ data/
+        if git diff --staged --quiet; then echo "Aucun changement."; else
+          git commit -m "Sources nouvelles : Écosse, Norvège, Chili ($(date -u +%Y-%m-%d))"
+          git pull --rebase; git push; fi
