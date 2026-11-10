@@ -318,6 +318,50 @@ def main():
         m = next((x for x in cen if x['k'] == b['k']), None)
         if m:
             recon.append({'k': b['k'], 'lo': r(min(m['tot'], b['tot']), 1), 'hi': r(max(m['tot'], b['tot']), 1), 'mid': r((m['tot'] + b['tot']) / 2, 1), 'ly': b['ly']})
+    # budget avec croissance et temperature : memes poissons, meme rythme, mais le poids de recolte suit les degres-jours attendus
+    # (temperature normale des 3 dernieres annees + anomalie actuelle amortie de 0,6 par mois ; variante : anomalie maintenue),
+    # avec la TGC de la generation precedente au meme mois x l'avance de croissance actuelle gardee a 70 % (comme le scenario central)
+    TN = {}
+    for (po, km), v in tt.items():
+        if v[1]:
+            TN.setdefault(km, [0.0, 0.0])
+            TN[km][0] += v[0]
+            TN[km][1] += v[1]
+    TN = {k: v[0] / v[1] for k, v in TN.items() if v[1]}
+    def tnorm(k):
+        v = [TN[sh(k, -12 * y)] for y in (1, 2, 3) if sh(k, -12 * y) in TN]
+        return S.mean(v) if v else None
+    t_last = max(k for k in TN if tnorm(k) and k <= sh(last, 1)) if TN else None
+    anom = (TN[t_last] - tnorm(t_last)) if t_last else 0.0
+    rho = (tgc['old_3m'] / tgc['old_ly_3m']) if tgc.get('old_3m') and tgc.get('old_ly_3m') else 1.0
+    rho_eff = 1 + 0.7 * (rho - 1)
+    def budget_growth(persist):
+        out, adv = [], (o['w'] ** (1 / 3) - oly['w'] ** (1 / 3)) if o['w'] and oly['w'] else 0.0
+        for i in range(1, 7):
+            k = sh(last, i); kl = sh(k, -12)
+            if kl > last:
+                break
+            nrm, tly, g = tnorm(k), TN.get(kl), tgc_month(old - 1, kl)
+            if nrm is None or tly is None or not g:
+                return None
+            steps = max(0, i - (t_last - last) if t_last else i)
+            tj = nrm + anom * (1.0 if persist else 0.6 ** steps)
+            adv += g * days(k) * (rho_eff * tj - tly) / 10000
+            gl = gstate(old - 1, kl)
+            if not gl['w'] or not gl['hw']:
+                return None
+            wproj = max(0.5, gl['w'] ** (1 / 3) + adv) ** 3
+            hw = gl['hw'] * wproj / gl['w']
+            fish = gl['h'] * (o['n'] / oly['n'] if oly['n'] else 1)      # poissons recoltes l'an dernier ce mois-la, au prorata du stock restant
+            b0 = next((b for b in budget if b['k'] == k), None)
+            if not b0:
+                break
+            out.append({'k': k, 'tot': r(fish * hw * GUT + b0['new'] + max(0.0, b0['ly'] - b0['ly_old'] - b0['ly_new']), 1), 'ly': b0['ly'], 'old': r(fish * hw * GUT, 1), 'new': b0['new'], 'hw': r(hw, 2), 'hw_ly': r(gl['hw'], 2), 'w': r(wproj, 2), 'w_ly': r(gl['w'], 2), 't': r(tj, 1), 't_ly': r(tly, 1)})
+        return out
+    budget_dd, budget_dd_persist = budget_growth(False), budget_growth(True)
+    growth_note = (f"growth budget: same fish and pace, harvest weight follows expected degree-days — temperature normal of the last 3 years "
+                   f"{'+ ' if anom >= 0 else '− '}{abs(anom):.1f} °C anomaly of {MON[t_last % 100 - 1] if t_last else '?'} fading by 0.6 a month (or kept), "
+                   f"TGC of G{old - 1} at the same month × {rho_eff:.2f} (G{old}'s advance {rho:.2f}, kept at 70 %)") if t_last else None
     # periodes : 3 prochains mois et les 3 suivants ; si les 3 prochains mois suivent le modele (confirme par les exports), ce qui reste du
     # budget de 6 mois dit ce que les 3 suivants peuvent donner
     def psum(A, a, b, key='tot'):
@@ -330,6 +374,12 @@ def main():
         periods = {'p1': {'span': f"{MON[budget[0]['k'] % 100 - 1]}–{MON[budget[2]['k'] % 100 - 1]} {budget[2]['k'] // 100}", 'model': r(q1m, 1), 'budget': r(q1b, 1), 'ly': r(q1l, 1)},
                    'p2': {'span': f"{MON[budget[3]['k'] % 100 - 1]}–{MON[budget[5]['k'] % 100 - 1]} {budget[5]['k'] // 100}", 'model': r(q2m, 1), 'budget': r(q2b, 1), 'ly': r(q2l, 1), 'implied': r(q1b + q2b - q1m, 1)},
                    'verdict': ('brought_forward' if q1m > q1b * 1.02 else 'held_back' if q1m < q1b * 0.98 else 'in_line')}
+        for key, B in (('dd', budget_dd), ('dd_persist', budget_dd_persist)):
+            if B and len(B) >= 6:
+                a, b = psum(B, 0, 3), psum(B, 3, 6)
+                periods['p1'][key] = r(a, 1)
+                periods['p2'][key] = r(b, 1)
+                periods['p2']['implied_' + key] = r(a + b - q1m, 1)
     budget_note = (f"fish budget: G{old} emptied at G{old - 1}'s pace of last year ({o['n']:.0f} M fish left against {oly['n']:.0f} M, x{f_old:.3f} with the weight advance), "
                    f"G{new} follows G{new - 1} in proportion to its biomass (x{f_new:.3f}), older fish as last year; no growth or temperature effect")
     out = {'meta': {'generated': dt.date.today().isoformat(), 'register': last, 'register_label': f'{MON[last % 100 - 1]} {last // 100}', 'old': old, 'new': new, 'window': win},
@@ -337,7 +387,7 @@ def main():
            'depletion': {'proj': dep, 'ly': [[sh(sh(last, -12), i), r(v, 1)] for i, v in enumerate(dep_ly)], 'end20': end20, 'end05': end05},
            'handover': {'prev2': season_prev2, 'prev': season_prev, 'cur': proj, 'k50': hand50, 'k50_prev': hand50_prev, 'k50_prev2': hand50_prev2},
            'smolt': {str(g): v for g, v in SM.items()}, 'zones': Z, 'factors': factors,
-           'volume': {'scenarios': vol, 'budget': budget, 'budget_f': {'old': r(f_old, 3), 'new': r(f_new, 3)}, 'budget_note': budget_note, 'reconciled': recon, 'periods': periods, 'nowcast': {'k': nc['k'], 't': r(nc['t'] / 1000, 1), 'ly': r(nc['ly'] / 1000, 1)} if nc else None, 'tested': 'replayed since Jan 2021: 3.4 % average error on the next 5 months; Q4 forecasts made each November missed by 7–11 points in 2022–2025'},
+           'volume': {'scenarios': vol, 'budget': budget, 'budget_f': {'old': r(f_old, 3), 'new': r(f_new, 3)}, 'budget_note': budget_note, 'reconciled': recon, 'budget_dd': budget_dd, 'budget_dd_persist': budget_dd_persist, 'growth': {'anomaly_c': r(anom, 2), 'anomaly_month': t_last, 'tgc_ratio': r(rho, 3), 'tgc_ratio_used': r(rho_eff, 3), 'note': growth_note}, 'periods': periods, 'nowcast': {'k': nc['k'], 't': r(nc['t'] / 1000, 1), 'ly': r(nc['ly'] / 1000, 1)} if nc else None, 'tested': 'replayed since Jan 2021: 3.4 % average error on the next 5 months; Q4 forecasts made each November missed by 7–11 points in 2022–2025'},
            'six': {'forecast': SIX.get('forecast'), 'alerts': SIX.get('alerts'), 'tests': {k: {x: v.get(x) for x in ('mape', 'mape_fixed4', 'naive_mape', 'inside_range')} for k, v in (SIX.get('tests') or {}).items()}}}
     io.open(OUT, 'w', encoding='utf-8').write(json.dumps(out, ensure_ascii=False, separators=(',', ':')))
     print(f"generations.json : registre {out['meta']['register_label']}, G{old} en recolte ({st['old']['n']:.1f} M, {st['old']['w']:.2f} kg), G{new} suivante ({st['new']['n']:.1f} M, {st['new']['w']:.2f} kg) ; fin 20 % {end20}, relais 50 % {hand50} (saison passee {hand50_prev})")
