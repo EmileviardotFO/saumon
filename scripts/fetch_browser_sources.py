@@ -32,32 +32,29 @@ def salmon_scotland(ctx):
         if len(links) == n0 and page:
             break
     print('  Salmon Scotland monthly reports:', len(links))
-    rows, months = [], set()
-    for h in sorted(links):
+    # chaque lien renvoie directement le PDF du mois (le nom du lien ne correspond pas toujours au mois : le
+    # constructeur lit le mois dans le PDF). On ne retelecharge pas un PDF deja present, sauf les 3 plus recents
+    # de la liste (Salmon Scotland corrige parfois le rapport du mois precedent).
+    out = os.path.join(GB, 'salmon_scotland')
+    os.makedirs(out, exist_ok=True)
+    got = kept = 0
+    for n, h in enumerate(links):
         u = h if h.startswith('http') else 'https://www.salmonscotland.co.uk' + h
+        dest = os.path.join(out, re.sub(r'[^a-z0-9-]+', '-', u.rstrip('/').split('/')[-1].lower()) + '.pdf')
+        if os.path.exists(dest) and n >= 3:
+            kept += 1
+            continue
         try:
-            pg.goto(u, timeout=90000, wait_until='domcontentloaded'); pg.wait_for_timeout(1200)
-            title = pg.evaluate("(document.querySelector('h1') || {innerText: document.title}).innerText")
-            m = re.search(r'(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})', title)
-            if not m:
-                print('   no month:', h, title[:60]); continue
-            ym = f'{m.group(2)}-{MON[m.group(1).lower()]:02d}'
-            tabs = pd.read_html(io.StringIO(pg.content()))
+            r = ctx.request.get(u, timeout=90000, headers={'Referer': 'https://www.salmonscotland.co.uk/reports'})
+            b = r.body()
+            if r.ok and b[:4] == b'%PDF':
+                open(dest, 'wb').write(b)
+                got += 1
+            else:
+                print('   pas un PDF :', h, r.status, r.headers.get('content-type', ''), len(b))
         except Exception as e:
-            print('   failed', h, str(e)[:80]); continue
-        for t in tabs:
-            cols = [str(c).strip() for c in t.columns]
-            if not any('farm' in c.lower() for c in cols):
-                continue
-            if ym not in months and len(months) < 2:
-                print('   ', ym, cols)
-            for rec in t.fillna('').astype(str).values.tolist():
-                rows.append([ym] + [x.strip() for x in rec[:6]])
-            months.add(ym)
-    if rows:
-        with open(os.path.join(GB, 'salmon_scotland_mortality.csv'), 'w', newline='', encoding='utf-8') as f:
-            w = csv.writer(f); w.writerow(['month', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6']); w.writerows(rows)
-        print(f'ok salmon_scotland_mortality.csv {len(rows)} lignes, {len(months)} mois, {min(months)} -> {max(months)}')
+            print('   failed', h, str(e)[:100])
+    print(f'ok salmon_scotland : {got} PDF telecharges, {kept} deja presents')
     pg.close()
 
 
