@@ -175,7 +175,14 @@ def newfoundland(ctx):
             print(' ', r.status if r else '?', slug, '| title:', pg.title(), '| frames:', [f.url[:160] for f in pg.frames][:6])
             html = pg.content()
             print('   pdf refs in html:', sorted(set(re.findall(r'[\w:/.%~-]+\.pdf[^"\'\s<>]{0,60}', html)))[:10])
-            print('   resources:', sorted({u for _, u in seen})[:25])
+            for u in sorted(set(re.findall(r'https://cdn\.flipbooklets\.com/pdfs/[\w.-]+\.pdf', html))):
+                dest = os.path.join(out, slug + '.pdf')
+                if not os.path.exists(dest):
+                    rr = ctx.request.get(u, timeout=120000, headers={'Referer': 'https://flipbooklets.com/'})
+                    if rr.ok and rr.body()[:4] == b'%PDF':
+                        open(dest, 'wb').write(rr.body()); print('   saved', slug + '.pdf', len(rr.body()))
+                    else:
+                        print('   pdf refused', rr.status, u)
             txt = ''
             for f in pg.frames:
                 try:
