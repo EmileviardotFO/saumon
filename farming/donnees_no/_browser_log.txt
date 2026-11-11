@@ -13,14 +13,13 @@ NEWFOUNDLAND
    link: Publications | https://naia.ca/publications/
    frames: ['https://naia.ca/media/public-reporting-archived-sea-lice-numbers']
    iframes/embeds: ['http://naia.ca/wp-content/uploads/2025/04/NAIA-colour-rgb.jpg', 'http://naia.ca/wp-content/uploads/2025/04/NAIA-colour-rgb.jpg', 'http://naia.ca/wp-content/uploads/2025/04/NAIA-colour-rgb.jpg', 'https://naia.ca/media/public-reporting-archived-sea-lice-numbers']
-   PDF 7874601 https://cdn.flipbooklets.com/pdfs/ZbzYmiaf3c7DFlCSk4Hzp4Gav1qE9rKvfcts6OTZ.pdf?v=fb-1402998998
+   PDF 7874601 https://cdn.flipbooklets.com/pdfs/ZbzYmiaf3c7DFlCSk4Hzp4Gav1qE9rKvfcts6OTZ.pdf?v=fb-45949154
   200 caia-2024-sustainability-report | title: CAIA 2024 Sustainability-report - FlipBooklets | frames: ['https://flipbooklets.com/pdfflipbooklets/caia-2024-sustainability-report#page1', 'about:blank']
-   pdf refs in html: ['allPages.pdf', 'https://cdn.flipbooklets.com/pdfs/ZbzYmiaf3c7DFlCSk4Hzp4Gav1qE9rKvfcts6OTZ.pdf?v=fb-1402998998', 'https://flipbooklets.com/flipbooklets-v2/js/flipbook.pdfservice.min.js?v=1.1']
-   resources: ['blob:https://flipbooklets.com/530cf14b-5d43-45af-9d56-a04fff49c07e', 'blob:https://flipbooklets.com/abfbe31e-c51f-4b5a-9720-592058fc9e6d', 'blob:https://flipbooklets.com/eee7052a-ef09-46df-87a3-019b170b5ddb', 'https://api.hubapi.com/hs-script-loader-public/v2/config/pixels-and-events/json?portalId=8142018', 'https://flipbooklets.com/images/fb-logo-icon.png', 'https://forms.hscollectedforms.net/collected-forms/v1/config/json?portalId=8142018&utk=', 'https://forms.hsforms.com/embed/v3/counters.gif?key=collected-forms-embed-js-form-bind&count=1', 'https://track.hubspot.com/__ptq.gif?k=1&sd=1280x720&cd=24-bit&cs=UTF-8&ln=en-gb&bfp=7cff01d1fe4ab7572af3aca890ecf101&v=1.1&a=8142018&pu=https%3A%2F%2Fflipbooklets.com%2Fpdfflipbooklets%2Fcaia-2024-sustainability-report&t']
+   pdf refs in html: ['allPages.pdf', 'https://cdn.flipbooklets.com/pdfs/ZbzYmiaf3c7DFlCSk4Hzp4Gav1qE9rKvfcts6OTZ.pdf?v=fb-45949154', 'https://flipbooklets.com/flipbooklets-v2/js/flipbook.pdfservice.min.js?v=1.1']
    text chars: 6437 | Canadian Aquaculture Industry Alliance 2024 Sustainability Report | SustainabilityReport |  Canadian Aquaculture Industry Alliance |  |  | 2024 | 1 / 24 |  | Powered by - FlipBooklets.com | × | This website uses cookies | This website uses cookies to improve user experience. By using our website you consent to all cookies in accordance with our Cookie Policy. Read more | ACCEPT ALL | DECLINE ALL |  SHOW DETAILS | STRICTLY NECESSARY | PERFORMANCE | TARGETING | FUNCTIONALITY | COOKIE DECLARATION | ABOUT COOKIES | Strictly necessary | Performance | Targeting | Functionality | Strictly necessary cookies allow core website functionality such as us
   200 economic-impacts-of-the-newfoundland-and-labrador-aquaculture-industry | title: Economic Impacts of the Newfoundland and Labrador Aquaculture Industry - FlipBooklets | frames: ['https://flipbooklets.com/pdfflipbooklets/economic-impacts-of-the-newfoundland-and-labrador-aquaculture-industry#page1', 'about:blank']
-   pdf refs in html: ['allPages.pdf', 'https://cdn.flipbooklets.com/pdfs/aDTtWv5GILrA2C84LDQEn2kVAz1V3ceCJSWuqBiC.pdf?v=fb-1876198289', 'https://flipbooklets.com/flipbooklets-v2/js/flipbook.pdfservice.min.js?v=1.1']
-   resources: ['blob:https://flipbooklets.com/022d8492-139c-4a8a-80b6-0d164a96c758', 'blob:https://flipbooklets.com/37283597-968a-484f-8b39-206af35bd2da', 'blob:https://flipbooklets.com/a2d38149-d801-4ff3-9ff4-0e88ba593230', 'https://api.hubapi.com/hs-script-loader-public/v2/config/pixels-and-events/json?portalId=8142018', 'https://flipbooklets.com/images/fb-logo-icon.png', 'https://forms.hscollectedforms.net/collected-forms/v1/config/json?portalId=8142018&utk=', 'https://forms.hsforms.com/embed/v3/counters.gif?key=collected-forms-embed-js-form-bind&count=1', 'https://track.hubspot.com/__ptq.gif?k=1&sd=1280x720&cd=24-bit&cs=UTF-8&ln=en-gb&bfp=7cff01d1fe4ab7572af3aca890ecf101&v=1.1&a=8142018&pu=https%3A%2F%2Fflipbooklets.com%2Fpdfflipbooklets%2Feconomic-impacts-of-the-newfoundl']
+   pdf refs in html: ['allPages.pdf', 'https://cdn.flipbooklets.com/pdfs/aDTtWv5GILrA2C84LDQEn2kVAz1V3ceCJSWuqBiC.pdf?v=fb-1685311909', 'https://flipbooklets.com/flipbooklets-v2/js/flipbook.pdfservice.min.js?v=1.1']
+   saved economic-impacts-of-the-newfoundland-and-labrador-aquaculture-industry.pdf 21383388
    text chars: 6375 | Economic impacts of the newfoundland and Labrador  aquaculture industry | 1 / 26 |  | Powered by - FlipBooklets.com | × | This website uses cookies | This website uses cookies to improve user experience. By using our website you consent to all cookies in accordance with our Cookie Policy. Read more | ACCEPT ALL | DECLINE ALL |  SHOW DETAILS | STRICTLY NECESSARY | PERFORMANCE | TARGETING | FUNCTIONALITY | COOKIE DECLARATION | ABOUT COOKIES | Strictly necessary | Performance | Targeting | Functionality | Strictly necessary cookies allow core website functionality such as user login and account management. The website cannot be used pr
 
 ================================================================================
@@ -30,7 +29,7 @@ SALMON_SCOTLAND
    clic : Download.path: canceled
    pas un PDF : https://www.salmonscotland.co.uk/reports/monthly-mortality-rate-september-2026 403 text/html; charset=UTF-8 6115
    clic : Download.path: canceled
-   pas un PDF : https://www.salmonscotland.co.uk/reports/monthly-mortality-rate-august-2027 403 text/html; charset=UTF-8 6106
+   pas un PDF : https://www.salmonscotland.co.uk/reports/monthly-mortality-rate-august-2027 403 text/html; charset=UTF-8 6127
    clic : Download.path: canceled
    pas un PDF : https://www.salmonscotland.co.uk/reports/monthly-mortality-rate-july-2026 403 text/html; charset=UTF-8 6100
    clic : Download.path: canceled
@@ -86,10 +85,10 @@ Neste oppdatering: 8. 2. 2027
 
 Privacy Policy
   nav items: ['our blog.', 'Privacy Policy']
-  data response 0 https://datastudio.google.com/batchedDataV2?appVersion=20261108_0000 4875
-  data response 1 https://datastudio.google.com/batchedDataV2?appVersion=20261108_0000 5111
-  data response 2 https://datastudio.google.com/batchedDataV2?appVersion=20261108_0000 4445
-  data response 3 https://datastudio.google.com/batchedDataV2?appVersion=20261108_0000 4884
-  data response 4 https://datastudio.google.com/batchedDataV2?appVersion=20261108_0000 4502
-  data response 5 https://datastudio.google.com/batchedDataV2?appVersion=20261108_0000 4879
+  data response 0 https://datastudio.google.com/batchedDataV2?appVersion=20261108_0000 4699
+  data response 1 https://datastudio.google.com/batchedDataV2?appVersion=20261108_0000 4708
+  data response 2 https://datastudio.google.com/batchedDataV2?appVersion=20261108_0000 4703
+  data response 3 https://datastudio.google.com/batchedDataV2?appVersion=20261108_0000 4269
+  data response 4 https://datastudio.google.com/batchedDataV2?appVersion=20261108_0000 4326
+  data response 5 https://datastudio.google.com/batchedDataV2?appVersion=20261108_0000 5022
 FIN
