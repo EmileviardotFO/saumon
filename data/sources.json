@@ -1,6 +1,6 @@
 {
  "meta": {
-  "generated": "2026-11-11T20:54+00:00",
+  "generated": "2026-11-11T21:03+00:00",
   "n": 72,
   "ok": 59,
   "late": 0,
@@ -430,8 +430,8 @@
      "source": "Subpesca, resolutions and informes sectoriales",
      "cadence": "daily",
      "pub": "as resolutions are signed",
-     "to": "res. 131481",
-     "collected": "2026-11-10",
+     "to": "res. 131494",
+     "collected": "2026-11-11",
      "wf": "chili-subpesca",
      "run": {
       "date": "2026-11-11",
