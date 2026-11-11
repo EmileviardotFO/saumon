@@ -299,7 +299,24 @@ def main():
         for m in s['months'][:6]:
             scl = REG0[sh(m['k'], -12)] / m['ly_tot'] if m.get('ly_tot') and REG0.get(sh(m['k'], -12)) else 1.0
             vol[sc].append({'k': m['k'], 'tot': r(m['tot'] * scl, 1), 'ly': r(m['ly_tot'] * scl, 1), 'kt5': r(m['kt5'], 1), 'kt6': r(m['kt6'], 1), 'ly5': r(m['ly5'], 1), 'ly6': r(m['ly6'], 1)})
-    nc = (G.get('nowcast') or {}).get('next')
+    NC = G.get('nowcast') or {}
+    nc = NC.get('next')
+    # le mois deja connu par les exportations remplace le modele (tonnes vives -> vides, comme le reste du panneau)
+    if nc:
+        for sc in vol.values():
+            for m in sc:
+                if m['k'] == nc['k']:
+                    m['tot'], m['known'] = r(nc['t'] * GUT / 1000, 1), True
+    # mois suivant en cours : rythme des exportations de poisson entier contre les memes jours un an plus tot,
+    # applique au meme mois de l'an dernier (registre) -> controle du modele, affiche a cote de la prevision
+    pace = None
+    af = NC.get('after')
+    if af and af.get('days', 0) >= 7 and vol.get('central'):
+        m = next((x for x in vol['central'] if x['k'] == af['k']), None)
+        if m and m.get('ly'):
+            alt = m['ly'] * (1 + af['yoy'] / 100)
+            pace = {'k': af['k'], 'days': af['days'], 'yoy': r(af['yoy'], 1), 'tot': r(alt, 1), 'model': m['tot'], 'model_yoy': r(100 * (m['tot'] / m['ly'] - 1), 1), 'ly': m['ly'],
+                    'gap': r(100 * (alt / m['tot'] - 1), 1)}
     # budget de poissons : volume des 6 prochains mois si la generation en recolte est videe au rythme de l'an dernier
     # (poissons restants x avance de poids), la nouvelle generation suit l'an dernier au prorata de sa biomasse, le reste comme l'an dernier
     def harv_kt(gen, k):
@@ -492,7 +509,7 @@ def main():
            'depletion': {'proj': dep, 'ly': [[sh(sh(last, -12), i), r(v, 1)] for i, v in enumerate(dep_ly)], 'end20': end20, 'end05': end05},
            'handover': {'prev2': season_prev2, 'prev': season_prev, 'cur': proj, 'k50': hand50, 'k50_prev': hand50_prev, 'k50_prev2': hand50_prev2},
            'smolt': {str(g): v for g, v in SM.items()}, 'zones': Z, 'factors': factors,
-           'volume': {'scenarios': vol, 'budget': budget, 'budget_f': {'old': r(f_old, 3), 'new': r(f_new, 3)}, 'budget_note': budget_note, 'reconciled': recon, 'budget_dd': budget_dd, 'budget_dd_persist': budget_dd_persist, 'growth': {'anomaly_c': r(anom, 2), 'anomaly_month': t_last, 'tgc_ratio': r(rho, 3), 'tgc_ratio_used': r(rho_eff, 3), 'note': growth_note, 'by_zone': zone_detail is not None, 'national': {'dd': budget_dd_nat, 'dd_persist': budget_dd_nat_persist}}, 'tgc_watch': tgc_watch, 'tgc_watch_meta': tgc_watch_meta, 'periods': periods, 'nowcast': {'k': nc['k'], 't': r(nc['t'] / 1000, 1), 'ly': r(nc['ly'] / 1000, 1)} if nc else None, 'tested': 'replayed since Jan 2021: 3.4 % average error on the next 5 months; Q4 forecasts made each November missed by 7–11 points in 2022–2025'},
+           'volume': {'scenarios': vol, 'budget': budget, 'budget_f': {'old': r(f_old, 3), 'new': r(f_new, 3)}, 'budget_note': budget_note, 'reconciled': recon, 'budget_dd': budget_dd, 'budget_dd_persist': budget_dd_persist, 'growth': {'anomaly_c': r(anom, 2), 'anomaly_month': t_last, 'tgc_ratio': r(rho, 3), 'tgc_ratio_used': r(rho_eff, 3), 'note': growth_note, 'by_zone': zone_detail is not None, 'national': {'dd': budget_dd_nat, 'dd_persist': budget_dd_nat_persist}}, 'tgc_watch': tgc_watch, 'tgc_watch_meta': tgc_watch_meta, 'periods': periods, 'nowcast': {'k': nc['k'], 't': r(nc['t'] * GUT / 1000, 1), 'ly': r(nc['ly'] * GUT / 1000, 1)} if nc else None, 'pace': pace, 'tested': 'Replayed since Jan 2021: 3.4 % average error on the next 5 months; Q4 forecasts made each November missed by 7–11 points in 2022–2025'},
            'six': {'forecast': SIX.get('forecast'), 'alerts': SIX.get('alerts'), 'tests': {k: {x: v.get(x) for x in ('mape', 'mape_fixed4', 'naive_mape', 'inside_range')} for k, v in (SIX.get('tests') or {}).items()}}}
     io.open(OUT, 'w', encoding='utf-8').write(json.dumps(out, ensure_ascii=False, separators=(',', ':')))
     print(f"generations.json : registre {out['meta']['register_label']}, G{old} en recolte ({st['old']['n']:.1f} M, {st['old']['w']:.2f} kg), G{new} suivante ({st['new']['n']:.1f} M, {st['new']['w']:.2f} kg) ; fin 20 % {end20}, relais 50 % {hand50} (saison passee {hand50_prev})")
