@@ -2643,6 +2643,18 @@ function showDataBanner(live) {
     .sb-b.late .sb-t i{background:#ffb74d;box-shadow:0 0 0 3px rgba(255,183,77,.25)}
     @media (max-width:700px){.sb-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sb-b{padding:9px 10px}.sb-t{font-size:11px}.sb-v{font-size:15px!important}.sb-s{font-size:10.5px!important}}
     .sb-v{font-size:17px;font-weight:800;color:#fff;margin:4px 0 2px}.sb-s{font-size:11.5px;color:#cfe0ea}.sb-due{color:#ffd28a}
+    .si-head{font-size:13.5px;font-weight:600;color:#d9f7e4;margin:2px 4px 12px;line-height:1.45}.si-head.warn{color:#fff}.si-head i{display:inline-block;width:8px;height:8px;border-radius:50%;background:#5fdc8f;margin-right:8px}.si-head.warn i{background:#ffb74d}
+    .si-chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 2px 12px}
+    .si-chip{font:inherit;font-size:12px;color:#e6f1f6;padding:5px 11px;border-radius:999px;border:1px solid rgba(255,255,255,.26);background:rgba(255,255,255,.08);cursor:pointer}
+    .si-chip span{opacity:.65;margin-left:3px}.si-chip.on{background:rgba(255,255,255,.3);color:#fff;font-weight:600}.si-chip.w{border-color:#ffb74d}.si-chip.w span{color:#ffd28a;opacity:1}
+    .si-g{margin:0 0 12px;border-radius:18px;background:linear-gradient(140deg,rgba(255,255,255,.14),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.22);overflow:hidden}
+    .si-gh{font-size:11px;letter-spacing:.09em;text-transform:uppercase;font-weight:700;color:#fff;padding:9px 13px 7px}.si-gh span{font-weight:400;letter-spacing:0;text-transform:none;color:#cfe0ea;margin-left:6px}
+    .si-r{display:flex;align-items:flex-start;gap:9px;padding:8px 13px;border-top:1px solid rgba(255,255,255,.12)}
+    .si-r>i{flex:0 0 auto;width:8px;height:8px;border-radius:50%;margin-top:5px;background:#5fdc8f;box-shadow:0 0 0 3px rgba(95,220,143,.2)}
+    .si-r.late>i,.si-r.failed>i{background:#ffb74d;box-shadow:0 0 0 3px rgba(255,183,77,.25)}.si-r.manual>i{background:#9fb4c0;box-shadow:none}
+    .si-m{flex:1 1 auto;min-width:0}.si-m b{display:block;font-size:12.5px;font-weight:600;color:#f3f8fb;line-height:1.35}.si-m span{display:block;font-size:11.5px;color:#cfe0ea;line-height:1.4;margin-top:1px}
+    .si-d{flex:0 0 auto;text-align:right;max-width:38%}.si-d b{display:block;font-size:12.5px;font-weight:700;color:#fff;white-space:nowrap}.si-d span{display:block;font-size:11px;color:#cfe0ea;white-space:nowrap}
+    @media (max-width:700px){.si-r{padding:8px 10px;gap:8px}.si-m b{font-size:12px}.si-m span{font-size:11px}.si-d b{font-size:12px}.si-d span{font-size:10.5px}.si-chip{font-size:11.5px;padding:5px 9px}}
     .sb-foot{font-size:11.5px;color:#cfe0ea;margin:12px 4px 2px;line-height:1.5}.sb-foot a{color:#9fe3ff}
     .db-pill{background:linear-gradient(150deg,rgba(255,255,255,.24),rgba(255,255,255,.08))!important;border:1px solid rgba(255,255,255,.32)!important;border-radius:999px!important;color:#fff!important;
       padding:4px 11px!important;font-size:12px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.45);transition:transform .15s}
@@ -2655,16 +2667,41 @@ function showDataBanner(live) {
   pnl.style.cssText = 'display:none;background:#0d1a24;padding:12px 18px 14px;font-size:12px;';
   const outc = o => o === 'failure' ? '<span class="delta-bad">failed</span>' : o === 'success' ? '<span class="delta-good">ok</span>'
                   : o === 'skipped' ? '<span style="color:var(--muted)">nothing new</span>' : '<span style="color:var(--muted)">—</span>';
-  window.srcPanelFill = () => { const src = sourceStatus(), today = new Date();
-    const nxt = x => x.next ? (x.next < today ? `<span class="sb-due">due ${x.next.toISOString().slice(0, 10)}</span>` : `next ≈ ${x.next.toISOString().slice(0, 10)}`) : 'each run';
-    pnl.innerHTML = `<div class="sb-head ${warn ? 'warn' : ''}"><span class="db-dot"></span>${warn ? 'Attention: ' + why + '.' : 'All sources up to date.'}${LAST_WEEK ? ` <span>Last complete week: ${LAST_WEEK.week} · ${LAST_WEEK.year}</span>` : ''}</div>` +
-      `<div class="sb-grid">${src.map((x, i) => `<div class="sb-b ${x.late || x.step === 'failure' ? 'late' : ''}" style="animation-delay:${Math.min(i * 45, 900)}ms" title="${String(x.note || '').replace(/"/g, '&quot;')}">` +
-        `<div class="sb-t"><i></i>${x.name}</div><div class="sb-v">${x.last}</div><div class="sb-s">${x.late ? 'late' : x.step === 'failure' ? 'last run failed' : 'up to date'} · ${nxt(x)}</div></div>`).join('')}</div>` +
-      `<div class="sb-foot">` + (st ? `Last update run ${st.run_utc ? st.run_utc.replace('T', ' ').slice(0, 16) + ' UTC' : ''}` +
+  // inventaire complet de ce qu'on collecte, par bassin (data/sources.json, scripts/build_sources.py) ; les bulles du calendrier de publication
+  // (sourceStatus) donnent le retard par rapport a la source et la prochaine date attendue
+  let SRCINV = null, srcBasin = 'all';
+  const pill = () => { const m = SRCINV && SRCINV.meta, bad = m ? m.failed + m.late : 0; b.className = 'db-pill' + (warn || bad ? ' warn' : ''); };
+  fetch(DATA_URL.replace('data.json', 'sources.json'), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null).then(j => { SRCINV = j || false; pill(); if (pnl.style.display !== 'none') window.srcPanelFill(); });
+  window.srcPanelFill = () => { const src = sourceStatus(), today = new Date(), e = t => String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+    const foot = `<div class="sb-foot">` + (st ? `Last update run ${st.run_utc ? st.run_utc.replace('T', ' ').slice(0, 16) + ' UTC' : ''}` +
           (st.smoke ? ` · dashboard test: ${st.smoke.ok ? 'all tabs ok' : '<span class="sb-due">' + st.smoke.checks.filter(c => !c.ok).map(c => c.name).join('; ') + '</span>'}` : '') +
           (((st.steps || []).filter(x => x.outcome === 'failure').length) ? ` · failed steps: <span class="sb-due">${st.steps.filter(x => x.outcome === 'failure').map(x => x.name).join('; ')}</span>` : '') +
-          (st.run_url ? ` · <a href="${st.run_url}" target="_blank" rel="noopener">open the run in GitHub</a>` : '') : 'The run status appears after the next update run.') +
-      ` · "Late" means behind the usual publication calendar of the source. Hover a bubble for its calendar.</div>`; };
+          (st.run_url ? ` · <a href="${st.run_url}" target="_blank" rel="noopener">open the run in GitHub</a>` : '') : '');
+    if (!SRCINV) {   // inventaire pas encore charge ou absent : anciennes bulles
+      const nxt = x => x.next ? (x.next < today ? `<span class="sb-due">due ${x.next.toISOString().slice(0, 10)}</span>` : `next ≈ ${x.next.toISOString().slice(0, 10)}`) : 'each run';
+      pnl.innerHTML = `<div class="sb-head ${warn ? 'warn' : ''}"><span class="db-dot"></span>${warn ? 'Attention: ' + why + '.' : 'All sources up to date.'}</div>` +
+        `<div class="sb-grid">${src.map(x => `<div class="sb-b ${x.late || x.step === 'failure' ? 'late' : ''}" style="opacity:1;animation:none"><div class="sb-t"><i></i>${x.name}</div><div class="sb-v">${x.last}</div><div class="sb-s">${x.late ? 'late' : 'up to date'} · ${nxt(x)}</div></div>`).join('')}</div>` + foot + `</div>`;
+      return; }
+    const iso = d => d.toISOString().slice(0, 10), rows = [];
+    SRCINV.basins.forEach(B => B.sources.forEach(x => { const m = x.ss ? src.find(y => y.name.startsWith(x.ss)) : null;
+      const flag = x.flag === 'failed' ? 'failed' : (m && m.late) ? 'late' : x.flag;
+      rows.push(Object.assign({}, x, { basin: B.name, flag, to: (m && m.last && m.last !== '—') ? m.last : x.to, next: m && m.next })); }));
+    const cnt = (f, bn) => rows.filter(x => x.flag === f && (!bn || x.basin === bn)).length, nF = cnt('failed'), nL = cnt('late'), nM = cnt('manual'), nOk = cnt('ok');
+    const bad = nF + nL || smokeBad;
+    const head = `<div class="si-head ${bad ? 'warn' : ''}"><i></i>${rows.length} sources in ${SRCINV.basins.length} groups: ${nOk} collected automatically and up to date` +
+      (nF ? `, <b class="sb-due">${nF} whose last run failed</b>` : '') + (nL ? `, <b class="sb-due">${nL} late</b>` : '') + `, ${nM} kept by hand.</div>`;
+    const chips = `<div class="si-chips">${[['all', 'All', rows.length, nF + nL]].concat(SRCINV.basins.map(B => [B.name, B.name, B.sources.length, cnt('failed', B.name) + cnt('late', B.name)]))
+      .map(([k, lab, n, w]) => `<button type="button" class="si-chip${srcBasin === k ? ' on' : ''}${w ? ' w' : ''}" data-b="${e(k)}">${e(lab)} <span>${n}</span></button>`).join('')}</div>`;
+    const st1 = x => x.flag === 'failed' ? `<span class="sb-due">last run failed${x.run ? ' ' + x.run.date : ''}</span>` : x.flag === 'late' ? `<span class="sb-due">late${x.next ? ' · due ' + iso(x.next) : ''}</span>`
+      : x.flag === 'manual' ? `by hand${x.collected ? ' · ' + x.collected : ''}` : (x.next ? `next ≈ ${iso(x.next)}` : x.run ? `run ${x.run.date}` : 'ok');
+    const body = SRCINV.basins.filter(B => srcBasin === 'all' || srcBasin === B.name).map(B => { const R = rows.filter(x => x.basin === B.name);
+      return `<div class="si-g"><div class="si-gh">${e(B.name)} <span>${R.length} source${R.length > 1 ? 's' : ''}</span></div>` + R.map(x =>
+        `<div class="si-r ${x.flag}" title="${e('Files: ' + x.files.join(', ') + (x.wf ? ' · collection: ' + x.wf : '') + (x.collected ? ' · last change of the file: ' + x.collected : ''))}"><i></i>` +
+        `<div class="si-m"><b>${e(x.what)}</b><span>${e(x.source)} · ${x.flag === 'manual' ? 'kept ' + e(x.cadence) : 'collected ' + e(x.cadence)}${x.pub ? ' · source: ' + e(x.pub) : ''}</span></div>` +
+        `<div class="si-d"><b>${x.to ? e(x.to) : '—'}</b><span>${st1(x)}</span></div></div>`).join('') + `</div>`; }).join('');
+    const un = (SRCINV.meta.unlisted || []).length ? `<span class="sb-due">Not yet in this list: ${e(SRCINV.meta.unlisted.join(', '))}.</span> ` : '';
+    pnl.innerHTML = head + chips + body + foot + ` · ${un}Right column: last period present in the data, then the next expected publication or the last run of the collection. "Late" = behind the source's usual calendar, or the collection has not run. Inventory checked ${e((SRCINV.meta.generated || '').replace('T', ' ').slice(0, 16))} UTC.</div>`;
+    pnl.querySelectorAll('.si-chip').forEach(c => c.addEventListener('click', ev => { ev.stopPropagation(); srcBasin = c.dataset.b; const y = pnl.scrollTop; window.srcPanelFill(); pnl.scrollTop = Math.min(y, 60); })); };
   window.srcPanelFill();
   document.body.insertBefore(pnl, document.body.firstChild);
   document.body.insertBefore(b, document.body.firstChild);

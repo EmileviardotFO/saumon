@@ -1,0 +1,1382 @@
+{
+ "meta": {
+  "generated": "2026-11-11T20:54+00:00",
+  "n": 72,
+  "ok": 59,
+  "late": 0,
+  "failed": 1,
+  "manual": 12,
+  "runs_checked": true,
+  "unlisted": [],
+  "derived": [
+   "basin_cards.json",
+   "big_fish.json",
+   "big_fish_archive.json",
+   "big_six.json",
+   "forecast_archive.json",
+   "gen_outlook.json",
+   "generations.json",
+   "generations_archive.json",
+   "iceland_outlook.json",
+   "own_supply.json",
+   "register_brief.json",
+   "search_index.json",
+   "six_stock.json",
+   "sources.json",
+   "summary.json"
+  ],
+  "note": "to = last period present in the data; collected = last time the file changed; run = last run of the collection; late = the collection has not run within its usual rhythm; failed = its last run failed."
+ },
+ "basins": [
+  {
+   "name": "Norway",
+   "sources": [
+    {
+     "what": "Biomass register: fish numbers, weight, biomass, harvest, losses, smolts — by production zone and generation",
+     "source": "Fiskeridirektoratet, Biomasseregisteret",
+     "cadence": "daily",
+     "pub": "around the 20th for the previous month",
+     "to": "Sep 2026",
+     "collected": "2026-11-11",
+     "wf": "maj-norvege-mensuel",
+     "run": {
+      "date": "2026-11-11",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43024212538"
+     },
+     "flag": "ok",
+     "files": [
+      "data.json"
+     ],
+     "key": "records",
+     "ss": "Biomasseregisteret"
+    },
+    {
+     "what": "Weekly export volumes, prices and size split of the spot panel",
+     "source": "Sjømat Norge, Akvafakta weekly report",
+     "cadence": "twice a week",
+     "pub": "Wednesday for the previous week",
+     "to": "W45 2026",
+     "collected": "2026-11-11",
+     "wf": "maj-marches",
+     "run": {
+      "date": "2026-11-11",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43070685547"
+     },
+     "flag": "ok",
+     "files": [
+      "data.json"
+     ],
+     "key": "weekly",
+     "ss": "Akvafakta weekly"
+    },
+    {
+     "what": "Monthly stock by generation, feed, markets and prices",
+     "source": "Sjømat Norge, Akvafakta monthly report",
+     "cadence": "twice a week",
+     "pub": "second half of the following month",
+     "to": "Sep 2026",
+     "collected": "2026-11-11",
+     "wf": "maj-marches",
+     "run": {
+      "date": "2026-11-11",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43070685547"
+     },
+     "flag": "ok",
+     "files": [
+      "data.json"
+     ],
+     "key": "monthly_akvafakta",
+     "ss": "Akvafakta monthly"
+    },
+    {
+     "what": "Exports by country and product (fresh whole, fillets, frozen)",
+     "source": "SSB, Statistikkbanken",
+     "cadence": "daily",
+     "pub": "around the 15th for the previous month",
+     "to": "Sep 2026",
+     "collected": "2026-11-11",
+     "wf": "maj-norvege-mensuel",
+     "run": {
+      "date": "2026-11-11",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43024212538"
+     },
+     "flag": "ok",
+     "files": [
+      "data.json"
+     ],
+     "key": "ssb_exports",
+     "ss": "SSB exports"
+    },
+    {
+     "what": "Weekly exports of whole salmon: tonnes and price",
+     "source": "SSB, weekly salmon exports",
+     "cadence": "twice a week",
+     "pub": "Wednesday for the previous week",
+     "to": "W45 2026",
+     "collected": "2026-11-11",
+     "wf": "maj-marches",
+     "run": {
+      "date": "2026-11-11",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43070685547"
+     },
+     "flag": "ok",
+     "files": [
+      "data.json"
+     ],
+     "key": "ssb_weekly",
+     "ss": "SSB weekly"
+    },
+    {
+     "what": "Exports of co-products (frozen heads, frames, offal)",
+     "source": "SSB, table 08799",
+     "cadence": "daily",
+     "pub": "monthly",
+     "to": "Sep 2026",
+     "collected": "2026-11-11",
+     "wf": "maj-norvege-mensuel",
+     "run": {
+      "date": "2026-11-11",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43024212538"
+     },
+     "flag": "ok",
+     "files": [
+      "data.json"
+     ],
+     "key": "ssb_coproducts"
+    },
+    {
+     "what": "Fish health by site and week: sea lice, temperature, diseases (PD, ISA), treatments, fallow status",
+     "source": "BarentsWatch, Fiskehelse API",
+     "cadence": "twice a week",
+     "pub": "weekly, Tuesday",
+     "to": "W45 2026",
+     "collected": "2026-11-11",
+     "wf": "maj-barentswatch",
+     "run": {
+      "date": "2026-11-11",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42989470449"
+     },
+     "flag": "ok",
+     "files": [
+      "data.json",
+      "bw_site_lice.json",
+      "bw_disease_sites.json",
+      "bw_treatments.json",
+      "bw_site_status.json",
+      "bw_farm_state.json"
+     ],
+     "key": "bw_weekly",
+     "ss": "BarentsWatch fish health"
+    },
+    {
+     "what": "Site register and history: licences, MTB, operators, positions",
+     "source": "BarentsWatch + Fiskeridirektoratet (Akvakulturregisteret)",
+     "cadence": "twice a week",
+     "pub": "register, re-read over a 4-week cycle",
+     "to": "2026-10-27",
+     "collected": "2026-11-11",
+     "wf": "maj-barentswatch",
+     "run": {
+      "date": "2026-11-11",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42989470449"
+     },
+     "flag": "ok",
+     "files": [
+      "bw_sites.json",
+      "bw_localities.json",
+      "data.json"
+     ],
+     "key": "bw_register",
+     "ss": "BarentsWatch site register"
+    },
+    {
+     "what": "Wellboat and harvest-vessel visits at farms (harvest pulse, smolt deliveries)",
+     "source": "BarentsWatch, vessel visits (AIS, Kystverket)",
+     "cadence": "daily",
+     "pub": "daily",
+     "to": "W45 2026",
+     "collected": "2026-11-11",
+     "wf": "maj-wellboats",
+     "run": {
+      "date": "2026-11-11",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43023441281"
+     },
+     "flag": "ok",
+     "files": [
+      "wellboats.json",
+      "wellboats_hist.json",
+      "harvest_pulse_log.json"
+     ]
+    },
+    {
+     "what": "Live wellboat positions in the salmon regions (all basins)",
+     "source": "aisstream.io (free AIS feed)",
+     "cadence": "every 2 hours",
+     "pub": "continuous",
+     "to": null,
+     "collected": "2026-11-11",
+     "wf": "collecte-ais",
+     "run": {
+      "date": "2026-11-11",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43072586939"
+     },
+     "flag": "ok",
+     "files": [
+      "ais/vessels.json"
+     ]
+    },
+    {
+     "what": "Vessels approved to carry live fish",
+     "source": "Mattilsynet, approved transport units",
+     "cadence": "every 2 hours",
+     "pub": "register",
+     "to": null,
+     "collected": "2026-11-07",
+     "wf": "collecte-ais",
+     "run": {
+      "date": "2026-11-11",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43072586939"
+     },
+     "flag": "ok",
+     "files": [
+      "wellboats_no.json"
+     ]
+    },
+    {
+     "what": "Approved slaughterhouses and processing plants",
+     "source": "Mattilsynet, fishery establishments",
+     "cadence": "twice a week",
+     "pub": "register",
+     "to": "2026-11-09",
+     "collected": "2026-11-11",
+     "wf": "maj-international",
+     "run": {
+      "date": "2026-11-09",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+     },
+     "flag": "ok",
+     "files": [
+      "data.json",
+      "plants.json",
+      "plants_geo.json"
+     ],
+     "key": "establishments",
+     "ss": "Mattilsynet"
+    },
+    {
+     "what": "Norwegian plants registered for export to China",
+     "source": "GACC (China customs), CIFER register",
+     "cadence": "twice a week",
+     "pub": "register, fragile source",
+     "to": "2026-11-09",
+     "collected": "2026-11-11",
+     "wf": "maj-international",
+     "run": {
+      "date": "2026-11-09",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+     },
+     "flag": "ok",
+     "files": [
+      "data.json",
+      "china_history.json"
+     ],
+     "key": "china",
+     "ss": "GACC"
+    },
+    {
+     "what": "Slaughter by quality class (superior, ordinary, production, rejects); MTB ceiling by company; weekly site activity",
+     "source": "Mattilsynet (quality dashboard) + Fiskeridirektoratet (licence register)",
+     "cadence": "weekly",
+     "pub": "quarterly (quality), register",
+     "to": null,
+     "collected": "2026-11-11",
+     "wf": "maj-sources-nouvelles",
+     "run": {
+      "date": "2026-11-11",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43021118221"
+     },
+     "flag": "ok",
+     "files": [
+      "no_extra.json"
+     ]
+    },
+    {
+     "what": "Annual accounts of privately held farmers",
+     "source": "Brønnøysundregistrene (public API)",
+     "cadence": "twice a week",
+     "pub": "yearly, as accounts are filed",
+     "to": null,
+     "collected": "2026-11-09",
+     "wf": "maj-international",
+     "run": {
+      "date": "2026-11-09",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+     },
+     "flag": "ok",
+     "files": [
+      "private_accounts.json"
+     ]
+    },
+    {
+     "what": "Harmful algae status by production zone",
+     "source": "Havforskningsinstituttet, algestatus.hi.no",
+     "cadence": "daily",
+     "pub": "weekly bulletin + episode reports",
+     "to": null,
+     "collected": "2026-11-11",
+     "wf": "maj-algues",
+     "run": {
+      "date": "2026-11-11",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43039933604"
+     },
+     "flag": "ok",
+     "files": [
+      "algae_watch.json"
+     ]
+    },
+    {
+     "what": "Post-smolt strategy by farmer (smolt size statements)",
+     "source": "Company statements, Nofima survey",
+     "cadence": "by hand",
+     "pub": "",
+     "to": null,
+     "collected": "2026-11-07",
+     "wf": null,
+     "run": null,
+     "flag": "manual",
+     "files": [
+      "postsmolt.json"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Chile",
+   "sources": [
+    {
+     "what": "Export declarations: tonnes, value, product, destination, exporter group",
+     "source": "Servicio Nacional de Aduanas (DUS, datos.gob.cl)",
+     "cadence": "weekly",
+     "pub": "monthly",
+     "to": "Sep 2026",
+     "collected": "2026-11-09",
+     "wf": "maj-chili",
+     "run": {
+      "date": "2026-11-09",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42688644369"
+     },
+     "flag": "ok",
+     "files": [
+      "chile_customs.json",
+      "chile_customs_cache.json",
+      "douanes_config.json"
+     ]
+    },
+    {
+     "what": "Regional harvest and plant output: Los Lagos, Aysén, Magallanes",
+     "source": "Sernapesca figures via INE regional bulletins",
+     "cadence": "weekly",
+     "pub": "monthly (Aysén quarterly)",
+     "to": "Aug 2026",
+     "collected": "2026-11-09",
+     "wf": "maj-chili",
+     "run": {
+      "date": "2026-11-09",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42688644369"
+     },
+     "flag": "ok",
+     "files": [
+      "chile_regional.json"
+     ]
+    },
+    {
+     "what": "Sea lice: high-dissemination centres (CAD)",
+     "source": "Sernapesca, PSEVC-Caligidosis",
+     "cadence": "weekly",
+     "pub": "weekly list",
+     "to": "2026-10-29",
+     "collected": "2026-11-07",
+     "wf": "maj-chili",
+     "run": {
+      "date": "2026-11-09",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42688644369"
+     },
+     "flag": "ok",
+     "files": [
+      "chile_caligus.json"
+     ]
+    },
+    {
+     "what": "Fish authorised to stock by farm (density resolutions) and monthly sector reports",
+     "source": "Subpesca, resolutions and informes sectoriales",
+     "cadence": "daily",
+     "pub": "as resolutions are signed",
+     "to": "res. 131481",
+     "collected": "2026-11-10",
+     "wf": "chili-subpesca",
+     "run": {
+      "date": "2026-11-11",
+      "ok": false,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43047192404"
+     },
+     "flag": "failed",
+     "files": [
+      "chile_subpesca.json",
+      "chile_subpesca_manual.json"
+     ]
+    },
+    {
+     "what": "Concessions map: sites, holders, status",
+     "source": "Subpesca, public geoportal (IDE)",
+     "cadence": "twice a week",
+     "pub": "register",
+     "to": null,
+     "collected": "2026-11-09",
+     "wf": "maj-international",
+     "run": {
+      "date": "2026-11-09",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+     },
+     "flag": "ok",
+     "files": [
+      "chile_sites.json"
+     ]
+    },
+    {
+     "what": "Finished cycles by farm: harvest, mortality, treatments",
+     "source": "Sernapesca, transparency files of law 21.532",
+     "cadence": "weekly",
+     "pub": "half-yearly",
+     "to": "2025H2",
+     "collected": "2026-11-10",
+     "wf": "maj-sources-nouvelles",
+     "run": {
+      "date": "2026-11-11",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43021118221"
+     },
+     "flag": "ok",
+     "files": [
+      "chile_cycles.json"
+     ]
+    },
+    {
+     "what": "Wellboat port visits (harvest activity by region)",
+     "source": "Global Fishing Watch API (AIS)",
+     "cadence": "weekly",
+     "pub": "about 5 days behind",
+     "to": "2026-11-05",
+     "collected": "2026-11-09",
+     "wf": "maj-chili-wellboats",
+     "run": {
+      "date": "2026-11-09",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42658447596"
+     },
+     "flag": "ok",
+     "files": [
+      "chile_wellboats.json",
+      "chile_wellboats_raw.json"
+     ]
+    },
+    {
+     "what": "Plants authorised to slaughter and process salmonids",
+     "source": "Sernapesca, listado de plantas autorizadas",
+     "cadence": "twice a week",
+     "pub": "monthly edition",
+     "to": "Noviembre 2026",
+     "collected": "2026-11-09",
+     "wf": "maj-international",
+     "run": {
+      "date": "2026-11-09",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+     },
+     "flag": "ok",
+     "files": [
+      "plants.json"
+     ]
+    },
+    {
+     "what": "Plant coordinates",
+     "source": "RETC, Ministerio del Medio Ambiente",
+     "cadence": "once",
+     "pub": "",
+     "to": null,
+     "collected": "2026-11-06",
+     "wf": null,
+     "run": null,
+     "flag": "manual",
+     "files": [
+      "plants_cl_exact.json"
+     ]
+    },
+    {
+     "what": "Mortality notices (algal blooms, oxygen) and bloom conditions (rain, sun, wind)",
+     "source": "Sernapesca press notices + NASA POWER",
+     "cadence": "daily",
+     "pub": "as published",
+     "to": null,
+     "collected": "2026-11-11",
+     "wf": "maj-algues",
+     "run": {
+      "date": "2026-11-11",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43039933604"
+     },
+     "flag": "ok",
+     "files": [
+      "algae_watch.json"
+     ]
+    },
+    {
+     "what": "Exports by destination (cross-check)",
+     "source": "UN Comtrade, reported by Chile",
+     "cadence": "twice a week",
+     "pub": "irregular, 2–3 months behind",
+     "to": "Sep 2026",
+     "collected": "2026-11-09",
+     "wf": "maj-international",
+     "run": {
+      "date": "2026-11-09",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+     },
+     "flag": "ok",
+     "files": [
+      "national_trade.json"
+     ],
+     "ss": "Chile export"
+    },
+    {
+     "what": "Average harvest weight by company and quarter",
+     "source": "Company reports (CMF filings, trading updates)",
+     "cadence": "by hand",
+     "pub": "",
+     "to": null,
+     "collected": "2026-11-08",
+     "wf": null,
+     "run": null,
+     "flag": "manual",
+     "files": [
+      "chile_harvest_weights.json"
+     ]
+    },
+    {
+     "what": "Annual production, health and mortality by region (starter dataset)",
+     "source": "Sernapesca, Subpesca yearbooks",
+     "cadence": "by hand",
+     "pub": "",
+     "to": null,
+     "collected": "2026-08-12",
+     "wf": null,
+     "run": null,
+     "flag": "manual",
+     "files": [
+      "chili.json"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Scotland",
+   "sources": [
+    {
+     "what": "Biomass, mortality, feed and treatments by site and month",
+     "source": "SEPA, monthly reports (Scotland's Aquaculture)",
+     "cadence": "twice a week",
+     "pub": "monthly, with a long delay",
+     "to": "Dec 2025",
+     "collected": "2026-11-09",
+     "wf": "maj-international",
+     "run": {
+      "date": "2026-11-09",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+     },
+     "flag": "ok",
+     "files": [
+      "scotland.json"
+     ]
+    },
+    {
+     "what": "Sea lice counts by site and week",
+     "source": "Scottish Government (Scotland's Aquaculture)",
+     "cadence": "weekly",
+     "pub": "weekly",
+     "to": "2026-10-26",
+     "collected": "2026-11-11",
+     "wf": "maj-sources-nouvelles",
+     "run": {
+      "date": "2026-11-11",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43021118221"
+     },
+     "flag": "ok",
+     "files": [
+      "scotland_weekly.json"
+     ]
+    },
+    {
+     "what": "Monthly mortality rate by farm, with cause",
+     "source": "Salmon Scotland, monthly mortality reports",
+     "cadence": "weekly",
+     "pub": "about a month in arrears",
+     "to": "Sep 2026",
+     "collected": "2026-11-11",
+     "wf": "maj-sources-nouvelles",
+     "run": {
+      "date": "2026-11-11",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43021118221"
+     },
+     "flag": "ok",
+     "files": [
+      "scotland_mortality.json"
+     ]
+    },
+    {
+     "what": "Movement restrictions, escapes, site register by operator",
+     "source": "Marine Directorate, Fish Health Inspectorate",
+     "cadence": "twice a week",
+     "pub": "as recorded",
+     "to": null,
+     "collected": "2026-11-09",
+     "wf": "maj-international",
+     "run": {
+      "date": "2026-11-09",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+     },
+     "flag": "ok",
+     "files": [
+      "scotland_extra.json"
+     ]
+    },
+    {
+     "what": "Reported mortality events by site, with cause",
+     "source": "Fish Health Inspectorate, monthly spreadsheet",
+     "cadence": "twice a day",
+     "pub": "monthly",
+     "to": null,
+     "collected": "2026-11-11",
+     "wf": "maj-actualite",
+     "run": {
+      "date": "2026-11-11",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43088310433"
+     },
+     "flag": "ok",
+     "files": [
+      "events.json"
+     ]
+    },
+    {
+     "what": "Annual production survey: tonnes, smolts, survival, staff",
+     "source": "Marine Directorate, Scottish Fish Farm Production Survey",
+     "cadence": "by hand",
+     "pub": "yearly, September",
+     "to": "2026-09",
+     "collected": "2026-10-31",
+     "wf": null,
+     "run": null,
+     "flag": "manual",
+     "files": [
+      "scotland_survey.json"
+     ]
+    },
+    {
+     "what": "Quarterly harvest of Mowi Scotland, Bakkafrost Scotland, Scottish Sea Farms",
+     "source": "Company quarterly reports",
+     "cadence": "by hand",
+     "pub": "",
+     "to": null,
+     "collected": "2026-11-07",
+     "wf": null,
+     "run": null,
+     "flag": "manual",
+     "files": [
+      "scotland_companies.json"
+     ]
+    },
+    {
+     "what": "Exports by destination",
+     "source": "HMRC overseas trade statistics",
+     "cadence": "twice a week",
+     "pub": "monthly, about 6 weeks behind",
+     "to": "Aug 2026",
+     "collected": "2026-11-09",
+     "wf": "maj-international",
+     "run": {
+      "date": "2026-11-09",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+     },
+     "flag": "ok",
+     "files": [
+      "national_trade.json"
+     ],
+     "ss": "UK export"
+    }
+   ]
+  },
+  {
+   "name": "Faroe Islands",
+   "sources": [
+    {
+     "what": "Fish by site at month end, sea lice counts, treatments, weekly harvest by size",
+     "source": "HFS (Heilsufrøðiliga Starvsstovan), Aling > Hagtøl",
+     "cadence": "weekly",
+     "pub": "weekly / monthly",
+     "to": "W44 2026",
+     "collected": "2026-11-10",
+     "wf": "maj-feroe-hfs",
+     "run": {
+      "date": "2026-11-10",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42863142327"
+     },
+     "flag": "ok",
+     "files": [
+      "faroe_hfs.json"
+     ]
+    },
+    {
+     "what": "Bakkafrost fish per farm, harvest and smolts; licence register",
+     "source": "Bakkafrost sustainability data + Landsverk",
+     "cadence": "twice a week",
+     "pub": "monthly",
+     "to": "Sep 2026",
+     "collected": "2026-11-09",
+     "wf": "maj-international",
+     "run": {
+      "date": "2026-11-09",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+     },
+     "flag": "ok",
+     "files": [
+      "faroe.json"
+     ]
+    },
+    {
+     "what": "Exports by product and destination",
+     "source": "Hagstova Føroya, table UH01046",
+     "cadence": "twice a week",
+     "pub": "monthly, about 6 weeks behind",
+     "to": "Aug 2026",
+     "collected": "2026-11-09",
+     "wf": "maj-international",
+     "run": {
+      "date": "2026-11-09",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+     },
+     "flag": "ok",
+     "files": [
+      "national_trade.json"
+     ],
+     "ss": "Faroe export"
+    },
+    {
+     "what": "Bakkafrost quarterly figures (harvest, weight, smolts)",
+     "source": "Bakkafrost quarterly reports",
+     "cadence": "by hand",
+     "pub": "",
+     "to": null,
+     "collected": "2026-11-09",
+     "wf": null,
+     "run": null,
+     "flag": "manual",
+     "files": [
+      "big_six_manual.json"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Iceland",
+   "sources": [
+    {
+     "what": "Biomass, fish numbers, mortality, harvest by site and month; cycles",
+     "source": "MAST, Mælaborð fiskeldis (public dashboard)",
+     "cadence": "daily",
+     "pub": "monthly",
+     "to": "Sep 2026",
+     "collected": "2026-11-11",
+     "wf": "maj-norvege-mensuel",
+     "run": {
+      "date": "2026-11-11",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43024212538"
+     },
+     "flag": "ok",
+     "files": [
+      "iceland_mast.json"
+     ]
+    },
+    {
+     "what": "Farm sites, sea areas, licences and applications (map layers)",
+     "source": "MAST, public map server",
+     "cadence": "twice a week",
+     "pub": "register",
+     "to": null,
+     "collected": "2026-11-09",
+     "wf": "maj-international",
+     "run": {
+      "date": "2026-11-09",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+     },
+     "flag": "ok",
+     "files": [
+      "iceland.json"
+     ]
+    },
+    {
+     "what": "Exports by product and destination",
+     "source": "Statistics Iceland, table UTA02801",
+     "cadence": "twice a week",
+     "pub": "monthly, about 4 weeks behind",
+     "to": "Sep 2026",
+     "collected": "2026-11-09",
+     "wf": "maj-international",
+     "run": {
+      "date": "2026-11-09",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+     },
+     "flag": "ok",
+     "files": [
+      "national_trade.json"
+     ],
+     "ss": "Iceland export"
+    }
+   ]
+  },
+  {
+   "name": "Canada",
+   "sources": [
+    {
+     "what": "British Columbia: sea lice counts, mortality events, fish transfers by farm",
+     "source": "DFO Pacific, public reporting",
+     "cadence": "twice a week",
+     "pub": "quarterly batches",
+     "to": "Jul 2026",
+     "collected": "2026-11-09",
+     "wf": "maj-international",
+     "run": {
+      "date": "2026-11-09",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+     },
+     "flag": "ok",
+     "files": [
+      "canada.json"
+     ],
+     "ss": "Canada BC — DFO sea lice"
+    },
+    {
+     "what": "British Columbia: licences, production status and carcasses by facility, lice mitigation, health events",
+     "source": "DFO Pacific, public reporting",
+     "cadence": "weekly",
+     "pub": "quarterly batches",
+     "to": "Jun 2026",
+     "collected": "2026-11-11",
+     "wf": "maj-sources-nouvelles",
+     "run": {
+      "date": "2026-11-11",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43021118221"
+     },
+     "flag": "ok",
+     "files": [
+      "canada_bc.json"
+     ]
+    },
+    {
+     "what": "Atlantic coast: sites, leases, stocking, ISA, escapes, production (NB, NS, NL)",
+     "source": "Provincial governments + DFO",
+     "cadence": "twice a week",
+     "pub": "irregular",
+     "to": null,
+     "collected": "2026-11-09",
+     "wf": "maj-international",
+     "run": {
+      "date": "2026-11-09",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+     },
+     "flag": "ok",
+     "files": [
+      "canada_atl.json"
+     ]
+    },
+    {
+     "what": "Shipments to the US by border post (west / east coast split)",
+     "source": "US Census, imports by port",
+     "cadence": "twice a week",
+     "pub": "monthly",
+     "to": null,
+     "collected": "2026-11-09",
+     "wf": "maj-international",
+     "run": {
+      "date": "2026-11-09",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+     },
+     "flag": "ok",
+     "files": [
+      "canada_extra.json"
+     ]
+    },
+    {
+     "what": "Exports by province, product and destination",
+     "source": "Statistics Canada, CIMT",
+     "cadence": "twice a week",
+     "pub": "monthly, about 5 weeks behind",
+     "to": "Sep 2026",
+     "collected": "2026-11-10",
+     "wf": "maj-canada-commerce",
+     "run": {
+      "date": "2026-11-10",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42896930667"
+     },
+     "flag": "ok",
+     "files": [
+      "canada_trade.json"
+     ]
+    },
+    {
+     "what": "Exports by destination (cross-check)",
+     "source": "UN Comtrade, reported by Canada",
+     "cadence": "twice a week",
+     "pub": "irregular, 2–3 months behind",
+     "to": "Aug 2026",
+     "collected": "2026-11-09",
+     "wf": "maj-international",
+     "run": {
+      "date": "2026-11-09",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+     },
+     "flag": "ok",
+     "files": [
+      "national_trade.json"
+     ],
+     "ss": "Canada export"
+    }
+   ]
+  },
+  {
+   "name": "Australia",
+   "sources": [
+    {
+     "what": "Tasmania: salmon mortalities by month and disposal method",
+     "source": "EPA Tasmania",
+     "cadence": "twice a week",
+     "pub": "quarterly, about 3 weeks after the quarter",
+     "to": "Sep 2026",
+     "collected": "2026-11-09",
+     "wf": "maj-international",
+     "run": {
+      "date": "2026-11-09",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+     },
+     "flag": "ok",
+     "files": [
+      "australia.json"
+     ],
+     "ss": "Australia — EPA"
+    },
+    {
+     "what": "Tasmania: production by company, leases",
+     "source": "NRE Tasmania, salmon farming portal",
+     "cadence": "twice a week",
+     "pub": "yearly (financial year)",
+     "to": "FY2025/26",
+     "collected": "2026-11-09",
+     "wf": "maj-international",
+     "run": {
+      "date": "2026-11-09",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+     },
+     "flag": "ok",
+     "files": [
+      "australia.json"
+     ],
+     "ss": "Australia — NRE"
+    },
+    {
+     "what": "Exports by destination",
+     "source": "UN Comtrade, reported by Australia",
+     "cadence": "twice a week",
+     "pub": "irregular, 2–3 months behind",
+     "to": "Aug 2026",
+     "collected": "2026-11-09",
+     "wf": "maj-international",
+     "run": {
+      "date": "2026-11-09",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+     },
+     "flag": "ok",
+     "files": [
+      "national_trade.json"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Markets & trade",
+   "sources": [
+    {
+     "what": "EU salmon trade flows by product and country",
+     "source": "Eurostat, Comext DS-045409",
+     "cadence": "twice a week",
+     "pub": "monthly, 6–8 weeks behind",
+     "to": "Aug 2026",
+     "collected": "2026-10-28",
+     "wf": "maj-international",
+     "run": {
+      "date": "2026-11-09",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+     },
+     "flag": "ok",
+     "files": [
+      "eurostat.json"
+     ],
+     "ss": "Eurostat"
+    },
+    {
+     "what": "US imports by product and origin",
+     "source": "US Census Bureau, trade API",
+     "cadence": "twice a week",
+     "pub": "monthly, about 5 weeks behind",
+     "to": "Sep 2026",
+     "collected": "2026-11-09",
+     "wf": "maj-international",
+     "run": {
+      "date": "2026-11-09",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+     },
+     "flag": "ok",
+     "files": [
+      "us_imports.json"
+     ],
+     "ss": "US Census"
+    },
+    {
+     "what": "Japan imports of salmon and trout by form and origin",
+     "source": "UN Comtrade, reported by Japan",
+     "cadence": "twice a week",
+     "pub": "monthly, 2–3 months behind",
+     "to": "Aug 2026",
+     "collected": "2026-11-09",
+     "wf": "maj-international",
+     "run": {
+      "date": "2026-11-09",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+     },
+     "flag": "ok",
+     "files": [
+      "japan_imports.json"
+     ]
+    },
+    {
+     "what": "China and Hong Kong imports by origin",
+     "source": "UN Comtrade, reported by China and Hong Kong",
+     "cadence": "twice a week",
+     "pub": "monthly, 2–4 months behind",
+     "to": "Jul 2026",
+     "collected": "2026-11-09",
+     "wf": "maj-international",
+     "run": {
+      "date": "2026-11-09",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+     },
+     "flag": "ok",
+     "files": [
+      "cn_imports.json"
+     ]
+    },
+    {
+     "what": "World imports by importing country and product",
+     "source": "UN Comtrade (HS6, monthly)",
+     "cadence": "twice a week",
+     "pub": "monthly, uneven by country",
+     "to": "Sep 2026",
+     "collected": "2026-11-09",
+     "wf": "maj-international",
+     "run": {
+      "date": "2026-11-09",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+     },
+     "flag": "ok",
+     "files": [
+      "world_imports.json"
+     ]
+    },
+    {
+     "what": "Swiss imports by tariff line and origin",
+     "source": "Swiss customs (FOCBS), open data",
+     "cadence": "weekly",
+     "pub": "monthly",
+     "to": "Sep 2026",
+     "collected": "2026-11-11",
+     "wf": "maj-suisse",
+     "run": {
+      "date": "2026-11-11",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43023133558"
+     },
+     "flag": "ok",
+     "files": [
+      "swiss_imports.json"
+     ]
+    },
+    {
+     "what": "Feed raw-material prices: fish meal, soy, rapeseed, wheat, oils, energy",
+     "source": "World Bank, commodity price data (Pink Sheet)",
+     "cadence": "daily",
+     "pub": "monthly, early in the month",
+     "to": "Oct 2026",
+     "collected": "2026-11-11",
+     "wf": "maj-norvege-mensuel",
+     "run": {
+      "date": "2026-11-11",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43024212538"
+     },
+     "flag": "ok",
+     "files": [
+      "feed.json"
+     ]
+    },
+    {
+     "what": "World feed market, marine ingredients, Peru anchovy quota",
+     "source": "IFFO, company and ministry releases",
+     "cadence": "by hand",
+     "pub": "",
+     "to": null,
+     "collected": "2026-11-05",
+     "wf": null,
+     "run": null,
+     "flag": "manual",
+     "files": [
+      "feed_manual.json"
+     ]
+    },
+    {
+     "what": "Industry supply by region (analyst comparison only)",
+     "source": "Kontali figures quoted in Mowi reports",
+     "cadence": "by hand",
+     "pub": "",
+     "to": null,
+     "collected": "2026-11-07",
+     "wf": null,
+     "run": null,
+     "flag": "manual",
+     "files": [
+      "global_supply.json"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Ocean & climate",
+   "sources": [
+    {
+     "what": "Sea surface temperature by farming area, all basins; ENSO index",
+     "source": "NOAA OISST v2.1 (daily)",
+     "cadence": "daily",
+     "pub": "daily, 1–2 days behind",
+     "to": "2026-11-09",
+     "collected": "2026-11-11",
+     "wf": "maj-temperature-mer",
+     "run": {
+      "date": "2026-11-11",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43023129981"
+     },
+     "flag": "ok",
+     "files": [
+      "sea_temp.json",
+      "coast_hd.json"
+     ]
+    },
+    {
+     "what": "Chlorophyll-a from satellite (algal bloom alert)",
+     "source": "NOAA CoastWatch, VIIRS ocean colour",
+     "cadence": "daily",
+     "pub": "daily",
+     "to": "2026-11-09",
+     "collected": "2026-11-11",
+     "wf": "maj-chlorophylle",
+     "run": {
+      "date": "2026-11-11",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43040774945"
+     },
+     "flag": "ok",
+     "files": [
+      "chlorophyll.json"
+     ]
+    },
+    {
+     "what": "Climate and sea-temperature news by basin",
+     "source": "Institutes and press",
+     "cadence": "by hand",
+     "pub": "",
+     "to": null,
+     "collected": "2026-11-08",
+     "wf": null,
+     "run": null,
+     "flag": "manual",
+     "files": [
+      "climate_news.json"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "News & companies",
+   "sources": [
+    {
+     "what": "Headlines of the week, all basins",
+     "source": "iLaks, Kyst.no, Fish Farming Expert, Salmonexpert.cl, The Fish Site, Undercurrent, Mundo Acuícola, Google News",
+     "cadence": "twice a day",
+     "pub": "continuous",
+     "to": "2026-11-11",
+     "collected": "2026-11-11",
+     "wf": "maj-actualite",
+     "run": {
+      "date": "2026-11-11",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43088310433"
+     },
+     "flag": "ok",
+     "files": [
+      "news.json",
+      "news_archive.json",
+      "news_links.json",
+      "stories.json"
+     ]
+    },
+    {
+     "what": "Mortality events watch (algae, jellyfish, disease, oxygen, storms)",
+     "source": "Trade press + Google News by basin and language",
+     "cadence": "twice a day",
+     "pub": "continuous",
+     "to": null,
+     "collected": "2026-11-11",
+     "wf": "maj-actualite",
+     "run": {
+      "date": "2026-11-11",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43088310433"
+     },
+     "flag": "ok",
+     "files": [
+      "events.json"
+     ]
+    },
+    {
+     "what": "Quarterly reports: harvest, cost per kg, EBIT, guidance",
+     "source": "Farmers' own releases (GlobeNewswire, Cision, NewsWeb, company sites)",
+     "cadence": "twice a day",
+     "pub": "at each results date",
+     "to": "2026 Q3",
+     "collected": "2026-11-11",
+     "wf": "maj-actualite",
+     "run": {
+      "date": "2026-11-11",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43088310433"
+     },
+     "flag": "ok",
+     "files": [
+      "quarterly.json"
+     ]
+    },
+    {
+     "what": "Disease research and news (lice, gill disease, PD, ISA, SRS, jellyfish…)",
+     "source": "Europe PMC, OpenAlex (open access), Google News",
+     "cadence": "daily",
+     "pub": "continuous",
+     "to": null,
+     "collected": "2026-11-11",
+     "wf": "maj-maladies",
+     "run": {
+      "date": "2026-11-11",
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43025530858"
+     },
+     "flag": "ok",
+     "files": [
+      "disease_research.json"
+     ]
+    },
+    {
+     "what": "Disease evidence cards and figures by basin",
+     "source": "Open-access papers, institute and company reports",
+     "cadence": "by hand",
+     "pub": "",
+     "to": null,
+     "collected": "2026-11-11",
+     "wf": null,
+     "run": null,
+     "flag": "manual",
+     "files": [
+      "disease_knowledge.json",
+      "disease_manual.json"
+     ]
+    },
+    {
+     "what": "Pinned topics, agenda, quarterly figures of the listed farmers",
+     "source": "Company calendars and reports",
+     "cadence": "by hand",
+     "pub": "",
+     "to": null,
+     "collected": "2026-11-08",
+     "wf": null,
+     "run": null,
+     "flag": "manual",
+     "files": [
+      "watch.json",
+      "summary_manual.json",
+      "big_six_manual.json"
+     ]
+    }
+   ]
+  }
+ ]
+}

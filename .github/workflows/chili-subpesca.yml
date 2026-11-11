@@ -39,7 +39,8 @@ jobs:
           python-version: '3.11'
       - name: Dependances
         run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq tesseract-ocr tesseract-ocr-spa poppler-utils
+          # les miroirs apt des runners tombent parfois (echec du 11 nov. 2026, code 100) : trois essais
+          for i in 1 2 3; do sudo apt-get update -qq && sudo apt-get install -y -qq tesseract-ocr tesseract-ocr-spa poppler-utils && break; echo "apt : essai $i en echec"; sleep 30; [ $i = 3 ] && exit 1; done
           pip install requests pdfplumber opencv-python-headless
       - name: Lire les nouveaux documents
         env:
