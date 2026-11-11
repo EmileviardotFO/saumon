@@ -36,7 +36,7 @@ jobs:
       if: always()
       run: |
         git config user.name "github-actions"; git config user.email "actions@github.com"
-        git add farming/donnees_gb/ farming/donnees_no/ farming/donnees_ca/dfo/ xlsx/chile/transparencia/ data/
+        git add farming/donnees_gb/ farming/donnees_no/ farming/donnees_ca/dfo/ farming/donnees_ca/nl/ xlsx/chile/transparencia/ data/
         if git diff --staged --quiet; then echo "Aucun changement."; else
           git commit -m "Sources nouvelles : Écosse, Norvège, Chili ($(date -u +%Y-%m-%d))"
           git pull --rebase; git push; fi
