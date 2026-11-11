@@ -1,5 +1,5 @@
 {
- "note": "Harvest outlook (onglet Generations) fige a chaque registre : volumes par scenario (kt vides), 6 kg+, dates de fin de generation et de relais ; pace = controle au rythme des exportations SSB, une ligne par nombre de jours connus. Les entrees ne sont jamais reecrites.",
+ "note": "Harvest outlook (onglet Generations) fige a chaque registre : volumes par scenario (kt vides), 6 kg+, dates de fin de generation et de relais ; pace = controle au rythme des exportations SSB, une ligne par nombre de jours connus. Les entrees ne sont jamais reecrites. external = prévisions d'autres sources saisies à la main à la même date, pour comparaison au réalisé.",
  "entries": {
   "202609": {
    "made": "2026-11-11",
@@ -257,6 +257,97 @@
      "ly": 136.0,
      "gap": 16.0,
      "made": "2026-11-11"
+    }
+   ],
+   "external": [
+    {
+     "source": "Prévision interne Hiddenfjord (collègue), base Kontali",
+     "made": "2026-11-09",
+     "data_of": "Kontali Norway, 2026-11-04",
+     "added": "2026-11-11",
+     "note": "Saisie à la main depuis la slide « Norway outlook: soft November, recovery into Christmas ». Récolte en kt poids vif (WFE) ; tot = converti en vidé (x 0,888) pour comparer aux scénarios. FPI = SISALMONI 3-6 kg en DKK/kg, EUR/NOK 10,50, EUR/DKK 7,46.",
+     "months": [
+      {
+       "k": 202610,
+       "wfe": 186.6,
+       "tot": 165.7,
+       "yoy": 8.2,
+       "fpi_dkk": 50.09,
+       "fpi_yoy": 5.3,
+       "actual": true
+      },
+      {
+       "k": 202611,
+       "wfe": 162,
+       "tot": 143.9,
+       "yoy": 9.5,
+       "fpi_dkk": 47.6,
+       "fpi_yoy": -7.1,
+       "actual": false
+      },
+      {
+       "k": 202612,
+       "wfe": 132,
+       "tot": 117.2,
+       "yoy": -5.6,
+       "fpi_dkk": 63.94,
+       "fpi_yoy": 8.3,
+       "actual": false
+      },
+      {
+       "k": 202701,
+       "wfe": 124,
+       "tot": 110.1,
+       "yoy": -4.2,
+       "fpi_dkk": 61.55,
+       "fpi_yoy": 13.0,
+       "actual": false
+      },
+      {
+       "k": 202702,
+       "wfe": 110,
+       "tot": 97.7,
+       "yoy": -3.7,
+       "fpi_dkk": 62.29,
+       "fpi_yoy": 9.4,
+       "actual": false
+      },
+      {
+       "k": 202703,
+       "wfe": 121,
+       "tot": 107.4,
+       "yoy": -2.9,
+       "fpi_dkk": 66.02,
+       "fpi_yoy": 7.6,
+       "actual": false
+      }
+     ],
+     "quarters": [
+      {
+       "span": "Oct 2026 – Dec 2026",
+       "wfe": 481,
+       "tot": 427.1,
+       "yoy": 4.4,
+       "fpi_dkk": 53.88,
+       "fpi_yoy": 2.4
+      },
+      {
+       "span": "Jan 2027 – Mar 2027",
+       "wfe": 355,
+       "tot": 315.2,
+       "yoy": -3.6,
+       "fpi_dkk": 63.29,
+       "fpi_yoy": 9.9
+      }
+     ],
+     "drivers": {
+      "stock_4kg_plus_kt": 247,
+      "stock_4kg_plus_yoy": 12,
+      "fish_at_sea_m": 455,
+      "fish_at_sea_yoy": -2,
+      "sea_temp_yoy_c": -0.7,
+      "nov_harvest_est_yoy": 10
+     }
     }
    ]
   }
