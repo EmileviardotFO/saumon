@@ -306,7 +306,7 @@ def main():
         for sc in vol.values():
             for m in sc:
                 if m['k'] == nc['k']:
-                    m['tot'], m['known'] = r(nc['t'] * GUT / 1000, 1), True
+                    m['model'], m['tot'], m['known'] = m['tot'], r(nc['t'] * GUT / 1000, 1), True
     # mois suivant en cours : rythme des exportations de poisson entier contre les memes jours un an plus tot,
     # applique au meme mois de l'an dernier (registre) -> controle du modele, affiche a cote de la prevision
     pace = None
@@ -512,6 +512,25 @@ def main():
            'volume': {'scenarios': vol, 'budget': budget, 'budget_f': {'old': r(f_old, 3), 'new': r(f_new, 3)}, 'budget_note': budget_note, 'reconciled': recon, 'budget_dd': budget_dd, 'budget_dd_persist': budget_dd_persist, 'growth': {'anomaly_c': r(anom, 2), 'anomaly_month': t_last, 'tgc_ratio': r(rho, 3), 'tgc_ratio_used': r(rho_eff, 3), 'note': growth_note, 'by_zone': zone_detail is not None, 'national': {'dd': budget_dd_nat, 'dd_persist': budget_dd_nat_persist}}, 'tgc_watch': tgc_watch, 'tgc_watch_meta': tgc_watch_meta, 'periods': periods, 'nowcast': {'k': nc['k'], 't': r(nc['t'] * GUT / 1000, 1), 'ly': r(nc['ly'] * GUT / 1000, 1)} if nc else None, 'pace': pace, 'tested': 'Replayed since Jan 2021: 3.4 % average error on the next 5 months; Q4 forecasts made each November missed by 7–11 points in 2022–2025'},
            'six': {'forecast': SIX.get('forecast'), 'alerts': SIX.get('alerts'), 'tests': {k: {x: v.get(x) for x in ('mape', 'mape_fixed4', 'naive_mape', 'inside_range')} for k, v in (SIX.get('tests') or {}).items()}}}
     io.open(OUT, 'w', encoding='utf-8').write(json.dumps(out, ensure_ascii=False, separators=(',', ':')))
+    # ---- journal des previsions figees : une entree par registre, ecrite une seule fois (jamais reecrite), pour comparer
+    # plus tard prevision et realite ; le controle au rythme des exportations est note a chaque nouvelle semaine SSB
+    AP = os.path.join(ROOT, 'data', 'generations_archive.json')
+    AR = D_('generations_archive.json') or {'note': 'Harvest outlook (onglet Generations) fige a chaque registre : volumes par scenario (kt vides), 6 kg+, dates de fin de generation et de relais ; pace = controle au rythme des exportations SSB, une ligne par nombre de jours connus. Les entrees ne sont jamais reecrites.', 'entries': {}}
+    key = str(out['meta']['register'])
+    V_ = out['volume']
+    if key not in AR['entries']:
+        AR['entries'][key] = {'made': out['meta']['generated'], 'register': out['meta']['register'],
+                              'scenarios': {sc: [{'k': m['k'], 'tot': m.get('model', m['tot']), 'ly': m['ly'], 'kt5': m['kt5'], 'ly5': m['ly5'], 'kt6': m['kt6'], 'ly6': m['ly6']} for m in ms] for sc, ms in (V_.get('scenarios') or {}).items()},
+                              'budget': [{'k': b['k'], 'tot': b['tot'], 'ly': b['ly']} for b in (V_.get('budget') or [])],
+                              'six': [{x: f_.get(x) for x in ('span', 'fcst', 'lo', 'hi', 'ly')} for f_ in ((out.get('six') or {}).get('forecast') or [])],
+                              'end20': (out.get('depletion') or {}).get('end20'), 'handover50': (out.get('handover') or {}).get('k50'),
+                              'state': {g: {x: r(st[g].get(x), 3) for x in ('n', 'w', 'bio', 'b5')} for g in ('old', 'new')}, 'nowcast': [], 'pace': []}
+    E = AR['entries'][key]
+    if V_.get('nowcast') and not any(x['k'] == V_['nowcast']['k'] for x in E['nowcast']):
+        E['nowcast'].append(dict(V_['nowcast'], made=out['meta']['generated']))
+    if V_.get('pace') and not any(x['k'] == V_['pace']['k'] and x['days'] == V_['pace']['days'] for x in E['pace']):
+        E['pace'].append(dict(V_['pace'], made=out['meta']['generated']))
+    io.open(AP, 'w', encoding='utf-8').write(json.dumps(AR, ensure_ascii=False, indent=1))
     print(f"generations.json : registre {out['meta']['register_label']}, G{old} en recolte ({st['old']['n']:.1f} M, {st['old']['w']:.2f} kg), G{new} suivante ({st['new']['n']:.1f} M, {st['new']['w']:.2f} kg) ; fin 20 % {end20}, relais 50 % {hand50} (saison passee {hand50_prev})")
     for f in factors:
         print(f"  {f['dir']:5s} {f['label']}: {f['now']} vs {f['ly']} — {f['why']}")
