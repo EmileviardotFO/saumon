@@ -268,7 +268,7 @@ def capacity():
 
 
 PROD = [('fresh_whole', r'fersk laks \('), ('frozen_whole', r'fryst laks \('), ('fresh_fillet', r'fersk laksefilet'), ('frozen_fillet', r'fryst laksefilet'), ('trout_fresh', r'fersk oppdrettet ørret')]
-EN = {'Polen': 'Poland', 'Nederland': 'Netherlands', 'Frankrike': 'France', 'Spania': 'Spain', 'Kina': 'China', 'Danmark': 'Denmark', 'Italia': 'Italy', 'Storbritannia': 'United Kingdom', 'Tyskland': 'Germany', 'Litauen': 'Lithuania',
+EN = {'U S A': 'USA', 'De Forente Arabiske Emirater': 'UAE', 'Saudi-Arabia': 'Saudi Arabia', 'Polen': 'Poland', 'Nederland': 'Netherlands', 'Frankrike': 'France', 'Spania': 'Spain', 'Kina': 'China', 'Danmark': 'Denmark', 'Italia': 'Italy', 'Storbritannia': 'United Kingdom', 'Tyskland': 'Germany', 'Litauen': 'Lithuania',
       'Sverige': 'Sweden', 'Sør-Korea': 'South Korea', 'Ukraina': 'Ukraine', 'Tyrkia': 'Turkey', 'Hongkong SAR': 'Hong Kong', 'De forente arabiske emirater': 'UAE', 'Tsjekkia': 'Czechia', 'Irland': 'Ireland', 'Hellas': 'Greece',
       'Belgia': 'Belgium', 'Estland': 'Estonia', 'Sveits': 'Switzerland', 'Marokko': 'Morocco', 'Sør-Afrika': 'South Africa', 'Filippinene': 'Philippines', 'Libanon': 'Lebanon', 'TOTALT': 'Total', 'Aserbajdsjan': 'Azerbaijan'}
 
