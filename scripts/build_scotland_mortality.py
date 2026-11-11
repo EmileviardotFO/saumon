@@ -21,9 +21,9 @@ def text(pdf):
     try:
         return subprocess.run(['pdftotext', '-layout', pdf, '-'], capture_output=True, text=True, check=True).stdout
     except Exception:
-        import pdfplumber
-        with pdfplumber.open(pdf) as p:
-            return '\n'.join(pg.extract_text(layout=True) or '' for pg in p.pages)
+        # pas de repli sur pdfplumber : sa mise en page decale les colonnes et fait perdre des fermes et la serie filiere.
+        # Sans pdftotext (paquet poppler-utils) on ne reecrit rien plutot que d'abimer le fichier.
+        raise SystemExit('scotland mortality : pdftotext absent (installer poppler-utils), fichier laisse tel quel')
 
 
 def parse(pdf):
