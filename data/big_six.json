@@ -1,6 +1,6 @@
 {
  "meta": {
-  "built": "2026-11-10T15:46+00:00",
+  "built": "2026-11-11T15:37+00:00",
   "unit": "thousand tonnes gutted (6 kg+ fish)",
   "note": "Supply only. 2026 = harvest to date plus the rest of the year at the same pace; 2027 = our harvest projection times the 6 kg+ share expected, low and high cases in brackets."
  },
@@ -46,9 +46,9 @@
     "title": "Biology in 2026: the best year in a long time — and a limit for 2027",
     "lines": [
      "Mortality at sea, January–Sep: 6.8 % of the fish (30 M fish) against 8.5 % (40 M) in 2025 and 8.5–9.6 % in 2019–2025: the lowest since at least 2019.",
-     "Sea lice, weeks 1–44: 0.134 adult females per fish on average against 0.175 in 2025 (0.134–0.175 since 2019).",
-     "Farm-weeks above the lice limit: 360 against 893 in 2025 (467–959 since 2019).",
-     "Non-medicinal delousing (thermal, mechanical, freshwater) reported: 2,613 against 3,263 in 2025 (-20 %): fewer handlings, fewer injuries.",
+     "Sea lice, weeks 1–45: 0.135 adult females per fish on average against 0.176 in 2025 (0.134–0.176 since 2019).",
+     "Farm-weeks above the lice limit: 376 against 914 in 2025 (474–981 since 2019).",
+     "Non-medicinal delousing (thermal, mechanical, freshwater) reported: 2,693 against 3,363 in 2025 (-20 %): fewer handlings, fewer injuries.",
      "Sea at the farms 9.4 °C on average against 9.8 °C in 2025: the cool summer slowed lice; the fish still grew faster than a year earlier."
     ],
     "limits": [

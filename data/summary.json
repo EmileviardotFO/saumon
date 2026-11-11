@@ -1,6 +1,6 @@
 {
  "meta": {
-  "built": "2026-11-10T15:46+00:00",
+  "built": "2026-11-11T15:37+00:00",
   "note": "Signals ranked by how unusual they are against their own history (score). Effect: supports / weighs on prices, risk, watch."
  },
  "lead": "Supply grows +6 % in 2026 across the seven basins and +0.1 % in 2027. Chile is the main source of change: a record El Niño, a slowing harvest and fewer big fish. Norway carries the growth with heavier fish and more 6 kg+. Imports grow fastest in Japan, Brazil, UK; USA and Israel are flat or down.",
@@ -160,7 +160,7 @@
    "lo": -4.5,
    "hi": 4.1,
    "sea": [
-    -0.2,
+    -0.3,
     0.7
    ],
    "tab": "outlook"
@@ -461,6 +461,34 @@
    "lang": "no"
   },
   {
+   "date": "2026-11-11",
+   "title": "Prissjokk på olje og gass gir valutahjelp til norske oppdrettere",
+   "url": "https://ilaks.no/prissjokk-pa-olje-og-gass-gir-valutahjelp-til-norske-oppdrettere/",
+   "source": "iLaks",
+   "n_sources": 2,
+   "basins": [
+    "NO"
+   ],
+   "themes": [
+    "market"
+   ],
+   "lang": "no"
+  },
+  {
+   "date": "2026-11-11",
+   "title": "E-vitamin kan forebygge skader hos smolt",
+   "url": "https://www.kyst.no/fiskehelse-havforskningsinstituttet-hi/e-vitamin-kan-forebygge-skader-hos-smolt/2209296",
+   "source": "kyst.no",
+   "n_sources": 2,
+   "basins": [
+    "NO"
+   ],
+   "themes": [
+    "biology"
+   ],
+   "lang": "no"
+  },
+  {
    "date": "2026-11-10",
    "title": "Scottish Sea Farms opens Scotland’s largest salmon site with £7.5m investment",
    "url": "https://www.undercurrentnews.com/2026/11/10/scottish-sea-farms-opens-scotlands-largest-salmon-site-with-7-5m-investment/",
@@ -532,37 +560,6 @@
    ],
    "themes": [
     "regulation"
-   ],
-   "lang": "en"
-  },
-  {
-   "date": "2026-11-06",
-   "title": "Urk-Export eyes doubling salmon processing capacity as demand outstrips production",
-   "url": "https://www.undercurrentnews.com/2026/11/06/urk-export-eyes-doubling-salmon-processing-capacity-as-demand-outstrips-production/",
-   "source": "undercurrentnews.com",
-   "n_sources": 2,
-   "basins": [
-    "global"
-   ],
-   "themes": [
-    "market",
-    "regulation"
-   ],
-   "lang": "en"
-  },
-  {
-   "date": "2026-11-06",
-   "title": "Hofseth Biocare swings to Q3 profit as fish oil prices drive record revenue",
-   "url": "https://www.undercurrentnews.com/2026/11/06/hofseth-biocare-swings-to-q3-profit-as-fish-oil-prices-drive-record-revenue/",
-   "source": "undercurrentnews.com",
-   "n_sources": 2,
-   "basins": [
-    "global"
-   ],
-   "themes": [
-    "market",
-    "feed",
-    "companies"
    ],
    "lang": "en"
   }
@@ -637,20 +634,20 @@
    }
   },
   "bw": {
-   "yw": 202644,
+   "yw": 202645,
    "now": {
-    "lice": 0.176,
-    "t": 10.76,
+    "lice": 0.169,
+    "t": 10.52,
     "over_limit": 6.5
    },
    "prev": {
-    "lice": 0.171,
-    "t": 10.94,
+    "lice": 0.176,
+    "t": 10.77,
     "over_limit": 6.5
    },
    "ly": {
-    "lice": 0.18,
-    "t": 11.13,
+    "lice": 0.169,
+    "t": 10.75,
     "over_limit": 6.5
    }
   },
@@ -789,37 +786,37 @@
    "202643": 10.5093,
    "202644": 10.3668,
    "202645": 10.4111,
-   "202646": 10.574
+   "202646": 10.5875
   }
  },
  "mainnews": [
   {
    "kind": "results",
-   "title": "Quarterly results: Mowi, SalMar, Bakkafrost",
-   "text": "Mowi 185.6 kt (+12 %), 2026 guidance 620 kt, next year 630 kt · SalMar 105.1 kt (+13 %), 2026 guidance 347 kt · Bakkafrost 27.6 kt (−10 %), 2026 guidance 117 kt, next year 125 kt · Mowi Scotland 11.6 kt (−33 %), 2026 guidance 74 kt, next year 76 kt.",
-   "src": "4 reports this week → Outlook",
+   "title": "Quarterly results: Mowi, SalMar, Mowi Scotland",
+   "text": "Mowi 185.6 kt (+12 %), 2026 guidance 620 kt, next year 630 kt · SalMar 105.1 kt (+13 %), 2026 guidance 347 kt · Mowi Scotland 11.6 kt (−33 %), 2026 guidance 74 kt, next year 76 kt.",
+   "src": "3 reports this week → Outlook",
    "tab": "outlook",
-   "n": 51
+   "n": 31
   },
   {
    "kind": "story",
    "title": "Agrosuper signs agreement to buy Blumar's salmon business for up to US$540 million",
-   "text": "Agrosuper, owner of AquaChile, signed a memorandum of understanding to acquire 100% of Salmones Blumar, valuing it at up to US$540 million. The two firms are negotiating the definitive contracts, and the combination would form the world's second-largest producer. Reports also say Multi X is exploring a purchase of Ventisqueros and that two Chilean producers may be up for sale.",
-   "src": "16 articles · 11-09",
-   "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxNREl4em1mTmlIc0dRY2luMVNjSGtjSHZfajE5THVNeXFuMEtGaHhmelZWU0dqWmhUQ2MyV3BGYTJMaHVuTVhfdDRCSGdjOS1mcklPRFpEUnFCb3VJblh2QzBYVnJDYnd1TUZfMVlNNTJTVDBKeF9ESG9GRkJkR3Q2cDdPckEtc0tYaS1lazdvYXdNRElhOS0yTDln?oc=5",
+   "text": "Agrosuper, owner of AquaChile, signed a memorandum of understanding to acquire 100% of Salmones Blumar at up to US$540m (€479m). The two firms are negotiating the definitive contracts, and the deal would create the world's second-largest producer. Press also reports Multi X exploring a purchase of Ventisqueros, and that other Chilean farmers are up for sale.",
+   "src": "17 articles · 11-10",
+   "url": "https://www.undercurrentnews.com/2026/11/10/blumar-ventisqueros-not-only-chilean-salmon-farmers-up-for-sale/",
    "basin": "CL",
    "who": "Agrosuper",
-   "n": 16
+   "n": 17
   },
   {
    "kind": "story",
-   "title": "Lerøy's Q3 operating profit jumps to NOK 459m and beats expectations",
-   "text": "Operational EBIT rose to NOK 459 million from NOK 15 million a year earlier. Lower farming costs and better biological performance offset lower harvest volumes, and the group sees low volume growth ahead.",
-   "src": "10 articles · 11-10",
+   "title": "Lerøy Q3 operating profit jumps to NOK 459m, beating expectations despite lower harvest",
+   "text": "Operational EBIT rose to NOK 459 million from NOK 15 million a year earlier, helped by lower farming costs and better biological performance. Harvest volumes fell, and Lerøy sees low volume growth ahead.",
+   "src": "9 articles · 11-10",
    "url": "https://ilaks.no/bedre-enn-ventet-fra-leroy-som-ser-lav-volumvekst-fremover/?mtm_campaign=feed_click&mtm_kwd=bedre-enn-ventet-fra-leroy-som-ser-lav-volumvekst-fremover&mtm_source=RSS2&mtm_medium=feed",
    "basin": "NO",
    "who": "Lerøy",
-   "n": 10
+   "n": 9
   }
  ],
  "monthly": [
