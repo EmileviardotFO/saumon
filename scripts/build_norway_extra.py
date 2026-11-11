@@ -110,6 +110,76 @@ def fillets(Q):
     return {'corr': cor, 'lag': lag, 'season': sea, 'season_years': [yrs[0], yrs[-1]] if yrs else None, 'months': months, 'wfe': WFE}
 
 
+def turnover(Q):
+    """Meme biomasse, plus de recolte : rotation du stock, survie, poids, nombre de poissons (registre de biomasse, data/data.json),
+    mis a cote des classes de qualite (Mattilsynet). Memes mois chaque annee (janvier -> dernier mois du registre)."""
+    try:
+        R = json.load(open(os.path.join(ROOT, 'data', 'data.json'), encoding='utf-8'))['records']
+    except Exception:
+        return None
+    F = ('uttak_kg', 'uttak_stk', 'dodfisk_stk', 'behfisk_stk', 'biomasse_kg', 'smolt_stk', 'feed_kg')
+    nat, zon = collections.defaultdict(lambda: collections.defaultdict(float)), collections.defaultdict(lambda: collections.defaultdict(lambda: collections.defaultdict(float)))
+    for r in R:
+        k = r['year'] * 100 + r['month']
+        for f in F:
+            if r.get(f) is not None:
+                nat[k][f] += r[f]
+                zon[r.get('po')][k][f] += r[f]
+    last = max(nat)
+    LY, LM = last // 100, last % 100
+    years = [LY - 3, LY - 2, LY - 1, LY]
+
+    def row(src, y, m=LM):
+        ks = [y * 100 + i for i in range(1, m + 1)]
+        if any(k not in src for k in ks):
+            return None
+        sm = lambda f: sum(src[k][f] for k in ks)
+        bio, stk = sm('biomasse_kg') / m, sm('behfisk_stk') / m
+        e = src[y * 100 + m]
+        return {'y': y, 'bio_end': round(e['biomasse_kg'] / 1e6, 1), 'fish_end': round(e['behfisk_stk'] / 1e6, 1), 'smolt': round(sm('smolt_stk') / 1e6, 1), 'dead': round(sm('dodfisk_stk') / 1e6, 1),
+                'dead_pct': round(100 * sm('dodfisk_stk') / stk, 1) if stk else None, 'harv_n': round(sm('uttak_stk') / 1e6, 1), 'harv': round(sm('uttak_kg') / 1e6, 1),
+                'w': round(sm('uttak_kg') / sm('uttak_stk'), 2) if sm('uttak_stk') else None, 'turn': round(sm('uttak_kg') / bio, 2) if bio else None, 'w_sea': round(e['biomasse_kg'] / e['behfisk_stk'], 2) if e['behfisk_stk'] else None,
+                'feed': round(sm('feed_kg') / 1e6, 1)}
+    N = [x for x in (row(nat, y) for y in years) if x]
+    if len(N) < 2:
+        return None
+    a, b = N[-1], N[-2]
+    # decomposition de la hausse de recolte : nombre de poissons, puis poids
+    dn = (a['harv_n'] - b['harv_n']) * b['w']
+    dw = a['harv_n'] * (a['w'] - b['w'])
+    # qualite sur la meme periode quand le registre s'arrete en fin de trimestre
+    qy = {}
+    if LM % 3 == 0:
+        for y in years:
+            X = [x for x in Q if x['q'][:4] == str(y) and int(x['q'][-1]) <= LM // 3]
+            if len(X) == LM // 3:
+                v = sum(x['vol'] for x in X)
+                qy[y] = {'vol': round(v), 'sup': round(sum(x['sup_kt'] for x in X)), 'prod': round(sum(x['prod_kt'] for x in X)), 'sup_pct': round(100 * sum(x['sup_kt'] for x in X) / v, 1), 'prod_pct': round(100 * sum(x['prod_kt'] for x in X) / v, 1)}
+    for x in N:
+        x['q'] = qy.get(x['y'])
+    # par zone : la rotation monte-t-elle la ou la mortalite baisse ?
+    Z = []
+    for po in sorted(k for k in zon if isinstance(k, int) and 1 <= k <= 13):
+        r1, r0 = row(zon[po], LY), row(zon[po], LY - 2)
+        if r1 and r0 and r0['harv'] > 20 and r0['turn'] and r1['turn']:   # les tres petites zones (PO1, PO13) donnent des ratios aberrants
+            Z.append({'po': po, 'harv': r1['harv'], 'harv0': r0['harv'], 'turn': r1['turn'], 'turn0': r0['turn'], 'dead': r1['dead_pct'], 'dead0': r0['dead_pct'], 'w': r1['w'], 'w0': r0['w'], 'fish': r1['fish_end'], 'fish0': r0['fish_end'],
+                      'bio': r1['bio_end'], 'bio0': r0['bio_end']})
+    zc = {'n': len(Z), 'turn_dead': corr([z['turn'] / z['turn0'] - 1 for z in Z], [z['dead'] - z['dead0'] for z in Z]), 'turn_w': corr([z['turn'] / z['turn0'] - 1 for z in Z], [z['w'] / z['w0'] - 1 for z in Z]),
+          'up': sum(z['turn'] > z['turn0'] for z in Z), 'dead_down': sum(z['dead'] < z['dead0'] for z in Z)} if len(Z) >= 6 else None
+    # trimestre par trimestre : part « Production » contre mortalite du registre (variations sur un an)
+    qd = {}
+    for x in Q:
+        y, k = int(x['q'][:4]), int(x['q'][-1])
+        ks = [y * 100 + m for m in range(3 * k - 2, 3 * k + 1)]
+        if all(m in nat for m in ks):
+            stk = sum(nat[m]['behfisk_stk'] for m in ks) / 3
+            qd[x['q']] = {'prod': x['prod'], 'dead': 100 * sum(nat[m]['dodfisk_stk'] for m in ks) / stk if stk else None}
+    pairs = [(qd[q]['prod'] - qd[p]['prod'], qd[q]['dead'] - qd[p]['dead']) for q in sorted(qd) for p in [f"{int(q[:4]) - 1}{q[4:]}"] if p in qd and qd[q]['dead'] is not None and qd[p]['dead'] is not None]
+    link = {'n': len(pairs), 'r': corr([p[0] for p in pairs], [p[1] for p in pairs]), 'q1': [{'y': int(q[:4]), 'prod': v['prod'], 'dead': round(v['dead'], 2)} for q, v in sorted(qd.items()) if q.endswith('K1')][-4:]} if len(pairs) >= 8 else None
+    return {'span': f"Jan–{dt.date(2000, LM, 1):%b}", 'last': last, 'years': N, 'decomp': {'total': round(a['harv'] - b['harv'], 1), 'fish': round(dn, 1), 'weight': round(dw, 1)}, 'zones': Z, 'zone_corr': zc, 'zone_years': [LY - 2, LY], 'link': link,
+            'source': 'Fiskeridirektoratet biomass register (live weight, salmon and trout, all production areas) · Mattilsynet quality classes'}
+
+
 GROUPS = [('Mowi', r'MOWI|NOVA SEA'), ('SalMar', r'SALMAR|SALFJORD|NORSKOTT|REFSNES|OCEAN FARMING|ARCTIC OFFSHORE'), ('Lerøy', r'LERØY|LEROY|SJØTROLL'), ('Cermaq', r'CERMAQ'), ('Grieg', r'GRIEG'), ('Nordlaks', r'NORDLAKS'),
           ('Bremnes / Salmon Group', r'BREMNES'), ('Alsaker', r'ALSAKER'), ('Måsøval', r'MÅSØVAL'), ('Eide', r'EIDE FJORDBRUK'), ('Firda', r'FIRDA'), ('Sinkaberg-Hansen', r'SINKABERG|SINKABERGHANSEN'), ('Ellingsen', r'ELLINGSEN'),
           ('Kvarøy', r'KVARØY'), ('Blom', r'BLOM FISKEOPPDRETT'), ('Wilsgård', r'WILSGÅRD'), ('Emilsen', r'EMILSEN'), ('Bjørøya', r'BJØRØYA'), ('Midt-Norsk Havbruk', r'MIDT-NORSK'), ('Erko', r'ERKO'), ('Osland', r'OSLAND')]
@@ -180,12 +250,19 @@ def capacity():
         est = sum(site[str(n)]['cap'] / len(site[str(n)]['owners']) * fill.get(site[str(n)]['po'], 0) for n in g['sites'] & active if str(n) in site) / 1000
         comp.append({'co': name, 'mtb': round(g['mtb'] / 1000, 1), 'other': round(g['other'] / 1000, 1), 'lic': g['lic'], 'sites': len(g['sites']), 'active': g['active'], 'active_cap': round(g['active_cap'] / 1000), 'est_bio': round(est, 1), 'use': round(100 * est / (g['mtb'] / 1000)) if g['mtb'] else None})
     comp.sort(key=lambda c: -c['mtb'])
+    # licences par formal (commerciales, developpement, recherche, enseignement, exposition, stamfisk...) : tonnage et principaux titulaires
+    EN = {'commercial': 'Commercial', 'utvikling': 'Development', 'forskning': 'Research', 'undervisning': 'Teaching', 'visning': 'Display (visitor centres)', 'stamfisk': 'Broodstock', 'fiskepark': 'Fish park', 'slaktemerd': 'Slaughter pens'}
+    bt = collections.defaultdict(lambda: {'n': 0, 'mtb': 0.0, 'by': collections.Counter()})
+    for t, (n, k) in lic.items():
+        b = bt[typ[t]]
+        b['n'] += 1; b['mtb'] += k; b['by'][group(n)] += k
+    types = sorted(({'t': EN.get(k, k.capitalize()), 'key': k, 'n': v['n'], 'mtb': round(v['mtb'] / 1000, 1), 'top': [[h, round(x / 1000, 1)] for h, x in v['by'].most_common(4)]} for k, v in bt.items()), key=lambda z: -z['mtb'])
     tot_c = sum(k for t, (n, k) in lic.items() if typ[t] == 'commercial') / 1000
     tot_all = sum(k for n, k in lic.values()) / 1000
     nat_bio = sum(bio[po].get(last, 0) for po in bio)
     top_sites = sorted(site.values(), key=lambda s_: -s_['cap'])[:0]
     return {'date': f'{date.group(3)}-{date.group(2)}-{date.group(1)}' if date else None, 'register_month': last, 'bw_week': week, 'mtb_commercial': round(tot_c), 'mtb_all': round(tot_all), 'licences': len(lic), 'sites': len(site),
-            'biomass': round(nat_bio), 'use_commercial': round(100 * nat_bio / tot_c), 'use_all': round(100 * nat_bio / tot_all), 'companies': comp[:30], 'zones': zones,
+            'biomass': round(nat_bio), 'use_commercial': round(100 * nat_bio / tot_c), 'use_all': round(100 * nat_bio / tot_all), 'types': types, 'companies': comp[:30], 'zones': zones,
             'note': 'Estimated biomass per farmer = capacity of its active sites x the filling rate of the production area (register biomass / capacity of all active sites); a site shared by two farmers is split equally.',
             'source': 'Fiskeridirektoratet, Akvakulturregisteret (daily dump) · BarentsWatch site status · Biomasseregisteret'}
 
@@ -221,6 +298,7 @@ def weekly():
 
 def main():
     out = {'meta': {'generated': dt.date.today().isoformat()}, 'quality': quality(), 'capacity': capacity(), 'weekly': weekly()}
+    out['turnover'] = turnover((out['quality'] or {}).get('quarters', []))
     json.dump(out, open(os.path.join(ROOT, 'data', 'no_extra.json'), 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
     q, c, w = out['quality'], out['capacity'], out['weekly']
     print('no_extra.json :', f"qualite {q['quarters'][-1]}" if q else 'qualite absente', '|', f"MTB {c['mtb_commercial']} kt, biomasse {c['biomass']} kt ({c['use_commercial']} %)" if c else 'registre absent', '|', f"{len(w['weeks'])} semaines sjomatrad" if w else 'hebdo absent')
