@@ -21,10 +21,11 @@ jobs:
       run: |
         python3 scripts/build_big_six.py || true
         python3 scripts/build_summary.py
+        python3 scripts/build_basin_cards.py || true
     - name: Enregistrer
       run: |
         git config user.name "github-actions"; git config user.email "actions@github.com"
-        git add data/summary.json data/big_six.json
+        git add data/summary.json data/big_six.json data/basin_cards.json
         git diff --cached --quiet && exit 0
         git commit -m "Summary ($(date -u +%Y-%m-%d))"
         for i in 1 2 3; do git pull --rebase -q origin main && git push -q origin HEAD:main && break; sleep 5; done
