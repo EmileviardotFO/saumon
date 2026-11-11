@@ -10,9 +10,9 @@ SALMON_SCOTLAND
    clic : Download.path: canceled
    pas un PDF : https://www.salmonscotland.co.uk/reports/monthly-mortality-rate-july-2026 403 text/html; charset=UTF-8 6100
    clic : Download.path: canceled
-   pas un PDF : https://www.salmonscotland.co.uk/reports/monthly-mortality-rate-june-2026 403 text/html; charset=UTF-8 6100
+   pas un PDF : https://www.salmonscotland.co.uk/reports/monthly-mortality-rate-december-2024 403 text/html; charset=UTF-8 6112
    abandon : le site refuse les telechargements
-ok salmon_scotland : 0 PDF telecharges, 0 deja presents
+ok salmon_scotland : 0 PDF telecharges, 18 deja presents
 
 ================================================================================
 SURVEY
@@ -62,10 +62,10 @@ Neste oppdatering: 8. 2. 2027
 
 Privacy Policy
   nav items: ['our blog.', 'Privacy Policy']
-  data response 0 https://datastudio.google.com/batchedDataV2?appVersion=20261106_0601 4877
-  data response 1 https://datastudio.google.com/batchedDataV2?appVersion=20261106_0601 4883
-  data response 2 https://datastudio.google.com/batchedDataV2?appVersion=20261106_0601 4888
-  data response 3 https://datastudio.google.com/batchedDataV2?appVersion=20261106_0601 4497
-  data response 4 https://datastudio.google.com/batchedDataV2?appVersion=20261106_0601 4446
-  data response 5 https://datastudio.google.com/batchedDataV2?appVersion=20261106_0601 5110
+  data response 0 https://datastudio.google.com/batchedDataV2?appVersion=20261108_0000 4875
+  data response 1 https://datastudio.google.com/batchedDataV2?appVersion=20261108_0000 4442
+  data response 2 https://datastudio.google.com/batchedDataV2?appVersion=20261108_0000 4498
+  data response 3 https://datastudio.google.com/batchedDataV2?appVersion=20261108_0000 5110
+  data response 4 https://datastudio.google.com/batchedDataV2?appVersion=20261108_0000 4884
+  data response 5 https://datastudio.google.com/batchedDataV2?appVersion=20261108_0000 4873
 FIN
