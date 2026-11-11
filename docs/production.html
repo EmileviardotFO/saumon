@@ -17347,8 +17347,9 @@ function renderSupply() {
 let WB = null, WB_LOADING = false, WB_KEY = 'NO', WB_MAP = null, WB_LAYER = null;
 function wbKindTxt(k) {   // nature des passages d'une ferme sur 14 jours
   if (!k) return '—';
-  const P = [['M', 'smolts in', '#81c784'], ['T', 'lice treatment', '#ffb74d'], ['H', 'harvest / transfer', '#4fc3f7']].filter(([c]) => k[c]);
-  return P.map(([c, l, col]) => `<span style="color:${col}">${l}${k[c] > 1 ? ' ×' + k[c] : ''}</span>`).join(' · ') || '—';
+  // des passages de bateau, pas des operations : un traitement de plusieurs jours fait plusieurs passages
+  const P = [['M', 'smolts in', '#81c784', 'during a smolt delivery'], ['T', 'lice treatment', '#ffb74d', 'in a week when the farm reported a lice treatment (one treatment over several days gives several visits)'], ['H', 'harvest / transfer', '#4fc3f7', 'counted as harvest or transfer']].filter(([c]) => k[c]);
+  return P.map(([c, l, col, why]) => `<span style="color:${col}" title="${k[c]} boat visit${k[c] > 1 ? 's' : ''} ${why}">${k[c]} visit${k[c] > 1 ? 's' : ''} · ${l}</span>`).join('<br>') || '—';
 }
 function wbKinds() {   // smolts mis en eau, traitements, recolte : passages classes selon l'etat declare de la ferme (BarentsWatch)
   const $ = id => document.getElementById(id), K = WB.kinds, SM = WB.smolt;
