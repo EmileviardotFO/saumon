@@ -201,8 +201,30 @@ def chile():
                 print('   cannot read', e)
 
 
+def canada():
+    """Colombie-Britannique : fichiers ouverts du ministere federal des Peches (DFO) que les constructeurs existants ne prennent pas."""
+    out = os.path.join(ROOT, 'farming', 'donnees_ca', 'dfo')
+    os.makedirs(out, exist_ok=True)
+    base = 'https://api-proxy.edh-cde.dfo-mpo.gc.ca/catalogue/records/{}/attachments/{}'
+    for name, rid, f in (
+            ('licences.csv', '522d1b67-30d8-4a34-9b62-5da99b1035e6', 'license-permis-mer-mar-rpt-pac-dfo-mpo-aquaculture-eng.csv'),
+            ('lice_mitigation.csv', 'fdba4d10-51aa-40df-884e-09e1c29049d8', 'lice-poux-mitigation-attenuation-2011-ongoing-rpt-pac-dfo-mpo-aquaculture-eng.csv'),
+            ('health_events.csv', 'deefd1d7-7184-44c7-83aa-ec0db91aad27', 'health-even-sante-2016-ongoing-rpt-pac-dfo-mpo-aquaculture-eng.csv'),
+            ('carcass.csv', '0a8c5505-ecb3-4d8b-8120-462bd7def6bb', 'carc-cat-fac-inst-2013-ongoing-rpt-pac-dfo-mpo-aquaculture-eng.csv'),
+            ('transfers.csv', '700fe290-7653-49e1-b961-741dc1ead924', 'transfers-transfert-2015-ongoing-rpt-pac-dfo-mpo-aquaculture-eng.csv'),
+            ('escapes.csv', '691dd994-4911-433d-b3b6-00349ba9f24e', 'escapes-evasions-2011-ongoing-rpt-pac-dfo-mpo-aquaculture-eng.csv'),
+            ('benthic_industry.csv', '7e76fdc8-c36a-491a-9afb-4f9280c929e8', 'benth-indust-2011-ongoing-rpt-pac-dfo-mpo-aquaculture-eng.csv')):
+        if save(base.format(rid, f), os.path.join(out, name)):
+            try:
+                txt = open(os.path.join(out, name), encoding='utf-8-sig', errors='replace').read().split('\n')
+                print('   ', len(txt), 'lignes |', txt[0][:300])
+                print('   ', txt[1][:300]); print('   ', txt[-2][:300])
+            except Exception as e:
+                print('   cannot read', e)
+
+
 if __name__ == '__main__':
-    for fn in (scotland, norway, chile):
+    for fn in (scotland, norway, chile, canada):
         print('\n' + '=' * 90 + '\n' + fn.__name__.upper(), flush=True)
         try:
             fn()
