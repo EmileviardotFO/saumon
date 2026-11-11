@@ -1,0 +1,88 @@
+Economic impacts of the newfoundland and Labrador  aquaculture industry
+1 / 26
+
+Powered by - FlipBooklets.com
+×
+This website uses cookies
+This website uses cookies to improve user experience. By using our website you consent to all cookies in accordance with our Cookie Policy. Read more
+ACCEPT ALL
+DECLINE ALL
+ SHOW DETAILS
+STRICTLY NECESSARY
+PERFORMANCE
+TARGETING
+FUNCTIONALITY
+COOKIE DECLARATION
+ABOUT COOKIES
+Strictly necessary
+Performance
+Targeting
+Functionality
+Strictly necessary cookies allow core website functionality such as user login and account management. The website cannot be used properly without strictly necessary cookies.
+Name	Provider / Domain	Expiration	Description
+__cf_bm	
+Cloudflare Inc.
+.hs-analytics.net	29 minutes 55 seconds	This cookie is used to distinguish between humans and bots. This is beneficial for the website, in order to make valid reports on the use of their website.
+__cf_bm	
+Cloudflare Inc.
+.hs-banner.com	29 minutes 55 seconds	This cookie is used to distinguish between humans and bots. This is beneficial for the website, in order to make valid reports on the use of their website.
+__cf_bm	
+Cloudflare Inc.
+.hs-scripts.com	29 minutes 55 seconds	This cookie is used to distinguish between humans and bots. This is beneficial for the website, in order to make valid reports on the use of their website.
+__cf_bm	
+Cloudflare Inc.
+.hsadspixel.net	29 minutes 55 seconds	This cookie is used to distinguish between humans and bots. This is beneficial for the website, in order to make valid reports on the use of their website.
+__cf_bm	
+Cloudflare Inc.
+.hsforms.com	29 minutes 40 seconds	This cookie is used to distinguish between humans and bots. This is beneficial for the website, in order to make valid reports on the use of their website.
+__cf_bm	
+Cloudflare Inc.
+.hubspot.com	29 minutes 56 seconds	This cookie is used to distinguish between humans and bots. This is beneficial for the website, in order to make valid reports on the use of their website.
+__cf_bm	
+Cloudflare Inc.
+.paddle.com	29 minutes 54 seconds	This cookie is used to distinguish between humans and bots. This is beneficial for the website, in order to make valid reports on the use of their website.
+XSRF-TOKEN	flipbooklets.com	1 hour 59 minutes	This cookie is written to help with site security in preventing Cross-Site Request Forgery attacks.
+CookieScriptConsent	
+CookieScript
+flipbooklets.com	4 months	This cookie is used by Cookie-Script.com service to remember visitor cookie consent preferences. It is necessary for Cookie-Script.com cookie banner to work properly.
+_GRECAPTCHA	
+Google LLC
+www.google.com	5 months 4 weeks	Google reCAPTCHA sets a necessary cookie (_GRECAPTCHA) when executed for the purpose of providing its risk analysis.
+Performance cookies are used to see how visitors use the website, eg. analytics cookies. Those cookies cannot be used to directly identify a certain visitor.
+Name	Provider / Domain	Expiration	Description
+_ga	
+Google LLC
+.flipbooklets.com	1 year 1 month	This cookie name is associated with Google Universal Analytics - which is a significant update to Google's more commonly used analytics service. This cookie is used to distinguish unique users by assigning a randomly generated number as a client identifier. It is included in each page request in a site and used to calculate visitor, session and campaign data for the sites analytics reports.
+_ga_4FZTZSZMPT	.flipbooklets.com	1 year 1 month	This cookie is used by Google Analytics to persist session state.
+__hssc	
+HubSpot Inc.
+.flipbooklets.com	29 minutes 38 seconds	This cookie name is associated with websites built on the HubSpot platform. It is reported by them as being used for website analytics.
+__hstc	
+HubSpot Inc.
+.flipbooklets.com	5 months 4 weeks	This cookie name is associated with websites built on the HubSpot platform. It is reported by them as being used for website analytics.
+__hssrc	
+HubSpot Inc.
+.flipbooklets.com	Session	This cookie name is associated with websites built on the HubSpot platform. It is reported by them as being used for website analytics.
+Targeting cookies are used to identify visitors between different websites, eg. content partners, banner networks. Those cookies may be used by companies to build a profile of visitor interests or show relevant ads on other websites.
+Name	Provider / Domain	Expiration	Description
+_gcl_au	
+Google LLC
+.flipbooklets.com	2 months 4 weeks	Used by Google AdSense for experimenting with advertisement efficiency across websites using their services
+_fbp	
+Meta Platform Inc.
+.flipbooklets.com	2 months 4 weeks	Used by Meta to deliver a series of advertisement products such as real time bidding from third party advertisers
+partnero_partner	.flipbooklets.com	4 weeks 2 days	This cookie is used to detect which of our partners recommended you to our service.
+partnero_session_uuid	.flipbooklets.com	1 year 1 month	This cookie is used to detect which of our partners recommended you to our service.
+referral_url	.flipbooklets.com	4 weeks 2 days	This cookie is used to detect which of our partners recommended you to our service.
+Functionality cookies are used to remember visitor information on the website, eg. language, timezone, enhanced content.
+Name	Provider / Domain	Expiration	Description
+hubspotutk	
+HubSpot Inc.
+.flipbooklets.com	5 months 4 weeks	This cookie name is associated with websites built on the HubSpot platform. HubSpot report that its purpose is user authentication. As a persistent rather than a session cookie it cannot be classified as Strictly Necessary.
+flipbooklets_session	flipbooklets.com	1 hour 59 minutes	This cookie is used to manage your preferences within the software and enhance your experience.
+Cookies are small text files that are placed on your computer by websites that you visit. Websites use cookies to help users navigate efficiently and perform certain functions. Cookies that are required for the website to operate properly are allowed to be set without your permission. All other cookies need to be approved before they can be set in the browser.
+
+You can change your consent to cookie usage at any time on our Privacy Policy page.
+We also use cookies to collect data for the purpose of personalizing and measuring the effectiveness of our advertising. For more details, visit the Google Privacy Policy.
+Cookie report created by CookieScript
+
