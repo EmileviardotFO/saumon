@@ -1,10 +1,10 @@
 {
  "meta": {
-  "generated": "2026-11-11T21:04+00:00",
+  "generated": "2026-11-11T21:05+00:00",
   "n": 72,
-  "ok": 59,
+  "ok": 60,
   "late": 0,
-  "failed": 1,
+  "failed": 0,
   "manual": 12,
   "runs_checked": true,
   "unlisted": [],
@@ -435,10 +435,10 @@
      "wf": "chili-subpesca",
      "run": {
       "date": "2026-11-11",
-      "ok": false,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43047192404"
+      "ok": true,
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43098833814"
      },
-     "flag": "failed",
+     "flag": "ok",
      "files": [
       "chile_subpesca.json",
       "chile_subpesca_manual.json"
