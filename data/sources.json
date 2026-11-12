@@ -1,6 +1,6 @@
 {
  "meta": {
-  "generated": "2026-11-11T21:05+00:00",
+  "generated": "2026-11-12T16:15+00:00",
   "n": 72,
   "ok": 60,
   "late": 0,
@@ -40,9 +40,9 @@
      "collected": "2026-11-11",
      "wf": "maj-norvege-mensuel",
      "run": {
-      "date": "2026-11-11",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43024212538"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43231981729"
      },
      "flag": "ok",
      "files": [
@@ -100,9 +100,9 @@
      "collected": "2026-11-11",
      "wf": "maj-norvege-mensuel",
      "run": {
-      "date": "2026-11-11",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43024212538"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43231981729"
      },
      "flag": "ok",
      "files": [
@@ -140,9 +140,9 @@
      "collected": "2026-11-11",
      "wf": "maj-norvege-mensuel",
      "run": {
-      "date": "2026-11-11",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43024212538"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43231981729"
      },
      "flag": "ok",
      "files": [
@@ -203,12 +203,12 @@
      "cadence": "daily",
      "pub": "daily",
      "to": "W45 2026",
-     "collected": "2026-11-11",
+     "collected": "2026-11-12",
      "wf": "maj-wellboats",
      "run": {
-      "date": "2026-11-11",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43023441281"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43231256495"
      },
      "flag": "ok",
      "files": [
@@ -223,12 +223,12 @@
      "cadence": "every 2 hours",
      "pub": "continuous",
      "to": null,
-     "collected": "2026-11-11",
+     "collected": "2026-11-12",
      "wf": "collecte-ais",
      "run": {
-      "date": "2026-11-11",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43072586939"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43195158226"
      },
      "flag": "ok",
      "files": [
@@ -244,9 +244,9 @@
      "collected": "2026-11-07",
      "wf": "collecte-ais",
      "run": {
-      "date": "2026-11-11",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43072586939"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43195158226"
      },
      "flag": "ok",
      "files": [
@@ -258,13 +258,13 @@
      "source": "Mattilsynet, fishery establishments",
      "cadence": "twice a week",
      "pub": "register",
-     "to": "2026-11-09",
+     "to": "2026-11-12",
      "collected": "2026-11-11",
      "wf": "maj-international",
      "run": {
-      "date": "2026-11-09",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43213390340"
      },
      "flag": "ok",
      "files": [
@@ -280,13 +280,13 @@
      "source": "GACC (China customs), CIFER register",
      "cadence": "twice a week",
      "pub": "register, fragile source",
-     "to": "2026-11-09",
+     "to": "2026-11-12",
      "collected": "2026-11-11",
      "wf": "maj-international",
      "run": {
-      "date": "2026-11-09",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43213390340"
      },
      "flag": "ok",
      "files": [
@@ -320,12 +320,12 @@
      "cadence": "twice a week",
      "pub": "yearly, as accounts are filed",
      "to": null,
-     "collected": "2026-11-09",
+     "collected": "2026-11-12",
      "wf": "maj-international",
      "run": {
-      "date": "2026-11-09",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43213390340"
      },
      "flag": "ok",
      "files": [
@@ -338,12 +338,12 @@
      "cadence": "daily",
      "pub": "weekly bulletin + episode reports",
      "to": null,
-     "collected": "2026-11-11",
+     "collected": "2026-11-12",
      "wf": "maj-algues",
      "run": {
-      "date": "2026-11-11",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43039933604"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43247916544"
      },
      "flag": "ok",
      "files": [
@@ -430,13 +430,13 @@
      "source": "Subpesca, resolutions and informes sectoriales",
      "cadence": "daily",
      "pub": "as resolutions are signed",
-     "to": "res. 131494",
-     "collected": "2026-11-11",
+     "to": "res. 131502",
+     "collected": "2026-11-12",
      "wf": "chili-subpesca",
      "run": {
-      "date": "2026-11-11",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43098833814"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43253903150"
      },
      "flag": "ok",
      "files": [
@@ -450,12 +450,12 @@
      "cadence": "twice a week",
      "pub": "register",
      "to": null,
-     "collected": "2026-11-09",
+     "collected": "2026-11-12",
      "wf": "maj-international",
      "run": {
-      "date": "2026-11-09",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43213390340"
      },
      "flag": "ok",
      "files": [
@@ -505,12 +505,12 @@
      "cadence": "twice a week",
      "pub": "monthly edition",
      "to": "Noviembre 2026",
-     "collected": "2026-11-09",
+     "collected": "2026-11-12",
      "wf": "maj-international",
      "run": {
-      "date": "2026-11-09",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43213390340"
      },
      "flag": "ok",
      "files": [
@@ -537,12 +537,12 @@
      "cadence": "daily",
      "pub": "as published",
      "to": null,
-     "collected": "2026-11-11",
+     "collected": "2026-11-12",
      "wf": "maj-algues",
      "run": {
-      "date": "2026-11-11",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43039933604"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43247916544"
      },
      "flag": "ok",
      "files": [
@@ -555,12 +555,12 @@
      "cadence": "twice a week",
      "pub": "irregular, 2–3 months behind",
      "to": "Sep 2026",
-     "collected": "2026-11-09",
+     "collected": "2026-11-12",
      "wf": "maj-international",
      "run": {
-      "date": "2026-11-09",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43213390340"
      },
      "flag": "ok",
      "files": [
@@ -607,12 +607,12 @@
      "cadence": "twice a week",
      "pub": "monthly, with a long delay",
      "to": "Dec 2025",
-     "collected": "2026-11-09",
+     "collected": "2026-11-12",
      "wf": "maj-international",
      "run": {
-      "date": "2026-11-09",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43213390340"
      },
      "flag": "ok",
      "files": [
@@ -661,12 +661,12 @@
      "cadence": "twice a week",
      "pub": "as recorded",
      "to": null,
-     "collected": "2026-11-09",
+     "collected": "2026-11-12",
      "wf": "maj-international",
      "run": {
-      "date": "2026-11-09",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43213390340"
      },
      "flag": "ok",
      "files": [
@@ -679,12 +679,12 @@
      "cadence": "twice a day",
      "pub": "monthly",
      "to": null,
-     "collected": "2026-11-11",
+     "collected": "2026-11-12",
      "wf": "maj-actualite",
      "run": {
-      "date": "2026-11-11",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43088310433"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43225264400"
      },
      "flag": "ok",
      "files": [
@@ -724,13 +724,13 @@
      "source": "HMRC overseas trade statistics",
      "cadence": "twice a week",
      "pub": "monthly, about 6 weeks behind",
-     "to": "Aug 2026",
-     "collected": "2026-11-09",
+     "to": "Sep 2026",
+     "collected": "2026-11-12",
      "wf": "maj-international",
      "run": {
-      "date": "2026-11-09",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43213390340"
      },
      "flag": "ok",
      "files": [
@@ -767,12 +767,12 @@
      "cadence": "twice a week",
      "pub": "monthly",
      "to": "Sep 2026",
-     "collected": "2026-11-09",
+     "collected": "2026-11-12",
      "wf": "maj-international",
      "run": {
-      "date": "2026-11-09",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43213390340"
      },
      "flag": "ok",
      "files": [
@@ -785,12 +785,12 @@
      "cadence": "twice a week",
      "pub": "monthly, about 6 weeks behind",
      "to": "Aug 2026",
-     "collected": "2026-11-09",
+     "collected": "2026-11-12",
      "wf": "maj-international",
      "run": {
-      "date": "2026-11-09",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43213390340"
      },
      "flag": "ok",
      "files": [
@@ -823,12 +823,12 @@
      "cadence": "daily",
      "pub": "monthly",
      "to": "Sep 2026",
-     "collected": "2026-11-11",
+     "collected": "2026-11-12",
      "wf": "maj-norvege-mensuel",
      "run": {
-      "date": "2026-11-11",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43024212538"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43231981729"
      },
      "flag": "ok",
      "files": [
@@ -841,12 +841,12 @@
      "cadence": "twice a week",
      "pub": "register",
      "to": null,
-     "collected": "2026-11-09",
+     "collected": "2026-11-12",
      "wf": "maj-international",
      "run": {
-      "date": "2026-11-09",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43213390340"
      },
      "flag": "ok",
      "files": [
@@ -859,12 +859,12 @@
      "cadence": "twice a week",
      "pub": "monthly, about 4 weeks behind",
      "to": "Sep 2026",
-     "collected": "2026-11-09",
+     "collected": "2026-11-12",
      "wf": "maj-international",
      "run": {
-      "date": "2026-11-09",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43213390340"
      },
      "flag": "ok",
      "files": [
@@ -883,12 +883,12 @@
      "cadence": "twice a week",
      "pub": "quarterly batches",
      "to": "Jul 2026",
-     "collected": "2026-11-09",
+     "collected": "2026-11-12",
      "wf": "maj-international",
      "run": {
-      "date": "2026-11-09",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43213390340"
      },
      "flag": "ok",
      "files": [
@@ -920,12 +920,12 @@
      "cadence": "twice a week",
      "pub": "irregular",
      "to": null,
-     "collected": "2026-11-09",
+     "collected": "2026-11-12",
      "wf": "maj-international",
      "run": {
-      "date": "2026-11-09",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43213390340"
      },
      "flag": "ok",
      "files": [
@@ -938,12 +938,12 @@
      "cadence": "twice a week",
      "pub": "monthly",
      "to": null,
-     "collected": "2026-11-09",
+     "collected": "2026-11-12",
      "wf": "maj-international",
      "run": {
-      "date": "2026-11-09",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43213390340"
      },
      "flag": "ok",
      "files": [
@@ -974,12 +974,12 @@
      "cadence": "twice a week",
      "pub": "irregular, 2–3 months behind",
      "to": "Aug 2026",
-     "collected": "2026-11-09",
+     "collected": "2026-11-12",
      "wf": "maj-international",
      "run": {
-      "date": "2026-11-09",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43213390340"
      },
      "flag": "ok",
      "files": [
@@ -998,12 +998,12 @@
      "cadence": "twice a week",
      "pub": "quarterly, about 3 weeks after the quarter",
      "to": "Sep 2026",
-     "collected": "2026-11-09",
+     "collected": "2026-11-12",
      "wf": "maj-international",
      "run": {
-      "date": "2026-11-09",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43213390340"
      },
      "flag": "ok",
      "files": [
@@ -1017,12 +1017,12 @@
      "cadence": "twice a week",
      "pub": "yearly (financial year)",
      "to": "FY2025/26",
-     "collected": "2026-11-09",
+     "collected": "2026-11-12",
      "wf": "maj-international",
      "run": {
-      "date": "2026-11-09",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43213390340"
      },
      "flag": "ok",
      "files": [
@@ -1036,12 +1036,12 @@
      "cadence": "twice a week",
      "pub": "irregular, 2–3 months behind",
      "to": "Aug 2026",
-     "collected": "2026-11-09",
+     "collected": "2026-11-12",
      "wf": "maj-international",
      "run": {
-      "date": "2026-11-09",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43213390340"
      },
      "flag": "ok",
      "files": [
@@ -1062,9 +1062,9 @@
      "collected": "2026-10-28",
      "wf": "maj-international",
      "run": {
-      "date": "2026-11-09",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43213390340"
      },
      "flag": "ok",
      "files": [
@@ -1078,12 +1078,12 @@
      "cadence": "twice a week",
      "pub": "monthly, about 5 weeks behind",
      "to": "Sep 2026",
-     "collected": "2026-11-09",
+     "collected": "2026-11-12",
      "wf": "maj-international",
      "run": {
-      "date": "2026-11-09",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43213390340"
      },
      "flag": "ok",
      "files": [
@@ -1097,12 +1097,12 @@
      "cadence": "twice a week",
      "pub": "monthly, 2–3 months behind",
      "to": "Aug 2026",
-     "collected": "2026-11-09",
+     "collected": "2026-11-12",
      "wf": "maj-international",
      "run": {
-      "date": "2026-11-09",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43213390340"
      },
      "flag": "ok",
      "files": [
@@ -1115,12 +1115,12 @@
      "cadence": "twice a week",
      "pub": "monthly, 2–4 months behind",
      "to": "Jul 2026",
-     "collected": "2026-11-09",
+     "collected": "2026-11-12",
      "wf": "maj-international",
      "run": {
-      "date": "2026-11-09",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43213390340"
      },
      "flag": "ok",
      "files": [
@@ -1133,12 +1133,12 @@
      "cadence": "twice a week",
      "pub": "monthly, uneven by country",
      "to": "Sep 2026",
-     "collected": "2026-11-09",
+     "collected": "2026-11-12",
      "wf": "maj-international",
      "run": {
-      "date": "2026-11-09",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/42615153290"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43213390340"
      },
      "flag": "ok",
      "files": [
@@ -1169,12 +1169,12 @@
      "cadence": "daily",
      "pub": "monthly, early in the month",
      "to": "Oct 2026",
-     "collected": "2026-11-11",
+     "collected": "2026-11-12",
      "wf": "maj-norvege-mensuel",
      "run": {
-      "date": "2026-11-11",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43024212538"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43231981729"
      },
      "flag": "ok",
      "files": [
@@ -1219,13 +1219,13 @@
      "source": "NOAA OISST v2.1 (daily)",
      "cadence": "daily",
      "pub": "daily, 1–2 days behind",
-     "to": "2026-11-09",
-     "collected": "2026-11-11",
+     "to": "2026-11-10",
+     "collected": "2026-11-12",
      "wf": "maj-temperature-mer",
      "run": {
-      "date": "2026-11-11",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43023129981"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43230963007"
      },
      "flag": "ok",
      "files": [
@@ -1238,13 +1238,13 @@
      "source": "NOAA CoastWatch, VIIRS ocean colour",
      "cadence": "daily",
      "pub": "daily",
-     "to": "2026-11-09",
-     "collected": "2026-11-11",
+     "to": "2026-11-10",
+     "collected": "2026-11-12",
      "wf": "maj-chlorophylle",
      "run": {
-      "date": "2026-11-11",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43040774945"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43248859628"
      },
      "flag": "ok",
      "files": [
@@ -1275,13 +1275,13 @@
      "source": "iLaks, Kyst.no, Fish Farming Expert, Salmonexpert.cl, The Fish Site, Undercurrent, Mundo Acuícola, Google News",
      "cadence": "twice a day",
      "pub": "continuous",
-     "to": "2026-11-11",
-     "collected": "2026-11-11",
+     "to": "2026-11-12",
+     "collected": "2026-11-12",
      "wf": "maj-actualite",
      "run": {
-      "date": "2026-11-11",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43088310433"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43225264400"
      },
      "flag": "ok",
      "files": [
@@ -1297,12 +1297,12 @@
      "cadence": "twice a day",
      "pub": "continuous",
      "to": null,
-     "collected": "2026-11-11",
+     "collected": "2026-11-12",
      "wf": "maj-actualite",
      "run": {
-      "date": "2026-11-11",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43088310433"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43225264400"
      },
      "flag": "ok",
      "files": [
@@ -1315,12 +1315,12 @@
      "cadence": "twice a day",
      "pub": "at each results date",
      "to": "2026 Q3",
-     "collected": "2026-11-11",
+     "collected": "2026-11-12",
      "wf": "maj-actualite",
      "run": {
-      "date": "2026-11-11",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43088310433"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43225264400"
      },
      "flag": "ok",
      "files": [
@@ -1333,12 +1333,12 @@
      "cadence": "daily",
      "pub": "continuous",
      "to": null,
-     "collected": "2026-11-11",
+     "collected": "2026-11-12",
      "wf": "maj-maladies",
      "run": {
-      "date": "2026-11-11",
+      "date": "2026-11-12",
       "ok": true,
-      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43025530858"
+      "url": "https://github.com/EmileviardotFO/saumon/actions/runs/43233517082"
      },
      "flag": "ok",
      "files": [

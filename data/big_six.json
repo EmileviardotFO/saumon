@@ -1,6 +1,6 @@
 {
  "meta": {
-  "built": "2026-11-11T15:37+00:00",
+  "built": "2026-11-12T16:15+00:00",
   "unit": "thousand tonnes gutted (6 kg+ fish)",
   "note": "Supply only. 2026 = harvest to date plus the rest of the year at the same pace; 2027 = our harvest projection times the 6 kg+ share expected, low and high cases in brackets."
  },
@@ -232,11 +232,11 @@
    "name": "Canada",
    "v2025": 87.5,
    "v2026": 100.0,
-   "v2027": 101.5,
+   "v2027": 100.1,
    "chg2026": 14.2,
-   "chg2027": 1.5,
-   "lo": -5.5,
-   "hi": 6.5,
+   "chg2027": 0.1,
+   "lo": -6.9,
+   "hi": 5.1,
    "six2027": null
   },
   {
