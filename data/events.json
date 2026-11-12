@@ -1,28 +1,28 @@
 {
  "meta": {
-  "generated": "2026-11-11",
+  "generated": "2026-11-12",
   "status": {
    "ilaks.no": "ok 12 articles, 1 kept",
-   "www.kyst.no": "ok 75 articles, 2 kept",
+   "www.kyst.no": "ok 84 articles, 2 kept",
    "www.fishfarmingexpert.com": "ok 65 articles, 2 kept",
    "www.fishfarmermagazine.com": "ok 30 articles, 0 kept",
-   "www.salmonexpert.cl": "ok 55 articles, 5 kept",
+   "www.salmonexpert.cl": "ok 56 articles, 7 kept",
    "thefishsite.com": "ok 50 articles, 1 kept",
-   "news.google.com (NO no #1)": "ok 10 articles, 8 kept",
+   "news.google.com (NO no #1)": "ok 10 articles, 7 kept",
    "news.google.com (NO no #2)": "ok 10 articles, 1 kept",
    "news.google.com (CL es #3)": "ok 30 articles, 11 kept",
    "news.google.com (CL es #4)": "ok 9 articles, 4 kept",
    "news.google.com (IS is #5)": "ok 0 articles, 0 kept",
-   "news.google.com (IS en #6)": "ok 9 articles, 3 kept",
-   "news.google.com (GB en #7)": "ok 34 articles, 10 kept",
-   "news.google.com (FO en #8)": "ok 7 articles, 1 kept",
+   "news.google.com (IS en #6)": "ok 7 articles, 2 kept",
+   "news.google.com (GB en #7)": "ok 32 articles, 10 kept",
+   "news.google.com (FO en #8)": "ok 9 articles, 1 kept",
    "news.google.com (FO fo #9)": "ok 0 articles, 0 kept",
-   "news.google.com (CA en #10)": "ok 22 articles, 3 kept",
-   "news.google.com (multi en #11)": "ok 34 articles, 2 kept",
+   "news.google.com (CA en #10)": "ok 16 articles, 3 kept",
+   "news.google.com (multi en #11)": "ok 29 articles, 1 kept",
    "news.google.com (CA en #12)": "ok 13 articles, 7 kept",
    "news.google.com (CA en #13)": "ok 0 articles, 0 kept",
-   "news.google.com (CA en #14)": "ok 6 articles, 1 kept",
-   "news.google.com (multi en #15)": "ok 68 articles, 12 kept",
+   "news.google.com (CA en #14)": "ok 6 articles, 0 kept",
+   "news.google.com (multi en #15)": "ok 71 articles, 12 kept",
    "gov.scot FHI": "ok 6824 reports, last 2026-10-14"
   },
   "note": "news = articles kept by keyword (a mortality word + a farming word), classified by cause and basin; manual = events entered by hand with their losses; scotland_fhi = mortalities reported to the Scottish Fish Health Inspectorate",
@@ -156,6 +156,48 @@
   }
  ],
  "news": [
+  {
+   "date": "2026-11-12",
+   "title": "Contingencias sanitarias desafían a Salmones Camanchaca pero mantiene números azules",
+   "url": "https://www.salmonexpert.cl/camanchaca-isa-oxigeno/contingencias-sanitarias-desafian-a-salmones-camanchaca-pero-mantiene-numeros-azules/2209647",
+   "source": "www.salmonexpert.cl",
+   "lang": "es",
+   "causes": [
+    "disease"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "cfd5da4413c2"
+  },
+  {
+   "date": "2026-11-12",
+   "title": "Autoridad endurece exigencias sobre mortalidad en la industria salmonicultora",
+   "url": "https://www.salmonexpert.cl/cosechas-mortalidad-noruega/autoridad-endurece-exigencias-sobre-mortalidad-en-la-industria-salmonicultora/2208252",
+   "source": "www.salmonexpert.cl",
+   "lang": "es",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "2f1edd7940d8"
+  },
+  {
+   "date": "2026-11-12",
+   "title": "Norwegian salmon mortality falls to 8.7% as fish health improves",
+   "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxOeG1iZENybEFPUHpCMHNxT0d6TGhiTHJuRDZrWnVOS2hvVXlBWnlpbTBLby1pbkFEYmFBX0RxaVhIMXhEU01pUThmN1poYW5FWFhnQ2I4bnBFRUFtbWl5eVVyOVJLZXlwMFpEYmFNUHlaeDgxNnh4SE9wd3llXzhIZjlCYWZPc3hMRkxJZk9Qb2txbmwzVzhkSGwtOA?oc=5",
+   "source": "Salmon Business",
+   "lang": "en",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "NO"
+   ],
+   "id": "d07c8d923078"
+  },
   {
    "date": "2026-11-11",
    "title": "Dødelighetsrisikoen i merdene synker – så mange laks er rapportert døde i sjøfasen i år",
@@ -1370,12 +1412,12 @@
   "source": "https://www.gov.scot/binaries/content/documents/govscot/publications/transparency-data/2019/12/fish-health-inspectorate-mortality-information/documents/mortality-information---until-end-october-2019/mortality-information---until-end-october-2019/govscot%3Adocument/Mortality%2Binformation%2B-%2Buntil%2Bend%2BSeptember%2B2026.xlsx",
   "monthly": {
    "2023-10": {
-    "reports": 41,
+    "reports": 40,
     "causes": {
-     "unspecified": 4,
      "gill": 32,
      "disease": 14,
      "oxygen": 3,
+     "unspecified": 3,
      "jellyfish": 1,
      "treatment": 1
     }
@@ -27271,17 +27313,6 @@
     ],
     "n": null,
     "pct": 3.21
-   },
-   {
-    "date": "2023-10-22",
-    "site": "Glenkens",
-    "company": "Kames Fish Farming Ltd",
-    "cause": "PKD-Confirmed ",
-    "causes": [
-     "unspecified"
-    ],
-    "n": null,
-    "pct": 3.09
    }
   ]
  },
