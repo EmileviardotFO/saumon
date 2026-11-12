@@ -68,6 +68,15 @@ jobs:
         rm -f data/smoke.json
 
         '
+    - name: Reporter la nouvelle semaine dans Summary, Prices et Generations
+      # sans cette etape, ces pages restaient sur la semaine precedente jusqu'au passage du lendemain
+      # (constate le 12 nov. 2026 : SSB semaine 45 collectee a 17h42, Summary construit a 15h37)
+      if: always()
+      continue-on-error: true
+      run: |
+        python3 scripts/build_summary.py || true
+        python3 scripts/build_gen_outlook.py || true
+        python3 scripts/build_generations.py || true
     - name: Publier data.json (et les fichiers bruts telecharges)
       if: always()
       run: "git config user.name  \"github-actions\"\ngit config user.email \"actions@github.com\"\n# data/ entier : data.json et les caches BarentsWatch ; farming/ : Australie et Canada.\ngit add data/\
