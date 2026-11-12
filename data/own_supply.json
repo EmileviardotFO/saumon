@@ -1,6 +1,6 @@
 {
  "meta": {
-  "built": "2026-11-09",
+  "built": "2026-11-12",
   "unit": "thousand tonnes gutted weight (GWT) or whole-fish equivalent",
   "note": "Built only from primary data (official registers, monthly harvest, exports, our own models). Analysts (Kontali, banks) appear only as a comparison."
  },
@@ -112,14 +112,14 @@
    },
    "e2026": 100.0,
    "chg2026": 14.2,
-   "c2027": 101.5,
-   "chg2027": 1.5,
-   "lo": -5.5,
-   "hi": 6.5,
-   "bc_2027": 2.9,
+   "c2027": 100.1,
+   "chg2027": 0.1,
+   "lo": -6.9,
+   "hi": 5.1,
+   "bc_2027": 0.2,
    "level_note": "production 2024 (Statistics Canada + Newfoundland report) carried to 2025 by exports",
    "source": "Statistics Canada (CIMT): domestic exports by province of origin, whole-fish equivalent",
-   "method": "Level: Canadian salmon production of 2024 (Statistics Canada, plus Newfoundland's own report as Statistics Canada suppresses it), carried to 2025 by exports. Exports by province measure the change month by month. 2026 = exports to date + the rest of the year as a year earlier (the rule that tested best). 2027: British Columbia (53 % of the volume) from the cycle of every farm (DFO): +3 %; the Atlantic provinces held flat, with downside from ISA in New Brunswick.",
+   "method": "Level: Canadian salmon production of 2024 (Statistics Canada, plus Newfoundland's own report as Statistics Canada suppresses it), carried to 2025 by exports. Exports by province measure the change month by month. 2026 = exports to date + the rest of the year as a year earlier (the rule that tested best). 2027: British Columbia (53 % of the volume) from the cycle of every farm (DFO): +0 %; the Atlantic provinces held flat, with downside from ISA in New Brunswick.",
    "tab": "canada"
   },
   "AU": {
@@ -147,10 +147,10 @@
   "v2025": 2761.7,
   "e2026": 2927.0,
   "chg2026": 6.0,
-  "c2027": 2929.8,
-  "chg2027": 0.1,
+  "c2027": 2928.4,
+  "chg2027": 0.0,
   "lo": -5.8,
-  "hi": 3.8,
+  "hi": 3.7,
   "note": "Sum of the seven basins we follow (about 95 % of farmed Atlantic salmon). Ireland, the United States, Russia, New Zealand and other small producers are not tracked."
  }
 }

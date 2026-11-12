@@ -214,7 +214,7 @@
 "registerTypeName": "水产品",
 "country": "NOR",
 "countryName": "挪威",
-"enterpriseName": "ARCTIC SWAN",
+"enterpriseName": "ARCTIC SWAN 1",
 "enterpriseAddress": "YSTENESGATA 6B",
 "province": "6003 ÅLESUND, MØRE OG ROMSDAL",
 "orgNo": "M2089",
@@ -694,13 +694,13 @@
 "province": "9008 TROMSØ, TROMS OG FINNMARK",
 "orgNo": "T1",
 "addTime": "Dec 30, 2021 12:00:00 AM",
-"status": "R",
-"statusName": "有效",
+"status": "X",
+"statusName": "注销",
 "regCo": "CNOR18FF1804010045",
 "regDate": "Apr 1, 2018 12:00:00 AM",
-"availDate": "Mar 31, 2028 12:00:00 AM",
+"availDate": "Nov 11, 2026 12:00:00 AM",
 "startDate": "2018-04-01",
-"endDate": "2028-03-31"
+"endDate": "2026-11-11"
 },
 {
 "appSeqNo": "AQU202000000082619",
@@ -770,13 +770,13 @@
 "province": "9008 TROMSØ, TROMS OG FINNMARK",
 "orgNo": "T1241",
 "addTime": "Dec 30, 2021 12:00:00 AM",
-"status": "R",
-"statusName": "有效",
+"status": "X",
+"statusName": "注销",
 "regCo": "CNOR18FF1804010050",
 "regDate": "Apr 1, 2018 12:00:00 AM",
-"availDate": "Mar 31, 2028 12:00:00 AM",
+"availDate": "Nov 11, 2026 12:00:00 AM",
 "startDate": "2018-04-01",
-"endDate": "2028-03-31"
+"endDate": "2026-11-11"
 },
 {
 "appSeqNo": "AQU202000000081903",
@@ -4137,9 +4137,9 @@
 "statusName": "有效",
 "regCo": "CNOR15012111110001",
 "regDate": "Nov 11, 2021 12:00:00 AM",
-"availDate": "Nov 10, 2026 12:00:00 AM",
+"availDate": "Nov 10, 2031 12:00:00 AM",
 "startDate": "2021-11-11",
-"endDate": "2026-11-10"
+"endDate": "2031-11-10"
 },
 {
 "appSeqNo": "SPE202000000140050",
@@ -4156,9 +4156,9 @@
 "statusName": "有效",
 "regCo": "CNOR15022111110001",
 "regDate": "Nov 11, 2021 12:00:00 AM",
-"availDate": "Nov 10, 2026 12:00:00 AM",
+"availDate": "Nov 10, 2031 12:00:00 AM",
 "startDate": "2021-11-11",
-"endDate": "2026-11-10"
+"endDate": "2031-11-10"
 },
 {
 "appSeqNo": "SPE202000000140052",
@@ -4175,9 +4175,9 @@
 "statusName": "有效",
 "regCo": "CNOR15032111110001",
 "regDate": "Nov 11, 2021 12:00:00 AM",
-"availDate": "Nov 10, 2026 12:00:00 AM",
+"availDate": "Nov 10, 2031 12:00:00 AM",
 "startDate": "2021-11-11",
-"endDate": "2026-11-10"
+"endDate": "2031-11-10"
 },
 {
 "appSeqNo": "SPE202000000140054",
@@ -4194,9 +4194,9 @@
 "statusName": "有效",
 "regCo": "CNOR15042111110001",
 "regDate": "Nov 11, 2021 12:00:00 AM",
-"availDate": "Nov 10, 2026 12:00:00 AM",
+"availDate": "Nov 10, 2031 12:00:00 AM",
 "startDate": "2021-11-11",
-"endDate": "2026-11-10"
+"endDate": "2031-11-10"
 },
 {
 "appSeqNo": "SPE202000000110542",
@@ -4213,9 +4213,9 @@
 "statusName": "有效",
 "regCo": "CNOR16012111110001",
 "regDate": "Nov 11, 2021 12:00:00 AM",
-"availDate": "Nov 10, 2026 12:00:00 AM",
+"availDate": "Nov 10, 2031 12:00:00 AM",
 "startDate": "2021-11-11",
-"endDate": "2026-11-10"
+"endDate": "2031-11-10"
 },
 {
 "appSeqNo": "SPE202000000110544",
@@ -4232,9 +4232,9 @@
 "statusName": "有效",
 "regCo": "CNOR16012111110002",
 "regDate": "Nov 11, 2021 12:00:00 AM",
-"availDate": "Nov 10, 2026 12:00:00 AM",
+"availDate": "Nov 10, 2031 12:00:00 AM",
 "startDate": "2021-11-11",
-"endDate": "2026-11-10"
+"endDate": "2031-11-10"
 },
 {
 "appSeqNo": "SPE202000000110546",
@@ -4251,9 +4251,9 @@
 "statusName": "有效",
 "regCo": "CNOR16012111110003",
 "regDate": "Nov 11, 2021 12:00:00 AM",
-"availDate": "Nov 10, 2026 12:00:00 AM",
+"availDate": "Nov 10, 2031 12:00:00 AM",
 "startDate": "2021-11-11",
-"endDate": "2026-11-10"
+"endDate": "2031-11-10"
 },
 {
 "appSeqNo": "OPT202100000007194",
@@ -4871,13 +4871,13 @@
 "province": "9008 Tromsø",
 "orgNo": "T24",
 "addTime": "Nov 9, 2022 12:00:00 AM",
-"status": "R",
-"statusName": "有效",
+"status": "X",
+"statusName": "注销",
 "regCo": "CNOR18FF2211090001",
 "regDate": "Nov 9, 2022 12:00:00 AM",
-"availDate": "Nov 9, 2027 12:00:00 AM",
+"availDate": "Nov 11, 2026 12:00:00 AM",
 "startDate": "2022-11-09",
-"endDate": "2027-11-09"
+"endDate": "2026-11-11"
 },
 {
 "appSeqNo": "AQU202200000301210",
@@ -8583,5 +8583,81 @@
 "availDate": "Oct 20, 2031 12:00:00 AM",
 "startDate": "2026-10-20",
 "endDate": "2031-10-20"
+},
+{
+"appSeqNo": "DIY202600001325968",
+"registerType": "1702",
+"registerTypeName": "巴氏杀菌乳和其他乳制品",
+"country": "NOR",
+"countryName": "挪威",
+"enterpriseName": "TINE SA AVD JÆREN",
+"enterpriseAddress": "Næringsvegen 21, 4365 NÆRBØ",
+"province": "Rogaland",
+"orgNo": "M220",
+"addTime": "Nov 10, 2026 12:00:00 AM",
+"status": "R",
+"statusName": "有效",
+"regCo": "CNOR17022611100005",
+"regDate": "Nov 10, 2026 12:00:00 AM",
+"availDate": "Nov 10, 2031 12:00:00 AM",
+"startDate": "2026-11-10",
+"endDate": "2031-11-10"
+},
+{
+"appSeqNo": "DIY202600001326010",
+"registerType": "1702",
+"registerTypeName": "巴氏杀菌乳和其他乳制品",
+"country": "NOR",
+"countryName": "挪威",
+"enterpriseName": "TINE SA AVD STORSTEINNES",
+"enterpriseAddress": "Meieriveien 21, 9050 STORSTEINNES",
+"province": "Troms",
+"orgNo": "M348",
+"addTime": "Nov 10, 2026 12:00:00 AM",
+"status": "R",
+"statusName": "有效",
+"regCo": "CNOR17022611100006",
+"regDate": "Nov 10, 2026 12:00:00 AM",
+"availDate": "Nov 10, 2031 12:00:00 AM",
+"startDate": "2026-11-10",
+"endDate": "2031-11-10"
+},
+{
+"appSeqNo": "AQU202600001348658",
+"registerType": "1801",
+"registerTypeName": "水产品",
+"country": "NOR",
+"countryName": "挪威",
+"enterpriseName": "HOA NHU",
+"enterpriseAddress": "Skasvegen 160, 4354 Voll",
+"province": "Rogaland",
+"orgNo": "R945",
+"addTime": "Nov 11, 2026 12:00:00 AM",
+"status": "R",
+"statusName": "有效",
+"regCo": "CNOR18PP2611110059",
+"regDate": "Nov 11, 2026 12:00:00 AM",
+"availDate": "Nov 11, 2031 12:00:00 AM",
+"startDate": "2026-11-11",
+"endDate": "2031-11-11"
+},
+{
+"appSeqNo": "AQU202600001322856",
+"registerType": "1801",
+"registerTypeName": "水产品",
+"country": "NOR",
+"countryName": "挪威",
+"enterpriseName": "Frost Seafood Norge AS",
+"enterpriseAddress": "LEGEMYRANE 4, 6076 MOLTUSTRANDA, NORWAY",
+"province": "Møre og Romsdal",
+"orgNo": "M2242",
+"addTime": "Nov 11, 2026 12:00:00 AM",
+"status": "R",
+"statusName": "有效",
+"regCo": "CNOR18PP2611110060",
+"regDate": "Nov 11, 2026 12:00:00 AM",
+"availDate": "Nov 11, 2031 12:00:00 AM",
+"startDate": "2026-11-11",
+"endDate": "2031-11-11"
 }
 ]

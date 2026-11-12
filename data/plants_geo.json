@@ -573,5 +573,65 @@
 -53.29567,
 -70.36874,
 "town"
+],
+"NO|SKAGANESET|5382|Skogsvåg": [
+60.26857,
+5.10504,
+"address"
+],
+"NO|Christian Michelsens gate 6B|5012|Bergen": [
+60.3931,
+5.32197,
+"address"
+],
+"NO|Porsvika 57A|5381|Glesvær": [
+60.21138,
+5.05263,
+"address"
+],
+"NO|Skansekaia 4B|6002|Ålesund": [
+62.47517,
+6.15138,
+"address"
+],
+"NO|Øvre veg 24|6415|Molde": [
+62.73852,
+7.1666,
+"address"
+],
+"NO|Naustholmveien 5|8764|Lovund": [
+66.36545,
+12.36736,
+"address"
+],
+"NO|Anna Eriksens vei 8|8432|Alsvåg": [
+68.90197,
+15.28445,
+"address"
+],
+"NO|Nymo gård|8647|Bleikvasslia": [
+65.88984,
+13.81419,
+"postcode"
+],
+"NO|Gleaveien 11A|8064|Røst": [
+67.50588,
+12.06974,
+"address"
+],
+"NO|STANSEVEIEN 33|0976|Oslo": [
+59.95035,
+10.88412,
+"address"
+],
+"NO|Roan havn 37|7180|Roan": [
+64.17698,
+10.21407,
+"address"
+],
+"NO|c/o Morten Lysvold Nilsen|5397|Bekkjarvik": [
+60.00819,
+5.19929,
+"postcode"
 ]
 }

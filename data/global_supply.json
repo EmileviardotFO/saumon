@@ -57,7 +57,7 @@
   "analysts_2027": "0 to +1 % — Kontali (via Mowi, 4 Nov 2026): around +1 %. SEB (28 Oct 2026): −1 %. Bakkafrost (2 Nov 2026): first half flat, second half about +2 %.",
   "analysts_2026": "about +4 % — Kontali's estimate in November (Mowi Q3 report); it was +1 % in February. Q1 2026 alone was +14 %, Q3 +4.8 %, and Q4 is expected at about −3 %.",
   "v2025_own": 2761.7,
-  "c2027": 0.1
+  "c2027": 0.0
  },
  "basins": [
   {
@@ -216,7 +216,7 @@
    "share": 4,
    "v_note": "North America (Canada and a small US volume)",
    "dir": "flat",
-   "y2027": "+2 % (−6 to +6 %), our projection",
+   "y2027": "0 % (−7 to +5 %), our projection",
    "y2026": "North America −15.2 % in Q3 2026 but +7.6 % over 12 months. Canadian exports January–September: British Columbia +40 %, Atlantic provinces −9 % (Statistics Canada).",
    "oneliner": "British Columbia had a big 2026 and should hold in 2027, before its 2029 ban bites; the Atlantic is under pressure from ISA.",
    "drivers": [
@@ -239,11 +239,11 @@
    ],
    "watch": "Monthly exports by province (Canada tab), BC farm cycles and smolt transfers, ISA confirmations (CFIA).",
    "r2027": [
-    -6,
-    6
+    -7,
+    5
    ],
    "analysts_2027": "about 0 %, then down",
-   "c2027": 1.5
+   "c2027": 0.1
   },
   {
    "id": "AU",
