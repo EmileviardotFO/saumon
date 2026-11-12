@@ -1,11 +1,11 @@
 {
  "meta": {
-  "generated": "2026-11-12T16:15+00:00",
-  "n": 72,
+  "generated": "2026-11-12T17:03+00:00",
+  "n": 73,
   "ok": 60,
   "late": 0,
   "failed": 0,
-  "manual": 12,
+  "manual": 13,
   "runs_checked": true,
   "unlisted": [],
   "derived": [
@@ -13,6 +13,7 @@
    "big_fish.json",
    "big_fish_archive.json",
    "big_six.json",
+   "chile_market.json",
    "forecast_archive.json",
    "gen_outlook.json",
    "generations.json",
@@ -567,6 +568,20 @@
       "national_trade.json"
      ],
      "ss": "Chile export"
+    },
+    {
+     "what": "Biomass, fish numbers and harvest weight quoted by analysts and farmers (fit points of our biomass estimate)",
+     "source": "Pareto, RaboResearch, company reports, via InfoSalmon, Aqua.cl, Salmonexpert",
+     "cadence": "by hand",
+     "pub": "",
+     "to": null,
+     "collected": null,
+     "wf": null,
+     "run": null,
+     "flag": "manual",
+     "files": [
+      "chile_anchors.json"
+     ]
     },
     {
      "what": "Average harvest weight by company and quarter",

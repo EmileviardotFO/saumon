@@ -257,6 +257,7 @@ add(CL, 'Plants authorised to slaughter and process salmonids', 'Sernapesca, lis
 add(CL, 'Plant coordinates', 'RETC, Ministerio del Medio Ambiente', STATIC, 'plants_cl_exact.json', None, None)
 add(CL, 'Mortality notices (algal blooms, oxygen) and bloom conditions (rain, sun, wind)', 'Sernapesca press notices + NASA POWER', DAILY, 'algae_watch.json', 'maj-algues', None, 'as published')
 add(CL, 'Exports by destination (cross-check)', 'UN Comtrade, reported by Chile', TWICE, 'national_trade.json', 'maj-international', t_nat('CL'), 'irregular, 2–3 months behind')
+add(CL, 'Biomass, fish numbers and harvest weight quoted by analysts and farmers (fit points of our biomass estimate)', 'Pareto, RaboResearch, company reports, via InfoSalmon, Aqua.cl, Salmonexpert', HAND, 'chile_anchors.json', None, None)
 add(CL, 'Average harvest weight by company and quarter', 'Company reports (CMF filings, trading updates)', HAND, 'chile_harvest_weights.json', None, None)
 add(CL, 'Annual production, health and mortality by region (starter dataset)', 'Sernapesca, Subpesca yearbooks', HAND, 'chili.json', None, None)
 
@@ -319,7 +320,7 @@ add(NW, 'Disease evidence cards and figures by basin', 'Open-access papers, inst
 add(NW, 'Pinned topics, agenda, quarterly figures of the listed farmers', 'Company calendars and reports', HAND, ['watch.json', 'summary_manual.json', 'big_six_manual.json'], None, None)
 
 # fichiers de data/ fabriques a partir des precedents (modeles, archives, index) : pas des collectes
-DERIVED = {'sources.json', 'summary.json', 'big_six.json', 'basin_cards.json', 'big_fish.json', 'big_fish_archive.json', 'forecast_archive.json', 'gen_outlook.json', 'generations.json',
+DERIVED = {'sources.json', 'chile_market.json', 'summary.json', 'big_six.json', 'basin_cards.json', 'big_fish.json', 'big_fish_archive.json', 'forecast_archive.json', 'gen_outlook.json', 'generations.json',
            'generations_archive.json', 'six_stock.json', 'register_brief.json', 'iceland_outlook.json', 'own_supply.json', 'search_index.json', 'smoke.json'}
 DATA_KEYS_DERIVED = {'meta', 'status', 'cohort', 'country'}   # cohort et country viennent du registre et d'Akvafakta
 
