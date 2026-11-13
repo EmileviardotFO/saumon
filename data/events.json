@@ -1,29 +1,29 @@
 {
  "meta": {
-  "generated": "2026-11-12",
+  "generated": "2026-11-13",
   "status": {
    "ilaks.no": "ok 12 articles, 0 kept",
-   "www.kyst.no": "ok 85 articles, 2 kept",
+   "www.kyst.no": "ok 87 articles, 2 kept",
    "www.fishfarmingexpert.com": "ok 65 articles, 2 kept",
    "www.fishfarmermagazine.com": "ok 30 articles, 0 kept",
-   "www.salmonexpert.cl": "ok 59 articles, 7 kept",
-   "thefishsite.com": "ok 50 articles, 1 kept",
-   "news.google.com (NO no #1)": "ok 10 articles, 7 kept",
+   "www.salmonexpert.cl": "ok 59 articles, 6 kept",
+   "thefishsite.com": "ok 50 articles, 2 kept",
+   "news.google.com (NO no #1)": "ok 9 articles, 7 kept",
    "news.google.com (NO no #2)": "ok 10 articles, 1 kept",
    "news.google.com (CL es #3)": "ok 30 articles, 11 kept",
    "news.google.com (CL es #4)": "ok 9 articles, 4 kept",
    "news.google.com (IS is #5)": "ok 0 articles, 0 kept",
-   "news.google.com (IS en #6)": "ok 7 articles, 2 kept",
-   "news.google.com (GB en #7)": "ok 32 articles, 10 kept",
-   "news.google.com (FO en #8)": "ok 10 articles, 1 kept",
+   "news.google.com (IS en #6)": "ok 8 articles, 3 kept",
+   "news.google.com (GB en #7)": "ok 27 articles, 9 kept",
+   "news.google.com (FO en #8)": "ok 9 articles, 1 kept",
    "news.google.com (FO fo #9)": "ok 0 articles, 0 kept",
-   "news.google.com (CA en #10)": "ok 20 articles, 2 kept",
-   "news.google.com (multi en #11)": "ok 28 articles, 3 kept",
+   "news.google.com (CA en #10)": "ok 21 articles, 2 kept",
+   "news.google.com (multi en #11)": "ok 26 articles, 3 kept",
    "news.google.com (CA en #12)": "ok 14 articles, 7 kept",
-   "news.google.com (CA en #13)": "ok 0 articles, 0 kept",
+   "news.google.com (CA en #13)": "ok 1 articles, 1 kept",
    "news.google.com (CA en #14)": "ok 6 articles, 0 kept",
-   "news.google.com (multi en #15)": "ok 69 articles, 12 kept",
-   "gov.scot FHI": "ok 6824 reports, last 2026-10-14"
+   "news.google.com (multi en #15)": "ok 76 articles, 12 kept",
+   "gov.scot FHI": "error: no xlsx link (1983 chars, 0 xlsx links, title: )"
   },
   "note": "news = articles kept by keyword (a mortality word + a farming word), classified by cause and basin; manual = events entered by hand with their losses; scotland_fhi = mortalities reported to the Scottish Fish Health Inspectorate",
   "causes": [
@@ -156,6 +156,35 @@
   }
  ],
  "news": [
+  {
+   "date": "2026-11-13",
+   "title": "Argyll pupils try sushi-making and explore salmon farming",
+   "url": "https://thefishsite.com/articles/argyll-pupils-try-sushi-making-and-explore-salmon-farming",
+   "source": "thefishsite.com",
+   "lang": "en",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "GB",
+    "FO"
+   ],
+   "id": "05b6c04f691a"
+  },
+  {
+   "date": "2026-11-13",
+   "title": "Jellyfish spur losses at Icelandic salmon farmer",
+   "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxQRENfcmVJeVRYdUlWN3VmVEZoVDBCS1M3YlVBZUpfNUxWNXc3NTZZMzdwdEtCUW80UjV6LWo4NnpCWFdPenRCU082d0l3ZEhVbEtYZFlnQjVvaXgwaFN2clhiTlFNaDNXT245ZnQxeTJ6ZC1Kb3BDOG9GOXFzQVAzV05sZGtRT2NINXhNcnAxTkxnbmY2aWh3V0VR?oc=5",
+   "source": "IntraFish",
+   "lang": "en",
+   "causes": [
+    "jellyfish"
+   ],
+   "basins": [
+    "IS"
+   ],
+   "id": "02815cb130fd"
+  },
   {
    "date": "2026-11-12",
    "title": "Contingencias sanitarias desafían a Salmones Camanchaca pero mantiene números azules",
@@ -323,6 +352,20 @@
     "NO"
    ],
    "id": "d6c8dc8b9036"
+  },
+  {
+   "date": "2026-11-10",
+   "title": "Mowi charged with 8 workplace safety failures after hatchery worker’s death",
+   "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxNRG5oRHJVWWdybnN6OXhkbFB3SWNJS1BYeWtoa19zU0xGZWhWMk1RWUpKb0YwYVBWWEpjbmstS0N1NmZtQVlGaHFGTHpMZUFUY3dQbzVxcFV6X0RuMjhRLWM5MlBBTEFlWmpyNW91VmtFUjU3bzFBNUphYXpjMF9FTENFSDBsS1czVzk3dzk5dUluY2E0d090Skw5enNVYkdNWmMxRFVhRUl0eDRLbUNfWXdZZEVFenhpVUlOa3E5YUoyWlk?oc=5",
+   "source": "IntraFish",
+   "lang": "en",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "NO"
+   ],
+   "id": "c8f5e4a13033"
   },
   {
    "date": "2026-11-09",
