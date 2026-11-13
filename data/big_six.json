@@ -1,6 +1,6 @@
 {
  "meta": {
-  "built": "2026-11-12T16:15+00:00",
+  "built": "2026-11-13T15:41+00:00",
   "unit": "thousand tonnes gutted (6 kg+ fish)",
   "note": "Supply only. 2026 = harvest to date plus the rest of the year at the same pace; 2027 = our harvest projection times the 6 kg+ share expected, low and high cases in brackets."
  },
@@ -21,7 +21,7 @@
     119.5,
     165.6
    ],
-   "how": "6 kg+ harvested month by month from the biomass register (every farm, gutted weight, our size model): 247 kt in 2025, 240 kt from January to September 2026, plus October–December from the generations model. 2027: the model gives January–September 2027 against the same months of 2026: +20 % central, +2 % if the new generation loses its growth advance, +30 % if it keeps all of it; October–December 2027 carried at the same rate. Cross-check: the size split of the Sitagri price index (fresh whole salmon traded on the spot market by the exporters that report to the index, not the whole harvest) shows 6 kg+ at 11.9 % of the volume in 2025 and 15.7 % so far in 2026, the same direction.",
+   "how": "6 kg+ harvested month by month from the biomass register (every farm, gutted weight, our size model): 247 kt in 2025, 240 kt from January to September 2026, plus October–December from the generations model. 2027: the model gives January–September 2027 against the same months of 2026: +20 % central, +2 % if the new generation loses its growth advance, +30 % if it keeps all of it; October–December 2027 carried at the same rate. Cross-check: the size split of the Sitagri price index (fresh whole salmon traded on the spot market by the exporters that report to the index, not the whole harvest) shows 6 kg+ at 11.9 % of the volume in 2025 and 15.5 % so far in 2026, the same direction.",
    "known": [
     "H1 2026: 166 kt of 6 kg+ against 120 kt in H1 2025 (+39 %).",
     "Fish over 5 kg at sea at the end of September: 52 kt gutted against 39 kt a year earlier (+34 %).",

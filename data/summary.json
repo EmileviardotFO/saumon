@@ -1,6 +1,6 @@
 {
  "meta": {
-  "built": "2026-11-12T17:56+00:00",
+  "built": "2026-11-13T15:41+00:00",
   "note": "Signals ranked by how unusual they are against their own history (score). Effect: supports / weighs on prices, risk, watch."
  },
  "lead": "Supply grows +6 % in 2026 across the seven basins and ±0.0 % in 2027. Chile is the main source of change: a record El Niño, a slowing harvest and fewer big fish. Norway carries the growth with heavier fish and more 6 kg+. Imports grow fastest in Japan, Brazil, UK; USA and Israel are flat or down.",
@@ -9,7 +9,7 @@
    "basin": "Chile · El Niño",
    "title": "Extreme El Niño, warm Chilean water",
    "value": "+3.3 °C",
-   "text": "Niño 3.4 index (week of 2026-11-04); Chilean sea +1.1 to +2.9 °C vs normal in Oct. NOAA: El Niño continues to strengthen, with a strong-to-very strong El Niño likely through January-March 2027 (remaining greater than an 83% chance).",
+   "text": "Niño 3.4 index (week of 2026-11-04); Chilean sea +1.1 to +2.9 °C vs normal in Oct. NOAA: El Niño continues to strengthen, with a strong-to-very strong El Niño likely through January-March 2027 (remaining greater than a 79% chance).",
    "effect": "risk",
    "tab": "seatemp",
    "score": 4.29
@@ -246,11 +246,6 @@
  ],
  "agenda": [
   {
-   "d": "2026-11-12",
-   "t": "NOAA El Niño bulletin (strong-to-very strong El Niño expected through January–March 2027)",
-   "u": "https://www.cpc.ncep.noaa.gov/products/analysis_monitoring/enso_advisory/ensodisc.shtml"
-  },
-  {
    "d": "2026-11-20",
    "t": "Norwegian biomass register for Oct (around the 20th)"
   },
@@ -447,10 +442,24 @@
  },
  "news": [
   {
-   "date": "2026-11-12",
-   "title": "Multi X Q3 operating earnings surge nearly fivefold on salmon price rebound",
-   "url": "https://www.undercurrentnews.com/2026/11/12/multi-x-q3-operating-earnings-surge-nearly-fivefold-on-salmon-price-rebound/",
-   "source": "undercurrentnews.com",
+   "date": "2026-11-10",
+   "title": "ProChile y chef internacional recorren planta de Blumar en Magallanes para promover el salmón regional en Japón",
+   "url": "https://www.elpinguino.com/cronica/prochile-y-chef-internacional-recorren-planta-de-blumar-en-magallanes-para-promover-el-salmon-regional-en-japon/",
+   "source": "El Pingüino",
+   "n_sources": 3,
+   "basins": [
+    "CL"
+   ],
+   "themes": [
+    "companies"
+   ],
+   "lang": "es"
+  },
+  {
+   "date": "2026-11-13",
+   "title": "Noruega destina inversiones para competirle a Chile con su salmón en el mercado brasileño",
+   "url": "https://www.salmonexpert.cl/brasil-chile-competencia/noruega-destina-inversiones-para-competirle-a-chile-con-su-salmon-en-el-mercado-brasileno/2209979",
+   "source": "salmonexpert.cl",
    "n_sources": 2,
    "basins": [
     "CL"
@@ -459,7 +468,49 @@
     "market",
     "companies"
    ],
+   "lang": "es"
+  },
+  {
+   "date": "2026-11-13",
+   "title": "Scottish salmon producer Loch Duart targets record US sales",
+   "url": "https://www.undercurrentnews.com/2026/11/13/scottish-salmon-producer-loch-duart-targets-record-us-sales/",
+   "source": "undercurrentnews.com",
+   "n_sources": 2,
+   "basins": [
+    "GB"
+   ],
+   "themes": [
+    "companies"
+   ],
    "lang": "en"
+  },
+  {
+   "date": "2026-11-13",
+   "title": "US wholesale: Chilean salmon prices climb as fresh starves the freezer",
+   "url": "https://www.undercurrentnews.com/2026/11/13/us-wholesale-chilean-salmon-climbs-as-fresh-starves-the-freezer/",
+   "source": "undercurrentnews.com",
+   "n_sources": 2,
+   "basins": [
+    "CL"
+   ],
+   "themes": [
+    "market"
+   ],
+   "lang": "en"
+  },
+  {
+   "date": "2026-11-13",
+   "title": "Hevder å ha funnet et protein som slår fiskemel: – Rundt 25 prosent bedre enn “gullstandarden”",
+   "url": "https://ilaks.no/hevder-a-ha-funnet-et-protein-som-slar-fiskemel-rundt-25-prosent-bedre-enn-gullstandarden/?mtm_campaign=feed_click&mtm_kwd=hevder-a-ha-funnet-et-protein-som-slar-fiskemel-rundt-25-prosent-bedre-enn-gullstandarden&mtm_source=RSS2&mtm_medium=feed",
+   "source": "ilaks.no",
+   "n_sources": 2,
+   "basins": [
+    "NO"
+   ],
+   "themes": [
+    "feed"
+   ],
+   "lang": "no"
   },
   {
    "date": "2026-11-12",
@@ -492,21 +543,6 @@
   },
   {
    "date": "2026-11-12",
-   "title": "Contingencias sanitarias desafían a Salmones Camanchaca pero mantiene números azules",
-   "url": "https://www.salmonexpert.cl/camanchaca-isa-oxigeno/contingencias-sanitarias-desafian-a-salmones-camanchaca-pero-mantiene-numeros-azules/2209647",
-   "source": "salmonexpert.cl",
-   "n_sources": 2,
-   "basins": [
-    "CL"
-   ],
-   "themes": [
-    "biology",
-    "companies"
-   ],
-   "lang": "es"
-  },
-  {
-   "date": "2026-11-12",
    "title": "Algehendelse satte kjepper i hjulene til Grieg",
    "url": "https://www.kyst.no/grieg-seafood-q3-tredje-kvartal-2026/algehendelse-satte-kjepper-i-hjulene-til-grieg/2209814",
    "source": "kyst.no",
@@ -518,48 +554,6 @@
     "companies"
    ],
    "lang": "no"
-  },
-  {
-   "date": "2026-11-11",
-   "title": "Prissjokk på olje og gass gir valutahjelp til norske oppdrettere",
-   "url": "https://ilaks.no/prissjokk-pa-olje-og-gass-gir-valutahjelp-til-norske-oppdrettere/",
-   "source": "iLaks",
-   "n_sources": 2,
-   "basins": [
-    "NO"
-   ],
-   "themes": [
-    "market"
-   ],
-   "lang": "no"
-  },
-  {
-   "date": "2026-11-11",
-   "title": "E-vitamin kan forebygge skader hos smolt",
-   "url": "https://www.kyst.no/fiskehelse-havforskningsinstituttet-hi/e-vitamin-kan-forebygge-skader-hos-smolt/2209296",
-   "source": "kyst.no",
-   "n_sources": 2,
-   "basins": [
-    "NO"
-   ],
-   "themes": [
-    "biology"
-   ],
-   "lang": "no"
-  },
-  {
-   "date": "2026-11-10",
-   "title": "Scottish Sea Farms opens Scotland’s largest salmon site with £7.5m investment",
-   "url": "https://www.undercurrentnews.com/2026/11/10/scottish-sea-farms-opens-scotlands-largest-salmon-site-with-7-5m-investment/",
-   "source": "undercurrentnews.com",
-   "n_sources": 2,
-   "basins": [
-    "GB"
-   ],
-   "themes": [
-    "companies"
-   ],
-   "lang": "en"
   }
  ],
  "week": {
@@ -670,7 +664,7 @@
    "level_en": "low"
   },
   "fx": {
-   "202436": 11.7905,
+   "202436": 11.7987,
    "202437": 11.9126,
    "202438": 11.7489,
    "202439": 11.7052,
@@ -784,37 +778,39 @@
    "202643": 10.5093,
    "202644": 10.3668,
    "202645": 10.4111,
-   "202646": 10.5814
+   "202646": 10.579
   }
  },
  "mainnews": [
   {
-   "kind": "results",
-   "title": "Quarterly results: Mowi, Mowi Scotland",
-   "text": "Mowi 185.6 kt (+12 %), 2026 guidance 620 kt, next year 630 kt · Mowi Scotland 11.6 kt (−33 %), 2026 guidance 74 kt, next year 76 kt.",
-   "src": "2 reports this week → Outlook",
-   "tab": "outlook",
-   "n": 8
-  },
-  {
    "kind": "story",
-   "title": "Agrosuper signs agreement to buy Blumar's salmon business for up to US$540 million",
-   "text": "Agrosuper, the owner of AquaChile, would acquire 100% of Salmones Blumar, valued at up to US$540 million, and the two firms are negotiating the final contracts. Reports say the combined company would be the world's second-largest producer. Agrosuper's AquaChile arm is increasingly driving the holding's earnings.",
-   "src": "14 articles · 11-09",
-   "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxNREl4em1mTmlIc0dRY2luMVNjSGtjSHZfajE5THVNeXFuMEtGaHhmelZWU0dqWmhUQ2MyV3BGYTJMaHVuTVhfdDRCSGdjOS1mcklPRFpEUnFCb3VJblh2QzBYVnJDYnd1TUZfMVlNNTJTVDBKeF9ESG9GRkJkR3Q2cDdPckEtc0tYaS1lazdvYXdNRElhOS0yTDln?oc=5",
-   "basin": "CL",
-   "who": "Agrosuper / Blumar",
-   "n": 14
-  },
-  {
-   "kind": "story",
-   "title": "Lerøy Q3 operating profit jumps to NOK 459 million, beating expectations",
-   "text": "Operational EBIT rose from NOK 15 million a year earlier, helped by lower farming costs and better biology despite lower harvest volumes. The company sees low volume growth ahead. Analysts are split: Arctic and Fearnley raised targets to NOK 52 with Buy, while SEB, Handelsbanken and Pareto are cautious on harvest volumes and rising costs.",
-   "src": "11 articles · 11-11",
+   "title": "Lerøy's Q3 operating profit jumps to NOK 459m, beating expectations",
+   "text": "Operational EBIT rose to NOK 459m from NOK 15m a year earlier, as lower farming costs and better biology offset lower harvest volumes. Lerøy sees a 2027 Norwegian harvest of 195,000t and holds its 2026 guidance, with low volume growth ahead. Analysts are split: Arctic and Fearnley kept Buy with NOK 52 targets, while SEB, Handelsbanken and Pareto are cautious on volumes and costs.",
+   "src": "12 articles · 11-11",
    "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxQVDlYWS1hdVZZZTg0ZmJQSUNMeXNiTVNZbW15SFlKbEF0S3JpZHhXQVhzN3lfVVFkU2VXRWNoYmRXRnRWNnZBWjI2QTBLY1BoRHR1b05BRzlIY1JTMnpvRDZ2V0RzUjUwSDJSNFYtbGdVUHQ1bk5GYU5XcVQ5aXlJUGlhdkc1LTlLVDNYLVRSNEpmdTlwUkFsX25BNFY4Z0N2?oc=5",
    "basin": "NO",
    "who": "Lerøy Seafood Group",
-   "n": 11
+   "n": 12
+  },
+  {
+   "kind": "story",
+   "title": "Seven suspects jailed pending trial for stealing six tonnes of salmon from Blumar in Aysén",
+   "text": "Authorities dismantled a criminal group that allegedly broke cage nets and removed salmon by boat to Puerto Aysén, helped by a company worker who gave access to the site. Seven defendants were remanded in custody.",
+   "src": "9 articles · 11-10",
+   "url": "https://www.salmonexpert.cl/aysen-blumar-centro/ordenan-prision-preventiva-de-imputados-por-la-sustraccion-de-6-toneladas-de-salmon-a-blumar/2208683",
+   "basin": "CL",
+   "who": "Blumar",
+   "n": 9
+  },
+  {
+   "kind": "story",
+   "title": "Grieg Seafood posts a larger Q3 loss after an algal bloom and gets a covenant waiver",
+   "text": "Operational EBIT was a loss of NOK 91m (€8.6m), against a loss of NOK 1m a year earlier, after an algal bloom caused significant fish losses at one site. Grieg cut its 2027 harvest guidance, guided for higher production costs next year and secured a bank covenant waiver. Analysts expect downward revisions to 2027 earnings.",
+   "src": "8 articles · 11-12",
+   "url": "https://www.kyst.no/grieg-seafood-q3-tredje-kvartal-2026/algehendelse-satte-kjepper-i-hjulene-til-grieg/2209814",
+   "basin": "NO",
+   "who": "Grieg Seafood",
+   "n": 8
   }
  ],
  "monthly": [
