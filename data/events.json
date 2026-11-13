@@ -13,17 +13,17 @@
    "news.google.com (CL es #3)": "ok 30 articles, 11 kept",
    "news.google.com (CL es #4)": "ok 9 articles, 4 kept",
    "news.google.com (IS is #5)": "ok 0 articles, 0 kept",
-   "news.google.com (IS en #6)": "ok 8 articles, 3 kept",
+   "news.google.com (IS en #6)": "ok 9 articles, 4 kept",
    "news.google.com (GB en #7)": "ok 27 articles, 9 kept",
-   "news.google.com (FO en #8)": "ok 9 articles, 1 kept",
+   "news.google.com (FO en #8)": "ok 8 articles, 1 kept",
    "news.google.com (FO fo #9)": "ok 0 articles, 0 kept",
-   "news.google.com (CA en #10)": "ok 21 articles, 2 kept",
-   "news.google.com (multi en #11)": "ok 26 articles, 3 kept",
+   "news.google.com (CA en #10)": "ok 22 articles, 3 kept",
+   "news.google.com (multi en #11)": "ok 26 articles, 4 kept",
    "news.google.com (CA en #12)": "ok 14 articles, 7 kept",
    "news.google.com (CA en #13)": "ok 1 articles, 1 kept",
    "news.google.com (CA en #14)": "ok 6 articles, 0 kept",
-   "news.google.com (multi en #15)": "ok 76 articles, 12 kept",
-   "gov.scot FHI": "error: no xlsx link (1983 chars, 0 xlsx links, title: )"
+   "news.google.com (multi en #15)": "ok 75 articles, 12 kept",
+   "gov.scot FHI": "ok 6824 reports, last 2026-10-14"
   },
   "note": "news = articles kept by keyword (a mortality word + a farming word), classified by cause and basin; manual = events entered by hand with their losses; scotland_fhi = mortalities reported to the Scottish Fish Health Inspectorate",
   "causes": [
@@ -184,6 +184,20 @@
     "IS"
    ],
    "id": "02815cb130fd"
+  },
+  {
+   "date": "2026-11-13",
+   "title": "The secret salmon death toll industry fought to keep hidden",
+   "url": "https://news.google.com/rss/articles/CBMihgJBVV95cUxQX3R1NWlvOG0taG5VVnF5Y3ZySzMxX1h5WGFMWjRkNHhWeWV0WXJOTXhCbnFVYzVVRDhtWTdDQVRTdENjZzJmOFNGdVhFMWVfcGd0d2Q4LWZHcTJpNXNJMDlxOE5KRmVlRlI3d09GT0xPX1cya08xTlMtUWJsMDIxYmh6NVlsUlZTdVFXNHl0TlZsWUxCcmlqeGFMMlhkR0s0NlhMMW83ajdwVUNEZlBfaTdUYm9XYTcwbFhBTllfOFp3OHNmX1hjVkdCbUtzbGRSQWFhWmxNeG55ZmlJa3VkbmJBYVJVOFQtRllldF9vTWZQWW5oN0xRcTJoY3VSS001TEtrVENB?oc=5",
+   "source": "The Mercury",
+   "lang": "en",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "other"
+   ],
+   "id": "02d7415161ba"
   },
   {
    "date": "2026-11-12",
@@ -831,6 +845,20 @@
     "CA"
    ],
    "id": "5932c4ac3ae7"
+  },
+  {
+   "date": "2026-10-13",
+   "title": "Algal Bloom Mortality at Multiexport Patagonia Farms in Chile Climbs to 642 Tonnes",
+   "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxNSER1QThVTlU1V3I3SkV5RC1KY0luekUxRGtqQjdYNTd6M0duQklROGh4amU5MVd0V2hEb1puVGxQT00wYV96RWxGbjJPUHpYeHJic0RKUktQTVBUZ3R0dGUyY2gzUjVMckZQQVFGVkxqS3l3dzhUUU9aY1NyTXFsTlZuNmtaTVlYaUVPb0ZUU1N0RjVScnNkNkdaYXJwT2RlUi1BbHlvSkdTNExsWnNlX0xkRHVtUDRXWGhDWS1zVmVoZw?oc=5",
+   "source": "Seafoodnews",
+   "lang": "en",
+   "causes": [
+    "algae"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "593ab3a5d7b7"
   },
   {
    "date": "2026-10-12",
@@ -1483,14 +1511,12 @@
   "source": "https://www.gov.scot/binaries/content/documents/govscot/publications/transparency-data/2019/12/fish-health-inspectorate-mortality-information/documents/mortality-information---until-end-october-2019/mortality-information---until-end-october-2019/govscot%3Adocument/Mortality%2Binformation%2B-%2Buntil%2Bend%2BSeptember%2B2026.xlsx",
   "monthly": {
    "2023-10": {
-    "reports": 40,
+    "reports": 32,
     "causes": {
-     "gill": 32,
-     "disease": 14,
+     "gill": 25,
+     "disease": 10,
      "oxygen": 3,
-     "unspecified": 3,
-     "jellyfish": 1,
-     "treatment": 1
+     "unspecified": 2
     }
    },
    "2023-11": {
@@ -27290,100 +27316,6 @@
     ],
     "n": null,
     "pct": 1.67
-   },
-   {
-    "date": "2023-10-23",
-    "site": "Shuna Castle",
-    "company": "Kames Fish Farming Ltd",
-    "cause": "compromised gills from plankton/ jellyfish ",
-    "causes": [
-     "jellyfish",
-     "gill"
-    ],
-    "n": null,
-    "pct": 1.23
-   },
-   {
-    "date": "2023-10-23",
-    "site": "Kyles Vuia",
-    "company": "Bakkafrost Scotland",
-    "cause": "Gill health related; Bacterial Disease (Furunculosis)",
-    "causes": [
-     "gill",
-     "disease"
-    ],
-    "n": null,
-    "pct": 3.34
-   },
-   {
-    "date": "2023-10-23",
-    "site": "Vuia Mor",
-    "company": "Bakkafrost Scotland",
-    "cause": "Gill health related; Viral Disease (PD)",
-    "causes": [
-     "gill",
-     "disease"
-    ],
-    "n": null,
-    "pct": 2.39
-   },
-   {
-    "date": "2023-10-23",
-    "site": "Sgian Dubh",
-    "company": "Bakkafrost Scotland",
-    "cause": "Bacterial disease; Gill health related",
-    "causes": [
-     "gill",
-     "disease"
-    ],
-    "n": null,
-    "pct": 1.23
-   },
-   {
-    "date": "2023-10-23",
-    "site": "Mill Bay",
-    "company": "Cooke Aquaculture Scotland Ltd",
-    "cause": "Environmental",
-    "causes": [
-     "unspecified"
-    ],
-    "n": null,
-    "pct": 1.86
-   },
-   {
-    "date": "2023-10-23",
-    "site": "Bastaness",
-    "company": "Cooke Aquaculture Scotland Ltd",
-    "cause": "CMS/ Gills",
-    "causes": [
-     "gill",
-     "disease"
-    ],
-    "n": null,
-    "pct": 1.78
-   },
-   {
-    "date": "2023-10-23",
-    "site": "Bay of Vady",
-    "company": "Cooke Aquaculture Scotland Ltd",
-    "cause": "Gills/ Predation",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 1.48
-   },
-   {
-    "date": "2023-10-23",
-    "site": "Culnacnoc Salmon Farm",
-    "company": "Organic Sea Harvest Ltd",
-    "cause": "Post Handling AGD Treatments / Seals (0.26)",
-    "causes": [
-     "gill",
-     "treatment"
-    ],
-    "n": null,
-    "pct": 3.21
    }
   ]
  },
