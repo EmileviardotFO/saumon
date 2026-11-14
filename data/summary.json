@@ -1,6 +1,6 @@
 {
  "meta": {
-  "built": "2026-11-13T17:31+00:00",
+  "built": "2026-11-14T14:30+00:00",
   "note": "Signals ranked by how unusual they are against their own history (score). Effect: supports / weighs on prices, risk, watch."
  },
  "lead": "Supply grows +6 % in 2026 across the seven basins and ±0.0 % in 2027. Chile is the main source of change: a record El Niño, a slowing harvest and fewer big fish. Norway carries the growth with heavier fish and more 6 kg+. Imports grow fastest in Japan, Brazil, UK; USA and Israel are flat or down.",
@@ -628,8 +628,8 @@
   "bw": {
    "yw": 202645,
    "now": {
-    "lice": 0.169,
-    "t": 10.52,
+    "lice": 0.172,
+    "t": 10.49,
     "over_limit": 6.5
    },
    "prev": {
@@ -664,7 +664,7 @@
    "level_en": "low"
   },
   "fx": {
-   "202436": 11.7987,
+   "202436": 11.7955,
    "202437": 11.9126,
    "202438": 11.7489,
    "202439": 11.7052,
@@ -784,33 +784,33 @@
  "mainnews": [
   {
    "kind": "story",
-   "title": "Lerøy's Q3 operating profit jumps to NOK 459m, beating expectations",
-   "text": "Operational EBIT rose to NOK 459m from NOK 15m a year earlier, as lower farming costs and better biology offset lower harvest volumes. Lerøy sees a 2027 Norwegian harvest of 195,000t and holds its 2026 guidance, with low volume growth ahead. Analysts are split: Arctic and Fearnley kept Buy with NOK 52 targets, while SEB, Handelsbanken and Pareto are cautious on volumes and costs.",
+   "title": "Analysts split on Lerøy as harvest concerns cloud earnings recovery",
+   "text": "12 articles since 11-09; latest: Analysts split on Lerøy as harvest concerns cloud earnings recovery (Salmon Business).",
    "src": "12 articles · 11-11",
    "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxQVDlYWS1hdVZZZTg0ZmJQSUNMeXNiTVNZbW15SFlKbEF0S3JpZHhXQVhzN3lfVVFkU2VXRWNoYmRXRnRWNnZBWjI2QTBLY1BoRHR1b05BRzlIY1JTMnpvRDZ2V0RzUjUwSDJSNFYtbGdVUHQ1bk5GYU5XcVQ5aXlJUGlhdkc1LTlLVDNYLVRSNEpmdTlwUkFsX25BNFY4Z0N2?oc=5",
    "basin": "NO",
-   "who": "Lerøy Seafood Group",
+   "who": "Lerøy",
    "n": 12
   },
   {
    "kind": "story",
-   "title": "Seven suspects jailed pending trial for stealing six tonnes of salmon from Blumar in Aysén",
-   "text": "Authorities dismantled a criminal group that allegedly broke cage nets and removed salmon by boat to Puerto Aysén, helped by a company worker who gave access to the site. Seven defendants were remanded in custody.",
-   "src": "9 articles · 11-10",
-   "url": "https://www.salmonexpert.cl/aysen-blumar-centro/ordenan-prision-preventiva-de-imputados-por-la-sustraccion-de-6-toneladas-de-salmon-a-blumar/2208683",
-   "basin": "CL",
-   "who": "Blumar",
-   "n": 9
+   "title": "Grieg Seafood posts €8.6m operating loss as algae hits production",
+   "text": "12 articles since 11-12; latest: Grieg Seafood seeks strategic partner for Gardermoen plant (Salmon Business).",
+   "src": "12 articles · 11-13",
+   "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxOWk5JVE4tcVVmMk9PaEdvclJaTDZuUXpwOWcwUWNVZTZWaWlvUlRmbXVZaTVkREJkWXFIZVVaMFRrTjJNLW00UENZdVVnWHJRQ3U4TDFyLVNxZ2RpVW4xMmt3Uk00VkRRcm02YTBSNDJYWW9Rd3ZBb1d4ZzQwQW9haFVfUHQ1d0pLUDRxQnBmaWF0b244c096WkdIVQ?oc=5",
+   "basin": "NO",
+   "who": "Grieg",
+   "n": 12
   },
   {
    "kind": "story",
-   "title": "Grieg Seafood posts a larger Q3 loss after an algal bloom and gets a covenant waiver",
-   "text": "Operational EBIT was a loss of NOK 91m (€8.6m), against a loss of NOK 1m a year earlier, after an algal bloom caused significant fish losses at one site. Grieg cut its 2027 harvest guidance, guided for higher production costs next year and secured a bank covenant waiver. Analysts expect downward revisions to 2027 earnings.",
-   "src": "8 articles · 11-12",
-   "url": "https://www.kyst.no/grieg-seafood-q3-tredje-kvartal-2026/algehendelse-satte-kjepper-i-hjulene-til-grieg/2209814",
-   "basin": "NO",
-   "who": "Grieg Seafood",
-   "n": 8
+   "title": "Bakkafrost outlines how Scotland is slowly improving",
+   "text": "7 articles since 11-09; latest: Un inversionista ético abandona la propiedad de Bakkafrost (salmonexpert.cl).",
+   "src": "7 articles · 11-13",
+   "url": "https://www.salmonexpert.cl/bakkafrost-bakkafrost-scotland-escocia/un-inversionista-etico-abandona-la-propiedad-de-bakkafrost/2210453",
+   "basin": "GB",
+   "who": "Bakkafrost",
+   "n": 7
   }
  ],
  "monthly": [
