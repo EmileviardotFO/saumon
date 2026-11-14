@@ -1,28 +1,28 @@
 {
  "meta": {
-  "generated": "2026-11-13",
+  "generated": "2026-11-14",
   "status": {
    "ilaks.no": "ok 12 articles, 0 kept",
-   "www.kyst.no": "ok 87 articles, 2 kept",
+   "www.kyst.no": "ok 90 articles, 2 kept",
    "www.fishfarmingexpert.com": "ok 65 articles, 2 kept",
    "www.fishfarmermagazine.com": "ok 30 articles, 0 kept",
    "www.salmonexpert.cl": "ok 59 articles, 6 kept",
    "thefishsite.com": "ok 50 articles, 2 kept",
-   "news.google.com (NO no #1)": "ok 9 articles, 7 kept",
+   "news.google.com (NO no #1)": "ok 10 articles, 7 kept",
    "news.google.com (NO no #2)": "ok 10 articles, 1 kept",
    "news.google.com (CL es #3)": "ok 30 articles, 11 kept",
    "news.google.com (CL es #4)": "ok 9 articles, 4 kept",
    "news.google.com (IS is #5)": "ok 0 articles, 0 kept",
    "news.google.com (IS en #6)": "ok 9 articles, 4 kept",
-   "news.google.com (GB en #7)": "ok 27 articles, 9 kept",
-   "news.google.com (FO en #8)": "ok 8 articles, 1 kept",
+   "news.google.com (GB en #7)": "ok 22 articles, 7 kept",
+   "news.google.com (FO en #8)": "ok 9 articles, 1 kept",
    "news.google.com (FO fo #9)": "ok 0 articles, 0 kept",
-   "news.google.com (CA en #10)": "ok 22 articles, 3 kept",
-   "news.google.com (multi en #11)": "ok 26 articles, 4 kept",
+   "news.google.com (CA en #10)": "ok 17 articles, 3 kept",
+   "news.google.com (multi en #11)": "ok 20 articles, 4 kept",
    "news.google.com (CA en #12)": "ok 14 articles, 7 kept",
-   "news.google.com (CA en #13)": "ok 1 articles, 1 kept",
+   "news.google.com (CA en #13)": "ok 0 articles, 0 kept",
    "news.google.com (CA en #14)": "ok 6 articles, 0 kept",
-   "news.google.com (multi en #15)": "ok 75 articles, 12 kept",
+   "news.google.com (multi en #15)": "ok 76 articles, 12 kept",
    "gov.scot FHI": "ok 6824 reports, last 2026-10-14"
   },
   "note": "news = articles kept by keyword (a mortality word + a farming word), classified by cause and basin; manual = events entered by hand with their losses; scotland_fhi = mortalities reported to the Scottish Fish Health Inspectorate",
@@ -1511,12 +1511,11 @@
   "source": "https://www.gov.scot/binaries/content/documents/govscot/publications/transparency-data/2019/12/fish-health-inspectorate-mortality-information/documents/mortality-information---until-end-october-2019/mortality-information---until-end-october-2019/govscot%3Adocument/Mortality%2Binformation%2B-%2Buntil%2Bend%2BSeptember%2B2026.xlsx",
   "monthly": {
    "2023-10": {
-    "reports": 32,
+    "reports": 8,
     "causes": {
-     "gill": 25,
-     "disease": 10,
-     "oxygen": 3,
-     "unspecified": 2
+     "gill": 6,
+     "unspecified": 1,
+     "disease": 3
     }
    },
    "2023-11": {
@@ -27046,276 +27045,6 @@
     ],
     "n": null,
     "pct": 3.8
-   },
-   {
-    "date": "2023-10-24",
-    "site": "Loch Alsh (Sron)",
-    "company": "Mowi Scotland Ltd",
-    "cause": "Gills, aneamia, treatment losses",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 2.6
-   },
-   {
-    "date": "2023-10-24",
-    "site": "Creag an T'Sagairt (Loch Hourn)",
-    "company": "Mowi Scotland Ltd",
-    "cause": "Gills",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 1.03
-   },
-   {
-    "date": "2023-10-24",
-    "site": "Sconser Quarry",
-    "company": "Mowi Scotland Ltd",
-    "cause": "Gills, aneamia and bacterial",
-    "causes": [
-     "gill",
-     "disease"
-    ],
-    "n": null,
-    "pct": 2.56
-   },
-   {
-    "date": "2023-10-24",
-    "site": "Gorsten",
-    "company": "Mowi Scotland Ltd",
-    "cause": "Bacterial",
-    "causes": [
-     "disease"
-    ],
-    "n": null,
-    "pct": 1.04
-   },
-   {
-    "date": "2023-10-24",
-    "site": "Camas Glas",
-    "company": "Mowi Scotland Ltd",
-    "cause": "HSMI and bacterial",
-    "causes": [
-     "disease"
-    ],
-    "n": null,
-    "pct": 3.8
-   },
-   {
-    "date": "2023-10-24",
-    "site": "Bagh Dail Nan Cean",
-    "company": "Mowi Scotland Ltd",
-    "cause": "AGD/HSMI",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 5.78
-   },
-   {
-    "date": "2023-10-24",
-    "site": "Colonsay",
-    "company": "Mowi Scotland Ltd",
-    "cause": "AGD and treatment losses",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 18.6
-   },
-   {
-    "date": "2023-10-24",
-    "site": "Groatay",
-    "company": "Mowi Scotland Ltd",
-    "cause": "AGD",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 3.7
-   },
-   {
-    "date": "2023-10-24",
-    "site": "Grey Horse Channel",
-    "company": "Mowi Scotland Ltd",
-    "cause": "AGD/treatment losses",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 6.27
-   },
-   {
-    "date": "2023-10-24",
-    "site": "Caolas A Deas",
-    "company": "Mowi Scotland Ltd",
-    "cause": "Anaemia/sea lice Treatment losses",
-    "causes": [
-     "disease"
-    ],
-    "n": null,
-    "pct": null
-   },
-   {
-    "date": "2023-10-24",
-    "site": "Hellisay",
-    "company": "Mowi Scotland Ltd",
-    "cause": "AGD / Low oxygen",
-    "causes": [
-     "gill",
-     "oxygen"
-    ],
-    "n": null,
-    "pct": 30.53
-   },
-   {
-    "date": "2023-10-24",
-    "site": "Loch Alsh (Sron)",
-    "company": "Mowi Scotland Ltd",
-    "cause": "Gills, aneamia, treatment losses",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 4.46
-   },
-   {
-    "date": "2023-10-24",
-    "site": "Sconser Quarry",
-    "company": "Mowi Scotland Ltd",
-    "cause": "Gills, aneamia and bacterial",
-    "causes": [
-     "gill",
-     "disease"
-    ],
-    "n": null,
-    "pct": 2.09
-   },
-   {
-    "date": "2023-10-24",
-    "site": "Gorsten",
-    "company": "Mowi Scotland Ltd",
-    "cause": "Bacterial",
-    "causes": [
-     "disease"
-    ],
-    "n": null,
-    "pct": 1.54
-   },
-   {
-    "date": "2023-10-24",
-    "site": "Camas Glas",
-    "company": "Mowi Scotland Ltd",
-    "cause": "Gills and Bacterial",
-    "causes": [
-     "gill",
-     "disease"
-    ],
-    "n": null,
-    "pct": 2.69
-   },
-   {
-    "date": "2023-10-24",
-    "site": "MacLean's Nose",
-    "company": "Mowi Scotland Ltd",
-    "cause": "AGD/'Treatment losses",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 2.06
-   },
-   {
-    "date": "2023-10-24",
-    "site": "Bagh Dail Nan Cean",
-    "company": "Mowi Scotland Ltd",
-    "cause": "AGD/HSMI",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 5.08
-   },
-   {
-    "date": "2023-10-24",
-    "site": "Colonsay",
-    "company": "Mowi Scotland Ltd",
-    "cause": "AGD/'Treatment losses",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 1.53
-   },
-   {
-    "date": "2023-10-24",
-    "site": "Groatay",
-    "company": "Mowi Scotland Ltd",
-    "cause": "AGD",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 4.76
-   },
-   {
-    "date": "2023-10-24",
-    "site": "Grey Horse Channel",
-    "company": "Mowi Scotland Ltd",
-    "cause": "AGD/'Treatment losses",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 4.75
-   },
-   {
-    "date": "2023-10-24",
-    "site": "Hellisay",
-    "company": "Mowi Scotland Ltd",
-    "cause": "AGD / Low oxygen",
-    "causes": [
-     "gill",
-     "oxygen"
-    ],
-    "n": null,
-    "pct": 21.1
-   },
-   {
-    "date": "2023-10-24",
-    "site": "Caolas A Deas",
-    "company": "Mowi Scotland Ltd",
-    "cause": "Anaemia/treatment losses",
-    "causes": [
-     "unspecified"
-    ],
-    "n": null,
-    "pct": 8.26
-   },
-   {
-    "date": "2023-10-24",
-    "site": "Seaforth",
-    "company": "Mowi Scotland Ltd",
-    "cause": "AGD / Low oxygen",
-    "causes": [
-     "gill",
-     "oxygen"
-    ],
-    "n": null,
-    "pct": 2.28
-   },
-   {
-    "date": "2023-10-24",
-    "site": "Trilleachan Mor",
-    "company": "Mowi Scotland Ltd",
-    "cause": "AGD/'Treatment losses",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 1.67
    }
   ]
  },
