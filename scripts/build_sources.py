@@ -320,7 +320,7 @@ add(NW, 'Disease evidence cards and figures by basin', 'Open-access papers, inst
 add(NW, 'Pinned topics, agenda, quarterly figures of the listed farmers', 'Company calendars and reports', HAND, ['watch.json', 'summary_manual.json', 'big_six_manual.json'], None, None)
 
 # fichiers de data/ fabriques a partir des precedents (modeles, archives, index) : pas des collectes
-DERIVED = {'sources.json', 'chile_market.json', 'summary.json', 'big_six.json', 'basin_cards.json', 'big_fish.json', 'big_fish_archive.json', 'forecast_archive.json', 'gen_outlook.json', 'generations.json',
+DERIVED = {'sources.json', 'site_alerts.json', 'chile_market.json', 'summary.json', 'big_six.json', 'basin_cards.json', 'big_fish.json', 'big_fish_archive.json', 'forecast_archive.json', 'gen_outlook.json', 'generations.json',
            'generations_archive.json', 'six_stock.json', 'register_brief.json', 'iceland_outlook.json', 'own_supply.json', 'search_index.json', 'smoke.json'}
 DATA_KEYS_DERIVED = {'meta', 'status', 'cohort', 'country'}   # cohort et country viennent du registre et d'Akvafakta
 

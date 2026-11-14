@@ -1,4 +1,4 @@
-name: Test - notification du registre de la biomasse
+name: Test - notifications (registre de la biomasse, alertes par ferme)
 
 # Envoie a la main la notification du dernier mois publie, marquee [TEST], sur le canal ntfy du secret NTFY_TOPIC.
 on:
@@ -18,3 +18,8 @@ jobs:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
           NTFY_TEST: '1'
         run: python3 scripts/notify_biomasse.py
+      - name: Envoyer l'alerte par ferme de test (dernier evenement connu)
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          NTFY_TEST: '1'
+        run: python3 scripts/build_site_alerts.py
