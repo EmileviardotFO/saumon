@@ -1,6 +1,6 @@
 {
  "meta": {
-  "built": "2026-11-14T14:30+00:00",
+  "built": "2026-11-15T14:58+00:00",
   "note": "Signals ranked by how unusual they are against their own history (score). Effect: supports / weighs on prices, risk, watch."
  },
  "lead": "Supply grows +6 % in 2026 across the seven basins and ±0.0 % in 2027. Chile is the main source of change: a record El Niño, a slowing harvest and fewer big fish. Norway carries the growth with heavier fish and more 6 kg+. Imports grow fastest in Japan, Brazil, UK; USA and Israel are flat or down.",
@@ -456,6 +456,20 @@
    "lang": "es"
   },
   {
+   "date": "2026-11-14",
+   "title": "Enfen: El Niño Costero extraordinario continuaría hasta inicios de invierno de 2027",
+   "url": "https://andina.pe/agencia/noticia-enfen-nino-costero-extraordinario-continuaria-hasta-inicios-invierno-2027-1099939.aspx",
+   "source": "Agencia Andina",
+   "n_sources": 2,
+   "basins": [
+    "global"
+   ],
+   "themes": [
+    "feed"
+   ],
+   "lang": "es"
+  },
+  {
    "date": "2026-11-13",
    "title": "Noruega destina inversiones para competirle a Chile con su salmón en el mercado brasileño",
    "url": "https://www.salmonexpert.cl/brasil-chile-competencia/noruega-destina-inversiones-para-competirle-a-chile-con-su-salmon-en-el-mercado-brasileno/2209979",
@@ -540,20 +554,6 @@
     "companies"
    ],
    "lang": "en"
-  },
-  {
-   "date": "2026-11-12",
-   "title": "Algehendelse satte kjepper i hjulene til Grieg",
-   "url": "https://www.kyst.no/grieg-seafood-q3-tredje-kvartal-2026/algehendelse-satte-kjepper-i-hjulene-til-grieg/2209814",
-   "source": "kyst.no",
-   "n_sources": 2,
-   "basins": [
-    "NO"
-   ],
-   "themes": [
-    "companies"
-   ],
-   "lang": "no"
   }
  ],
  "week": {
@@ -658,13 +658,13 @@
    }
   ],
   "hi": {
-   "week": 45,
+   "week": 46,
    "year": 2026,
    "level": 1,
    "level_en": "low"
   },
   "fx": {
-   "202436": 11.7955,
+   "202436": 11.8015,
    "202437": 11.9126,
    "202438": 11.7489,
    "202439": 11.7052,
@@ -785,12 +785,12 @@
   {
    "kind": "story",
    "title": "Analysts split on Lerøy as harvest concerns cloud earnings recovery",
-   "text": "12 articles since 11-09; latest: Analysts split on Lerøy as harvest concerns cloud earnings recovery (Salmon Business).",
-   "src": "12 articles · 11-11",
+   "text": "14 articles since 11-09; latest: Analysts split on Lerøy as harvest concerns cloud earnings recovery (Salmon Business).",
+   "src": "14 articles · 11-11",
    "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxQVDlYWS1hdVZZZTg0ZmJQSUNMeXNiTVNZbW15SFlKbEF0S3JpZHhXQVhzN3lfVVFkU2VXRWNoYmRXRnRWNnZBWjI2QTBLY1BoRHR1b05BRzlIY1JTMnpvRDZ2V0RzUjUwSDJSNFYtbGdVUHQ1bk5GYU5XcVQ5aXlJUGlhdkc1LTlLVDNYLVRSNEpmdTlwUkFsX25BNFY4Z0N2?oc=5",
    "basin": "NO",
    "who": "Lerøy",
-   "n": 12
+   "n": 14
   },
   {
    "kind": "story",
