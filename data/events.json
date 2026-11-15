@@ -14,16 +14,16 @@
    "news.google.com (CL es #4)": "ok 8 articles, 1 kept",
    "news.google.com (IS is #5)": "ok 0 articles, 0 kept",
    "news.google.com (IS en #6)": "ok 9 articles, 3 kept",
-   "news.google.com (GB en #7)": "ok 24 articles, 7 kept",
+   "news.google.com (GB en #7)": "ok 20 articles, 7 kept",
    "news.google.com (FO en #8)": "ok 10 articles, 1 kept",
    "news.google.com (FO fo #9)": "ok 0 articles, 0 kept",
-   "news.google.com (CA en #10)": "ok 12 articles, 1 kept",
-   "news.google.com (multi en #11)": "ok 13 articles, 4 kept",
+   "news.google.com (CA en #10)": "ok 11 articles, 1 kept",
+   "news.google.com (multi en #11)": "ok 11 articles, 3 kept",
    "news.google.com (CA en #12)": "ok 13 articles, 7 kept",
-   "news.google.com (CA en #13)": "ok 0 articles, 0 kept",
+   "news.google.com (CA en #13)": "ok 1 articles, 1 kept",
    "news.google.com (CA en #14)": "ok 5 articles, 0 kept",
-   "news.google.com (multi en #15)": "ok 64 articles, 10 kept",
-   "gov.scot FHI": "error: no xlsx link (1983 chars, 0 xlsx links, title: )"
+   "news.google.com (multi en #15)": "ok 63 articles, 10 kept",
+   "gov.scot FHI": "ok 6824 reports, last 2026-10-14"
   },
   "note": "news = articles kept by keyword (a mortality word + a farming word), classified by cause and basin; manual = events entered by hand with their losses; scotland_fhi = mortalities reported to the Scottish Fish Health Inspectorate",
   "causes": [
@@ -1511,9 +1511,9 @@
   "source": "https://www.gov.scot/binaries/content/documents/govscot/publications/transparency-data/2019/12/fish-health-inspectorate-mortality-information/documents/mortality-information---until-end-october-2019/mortality-information---until-end-october-2019/govscot%3Adocument/Mortality%2Binformation%2B-%2Buntil%2Bend%2BSeptember%2B2026.xlsx",
   "monthly": {
    "2023-10": {
-    "reports": 8,
+    "reports": 5,
     "causes": {
-     "gill": 6,
+     "gill": 3,
      "unspecified": 1,
      "disease": 3
     }
@@ -27012,39 +27012,6 @@
     ],
     "n": null,
     "pct": 2.19
-   },
-   {
-    "date": "2023-10-25",
-    "site": "South Sound",
-    "company": "Scottish Sea Farms Ltd",
-    "cause": "Environmental; Gill Health related",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 10.9
-   },
-   {
-    "date": "2023-10-25",
-    "site": "Tanera",
-    "company": "Scottish Sea Farms Ltd",
-    "cause": " Gill Health related",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 6.5
-   },
-   {
-    "date": "2023-10-25",
-    "site": "Fada",
-    "company": "Scottish Sea Farms Ltd",
-    "cause": "Environment; Gill health related",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 3.8
    }
   ]
  },
