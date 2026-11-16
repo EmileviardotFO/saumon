@@ -1,6 +1,6 @@
 {
  "meta": {
-  "built": "2026-11-15T14:58+00:00",
+  "built": "2026-11-16T17:27+00:00",
   "note": "Signals ranked by how unusual they are against their own history (score). Effect: supports / weighs on prices, risk, watch."
  },
  "lead": "Supply grows +6 % in 2026 across the seven basins and ±0.0 % in 2027. Chile is the main source of change: a record El Niño, a slowing harvest and fewer big fish. Norway carries the growth with heavier fish and more 6 kg+. Imports grow fastest in Japan, Brazil, UK; USA and Israel are flat or down.",
@@ -8,11 +8,11 @@
   {
    "basin": "Chile · El Niño",
    "title": "Extreme El Niño, warm Chilean water",
-   "value": "+3.3 °C",
-   "text": "Niño 3.4 index (week of 2026-11-04); Chilean sea +1.1 to +2.9 °C vs normal in Oct. NOAA: El Niño continues to strengthen, with a strong-to-very strong El Niño likely through January-March 2027 (remaining greater than a 79% chance).",
+   "value": "+3.2 °C",
+   "text": "Niño 3.4 index (week of 2026-11-11); Chilean sea +1.1 to +2.9 °C vs normal in Oct. NOAA: El Niño continues to strengthen, with a strong-to-very strong El Niño likely through January-March 2027 (remaining greater than a 79% chance).",
    "effect": "risk",
    "tab": "seatemp",
-   "score": 4.29
+   "score": 4.16
   },
   {
    "basin": "Chile",
@@ -114,7 +114,7 @@
   ]
  },
  "demand": {
-  "world": 7.2,
+  "world": 7.3,
   "to": 202609,
   "markets": [
    [
@@ -456,6 +456,20 @@
    "lang": "es"
   },
   {
+   "date": "2026-11-16",
+   "title": "Week 47 China Atlantic salmon prices fall, leaving importers in the red again",
+   "url": "https://www.undercurrentnews.com/2026/11/16/week-47-china-atlantic-salmon-prices-fall-leaving-importers-in-the-red-again/",
+   "source": "undercurrentnews.com",
+   "n_sources": 2,
+   "basins": [
+    "global"
+   ],
+   "themes": [
+    "market"
+   ],
+   "lang": "en"
+  },
+  {
    "date": "2026-11-14",
    "title": "Enfen: El Niño Costero extraordinario continuaría hasta inicios de invierno de 2027",
    "url": "https://andina.pe/agencia/noticia-enfen-nino-costero-extraordinario-continuaria-hasta-inicios-invierno-2027-1099939.aspx",
@@ -466,21 +480,6 @@
    ],
    "themes": [
     "feed"
-   ],
-   "lang": "es"
-  },
-  {
-   "date": "2026-11-13",
-   "title": "Noruega destina inversiones para competirle a Chile con su salmón en el mercado brasileño",
-   "url": "https://www.salmonexpert.cl/brasil-chile-competencia/noruega-destina-inversiones-para-competirle-a-chile-con-su-salmon-en-el-mercado-brasileno/2209979",
-   "source": "salmonexpert.cl",
-   "n_sources": 2,
-   "basins": [
-    "CL"
-   ],
-   "themes": [
-    "market",
-    "companies"
    ],
    "lang": "es"
   },
@@ -527,6 +526,20 @@
    "lang": "no"
   },
   {
+   "date": "2026-11-13",
+   "title": "Chile truckers reach deal to end strike but continued roadblocks threaten salmon supply chain",
+   "url": "https://www.undercurrentnews.com/2026/11/13/chile-truckers-reach-deal-to-end-strike-but-continued-roadblocks-threaten-salmon-supply-chain/",
+   "source": "undercurrentnews.com",
+   "n_sources": 2,
+   "basins": [
+    "CL"
+   ],
+   "themes": [
+    "market"
+   ],
+   "lang": "en"
+  },
+  {
    "date": "2026-11-12",
    "title": "Nordic Aqua begins salmon harvests from second China RAS unit, raising capacity to 8,000t",
    "url": "https://www.undercurrentnews.com/2026/11/12/nordic-aqua-begins-salmon-harvests-from-second-china-ras-unit-raising-capacity-to-8000t/",
@@ -537,21 +550,6 @@
    ],
    "themes": [
     "regulation"
-   ],
-   "lang": "en"
-  },
-  {
-   "date": "2026-11-12",
-   "title": "Bakkafrost bullish on Scottish salmon improvements as ethical investor exits business",
-   "url": "https://www.undercurrentnews.com/2026/11/12/bakkafrost-bullish-on-scottish-salmon-improvements-as-ethical-investor-exits-business/",
-   "source": "undercurrentnews.com",
-   "n_sources": 2,
-   "basins": [
-    "GB",
-    "FO"
-   ],
-   "themes": [
-    "companies"
    ],
    "lang": "en"
   }
@@ -645,16 +643,16 @@
   },
   "pulse": [
    {
-    "yw": 202644,
-    "yoy_pct": -2.6,
-    "cage_deliveries": 198,
-    "slaughter_boat_visits": 69
-   },
-   {
     "yw": 202645,
     "yoy_pct": 4.9,
     "cage_deliveries": 194,
     "slaughter_boat_visits": 62
+   },
+   {
+    "yw": 202646,
+    "yoy_pct": 4.4,
+    "cage_deliveries": 192,
+    "slaughter_boat_visits": 68
    }
   ],
   "hi": {
@@ -664,7 +662,6 @@
    "level_en": "low"
   },
   "fx": {
-   "202436": 11.8015,
    "202437": 11.9126,
    "202438": 11.7489,
    "202439": 11.7052,
@@ -778,7 +775,8 @@
    "202643": 10.5093,
    "202644": 10.3668,
    "202645": 10.4111,
-   "202646": 10.579
+   "202646": 10.579,
+   "202647": 10.574
   }
  },
  "mainnews": [
@@ -831,8 +829,8 @@
   {
    "k": "cn",
    "label": "Norway to China + HK",
-   "when": "Sep 2026",
-   "text": "12.5 kt (+37 %)",
+   "when": "Oct 2026",
+   "text": "9.6 kt (+11 %)",
    "tab": "china"
   },
   {
