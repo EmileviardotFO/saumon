@@ -1,28 +1,28 @@
 {
  "meta": {
-  "generated": "2026-11-15",
+  "generated": "2026-11-16",
   "status": {
-   "ilaks.no": "ok 12 articles, 0 kept",
-   "www.kyst.no": "ok 90 articles, 2 kept",
+   "ilaks.no": "ok 12 articles, 1 kept",
+   "www.kyst.no": "ok 94 articles, 2 kept",
    "www.fishfarmingexpert.com": "ok 65 articles, 2 kept",
    "www.fishfarmermagazine.com": "ok 30 articles, 0 kept",
    "www.salmonexpert.cl": "ok 59 articles, 6 kept",
-   "thefishsite.com": "ok 50 articles, 2 kept",
-   "news.google.com (NO no #1)": "ok 10 articles, 6 kept",
-   "news.google.com (NO no #2)": "ok 10 articles, 1 kept",
-   "news.google.com (CL es #3)": "ok 30 articles, 11 kept",
+   "thefishsite.com": "ok 50 articles, 1 kept",
+   "news.google.com (NO no #1)": "ok 10 articles, 7 kept",
+   "news.google.com (NO no #2)": "ok 8 articles, 1 kept",
+   "news.google.com (CL es #3)": "ok 31 articles, 11 kept",
    "news.google.com (CL es #4)": "ok 8 articles, 1 kept",
    "news.google.com (IS is #5)": "ok 0 articles, 0 kept",
    "news.google.com (IS en #6)": "ok 9 articles, 3 kept",
-   "news.google.com (GB en #7)": "ok 20 articles, 7 kept",
+   "news.google.com (GB en #7)": "ok 22 articles, 8 kept",
    "news.google.com (FO en #8)": "ok 10 articles, 1 kept",
    "news.google.com (FO fo #9)": "ok 0 articles, 0 kept",
-   "news.google.com (CA en #10)": "ok 11 articles, 1 kept",
-   "news.google.com (multi en #11)": "ok 11 articles, 3 kept",
+   "news.google.com (CA en #10)": "ok 10 articles, 1 kept",
+   "news.google.com (multi en #11)": "ok 10 articles, 3 kept",
    "news.google.com (CA en #12)": "ok 13 articles, 7 kept",
    "news.google.com (CA en #13)": "ok 1 articles, 1 kept",
-   "news.google.com (CA en #14)": "ok 5 articles, 0 kept",
-   "news.google.com (multi en #15)": "ok 63 articles, 10 kept",
+   "news.google.com (CA en #14)": "ok 4 articles, 0 kept",
+   "news.google.com (multi en #15)": "ok 80 articles, 10 kept",
    "gov.scot FHI": "ok 6824 reports, last 2026-10-14"
   },
   "note": "news = articles kept by keyword (a mortality word + a farming word), classified by cause and basin; manual = events entered by hand with their losses; scotland_fhi = mortalities reported to the Scottish Fish Health Inspectorate",
@@ -156,6 +156,34 @@
   }
  ],
  "news": [
+  {
+   "date": "2026-11-16",
+   "title": "Over 400.000 fisk døde i Eides lukkede Watermoon-anlegg",
+   "url": "https://ilaks.no/over-400-000-fisk-dode-i-eides-lukkede-watermoon-anlegg/?mtm_campaign=feed_click&mtm_kwd=over-400-000-fisk-dode-i-eides-lukkede-watermoon-anlegg&mtm_source=RSS2&mtm_medium=feed",
+   "source": "ilaks.no",
+   "lang": "no",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "NO"
+   ],
+   "id": "44a1a5248eed"
+  },
+  {
+   "date": "2026-11-16",
+   "title": "Over 700 forbedringer etter massedød i pilotanlegg (+)",
+   "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxQODRIcmtiY3R6cFpWQndiTGhHWmJKRWFUcnlTZnd1WFlNSld4a0FkSXdOdkFHUDdfTzEzQUNWOHMxTWxBaDRnSVpKQWZJS1JJX1RIdkJCSU9NUVdnbVhVS2NPRU9ycUgySWZWVnVRNmkwZFRiMVZUX3hfU0M1OXgta0daR3B6RW9jQWQ1WkZqdHU1UzRoVFBCaHlB?oc=5",
+   "source": "Intrafish",
+   "lang": "no",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "NO"
+   ],
+   "id": "361a1f5509f7"
+  },
   {
    "date": "2026-11-13",
    "title": "Argyll pupils try sushi-making and explore salmon farming",
@@ -27016,6 +27044,20 @@
   ]
  },
  "auto": [
+  {
+   "date": "2026-11",
+   "basin": "NO",
+   "region": "",
+   "cause": "unspecified",
+   "agent": "press (automatic)",
+   "fish_m": 0.4,
+   "tonnes": null,
+   "company": "",
+   "note": "11 articles: Skjerper meldekravene for tap av fisk · Norway tightens reporting requirements for fish losses · Mowi faces eight safety charges following hatchery worker’s death",
+   "url": "https://www.kyst.no/dodfisk-mattilsynet/skjerper-meldekravene-for-tap-av-fisk/2208074",
+   "src": "www.kyst.no",
+   "auto": "press"
+  },
   {
    "date": "2026-11",
    "basin": "AU",
