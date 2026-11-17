@@ -1,4 +1,12 @@
 site,name,company,start,end,type,product,substance,amount,unit
+A-87,Út fyri Haldórsvík,Mowi P/F,2026-11-02,2026-11-06,Bað,Salmosan Vet,Azamethiphos,11000.0,g
+A-83,Sørvágsfjørður ytra,Luna P/F,2026-10-26,2026-10-31,Bað,Salmosan Vet,Azamethiphos,14100.0,g
+A-32,Fossá,Mowi P/F,2026-10-11,2026-10-17,Bað,Salmosan,,8800000.0,
+A-32,Fossá,Mowi P/F,2026-10-11,2026-10-17,Bað,Salmosan Vet,Azamethiphos,4400.0,g
+A-87,Út fyri Haldórsvík,Mowi P/F,2026-10-08,2026-10-10,Bað,Salmosan Vet,Azamethiphos,11000.0,g
+A-83,Sørvágsfjørður ytra,Luna P/F,2026-09-21,2026-10-02,Bað,Salmosan Vet,Azamethiphos,27500.0,g
+A-57,Fuglafjørður,Bakkafrost Farming P/F,2026-09-17,2026-09-24,Fóður,Emamektin Vet - Feed 5mg,,1470000.0,
+A-08,Suðuri í Bug,Luna P/F,2026-09-07,2026-09-16,Fóður,Emamektin Vet - Feed,Emamectinbenzoate,427500.0,mg
 A-83,Sørvágsfjørður ytra,Luna P/F,2026-08-24,2026-08-28,Bað,Salmosan Vet,Azamethiphos,27500.0,g
 A-63,Árnafjørður,Bakkafrost Farming P/F,2026-08-11,2026-08-11,Bað,Salmosan VET,Azamethiphos,2700.0,g
 A-72,Haraldsund Norður,Bakkafrost Farming P/F,2026-08-01,2026-08-08,Fóður,emamektin vet - feed 10mg,,240000.0,
@@ -9,8 +17,8 @@ A-04,Lambavík,Bakkafrost Farming P/F,2026-05-22,2026-05-27,Bað,Salmosan VET,Az
 A-52,Oyndarfjørður inni á fjørð,Mowi P/F,2026-05-20,2026-05-21,Bað,Salmosan Vet,Azamethiphos,26600.0,g
 A-85,Undir Neslandinum,Bakkafrost Farming P/F,2026-05-02,2026-05-05,Bað,Salmosan VET,Azamethiphos,2700.0,g
 A-81,Kolbeinagjógv,Bakkafrost Farming P/F,2026-04-23,2026-04-28,Bað,Salmosan VET,Azamethiphos,2600.0,g
-A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,2026-02-26,2026-03-04,Fóður,"Slice 7,5mg/kg",,165000.0,
 A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,2026-02-26,2026-03-04,Fóður,"Slice 7,5 mg/kg",,322500.0,
+A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,2026-02-26,2026-03-04,Fóður,"Slice 7,5mg/kg",,165000.0,
 A-11,Hvannasund suður,Bakkafrost Farming P/F,2026-02-19,2026-02-28,Fóður,"Slice 7,5mg/kg",,187500.0,
 A-11,Hvannasund suður,Bakkafrost Farming P/F,2026-02-19,2026-02-28,Fóður,"Slice 7,5 mg/kg",,285000.0,
 A-52,Oyndarfjørður inni á fjørð,Mowi P/F,2026-01-26,2026-02-12,Bað,Salmosan Vet,Azamethiphos,39800.0,g
@@ -34,24 +42,24 @@ A-83,Sørvágsfjørður ytra,Luna P/F,2025-10-18,2025-10-24,Bað,Salmosan Vet,Az
 A-32,Fossá,Mowi P/F,2025-10-07,2025-10-19,Bað,Salmosan Vet,Azamethiphos,26400.0,g
 A-63,Árnafjørður,Bakkafrost Farming P/F,2025-10-01,2025-10-11,Fóður,Emamektin Vet - Feed 5 mg,,230000.0,
 A-92,Vágur,Bakkafrost Farming P/F,2025-09-20,2025-09-28,Fóður,Emamektin Vet - Feed 5 mg,,338025.0,
-A-08,Suðuri í Bug,Luna P/F,2025-09-16,2025-09-25,Fóður,Emamektin Vet - Feed,Emamectinbenzoate,750000.0,mg
 A-52,Oyndarfjørður inni á fjørð,Mowi P/F,2025-09-16,2025-09-25,Fóður,Emamektin Vet - Feed 5mg,,510000.0,
+A-08,Suðuri í Bug,Luna P/F,2025-09-16,2025-09-25,Fóður,Emamektin Vet - Feed,Emamectinbenzoate,750000.0,mg
 A-32,Fossá,Mowi P/F,2025-09-02,2025-09-11,Bað,Salmosan Vet,Azamethiphos,30800.0,g
-A-85,Undir Neslandinum,Bakkafrost Farming P/F,2025-09-04,2025-09-10,Fóður,Emamektin Vet - Feed 5mg,,1085000.0,
 A-85,Undir Neslandinum,Bakkafrost Farming P/F,2025-09-04,2025-09-10,Fóður,Emamektin Vet - Feed 5 mg,,310000.0,
+A-85,Undir Neslandinum,Bakkafrost Farming P/F,2025-09-04,2025-09-10,Fóður,Emamektin Vet - Feed 5mg,,1085000.0,
 A-72,Haraldsund Norður,Bakkafrost Farming P/F,2025-08-27,2025-08-31,Fóður,"Emamektin Vet- Feed 7,5mg",,1485000.0,
 A-83,Sørvágsfjørður ytra,Luna P/F,2025-08-27,2025-08-30,Bað,Salmosan Vet,Azamethiphos,16000.0,g
 A-13,Borðoyarvík,Bakkafrost Farming P/F,2025-08-16,2025-08-22,Fóður,Emamektin Vet - Feed 5 mg,,405000.0,
-A-80,Selatrað,Bakkafrost Farming P/F,2025-08-12,2025-08-19,Fóður,Emamektin Vet - Feed 5mg,,210000.0,
 A-80,Selatrað,Bakkafrost Farming P/F,2025-08-12,2025-08-19,Fóður,Emamektin Vet - Feed 5 mg,,140000.0,
+A-80,Selatrað,Bakkafrost Farming P/F,2025-08-12,2025-08-19,Fóður,Emamektin Vet - Feed 5mg,,210000.0,
 A-04,Lambavík,Bakkafrost Farming P/F,2025-08-05,2025-08-12,Fóður,Emamektin Vet - Feed 5 mg,,265000.0,
 A-83,Sørvágsfjørður ytra,Luna P/F,2025-07-26,2025-08-01,Bað,Salmosan Vet,Azamethiphos,17600.0,g
 A-32,Fossá,Mowi P/F,2025-07-21,2025-07-26,Bað,Salmosan Vet,Azamethiphos,26400.0,g
 A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,2025-07-18,2025-07-18,Bað,Salmosan VET,Azamethiphos,2700.0,g
 A-15,Froðba,Bakkafrost Farming P/F,2025-07-08,2025-07-16,Bað,Salmosan VET,Azamethiphos,29700.0,g
 A-32,Fossá,Mowi P/F,2025-06-16,2025-06-22,Bað,Salmosan Vet,Azamethiphos,26400.0,g
-A-12,Kunoyarnes,Bakkafrost Farming P/F,2025-06-03,2025-06-10,Fóður,Emamektin Vet - Feed 5mg,,62500.0,
 A-12,Kunoyarnes,Bakkafrost Farming P/F,2025-06-03,2025-06-10,Fóður,Emamektin Vet - Feed 5 mg,,462500.0,
+A-12,Kunoyarnes,Bakkafrost Farming P/F,2025-06-03,2025-06-10,Fóður,Emamektin Vet - Feed 5mg,,62500.0,
 A-15,Froðba,Bakkafrost Farming P/F,2025-06-04,2025-06-10,Bað,Salmosan VET,Azamethiphos,29700.0,g
 A-23,Hvalba,Bakkafrost Farming P/F,2025-05-10,2025-05-16,Fóður,Slice Premix Vet,Emamectinbenzoate,682500.0,mg
 A-57,Fuglafjørður,Bakkafrost Farming P/F,2025-04-26,2025-05-08,Fóður,Slice Premix Vet,Emamectinbenzoate,825000.0,mg
@@ -63,8 +71,8 @@ A-57,Fuglafjørður,Bakkafrost Farming P/F,2025-02-04,2025-02-10,Fóður,Emamekt
 A-73,Hvannasund Norður,Bakkafrost Farming P/F,2025-01-15,2025-01-22,Fóður,Emamektin Vet - Feed 5 mg,,165000.0,
 A-43,Funningsfjørður eystari Hagagjógv,Bakkafrost Farming P/F,2024-12-23,2025-01-11,Fóður,Emamektin Vet - Feed,Emamectinbenzoate,532500.0,mg
 A-05,Undir Síðu,Bakkafrost Farming P/F,2024-12-30,2025-01-01,Fóður,Slice 10 mg/kg,,384350.0,
-A-05,Undir Síðu,Bakkafrost Farming P/F,2024-12-22,2024-12-29,Fóður,Emamektin Vet - Feed,Emamectinbenzoate,865650.0,mg
 A-81,Kolbeinagjógv,Bakkafrost Farming P/F,2024-12-22,2024-12-29,Fóður,Emamektin Vet - Feed,Emamectinbenzoate,910000.0,mg
+A-05,Undir Síðu,Bakkafrost Farming P/F,2024-12-22,2024-12-29,Fóður,Emamektin Vet - Feed,Emamectinbenzoate,865650.0,mg
 A-23,Hvalba,Bakkafrost Farming P/F,2024-12-14,2024-12-22,Fóður,Emamektin Vet - Feed 5 mg,,22500.0,
 A-05,Undir Síðu,Bakkafrost Farming P/F,2024-12-20,2024-12-20,Bað,Alpha Max,,44000.0,mg
 A-15,Froðba,Bakkafrost Farming P/F,2024-12-06,2024-12-15,Fóður,Emamektin Vet - Feed 5 mg,,450000.0,
@@ -77,8 +85,8 @@ A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,2024-10-10,202
 A-63,Árnafjørður,Bakkafrost Farming P/F,2024-09-27,2024-10-09,Fóður,Emamektin Vet - Feed,Emamectinbenzoate,2500000.0,mg
 A-90,Sandsvág,Mowi P/F,2024-09-25,2024-10-01,Fóður,emamektin vet - feed 10mg,,425000.0,
 A-88,Vestmanna,Luna P/F,2024-09-13,2024-09-21,Fóður,"Slice 7,5mg/kg",,1387500.0,
-A-04,Lambavík,Bakkafrost Farming P/F,2024-09-10,2024-09-17,Fóður,"Emamektin Vet- feed 12,5mg",,1887500.0,
 A-04,Lambavík,Bakkafrost Farming P/F,2024-09-10,2024-09-17,Fóður,"Slice 12,5mg/kg",,775000.0,
+A-04,Lambavík,Bakkafrost Farming P/F,2024-09-10,2024-09-17,Fóður,"Emamektin Vet- feed 12,5mg",,1887500.0,
 A-52,Oyndarfjørður inni á fjørð,Mowi P/F,2024-09-09,2024-09-15,Fóður,emamektin vet - feed 10mg,,1713750.0,
 A-25,Gøtuvík suðursíðan,Bakkafrost Farming P/F,2024-08-31,2024-09-10,Fóður,Emamektin Vet - Feed,Emamectinbenzoate,850000.0,mg
 A-47,Gøtuvík norðursíðan,Bakkafrost Farming P/F,2024-08-31,2024-09-07,Fóður,Emamektin Vet - Feed,Emamectinbenzoate,650000.0,mg
@@ -97,8 +105,8 @@ A-83,Sørvágsfjørður ytra,Luna P/F,2024-06-18,2024-06-21,Bað,Salmosan Vet,Az
 A-13,Borðoyarvík,Bakkafrost Farming P/F,2024-05-31,2024-06-08,Fóður,"Emamektin Vet- feed 12,5mg",,881250.0,
 A-32,Fossá,Mowi P/F,2024-05-23,2024-05-27,Bað,Salmosan Vet,Azamethiphos,6600.0,g
 A-04,Lambavík,Bakkafrost Farming P/F,2024-05-15,2024-05-20,Fóður,Emamectin Vet 15mg/kg,Emamectinbenzoate,795000.0,mg
-A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,2024-05-16,2024-05-18,Bað,Salmosan VET,Azamethiphos,1080.0,g
 A-87,Út fyri Haldórsvík,Mowi P/F,2024-05-13,2024-05-18,Bað,Salmosan Vet,Azamethiphos,14500.0,g
+A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,2024-05-16,2024-05-18,Bað,Salmosan VET,Azamethiphos,1080.0,g
 A-08,Suðuri í Bug,Luna P/F,2024-05-07,2024-05-17,Fóður,"Slice 7,5mg/kg",,165000.0,
 A-87,Út fyri Haldórsvík,Mowi P/F,2024-05-01,2024-05-12,Fóður,Emamectin Vet 20mg/kg,,2000000.0,
 A-85,Undir Neslandinum,Bakkafrost Farming P/F,2024-04-18,2024-04-26,Fóður,Emamectin Vet 15mg/kg,Emamectinbenzoate,2475000.0,mg
@@ -139,23 +147,23 @@ A-06,Argjalandið,Bakkafrost Farming P/F,2023-10-05,2023-10-13,Fóður,Emamektin
 A-89,Velbastað,Luna P/F,2023-09-27,2023-10-05,Fóður,Emamektin Vet - Feed,Emamectinbenzoate,1760000.0,mg
 A-90,Sandsvág,Mowi P/F,2023-09-24,2023-10-01,Fóður,Emamektin Vet - Feed,Emamectinbenzoate,1425000.0,mg
 A-57,Fuglafjørður,Bakkafrost Farming P/F,2023-09-19,2023-09-28,Fóður,Slice Premix Vet,Emamectinbenzoate,118750.0,mg
-A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,2023-09-23,2023-09-24,Bað,Salmosan VET,Azamethiphos,1900.0,g
 A-11,Hvannasund suður,Bakkafrost Farming P/F,2023-09-24,2023-09-24,Bað,Salmosan VET,Azamethiphos,1900.0,g
+A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,2023-09-23,2023-09-24,Bað,Salmosan VET,Azamethiphos,1900.0,g
 A-72,Haraldsund Norður,Bakkafrost Farming P/F,2023-09-14,2023-09-20,Fóður,Emamektin Vet - Feed,Emamectinbenzoate,116250.0,mg
 A-87,Út fyri Haldórsvík,Mowi P/F,2023-08-29,2023-09-08,Fóður,Emamectin Vet 15mg/kg,Emamectinbenzoate,195000.0,mg
 A-87,Út fyri Haldórsvík,Mowi P/F,2023-08-29,2023-09-08,Fóður,emamektin vet - feed 10mg,,135000.0,
 A-57,Fuglafjørður,Bakkafrost Farming P/F,2023-08-31,2023-09-07,Fóður,Slice Premix Vet,Emamectinbenzoate,950000.0,mg
 A-88,Vestmanna,Luna P/F,2023-08-22,2023-09-02,Fóður,Emamektin vet - SLICE 6mg,,210000.0,
-A-73,Hvannasund Norður,Bakkafrost Farming P/F,2023-08-21,2023-08-29,Fóður,Emamektin Vet - Feed,Emamectinbenzoate,950000.0,mg
 A-04,Lambavík,Bakkafrost Farming P/F,2023-08-26,2023-08-29,Bað,Salmosan VET,Azamethiphos,2.95,g
-A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,2023-08-15,2023-08-23,Fóður,Emamektin Vet - Feed,Emamectinbenzoate,2300000.0,mg
+A-73,Hvannasund Norður,Bakkafrost Farming P/F,2023-08-21,2023-08-29,Fóður,Emamektin Vet - Feed,Emamectinbenzoate,950000.0,mg
 A-27,Miðvágur,Luna P/F,2023-08-15,2023-08-23,Fóður,"Slice 7,5mg/kg",,375000.0,
+A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,2023-08-15,2023-08-23,Fóður,Emamektin Vet - Feed,Emamectinbenzoate,2300000.0,mg
 A-08,Suðuri í Bug,Luna P/F,2023-08-15,2023-08-22,Fóður,"Slice 7,5mg/kg",,187500.0,
 A-32,Fossá,Mowi P/F,2023-08-04,2023-08-12,Fóður,emamektin vet - feed 10mg,,600000.0,
 A-23,Hvalba,Bakkafrost Farming P/F,2023-07-26,2023-08-02,Fóður,Emamectin Vet 15mg/kg,Emamectinbenzoate,1530000.0,mg
 A-88,Vestmanna,Luna P/F,2023-07-12,2023-07-30,Fóður,Diflobenzuron,Diflubenzuron,302400.0,g
-A-04,Lambavík,Bakkafrost Farming P/F,2023-07-19,2023-07-25,Bað,Salmosan VET,Azamethiphos,2.9,g
 A-89,Velbastað,Luna P/F,2023-07-15,2023-07-25,Fóður,"Slice 7,5mg/kg",,885000.0,
+A-04,Lambavík,Bakkafrost Farming P/F,2023-07-19,2023-07-25,Bað,Salmosan VET,Azamethiphos,2.9,g
 A-12,Kunoyarnes,Bakkafrost Farming P/F,2023-07-04,2023-07-13,Bað,Salmosan VET,Azamethiphos,2.6,g
 A-88,Vestmanna,Luna P/F,2023-06-27,2023-06-29,Bað,Salmosan Vet,Azamethiphos,58000.0,g
 A-83,Sørvágsfjørður ytra,Luna P/F,2023-05-11,2023-06-02,Fóður,Diflobenzuron,Diflubenzuron,277600.0,g
@@ -196,19 +204,19 @@ A-72,Haraldsund Norður,Bakkafrost Farming P/F,2022-11-05,2022-11-09,Bað,Salmos
 A-04,Lambavík,Bakkafrost Farming P/F,2022-10-21,2022-10-31,Fóður,Emamektin Vet - Feed,Emamectinbenzoate,1470000.0,mg
 A-32,Fossá,Mowi P/F,2022-10-26,2022-10-30,Bað,Salmosan Vet,Azamethiphos,850.0,g
 A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,2022-10-20,2022-10-28,Fóður,"Slice 12,5mg/kg",,1750000.0,
-A-13,Borðoyarvík,Bakkafrost Farming P/F,2022-10-13,2022-10-22,Fóður,Emamektin Vet - Feed,Emamectinbenzoate,870000.0,mg
 A-12,Kunoyarnes,Bakkafrost Farming P/F,2022-10-06,2022-10-22,Fóður,Emamektin Vet - Feed,Emamectinbenzoate,1300000.0,mg
+A-13,Borðoyarvík,Bakkafrost Farming P/F,2022-10-13,2022-10-22,Fóður,Emamektin Vet - Feed,Emamectinbenzoate,870000.0,mg
 A-63,Árnafjørður,Bakkafrost Farming P/F,2022-09-28,2022-10-09,Fóður,Slice Premix Vet,Emamectinbenzoate,255000.0,mg
 A-32,Fossá,Mowi P/F,2022-09-28,2022-09-28,Bað,Salmosan Vet,Azamethiphos,170.0,g
 A-85,Undir Neslandinum,Bakkafrost Farming P/F,2022-09-15,2022-09-23,Fóður,Slice Premix Vet,Emamectinbenzoate,2650000.0,mg
-A-05,Undir Síðu,Bakkafrost Farming P/F,2022-09-08,2022-09-15,Fóður,Slice Premix Vet,Emamectinbenzoate,1462500.0,mg
-A-81,Kolbeinagjógv,Bakkafrost Farming P/F,2022-09-08,2022-09-15,Fóður,Slice Premix Vet,Emamectinbenzoate,1225000.0,mg
 A-87,Út fyri Haldórsvík,Mowi P/F,2022-09-12,2022-09-15,Bað,Salmosan Vet,Azamethiphos,510.0,g
+A-81,Kolbeinagjógv,Bakkafrost Farming P/F,2022-09-08,2022-09-15,Fóður,Slice Premix Vet,Emamectinbenzoate,1225000.0,mg
+A-05,Undir Síðu,Bakkafrost Farming P/F,2022-09-08,2022-09-15,Fóður,Slice Premix Vet,Emamectinbenzoate,1462500.0,mg
 A-04,Lambavík,Bakkafrost Farming P/F,2022-09-05,2022-09-13,Fóður,"Emamektin Vet- feed 12,5mg",,187500.0,
-A-13,Borðoyarvík,Bakkafrost Farming P/F,2022-09-06,2022-09-12,Fóður,Slice Premix Vet,Emamectinbenzoate,18750.0,mg
 A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,2022-08-30,2022-09-12,Bað,Salmosan VET,Azamethiphos,4320.0,g
-A-32,Fossá,Mowi P/F,2022-09-05,2022-09-11,Bað,Salmosan Vet,Azamethiphos,1190.0,g
+A-13,Borðoyarvík,Bakkafrost Farming P/F,2022-09-06,2022-09-12,Fóður,Slice Premix Vet,Emamectinbenzoate,18750.0,mg
 A-83,Sørvágsfjørður ytra,Luna P/F,2022-09-01,2022-09-11,Fóður,Emamektin Vet - Feed,Emamectinbenzoate,465000.0,mg
+A-32,Fossá,Mowi P/F,2022-09-05,2022-09-11,Bað,Salmosan Vet,Azamethiphos,1190.0,g
 A-52,Oyndarfjørður inni á fjørð,Mowi P/F,2022-08-30,2022-09-04,Fóður,Slice Premix Vet,Emamectinbenzoate,125000.0,mg
 A-27,Miðvágur,Luna P/F,2022-08-26,2022-09-02,Fóður,Emamektin Vet - Feed,Emamectinbenzoate,1130000.0,mg
 A-13,Borðoyarvík,Bakkafrost Farming P/F,2022-08-22,2022-08-29,Fóður,Slice Premix Vet,Emamectinbenzoate,212500.0,mg
@@ -223,13 +231,13 @@ A-87,Út fyri Haldórsvík,Mowi P/F,2022-07-11,2022-07-15,Bað,Salmosan Vet,Azam
 A-81,Kolbeinagjógv,Bakkafrost Farming P/F,2022-06-18,2022-06-29,Fóður,Slice Premix Vet,Emamectinbenzoate,975000.0,mg
 A-81,Kolbeinagjógv,Bakkafrost Farming P/F,2022-06-18,2022-06-29,Fóður,Emamektin Vet - Feed,Emamectinbenzoate,80000.0,mg
 A-05,Undir Síðu,Bakkafrost Farming P/F,2022-06-20,2022-06-28,Fóður,Slice Premix Vet,Emamectinbenzoate,231250.0,mg
+A-32,Fossá,Mowi P/F,2022-06-13,2022-06-20,Bað,Salmosan Vet,Azamethiphos,480.0,g
 A-85,Undir Neslandinum,Bakkafrost Farming P/F,2022-06-10,2022-06-20,Fóður,"Slice 12,5mg/kg",,600000.0,
 A-85,Undir Neslandinum,Bakkafrost Farming P/F,2022-06-10,2022-06-20,Fóður,Emamektin Vet - Feed,Emamectinbenzoate,520000.0,mg
-A-32,Fossá,Mowi P/F,2022-06-13,2022-06-20,Bað,Salmosan Vet,Azamethiphos,480.0,g
 A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,2022-06-04,2022-06-12,Fóður,Emamectin Vet 15mg/kg,Emamectinbenzoate,915000.0,mg
 A-05,Undir Síðu,Bakkafrost Farming P/F,2022-05-26,2022-06-04,Fóður,Slice Premix Vet,Emamectinbenzoate,393750.0,mg
-A-32,Fossá,Mowi P/F,2022-05-30,2022-06-03,Bað,Salmosan Vet,Azamethiphos,860.0,g
 A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,2022-06-03,2022-06-03,Fóður,Emamectin Vet 15mg/kg,Emamectinbenzoate,34095.0,mg
+A-32,Fossá,Mowi P/F,2022-05-30,2022-06-03,Bað,Salmosan Vet,Azamethiphos,860.0,g
 A-72,Haraldsund Norður,Bakkafrost Farming P/F,2022-05-09,2022-05-17,Fóður,Slice Premix Vet,Emamectinbenzoate,225000.0,mg
 A-72,Haraldsund Norður,Bakkafrost Farming P/F,2022-05-09,2022-05-17,Fóður,Emamectin Vet 20mg/kg,,1320000.0,
 A-15,Froðba,Bakkafrost Farming P/F,2022-05-12,2022-05-14,Bað,Salmosan VET,Azamethiphos,2.6,g
@@ -260,8 +268,8 @@ A-13,Borðoyarvík,Bakkafrost Farming P/F,2021-12-21,2021-12-23,Bað,Salmosan VE
 A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,2021-12-09,2021-12-20,Fóður,"Slice 12,5mg/kg",,1550000.0,
 A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,2021-12-09,2021-12-20,Fóður,Slice Premix Vet,Emamectinbenzoate,1262500.0,mg
 A-57,Fuglafjørður,Bakkafrost Farming P/F,2021-11-30,2021-12-08,Fóður,Emamektin Vet - Feed,Emamectinbenzoate,625000.0,mg
-A-11,Hvannasund suður,Bakkafrost Farming P/F,2021-11-21,2021-11-28,Fóður,Emamectin Vet 15mg/kg,Emamectinbenzoate,2220000.0,mg
 A-21,"Hvannasund suður, Hvannasundsmegin",Bakkafrost Farming P/F,2021-11-19,2021-11-28,Fóður,Emamectin Vet 15mg/kg,Emamectinbenzoate,2100000.0,mg
+A-11,Hvannasund suður,Bakkafrost Farming P/F,2021-11-21,2021-11-28,Fóður,Emamectin Vet 15mg/kg,Emamectinbenzoate,2220000.0,mg
 A-83,Sørvágsfjørður ytra,Luna P/F,2021-11-13,2021-11-21,Bað,Salmosan Vet,Azamethiphos,21200.0,g
 A-12,Kunoyarnes,Bakkafrost Farming P/F,2021-10-24,2021-11-03,Bað,Salmosan VET,Azamethiphos,15.6,g
 A-71,Funningsfjørður Líðin,Bakkafrost Farming P/F,2021-10-23,2021-10-30,Fóður,Emamektin Vet - Feed,Emamectinbenzoate,1400000.0,mg
@@ -296,8 +304,8 @@ A-72,Haraldsund Norður,Bakkafrost Farming P/F,2021-03-25,2021-04-04,Fóður,Sli
 A-81,Kolbeinagjógv,Bakkafrost Farming P/F,2021-03-18,2021-03-26,Fóður,Slice Premix Vet,Emamectinbenzoate,1300000.0,mg
 A-52,Oyndarfjørður inni á fjørð,Mowi P/F,2021-03-03,2021-03-15,Fóður,Slice Premix Vet,Emamectinbenzoate,500000.0,mg
 A-04,Lambavík,Bakkafrost Farming P/F,2021-01-27,2021-02-04,Fóður,Slice Premix Vet,Emamectinbenzoate,630000.0,mg
-A-13,Borðoyarvík,Bakkafrost Farming P/F,2021-01-23,2021-02-03,Fóður,Slice Premix Vet,Emamectinbenzoate,630000.0,mg
 A-06,Argjalandið,Bakkafrost Farming P/F,2021-01-25,2021-02-03,Fóður,Slice Premix Vet,Emamectinbenzoate,312500.0,mg
+A-13,Borðoyarvík,Bakkafrost Farming P/F,2021-01-23,2021-02-03,Fóður,Slice Premix Vet,Emamectinbenzoate,630000.0,mg
 A-12,Kunoyarnes,Bakkafrost Farming P/F,2021-01-06,2021-01-13,Fóður,Slice Premix Vet,Emamectinbenzoate,1087500.0,mg
 A-18,Hovsfjørður ytra,Bakkafrost Farming P/F,2020-12-20,2021-01-05,Fóður,Slice Premix Vet,Emamectinbenzoate,1760000.0,mg
 A-19,Undir Klyvunum út fyri Nes,Bakkafrost Farming P/F,2020-12-24,2021-01-03,Fóður,Slice Premix Vet,Emamectinbenzoate,2320000.0,mg
