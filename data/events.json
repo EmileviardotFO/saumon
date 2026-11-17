@@ -1,28 +1,28 @@
 {
  "meta": {
-  "generated": "2026-11-16",
+  "generated": "2026-11-17",
   "status": {
-   "ilaks.no": "ok 12 articles, 1 kept",
-   "www.kyst.no": "ok 96 articles, 2 kept",
+   "ilaks.no": "ok 12 articles, 0 kept",
+   "www.kyst.no": "ok 102 articles, 2 kept",
    "www.fishfarmingexpert.com": "ok 65 articles, 2 kept",
    "www.fishfarmermagazine.com": "ok 30 articles, 0 kept",
-   "www.salmonexpert.cl": "ok 59 articles, 6 kept",
+   "www.salmonexpert.cl": "ok 59 articles, 8 kept",
    "thefishsite.com": "ok 50 articles, 1 kept",
-   "news.google.com (NO no #1)": "error: HTTPError: HTTP Error 429: Too Many Requests",
+   "news.google.com (NO no #1)": "ok 10 articles, 7 kept",
    "news.google.com (NO no #2)": "ok 9 articles, 1 kept",
-   "news.google.com (CL es #3)": "ok 29 articles, 10 kept",
-   "news.google.com (CL es #4)": "ok 8 articles, 1 kept",
-   "news.google.com (IS is #5)": "error: HTTPError: HTTP Error 429: Too Many Requests",
+   "news.google.com (CL es #3)": "ok 30 articles, 10 kept",
+   "news.google.com (CL es #4)": "ok 8 articles, 2 kept",
+   "news.google.com (IS is #5)": "ok 0 articles, 0 kept",
    "news.google.com (IS en #6)": "ok 9 articles, 3 kept",
-   "news.google.com (GB en #7)": "ok 22 articles, 8 kept",
-   "news.google.com (FO en #8)": "ok 9 articles, 1 kept",
+   "news.google.com (GB en #7)": "ok 23 articles, 8 kept",
+   "news.google.com (FO en #8)": "ok 10 articles, 1 kept",
    "news.google.com (FO fo #9)": "ok 0 articles, 0 kept",
-   "news.google.com (CA en #10)": "error: HTTPError: HTTP Error 429: Too Many Requests",
-   "news.google.com (multi en #11)": "ok 10 articles, 3 kept",
+   "news.google.com (CA en #10)": "ok 13 articles, 1 kept",
+   "news.google.com (multi en #11)": "ok 14 articles, 3 kept",
    "news.google.com (CA en #12)": "ok 13 articles, 7 kept",
-   "news.google.com (CA en #13)": "error: HTTPError: HTTP Error 429: Too Many Requests",
-   "news.google.com (CA en #14)": "error: HTTPError: HTTP Error 429: Too Many Requests",
-   "news.google.com (multi en #15)": "ok 71 articles, 9 kept",
+   "news.google.com (CA en #13)": "ok 1 articles, 1 kept",
+   "news.google.com (CA en #14)": "ok 4 articles, 0 kept",
+   "news.google.com (multi en #15)": "ok 74 articles, 9 kept",
    "gov.scot FHI": "ok 6824 reports, last 2026-10-14"
   },
   "note": "news = articles kept by keyword (a mortality word + a farming word), classified by cause and basin; manual = events entered by hand with their losses; scotland_fhi = mortalities reported to the Scottish Fish Health Inspectorate",
@@ -156,6 +156,34 @@
   }
  ],
  "news": [
+  {
+   "date": "2026-11-17",
+   "title": "“La decisión de Noruega de ingresar salmón a Brasil recuerda que los mercados se disputan cada día”",
+   "url": "https://www.salmonexpert.cl/brasil-chile-competencia/la-decision-de-noruega-de-ingresar-salmon-a-brasil-recuerda-que-los-mercados-se-disputan-cada-dia/2211252",
+   "source": "www.salmonexpert.cl",
+   "lang": "es",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "fc80c123d838"
+  },
+  {
+   "date": "2026-11-17",
+   "title": "El Niño aún no alcanza su máximo y ya moviliza medidas preventivas para la acuicultura",
+   "url": "https://www.salmonexpert.cl/acuicultura-chilena-fan-fenomeno-de-el-nino/el-nino-aun-no-alcanza-su-maximo-y-ya-moviliza-medidas-preventivas-para-la-acuicultura/2211562",
+   "source": "www.salmonexpert.cl",
+   "lang": "es",
+   "causes": [
+    "temperature"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "c93ef407ddfd"
+  },
   {
    "date": "2026-11-16",
    "title": "Over 400.000 fisk døde i Eides lukkede Watermoon-anlegg",
@@ -1539,10 +1567,10 @@
   "source": "https://www.gov.scot/binaries/content/documents/govscot/publications/transparency-data/2019/12/fish-health-inspectorate-mortality-information/documents/mortality-information---until-end-october-2019/mortality-information---until-end-october-2019/govscot%3Adocument/Mortality%2Binformation%2B-%2Buntil%2Bend%2BSeptember%2B2026.xlsx",
   "monthly": {
    "2023-10": {
-    "reports": 5,
+    "reports": 4,
     "causes": {
-     "gill": 3,
      "unspecified": 1,
+     "gill": 2,
      "disease": 3
     }
    },
@@ -27029,17 +27057,6 @@
     ],
     "n": null,
     "pct": 1.22
-   },
-   {
-    "date": "2023-10-27",
-    "site": "Loch A Chairn Bhain",
-    "company": "Loch Duart Ltd",
-    "cause": "Seal predation/gill health (AGD)",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 2.19
    }
   ]
  },
