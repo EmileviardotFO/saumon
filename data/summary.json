@@ -1,6 +1,6 @@
 {
  "meta": {
-  "built": "2026-11-16T20:01+00:00",
+  "built": "2026-11-17T17:04+00:00",
   "note": "Signals ranked by how unusual they are against their own history (score). Effect: supports / weighs on prices, risk, watch."
  },
  "lead": "Supply grows +6 % in 2026 across the seven basins and ±0.0 % in 2027. Chile is the main source of change: a record El Niño, a slowing harvest and fewer big fish. Norway carries the growth with heavier fish and more 6 kg+. Imports grow fastest in Japan, Brazil, UK; USA and Israel are flat or down.",
@@ -225,8 +225,8 @@
    "lo": -6.9,
    "hi": 5.1,
    "sea": [
-    -1.1,
-    -0.2
+    -1.2,
+    -0.1
    ],
    "tab": "canada"
   },
@@ -456,13 +456,43 @@
    "lang": "es"
   },
   {
+   "date": "2026-11-17",
+   "title": "“La decisión de Noruega de ingresar salmón a Brasil recuerda que los mercados se disputan cada día”",
+   "url": "https://www.salmonexpert.cl/brasil-chile-competencia/la-decision-de-noruega-de-ingresar-salmon-a-brasil-recuerda-que-los-mercados-se-disputan-cada-dia/2211252",
+   "source": "salmonexpert.cl",
+   "n_sources": 2,
+   "basins": [
+    "CL"
+   ],
+   "themes": [
+    "market"
+   ],
+   "lang": "es"
+  },
+  {
+   "date": "2026-11-17",
+   "title": "El Niño aún no alcanza su máximo y ya moviliza medidas preventivas para la acuicultura",
+   "url": "https://www.salmonexpert.cl/acuicultura-chilena-fan-fenomeno-de-el-nino/el-nino-aun-no-alcanza-su-maximo-y-ya-moviliza-medidas-preventivas-para-la-acuicultura/2211562",
+   "source": "salmonexpert.cl",
+   "n_sources": 2,
+   "basins": [
+    "CL"
+   ],
+   "themes": [
+    "feed",
+    "biology"
+   ],
+   "lang": "es"
+  },
+  {
    "date": "2026-11-16",
    "title": "Week 47 China Atlantic salmon prices fall, leaving importers in the red again",
    "url": "https://www.undercurrentnews.com/2026/11/16/week-47-china-atlantic-salmon-prices-fall-leaving-importers-in-the-red-again/",
    "source": "undercurrentnews.com",
    "n_sources": 2,
    "basins": [
-    "global"
+    "NO",
+    "CL"
    ],
    "themes": [
     "market"
@@ -499,20 +529,6 @@
   },
   {
    "date": "2026-11-13",
-   "title": "US wholesale: Chilean salmon prices climb as fresh starves the freezer",
-   "url": "https://www.undercurrentnews.com/2026/11/13/us-wholesale-chilean-salmon-climbs-as-fresh-starves-the-freezer/",
-   "source": "undercurrentnews.com",
-   "n_sources": 2,
-   "basins": [
-    "CL"
-   ],
-   "themes": [
-    "market"
-   ],
-   "lang": "en"
-  },
-  {
-   "date": "2026-11-13",
    "title": "Hevder å ha funnet et protein som slår fiskemel: – Rundt 25 prosent bedre enn “gullstandarden”",
    "url": "https://ilaks.no/hevder-a-ha-funnet-et-protein-som-slar-fiskemel-rundt-25-prosent-bedre-enn-gullstandarden/?mtm_campaign=feed_click&mtm_kwd=hevder-a-ha-funnet-et-protein-som-slar-fiskemel-rundt-25-prosent-bedre-enn-gullstandarden&mtm_source=RSS2&mtm_medium=feed",
    "source": "ilaks.no",
@@ -524,20 +540,6 @@
     "feed"
    ],
    "lang": "no"
-  },
-  {
-   "date": "2026-11-13",
-   "title": "Chile truckers reach deal to end strike but continued roadblocks threaten salmon supply chain",
-   "url": "https://www.undercurrentnews.com/2026/11/13/chile-truckers-reach-deal-to-end-strike-but-continued-roadblocks-threaten-salmon-supply-chain/",
-   "source": "undercurrentnews.com",
-   "n_sources": 2,
-   "basins": [
-    "CL"
-   ],
-   "themes": [
-    "market"
-   ],
-   "lang": "en"
   },
   {
    "date": "2026-11-12",
@@ -776,20 +778,10 @@
    "202644": 10.3668,
    "202645": 10.4111,
    "202646": 10.579,
-   "202647": 10.574
+   "202647": 10.5747
   }
  },
  "mainnews": [
-  {
-   "kind": "story",
-   "title": "Analysts split on Lerøy as harvest concerns cloud earnings recovery",
-   "text": "14 articles since 11-09; latest: Analysts split on Lerøy as harvest concerns cloud earnings recovery (Salmon Business).",
-   "src": "14 articles · 11-11",
-   "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxQVDlYWS1hdVZZZTg0ZmJQSUNMeXNiTVNZbW15SFlKbEF0S3JpZHhXQVhzN3lfVVFkU2VXRWNoYmRXRnRWNnZBWjI2QTBLY1BoRHR1b05BRzlIY1JTMnpvRDZ2V0RzUjUwSDJSNFYtbGdVUHQ1bk5GYU5XcVQ5aXlJUGlhdkc1LTlLVDNYLVRSNEpmdTlwUkFsX25BNFY4Z0N2?oc=5",
-   "basin": "NO",
-   "who": "Lerøy",
-   "n": 14
-  },
   {
    "kind": "story",
    "title": "Grieg Seafood posts €8.6m operating loss as algae hits production",
@@ -802,12 +794,22 @@
   },
   {
    "kind": "story",
-   "title": "Bakkafrost outlines how Scotland is slowly improving",
-   "text": "7 articles since 11-09; latest: Un inversionista ético abandona la propiedad de Bakkafrost (salmonexpert.cl).",
+   "title": "Analysts split on Lerøy as harvest concerns cloud earnings recovery",
+   "text": "11 articles since 11-10; latest: Analysts split on Lerøy as harvest concerns cloud earnings recovery (Salmon Business).",
+   "src": "11 articles · 11-11",
+   "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxQVDlYWS1hdVZZZTg0ZmJQSUNMeXNiTVNZbW15SFlKbEF0S3JpZHhXQVhzN3lfVVFkU2VXRWNoYmRXRnRWNnZBWjI2QTBLY1BoRHR1b05BRzlIY1JTMnpvRDZ2V0RzUjUwSDJSNFYtbGdVUHQ1bk5GYU5XcVQ5aXlJUGlhdkc1LTlLVDNYLVRSNEpmdTlwUkFsX25BNFY4Z0N2?oc=5",
+   "basin": "NO",
+   "who": "Lerøy",
+   "n": 11
+  },
+  {
+   "kind": "story",
+   "title": "Salmones Camanchaca: profit falls 62% as disease and costs hit earnings",
+   "text": "7 articles since 11-11; latest: Salmones Camanchaca: profit falls 62% as disease and costs hit earnings (Salmon Business).",
    "src": "7 articles · 11-13",
-   "url": "https://www.salmonexpert.cl/bakkafrost-bakkafrost-scotland-escocia/un-inversionista-etico-abandona-la-propiedad-de-bakkafrost/2210453",
-   "basin": "GB",
-   "who": "Bakkafrost",
+   "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxOQmpnSlZMeV9Zb2pQNC1CR3ZXTnBWcGRzMk5HSlJGSFh2YW9pVGZwd2k2ZkxENTVyR3lFcmRWRThiY21YRjNxSGhldzhWU1I5VmhSUXB3cFU1eXFKVEt6NVVlYS1pVHYwZG9pM3pBcnR2WmFva0RQVG5wY3ZVcjJkdTFDcHFyR1JBcEZHTWF0WVJrRE1GamRKMWpiUG9CdjJzZld3?oc=5",
+   "basin": "CL",
+   "who": "Camanchaca",
    "n": 7
   }
  ],
