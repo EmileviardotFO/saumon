@@ -11,7 +11,7 @@
 "why": "name",
 "first_seen": "2026-11-07T00:35",
 "last_seen": "2026-11-17T03:16",
-"last_pos": "2026-11-17T03:16"
+"last_pos": "2026-11-17T13:48"
 },
 "259031710": {
 "name": "RINGASKJAER",
@@ -51,7 +51,7 @@
 "why": "destination",
 "first_seen": "2026-11-07T00:35",
 "last_seen": "2026-11-17T03:16",
-"last_pos": "2026-11-17T03:16"
+"last_pos": "2026-11-17T13:48"
 },
 "257518900": {
 "name": "FOSNA VIND",
@@ -92,7 +92,7 @@
 "first_seen": "2026-11-07T00:35",
 "last_seen": "2026-11-15T23:09",
 "owner": "INTERSHIP AS",
-"last_pos": "2026-11-15T23:09"
+"last_pos": "2026-11-17T13:48"
 },
 "232032780": {
 "name": "KALLISTA HELEN",
@@ -117,8 +117,8 @@
 "flag": "NO",
 "why": "destination",
 "first_seen": "2026-11-07T00:35",
-"last_seen": "2026-11-16T18:53",
-"last_pos": "2026-11-17T03:16"
+"last_seen": "2026-11-17T13:48",
+"last_pos": "2026-11-17T13:48"
 },
 "258542000": {
 "name": "VESTFJORD",
@@ -144,7 +144,7 @@
 "why": "name",
 "first_seen": "2026-11-07T00:35",
 "last_seen": "2026-11-13T09:53",
-"last_pos": "2026-11-17T03:16"
+"last_pos": "2026-11-17T13:48"
 },
 "257747000": {
 "name": "SEIGRUNN",
@@ -197,9 +197,9 @@
 "flag": "NO",
 "why": "mattilsynet",
 "first_seen": "2026-11-07T00:35",
-"last_seen": "2026-11-15T09:47",
+"last_seen": "2026-11-17T13:48",
 "owner": "ALSAKER LFC SERVICE AS",
-"last_pos": "2026-11-17T03:16"
+"last_pos": "2026-11-17T13:48"
 },
 "235040075": {
 "name": "MARGARET SINCLAIR",
@@ -212,7 +212,7 @@
 "why": "destination",
 "first_seen": "2026-11-07T00:35",
 "last_seen": "2026-11-16T18:53",
-"last_pos": "2026-11-17T03:16"
+"last_pos": "2026-11-17T13:48"
 },
 "232058095": {
 "name": "MOWI STORR",
@@ -224,8 +224,8 @@
 "flag": "GB",
 "why": "destination",
 "first_seen": "2026-11-07T00:35",
-"last_seen": "2026-11-16T18:53",
-"last_pos": "2026-11-17T03:16"
+"last_seen": "2026-11-17T13:48",
+"last_pos": "2026-11-17T13:48"
 },
 "257648000": {
 "name": "RONJA SKYE",
@@ -238,7 +238,7 @@
 "why": "destination",
 "first_seen": "2026-11-07T00:35",
 "last_seen": "2026-11-16T18:53",
-"last_pos": "2026-11-17T03:16"
+"last_pos": "2026-11-17T13:48"
 },
 "257789000": {
 "name": "RONJA VEST",
@@ -250,7 +250,7 @@
 "flag": "NO",
 "why": "mattilsynet",
 "first_seen": "2026-11-07T00:35",
-"last_seen": "2026-11-12T01:05",
+"last_seen": "2026-11-17T13:48",
 "owner": "SØLVTRANS REDERI AS",
 "last_pos": "2026-11-17T03:16"
 },
@@ -332,9 +332,9 @@
 "flag": "NO",
 "why": "mattilsynet",
 "first_seen": "2026-11-07T06:32",
-"last_seen": "2026-11-07T19:09",
+"last_seen": "2026-11-17T13:48",
 "owner": "ROSTEIN AS",
-"last_pos": "2026-11-13T23:56"
+"last_pos": "2026-11-17T13:48"
 },
 "257170000": {
 "name": "FROY HARVEST",
@@ -346,8 +346,8 @@
 "flag": "NO",
 "why": "destination",
 "first_seen": "2026-11-07T06:32",
-"last_seen": "2026-11-16T18:53",
-"last_pos": "2026-11-17T03:16"
+"last_seen": "2026-11-17T13:48",
+"last_pos": "2026-11-17T13:48"
 },
 "257558000": {
 "name": "RO VENTURE",
@@ -388,7 +388,7 @@
 "why": "destination",
 "first_seen": "2026-11-07T13:24",
 "last_seen": "2026-11-16T06:51",
-"last_pos": "2026-11-17T03:16"
+"last_pos": "2026-11-17T13:48"
 },
 "259050260": {
 "name": "ELLA",
@@ -427,9 +427,9 @@
 "flag": "NO",
 "why": "mattilsynet",
 "first_seen": "2026-11-07T13:24",
-"last_seen": "2026-11-16T18:53",
+"last_seen": "2026-11-17T13:48",
 "owner": "AUSTEVOLL SJØTJENESTER AS",
-"last_pos": "2026-11-17T03:16"
+"last_pos": "2026-11-17T13:48"
 },
 "257033140": {
 "name": "RONJA MERDOE",
@@ -442,7 +442,7 @@
 "why": "name",
 "first_seen": "2026-11-07T13:24",
 "last_seen": "2026-11-08T06:22",
-"last_pos": "2026-11-15T17:33"
+"last_pos": "2026-11-17T13:48"
 },
 "257036670": {
 "name": "RINGAVAAG",
@@ -562,7 +562,7 @@
 "first_seen": "2026-11-07T19:09",
 "last_seen": "2026-11-14T06:45",
 "owner": "ROSTEIN AS",
-"last_pos": "2026-11-16T06:51"
+"last_pos": "2026-11-17T13:48"
 },
 "257178000": {
 "name": "NYKSUND",
@@ -666,8 +666,8 @@
 "flag": "NO",
 "why": "destination",
 "first_seen": "2026-11-07T23:59",
-"last_seen": "2026-11-15T09:47",
-"last_pos": "2026-11-15T09:47"
+"last_seen": "2026-11-17T13:48",
+"last_pos": "2026-11-17T13:48"
 },
 "257914700": {
 "name": "ERVIK SUPPORT",
@@ -679,8 +679,8 @@
 "flag": "NO",
 "why": "destination",
 "first_seen": "2026-11-07T23:59",
-"last_seen": "2026-11-17T03:16",
-"last_pos": "2026-11-16T18:53"
+"last_seen": "2026-11-17T13:48",
+"last_pos": "2026-11-17T13:48"
 },
 "259991000": {
 "name": "VAGSUND",
@@ -746,7 +746,7 @@
 "why": "destination",
 "first_seen": "2026-11-08T13:46",
 "last_seen": "2026-11-15T09:47",
-"last_pos": "2026-11-15T17:33"
+"last_pos": "2026-11-17T13:48"
 },
 "257034390": {
 "name": "AQUA FARMS III",
@@ -758,8 +758,8 @@
 "flag": "NO",
 "why": "name",
 "first_seen": "2026-11-08T13:46",
-"last_seen": "2026-11-16T06:51",
-"last_pos": "2026-11-16T06:51"
+"last_seen": "2026-11-17T13:48",
+"last_pos": "2026-11-17T13:48"
 },
 "257917000": {
 "name": "FROY SAGA",
@@ -801,7 +801,7 @@
 "first_seen": "2026-11-08T19:10",
 "last_seen": "2026-11-08T19:10",
 "owner": "Seistar Holding AS",
-"last_pos": "2026-11-15T23:09"
+"last_pos": "2026-11-17T13:48"
 },
 "259584000": {
 "name": "ROHAV",
@@ -868,8 +868,8 @@
 "flag": "NO",
 "why": "destination",
 "first_seen": "2026-11-09T00:04",
-"last_seen": "2026-11-17T03:16",
-"last_pos": "2026-11-17T03:16"
+"last_seen": "2026-11-17T13:48",
+"last_pos": "2026-11-17T13:48"
 },
 "257178620": {
 "name": "LEROEY MARSTEIN",
@@ -922,7 +922,7 @@
 "first_seen": "2026-11-09T06:52",
 "last_seen": "2026-11-13T09:53",
 "owner": "ROSTEIN AS",
-"last_pos": "2026-11-17T03:16"
+"last_pos": "2026-11-17T13:48"
 },
 "257432990": {
 "name": "RONJA VIKING",
@@ -1081,7 +1081,7 @@
 "why": "name",
 "first_seen": "2026-11-10T21:10",
 "last_seen": "2026-11-17T03:16",
-"last_pos": "2026-11-17T03:16"
+"last_pos": "2026-11-17T13:48"
 },
 "258764000": {
 "name": "PELAGIA HORDAFOR",
@@ -1187,8 +1187,8 @@
 "flag": "NO",
 "why": "destination",
 "first_seen": "2026-11-11T18:14",
-"last_seen": "2026-11-17T03:16",
-"last_pos": "2026-11-17T03:16"
+"last_seen": "2026-11-17T13:48",
+"last_pos": "2026-11-17T13:48"
 },
 "257104940": {
 "name": "SVEHOLM",
@@ -1228,8 +1228,8 @@
 "flag": "NO",
 "why": "destination",
 "first_seen": "2026-11-11T18:14",
-"last_seen": "2026-11-17T03:16",
-"last_pos": "2026-11-17T03:16"
+"last_seen": "2026-11-17T13:48",
+"last_pos": "2026-11-17T13:48"
 },
 "257000580": {
 "name": "OBELIX",
@@ -1308,7 +1308,7 @@
 "why": "destination",
 "first_seen": "2026-11-12T01:05",
 "last_seen": "2026-11-16T18:53",
-"last_pos": "2026-11-16T18:53"
+"last_pos": "2026-11-17T13:48"
 },
 "259050270": {
 "name": "LEROY AASTFJORD",
@@ -1321,7 +1321,7 @@
 "why": "destination",
 "first_seen": "2026-11-12T01:05",
 "last_seen": "2026-11-17T03:16",
-"last_pos": "2026-11-17T03:16"
+"last_pos": "2026-11-17T13:48"
 },
 "257078520": {
 "name": "KJELVAAGTIND",
@@ -1387,7 +1387,7 @@
 "first_seen": "2026-11-12T18:40",
 "last_seen": "2026-11-16T18:53",
 "owner": "ROSTEIN AS",
-"last_pos": "2026-11-16T18:53"
+"last_pos": "2026-11-17T13:48"
 },
 "257080750": {
 "name": "EIDSVAAG OPAL",
@@ -1505,8 +1505,8 @@
 "flag": "NO",
 "why": "destination",
 "first_seen": "2026-11-13T01:25",
-"last_seen": "2026-11-17T03:16",
-"last_pos": "2026-11-17T03:16"
+"last_seen": "2026-11-17T13:48",
+"last_pos": "2026-11-17T13:48"
 },
 "257534800": {
 "name": "FOSNA NJORD",
@@ -1558,7 +1558,7 @@
 "why": "name",
 "first_seen": "2026-11-13T09:53",
 "last_seen": "2026-11-13T09:53",
-"last_pos": "2026-11-13T09:53"
+"last_pos": "2026-11-17T13:48"
 },
 "257008000": {
 "name": "SCANBIO HAUGFJORD",
@@ -1652,7 +1652,7 @@
 "first_seen": "2026-11-13T23:56",
 "last_seen": "2026-11-14T06:45",
 "owner": "ROSTEIN AS",
-"last_pos": "2026-11-14T06:45"
+"last_pos": "2026-11-17T13:48"
 },
 "257701000": {
 "name": "FOLLA",
@@ -1665,7 +1665,7 @@
 "why": "destination",
 "first_seen": "2026-11-13T23:56",
 "last_seen": "2026-11-13T23:56",
-"last_pos": "2026-11-16T18:53"
+"last_pos": "2026-11-17T13:48"
 },
 "257920000": {
 "name": "RONJA NAEROEYSUND",
@@ -1704,7 +1704,7 @@
 "why": "name",
 "first_seen": "2026-11-14T06:45",
 "last_seen": "2026-11-14T06:45",
-"last_pos": "2026-11-17T03:16"
+"last_pos": "2026-11-17T13:48"
 },
 "259183000": {
 "name": "RO MASTER",
@@ -1759,7 +1759,7 @@
 "first_seen": "2026-11-14T21:03",
 "last_seen": "2026-11-16T18:53",
 "owner": "SØLVTRANS REDERI AS",
-"last_pos": "2026-11-17T03:16"
+"last_pos": "2026-11-17T13:48"
 },
 "257061870": {
 "name": "KROKSLEIVEN",
@@ -1813,7 +1813,7 @@
 "why": "destination",
 "first_seen": "2026-11-15T09:47",
 "last_seen": "2026-11-15T09:47",
-"last_pos": "2026-11-15T09:47"
+"last_pos": "2026-11-17T13:48"
 },
 "258211000": {
 "name": "INTER CALEDONIA",
@@ -1825,8 +1825,8 @@
 "flag": "NO",
 "why": "destination",
 "first_seen": "2026-11-15T17:33",
-"last_seen": "2026-11-15T23:09",
-"last_pos": "2026-11-16T06:51"
+"last_seen": "2026-11-17T13:48",
+"last_pos": "2026-11-17T13:48"
 },
 "258375000": {
 "name": "RO CHIEF",
@@ -1905,10 +1905,50 @@
 "first_seen": "2026-11-17T03:16",
 "last_seen": "2026-11-17T03:16",
 "last_pos": "2026-11-17T03:16"
+},
+"257647000": {
+"name": "REISA",
+"cs": "LFRT",
+"type": 90,
+"dest": "TROMSO",
+"imo": 9868259,
+"len": 85,
+"flag": "NO",
+"why": "mattilsynet",
+"first_seen": "2026-11-17T13:48",
+"last_seen": "2026-11-17T13:48",
+"owner": "NORSK FISKETRANSPORT AS",
+"last_pos": "2026-11-17T13:48"
+},
+"257229800": {
+"name": "HAVNEBUNKER III",
+"cs": "LAHC",
+"type": 80,
+"dest": "FISHFARMS",
+"imo": null,
+"len": 23,
+"flag": "NO",
+"why": "destination",
+"first_seen": "2026-11-17T13:48",
+"last_seen": "2026-11-17T13:48",
+"last_pos": "2026-11-17T13:48"
+},
+"259000410": {
+"name": "FOSNA NORDKAPP",
+"cs": "LH4262",
+"type": 99,
+"dest": "FISHFARM",
+"imo": null,
+"len": 15,
+"flag": "NO",
+"why": "destination",
+"first_seen": "2026-11-17T13:48",
+"last_seen": "2026-11-17T13:48",
+"last_pos": "2026-11-17T13:48"
 }
 },
-"updated": "2026-11-17T03:16",
-"runs": 34,
+"updated": "2026-11-17T13:48",
+"runs": 35,
 "log": [
 [
 "2026-11-07T00:35",
@@ -2249,6 +2289,16 @@
 1,
 107,
 42
+],
+[
+"2026-11-17T13:48",
+1200,
+10811,
+1024,
+146,
+3,
+111,
+39
 ]
 ]
 }
