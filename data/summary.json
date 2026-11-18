@@ -1,6 +1,6 @@
 {
  "meta": {
-  "built": "2026-11-17T17:04+00:00",
+  "built": "2026-11-18T16:43+00:00",
   "note": "Signals ranked by how unusual they are against their own history (score). Effect: supports / weighs on prices, risk, watch."
  },
  "lead": "Supply grows +6 % in 2026 across the seven basins and ±0.0 % in 2027. Chile is the main source of change: a record El Niño, a slowing harvest and fewer big fish. Norway carries the growth with heavier fish and more 6 kg+. Imports grow fastest in Japan, Brazil, UK; USA and Israel are flat or down.",
@@ -33,15 +33,6 @@
    "score": 2.43
   },
   {
-   "basin": "Norway",
-   "title": "More 6 kg+ than last year in Oct",
-   "value": "14.5 %",
-   "text": "of the harvest in 6 kg+ (13.1 % a year earlier), adjusted with harvest-boat visits: zone 13 42 → 33 %, zone 9 13 → 19 %.",
-   "effect": "weighs",
-   "tab": "genmap",
-   "score": 1.7
-  },
-  {
    "basin": "Chile",
    "title": "Fewer big fish exported in the last 6 months",
    "value": "−9 to −5 pt",
@@ -49,6 +40,15 @@
    "effect": "supports",
    "tab": "chile",
    "score": 1.68
+  },
+  {
+   "basin": "Norway",
+   "title": "More 6 kg+ than last year in Oct",
+   "value": "14.4 %",
+   "text": "of the harvest in 6 kg+ (13.1 % a year earlier), adjusted with harvest-boat visits: zone 13 42 → 33 %, zone 9 13 → 19 %.",
+   "effect": "weighs",
+   "tab": "genmap",
+   "score": 1.65
   },
   {
    "basin": "Norway",
@@ -456,6 +456,20 @@
    "lang": "es"
   },
   {
+   "date": "2026-11-18",
+   "title": "Drømmen om offshore-oppdrett hemmes av uavklart skatteregning",
+   "url": "https://ilaks.no/drommen-om-offshore-oppdrett-hemmes-av-uavklart-skatteregning/",
+   "source": "iLaks",
+   "n_sources": 2,
+   "basins": [
+    "NO"
+   ],
+   "themes": [
+    "regulation"
+   ],
+   "lang": "no"
+  },
+  {
    "date": "2026-11-17",
    "title": "“La decisión de Noruega de ingresar salmón a Brasil recuerda que los mercados se disputan cada día”",
    "url": "https://www.salmonexpert.cl/brasil-chile-competencia/la-decision-de-noruega-de-ingresar-salmon-a-brasil-recuerda-que-los-mercados-se-disputan-cada-dia/2211252",
@@ -540,20 +554,6 @@
     "feed"
    ],
    "lang": "no"
-  },
-  {
-   "date": "2026-11-12",
-   "title": "Nordic Aqua begins salmon harvests from second China RAS unit, raising capacity to 8,000t",
-   "url": "https://www.undercurrentnews.com/2026/11/12/nordic-aqua-begins-salmon-harvests-from-second-china-ras-unit-raising-capacity-to-8000t/",
-   "source": "undercurrentnews.com",
-   "n_sources": 2,
-   "basins": [
-    "global"
-   ],
-   "themes": [
-    "regulation"
-   ],
-   "lang": "en"
   }
  ],
  "week": {
@@ -626,20 +626,20 @@
    }
   },
   "bw": {
-   "yw": 202645,
+   "yw": 202646,
    "now": {
+    "lice": 0.164,
+    "t": 9.99,
+    "over_limit": 6.5
+   },
+   "prev": {
     "lice": 0.172,
     "t": 10.49,
     "over_limit": 6.5
    },
-   "prev": {
-    "lice": 0.176,
-    "t": 10.77,
-    "over_limit": 6.5
-   },
    "ly": {
-    "lice": 0.169,
-    "t": 10.75,
+    "lice": 0.178,
+    "t": 10.24,
     "over_limit": 6.5
    }
   },
@@ -778,7 +778,7 @@
    "202644": 10.3668,
    "202645": 10.4111,
    "202646": 10.579,
-   "202647": 10.5747
+   "202647": 10.5847
   }
  },
  "mainnews": [
@@ -794,16 +794,6 @@
   },
   {
    "kind": "story",
-   "title": "Analysts split on Lerøy as harvest concerns cloud earnings recovery",
-   "text": "11 articles since 11-10; latest: Analysts split on Lerøy as harvest concerns cloud earnings recovery (Salmon Business).",
-   "src": "11 articles · 11-11",
-   "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxQVDlYWS1hdVZZZTg0ZmJQSUNMeXNiTVNZbW15SFlKbEF0S3JpZHhXQVhzN3lfVVFkU2VXRWNoYmRXRnRWNnZBWjI2QTBLY1BoRHR1b05BRzlIY1JTMnpvRDZ2V0RzUjUwSDJSNFYtbGdVUHQ1bk5GYU5XcVQ5aXlJUGlhdkc1LTlLVDNYLVRSNEpmdTlwUkFsX25BNFY4Z0N2?oc=5",
-   "basin": "NO",
-   "who": "Lerøy",
-   "n": 11
-  },
-  {
-   "kind": "story",
    "title": "Salmones Camanchaca: profit falls 62% as disease and costs hit earnings",
    "text": "7 articles since 11-11; latest: Salmones Camanchaca: profit falls 62% as disease and costs hit earnings (Salmon Business).",
    "src": "7 articles · 11-13",
@@ -811,6 +801,16 @@
    "basin": "CL",
    "who": "Camanchaca",
    "n": 7
+  },
+  {
+   "kind": "story",
+   "title": "News - Ethical investor pulls stake from Bakkafrost",
+   "text": "6 articles since 11-11; latest: Un inversionista ético abandona la propiedad de Bakkafrost (salmonexpert.cl).",
+   "src": "6 articles · 11-13",
+   "url": "https://www.salmonexpert.cl/bakkafrost-bakkafrost-scotland-escocia/un-inversionista-etico-abandona-la-propiedad-de-bakkafrost/2210453",
+   "basin": "FO",
+   "who": "Bakkafrost",
+   "n": 6
   }
  ],
  "monthly": [
