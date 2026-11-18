@@ -1,6 +1,6 @@
 {
  "meta": {
-  "built": "2026-11-18T16:43+00:00",
+  "built": "2026-11-18T18:41+00:00",
   "note": "Signals ranked by how unusual they are against their own history (score). Effect: supports / weighs on prices, risk, watch."
  },
  "lead": "Supply grows +6 % in 2026 across the seven basins and ±0.0 % in 2027. Chile is the main source of change: a record El Niño, a slowing harvest and fewer big fish. Norway carries the growth with heavier fish and more 6 kg+. Imports grow fastest in Japan, Brazil, UK; USA and Israel are flat or down.",
@@ -71,11 +71,11 @@
   {
    "basin": "Market",
    "title": "Norwegian export price below last year",
-   "value": "73.3 NOK/kg",
-   "text": "fresh salmon, week 45 (78.1 a year earlier, −6 %); export volume since January +13 %.",
+   "value": "73.4 NOK/kg",
+   "text": "fresh salmon, week 46 (80.1 a year earlier, −8 %); export volume since January +13 %.",
    "effect": "price",
    "tab": "prices",
-   "score": 0.56
+   "score": 0.67
   }
  ],
  "supply": {
@@ -430,13 +430,13 @@
    ]
   },
   "ssb": {
-   "yw": 202645,
+   "yw": 202646,
    "unit": "NOK/kg",
-   "now": 73.35,
-   "prev": 74.98,
-   "ly": 78.08,
-   "tonnes": 28277,
-   "tonnes_ly": 24111,
+   "now": 73.41,
+   "prev": 73.35,
+   "ly": 80.1,
+   "tonnes": 26669,
+   "tonnes_ly": 23488,
    "src": "Statistics Norway, weekly exports of fresh farmed salmon (table 03024)"
   }
  },
@@ -559,13 +559,6 @@
  "week": {
   "ssb": [
    {
-    "yw": 202640,
-    "t": 30277,
-    "t_ly": 24009,
-    "p": 73.8,
-    "p_ly": 77.68
-   },
-   {
     "yw": 202641,
     "t": 27982,
     "t_ly": 26112,
@@ -599,6 +592,13 @@
     "t_ly": 24111,
     "p": 73.35,
     "p_ly": 78.08
+   },
+   {
+    "yw": 202646,
+    "t": 26669,
+    "t_ly": 23488,
+    "p": 73.41,
+    "p_ly": 80.1
    }
   ],
   "spot": {
