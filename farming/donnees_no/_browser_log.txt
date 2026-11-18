@@ -4,7 +4,7 @@ SALMON_SCOTLAND
   index title: Reports | Salmon Scotland | links on first page: 93 | text: MEMBER AREAREPORTSCONTACT Home About FAQs Members Map Facts News Careers Initiatives HomeReports Reports  Salmon Scotland is committed to offering transparent and open access to information about one 
   Salmon Scotland monthly reports: 93
    clic : Download.path: canceled
-   pas un PDF : https://www.salmonscotland.co.uk/reports/monthly-mortality-rate-september-2026 403 text/html; charset=UTF-8 6136
+   pas un PDF : https://www.salmonscotland.co.uk/reports/monthly-mortality-rate-september-2026 403 text/html; charset=UTF-8 6115
    clic : Download.path: canceled
    pas un PDF : https://www.salmonscotland.co.uk/reports/monthly-mortality-rate-august-2027 403 text/html; charset=UTF-8 6106
    clic : Download.path: canceled
@@ -62,10 +62,10 @@ Neste oppdatering: 8. 2. 2027
 
 Privacy Policy
   nav items: ['our blog.', 'Privacy Policy']
-  data response 0 https://datastudio.google.com/batchedDataV2?appVersion=20261108_0000 4879
-  data response 1 https://datastudio.google.com/batchedDataV2?appVersion=20261108_0000 4883
-  data response 2 https://datastudio.google.com/batchedDataV2?appVersion=20261108_0000 4446
-  data response 3 https://datastudio.google.com/batchedDataV2?appVersion=20261108_0000 4502
-  data response 4 https://datastudio.google.com/batchedDataV2?appVersion=20261108_0000 4876
-  data response 5 https://datastudio.google.com/batchedDataV2?appVersion=20261108_0000 5111
+  data response 0 https://datastudio.google.com/batchedDataV2?appVersion=20261113_0001 4879
+  data response 1 https://datastudio.google.com/batchedDataV2?appVersion=20261113_0001 4446
+  data response 2 https://datastudio.google.com/batchedDataV2?appVersion=20261113_0001 4877
+  data response 3 https://datastudio.google.com/batchedDataV2?appVersion=20261113_0001 4884
+  data response 4 https://datastudio.google.com/batchedDataV2?appVersion=20261113_0001 4502
+  data response 5 https://datastudio.google.com/batchedDataV2?appVersion=20261113_0001 5111
 FIN
