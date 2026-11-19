@@ -1,6 +1,6 @@
 {
  "meta": {
-  "built": "2026-11-19T16:47+00:00",
+  "built": "2026-11-19T18:53+00:00",
   "note": "Signals ranked by how unusual they are against their own history (score). Effect: supports / weighs on prices, risk, watch."
  },
  "lead": "Supply grows +6 % in 2026 across the seven basins and ±0.0 % in 2027. Chile is the main source of change: a record El Niño, a slowing harvest and fewer big fish. Norway carries the growth with heavier fish and more 6 kg+. Imports grow fastest in Brazil, UK, Japan; USA and Israel are flat or down.",
@@ -273,7 +273,7 @@
   "eu_spot": {
    "year": 2026,
    "week": 44,
-   "src": "Sitagri Salmon index, Sjømat Norge (ikke",
+   "src": "Sitagri Salmon index, Sjømat Norge",
    "unit": "NOK/kg",
    "avg": [
     69.26,
@@ -605,8 +605,8 @@
    "yw": 202644,
    "now": {
     "p_avg": 69.26,
-    "sh_6plus": 7.0,
-    "sh_5plus": 26.0,
+    "sh_6plus": null,
+    "sh_5plus": null,
     "p_6-7": 71.15,
     "p_4-5": 69.84
    },
