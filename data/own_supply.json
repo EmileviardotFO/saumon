@@ -1,6 +1,6 @@
 {
  "meta": {
-  "built": "2026-11-16",
+  "built": "2026-11-19",
   "unit": "thousand tonnes gutted weight (GWT) or whole-fish equivalent",
   "note": "Built only from primary data (official registers, monthly harvest, exports, our own models). Analysts (Kontali, banks) appear only as a comparison."
  },
@@ -72,14 +72,14 @@
   "FO": {
    "v2025": 114.9,
    "ytd": {
-    "to": "Aug 2026",
-    "kt": 83.0,
-    "chg": 18.7
+    "to": "Sep 2026",
+    "kt": 92.4,
+    "chg": 11.9
    },
-   "e2026": 136.3,
-   "chg2026": 18.7,
+   "e2026": 128.5,
+   "chg2026": 11.9,
    "chg2027": 0,
-   "c2027": 136.3,
+   "c2027": 128.5,
    "lo": -5,
    "hi": 5,
    "source": "Hagstova (Statistics Faroe Islands): salmon exports by month, converted to whole-fish equivalent",
@@ -145,9 +145,9 @@
  },
  "tracked": {
   "v2025": 2761.7,
-  "e2026": 2927.0,
-  "chg2026": 6.0,
-  "c2027": 2928.4,
+  "e2026": 2919.2,
+  "chg2026": 5.7,
+  "c2027": 2920.6,
   "chg2027": 0.0,
   "lo": -5.8,
   "hi": 3.7,
