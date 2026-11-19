@@ -1,9 +1,9 @@
 {
  "meta": {
-  "built": "2026-11-18T18:41+00:00",
+  "built": "2026-11-19T16:47+00:00",
   "note": "Signals ranked by how unusual they are against their own history (score). Effect: supports / weighs on prices, risk, watch."
  },
- "lead": "Supply grows +6 % in 2026 across the seven basins and ±0.0 % in 2027. Chile is the main source of change: a record El Niño, a slowing harvest and fewer big fish. Norway carries the growth with heavier fish and more 6 kg+. Imports grow fastest in Japan, Brazil, UK; USA and Israel are flat or down.",
+ "lead": "Supply grows +6 % in 2026 across the seven basins and ±0.0 % in 2027. Chile is the main source of change: a record El Niño, a slowing harvest and fewer big fish. Norway carries the growth with heavier fish and more 6 kg+. Imports grow fastest in Brazil, UK, Japan; USA and Israel are flat or down.",
  "signals": [
   {
    "basin": "Chile · El Niño",
@@ -79,14 +79,10 @@
   }
  ],
  "supply": {
-  "world": 6.0,
+  "world": 5.7,
   "world_next": 0.0,
-  "world_kt": 2927,
+  "world_kt": 2919,
   "basins": [
-   [
-    "Faroe Islands",
-    18.7
-   ],
    [
     "Iceland",
     18.3
@@ -94,6 +90,10 @@
    [
     "Canada",
     14.2
+   ],
+   [
+    "Faroe Islands",
+    11.9
    ],
    [
     "Tasmania",
@@ -114,13 +114,9 @@
   ]
  },
  "demand": {
-  "world": 7.3,
+  "world": 6.8,
   "to": 202609,
   "markets": [
-   [
-    "Japan",
-    30.0
-   ],
    [
     "Brazil",
     14.7
@@ -130,8 +126,12 @@
     14.1
    ],
    [
+    "Japan",
+    13.4
+   ],
+   [
     "EU",
-    7.8
+    7.7
    ],
    [
     "Thailand",
@@ -193,8 +193,8 @@
   },
   {
    "basin": "Faroe Islands",
-   "v2026": 136.3,
-   "chg2026": 18.7,
+   "v2026": 128.5,
+   "chg2026": 11.9,
    "chg2027": 0,
    "lo": -5,
    "hi": 5,
@@ -442,20 +442,6 @@
  },
  "news": [
   {
-   "date": "2026-11-10",
-   "title": "ProChile y chef internacional recorren planta de Blumar en Magallanes para promover el salmón regional en Japón",
-   "url": "https://www.elpinguino.com/cronica/prochile-y-chef-internacional-recorren-planta-de-blumar-en-magallanes-para-promover-el-salmon-regional-en-japon/",
-   "source": "El Pingüino",
-   "n_sources": 3,
-   "basins": [
-    "CL"
-   ],
-   "themes": [
-    "companies"
-   ],
-   "lang": "es"
-  },
-  {
    "date": "2026-11-18",
    "title": "Drømmen om offshore-oppdrett hemmes av uavklart skatteregning",
    "url": "https://ilaks.no/drommen-om-offshore-oppdrett-hemmes-av-uavklart-skatteregning/",
@@ -499,6 +485,20 @@
    "lang": "es"
   },
   {
+   "date": "2026-11-17",
+   "title": "Consultation opens about proposed offshore fish farming areas in Norway",
+   "url": "https://www.fishfarmingexpert.com/norway-offshore-fish-farming/consultation-opens-about-proposed-offshore-fish-farming-areas-in-norway/2212482",
+   "source": "fishfarmingexpert.com",
+   "n_sources": 2,
+   "basins": [
+    "NO"
+   ],
+   "themes": [
+    "regulation"
+   ],
+   "lang": "en"
+  },
+  {
    "date": "2026-11-16",
    "title": "Week 47 China Atlantic salmon prices fall, leaving importers in the red again",
    "url": "https://www.undercurrentnews.com/2026/11/16/week-47-china-atlantic-salmon-prices-fall-leaving-importers-in-the-red-again/",
@@ -506,6 +506,20 @@
    "n_sources": 2,
    "basins": [
     "NO",
+    "CL"
+   ],
+   "themes": [
+    "market"
+   ],
+   "lang": "en"
+  },
+  {
+   "date": "2026-11-16",
+   "title": "Chilean coho prices in Japan hit record highs as wild salmon shortages tighten supply",
+   "url": "https://www.undercurrentnews.com/2026/11/16/chilean-coho-prices-in-japan-hit-record-highs-as-wild-salmon-shortages-tighten-supply/",
+   "source": "undercurrentnews.com",
+   "n_sources": 2,
+   "basins": [
     "CL"
    ],
    "themes": [
@@ -540,20 +554,6 @@
     "companies"
    ],
    "lang": "en"
-  },
-  {
-   "date": "2026-11-13",
-   "title": "Hevder å ha funnet et protein som slår fiskemel: – Rundt 25 prosent bedre enn “gullstandarden”",
-   "url": "https://ilaks.no/hevder-a-ha-funnet-et-protein-som-slar-fiskemel-rundt-25-prosent-bedre-enn-gullstandarden/?mtm_campaign=feed_click&mtm_kwd=hevder-a-ha-funnet-et-protein-som-slar-fiskemel-rundt-25-prosent-bedre-enn-gullstandarden&mtm_source=RSS2&mtm_medium=feed",
-   "source": "ilaks.no",
-   "n_sources": 2,
-   "basins": [
-    "NO"
-   ],
-   "themes": [
-    "feed"
-   ],
-   "lang": "no"
   }
  ],
  "week": {
@@ -664,7 +664,7 @@
    "level_en": "low"
   },
   "fx": {
-   "202437": 11.9126,
+   "202437": 11.9056,
    "202438": 11.7489,
    "202439": 11.7052,
    "202440": 11.7145,
@@ -778,39 +778,39 @@
    "202644": 10.3668,
    "202645": 10.4111,
    "202646": 10.579,
-   "202647": 10.5847
+   "202647": 10.6004
   }
  },
  "mainnews": [
   {
    "kind": "story",
    "title": "Grieg Seafood posts €8.6m operating loss as algae hits production",
-   "text": "12 articles since 11-12; latest: Grieg Seafood seeks strategic partner for Gardermoen plant (Salmon Business).",
-   "src": "12 articles · 11-13",
+   "text": "13 articles since 11-12; latest: Grieg Seafood seeks strategic partner for Gardermoen plant (Salmon Business).",
+   "src": "13 articles · 11-13",
    "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxOWk5JVE4tcVVmMk9PaEdvclJaTDZuUXpwOWcwUWNVZTZWaWlvUlRmbXVZaTVkREJkWXFIZVVaMFRrTjJNLW00UENZdVVnWHJRQ3U4TDFyLVNxZ2RpVW4xMmt3Uk00VkRRcm02YTBSNDJYWW9Rd3ZBb1d4ZzQwQW9haFVfUHQ1d0pLUDRxQnBmaWF0b244c096WkdIVQ?oc=5",
    "basin": "NO",
    "who": "Grieg",
-   "n": 12
+   "n": 13
   },
   {
    "kind": "story",
    "title": "Salmones Camanchaca: profit falls 62% as disease and costs hit earnings",
-   "text": "7 articles since 11-11; latest: Salmones Camanchaca: profit falls 62% as disease and costs hit earnings (Salmon Business).",
-   "src": "7 articles · 11-13",
+   "text": "6 articles since 11-12; latest: Salmones Camanchaca: profit falls 62% as disease and costs hit earnings (Salmon Business).",
+   "src": "6 articles · 11-13",
    "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxOQmpnSlZMeV9Zb2pQNC1CR3ZXTnBWcGRzMk5HSlJGSFh2YW9pVGZwd2k2ZkxENTVyR3lFcmRWRThiY21YRjNxSGhldzhWU1I5VmhSUXB3cFU1eXFKVEt6NVVlYS1pVHYwZG9pM3pBcnR2WmFva0RQVG5wY3ZVcjJkdTFDcHFyR1JBcEZHTWF0WVJrRE1GamRKMWpiUG9CdjJzZld3?oc=5",
    "basin": "CL",
    "who": "Camanchaca",
-   "n": 7
+   "n": 6
   },
   {
    "kind": "story",
-   "title": "News - Ethical investor pulls stake from Bakkafrost",
-   "text": "6 articles since 11-11; latest: Un inversionista ético abandona la propiedad de Bakkafrost (salmonexpert.cl).",
-   "src": "6 articles · 11-13",
-   "url": "https://www.salmonexpert.cl/bakkafrost-bakkafrost-scotland-escocia/un-inversionista-etico-abandona-la-propiedad-de-bakkafrost/2210453",
-   "basin": "FO",
-   "who": "Bakkafrost",
-   "n": 6
+   "title": "Lerøy makes big increase in share of south Norway fish farming operation",
+   "text": "5 articles since 11-16; latest: Lerøy makes big increase in share of south Norway fish farming operation (fishfarmingexpert.com).",
+   "src": "5 articles · 11-16",
+   "url": "https://www.fishfarmingexpert.com/acquisition-leroy-seafood-group-norway/leroy-makes-big-increase-in-share-of-south-norway-fish-farming-operation/2211336",
+   "basin": "NO",
+   "who": "Lerøy",
+   "n": 5
   }
  ],
  "monthly": [

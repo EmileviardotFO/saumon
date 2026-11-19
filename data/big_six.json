@@ -1,6 +1,6 @@
 {
  "meta": {
-  "built": "2026-11-18T16:43+00:00",
+  "built": "2026-11-19T16:47+00:00",
   "unit": "thousand tonnes gutted (6 kg+ fish)",
   "note": "Supply only. 2026 = harvest to date plus the rest of the year at the same pace; 2027 = our harvest projection times the 6 kg+ share expected, low and high cases in brackets."
  },
@@ -111,10 +111,10 @@
    "id": "FO",
    "name": "Faroe Islands",
    "v2025": 45.3,
-   "v2026": 62.3,
-   "v2027": 59.9,
-   "lo": 44.5,
-   "hi": 71.5,
+   "v2026": 58.8,
+   "v2027": 56.5,
+   "lo": 42.0,
+   "hi": 67.4,
    "share": [
     39.4,
     45.7
@@ -130,10 +130,10 @@
     "q3_2026": 4.97,
     "y2025": 5.26
    },
-   "how": "Harvest (115 kt in 2025, 136 kt in 2026) × share of 6 kg+ estimated from Bakkafrost's average harvest weight (gutted): 5.7 kg in H1 2026 against 5.1 kg in H1 2025, back to 5.0 kg in Q3 2026 (estimated share 39 % in 2025, 46 % in 2026, assuming the usual spread of weights). 2027: flat harvest (Bakkafrost plans as much as in 2026) with more even harvests through the year: fewer big fish than in H1 2026 and slightly fewer over the year, but still mostly large fish, aimed at the United States and China; we take 5.4 kg on average (low case 5.1 kg, high case 5.6 kg).",
+   "how": "Harvest (115 kt in 2025, 128 kt in 2026) × share of 6 kg+ estimated from Bakkafrost's average harvest weight (gutted): 5.7 kg in H1 2026 against 5.1 kg in H1 2025, back to 5.0 kg in Q3 2026 (estimated share 39 % in 2025, 46 % in 2026, assuming the usual spread of weights). 2027: flat harvest (Bakkafrost plans as much as in 2026) with more even harvests through the year: fewer big fish than in H1 2026 and slightly fewer over the year, but still mostly large fish, aimed at the United States and China; we take 5.4 kg on average (low case 5.1 kg, high case 5.6 kg).",
    "known": [
     "H1 2026 was a big-fish half-year: 5.7 kg on average against 5.1 kg a year earlier (about 27 kt of 6 kg+ at Bakkafrost against 11 kt, estimated); Q3 2026 back to 5.0 kg.",
-    "Where Faroese whole salmon goes in 2026: United States 19 %, China 15 % of the tonnes (Faroese export statistics).",
+    "Where Faroese whole salmon goes in 2026: United States 20 %, China 15 % of the tonnes (Faroese export statistics).",
     "Bakkafrost Faroes harvest guidance 2026: 97,000 t (raised from 92,000 t in May); smolts put to sea in 2026: 9.5 million in H1, 4.5 million in Q3; average smolt weight 527 g in Q1 2026 (449 g in 2025).",
     "SEB on Q2 2026: heavier fish (5.6 kg vs 5.0 kg) but the premium for larger fish remained limited."
    ],
@@ -219,13 +219,13 @@
    "id": "FO",
    "name": "Faroe Islands",
    "v2025": 114.9,
-   "v2026": 136.3,
-   "v2027": 136.3,
-   "chg2026": 18.7,
+   "v2026": 128.5,
+   "v2027": 128.5,
+   "chg2026": 11.9,
    "chg2027": 0,
    "lo": -5,
    "hi": 5,
-   "six2027": 59.9
+   "six2027": 56.5
   },
   {
    "id": "CA",
@@ -271,10 +271,10 @@
    "Faroe Islands"
   ],
   "v2025": 438.9,
-  "v2026": 506.2,
-  "v2027": 567.1,
-  "lo": 433.3,
-  "hi": 644.3
+  "v2026": 502.7,
+  "v2027": 563.7,
+  "lo": 430.8,
+  "hi": 640.2
  },
- "lead": "6 kg+ salmon from Norway, Chile and the Faroes: about 506 kt in 2026 (+15 % on 2025) and 567 kt in 2027 (+12 %, range 433–644 kt). Norway drives the change; more big fish in Norway; fewer in Faroe Islands, Iceland, Scotland."
+ "lead": "6 kg+ salmon from Norway, Chile and the Faroes: about 503 kt in 2026 (+15 % on 2025) and 564 kt in 2027 (+12 %, range 431–640 kt). Norway drives the change; more big fish in Norway; fewer in Faroe Islands, Iceland, Scotland."
 }
