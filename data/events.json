@@ -1,28 +1,28 @@
 {
  "meta": {
-  "generated": "2026-11-19",
+  "generated": "2026-11-20",
   "status": {
    "ilaks.no": "ok 12 articles, 0 kept",
-   "www.kyst.no": "ok 120 articles, 2 kept",
+   "www.kyst.no": "ok 126 articles, 3 kept",
    "www.fishfarmingexpert.com": "ok 65 articles, 2 kept",
    "www.fishfarmermagazine.com": "ok 30 articles, 0 kept",
-   "www.salmonexpert.cl": "error: ParseError: not well-formed (invalid token): line 7, column 22",
+   "www.salmonexpert.cl": "ok 59 articles, 5 kept",
    "thefishsite.com": "ok 50 articles, 1 kept",
    "news.google.com (NO no #1)": "ok 10 articles, 7 kept",
-   "news.google.com (NO no #2)": "ok 8 articles, 1 kept",
-   "news.google.com (CL es #3)": "ok 24 articles, 10 kept",
-   "news.google.com (CL es #4)": "ok 8 articles, 2 kept",
+   "news.google.com (NO no #2)": "ok 9 articles, 1 kept",
+   "news.google.com (CL es #3)": "ok 23 articles, 10 kept",
+   "news.google.com (CL es #4)": "ok 7 articles, 2 kept",
    "news.google.com (IS is #5)": "ok 0 articles, 0 kept",
    "news.google.com (IS en #6)": "ok 8 articles, 4 kept",
    "news.google.com (GB en #7)": "ok 20 articles, 8 kept",
    "news.google.com (FO en #8)": "ok 10 articles, 1 kept",
    "news.google.com (FO fo #9)": "ok 0 articles, 0 kept",
-   "news.google.com (CA en #10)": "ok 9 articles, 1 kept",
-   "news.google.com (multi en #11)": "ok 13 articles, 3 kept",
+   "news.google.com (CA en #10)": "ok 33 articles, 2 kept",
+   "news.google.com (multi en #11)": "ok 12 articles, 3 kept",
    "news.google.com (CA en #12)": "ok 13 articles, 7 kept",
    "news.google.com (CA en #13)": "ok 0 articles, 0 kept",
    "news.google.com (CA en #14)": "ok 4 articles, 0 kept",
-   "news.google.com (multi en #15)": "ok 70 articles, 9 kept",
+   "news.google.com (multi en #15)": "ok 100 articles, 11 kept",
    "gov.scot FHI": "ok 6824 reports, last 2026-10-14"
   },
   "note": "news = articles kept by keyword (a mortality word + a farming word), classified by cause and basin; manual = events entered by hand with their losses; scotland_fhi = mortalities reported to the Scottish Fish Health Inspectorate",
@@ -156,6 +156,20 @@
   }
  ],
  "news": [
+  {
+   "date": "2026-11-20",
+   "title": "Overraskende funn om KI og dødfisk­registrering",
+   "url": "https://www.kyst.no/ai-aktuelt-ki/overraskende-funn-om-ki-og-dodfiskregistrering/2213892",
+   "source": "www.kyst.no",
+   "lang": "no",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "NO"
+   ],
+   "id": "2021374d4def"
+  },
   {
    "date": "2026-11-17",
    "title": "“La decisión de Noruega de ingresar salmón a Brasil recuerda que los mercados se disputan cada día”",
@@ -521,6 +535,20 @@
     "GB"
    ],
    "id": "84d0971c78b4"
+  },
+  {
+   "date": "2026-11-03",
+   "title": "Scottish Sea Farms cuts 2026 harvest forecast by 3,000t after mortality problems",
+   "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxNQWhmNXBrSUVDX1NrMGhRRFExQzUyTGwyOVdhaFRQbWIwN2d1SUlFYmtFRzdPcVk5Uld2TWlUQnVZWEVZQ3NBWWtqWGJoSEotU1ctN09naUJLQ3drLU5DX1lsVEhFVkFKaElOTkZtQWdkUmJFOWJsVVc3b0ppOWJ3QTZTb2NrRmcwVnhNMW9GXzdCLUpoUjVmeUh6SWxnRVpiNXZGajlua1Qxby1WTXlWNGh2ZVdpbllhVkREYVlEVUNWZw?oc=5",
+   "source": "Undercurrent News",
+   "lang": "en",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "GB"
+   ],
+   "id": "dd582521d878"
   },
   {
    "date": "2026-11-02",
@@ -1581,11 +1609,9 @@
   "source": "https://www.gov.scot/binaries/content/documents/govscot/publications/transparency-data/2019/12/fish-health-inspectorate-mortality-information/documents/mortality-information---until-end-october-2019/mortality-information---until-end-october-2019/govscot%3Adocument/Mortality%2Binformation%2B-%2Buntil%2Bend%2BSeptember%2B2026.xlsx",
   "monthly": {
    "2023-10": {
-    "reports": 4,
+    "reports": 1,
     "causes": {
-     "unspecified": 1,
-     "gill": 2,
-     "disease": 3
+     "disease": 1
     }
    },
    "2023-11": {
@@ -27036,41 +27062,6 @@
     ],
     "n": null,
     "pct": 17.4
-   },
-   {
-    "date": "2023-10-30",
-    "site": "Mill Bay",
-    "company": "Cooke Aquaculture Scotland Ltd",
-    "cause": "Environmental",
-    "causes": [
-     "unspecified"
-    ],
-    "n": null,
-    "pct": 1.24
-   },
-   {
-    "date": "2023-10-30",
-    "site": "Kyles Vuia",
-    "company": "Bakkafrost Scotland",
-    "cause": "Gill Health Related; Bacterial Disease (Furunculosis)",
-    "causes": [
-     "gill",
-     "disease"
-    ],
-    "n": null,
-    "pct": 2.24
-   },
-   {
-    "date": "2023-10-30",
-    "site": "Vuia Mor",
-    "company": "Bakkafrost Scotland",
-    "cause": "Gill Health Related; Viral Disease (PD)",
-    "causes": [
-     "gill",
-     "disease"
-    ],
-    "n": null,
-    "pct": 1.22
    }
   ]
  },
@@ -27084,7 +27075,7 @@
    "fish_m": 0.4,
    "tonnes": null,
    "company": "",
-   "note": "11 articles: Skjerper meldekravene for tap av fisk · Norway tightens reporting requirements for fish losses · Mowi faces eight safety charges following hatchery worker’s death",
+   "note": "12 articles: Skjerper meldekravene for tap av fisk · Norway tightens reporting requirements for fish losses · Mowi faces eight safety charges following hatchery worker’s death",
    "url": "https://www.kyst.no/dodfisk-mattilsynet/skjerper-meldekravene-for-tap-av-fisk/2208074",
    "src": "www.kyst.no",
    "auto": "press"
@@ -27101,6 +27092,20 @@
    "note": "2 articles: Salmon deaths at 'eye-watering' levels in Macquarie Harbour · 1,907 tonnes of salmon died in Macquarie Harbour over 15 months",
    "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxOUm42SXNPSkRLYkVDVlJ4UW53dUFMbXV1bENrMnRCeDVGWlpVLWVwZ0xIMUhJd1gtMmhfcTRSQlFkRV9TQkt3Mnc0VVFDS0lEVFdYaWMzMHFaa2hqaGVvUUhObktyNEdOcURtXzFaRTloRVpaeFRSZy1XcXlkREtNTGpkamMweUNSQnl5MkZfazh5V1FERHVKQg?oc=5",
    "src": "ABC News & Headlines – Australian Broadcasting Corporation",
+   "auto": "press"
+  },
+  {
+   "date": "2026-11",
+   "basin": "GB",
+   "region": "",
+   "cause": "unspecified",
+   "agent": "press (automatic)",
+   "fish_m": null,
+   "tonnes": 3000.0,
+   "company": "",
+   "note": "2 articles: Scottish Sea Farms: mortality problems force 3,000-tonne harvest forecast cut · Scottish Sea Farms cuts 2026 harvest forecast by 3,000t after mortality problems",
+   "url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxQeVpQZFRjZENDMDloLXZTNlBheFBfNlNRZkoyU0dPX0ZfWXlKaVNfVDBvbWNWZldCX0ZTakU0NUVGR0NXdV83Uklqc3NwYzN6ZGFKb0FQNjMzQVA2dEdFMjEzZENSX1hKaHhxYmJkbEVUdUFISEJaNFZ2YzRTckxIbElndzFKWF9RSGxLcHNXZVZTX0xPc2wwU1NWOGFZZkNoLTdIUWZ6dXVHNVU?oc=5",
+   "src": "Salmon Business",
    "auto": "press"
   },
   {
