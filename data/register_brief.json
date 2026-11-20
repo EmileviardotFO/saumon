@@ -1,23 +1,24 @@
 {
- "month": 202609,
- "published": "2026-11-05",
- "valid_until": "2026-11-12",
- "title": "Biomass register — September 2026: generation 2025 ahead of usual (+11 % weight), −4 % stock left; 6 kg+ expected 12.9 % in October",
+ "month": 202610,
+ "published": "2026-11-20",
+ "valid_until": "2026-11-27",
+ "title": "Biomass register — October 2026: generation 2025 ahead of usual (+13 % weight), −2 % stock left; 6 kg+ expected 15.5 % in November",
  "lines": [
-  "Harvest in September 2026: 172 kt gutted (+15 % on September 2025), average fish 4.10 kg (4.06 a year earlier). Biomass at sea 788 kt gutted (−0.2 %), 89 % of the MTB (zones 1–13, live weight).",
-  "Generation 2025, being harvested: 3.28 kg gutted on average, +11 % against the same generation stage of the past 5 years (ahead of usual); 514 kt gutted left at sea, −4 %.",
-  "Generation 2026, next in line: 0.94 kg gutted on average, +13 % against the same generation stage of the past 5 years (ahead of usual).",
-  "Mortality: 1.12 % of the stock in the month (1.07 % a year earlier).",
-  "Sizes expected (share of harvest volume): October 2026: 6 kg+ 12.9 %, 5–6 kg 18.1 %; November 2026: 6 kg+ 14.8 %, 5–6 kg 19.3 %."
+  "Harvest in October 2026: 168 kt gutted (+6 % on October 2025), average fish 4.26 kg (4.09 a year earlier). Biomass at sea 804 kt gutted (+1 %), 91 % of the MTB (zones 1–13, live weight).",
+  "Generation 2025, being harvested: 3.67 kg gutted on average, +13 % against the same generation stage of the past 5 years (ahead of usual); 452 kt gutted left at sea, −2 %.",
+  "Generation 2026, next in line: 1.08 kg gutted on average, +8 % against the same generation stage of the past 5 years (ahead of usual).",
+  "Mortality: 0.83 % of the stock in the month (1.27 % a year earlier).",
+  "Sizes expected (share of harvest volume): November 2026: 6 kg+ 15.5 %, 5–6 kg 20.6 % (revised +0.7 pt from last month's forecast); December 2026: 6 kg+ 18.5 %, 5–6 kg 21.6 %.",
+  "Check of last forecast for October 2026: 6 kg+ forecast 12.9 %, actual 14.4 %; 5–6 kg forecast 18.1 %, actual 19.4 %."
  ],
  "forecast": {
-  "202610": {
-   "share6": 12.9,
-   "share56": 18.1
-  },
   "202611": {
-   "share6": 14.8,
-   "share56": 19.3
+   "share6": 15.5,
+   "share56": 20.6
+  },
+  "202612": {
+   "share6": 18.5,
+   "share56": 21.6
   }
  },
  "source": "Fiskeridirektoratet biomass register; dashboard forecasts"
