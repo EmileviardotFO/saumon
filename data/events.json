@@ -4,23 +4,23 @@
   "status": {
    "ilaks.no": "ok 12 articles, 0 kept",
    "www.kyst.no": "ok 126 articles, 3 kept",
-   "www.fishfarmingexpert.com": "ok 65 articles, 2 kept",
+   "www.fishfarmingexpert.com": "error: ParseError: not well-formed (invalid token): line 7, column 22",
    "www.fishfarmermagazine.com": "ok 30 articles, 0 kept",
-   "www.salmonexpert.cl": "ok 59 articles, 5 kept",
+   "www.salmonexpert.cl": "error: ParseError: not well-formed (invalid token): line 7, column 22",
    "thefishsite.com": "ok 50 articles, 1 kept",
    "news.google.com (NO no #1)": "ok 10 articles, 7 kept",
    "news.google.com (NO no #2)": "ok 9 articles, 1 kept",
-   "news.google.com (CL es #3)": "ok 23 articles, 10 kept",
-   "news.google.com (CL es #4)": "ok 7 articles, 2 kept",
+   "news.google.com (CL es #3)": "ok 25 articles, 12 kept",
+   "news.google.com (CL es #4)": "ok 8 articles, 3 kept",
    "news.google.com (IS is #5)": "ok 0 articles, 0 kept",
-   "news.google.com (IS en #6)": "ok 8 articles, 4 kept",
-   "news.google.com (GB en #7)": "ok 20 articles, 8 kept",
+   "news.google.com (IS en #6)": "ok 9 articles, 4 kept",
+   "news.google.com (GB en #7)": "ok 19 articles, 8 kept",
    "news.google.com (FO en #8)": "ok 10 articles, 1 kept",
    "news.google.com (FO fo #9)": "ok 0 articles, 0 kept",
-   "news.google.com (CA en #10)": "ok 33 articles, 2 kept",
-   "news.google.com (multi en #11)": "ok 12 articles, 3 kept",
+   "news.google.com (CA en #10)": "ok 9 articles, 1 kept",
+   "news.google.com (multi en #11)": "ok 41 articles, 7 kept",
    "news.google.com (CA en #12)": "ok 13 articles, 7 kept",
-   "news.google.com (CA en #13)": "ok 0 articles, 0 kept",
+   "news.google.com (CA en #13)": "ok 1 articles, 1 kept",
    "news.google.com (CA en #14)": "ok 4 articles, 0 kept",
    "news.google.com (multi en #15)": "ok 100 articles, 11 kept",
    "gov.scot FHI": "ok 6824 reports, last 2026-10-14"
@@ -957,6 +957,20 @@
     "CL"
    ],
    "id": "593ab3a5d7b7"
+  },
+  {
+   "date": "2026-10-13",
+   "title": "FAN en Magallanes: mortalidad en centros de Multi X llega a 959 toneladas",
+   "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxQN0xWNUJXNWxPc2NlWHlqc18weHFMZ2lodGZvZk5LYUxCdWNqQWIybEUzcWx2NVBGRFpqSGhYeEtJV09Xc21JNGRxNzJqVDQ1Q21fTUprcndNOVRRUXlZZ0RWWVhpLTFYVGJuNEl3VlVKNEpkbGRVc2lDaVcwS1ZxUk03dk5aWjBoRXItdlNsVlZ2VkdfajRXZnFvVWFIZVRwTHFfVEFqSmxlUQ?oc=5",
+   "source": "Mundoacuicola",
+   "lang": "es",
+   "causes": [
+    "algae"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "7987c592a5c7"
   },
   {
    "date": "2026-10-12",
@@ -27170,10 +27184,10 @@
    "region": "PO12",
    "cause": "unspecified",
    "agent": "register (automatic)",
-   "fish_m": 0.58,
+   "fish_m": 0.59,
    "tonnes": null,
    "company": "",
-   "note": "0.58 M dead fish in the month, 1.3 % of the fish present, against a usual 0.6 %",
+   "note": "0.59 M dead fish in the month, 1.3 % of the fish present, against a usual 0.6 %",
    "url": "https://www.fiskeridir.no/Akvakultur/Tall-og-analyse/Biomassestatistikk",
    "src": "Fiskeridirektoratet, biomass register",
    "auto": "data"
