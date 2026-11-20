@@ -1,6 +1,6 @@
 {
  "meta": {
-  "built": "2026-11-19T16:47+00:00",
+  "built": "2026-11-20T16:22+00:00",
   "unit": "thousand tonnes gutted (6 kg+ fish)",
   "note": "Supply only. 2026 = harvest to date plus the rest of the year at the same pace; 2027 = our harvest projection times the 6 kg+ share expected, low and high cases in brackets."
  },
@@ -9,10 +9,10 @@
    "id": "NO",
    "name": "Norway",
    "v2025": 247.2,
-   "v2026": 323.4,
-   "v2027": 389.2,
-   "lo": 324.1,
-   "hi": 421.8,
+   "v2026": 321.7,
+   "v2027": 393.0,
+   "lo": 327.1,
+   "hi": 402.2,
    "share": [
     16.3,
     20.4
@@ -21,22 +21,22 @@
     119.5,
     165.6
    ],
-   "how": "6 kg+ harvested month by month from the biomass register (every farm, gutted weight, our size model): 247 kt in 2025, 240 kt from January to September 2026, plus October–December from the generations model. 2027: the model gives January–September 2027 against the same months of 2026: +20 % central, +2 % if the new generation loses its growth advance, +30 % if it keeps all of it; October–December 2027 carried at the same rate. Cross-check: the size split of the Sitagri price index (fresh whole salmon traded on the spot market by the exporters that report to the index, not the whole harvest) shows 6 kg+ at 11.9 % of the volume in 2025 and 15.5 % so far in 2026, the same direction.",
+   "how": "6 kg+ harvested month by month from the biomass register (every farm, gutted weight, our size model): 247 kt in 2025, 241 kt from January to September 2026, plus October–December from the generations model. 2027: the model gives January–September 2027 against the same months of 2026: +32 % central, +9 % if the new generation loses its growth advance, +34 % if it keeps all of it; October–December 2027 carried at the same rate. Cross-check: the size split of the Sitagri price index (fresh whole salmon traded on the spot market by the exporters that report to the index, not the whole harvest) shows 6 kg+ at 11.9 % of the volume in 2025 and 15.5 % so far in 2026, the same direction.",
    "known": [
     "H1 2026: 166 kt of 6 kg+ against 120 kt in H1 2025 (+39 %).",
-    "Fish over 5 kg at sea at the end of September: 52 kt gutted against 39 kt a year earlier (+34 %).",
-    "The generation being harvested grows 14 % faster per fish and loses 0.85 % of its fish a month (1.43 % a year earlier).",
-    "Next generation: 283 M fish at 1.07 kg (289 M at 1.00 kg a year earlier).",
+    "Fish over 5 kg at sea at the end of September: 82 kt gutted against 59 kt a year earlier (+40 %).",
+    "The generation being harvested grows 14 % faster per fish and loses 0.97 % of its fish a month (1.31 % a year earlier).",
+    "Next generation: 315 M fish at 1.23 kg (315 M at 1.19 kg a year earlier).",
     "October 2026: 14.5 % of the harvest in 6 kg+ (13.1 % a year earlier), from harvest-boat visits."
    ],
    "up": [
-    "Stock already in the water: 52 kt of fish over 5 kg at the end of September (+34 %), and they keep growing through the winter: most of the 6 kg+ of H1 2027 are these fish.",
-    "The next generation is ahead: 1.07 kg per fish against 1.00 kg a year earlier, growing faster. If it keeps the advance, it reaches 6 kg in spring–summer 2027 and the usual April–July gap in big fish disappears (+30 % case).",
+    "Stock already in the water: 82 kt of fish over 5 kg at the end of September (+40 %), and they keep growing through the winter: most of the 6 kg+ of H1 2027 are these fish.",
+    "The next generation is ahead: 1.23 kg per fish against 1.19 kg a year earlier, growing faster. If it keeps the advance, it reaches 6 kg in spring–summer 2027 and the usual April–July gap in big fish disappears (+34 % case).",
     "Fewer losses: the generation being harvested loses 0.85 % of its fish a month against 1.43 % a year earlier, so more fish reach large sizes.",
     "Farmers can keep fish longer when lice and disease leave them alone: fewer forced harvests of small fish."
    ],
    "down": [
-    "The growth advance fades: if the new generation grows like an average one, 6 kg+ are only +2 % in January–September 2027.",
+    "The growth advance fades: if the new generation grows like an average one, 6 kg+ are only +9 % in January–September 2027.",
     "Biology goes back to normal (see the box): more lice, more delousing, more handling deaths, more early harvests.",
     "Algae (spring 2026 in the south, 2025 in the north), ISA, pasteurellosis or a jellyfish year force early harvests of smaller fish.",
     "Weak premium for big sizes: farmers may prefer to harvest earlier and free biomass for the next generation.",
@@ -45,7 +45,7 @@
    "biology": {
     "title": "Biology in 2026: the best year in a long time — and a limit for 2027",
     "lines": [
-     "Mortality at sea, January–Sep: 6.8 % of the fish (30 M fish) against 8.5 % (40 M) in 2025 and 8.5–9.6 % in 2019–2025: the lowest since at least 2019.",
+     "Mortality at sea, January–Oct: 7.5 % of the fish (34 M fish) against 9.7 % (46 M) in 2025 and 9.7–10.5 % in 2019–2025: the lowest since at least 2019.",
      "Sea lice, weeks 1–46: 0.136 adult females per fish on average against 0.176 in 2025 (0.134–0.176 since 2019).",
      "Farm-weeks above the lice limit: 394 against 942 in 2025 (484–1005 since 2019).",
      "Non-medicinal delousing (thermal, mechanical, freshwater) reported: 2,778 against 3,446 in 2025 (-19 %): fewer handlings, fewer injuries.",
@@ -189,7 +189,7 @@
    "chg2027": 0.6,
    "lo": -4.5,
    "hi": 4.1,
-   "six2027": 389.2
+   "six2027": 393.0
   },
   {
    "id": "CL",
@@ -271,10 +271,10 @@
    "Faroe Islands"
   ],
   "v2025": 438.9,
-  "v2026": 502.7,
-  "v2027": 563.7,
-  "lo": 430.8,
-  "hi": 640.2
+  "v2026": 501.0,
+  "v2027": 567.5,
+  "lo": 433.8,
+  "hi": 620.6
  },
- "lead": "6 kg+ salmon from Norway, Chile and the Faroes: about 503 kt in 2026 (+15 % on 2025) and 564 kt in 2027 (+12 %, range 431–640 kt). Norway drives the change; more big fish in Norway; fewer in Faroe Islands, Iceland, Scotland."
+ "lead": "6 kg+ salmon from Norway, Chile and the Faroes: about 501 kt in 2026 (+14 % on 2025) and 568 kt in 2027 (+13 %, range 434–621 kt). Norway drives the change; more big fish in Norway; fewer in Faroe Islands, Iceland, Scotland."
 }
