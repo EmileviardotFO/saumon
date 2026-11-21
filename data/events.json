@@ -1,28 +1,28 @@
 {
  "meta": {
-  "generated": "2026-11-20",
+  "generated": "2026-11-21",
   "status": {
    "ilaks.no": "ok 12 articles, 0 kept",
    "www.kyst.no": "ok 126 articles, 3 kept",
-   "www.fishfarmingexpert.com": "error: ParseError: not well-formed (invalid token): line 7, column 22",
+   "www.fishfarmingexpert.com": "ok 65 articles, 2 kept",
    "www.fishfarmermagazine.com": "ok 30 articles, 0 kept",
    "www.salmonexpert.cl": "error: ParseError: not well-formed (invalid token): line 7, column 22",
    "thefishsite.com": "ok 50 articles, 1 kept",
    "news.google.com (NO no #1)": "ok 10 articles, 7 kept",
    "news.google.com (NO no #2)": "ok 9 articles, 1 kept",
-   "news.google.com (CL es #3)": "ok 25 articles, 12 kept",
-   "news.google.com (CL es #4)": "ok 8 articles, 3 kept",
+   "news.google.com (CL es #3)": "ok 26 articles, 10 kept",
+   "news.google.com (CL es #4)": "ok 8 articles, 4 kept",
    "news.google.com (IS is #5)": "ok 0 articles, 0 kept",
-   "news.google.com (IS en #6)": "ok 9 articles, 4 kept",
+   "news.google.com (IS en #6)": "ok 7 articles, 4 kept",
    "news.google.com (GB en #7)": "ok 19 articles, 8 kept",
    "news.google.com (FO en #8)": "ok 10 articles, 1 kept",
    "news.google.com (FO fo #9)": "ok 0 articles, 0 kept",
-   "news.google.com (CA en #10)": "ok 9 articles, 1 kept",
-   "news.google.com (multi en #11)": "ok 41 articles, 7 kept",
+   "news.google.com (CA en #10)": "ok 6 articles, 1 kept",
+   "news.google.com (multi en #11)": "ok 14 articles, 3 kept",
    "news.google.com (CA en #12)": "ok 13 articles, 7 kept",
    "news.google.com (CA en #13)": "ok 1 articles, 1 kept",
    "news.google.com (CA en #14)": "ok 4 articles, 0 kept",
-   "news.google.com (multi en #15)": "ok 100 articles, 11 kept",
+   "news.google.com (multi en #15)": "ok 62 articles, 10 kept",
    "gov.scot FHI": "ok 6824 reports, last 2026-10-14"
   },
   "note": "news = articles kept by keyword (a mortality word + a farming word), classified by cause and basin; manual = events entered by hand with their losses; scotland_fhi = mortalities reported to the Scottish Fish Health Inspectorate",
@@ -973,6 +973,20 @@
    "id": "7987c592a5c7"
   },
   {
+   "date": "2026-10-13",
+   "title": "Autoridad fiscaliza retiro de mortalidad de peces en Magallanes: total supera las 959 toneladas",
+   "url": "https://news.google.com/rss/articles/CBMi_AFBVV95cUxOdm9ySkV5SU5FSWV1NFpNV1FWTFQycV9RZjU5T3VEWC1JUzAweEtfV0tOWlVvcmgySmpYVWVSMTZZZVI5WTczZ3luN2VLLWV3OFVkLTQ2aGh3bnZfc0FoZ1RKaU5GMEV5SXdJblpDaEdWWkR6YkQxZTd1TGZfaG9iRnM2ZXY3Tld1WHpuRlpLQjVkRFVaZ1FOUDlJbk9VWmFzVFIyQXJ6bU5oTkQtOHpFUzlFWFppV0lnTjBHazVtVXJ6UXpQWXlSYmZWYnd4Xy03bVVMTTdPdWpfcS1Dc3RRX25iSVQ2ejhIVWNvUDk4Q29EMTFWWlpxNXhKU0Q?oc=5",
+   "source": "Salmonexpert",
+   "lang": "es",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "64155b88d586"
+  },
+  {
    "date": "2026-10-12",
    "title": "Giftig algeoppblomstring har doblet tap på en uke",
    "url": "https://news.google.com/rss/articles/CBMidkFVX3lxTE4tOHRaM001bjQ1SjhidlFMNk40NHRSeUJxcFBNamUtelJ1T1Z4SWdPVUQ0VGgwMkV3Z2wzTWUta2xnSHFXR1YycXB6T1Vjdnd1NkxyRHBfZ1N3T1JQWTZjeWY5TTc3clBmbnpsUjh4cld3NjNPbEE?oc=5",
@@ -1622,12 +1636,6 @@
  "scotland_fhi": {
   "source": "https://www.gov.scot/binaries/content/documents/govscot/publications/transparency-data/2019/12/fish-health-inspectorate-mortality-information/documents/mortality-information---until-end-october-2019/mortality-information---until-end-october-2019/govscot%3Adocument/Mortality%2Binformation%2B-%2Buntil%2Bend%2BSeptember%2B2026.xlsx",
   "monthly": {
-   "2023-10": {
-    "reports": 1,
-    "causes": {
-     "disease": 1
-    }
-   },
    "2023-11": {
     "reports": 109,
     "causes": {
@@ -27065,17 +27073,6 @@
     ],
     "n": null,
     "pct": 1.39
-   },
-   {
-    "date": "2023-10-31",
-    "site": "Poseidon",
-    "company": "Scottish Sea Farms Ltd",
-    "cause": "Virus disease",
-    "causes": [
-     "disease"
-    ],
-    "n": null,
-    "pct": 17.4
    }
   ]
  },
