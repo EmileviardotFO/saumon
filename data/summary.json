@@ -1,6 +1,6 @@
 {
  "meta": {
-  "built": "2026-11-20T18:29+00:00",
+  "built": "2026-11-21T15:37+00:00",
   "note": "Signals ranked by how unusual they are against their own history (score). Effect: supports / weighs on prices, risk, watch."
  },
  "lead": "Supply grows +6 % in 2026 across the seven basins and ±0.0 % in 2027. Chile is the main source of change: a record El Niño, a slowing harvest and fewer big fish. Norway carries the growth. Imports grow fastest in Brazil, UK, Japan; USA and Israel are flat or down.",
@@ -35,11 +35,11 @@
   {
    "basin": "Norway",
    "title": "Fewer 6 kg+ than last year in Nov",
-   "value": "15.5 %",
-   "text": "of the harvest in 6 kg+ (16.9 % a year earlier), adjusted with harvest-boat visits: zone 8 5 → 9 %, zone 11 27 → 23 %.",
+   "value": "15.4 %",
+   "text": "of the harvest in 6 kg+ (16.9 % a year earlier), adjusted with harvest-boat visits: zone 11 27 → 22 %, zone 8 5 → 9 %.",
    "effect": "supports",
    "tab": "genmap",
-   "score": 1.7
+   "score": 1.75
   },
   {
    "basin": "Chile",
@@ -246,10 +246,6 @@
  ],
  "agenda": [
   {
-   "d": "2026-11-20",
-   "t": "Norwegian biomass register for Oct (around the 20th)"
-  },
-  {
    "d": "2026-11-21",
    "t": "Review: big-fish forecasts against the October register (harvest-boat method, first test on an unseen month)"
   },
@@ -263,6 +259,10 @@
    "t": "Chile: critical El Niño period for algal blooms starts (Sernapesca); preventive algae emergency until 30 Jun 2027",
    "u": "https://www.aqua.cl/los-lagos-entra-en-emergencia-preventiva-ante-riesgo-de-floraciones-algales-nocivas/",
    "until": "2027-03-31"
+  },
+  {
+   "d": "2026-12-20",
+   "t": "Norwegian biomass register for Nov (around the 20th)"
   },
   {
    "d": "2027-01-21",
@@ -456,6 +456,34 @@
    "lang": "no"
   },
   {
+   "date": "2026-11-20",
+   "title": "Norwegian, Scot salmon spot prices up again, medium sizes in high demand",
+   "url": "https://www.undercurrentnews.com/2026/11/20/norway-scots-salmon-spot-prices-up-again-smoked-sizes-in-demand/",
+   "source": "undercurrentnews.com",
+   "n_sources": 2,
+   "basins": [
+    "NO"
+   ],
+   "themes": [
+    "market"
+   ],
+   "lang": "en"
+  },
+  {
+   "date": "2026-11-20",
+   "title": "Salmon sector welcomes deal to reduce EU export barriers",
+   "url": "https://www.fishfarmingexpert.com/export-barriers-salmon-scotland-sanitary-and-phytosanitary-agreement/salmon-sector-welcomes-deal-to-reduce-eu-export-barriers/2214308",
+   "source": "fishfarmingexpert.com",
+   "n_sources": 2,
+   "basins": [
+    "GB"
+   ],
+   "themes": [
+    "market"
+   ],
+   "lang": "en"
+  },
+  {
    "date": "2026-11-19",
    "title": "Norway salmon prices rise in Poland as smaller fish narrow premium to larger sizes",
    "url": "https://www.undercurrentnews.com/2026/11/19/norway-salmon-prices-rise-in-poland-as-smaller-fish-narrow-premium-to-larger-sizes/",
@@ -484,18 +512,18 @@
    "lang": "es"
   },
   {
-   "date": "2026-11-18",
-   "title": "Drømmen om offshore-oppdrett hemmes av uavklart skatteregning",
-   "url": "https://ilaks.no/drommen-om-offshore-oppdrett-hemmes-av-uavklart-skatteregning/",
-   "source": "iLaks",
+   "date": "2026-11-19",
+   "title": "Se detecta nuevo muestreo positivo de virus ISA en centro de salmones de Aysén",
+   "url": "https://www.salmonexpert.cl/aysen-fiscalizacion-isa/se-detecta-nuevo-muestreo-positivo-de-virus-isa-en-centro-de-salmones-de-aysen/2213631",
+   "source": "salmonexpert.cl",
    "n_sources": 2,
    "basins": [
-    "NO"
+    "CL"
    ],
    "themes": [
-    "regulation"
+    "biology"
    ],
-   "lang": "no"
+   "lang": "es"
   },
   {
    "date": "2026-11-17",
@@ -512,21 +540,6 @@
    "lang": "es"
   },
   {
-   "date": "2026-11-17",
-   "title": "El Niño aún no alcanza su máximo y ya moviliza medidas preventivas para la acuicultura",
-   "url": "https://www.salmonexpert.cl/acuicultura-chilena-fan-fenomeno-de-el-nino/el-nino-aun-no-alcanza-su-maximo-y-ya-moviliza-medidas-preventivas-para-la-acuicultura/2211562",
-   "source": "salmonexpert.cl",
-   "n_sources": 2,
-   "basins": [
-    "CL"
-   ],
-   "themes": [
-    "feed",
-    "biology"
-   ],
-   "lang": "es"
-  },
-  {
    "date": "2026-11-14",
    "title": "Enfen: El Niño Costero extraordinario continuaría hasta inicios de invierno de 2027",
    "url": "https://andina.pe/agencia/noticia-enfen-nino-costero-extraordinario-continuaria-hasta-inicios-invierno-2027-1099939.aspx",
@@ -539,20 +552,6 @@
     "feed"
    ],
    "lang": "es"
-  },
-  {
-   "date": "2026-11-13",
-   "title": "Scottish salmon producer Loch Duart targets record US sales",
-   "url": "https://www.undercurrentnews.com/2026/11/13/scottish-salmon-producer-loch-duart-targets-record-us-sales/",
-   "source": "undercurrentnews.com",
-   "n_sources": 2,
-   "basins": [
-    "GB"
-   ],
-   "themes": [
-    "companies"
-   ],
-   "lang": "en"
   }
  ],
  "week": {
@@ -627,12 +626,12 @@
   "bw": {
    "yw": 202646,
    "now": {
-    "lice": 0.164,
-    "t": 9.99,
+    "lice": 0.156,
+    "t": 9.96,
     "over_limit": 6.5
    },
    "prev": {
-    "lice": 0.172,
+    "lice": 0.171,
     "t": 10.49,
     "over_limit": 6.5
    },
@@ -663,7 +662,7 @@
    "level_en": "low"
   },
   "fx": {
-   "202437": 11.9068,
+   "202437": 11.8918,
    "202438": 11.7489,
    "202439": 11.7052,
    "202440": 11.7145,
@@ -804,7 +803,7 @@
   {
    "kind": "story",
    "title": "Cámara de Turismo de Puerto Aysén realizó encuentro de senderismo en Cerro Cordón con apoyo de AquaChile",
-   "text": "4 articles since 11-13; latest: AquaChile y Fundación Musicarte reunieron a 12 jóvenes talentos (mundoacuicola.cl).",
+   "text": "4 articles since 11-15; latest: AquaChile y Fundación Musicarte reunieron a 12 jóvenes talentos (mundoacuicola.cl).",
    "src": "4 articles · 11-18",
    "url": "https://www.mundoacuicola.cl/new/aquachile-y-fundacion-musicarte-reunieron-a-12-jovenes-talentos/",
    "basin": "CL",
