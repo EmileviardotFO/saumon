@@ -45,6 +45,19 @@ ne peut pas etre recalcule depuis ce seul fichier. Strategie retenue :
   - Si la cohorte est totalement nouvelle (aucun historique), on part de 0.0
     -- une cohorte qui apparait pour la premiere fois vient d'etre relachee,
     l'erreur residuelle est donc faible et ne se reproduit qu'une fois.
+
+Exception, novembre 2026 : la generation de l'annee en cours est recalculee a
+chaque passage. L'historique suit exactement la regle
+    age = mois - mois moyen de mise a l'eau de la zone cette annee-la
+          (pondere par UTSETT_SMOLT_STK, toutes les mises a l'eau de l'annee)
+mais pour l'annee en cours ce mois moyen n'est connu qu'en decembre. Les ages
+de la generation 2026 avaient ete figes avec les mises a l'eau de janvier a
+juin seulement : mois moyen trop tot, donc age trop grand d'environ 2,6 mois
+(5,5 mois affiches fin octobre 2026 contre 2,8 pour la generation 2025 un an
+plus tot, alors que les deux calendriers de mise a l'eau sont identiques).
+Desormais, tant que l'annee n'est pas finie, les mois manquants sont completes
+par les mises a l'eau de la meme zone l'annee precedente ; la valeur devient
+definitive avec le fichier de decembre, puis n'est plus touchee.
 """
 import sys, io, json, os
 import pandas as pd
@@ -90,8 +103,34 @@ def load_excel(path):
     return df
 
 
+def mean_release_month(df):
+    """Mois moyen de mise a l'eau par (zone, annee), pondere par les smolts.
+
+    Pour la derniere annee du fichier, si elle est incomplete, les mois qui
+    manquent sont completes par ceux de l'annee precedente dans la meme zone.
+    Renvoie aussi cette derniere annee : c'est la seule generation recalculee.
+    """
+    rel = {}
+    for (po, y, m), v in df.groupby(['PO_KODE', 'ÅR', 'MÅNED_KODE'])['UTSETT_SMOLT_STK'].sum().items():
+        rel.setdefault((int(po), int(y)), {})[int(m)] = float(v)
+    y_max = int(df['ÅR'].max())
+    m_max = int(df.loc[df['ÅR'] == y_max, 'MÅNED_KODE'].max())
+    out = {}
+    for (po, y), months in rel.items():
+        months = dict(months)
+        if y == y_max and m_max < 12:
+            for m, v in rel.get((po, y - 1), {}).items():
+                if m > m_max:
+                    months[m] = v
+        total = sum(months.values())
+        if total > 0:
+            out[(po, y)] = sum(m * v for m, v in months.items()) / total
+    return out, y_max
+
+
 def build_cohort(df, existing_cohort):
     df = df.copy()
+    mean_month, y_max = mean_release_month(df)
     df['weight_kg'] = df['BIOMASSE_KG'] / df['BEHFISK_STK'].replace(0, pd.NA)
     df['ym'] = df['ÅR'] * 12 + df['MÅNED_KODE']
     df['prev_ym'] = df.groupby(['PO_KODE', 'UTSETTSÅR'])['ym'].shift(1)
@@ -117,7 +156,11 @@ def build_cohort(df, existing_cohort):
         weight_kg = float(r['weight_kg']) if pd.notna(r['weight_kg']) else None
         growth_kg = float(r['growth_kg']) if pd.notna(r['growth_kg']) else None
 
-        if key in old:
+        if coh == y_max and po >= 1 and (po, coh) in mean_month:
+            # generation de l'annee en cours : toujours recalculee (voir en-tete)
+            age = round((y - coh) * 12 + m - mean_month[(po, coh)], 2)
+            last_age[(po, coh)] = (y * 12 + m, age)
+        elif key in old:
             age = old[key]
         else:
             pk = (po, coh)
