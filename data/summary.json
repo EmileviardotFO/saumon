@@ -1,6 +1,6 @@
 {
  "meta": {
-  "built": "2026-11-21T17:05+00:00",
+  "built": "2026-11-22T15:40+00:00",
   "note": "Signals ranked by how unusual they are against their own history (score). Effect: supports / weighs on prices, risk, watch."
  },
  "lead": "Supply grows +6 % in 2026 across the seven basins and ±0.0 % in 2027. Chile is the main source of change: a record El Niño, a slowing harvest and fewer big fish. Norway carries the growth. Imports grow fastest in Brazil, UK, Japan; USA and Israel are flat or down.",
@@ -246,10 +246,6 @@
  ],
  "agenda": [
   {
-   "d": "2026-11-21",
-   "t": "Review: big-fish forecasts against the October register (harvest-boat method, first test on an unseen month)"
-  },
-  {
    "d": "2026-11-30",
    "t": "APVMA decision expected on Salmon Tasmania's florfenicol emergency permit",
    "u": "https://www.abc.net.au/news/2026-11-04/lobster-fishers-against-tas-salmon-industry-antibiotic-plans/107344468"
@@ -484,9 +480,9 @@
    "lang": "en"
   },
   {
-   "date": "2026-11-19",
-   "title": "Norway salmon prices rise in Poland as smaller fish narrow premium to larger sizes",
-   "url": "https://www.undercurrentnews.com/2026/11/19/norway-salmon-prices-rise-in-poland-as-smaller-fish-narrow-premium-to-larger-sizes/",
+   "date": "2026-11-20",
+   "title": "UCN proposes new fresh Norwegian Atlantic salmon, DDP Netherlands price assessments",
+   "url": "https://www.undercurrentnews.com/2026/11/20/ucn-proposes-new-fresh-norwegian-atlantic-salmon-ddp-netherlands-price-assessments/",
    "source": "undercurrentnews.com",
    "n_sources": 2,
    "basins": [
@@ -662,7 +658,7 @@
    "level_en": "low"
   },
   "fx": {
-   "202437": 11.8918,
+   "202437": 11.8495,
    "202438": 11.7489,
    "202439": 11.7052,
    "202440": 11.7145,
