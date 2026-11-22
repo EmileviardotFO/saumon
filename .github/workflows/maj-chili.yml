@@ -21,7 +21,15 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: sudo apt-get install -y -qq p7zip-full p7zip-rar && pip install -q requests pdfplumber
+      # Ubuntu 26.04 (image des machines GitHub depuis novembre 2026) n'a plus p7zip-full / p7zip-rar : les paquets
+      # s'appellent 7zip et 7zip-rar. On essaie les nouveaux noms, puis les anciens, et on verifie que la commande 7z existe.
+      - name: Installer 7z (archives des douanes) et les dependances Python
+        run: |
+          sudo apt-get update -qq || true
+          sudo apt-get install -y -qq 7zip 7zip-rar || sudo apt-get install -y -qq p7zip-full p7zip-rar || sudo apt-get install -y -qq 7zip || sudo apt-get install -y -qq p7zip-full
+          if ! command -v 7z >/dev/null; then for b in 7zz 7za 7zr; do if command -v "$b" >/dev/null; then sudo ln -sf "$(command -v "$b")" /usr/local/bin/7z; break; fi; done; fi
+          7z | head -3
+          pip install -q requests pdfplumber
       - name: Douanes - exportations mensuelles de salmonides (DUS)
         id: customs
         continue-on-error: true
