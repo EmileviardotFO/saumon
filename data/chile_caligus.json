@@ -1,6 +1,6 @@
 {
 "meta": {
-"built": "2026-11-07",
+"built": "2026-11-22",
 "source": "Sernapesca, PSEVC-Caligidosis: list of high-dissemination centres (CAD)",
 "page": "https://www.sernapesca.cl/informacion-utilidad/listados-y-registros/",
 "rule": "CAD = average load of 3 or more gravid female caligus at the weekly count after the end of the official treatment window of its area (ACS)"
@@ -11,6 +11,12 @@
 "url": "https://www.sernapesca.cl/app/uploads/2026/10/Listado_Centros_de_alta_diseminacion-v20261029.pdf",
 "rows": 317,
 "new": 317
+},
+{
+"version": "20261112",
+"url": "https://www.sernapesca.cl/app/uploads/2026/11/Listado_Centros_de_alta_diseminacion-v20261112.pdf",
+"rows": 324,
+"new": 7
 }
 ],
 "entries": [
@@ -3500,6 +3506,83 @@
 "site": "MELCHOR 1",
 "company": "AUSTRALIS MAR S.A.",
 "first_seen": "20261029"
+},
+{
+"n": 319,
+"code": "102003",
+"region": "Los Lagos",
+"acs": "11",
+"sp": "atlantic",
+"week": "2026-W45",
+"site": "AUCHAC",
+"company": "INVERMAR S.A.",
+"first_seen": "20261112"
+},
+{
+"n": 320,
+"code": "102178",
+"region": "Los Lagos",
+"acs": "14",
+"sp": "atlantic",
+"week": "2026-W45",
+"site": "ISLOTES",
+"company": "SALMONES CAMANCHACA S.A.",
+"first_seen": "20261112"
+},
+{
+"n": 321,
+"code": "110135",
+"region": "Aysén",
+"acs": "26B",
+"sp": "atlantic",
+"week": "2026-W45",
+"site": "RENAICO",
+"company": "EXPORTADORA LOS FIORDOS LTDA.",
+"first_seen": "20261112"
+},
+{
+"n": 322,
+"code": "110214",
+"region": "Aysén",
+"acs": "34",
+"sp": "atlantic",
+"week": "2026-W45",
+"site": "LA LEONA",
+"company": "AQUACHILE S.A.",
+"first_seen": "20261112"
+},
+{
+"n": 325,
+"code": "110477",
+"region": "Aysén",
+"acs": "23B",
+"sp": "atlantic",
+"week": "2026-W45",
+"site": "LYNG 2",
+"company": "MOWI CHILE S.A.",
+"first_seen": "20261112"
+},
+{
+"n": 323,
+"code": "110691",
+"region": "Aysén",
+"acs": "34",
+"sp": "atlantic",
+"week": "2026-W45",
+"site": "HARRY",
+"company": "EXPORTADORA LOS FIORDOS LTDA.",
+"first_seen": "20261112"
+},
+{
+"n": 324,
+"code": "110751",
+"region": "Aysén",
+"acs": "30B",
+"sp": "atlantic",
+"week": "2026-W45",
+"site": "LATOLQUE",
+"company": "TORNAGALEONES S.A., GRANJA MARINA",
+"first_seen": "20261112"
 }
 ]
 }
