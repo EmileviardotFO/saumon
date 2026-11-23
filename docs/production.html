@@ -8228,6 +8228,13 @@ document.querySelectorAll('#viewToggle button').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('#viewToggle button').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
+    { // Exports by market : par defaut un seul mois (le dernier publie), comme le tableau hebdomadaire au-dessus, et non le cumul annuel.
+      // Le choix fait dans cet onglet y est conserve ; les autres onglets retrouvent leur propre periode en sortant.
+      const pv = currentView, nv = btn.dataset.v, M = window._mktPer || (window._mktPer = { type: 'single', back: null });
+      const setT = t => { if (![...periodTypeSel.options].some(o => o.value === t)) return; periodTypeSel.value = t; monthSelLabel.textContent = MONTH_SEL_LABELS[t]; startMonthField.style.display = t === 'range' ? 'flex' : 'none'; };
+      if (nv === 'markets' && pv !== 'markets') { M.back = periodTypeSel.value; if (M.type === '12' && ![...periodTypeSel.options].some(o => o.value === '12')) periodTypeSel.insertAdjacentHTML('beforeend', '<option value="12">12 months rolling</option>'); setT(M.type); }
+      else if (pv === 'markets' && nv !== 'markets') { M.type = periodTypeSel.value; if (M.back) setT(M.back); }
+    }
     currentView = btn.dataset.v;
     if (document.body.classList.contains('booting')) requestAnimationFrame(() => requestAnimationFrame(() => window.endBoot ? window.endBoot() : document.body.classList.remove('booting')));
     // le bandeau qualite (mortalite / aliment du registre) ne concerne que les vues qui en affichent ; elles le reaffichent elles-memes
