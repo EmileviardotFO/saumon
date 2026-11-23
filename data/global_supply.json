@@ -24,9 +24,9 @@
  "world": {
   "v2025": 2841,
   "y2026": "+6 %",
-  "y2026_note": "Our estimate: 2.92 Mt — actual harvest or exports to date, the rest of the year projected.",
-  "y2027": "0 %",
-  "y2027_note": "Our projection for the seven basins: 2.92 Mt, range −6 to +4 %.",
+  "y2026_note": "Our estimate: 2.93 Mt — actual harvest or exports to date, the rest of the year projected.",
+  "y2027": "+1 %",
+  "y2027_note": "Our projection for the seven basins: 2.96 Mt, range −4 to +4 %.",
   "summary": "After a very strong 2026 — +4 % with a record first quarter — the world will have almost no more farmed salmon in 2027. Norway, by far the largest producer, has hit its legal biomass ceilings; Chile enters 2027 with 7 % less fish in the sea and an extraordinary El Niño; Canada's British Columbia is winding down towards its 2029 ban. The few gains come from Scotland's recovery, Australia and Iceland's ups and downs. With demand still growing (China especially), a flat supply means a tight market.",
   "risks": [
    {
@@ -51,13 +51,13 @@
    }
   ],
   "r2027": [
-   -6,
+   -4,
    4
   ],
   "analysts_2027": "0 to +1 % — Kontali (via Mowi, 4 Nov 2026): around +1 %. SEB (28 Oct 2026): −1 %. Bakkafrost (2 Nov 2026): first half flat, second half about +2 %.",
   "analysts_2026": "about +4 % — Kontali's estimate in November (Mowi Q3 report); it was +1 % in February. Q1 2026 alone was +14 %, Q3 +4.8 %, and Q4 is expected at about −3 %.",
   "v2025_own": 2761.7,
-  "c2027": 0.0
+  "c2027": 0.9
  },
  "basins": [
   {
@@ -66,8 +66,8 @@
    "tab": "outlook",
    "v2025": 1534,
    "share": 54,
-   "dir": "flat",
-   "y2027": "+1 % (−4 to +4 %), our projection",
+   "dir": "up",
+   "y2027": "+2 % (−2 to +4 %), our projection",
    "y2026": "+5.2 % over the last 12 months, +8.8 % in Q3 2026 (Kontali). Mowi raised its 2026 harvest guidance to 620,000 t.",
    "oneliner": "Volume cannot grow much — farmers are at their legal biomass ceiling — but the fish are getting bigger: expect a flat year with more large salmon (5 kg+) in 2027.",
    "drivers": [
@@ -94,11 +94,11 @@
    ],
    "watch": "Monthly biomass (Fiskeridirektoratet), sea temperature this winter, lice levels in spring, the government's decision on the 6 % cut.",
    "r2027": [
-    -4,
+    -2,
     4
    ],
    "analysts_2027": "0 to +2 %",
-   "c2027": 0.6
+   "c2027": 2.1
   },
   {
    "id": "CL",

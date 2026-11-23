@@ -1,6 +1,6 @@
 {
  "meta": {
-  "built": "2026-11-19",
+  "built": "2026-11-23",
   "unit": "thousand tonnes gutted weight (GWT) or whole-fish equivalent",
   "note": "Built only from primary data (official registers, monthly harvest, exports, our own models). Analysts (Kontali, banks) appear only as a comparison."
  },
@@ -8,16 +8,16 @@
   "NO": {
    "v2025": 1537.1,
    "ytd": {
-    "to": "Sep 2026",
-    "kt": 1199.3,
-    "chg": 7.0
+    "to": "Oct 2026",
+    "kt": 1375.7,
+    "chg": 7.5
    },
-   "e2026": 1630.1,
-   "chg2026": 6.1,
-   "c2027": 1639.7,
-   "chg2027": 0.6,
-   "lo": -4.5,
-   "hi": 4.1,
+   "e2026": 1645.5,
+   "chg2026": 7.1,
+   "c2027": 1679.5,
+   "chg2027": 2.1,
+   "lo": -2.1,
+   "hi": 4.2,
    "source": "Fiskeridirektoratet biomass register, monthly harvest by farm (live weight × 0.888)",
    "method": "Actual harvest to the last month published; rest of the year = same months a year earlier × our generation model (fish at sea, weights, growth, mortality — Generations tab). 2027 = the three generation scenarios (advance fades, central, advance kept), Oct–Dec 2027 assumed equal to 2026.",
    "tab": "outlook"
@@ -145,12 +145,12 @@
  },
  "tracked": {
   "v2025": 2761.7,
-  "e2026": 2919.2,
-  "chg2026": 5.7,
-  "c2027": 2920.6,
-  "chg2027": 0.0,
-  "lo": -5.8,
-  "hi": 3.7,
+  "e2026": 2934.6,
+  "chg2026": 6.3,
+  "c2027": 2960.4,
+  "chg2027": 0.9,
+  "lo": -4.5,
+  "hi": 3.8,
   "note": "Sum of the seven basins we follow (about 95 % of farmed Atlantic salmon). Ireland, the United States, Russia, New Zealand and other small producers are not tracked."
  }
 }
