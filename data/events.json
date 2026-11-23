@@ -1,28 +1,28 @@
 {
  "meta": {
-  "generated": "2026-11-22",
+  "generated": "2026-11-23",
   "status": {
    "ilaks.no": "ok 12 articles, 0 kept",
-   "www.kyst.no": "ok 126 articles, 3 kept",
+   "www.kyst.no": "ok 131 articles, 3 kept",
    "www.fishfarmingexpert.com": "ok 65 articles, 2 kept",
    "www.fishfarmermagazine.com": "ok 30 articles, 0 kept",
-   "www.salmonexpert.cl": "ok 59 articles, 5 kept",
+   "www.salmonexpert.cl": "ok 59 articles, 4 kept",
    "thefishsite.com": "ok 50 articles, 1 kept",
    "news.google.com (NO no #1)": "ok 10 articles, 7 kept",
    "news.google.com (NO no #2)": "ok 9 articles, 1 kept",
-   "news.google.com (CL es #3)": "ok 28 articles, 10 kept",
+   "news.google.com (CL es #3)": "ok 29 articles, 10 kept",
    "news.google.com (CL es #4)": "ok 8 articles, 4 kept",
    "news.google.com (IS is #5)": "ok 0 articles, 0 kept",
-   "news.google.com (IS en #6)": "ok 7 articles, 3 kept",
+   "news.google.com (IS en #6)": "ok 12 articles, 3 kept",
    "news.google.com (GB en #7)": "ok 19 articles, 8 kept",
-   "news.google.com (FO en #8)": "ok 9 articles, 1 kept",
+   "news.google.com (FO en #8)": "ok 10 articles, 1 kept",
    "news.google.com (FO fo #9)": "ok 0 articles, 0 kept",
-   "news.google.com (CA en #10)": "ok 7 articles, 1 kept",
-   "news.google.com (multi en #11)": "ok 12 articles, 3 kept",
+   "news.google.com (CA en #10)": "ok 33 articles, 3 kept",
+   "news.google.com (multi en #11)": "ok 10 articles, 3 kept",
    "news.google.com (CA en #12)": "ok 13 articles, 7 kept",
    "news.google.com (CA en #13)": "ok 1 articles, 1 kept",
-   "news.google.com (CA en #14)": "ok 4 articles, 0 kept",
-   "news.google.com (multi en #15)": "ok 57 articles, 10 kept",
+   "news.google.com (CA en #14)": "ok 3 articles, 0 kept",
+   "news.google.com (multi en #15)": "ok 58 articles, 10 kept",
    "gov.scot FHI": "ok 6824 reports, last 2026-10-14"
   },
   "note": "news = articles kept by keyword (a mortality word + a farming word), classified by cause and basin; manual = events entered by hand with their losses; scotland_fhi = mortalities reported to the Scottish Fish Health Inspectorate",
@@ -492,6 +492,20 @@
     "NO"
    ],
    "id": "7f4b48b6c791"
+  },
+  {
+   "date": "2026-11-09",
+   "title": "News - Mowi faces court charges over hatchery death",
+   "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxPSGJjenkxclRsWUdtQ2w2b3ZKbWdkcUFjandmd2Jya0kzWnF5RG1sY1c5Ri1fbGRmbVFQU0xVVHVpeHRfTXpMeHdaenl6WW1ZT0lnblZ3UlR2UTJjUG55VG9JMlZWY19TcER0Uk9DcFN0cklVZ3VVdWJDOGxYVUo1XzZ4dHJBVEtpLURRbw?oc=5",
+   "source": "Fish Farmer",
+   "lang": "en",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "NO"
+   ],
+   "id": "d71b152937e5"
   },
   {
    "date": "2026-11-05",
@@ -1665,12 +1679,11 @@
   "source": "https://www.gov.scot/binaries/content/documents/govscot/publications/transparency-data/2019/12/fish-health-inspectorate-mortality-information/documents/mortality-information---until-end-october-2019/mortality-information---until-end-october-2019/govscot%3Adocument/Mortality%2Binformation%2B-%2Buntil%2Bend%2BSeptember%2B2026.xlsx",
   "monthly": {
    "2023-11": {
-    "reports": 109,
+    "reports": 86,
     "causes": {
-     "gill": 90,
-     "disease": 22,
-     "unspecified": 13,
-     "oxygen": 1,
+     "unspecified": 12,
+     "gill": 69,
+     "disease": 19,
      "jellyfish": 4,
      "treatment": 3
     }
@@ -26845,262 +26858,6 @@
     ],
     "n": null,
     "pct": 2.41
-   },
-   {
-    "date": "2023-11-02",
-    "site": "Lochmaddy",
-    "company": "Loch Duart Ltd",
-    "cause": "Gill health (AGD)",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 3.85
-   },
-   {
-    "date": "2023-11-02",
-    "site": "Lochmaddy",
-    "company": "Loch Duart Ltd",
-    "cause": "Gill health (AGD)",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 6.11
-   },
-   {
-    "date": "2023-11-02",
-    "site": "Loch A Chairn Bhain",
-    "company": "Loch Duart Ltd",
-    "cause": "Seal predation / gill health (AGD)",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 3.9
-   },
-   {
-    "date": "2023-11-02",
-    "site": "South Sound",
-    "company": "Scottish Sea Farms Ltd",
-    "cause": " Gill Health related",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": null
-   },
-   {
-    "date": "2023-11-02",
-    "site": "Tanera",
-    "company": "Scottish Sea Farms Ltd",
-    "cause": " Gill Health related",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": null
-   },
-   {
-    "date": "2023-11-02",
-    "site": "Fada",
-    "company": "Scottish Sea Farms Ltd",
-    "cause": " Gill Health related",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": null
-   },
-   {
-    "date": "2023-11-02",
-    "site": "Scallastle",
-    "company": "Scottish Sea Farms Ltd",
-    "cause": " Gill Health related",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 4
-   },
-   {
-    "date": "2023-11-02",
-    "site": "Fishnish (A)",
-    "company": "Scottish Sea Farms Ltd",
-    "cause": " Gill Health related",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": null
-   },
-   {
-    "date": "2023-11-02",
-    "site": "Dunstaffnage",
-    "company": "Scottish Sea Farms Ltd",
-    "cause": " Gill Health related",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": null
-   },
-   {
-    "date": "2023-11-02",
-    "site": "Hunda",
-    "company": "Scottish Sea Farms Ltd",
-    "cause": "Gill health related",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": null
-   },
-   {
-    "date": "2023-11-02",
-    "site": "Loch Alsh (Sron)",
-    "company": "Mowi Scotland Ltd",
-    "cause": "Gills, aneamia, treatment losses",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 13.19
-   },
-   {
-    "date": "2023-11-02",
-    "site": "Creag an T'Sagairt (Loch Hourn)",
-    "company": "Mowi Scotland Ltd",
-    "cause": "Gills",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 3.93
-   },
-   {
-    "date": "2023-11-02",
-    "site": "Sconser Quarry",
-    "company": "Mowi Scotland Ltd",
-    "cause": "Gills, aneamia and bacterial",
-    "causes": [
-     "gill",
-     "disease"
-    ],
-    "n": null,
-    "pct": 1.8
-   },
-   {
-    "date": "2023-11-02",
-    "site": "Gorsten",
-    "company": "Mowi Scotland Ltd",
-    "cause": "Bacterial",
-    "causes": [
-     "disease"
-    ],
-    "n": null,
-    "pct": 1.56
-   },
-   {
-    "date": "2023-11-02",
-    "site": "Camas Glas",
-    "company": "Mowi Scotland Ltd",
-    "cause": "Gills and bacterial",
-    "causes": [
-     "gill",
-     "disease"
-    ],
-    "n": null,
-    "pct": 1.55
-   },
-   {
-    "date": "2023-11-02",
-    "site": "MacLean's Nose",
-    "company": "Mowi Scotland Ltd",
-    "cause": "AGD/'Treatment losses",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 1.9
-   },
-   {
-    "date": "2023-11-02",
-    "site": "Bagh Dail Nan Cean",
-    "company": "Mowi Scotland Ltd",
-    "cause": "AGD/HSMI",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 1.8
-   },
-   {
-    "date": "2023-11-02",
-    "site": "Colonsay",
-    "company": "Mowi Scotland Ltd",
-    "cause": "AGD and treatment losses",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 4.67
-   },
-   {
-    "date": "2023-11-02",
-    "site": "Groatay",
-    "company": "Mowi Scotland Ltd",
-    "cause": "AGD",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 1.81
-   },
-   {
-    "date": "2023-11-02",
-    "site": "Grey Horse Channel",
-    "company": "Mowi Scotland Ltd",
-    "cause": "AGD/treatment losses",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 2.93
-   },
-   {
-    "date": "2023-11-02",
-    "site": "Caolas A Deas",
-    "company": "Mowi Scotland Ltd",
-    "cause": "Anaemia/treatment losses",
-    "causes": [
-     "unspecified"
-    ],
-    "n": null,
-    "pct": 2.68
-   },
-   {
-    "date": "2023-11-02",
-    "site": "Seaforth",
-    "company": "Mowi Scotland Ltd",
-    "cause": "AGD / Low oxygen",
-    "causes": [
-     "gill",
-     "oxygen"
-    ],
-    "n": null,
-    "pct": 2.99
-   },
-   {
-    "date": "2023-11-02",
-    "site": "Trilleachan Mor",
-    "company": "Mowi Scotland Ltd",
-    "cause": "AGD/Treatment losses",
-    "causes": [
-     "gill"
-    ],
-    "n": null,
-    "pct": 1.39
    }
   ]
  },
@@ -27114,7 +26871,7 @@
    "fish_m": 0.4,
    "tonnes": null,
    "company": "",
-   "note": "13 articles: Skjerper meldekravene for tap av fisk · Norway tightens reporting requirements for fish losses · Mowi faces eight safety charges following hatchery worker’s death",
+   "note": "14 articles: Skjerper meldekravene for tap av fisk · Norway tightens reporting requirements for fish losses · News - Mowi faces court charges over hatchery death",
    "url": "https://www.kyst.no/dodfisk-mattilsynet/skjerper-meldekravene-for-tap-av-fisk/2208074",
    "src": "www.kyst.no",
    "auto": "press"
