@@ -1,18 +1,18 @@
 {
  "meta": {
-  "built": "2026-11-22T17:36+00:00",
+  "built": "2026-11-23T19:29+00:00",
   "note": "Signals ranked by how unusual they are against their own history (score). Effect: supports / weighs on prices, risk, watch."
  },
- "lead": "Supply grows +6 % in 2026 across the seven basins and ±0.0 % in 2027. Chile is the main source of change: a record El Niño, a slowing harvest and fewer big fish. Norway carries the growth. Imports grow fastest in Brazil, UK, Japan; USA and Israel are flat or down.",
+ "lead": "Supply grows +6 % in 2026 across the seven basins and +0.9 % in 2027. Chile is the main source of change: a record El Niño, a slowing harvest and fewer big fish. Norway carries the growth. Imports grow fastest in Brazil, UK, Japan; USA and Israel are flat or down.",
  "signals": [
   {
    "basin": "Chile · El Niño",
    "title": "Extreme El Niño, warm Chilean water",
-   "value": "+3.2 °C",
-   "text": "Niño 3.4 index (week of 2026-11-11); Chilean sea +1.1 to +2.9 °C vs normal in Oct. NOAA: El Niño continues to strengthen, with a strong-to-very strong El Niño likely through January-March 2027 (remaining greater than a 79% chance).",
+   "value": "+3.3 °C",
+   "text": "Niño 3.4 index (week of 2026-11-18); Chilean sea +1.1 to +2.9 °C vs normal in Oct. NOAA: El Niño continues to strengthen, with a strong-to-very strong El Niño likely through January-March 2027 (remaining greater than a 79% chance).",
    "effect": "risk",
    "tab": "seatemp",
-   "score": 4.16
+   "score": 4.29
   },
   {
    "basin": "Chile",
@@ -79,9 +79,9 @@
   }
  ],
  "supply": {
-  "world": 5.7,
-  "world_next": 0.0,
-  "world_kt": 2919,
+  "world": 6.3,
+  "world_next": 0.9,
+  "world_kt": 2935,
   "basins": [
    [
     "Iceland",
@@ -101,7 +101,7 @@
    ],
    [
     "Norway",
-    6.1
+    7.1
    ],
    [
     "Scotland",
@@ -114,7 +114,7 @@
   ]
  },
  "demand": {
-  "world": 6.8,
+  "world": 6.7,
   "to": 202609,
   "markets": [
    [
@@ -131,7 +131,7 @@
    ],
    [
     "EU",
-    7.7
+    7.6
    ],
    [
     "Thailand",
@@ -154,11 +154,11 @@
  "basins": [
   {
    "basin": "Norway",
-   "v2026": 1630.1,
-   "chg2026": 6.1,
-   "chg2027": 0.6,
-   "lo": -4.5,
-   "hi": 4.1,
+   "v2026": 1645.5,
+   "chg2026": 7.1,
+   "chg2027": 2.1,
+   "lo": -2.1,
+   "hi": 4.2,
    "sea": [
     -0.3,
     0.7
@@ -522,32 +522,32 @@
    "lang": "es"
   },
   {
-   "date": "2026-11-17",
-   "title": "“La decisión de Noruega de ingresar salmón a Brasil recuerda que los mercados se disputan cada día”",
-   "url": "https://www.salmonexpert.cl/brasil-chile-competencia/la-decision-de-noruega-de-ingresar-salmon-a-brasil-recuerda-que-los-mercados-se-disputan-cada-dia/2211252",
-   "source": "salmonexpert.cl",
+   "date": "2026-11-19",
+   "title": "Tribunal rules that UK class action against salmon firms can proceed",
+   "url": "https://www.fishfarmingexpert.com/class-action-grieg-seafood-mowi-asa/tribunal-rules-that-uk-class-action-against-salmon-firms-can-proceed/2213442",
+   "source": "fishfarmingexpert.com",
    "n_sources": 2,
    "basins": [
-    "CL"
+    "GB"
    ],
    "themes": [
-    "market"
+    "regulation"
    ],
-   "lang": "es"
+   "lang": "en"
   },
   {
-   "date": "2026-11-14",
-   "title": "Enfen: El Niño Costero extraordinario continuaría hasta inicios de invierno de 2027",
-   "url": "https://andina.pe/agencia/noticia-enfen-nino-costero-extraordinario-continuaria-hasta-inicios-invierno-2027-1099939.aspx",
-   "source": "Agencia Andina",
+   "date": "2026-11-18",
+   "title": "Aquaculture act moves forward in United States Senate",
+   "url": "https://www.fishfarmingexpert.com/marine-aquaculture-research-for-america-act-open-ocean-aquaculture-stronger-america-through-seafood/aquaculture-act-moves-forward-in-united-states-senate/2212952",
+   "source": "fishfarmingexpert.com",
    "n_sources": 2,
    "basins": [
     "global"
    ],
    "themes": [
-    "feed"
+    "market"
    ],
-   "lang": "es"
+   "lang": "en"
   }
  ],
  "week": {
@@ -639,16 +639,16 @@
   },
   "pulse": [
    {
-    "yw": 202645,
-    "yoy_pct": 4.9,
-    "cage_deliveries": 194,
-    "slaughter_boat_visits": 62
-   },
-   {
     "yw": 202646,
     "yoy_pct": 4.4,
     "cage_deliveries": 192,
     "slaughter_boat_visits": 68
+   },
+   {
+    "yw": 202647,
+    "yoy_pct": -17.7,
+    "cage_deliveries": 188,
+    "slaughter_boat_visits": 63
    }
   ],
   "hi": {
@@ -658,7 +658,6 @@
    "level_en": "low"
   },
   "fx": {
-   "202437": 11.8495,
    "202438": 11.7489,
    "202439": 11.7052,
    "202440": 11.7145,
@@ -772,10 +771,21 @@
    "202644": 10.3668,
    "202645": 10.4111,
    "202646": 10.579,
-   "202647": 10.6239
+   "202647": 10.6239,
+   "202648": 10.7285
   }
  },
  "mainnews": [
+  {
+   "kind": "story",
+   "title": "Scottish islanders vote in favour of proposed Mowi salmon farm",
+   "text": "7 articles since 11-17; latest: Scottish islanders vote in favour of proposed Mowi salmon farm (Salmon Business).",
+   "src": "7 articles · 11-23",
+   "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxQazNtVHcwak5WVDJCcWtDcVJXWGpqeUFxeHZNUXRDMVhsUkMyTFRJajBCSkJZT3doNGZZMGU3ZWtndVR1VTItV2V6RnRRdlQ2cGUycXhqaFVEMjJ5aTUzSF9EN0FZN3B3YzJ1dm1FS0NETGgzckNPbktxOWJfZS1MTFhwRXBCNW1UMjlZSlREaXNBdjBxNnZCWlVR?oc=5",
+   "basin": "NO",
+   "who": "Mowi",
+   "n": 7
+  },
   {
    "kind": "story",
    "title": "Lerøy makes big increase in share of south Norway fish farming operation",
@@ -789,22 +799,12 @@
   {
    "kind": "story",
    "title": "News - Salmon sales near £1.7 billion ahead of Christmas",
-   "text": "4 articles since 11-16; latest: News - Salmon sales near £1.7 billion ahead of Christmas (Fish Farmer).",
-   "src": "4 articles · 11-16",
-   "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxPZWlndzRNU1VfX1g3cEpuQmFqUElpX2p3M1BaRUpDV3ZEeWVwSEtUTDIzenBUY1phM09UelRBUjdaMEdyNXpOZ0NlaC1DWExVTHE4QkRBZkNvX091RXpuZUhjdWxtMnhCMFE4U3Bxa3ZBNTZWVGpwS185YXM3R3Uzb3RocFE2NzRiWGg0aHI0Wkw?oc=5",
+   "text": "5 articles since 11-16; latest: UK Salmon Retail Sales Near £1.7 Billion Ahead of Christmas as Cod, Haddock Volumes Slide (Seafoodnews).",
+   "src": "5 articles · 11-20",
+   "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxOdjNYdXZTdVJzblZiaGk3bVpyWUFzWERnTkF3UWlYVHdqSGZDbDVBRHA0eXVZLWJfTlNraHRsbjNjRjdOWllyempZUzlvdHd2TXBzRzFSQ1l6Y0x4T3RZNjdScjZqTlo0Z0wzRUVxUTNTWEZITThOanQ2VjhLYU1HLVRrZy10OWJXQjVvUEktVUdlNURIRmtEdWxmdlQtQTJYVGhaekFRZVkxRWJ5NkIyUnJ5bHk1Vl9yYlc0X2c0Nlp2bm5FVUstOVpxQlV3UVpT?oc=5",
    "basin": "GB",
    "who": "Sector",
-   "n": 4
-  },
-  {
-   "kind": "story",
-   "title": "Cámara de Turismo de Puerto Aysén realizó encuentro de senderismo en Cerro Cordón con apoyo de AquaChile",
-   "text": "4 articles since 11-15; latest: AquaChile y Fundación Musicarte reunieron a 12 jóvenes talentos (mundoacuicola.cl).",
-   "src": "4 articles · 11-18",
-   "url": "https://www.mundoacuicola.cl/new/aquachile-y-fundacion-musicarte-reunieron-a-12-jovenes-talentos/",
-   "basin": "CL",
-   "who": "AquaChile",
-   "n": 4
+   "n": 5
   }
  ],
  "monthly": [
@@ -840,7 +840,7 @@
    "k": "outlook",
    "label": "Outlook",
    "when": "",
-   "text": "2026 +6 %, 2027 ±0.0 %",
+   "text": "2026 +6 %, 2027 +0.9 %",
    "tab": "supply"
   }
  ],
