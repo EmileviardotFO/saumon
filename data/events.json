@@ -1,29 +1,29 @@
 {
  "meta": {
-  "generated": "2026-11-23",
+  "generated": "2026-11-24",
   "status": {
    "ilaks.no": "ok 12 articles, 0 kept",
-   "www.kyst.no": "ok 132 articles, 3 kept",
+   "www.kyst.no": "ok 139 articles, 3 kept",
    "www.fishfarmingexpert.com": "ok 65 articles, 2 kept",
    "www.fishfarmermagazine.com": "ok 30 articles, 0 kept",
-   "www.salmonexpert.cl": "ok 59 articles, 4 kept",
-   "thefishsite.com": "ok 50 articles, 1 kept",
-   "news.google.com (NO no #1)": "ok 9 articles, 7 kept",
+   "www.salmonexpert.cl": "ok 59 articles, 3 kept",
+   "thefishsite.com": "ok 50 articles, 2 kept",
+   "news.google.com (NO no #1)": "ok 13 articles, 8 kept",
    "news.google.com (NO no #2)": "ok 9 articles, 1 kept",
    "news.google.com (CL es #3)": "ok 29 articles, 10 kept",
-   "news.google.com (CL es #4)": "ok 8 articles, 4 kept",
+   "news.google.com (CL es #4)": "ok 9 articles, 5 kept",
    "news.google.com (IS is #5)": "ok 0 articles, 0 kept",
-   "news.google.com (IS en #6)": "ok 11 articles, 4 kept",
-   "news.google.com (GB en #7)": "ok 20 articles, 8 kept",
+   "news.google.com (IS en #6)": "ok 37 articles, 9 kept",
+   "news.google.com (GB en #7)": "ok 52 articles, 8 kept",
    "news.google.com (FO en #8)": "ok 10 articles, 1 kept",
-   "news.google.com (FO fo #9)": "ok 0 articles, 0 kept",
-   "news.google.com (CA en #10)": "ok 8 articles, 1 kept",
-   "news.google.com (multi en #11)": "ok 44 articles, 7 kept",
-   "news.google.com (CA en #12)": "ok 13 articles, 7 kept",
+   "news.google.com (FO fo #9)": "error: HTTPError: HTTP Error 429: Too Many Requests",
+   "news.google.com (CA en #10)": "ok 6 articles, 1 kept",
+   "news.google.com (multi en #11)": "ok 45 articles, 7 kept",
+   "news.google.com (CA en #12)": "ok 38 articles, 14 kept",
    "news.google.com (CA en #13)": "ok 1 articles, 1 kept",
    "news.google.com (CA en #14)": "ok 3 articles, 0 kept",
-   "news.google.com (multi en #15)": "ok 100 articles, 11 kept",
-   "gov.scot FHI": "ok 6824 reports, last 2026-10-14"
+   "news.google.com (multi en #15)": "ok 59 articles, 10 kept",
+   "gov.scot FHI": "error: no xlsx link (1983 chars, 0 xlsx links, title: )"
   },
   "note": "news = articles kept by keyword (a mortality word + a farming word), classified by cause and basin; manual = events entered by hand with their losses; scotland_fhi = mortalities reported to the Scottish Fish Health Inspectorate",
   "causes": [
@@ -156,6 +156,20 @@
   }
  ],
  "news": [
+  {
+   "date": "2026-11-24",
+   "title": "Norway sees a decline in farmed salmon mortality",
+   "url": "https://thefishsite.com/articles/norway-sees-a-decline-in-farmed-salmon-mortality",
+   "source": "thefishsite.com",
+   "lang": "en",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "NO"
+   ],
+   "id": "2100a372e73b"
+  },
   {
    "date": "2026-11-20",
    "title": "Overraskende funn om KI og dødfisk­registrering",
@@ -1673,6 +1687,64 @@
     "CA"
    ],
    "id": "3d71559a9d35"
+  },
+  {
+   "date": "2025-09-04",
+   "title": "Lack of transparency about salmon die-off feels like déjà vu, salmon federation says",
+   "url": "https://news.google.com/rss/articles/CBMijwFBVV95cUxQT1k1VTBydG41OXZMaFlPM2dDUVlYX1RxTDNicVNydFFSX3ZJdER6TTZyaU9ORzRhSHJmaDlHLVFPeFppVVB1a0w0eGpMSU9iRHlnMlFLc1JhYkE2UjNfTWlqTjg5VVZUd0c1S25WVFlxRU9NeDQ5WVFBdm5oVkw4SDJwMnBhdE1RWXIxX1Braw?oc=5",
+   "source": "CBC",
+   "lang": "en",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "CA"
+   ],
+   "id": "37423b55ef57"
+  },
+  {
+   "date": "2025-09-04",
+   "title": "400,000 salmon died at Mowi sites in Newfoundland",
+   "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxQMWVPMHpGcUJBT2RZcU1NY19yVjJlNF82NzJDaTdTcjZLVm5sRTNoMTIwRFUxeXRjTkNyT3NHU0h0LTZEc2VMYWdLY3dXbTAtTXpsX2VoNXBTTTJ0NDk1R19JU3FFRjhwNEJzT3ZWM0VodUNrbUVZeTl2MGZEcEo5QTh4UTA2UnZPSGdydEtLazl0djFFRjc0ZWVoeF9VVEdFc3JXTlZRLUtlX2prejRZcE5QRWM5UzlpcXBjV1ZsVVY4Zw?oc=5",
+   "source": "Fishfarming expert",
+   "lang": "en",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "NO",
+    "CA"
+   ],
+   "id": "4e4fdca4029c"
+  },
+  {
+   "date": "2025-09-04",
+   "title": "Mowi reports mass mortality at three Newfoundland sites, 1.7 million fish affected",
+   "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxOZjJFbHpYUnNCZldyVEdYamViVEFtWm9PYy1SSm5tWjJ4eDdxZWVRQXFKenlSdjhxSWpqUTFsai1CS0xtdmlPeDhra2dHV2xDb1RPVVZyZGJ6dUZ0eXFVU0dVSmI2Y0FpUlR0dGxYMklMemhTNGotd2tPX1d0YUJhelplVzllN3pUTkVHRFZkOXQtLWdnQmFuRVJPYkpMay1GSlNqOVdoWFpLMVAtUTI3azhpbw?oc=5",
+   "source": "Salmon Business",
+   "lang": "en",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "NO",
+    "CA"
+   ],
+   "id": "e72f6bb7dc5f"
+  },
+  {
+   "date": "2025-09-03",
+   "title": "More than 1.5M fish affected in mass die-off at Mowi aquaculture site in N.L.",
+   "url": "https://news.google.com/rss/articles/CBMikwFBVV95cUxNd2I4TmRYQ1ZuXzdQbFNQcVBkQ3pWWkhqaEszSHh0WjVGczNKTW9zb0dROTgzbmc2ek1UZ1BlOFRNbF9YVENEYloxR1RrWTd4Tlg3T2k2emVhdGdHMXdCYlNoV0s4dkhnLS1MRTVRczRUWXdKMkNYWUJ5RUhfUWpHcjB2d0xzOXBYdVhyalctZGVtTzg?oc=5",
+   "source": "CBC",
+   "lang": "en",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "NO"
+   ],
+   "id": "ae7c64517e82"
   }
  ],
  "scotland_fhi": {
@@ -26871,7 +26943,7 @@
    "fish_m": 0.4,
    "tonnes": null,
    "company": "",
-   "note": "14 articles: Skjerper meldekravene for tap av fisk · Norway tightens reporting requirements for fish losses · News - Mowi faces court charges over hatchery death",
+   "note": "15 articles: Skjerper meldekravene for tap av fisk · Norway tightens reporting requirements for fish losses · News - Mowi faces court charges over hatchery death",
    "url": "https://www.kyst.no/dodfisk-mattilsynet/skjerper-meldekravene-for-tap-av-fisk/2208074",
    "src": "www.kyst.no",
    "auto": "press"
@@ -27267,6 +27339,20 @@
    "url": "https://aquaculture.scotland.gov.uk/Data/FishFarmMonthlyBiomassAndTreatmentReports",
    "src": "SEPA",
    "auto": "data"
+  },
+  {
+   "date": "2025-09",
+   "basin": "NO",
+   "region": "",
+   "cause": "unspecified",
+   "agent": "press (automatic)",
+   "fish_m": 1.5,
+   "tonnes": null,
+   "company": "",
+   "note": "1 article: More than 1.5M fish affected in mass die-off at Mowi aquaculture site in N.L.",
+   "url": "https://news.google.com/rss/articles/CBMikwFBVV95cUxNd2I4TmRYQ1ZuXzdQbFNQcVBkQ3pWWkhqaEszSHh0WjVGczNKTW9zb0dROTgzbmc2ek1UZ1BlOFRNbF9YVENEYloxR1RrWTd4Tlg3T2k2emVhdGdHMXdCYlNoV0s4dkhnLS1MRTVRczRUWXdKMkNYWUJ5RUhfUWpHcjB2d0xzOXBYdVhyalctZGVtTzg?oc=5",
+   "src": "CBC",
+   "auto": "press"
   },
   {
    "date": "2025-07",
