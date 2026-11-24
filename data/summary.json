@@ -1,6 +1,6 @@
 {
  "meta": {
-  "built": "2026-11-23T21:53+00:00",
+  "built": "2026-11-24T19:05+00:00",
   "note": "Signals ranked by how unusual they are against their own history (score). Effect: supports / weighs on prices, risk, watch."
  },
  "lead": "Supply grows +6 % in 2026 across the seven basins and +0.9 % in 2027. Chile is the main source of change: a record El Niño, a slowing harvest and fewer big fish. Norway carries the growth. Imports grow fastest in Brazil, UK, Japan; USA and Israel are flat or down.",
@@ -26,11 +26,11 @@
   {
    "basin": "Chile",
    "title": "Atlantic harvest slowing",
-   "value": "+4.0 %",
-   "text": "Jan–Sep on a year earlier, but month by month: Jul +3 %, Aug −6 %, Sep −2 %.",
+   "value": "+2.3 %",
+   "text": "Jan–Oct on a year earlier, but month by month: Aug −6 %, Sep −2 %, Oct −9 %.",
    "effect": "supports",
    "tab": "chile",
-   "score": 2.43
+   "score": 2.98
   },
   {
    "basin": "Norway",
@@ -438,6 +438,48 @@
  },
  "news": [
   {
+   "date": "2026-11-24",
+   "title": "Norway’s PM, opposition party outline competing paths to salmon growth amid tax, regulatory divide",
+   "url": "https://www.undercurrentnews.com/2026/11/24/norways-pm-opposition-party-outline-competing-paths-to-salmon-growth-amid-tax-regulatory-divide/",
+   "source": "undercurrentnews.com",
+   "n_sources": 2,
+   "basins": [
+    "NO"
+   ],
+   "themes": [
+    "regulation"
+   ],
+   "lang": "en"
+  },
+  {
+   "date": "2026-11-24",
+   "title": "El Gobierno no ha logrado desregular a la industria chilena, pero… el salmón coho toma el liderazgo",
+   "url": "https://www.salmonexpert.cl/coho-gobierno-jose-antonio-kast/el-gobierno-no-ha-logrado-desregular-a-la-industria-chilena-pero-el-salmon-coho-toma-el-liderazgo/2214956",
+   "source": "salmonexpert.cl",
+   "n_sources": 2,
+   "basins": [
+    "CL"
+   ],
+   "themes": [
+    "regulation"
+   ],
+   "lang": "es"
+  },
+  {
+   "date": "2026-11-23",
+   "title": "Chilean salmon prices to Brazil fall again in week 48 while dollar squeezes importers",
+   "url": "https://www.undercurrentnews.com/2026/11/23/chilean-salmon-prices-to-brazil-fall-again-in-week-48-while-dollar-squeezes-importers/",
+   "source": "undercurrentnews.com",
+   "n_sources": 2,
+   "basins": [
+    "CL"
+   ],
+   "themes": [
+    "market"
+   ],
+   "lang": "en"
+  },
+  {
    "date": "2026-11-20",
    "title": "Finansdepartementet om offshore oppdrett-kritikk: – Skiller seg fra kystnært havbruk på flere områder",
    "url": "https://ilaks.no/finansdepartementet-om-offshore-oppdrett-kritikk-skiller-seg-fra-kystnaert-havbruk-pa-flere-omrader/",
@@ -480,20 +522,6 @@
    "lang": "en"
   },
   {
-   "date": "2026-11-20",
-   "title": "UCN proposes new fresh Norwegian Atlantic salmon, DDP Netherlands price assessments",
-   "url": "https://www.undercurrentnews.com/2026/11/20/ucn-proposes-new-fresh-norwegian-atlantic-salmon-ddp-netherlands-price-assessments/",
-   "source": "undercurrentnews.com",
-   "n_sources": 2,
-   "basins": [
-    "NO"
-   ],
-   "themes": [
-    "market"
-   ],
-   "lang": "en"
-  },
-  {
    "date": "2026-11-19",
    "title": "Exportaciones de salmón y trucha marcan récord a octubre pero gremio advierte estancamiento productivo",
    "url": "https://www.mundoacuicola.cl/new/exportaciones-de-salmon-y-trucha-marcan-record-a-octubre-pero-gremio-advierte-estancamiento-productivo/",
@@ -509,20 +537,6 @@
   },
   {
    "date": "2026-11-19",
-   "title": "Se detecta nuevo muestreo positivo de virus ISA en centro de salmones de Aysén",
-   "url": "https://www.salmonexpert.cl/aysen-fiscalizacion-isa/se-detecta-nuevo-muestreo-positivo-de-virus-isa-en-centro-de-salmones-de-aysen/2213631",
-   "source": "salmonexpert.cl",
-   "n_sources": 2,
-   "basins": [
-    "CL"
-   ],
-   "themes": [
-    "biology"
-   ],
-   "lang": "es"
-  },
-  {
-   "date": "2026-11-19",
    "title": "Tribunal rules that UK class action against salmon firms can proceed",
    "url": "https://www.fishfarmingexpert.com/class-action-grieg-seafood-mowi-asa/tribunal-rules-that-uk-class-action-against-salmon-firms-can-proceed/2213442",
    "source": "fishfarmingexpert.com",
@@ -532,20 +546,6 @@
    ],
    "themes": [
     "regulation"
-   ],
-   "lang": "en"
-  },
-  {
-   "date": "2026-11-18",
-   "title": "Aquaculture act moves forward in United States Senate",
-   "url": "https://www.fishfarmingexpert.com/marine-aquaculture-research-for-america-act-open-ocean-aquaculture-stronger-america-through-seafood/aquaculture-act-moves-forward-in-united-states-senate/2212952",
-   "source": "fishfarmingexpert.com",
-   "n_sources": 2,
-   "basins": [
-    "global"
-   ],
-   "themes": [
-    "market"
    ],
    "lang": "en"
   }
@@ -772,39 +772,39 @@
    "202645": 10.4111,
    "202646": 10.579,
    "202647": 10.6239,
-   "202648": 10.7285
+   "202648": 10.7317
   }
  },
  "mainnews": [
   {
    "kind": "story",
    "title": "Scottish islanders vote in favour of proposed Mowi salmon farm",
-   "text": "7 articles since 11-17; latest: Scottish islanders vote in favour of proposed Mowi salmon farm (Salmon Business).",
-   "src": "7 articles · 11-23",
-   "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxQazNtVHcwak5WVDJCcWtDcVJXWGpqeUFxeHZNUXRDMVhsUkMyTFRJajBCSkJZT3doNGZZMGU3ZWtndVR1VTItV2V6RnRRdlQ2cGUycXhqaFVEMjJ5aTUzSF9EN0FZN3B3YzJ1dm1FS0NETGgzckNPbktxOWJfZS1MTFhwRXBCNW1UMjlZSlREaXNBdjBxNnZCWlVR?oc=5",
+   "text": "8 articles since 11-17; latest: Scottish islanders vote for Mowi to build new salmon farm (The National Scot).",
+   "src": "8 articles · 11-24",
+   "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxPWUcwZFBnbWNobTdvaWNoTGxEaV81VXRfVmgyTDk2MTlHOUE3aVJtLXVodVZhT3lkQVhsZmRGSHBpZXlxSGNnUWljOVkwV1JnaU0tTXRjMmNtTnROX3FNQ0JINTBLX0R5VlpNQ3lTQXVELW1HdEVwRnVZVk91YlVTTUFPelZEbzF4SnFJNUZ4c1RxQ2VXbzU4eU9R?oc=5",
    "basin": "NO",
    "who": "Mowi",
-   "n": 7
+   "n": 8
   },
   {
    "kind": "story",
-   "title": "Lerøy makes big increase in share of south Norway fish farming operation",
-   "text": "6 articles since 11-16; latest: Lerøy makes big increase in share of south Norway fish farming operation (fishfarmingexpert.com).",
-   "src": "6 articles · 11-16",
-   "url": "https://www.fishfarmingexpert.com/acquisition-leroy-seafood-group-norway/leroy-makes-big-increase-in-share-of-south-norway-fish-farming-operation/2211336",
+   "title": "Grieg Seafood: nominates AKVA group chief executive as chairman",
+   "text": "4 articles since 11-23; latest: Grieg Seafood: nominates AKVA group chief executive as chairman (Salmon Business).",
+   "src": "4 articles · 11-24",
+   "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxPdHkxbkJvVDV6a2ZEaFg5ZGZFVWdyQkVhekc2ckVfb1NRZzQweXpnVVl0TUtldFRyMGczT0xBcWZLYVBBdDFtRXl1ekVLVUVaa3B6VkpWbTItTjZ4cGhFLVdUc0ZrMFhrd2pNZEw5VWk4YUdZWGVvTGtHMTY5UFZwQ0pmOXJvVkZHdk53LUxWQkZWOHBJdUhrbWNB?oc=5",
    "basin": "NO",
-   "who": "Lerøy",
-   "n": 6
+   "who": "Grieg",
+   "n": 4
   },
   {
    "kind": "story",
-   "title": "News - Salmon sales near £1.7 billion ahead of Christmas",
-   "text": "5 articles since 11-16; latest: UK Salmon Retail Sales Near £1.7 Billion Ahead of Christmas as Cod, Haddock Volumes Slide (Seafoodnews).",
-   "src": "5 articles · 11-20",
-   "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxOdjNYdXZTdVJzblZiaGk3bVpyWUFzWERnTkF3UWlYVHdqSGZDbDVBRHA0eXVZLWJfTlNraHRsbjNjRjdOWllyempZUzlvdHd2TXBzRzFSQ1l6Y0x4T3RZNjdScjZqTlo0Z0wzRUVxUTNTWEZITThOanQ2VjhLYU1HLVRrZy10OWJXQjVvUEktVUdlNURIRmtEdWxmdlQtQTJYVGhaekFRZVkxRWJ5NkIyUnJ5bHk1Vl9yYlc0X2c0Nlp2bm5FVUstOVpxQlV3UVpT?oc=5",
-   "basin": "GB",
-   "who": "Sector",
-   "n": 5
+   "title": "Andfjord Salmon: begins commercial harvests after €3.1m quarterly operating loss",
+   "text": "3 articles since 11-17; latest: Andfjord Salmon: begins commercial harvests after €3.1m quarterly operating loss (Salmon Business).",
+   "src": "3 articles · 11-18",
+   "url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxNdUtNbTJ5MldVcC1MTHk1eWQyWk1CYjNmSk1VdVY0dVpHeExicC1RT05iMUtRQ3JfdmlWZ3JfMUctM3BGbEJsSFphV2E3Mm81Y3VCZkFQdkcxM0toLXd3SThiZWhNQUhfQ2RQa1BIbTNhZ2RmbFpXcTdjRnU3clZIbGl6bzJXX0R4VWhBRFlhc0I5YU82Z09Tc1YxZ2xmcTFRZ1lWTHF4LWJXTGNRVkYzRQ?oc=5",
+   "basin": "global",
+   "who": "Andfjord",
+   "n": 3
   }
  ],
  "monthly": [
@@ -832,8 +832,8 @@
   {
    "k": "chile",
    "label": "Chile harvest",
-   "when": "Sep 2026",
-   "text": "Atlantic Jan–Sep 596 kt (+4 %)",
+   "when": "Oct 2026",
+   "text": "Atlantic Jan–Oct 677 kt (+2 %)",
    "tab": "chile"
   },
   {
