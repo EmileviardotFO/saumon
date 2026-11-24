@@ -10,19 +10,19 @@
    "thefishsite.com": "ok 50 articles, 2 kept",
    "news.google.com (NO no #1)": "ok 13 articles, 8 kept",
    "news.google.com (NO no #2)": "ok 9 articles, 1 kept",
-   "news.google.com (CL es #3)": "ok 29 articles, 10 kept",
+   "news.google.com (CL es #3)": "ok 51 articles, 14 kept",
    "news.google.com (CL es #4)": "ok 9 articles, 5 kept",
    "news.google.com (IS is #5)": "ok 0 articles, 0 kept",
-   "news.google.com (IS en #6)": "ok 37 articles, 9 kept",
-   "news.google.com (GB en #7)": "ok 52 articles, 8 kept",
+   "news.google.com (IS en #6)": "ok 38 articles, 9 kept",
+   "news.google.com (GB en #7)": "ok 51 articles, 8 kept",
    "news.google.com (FO en #8)": "ok 10 articles, 1 kept",
-   "news.google.com (FO fo #9)": "error: HTTPError: HTTP Error 429: Too Many Requests",
-   "news.google.com (CA en #10)": "ok 6 articles, 1 kept",
-   "news.google.com (multi en #11)": "ok 45 articles, 7 kept",
-   "news.google.com (CA en #12)": "ok 38 articles, 14 kept",
+   "news.google.com (FO fo #9)": "ok 0 articles, 0 kept",
+   "news.google.com (CA en #10)": "ok 34 articles, 3 kept",
+   "news.google.com (multi en #11)": "ok 46 articles, 7 kept",
+   "news.google.com (CA en #12)": "ok 14 articles, 7 kept",
    "news.google.com (CA en #13)": "ok 1 articles, 1 kept",
    "news.google.com (CA en #14)": "ok 3 articles, 0 kept",
-   "news.google.com (multi en #15)": "ok 59 articles, 10 kept",
+   "news.google.com (multi en #15)": "ok 91 articles, 11 kept",
    "gov.scot FHI": "error: no xlsx link (1983 chars, 0 xlsx links, title: )"
   },
   "note": "news = articles kept by keyword (a mortality word + a farming word), classified by cause and basin; manual = events entered by hand with their losses; scotland_fhi = mortalities reported to the Scottish Fish Health Inspectorate",
@@ -971,6 +971,20 @@
     "CL"
    ],
    "id": "d0e997f74f42"
+  },
+  {
+   "date": "2026-10-14",
+   "title": "Tras más de 900 toneladas de pérdida en centros de MultiExport Patagonia, Sernapesca informó término de la contingencia",
+   "url": "https://news.google.com/rss/articles/CBMi4wFBVV95cUxQNWFCTmljUldUa0NSZnFlNUo2REQzQW9BVk01ZFZPWTZ1MDBIYnRPX3dPMTRENDl1cFN0WkpZWkQ0dHJUQ0c0dk1TTkRxZmcyaVFiSk9DWTAtVlNjVjNwVkpZTW9PMlMtdTBvVXdTd244NE5DTzIxMHhNdmpJNWFmVWpYVjR2SHdxRzZzM2VGX0dKTi1qaEUzbXR0NTk1ZEcwRTFybW55MUQ4djljS3VoS0ltYVlObXdLNk9SbUNUSFdMNEdlR3lCX0kzYVBfYzJiaU5qYXZGS0hWbDBmYnFyNkw0NA?oc=5",
+   "source": "Diálogo Sur",
+   "lang": "es",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "db7c7fbc6d9f"
   },
   {
    "date": "2026-10-13",
