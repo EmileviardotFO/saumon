@@ -8,22 +8,22 @@
    "www.fishfarmermagazine.com": "ok 30 articles, 0 kept",
    "www.salmonexpert.cl": "ok 59 articles, 2 kept",
    "thefishsite.com": "ok 50 articles, 2 kept",
-   "news.google.com (NO no #1)": "ok 13 articles, 8 kept",
+   "news.google.com (NO no #1)": "ok 10 articles, 7 kept",
    "news.google.com (NO no #2)": "ok 9 articles, 1 kept",
-   "news.google.com (CL es #3)": "ok 29 articles, 11 kept",
+   "news.google.com (CL es #3)": "ok 51 articles, 14 kept",
    "news.google.com (CL es #4)": "ok 8 articles, 4 kept",
    "news.google.com (IS is #5)": "ok 0 articles, 0 kept",
-   "news.google.com (IS en #6)": "ok 37 articles, 9 kept",
-   "news.google.com (GB en #7)": "ok 51 articles, 8 kept",
+   "news.google.com (IS en #6)": "ok 38 articles, 9 kept",
+   "news.google.com (GB en #7)": "ok 57 articles, 8 kept",
    "news.google.com (FO en #8)": "ok 10 articles, 1 kept",
    "news.google.com (FO fo #9)": "ok 0 articles, 0 kept",
-   "news.google.com (CA en #10)": "ok 7 articles, 1 kept",
-   "news.google.com (multi en #11)": "ok 10 articles, 3 kept",
-   "news.google.com (CA en #12)": "ok 13 articles, 7 kept",
-   "news.google.com (CA en #13)": "ok 1 articles, 1 kept",
+   "news.google.com (CA en #10)": "ok 34 articles, 3 kept",
+   "news.google.com (multi en #11)": "ok 46 articles, 4 kept",
+   "news.google.com (CA en #12)": "ok 14 articles, 7 kept",
+   "news.google.com (CA en #13)": "ok 2 articles, 1 kept",
    "news.google.com (CA en #14)": "ok 3 articles, 0 kept",
-   "news.google.com (multi en #15)": "ok 60 articles, 10 kept",
-   "gov.scot FHI": "error: no xlsx link (1983 chars, 0 xlsx links, title: )"
+   "news.google.com (multi en #15)": "ok 91 articles, 11 kept",
+   "gov.scot FHI": "ok 6824 reports, last 2026-10-14"
   },
   "note": "news = articles kept by keyword (a mortality word + a farming word), classified by cause and basin; manual = events entered by hand with their losses; scotland_fhi = mortalities reported to the Scottish Fish Health Inspectorate",
   "causes": [
@@ -156,6 +156,20 @@
   }
  ],
  "news": [
+  {
+   "date": "2026-11-25",
+   "title": "Diputado Mauro González solicita zanja sanitaria ante una eventual mortalidad masiva de salmones: “Nunca más se pueden verter salmones muertos al mar”",
+   "url": "https://news.google.com/rss/articles/CBMijgJBVV95cUxOd0NvNXh4VkpWTFRYMU9ibms4NEVuMXpiR29LLXpEY1lHaU5UenI1UmlNZ240cXRTV3RldnFRUFZmQW14V1FIbXBYVlhiN1d1NkQtTVpzSXc2RWVhMXNhRElVQ0FNcGJpRl9qZVV1aHRsMHZrSVZpS2N5aWdhRGVHdXZBSFhCRk95S0t1aEMyRThfNjJOaWxKRTBobkdMdHR1TVNSaTVUVVBCREdVaFRYQk44Sm5JNXc0T3FPM1NwME05amtMLUs1UWhrSGFPb1dORlF1Y1FQd2gxUFNXWmpfbVYxMXU0Tk91b3pXOE5RNEloTDFaQWZFVzlKWU4xbHVUUDgzdlNaTEg3UGZSalE?oc=5",
+   "source": "G5noticias",
+   "lang": "es",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "3675f243327c"
+  },
   {
    "date": "2026-11-24",
    "title": "Norway sees a decline in farmed salmon mortality",
@@ -1765,13 +1779,13 @@
   "source": "https://www.gov.scot/binaries/content/documents/govscot/publications/transparency-data/2019/12/fish-health-inspectorate-mortality-information/documents/mortality-information---until-end-october-2019/mortality-information---until-end-october-2019/govscot%3Adocument/Mortality%2Binformation%2B-%2Buntil%2Bend%2BSeptember%2B2026.xlsx",
   "monthly": {
    "2023-11": {
-    "reports": 86,
+    "reports": 85,
     "causes": {
-     "unspecified": 12,
      "gill": 69,
      "disease": 19,
      "jellyfish": 4,
-     "treatment": 3
+     "treatment": 3,
+     "unspecified": 11
     }
    },
    "2023-12": {
@@ -26933,17 +26947,6 @@
     ],
     "n": null,
     "pct": 1.74
-   },
-   {
-    "date": "2023-11-03",
-    "site": "Yetts O' Muckart",
-    "company": "Cooke Aquaculture (Freshwater) Ltd",
-    "cause": "Furunculosis",
-    "causes": [
-     "unspecified"
-    ],
-    "n": null,
-    "pct": 2.41
    }
   ]
  },
