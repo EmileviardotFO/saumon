@@ -1,6 +1,6 @@
 {
  "meta": {
-  "built": "2026-11-24T20:29+00:00",
+  "built": "2026-11-25T18:11+00:00",
   "note": "Signals ranked by how unusual they are against their own history (score). Effect: supports / weighs on prices, risk, watch."
  },
  "lead": "Supply grows +6 % in 2026 across the seven basins and +0.9 % in 2027. Chile is the main source of change: a record El Niño, a slowing harvest and fewer big fish. Norway carries the growth. Imports grow fastest in Brazil, UK, Japan; USA and Israel are flat or down.",
@@ -9,7 +9,7 @@
    "basin": "Chile · El Niño",
    "title": "Extreme El Niño, warm Chilean water",
    "value": "+3.3 °C",
-   "text": "Niño 3.4 index (week of 2026-11-18); Chilean sea +1.1 to +2.9 °C vs normal in Oct. NOAA: El Niño continues to strengthen, with a strong-to-very strong El Niño likely through January-March 2027 (remaining greater than a 79% chance).",
+   "text": "Niño 3.4 index (week of 2026-11-18); Chilean sea +0.7 to +1.9 °C vs normal in Nov. NOAA: El Niño continues to strengthen, with a strong-to-very strong El Niño likely through January-March 2027 (remaining greater than a 79% chance).",
    "effect": "risk",
    "tab": "seatemp",
    "score": 4.29
@@ -35,11 +35,11 @@
   {
    "basin": "Norway",
    "title": "Fewer 6 kg+ than last year in Nov",
-   "value": "15.4 %",
-   "text": "of the harvest in 6 kg+ (16.9 % a year earlier), adjusted with harvest-boat visits: zone 11 27 → 22 %, zone 8 5 → 9 %.",
+   "value": "15.3 %",
+   "text": "of the harvest in 6 kg+ (16.9 % a year earlier), adjusted with harvest-boat visits: zone 11 27 → 23 %, zone 8 5 → 8 %.",
    "effect": "supports",
    "tab": "genmap",
-   "score": 1.75
+   "score": 1.8
   },
   {
    "basin": "Chile",
@@ -160,8 +160,8 @@
    "lo": -2.1,
    "hi": 4.2,
    "sea": [
-    -0.3,
-    0.7
+    -0.1,
+    0.8
    ],
    "tab": "outlook"
   },
@@ -173,8 +173,8 @@
    "lo": -9.1,
    "hi": 0.9,
    "sea": [
-    1.1,
-    2.9
+    0.7,
+    1.9
    ],
    "tab": "chile"
   },
@@ -187,7 +187,7 @@
    "hi": 9.6,
    "sea": [
     0.3,
-    0.7
+    0.6
    ],
    "tab": "scotland"
   },
@@ -199,8 +199,8 @@
    "lo": -5,
    "hi": 5,
    "sea": [
-    0.5,
-    0.5
+    0.4,
+    0.4
    ],
    "tab": "faroe"
   },
@@ -212,8 +212,8 @@
    "lo": -13.5,
    "hi": -2.0,
    "sea": [
-    0.2,
-    0.7
+    0.4,
+    0.4
    ],
    "tab": "iceland"
   },
@@ -225,8 +225,8 @@
    "lo": -6.9,
    "hi": 5.1,
    "sea": [
-    -1.2,
-    -0.1
+    -1.1,
+    0.1
    ],
    "tab": "canada"
   },
@@ -239,7 +239,7 @@
    "hi": 10,
    "sea": [
     0.9,
-    1.3
+    1.5
    ],
    "tab": "australia"
   }
@@ -438,23 +438,37 @@
  },
  "news": [
   {
-   "date": "2026-11-24",
-   "title": "Norway’s PM, opposition party outline competing paths to salmon growth amid tax, regulatory divide",
-   "url": "https://www.undercurrentnews.com/2026/11/24/norways-pm-opposition-party-outline-competing-paths-to-salmon-growth-amid-tax-regulatory-divide/",
-   "source": "undercurrentnews.com",
+   "date": "2026-11-25",
+   "title": "Record results for NZ King Salmon",
+   "url": "https://www.fishfarmingexpert.com/chinook-salmon-financial-results-new-zealand-king-salmon/record-results-for-nz-king-salmon/2216013",
+   "source": "fishfarmingexpert.com",
    "n_sources": 2,
    "basins": [
-    "NO"
+    "NZ"
    ],
    "themes": [
-    "regulation"
+    "companies"
    ],
    "lang": "en"
   },
   {
-   "date": "2026-11-24",
-   "title": "El Gobierno no ha logrado desregular a la industria chilena, pero… el salmón coho toma el liderazgo",
-   "url": "https://www.salmonexpert.cl/coho-gobierno-jose-antonio-kast/el-gobierno-no-ha-logrado-desregular-a-la-industria-chilena-pero-el-salmon-coho-toma-el-liderazgo/2214956",
+   "date": "2026-11-25",
+   "title": "El análisis de la eventual adquisición de Salmones Blumar por parte de Agrosuper",
+   "url": "https://www.salmonexpert.cl/adquisicion-agrosuper-aquachile/el-analisis-de-la-eventual-adquisicion-de-salmones-blumar-por-parte-de-agrosuper/2214932",
+   "source": "salmonexpert.cl",
+   "n_sources": 2,
+   "basins": [
+    "CL"
+   ],
+   "themes": [
+    "companies"
+   ],
+   "lang": "es"
+  },
+  {
+   "date": "2026-11-25",
+   "title": "La ley de acuicultura avanza en el Senado de Estados Unidos",
+   "url": "https://www.salmonexpert.cl/eeuu-estados-unidos-ley-de-acuicultura/la-ley-de-acuicultura-avanza-en-el-senado-de-estados-unidos/2212975",
    "source": "salmonexpert.cl",
    "n_sources": 2,
    "basins": [
@@ -466,16 +480,30 @@
    "lang": "es"
   },
   {
-   "date": "2026-11-23",
-   "title": "Chilean salmon prices to Brazil fall again in week 48 while dollar squeezes importers",
-   "url": "https://www.undercurrentnews.com/2026/11/23/chilean-salmon-prices-to-brazil-fall-again-in-week-48-while-dollar-squeezes-importers/",
-   "source": "undercurrentnews.com",
+   "date": "2026-11-25",
+   "title": "De la articulación a los resultados: PTI del Salmón inicia una nueva etapa",
+   "url": "https://www.mundoacuicola.cl/new/de-la-articulacion-a-los-resultados-pti-del-salmon-inicia-una-nueva-etapa/",
+   "source": "mundoacuicola.cl",
    "n_sources": 2,
    "basins": [
     "CL"
    ],
    "themes": [
-    "market"
+    "companies"
+   ],
+   "lang": "es"
+  },
+  {
+   "date": "2026-11-24",
+   "title": "Norway’s PM, opposition party outline competing paths to salmon growth amid tax, regulatory divide",
+   "url": "https://www.undercurrentnews.com/2026/11/24/norways-pm-opposition-party-outline-competing-paths-to-salmon-growth-amid-tax-regulatory-divide/",
+   "source": "undercurrentnews.com",
+   "n_sources": 2,
+   "basins": [
+    "NO"
+   ],
+   "themes": [
+    "regulation"
    ],
    "lang": "en"
   },
@@ -518,34 +546,6 @@
    ],
    "themes": [
     "market"
-   ],
-   "lang": "en"
-  },
-  {
-   "date": "2026-11-19",
-   "title": "Exportaciones de salmón y trucha marcan récord a octubre pero gremio advierte estancamiento productivo",
-   "url": "https://www.mundoacuicola.cl/new/exportaciones-de-salmon-y-trucha-marcan-record-a-octubre-pero-gremio-advierte-estancamiento-productivo/",
-   "source": "mundoacuicola.cl",
-   "n_sources": 2,
-   "basins": [
-    "CL"
-   ],
-   "themes": [
-    "market"
-   ],
-   "lang": "es"
-  },
-  {
-   "date": "2026-11-19",
-   "title": "Tribunal rules that UK class action against salmon firms can proceed",
-   "url": "https://www.fishfarmingexpert.com/class-action-grieg-seafood-mowi-asa/tribunal-rules-that-uk-class-action-against-salmon-firms-can-proceed/2213442",
-   "source": "fishfarmingexpert.com",
-   "n_sources": 2,
-   "basins": [
-    "GB"
-   ],
-   "themes": [
-    "regulation"
    ],
    "lang": "en"
   }
@@ -620,20 +620,20 @@
    }
   },
   "bw": {
-   "yw": 202646,
+   "yw": 202647,
    "now": {
-    "lice": 0.156,
-    "t": 9.96,
+    "lice": 0.147,
+    "t": 9.28,
     "over_limit": 6.5
    },
    "prev": {
-    "lice": 0.171,
-    "t": 10.49,
+    "lice": 0.155,
+    "t": 9.96,
     "over_limit": 6.5
    },
    "ly": {
-    "lice": 0.178,
-    "t": 10.24,
+    "lice": 0.171,
+    "t": 9.42,
     "over_limit": 6.5
    }
   },
@@ -772,38 +772,38 @@
    "202645": 10.4111,
    "202646": 10.579,
    "202647": 10.6239,
-   "202648": 10.7317
+   "202648": 10.7471
   }
  },
  "mainnews": [
   {
    "kind": "story",
    "title": "Scottish islanders vote in favour of proposed Mowi salmon farm",
-   "text": "8 articles since 11-17; latest: Scottish islanders vote for Mowi to build new salmon farm (The National Scot).",
-   "src": "8 articles · 11-24",
+   "text": "7 articles since 11-19; latest: Scottish islanders vote for Mowi to build new salmon farm (The National Scot).",
+   "src": "7 articles · 11-24",
    "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxPWUcwZFBnbWNobTdvaWNoTGxEaV81VXRfVmgyTDk2MTlHOUE3aVJtLXVodVZhT3lkQVhsZmRGSHBpZXlxSGNnUWljOVkwV1JnaU0tTXRjMmNtTnROX3FNQ0JINTBLX0R5VlpNQ3lTQXVELW1HdEVwRnVZVk91YlVTTUFPelZEbzF4SnFJNUZ4c1RxQ2VXbzU4eU9R?oc=5",
    "basin": "NO",
    "who": "Mowi",
-   "n": 8
+   "n": 7
   },
   {
    "kind": "story",
    "title": "Grieg Seafood: nominates AKVA group chief executive as chairman",
-   "text": "4 articles since 11-23; latest: Grieg Seafood: nominates AKVA group chief executive as chairman (Salmon Business).",
-   "src": "4 articles · 11-24",
-   "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxPdHkxbkJvVDV6a2ZEaFg5ZGZFVWdyQkVhekc2ckVfb1NRZzQweXpnVVl0TUtldFRyMGczT0xBcWZLYVBBdDFtRXl1ekVLVUVaa3B6VkpWbTItTjZ4cGhFLVdUc0ZrMFhrd2pNZEw5VWk4YUdZWGVvTGtHMTY5UFZwQ0pmOXJvVkZHdk53LUxWQkZWOHBJdUhrbWNB?oc=5",
+   "text": "7 articles since 11-23; latest: Fjerner oppkjøpspremie fra Grieg Seafood (ilaks.no).",
+   "src": "7 articles · 11-25",
+   "url": "https://ilaks.no/fjerner-oppkjopspremie-fra-grieg-seafood/?mtm_campaign=feed_click&mtm_kwd=fjerner-oppkjopspremie-fra-grieg-seafood&mtm_source=RSS2&mtm_medium=feed",
    "basin": "NO",
    "who": "Grieg",
-   "n": 4
+   "n": 7
   },
   {
    "kind": "story",
-   "title": "Andfjord Salmon: begins commercial harvests after €3.1m quarterly operating loss",
-   "text": "3 articles since 11-17; latest: Andfjord Salmon: begins commercial harvests after €3.1m quarterly operating loss (Salmon Business).",
-   "src": "3 articles · 11-18",
-   "url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxNdUtNbTJ5MldVcC1MTHk1eWQyWk1CYjNmSk1VdVY0dVpHeExicC1RT05iMUtRQ3JfdmlWZ3JfMUctM3BGbEJsSFphV2E3Mm81Y3VCZkFQdkcxM0toLXd3SThiZWhNQUhfQ2RQa1BIbTNhZ2RmbFpXcTdjRnU3clZIbGl6bzJXX0R4VWhBRFlhc0I5YU82Z09Tc1YxZ2xmcTFRZ1lWTHF4LWJXTGNRVkYzRQ?oc=5",
+   "title": "US Senate committee advances offshore aquaculture bill",
+   "text": "3 articles since 11-18; latest: US Senate committee advances offshore aquaculture bill (thefishsite.com).",
+   "src": "3 articles · 11-19",
+   "url": "https://thefishsite.com/articles/us-senate-committee-advances-offshore-aquaculture-bill",
    "basin": "global",
-   "who": "Andfjord",
+   "who": "Sector",
    "n": 3
   }
  ],
