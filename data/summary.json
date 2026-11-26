@@ -1,15 +1,15 @@
 {
  "meta": {
-  "built": "2026-11-25T19:45+00:00",
+  "built": "2026-11-26T17:54+00:00",
   "note": "Signals ranked by how unusual they are against their own history (score). Effect: supports / weighs on prices, risk, watch."
  },
- "lead": "Supply grows +6 % in 2026 across the seven basins and +0.9 % in 2027. Chile is the main source of change: a record El Niño, a slowing harvest and fewer big fish. Norway carries the growth. Imports grow fastest in Brazil, UK, Japan; USA and Israel are flat or down.",
+ "lead": "Supply grows +6 % in 2026 across the seven basins and −0.1 % in 2027. Chile is the main source of change: a record El Niño, a slowing harvest and fewer big fish. Norway carries the growth. Imports grow fastest in UK, Brazil, Japan; USA and Israel are flat or down.",
  "signals": [
   {
    "basin": "Chile · El Niño",
    "title": "Extreme El Niño, warm Chilean water",
    "value": "+3.3 °C",
-   "text": "Niño 3.4 index (week of 2026-11-18); Chilean sea +0.7 to +1.9 °C vs normal in Nov. NOAA: El Niño continues to strengthen, with a strong-to-very strong El Niño likely through January-March 2027 (remaining greater than a 79% chance).",
+   "text": "Niño 3.4 index (week of 2026-11-18); Chilean sea +0.7 to +1.8 °C vs normal in Nov. NOAA: El Niño continues to strengthen, with a strong-to-very strong El Niño likely through January-March 2027 (remaining greater than a 79% chance).",
    "effect": "risk",
    "tab": "seatemp",
    "score": 4.29
@@ -79,13 +79,13 @@
   }
  ],
  "supply": {
-  "world": 6.3,
-  "world_next": 0.9,
-  "world_kt": 2935,
+  "world": 5.9,
+  "world_next": -0.1,
+  "world_kt": 2925,
   "basins": [
    [
     "Iceland",
-    18.3
+    19.3
    ],
    [
     "Canada",
@@ -109,21 +109,21 @@
    ],
    [
     "Chile",
-    2.2
+    0.8
    ]
   ]
  },
  "demand": {
-  "world": 6.7,
+  "world": 6.8,
   "to": 202609,
   "markets": [
    [
-    "Brazil",
-    14.7
+    "UK",
+    16.5
    ],
    [
-    "UK",
-    14.1
+    "Brazil",
+    14.7
    ],
    [
     "Japan",
@@ -131,7 +131,7 @@
    ],
    [
     "EU",
-    7.6
+    7.5
    ],
    [
     "Thailand",
@@ -167,14 +167,14 @@
   },
   {
    "basin": "Chile",
-   "v2026": 739.9,
-   "chg2026": 2.2,
-   "chg2027": -2.1,
-   "lo": -9.1,
-   "hi": 0.9,
+   "v2026": 729.6,
+   "chg2026": 0.8,
+   "chg2027": -5.8,
+   "lo": -12.8,
+   "hi": -2.8,
    "sea": [
     0.7,
-    1.9
+    1.8
    ],
    "tab": "chile"
   },
@@ -186,8 +186,8 @@
    "lo": -4.2,
    "hi": 9.6,
    "sea": [
-    0.3,
-    0.6
+    0.2,
+    0.5
    ],
    "tab": "scotland"
   },
@@ -206,13 +206,13 @@
   },
   {
    "basin": "Iceland",
-   "v2026": 64.5,
-   "chg2026": 18.3,
-   "chg2027": -7.0,
-   "lo": -13.5,
-   "hi": -2.0,
+   "v2026": 65.1,
+   "chg2026": 19.3,
+   "chg2027": -7.4,
+   "lo": -14.4,
+   "hi": -2.4000000000000004,
    "sea": [
-    0.4,
+    0.3,
     0.4
    ],
    "tab": "iceland"
@@ -226,7 +226,7 @@
    "hi": 5.1,
    "sea": [
     -1.1,
-    0.1
+    0.2
    ],
    "tab": "canada"
   },
@@ -238,8 +238,8 @@
    "lo": 0,
    "hi": 10,
    "sea": [
-    0.9,
-    1.5
+    1.0,
+    1.6
    ],
    "tab": "australia"
   }
@@ -438,6 +438,63 @@
  },
  "news": [
   {
+   "date": "2026-11-26",
+   "title": "Price of Norwegian salmon leapt by almost NOK 5 per kilo last week",
+   "url": "https://www.fishfarmingexpert.com/farmed-cod-norway-norwegian-salmon/price-of-norwegian-salmon-leapt-by-almost-nok-5-per-kilo-last-week/2216655",
+   "source": "fishfarmingexpert.com",
+   "n_sources": 2,
+   "basins": [
+    "NO"
+   ],
+   "themes": [
+    "market"
+   ],
+   "lang": "en"
+  },
+  {
+   "date": "2026-11-26",
+   "title": "La protección de cetáceos cobra relevancia ante las exigencias de los mercados del salmón",
+   "url": "https://www.salmonexpert.cl/apl-armasur-ballenas/la-proteccion-de-cetaceos-cobra-relevancia-ante-las-exigencias-de-los-mercados-del-salmon/2216397",
+   "source": "salmonexpert.cl",
+   "n_sources": 2,
+   "basins": [
+    "CL"
+   ],
+   "themes": [
+    "market"
+   ],
+   "lang": "es"
+  },
+  {
+   "date": "2026-11-26",
+   "title": "La incógnita de los analistas: ¿el suministro de salmón chileno se verá afectado por El Niño?",
+   "url": "https://www.salmonexpert.cl/el-nino-pareto-pareto-securities/la-incognita-de-los-analistas-el-suministro-de-salmon-chileno-se-vera-afectado-por-el-nino/2216336",
+   "source": "salmonexpert.cl",
+   "n_sources": 2,
+   "basins": [
+    "CL"
+   ],
+   "themes": [
+    "feed",
+    "biology"
+   ],
+   "lang": "es"
+  },
+  {
+   "date": "2026-11-26",
+   "title": "(+) Godt hopp oppover for lakseprisen",
+   "url": "https://www.kyst.no/eksport-laksepris-torsk/godt-hopp-oppover-for-lakseprisen/2216548",
+   "source": "Kyst.no",
+   "n_sources": 2,
+   "basins": [
+    "NO"
+   ],
+   "themes": [
+    "market"
+   ],
+   "lang": "no"
+  },
+  {
    "date": "2026-11-25",
    "title": "Record results for NZ King Salmon",
    "url": "https://www.fishfarmingexpert.com/chinook-salmon-financial-results-new-zealand-king-salmon/record-results-for-nz-king-salmon/2216013",
@@ -467,73 +524,17 @@
   },
   {
    "date": "2026-11-25",
-   "title": "La ley de acuicultura avanza en el Senado de Estados Unidos",
-   "url": "https://www.salmonexpert.cl/eeuu-estados-unidos-ley-de-acuicultura/la-ley-de-acuicultura-avanza-en-el-senado-de-estados-unidos/2212975",
-   "source": "salmonexpert.cl",
-   "n_sources": 2,
-   "basins": [
-    "CL"
-   ],
-   "themes": [
-    "regulation"
-   ],
-   "lang": "es"
-  },
-  {
-   "date": "2026-11-25",
-   "title": "De la articulación a los resultados: PTI del Salmón inicia una nueva etapa",
-   "url": "https://www.mundoacuicola.cl/new/de-la-articulacion-a-los-resultados-pti-del-salmon-inicia-una-nueva-etapa/",
-   "source": "mundoacuicola.cl",
-   "n_sources": 2,
-   "basins": [
-    "CL"
-   ],
-   "themes": [
-    "companies"
-   ],
-   "lang": "es"
-  },
-  {
-   "date": "2026-11-24",
-   "title": "Norway’s PM, opposition party outline competing paths to salmon growth amid tax, regulatory divide",
-   "url": "https://www.undercurrentnews.com/2026/11/24/norways-pm-opposition-party-outline-competing-paths-to-salmon-growth-amid-tax-regulatory-divide/",
-   "source": "undercurrentnews.com",
+   "title": "Skretting om fôrråvarekrisen: – Har truffet oss mye raskere og hardere enn vi forventet",
+   "url": "https://ilaks.no/skretting-om-forravarekrisen-har-truffet-oss-mye-raskere-og-hardere-enn-vi-forventet/?mtm_campaign=feed_click&mtm_kwd=skretting-om-forravarekrisen-har-truffet-oss-mye-raskere-og-hardere-enn-vi-forventet&mtm_source=RSS2&mtm_medium=feed",
+   "source": "ilaks.no",
    "n_sources": 2,
    "basins": [
     "NO"
    ],
    "themes": [
-    "regulation"
-   ],
-   "lang": "en"
-  },
-  {
-   "date": "2026-11-20",
-   "title": "Finansdepartementet om offshore oppdrett-kritikk: – Skiller seg fra kystnært havbruk på flere områder",
-   "url": "https://ilaks.no/finansdepartementet-om-offshore-oppdrett-kritikk-skiller-seg-fra-kystnaert-havbruk-pa-flere-omrader/",
-   "source": "iLaks",
-   "n_sources": 2,
-   "basins": [
-    "NO"
-   ],
-   "themes": [
-    "regulation"
+    "feed"
    ],
    "lang": "no"
-  },
-  {
-   "date": "2026-11-20",
-   "title": "Norwegian, Scot salmon spot prices up again, medium sizes in high demand",
-   "url": "https://www.undercurrentnews.com/2026/11/20/norway-scots-salmon-spot-prices-up-again-smoked-sizes-in-demand/",
-   "source": "undercurrentnews.com",
-   "n_sources": 2,
-   "basins": [
-    "NO"
-   ],
-   "themes": [
-    "market"
-   ],
-   "lang": "en"
   },
   {
    "date": "2026-11-20",
@@ -658,7 +659,7 @@
    "level_en": "low"
   },
   "fx": {
-   "202438": 11.7489,
+   "202438": 11.7412,
    "202439": 11.7052,
    "202440": 11.7145,
    "202441": 11.7321,
@@ -772,19 +773,19 @@
    "202645": 10.4111,
    "202646": 10.579,
    "202647": 10.6239,
-   "202648": 10.7471
+   "202648": 10.7398
   }
  },
  "mainnews": [
   {
    "kind": "story",
    "title": "Scottish islanders vote in favour of proposed Mowi salmon farm",
-   "text": "7 articles since 11-19; latest: Scottish islanders vote for Mowi to build new salmon farm (The National Scot).",
-   "src": "7 articles · 11-24",
-   "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxPWUcwZFBnbWNobTdvaWNoTGxEaV81VXRfVmgyTDk2MTlHOUE3aVJtLXVodVZhT3lkQVhsZmRGSHBpZXlxSGNnUWljOVkwV1JnaU0tTXRjMmNtTnROX3FNQ0JINTBLX0R5VlpNQ3lTQXVELW1HdEVwRnVZVk91YlVTTUFPelZEbzF4SnFJNUZ4c1RxQ2VXbzU4eU9R?oc=5",
+   "text": "8 articles since 11-19; latest: Canadian aquaculture minister under fire for Mowi-sponsored trip (undercurrentnews.com).",
+   "src": "8 articles · 11-25",
+   "url": "https://www.undercurrentnews.com/2026/11/25/canadian-aquaculture-minister-under-fire-for-mowi-sponsored-trip/",
    "basin": "NO",
    "who": "Mowi",
-   "n": 7
+   "n": 8
   },
   {
    "kind": "story",
@@ -798,13 +799,13 @@
   },
   {
    "kind": "story",
-   "title": "US Senate committee advances offshore aquaculture bill",
-   "text": "3 articles since 11-18; latest: US Senate committee advances offshore aquaculture bill (thefishsite.com).",
-   "src": "3 articles · 11-19",
-   "url": "https://thefishsite.com/articles/us-senate-committee-advances-offshore-aquaculture-bill",
-   "basin": "global",
-   "who": "Sector",
-   "n": 3
+   "title": "Agrosuper explica las razones que la llevaron a realizar la compra de Salmones Blumar",
+   "text": "4 articles since 11-24; latest: El análisis de la eventual adquisición de Salmones Blumar por parte de Agrosuper (salmonexpert.cl).",
+   "src": "4 articles · 11-25",
+   "url": "https://www.salmonexpert.cl/adquisicion-agrosuper-aquachile/el-analisis-de-la-eventual-adquisicion-de-salmones-blumar-por-parte-de-agrosuper/2214932",
+   "basin": "CL",
+   "who": "AquaChile",
+   "n": 4
   }
  ],
  "monthly": [
@@ -840,7 +841,7 @@
    "k": "outlook",
    "label": "Outlook",
    "when": "",
-   "text": "2026 +6 %, 2027 +0.9 %",
+   "text": "2026 +6 %, 2027 −0.1 %",
    "tab": "supply"
   }
  ],
