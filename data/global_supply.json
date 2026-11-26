@@ -24,9 +24,9 @@
  "world": {
   "v2025": 2841,
   "y2026": "+6 %",
-  "y2026_note": "Our estimate: 2.93 Mt — actual harvest or exports to date, the rest of the year projected.",
-  "y2027": "+1 %",
-  "y2027_note": "Our projection for the seven basins: 2.96 Mt, range −4 to +4 %.",
+  "y2026_note": "Our estimate: 2.92 Mt — actual harvest or exports to date, the rest of the year projected.",
+  "y2027": "−0 %",
+  "y2027_note": "Our projection for the seven basins: 2.92 Mt, range −5 to +3 %.",
   "summary": "After a very strong 2026 — +4 % with a record first quarter — the world will have almost no more farmed salmon in 2027. Norway, by far the largest producer, has hit its legal biomass ceilings; Chile enters 2027 with 7 % less fish in the sea and an extraordinary El Niño; Canada's British Columbia is winding down towards its 2029 ban. The few gains come from Scotland's recovery, Australia and Iceland's ups and downs. With demand still growing (China especially), a flat supply means a tight market.",
   "risks": [
    {
@@ -51,13 +51,13 @@
    }
   ],
   "r2027": [
-   -4,
-   4
+   -5,
+   3
   ],
   "analysts_2027": "0 to +1 % — Kontali (via Mowi, 4 Nov 2026): around +1 %. SEB (28 Oct 2026): −1 %. Bakkafrost (2 Nov 2026): first half flat, second half about +2 %.",
   "analysts_2026": "about +4 % — Kontali's estimate in November (Mowi Q3 report); it was +1 % in February. Q1 2026 alone was +14 %, Q3 +4.8 %, and Q4 is expected at about −3 %.",
   "v2025_own": 2761.7,
-  "c2027": 0.9
+  "c2027": -0.1
  },
  "basins": [
   {
@@ -107,7 +107,7 @@
    "v2025": 726,
    "share": 26,
    "dir": "down",
-   "y2027": "−2 % (−9 to +1 %), our projection",
+   "y2027": "−6 % (−13 to −3 %), our projection",
    "y2026": "Record 2025 (1.15 Mt all species). Q3 2026 −2.1 %; Q4 2026 expected about −10 % (Mowi). Standing biomass −7 % year on year.",
    "oneliner": "Chile starts 2027 with less fish in the water (−7 % industry-wide) and an extraordinary El Niño: the risk is mostly on the downside.",
    "drivers": [
@@ -134,11 +134,11 @@
    ],
    "watch": "Algal blooms (Sernapesca alerts) and sea temperature in Los Lagos and Aysén this summer; monthly biomass in the Salmon Outlook; smolt stocking by quarter (Subpesca resolutions in the Chile tab).",
    "r2027": [
-    -9,
-    1
+    -13,
+    -3
    ],
    "analysts_2027": "flat to down, with downside risk",
-   "c2027": -2.1
+   "c2027": -5.8
   },
   {
    "id": "GB",
@@ -313,7 +313,7 @@
     -2
    ],
    "analysts_2027": "about −5 to −15 % after a record 2026",
-   "c2027": -7.0
+   "c2027": -7.4
   }
  ],
  "glossary": [

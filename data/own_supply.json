@@ -1,6 +1,6 @@
 {
  "meta": {
-  "built": "2026-11-23",
+  "built": "2026-11-26",
   "unit": "thousand tonnes gutted weight (GWT) or whole-fish equivalent",
   "note": "Built only from primary data (official registers, monthly harvest, exports, our own models). Analysts (Kontali, banks) appear only as a comparison."
  },
@@ -25,19 +25,19 @@
   "CL": {
    "v2025": 724.0,
    "ytd": {
-    "to": "Sep 2026",
-    "kt": 529.7,
-    "chg": 4.0
+    "to": "Oct 2026",
+    "kt": 600.8,
+    "chg": 2.3
    },
-   "last3": -2.1,
-   "e2026": 739.9,
-   "chg2026": 2.2,
-   "c2027": 724.7,
-   "chg2027": -2.1,
-   "lo": -9.1,
-   "hi": 0.9,
+   "last3": -5.8,
+   "e2026": 729.6,
+   "chg2026": 0.8,
+   "c2027": 687.2,
+   "chg2027": -5.8,
+   "lo": -12.8,
+   "hi": -2.8,
    "source": "Subpesca monthly sector reports: cumulative Atlantic salmon harvest (live weight × 0.888)",
-   "method": "Actual Atlantic salmon harvest to Sep 2026; the last three months ran at -2.1 % on a year earlier (it was +16 % for 2025 as a whole) — the rest of 2026 and 2027 are carried at that pace. Range skewed down (−7 / +3 points): an extraordinary El Niño and an algae emergency raise the risk of mass mortality; Chile publishes no current biomass for free.",
+   "method": "Actual Atlantic salmon harvest to Oct 2026; the last three months ran at -5.8 % on a year earlier (it was +16 % for 2025 as a whole) — the rest of 2026 and 2027 are carried at that pace. Range skewed down (−7 / +3 points): an extraordinary El Niño and an algae emergency raise the risk of mass mortality; Chile publishes no current biomass for free.",
    "tab": "chile"
   },
   "GB": {
@@ -89,16 +89,16 @@
   "IS": {
    "v2025": 54.5,
    "ytd": {
-    "to": "Q3 2026",
-    "kt": 51.2,
-    "chg": 45.7
+    "to": "Q4 2026",
+    "kt": 56.3,
+    "chg": 3.2
    },
-   "e2026": 64.5,
-   "chg2026": 18.3,
-   "c2027": 60.0,
-   "chg2027": -7.0,
-   "lo": -13.5,
-   "hi": -2.0,
+   "e2026": 65.1,
+   "chg2026": 19.3,
+   "c2027": 60.3,
+   "chg2027": -7.4,
+   "lo": -14.4,
+   "hi": -2.4000000000000004,
    "source": "MAST monthly farm reports (fish, weights, harvest by site)",
    "method": "Harvest to date from MAST; Q4 2026 and 2027 from our farm-by-farm simulation (growth, harvest weights, mortality) in three scenarios. The simulation has run high in past tests, so read the direction (down after a record 2026, with 30 % fewer fish over 4 kg at sea) more than the level.",
    "tab": "iceland"
@@ -145,12 +145,12 @@
  },
  "tracked": {
   "v2025": 2761.7,
-  "e2026": 2934.6,
-  "chg2026": 6.3,
-  "c2027": 2960.4,
-  "chg2027": 0.9,
-  "lo": -4.5,
-  "hi": 3.8,
+  "e2026": 2924.9,
+  "chg2026": 5.9,
+  "c2027": 2923.2,
+  "chg2027": -0.1,
+  "lo": -5.4,
+  "hi": 2.9,
   "note": "Sum of the seven basins we follow (about 95 % of farmed Atlantic salmon). Ireland, the United States, Russia, New Zealand and other small producers are not tracked."
  }
 }
