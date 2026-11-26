@@ -6,23 +6,23 @@
    "www.kyst.no": "ok 150 articles, 3 kept",
    "www.fishfarmingexpert.com": "ok 65 articles, 2 kept",
    "www.fishfarmermagazine.com": "ok 30 articles, 0 kept",
-   "www.salmonexpert.cl": "ok 59 articles, 2 kept",
+   "www.salmonexpert.cl": "ok 59 articles, 3 kept",
    "thefishsite.com": "ok 50 articles, 2 kept",
-   "news.google.com (NO no #1)": "ok 12 articles, 7 kept",
+   "news.google.com (NO no #1)": "ok 10 articles, 7 kept",
    "news.google.com (NO no #2)": "ok 10 articles, 1 kept",
-   "news.google.com (CL es #3)": "ok 30 articles, 11 kept",
-   "news.google.com (CL es #4)": "ok 8 articles, 5 kept",
+   "news.google.com (CL es #3)": "ok 51 articles, 15 kept",
+   "news.google.com (CL es #4)": "ok 7 articles, 3 kept",
    "news.google.com (IS is #5)": "ok 0 articles, 0 kept",
-   "news.google.com (IS en #6)": "ok 33 articles, 9 kept",
-   "news.google.com (GB en #7)": "error: HTTPError: HTTP Error 429: Too Many Requests",
+   "news.google.com (IS en #6)": "ok 9 articles, 3 kept",
+   "news.google.com (GB en #7)": "ok 56 articles, 8 kept",
    "news.google.com (FO en #8)": "ok 10 articles, 1 kept",
    "news.google.com (FO fo #9)": "ok 0 articles, 0 kept",
-   "news.google.com (CA en #10)": "ok 30 articles, 3 kept",
+   "news.google.com (CA en #10)": "ok 8 articles, 2 kept",
    "news.google.com (multi en #11)": "ok 11 articles, 3 kept",
-   "news.google.com (CA en #12)": "ok 35 articles, 13 kept",
+   "news.google.com (CA en #12)": "ok 33 articles, 12 kept",
    "news.google.com (CA en #13)": "ok 2 articles, 1 kept",
    "news.google.com (CA en #14)": "ok 2 articles, 0 kept",
-   "news.google.com (multi en #15)": "ok 67 articles, 10 kept",
+   "news.google.com (multi en #15)": "ok 65 articles, 10 kept",
    "gov.scot FHI": "ok 6824 reports, last 2026-10-14"
   },
   "note": "news = articles kept by keyword (a mortality word + a farming word), classified by cause and basin; manual = events entered by hand with their losses; scotland_fhi = mortalities reported to the Scottish Fish Health Inspectorate",
@@ -157,6 +157,48 @@
  ],
  "news": [
   {
+   "date": "2026-11-26",
+   "title": "Diputado solicita con urgencia zanja sanitaria ante una eventual mortalidad masiva de salmones",
+   "url": "https://www.salmonexpert.cl/algas-nocivas-diputados-el-nino/diputado-solicita-con-urgencia-zanja-sanitaria-ante-una-eventual-mortalidad-masiva-de-salmones/2217095",
+   "source": "www.salmonexpert.cl",
+   "lang": "es",
+   "causes": [
+    "temperature"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "2460886dbe62"
+  },
+  {
+   "date": "2026-11-26",
+   "title": "Diputado solicita con urgencia zanja sanitaria ante una eventual mortalidad masiva de salmones",
+   "url": "https://news.google.com/rss/articles/CBMi9AFBVV95cUxNWjF3N0ZtNDgtZVNzNVMwUlN2QlBWTndrTFJNVUM0WnJTNVN0OUh1eXc2UDJOalQzc1UwTlhBR2M4LUZmRUVFbUhBS2cxWDlUaHRyR2ZBWjliMUg1ckxhWVhCeE4zM3ZqLUd5WDFITnhXN0cyRVFaUFZOY1A5N0pETU1ZeVlKeTc0bHRDM2YyYUxONzNLYTQ2MDVyaTNnTTk2cnNBMGRNZXQzZkR0SnBDRlhuU1ZYYjZsMEtFck5YR0pPMDBrYmtWSkVwVk5UZnFqNlhxYlY0T09XRXBpdjB5bnRUMF9VU2tiUlFidDVPVm15Mnoy?oc=5",
+   "source": "Salmonexpert",
+   "lang": "es",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "7a5f553bcdaa"
+  },
+  {
+   "date": "2026-11-26",
+   "title": "“Nunca más se pueden verter salmones muertos al mar”",
+   "url": "https://news.google.com/rss/articles/CBMijwFBVV95cUxNUXhBTlBLLXlYLS1OSHdyVFJQbkdKM1hwLTY1WjV5aFhQd2VGcGNEc0o2SDd1UFpEZGxOenMyVGYwRHhEWVBCem9JTGUzZkxrX3Rja2ItYjk0S1JiMkxIX0ExeFpvSnZfSlVOLXUyRzhZenZyU1dKR1ZPc2dGeHYwaGpILUFPdWNfbm5oQzZkUQ?oc=5",
+   "source": "Diario Digital El Calbucano",
+   "lang": "es",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "1714618ab50b"
+  },
+  {
    "date": "2026-11-25",
    "title": "Diputado Mauro González solicita zanja sanitaria ante una eventual mortalidad masiva de salmones: “Nunca más se pueden verter salmones muertos al mar”",
    "url": "https://news.google.com/rss/articles/CBMijgJBVV95cUxOd0NvNXh4VkpWTFRYMU9ibms4NEVuMXpiR29LLXpEY1lHaU5UenI1UmlNZ240cXRTV3RldnFRUFZmQW14V1FIbXBYVlhiN1d1NkQtTVpzSXc2RWVhMXNhRElVQ0FNcGJpRl9qZVV1aHRsMHZrSVZpS2N5aWdhRGVHdXZBSFhCRk95S0t1aEMyRThfNjJOaWxKRTBobkdMdHR1TVNSaTVUVVBCREdVaFRYQk44Sm5JNXc0T3FPM1NwME05amtMLUs1UWhrSGFPb1dORlF1Y1FQd2gxUFNXWmpfbVYxMXU0Tk91b3pXOE5RNEloTDFaQWZFVzlKWU4xbHVUUDgzdlNaTEg3UGZSalE?oc=5",
@@ -169,6 +211,20 @@
     "CL"
    ],
    "id": "3675f243327c"
+  },
+  {
+   "date": "2026-11-25",
+   "title": "Canadian aquaculture report details mortality setbacks, progress on fish health",
+   "url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxNYkdTSllMSHc0ZWMxSVJsSWlXQTM1VXgtNEtjSi1MWU5qRTRYZm9OZ09HX2xRcmZXRWJOek1RU1hyRXhwdV9pRHNWZmdUem4ySWF2bDBfNHJtMEkxLU9EcFN3QWFkVWxjS0ZzemF1c0VYYXd2V3Q4OXBEUFQ5clZuRDdpWTQ5YXFOMUQ3ZVRvbTVhckFHdkJ6UGNwMlM3X3NtXzR6QVpFOENQR3VUbHA2X0YySklLWjMwbUlFUjVjeFg?oc=5",
+   "source": "Undercurrent News",
+   "lang": "en",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "CA"
+   ],
+   "id": "0ef4f763513a"
   },
   {
    "date": "2026-11-24",
