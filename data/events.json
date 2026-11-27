@@ -1,29 +1,29 @@
 {
  "meta": {
-  "generated": "2026-11-26",
+  "generated": "2026-11-27",
   "status": {
    "ilaks.no": "ok 12 articles, 0 kept",
-   "www.kyst.no": "ok 150 articles, 3 kept",
-   "www.fishfarmingexpert.com": "ok 65 articles, 2 kept",
+   "www.kyst.no": "ok 156 articles, 3 kept",
+   "www.fishfarmingexpert.com": "ok 66 articles, 2 kept",
    "www.fishfarmermagazine.com": "ok 30 articles, 0 kept",
-   "www.salmonexpert.cl": "ok 59 articles, 3 kept",
+   "www.salmonexpert.cl": "ok 59 articles, 4 kept",
    "thefishsite.com": "ok 50 articles, 2 kept",
-   "news.google.com (NO no #1)": "ok 10 articles, 7 kept",
+   "news.google.com (NO no #1)": "ok 11 articles, 7 kept",
    "news.google.com (NO no #2)": "ok 10 articles, 1 kept",
-   "news.google.com (CL es #3)": "ok 51 articles, 15 kept",
-   "news.google.com (CL es #4)": "ok 7 articles, 3 kept",
+   "news.google.com (CL es #3)": "ok 51 articles, 13 kept",
+   "news.google.com (CL es #4)": "ok 7 articles, 2 kept",
    "news.google.com (IS is #5)": "ok 0 articles, 0 kept",
-   "news.google.com (IS en #6)": "ok 9 articles, 3 kept",
-   "news.google.com (GB en #7)": "ok 56 articles, 8 kept",
+   "news.google.com (IS en #6)": "ok 9 articles, 4 kept",
+   "news.google.com (GB en #7)": "ok 31 articles, 8 kept",
    "news.google.com (FO en #8)": "ok 10 articles, 1 kept",
    "news.google.com (FO fo #9)": "ok 0 articles, 0 kept",
-   "news.google.com (CA en #10)": "ok 8 articles, 2 kept",
+   "news.google.com (CA en #10)": "ok 29 articles, 3 kept",
    "news.google.com (multi en #11)": "ok 11 articles, 3 kept",
-   "news.google.com (CA en #12)": "ok 33 articles, 12 kept",
+   "news.google.com (CA en #12)": "ok 12 articles, 7 kept",
    "news.google.com (CA en #13)": "ok 2 articles, 1 kept",
-   "news.google.com (CA en #14)": "ok 2 articles, 0 kept",
-   "news.google.com (multi en #15)": "ok 65 articles, 10 kept",
-   "gov.scot FHI": "ok 6824 reports, last 2026-10-14"
+   "news.google.com (CA en #14)": "ok 3 articles, 0 kept",
+   "news.google.com (multi en #15)": "ok 100 articles, 11 kept",
+   "gov.scot FHI": "error: no xlsx link (1983 chars, 0 xlsx links, title: )"
   },
   "note": "news = articles kept by keyword (a mortality word + a farming word), classified by cause and basin; manual = events entered by hand with their losses; scotland_fhi = mortalities reported to the Scottish Fish Health Inspectorate",
   "causes": [
@@ -156,6 +156,20 @@
   }
  ],
  "news": [
+  {
+   "date": "2026-11-27",
+   "title": "La operación salmonicultora de Blumar muestra mejores números",
+   "url": "https://www.salmonexpert.cl/blumar-finanzas-ganancias/la-operacion-salmonicultora-de-blumar-muestra-mejores-numeros/2217320",
+   "source": "www.salmonexpert.cl",
+   "lang": "es",
+   "causes": [
+    "unspecified"
+   ],
+   "basins": [
+    "CL"
+   ],
+   "id": "2a8ccc85ce41"
+  },
   {
    "date": "2026-11-26",
    "title": "Diputado solicita con urgencia zanja sanitaria ante una eventual mortalidad masiva de salmones",
