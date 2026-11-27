@@ -1,6 +1,6 @@
 {
  "meta": {
-  "built": "2026-11-26T19:25+00:00",
+  "built": "2026-11-27T17:39+00:00",
   "note": "Signals ranked by how unusual they are against their own history (score). Effect: supports / weighs on prices, risk, watch."
  },
  "lead": "Supply grows +6 % in 2026 across the seven basins and −0.1 % in 2027. Chile is the main source of change: a record El Niño, a slowing harvest and fewer big fish. Norway carries the growth. Imports grow fastest in UK, Brazil, Japan; USA and Israel are flat or down.",
@@ -161,7 +161,7 @@
    "hi": 4.2,
    "sea": [
     -0.1,
-    0.8
+    0.9
    ],
    "tab": "outlook"
   },
@@ -226,7 +226,7 @@
    "hi": 5.1,
    "sea": [
     -1.1,
-    0.2
+    0.1
    ],
    "tab": "canada"
   },
@@ -438,6 +438,35 @@
  },
  "news": [
   {
+   "date": "2026-11-27",
+   "title": "Mowi to convert €10m of feed debt into equity as Arctic Fish seeks fresh funding",
+   "url": "https://www.undercurrentnews.com/2026/11/27/mowi-to-convert-e10m-of-feed-debt-into-equity-as-arctic-fish-seeks-fresh-funding/",
+   "source": "undercurrentnews.com",
+   "n_sources": 2,
+   "basins": [
+    "NO",
+    "IS"
+   ],
+   "themes": [
+    "companies"
+   ],
+   "lang": "en"
+  },
+  {
+   "date": "2026-11-27",
+   "title": "La operación salmonicultora de Blumar muestra mejores números",
+   "url": "https://www.salmonexpert.cl/blumar-finanzas-ganancias/la-operacion-salmonicultora-de-blumar-muestra-mejores-numeros/2217320",
+   "source": "salmonexpert.cl",
+   "n_sources": 2,
+   "basins": [
+    "CL"
+   ],
+   "themes": [
+    "companies"
+   ],
+   "lang": "es"
+  },
+  {
    "date": "2026-11-26",
    "title": "Price of Norwegian salmon leapt by almost NOK 5 per kilo last week",
    "url": "https://www.fishfarmingexpert.com/farmed-cod-norway-norwegian-salmon/price-of-norwegian-salmon-leapt-by-almost-nok-5-per-kilo-last-week/2216655",
@@ -495,6 +524,20 @@
    "lang": "no"
   },
   {
+   "date": "2026-11-26",
+   "title": "First Nation Wild Salmon Alliance chair hopes Feds won’t backtrack on open-net salmon farms ban",
+   "url": "https://mapleridgenews.com/2026/11/26/first-nation-wild-salmon-alliance-chair-hopes-feds-wont-backtrack-on-open-net-salmon-farms-ban/",
+   "source": "Maple Ridge News",
+   "n_sources": 2,
+   "basins": [
+    "global"
+   ],
+   "themes": [
+    "regulation"
+   ],
+   "lang": "en"
+  },
+  {
    "date": "2026-11-25",
    "title": "Record results for NZ King Salmon",
    "url": "https://www.fishfarmingexpert.com/chinook-salmon-financial-results-new-zealand-king-salmon/record-results-for-nz-king-salmon/2216013",
@@ -505,48 +548,6 @@
    ],
    "themes": [
     "companies"
-   ],
-   "lang": "en"
-  },
-  {
-   "date": "2026-11-25",
-   "title": "El análisis de la eventual adquisición de Salmones Blumar por parte de Agrosuper",
-   "url": "https://www.salmonexpert.cl/adquisicion-agrosuper-aquachile/el-analisis-de-la-eventual-adquisicion-de-salmones-blumar-por-parte-de-agrosuper/2214932",
-   "source": "salmonexpert.cl",
-   "n_sources": 2,
-   "basins": [
-    "CL"
-   ],
-   "themes": [
-    "companies"
-   ],
-   "lang": "es"
-  },
-  {
-   "date": "2026-11-25",
-   "title": "Skretting om fôrråvarekrisen: – Har truffet oss mye raskere og hardere enn vi forventet",
-   "url": "https://ilaks.no/skretting-om-forravarekrisen-har-truffet-oss-mye-raskere-og-hardere-enn-vi-forventet/?mtm_campaign=feed_click&mtm_kwd=skretting-om-forravarekrisen-har-truffet-oss-mye-raskere-og-hardere-enn-vi-forventet&mtm_source=RSS2&mtm_medium=feed",
-   "source": "ilaks.no",
-   "n_sources": 2,
-   "basins": [
-    "NO"
-   ],
-   "themes": [
-    "feed"
-   ],
-   "lang": "no"
-  },
-  {
-   "date": "2026-11-20",
-   "title": "Salmon sector welcomes deal to reduce EU export barriers",
-   "url": "https://www.fishfarmingexpert.com/export-barriers-salmon-scotland-sanitary-and-phytosanitary-agreement/salmon-sector-welcomes-deal-to-reduce-eu-export-barriers/2214308",
-   "source": "fishfarmingexpert.com",
-   "n_sources": 2,
-   "basins": [
-    "GB"
-   ],
-   "themes": [
-    "market"
    ],
    "lang": "en"
   }
@@ -659,7 +660,7 @@
    "level_en": "low"
   },
   "fx": {
-   "202438": 11.7412,
+   "202438": 11.7254,
    "202439": 11.7052,
    "202440": 11.7145,
    "202441": 11.7321,
@@ -773,19 +774,19 @@
    "202645": 10.4111,
    "202646": 10.579,
    "202647": 10.6239,
-   "202648": 10.7398
+   "202648": 10.7289
   }
  },
  "mainnews": [
   {
    "kind": "story",
-   "title": "Scottish islanders vote in favour of proposed Mowi salmon farm",
-   "text": "8 articles since 11-19; latest: Canadian aquaculture minister under fire for Mowi-sponsored trip (undercurrentnews.com).",
-   "src": "8 articles · 11-25",
-   "url": "https://www.undercurrentnews.com/2026/11/25/canadian-aquaculture-minister-under-fire-for-mowi-sponsored-trip/",
+   "title": "Mowi-backed producer seeks €16.7 million equity injection to meet debt covenants",
+   "text": "10 articles since 11-20; latest: Henter ledere fra Mowi og Måsøval (kyst.no).",
+   "src": "10 articles · 11-27",
+   "url": "https://www.kyst.no/mowi-masoval-ode/henter-ledere-fra-mowi-og-masoval/2217258",
    "basin": "NO",
    "who": "Mowi",
-   "n": 8
+   "n": 10
   },
   {
    "kind": "story",
@@ -799,13 +800,13 @@
   },
   {
    "kind": "story",
-   "title": "Agrosuper explica las razones que la llevaron a realizar la compra de Salmones Blumar",
-   "text": "4 articles since 11-24; latest: El análisis de la eventual adquisición de Salmones Blumar por parte de Agrosuper (salmonexpert.cl).",
-   "src": "4 articles · 11-25",
-   "url": "https://www.salmonexpert.cl/adquisicion-agrosuper-aquachile/el-analisis-de-la-eventual-adquisicion-de-salmones-blumar-por-parte-de-agrosuper/2214932",
+   "title": "Blumar aporta 390 kilos de salmón a las SalmoJornadas en Magallanes",
+   "text": "6 articles since 11-25; latest: La operación salmonicultora de Blumar muestra mejores números (salmonexpert.cl).",
+   "src": "6 articles · 11-27",
+   "url": "https://www.salmonexpert.cl/blumar-finanzas-ganancias/la-operacion-salmonicultora-de-blumar-muestra-mejores-numeros/2217320",
    "basin": "CL",
-   "who": "AquaChile",
-   "n": 4
+   "who": "Blumar",
+   "n": 6
   }
  ],
  "monthly": [
