@@ -1,6 +1,6 @@
 {
  "meta": {
-  "built": "2026-11-27T19:20+00:00",
+  "built": "2026-11-28T16:24+00:00",
   "note": "Signals ranked by how unusual they are against their own history (score). Effect: supports / weighs on prices, risk, watch."
  },
  "lead": "Supply grows +6 % in 2026 across the seven basins and −0.1 % in 2027. Chile is the main source of change: a record El Niño, a slowing harvest and fewer big fish. Norway carries the growth. Imports grow fastest in UK, Brazil, Japan; USA and Israel are flat or down.",
@@ -9,7 +9,7 @@
    "basin": "Chile · El Niño",
    "title": "Extreme El Niño, warm Chilean water",
    "value": "+3.3 °C",
-   "text": "Niño 3.4 index (week of 2026-11-18); Chilean sea +0.7 to +1.8 °C vs normal in Nov. NOAA: El Niño continues to strengthen, with a strong-to-very strong El Niño likely through January-March 2027 (remaining greater than a 79% chance).",
+   "text": "Niño 3.4 index (week of 2026-11-18); Chilean sea +0.6 to +1.8 °C vs normal in Nov. NOAA: El Niño continues to strengthen, with a strong-to-very strong El Niño likely through January-March 2027 (remaining greater than a 79% chance).",
    "effect": "risk",
    "tab": "seatemp",
    "score": 4.29
@@ -35,11 +35,11 @@
   {
    "basin": "Norway",
    "title": "Fewer 6 kg+ than last year in Nov",
-   "value": "15.3 %",
-   "text": "of the harvest in 6 kg+ (16.9 % a year earlier), adjusted with harvest-boat visits: zone 11 27 → 23 %, zone 8 5 → 8 %.",
+   "value": "15.4 %",
+   "text": "of the harvest in 6 kg+ (16.9 % a year earlier), adjusted with harvest-boat visits: zone 11 27 → 23 %, zone 8 5 → 9 %.",
    "effect": "supports",
    "tab": "genmap",
-   "score": 1.8
+   "score": 1.75
   },
   {
    "basin": "Chile",
@@ -160,8 +160,8 @@
    "lo": -2.1,
    "hi": 4.2,
    "sea": [
-    -0.1,
-    0.9
+    -0.2,
+    0.8
    ],
    "tab": "outlook"
   },
@@ -173,7 +173,7 @@
    "lo": -12.8,
    "hi": -2.8,
    "sea": [
-    0.7,
+    0.6,
     1.8
    ],
    "tab": "chile"
@@ -226,7 +226,7 @@
    "hi": 5.1,
    "sea": [
     -1.1,
-    0.1
+    0.2
    ],
    "tab": "canada"
   },
@@ -467,6 +467,35 @@
    "lang": "es"
   },
   {
+   "date": "2026-11-27",
+   "title": "Brazil farmed tilapia prices edge lower as retailers shift focus to other proteins",
+   "url": "https://www.undercurrentnews.com/2026/11/27/brazil-farmed-tilapia-prices-edge-lower-as-retailers-shift-focus-to-other-proteins/",
+   "source": "undercurrentnews.com",
+   "n_sources": 2,
+   "basins": [
+    "global"
+   ],
+   "themes": [
+    "market"
+   ],
+   "lang": "en"
+  },
+  {
+   "date": "2026-11-27",
+   "title": "China’s imported fishmeal stocks sink below 90,000t, lowest since 2021",
+   "url": "https://www.undercurrentnews.com/2026/11/27/chinas-imported-fishmeal-stocks-sink-below-90000t-lowest-since-2021/",
+   "source": "undercurrentnews.com",
+   "n_sources": 2,
+   "basins": [
+    "global"
+   ],
+   "themes": [
+    "market",
+    "feed"
+   ],
+   "lang": "en"
+  },
+  {
    "date": "2026-11-26",
    "title": "Price of Norwegian salmon leapt by almost NOK 5 per kilo last week",
    "url": "https://www.fishfarmingexpert.com/farmed-cod-norway-norwegian-salmon/price-of-norwegian-salmon-leapt-by-almost-nok-5-per-kilo-last-week/2216655",
@@ -522,34 +551,6 @@
     "market"
    ],
    "lang": "no"
-  },
-  {
-   "date": "2026-11-26",
-   "title": "First Nation Wild Salmon Alliance chair hopes Feds won’t backtrack on open-net salmon farms ban",
-   "url": "https://mapleridgenews.com/2026/11/26/first-nation-wild-salmon-alliance-chair-hopes-feds-wont-backtrack-on-open-net-salmon-farms-ban/",
-   "source": "Maple Ridge News",
-   "n_sources": 2,
-   "basins": [
-    "global"
-   ],
-   "themes": [
-    "regulation"
-   ],
-   "lang": "en"
-  },
-  {
-   "date": "2026-11-25",
-   "title": "Record results for NZ King Salmon",
-   "url": "https://www.fishfarmingexpert.com/chinook-salmon-financial-results-new-zealand-king-salmon/record-results-for-nz-king-salmon/2216013",
-   "source": "fishfarmingexpert.com",
-   "n_sources": 2,
-   "basins": [
-    "NZ"
-   ],
-   "themes": [
-    "companies"
-   ],
-   "lang": "en"
   }
  ],
  "week": {
@@ -624,8 +625,8 @@
   "bw": {
    "yw": 202647,
    "now": {
-    "lice": 0.147,
-    "t": 9.28,
+    "lice": 0.148,
+    "t": 9.27,
     "over_limit": 6.5
    },
    "prev": {
@@ -660,7 +661,7 @@
    "level_en": "low"
   },
   "fx": {
-   "202438": 11.7254,
+   "202438": 11.7004,
    "202439": 11.7052,
    "202440": 11.7145,
    "202441": 11.7321,
@@ -780,33 +781,33 @@
  "mainnews": [
   {
    "kind": "story",
-   "title": "Mowi-backed producer seeks €16.7 million equity injection to meet debt covenants",
-   "text": "10 articles since 11-20; latest: Henter ledere fra Mowi og Måsøval (kyst.no).",
-   "src": "10 articles · 11-27",
-   "url": "https://www.kyst.no/mowi-masoval-ode/henter-ledere-fra-mowi-og-masoval/2217258",
-   "basin": "NO",
-   "who": "Mowi",
-   "n": 10
-  },
-  {
-   "kind": "story",
    "title": "Grieg Seafood: nominates AKVA group chief executive as chairman",
-   "text": "7 articles since 11-23; latest: Fjerner oppkjøpspremie fra Grieg Seafood (ilaks.no).",
-   "src": "7 articles · 11-25",
+   "text": "8 articles since 11-23; latest: Fjerner oppkjøpspremie fra Grieg Seafood (ilaks.no).",
+   "src": "8 articles · 11-25",
    "url": "https://ilaks.no/fjerner-oppkjopspremie-fra-grieg-seafood/?mtm_campaign=feed_click&mtm_kwd=fjerner-oppkjopspremie-fra-grieg-seafood&mtm_source=RSS2&mtm_medium=feed",
    "basin": "NO",
    "who": "Grieg",
-   "n": 7
+   "n": 8
+  },
+  {
+   "kind": "story",
+   "title": "Mowi-backed producer seeks €16.7 million equity injection to meet debt covenants",
+   "text": "8 articles since 11-23; latest: Henter ledere fra Mowi og Måsøval (kyst.no).",
+   "src": "8 articles · 11-27",
+   "url": "https://www.kyst.no/mowi-masoval-ode/henter-ledere-fra-mowi-og-masoval/2217258",
+   "basin": "NO",
+   "who": "Mowi",
+   "n": 8
   },
   {
    "kind": "story",
    "title": "Blumar aporta 390 kilos de salmón a las SalmoJornadas en Magallanes",
-   "text": "6 articles since 11-25; latest: La operación salmonicultora de Blumar muestra mejores números (salmonexpert.cl).",
-   "src": "6 articles · 11-27",
+   "text": "7 articles since 11-25; latest: La operación salmonicultora de Blumar muestra mejores números (salmonexpert.cl).",
+   "src": "7 articles · 11-27",
    "url": "https://www.salmonexpert.cl/blumar-finanzas-ganancias/la-operacion-salmonicultora-de-blumar-muestra-mejores-numeros/2217320",
    "basin": "CL",
    "who": "Blumar",
-   "n": 6
+   "n": 7
   }
  ],
  "monthly": [
